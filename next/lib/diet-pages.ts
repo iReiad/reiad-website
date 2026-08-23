@@ -1,5 +1,9 @@
 /* ============================================================
-   diet-pages.ts: the eleven addresses of the diet tool, once.
+   diet-pages.ts: every address of the diet tool, once.
+
+   NOT "the eleven addresses", which this line said while the
+   table held fourteen. A comment that counts a list beside it is
+   the failure at the top of `CLAUDE.md` in its smallest form.
 
    THE SAME RULE AS `nav.ts`, one level down. The front door's
    deck said all ten in one place, the strip across the top of
@@ -104,6 +108,19 @@ export const DIET_PAGES: DietPage[] = [
     dek: {
       en: "The trend against the scale, the rate with its error bar, and what your own log says you burn rather than what an equation guesses.",
       bn: "দাঁড়িপাল্লার বিপরীতে ধারা, ভুলের সীমাসহ হার, আর সূত্রের আন্দাজ নয়, আপনার নিজের খাতা যা বলে সেই খরচ।",
+    },
+    needsAccount: true,
+  },
+  {
+    href: "/tools/diet/year",
+    needs: ["/tools/diet/trend"],
+    tone: "var(--plum)",
+    tab: { en: "The year", bn: "বছর" },
+    title: { en: "A year in one page", bn: "এক পাতায় এক বছর" },
+    go: { en: "See the year", bn: "বছরটা দেখুন" },
+    dek: {
+      en: "One long trend with everything that happened to it drawn on it: the protocols you ran banded across it, the seasons you crossed along its foot, and the days you marked. The chart is a year wide from the first weighing, so the part not lived yet is shaded rather than missing.",
+      bn: "একটা লম্বা ধারা, আর তার উপরেই সব কিছু আঁকা: যে নিয়মগুলো চালিয়েছেন সেগুলো চওড়া পটি হিসেবে, যে ঋতুগুলো পার হয়েছেন সেগুলো নিচের কিনারায়, আর যে দিনগুলোয় চিহ্ন দিয়েছেন। প্রথম ওজনের দিন থেকে ছকটা এক বছর চওড়া, তাই যে সময়টা এখনো আসেনি সেটা ফাঁকা নয়, ছায়া দেওয়া।",
     },
     needsAccount: true,
   },

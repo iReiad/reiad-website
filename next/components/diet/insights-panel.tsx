@@ -51,9 +51,10 @@ import {
   type Body, type Day, type Entry,
 } from "@reiad/shared/diet";
 import {
-  COVERAGE_FLOOR, adherence, againstBudget, calibration, costByTag,
-  loggedDays, monthsSince, per100kcal, proteinPrice, proteinSplit, spend,
-  swaps, weekVsOwn, type Item, type SlotId, type Spend,
+  COVERAGE_FLOOR, NIGHTS_LEAST, SHORT_NIGHT_HOURS, adherence, afterShortNights,
+  againstBudget, calibration, costByTag, loggedDays, monthsSince, per100kcal,
+  proteinPrice, proteinSplit, spend, swaps, weekVsOwn,
+  type Item, type SlotId, type Spend,
 } from "@reiad/shared/insights";
 import { DEFAULT_PLACE, byId, forPlace, type Place } from "@reiad/shared/foods";
 import {
@@ -88,6 +89,11 @@ const money = (n: number): string =>
     which is the difference between a reading and a blank. */
 const show = (n: number): string =>
   (Math.abs(n) >= 10 ? String(Math.round(n)) : (Math.round(n * 100) / 100).toFixed(2));
+
+/** One decimal, for a figure that is a measurement rather than a
+    ratio. `show()` gives two under ten, which reads as more
+    precision than a night's sleep has. */
+const one = (n: number): string => n.toFixed(1);
 
 const pct = (n: number): number => Math.round(n * 100);
 /** A multiple, at one decimal. `show()` gives two under ten,
@@ -166,6 +172,7 @@ export function InsightsPanel({
       {w ? <Swaps entries={entries} /> : null}
       <Fullness place={place} />
       {w ? <ThisWeek days={days} today={today} /> : null}
+      {w ? <AfterAShortNight days={days} profile={profile} today={today} /> : null}
       {w ? <Holding days={days} profile={profile} today={today} /> : null}
       {w ? <Calibration days={days} profile={profile} today={today} /> : null}
       {w ? (
@@ -494,6 +501,136 @@ function ThisWeek({ days, today }: { days: Day[]; today: string }) {
           </p>
         </>
       )}
+    </section>
+  );
+}
+
+/* ---- 4b. days after a short night ---- */
+
+/** `DIET.md` section 18, and the whole of what an hours field
+    earns: one plain observation of the kind section 16 allows.
+
+    IT IS OFFSET BY A DAY AND THE PAGE SAYS SO. Short sleep
+    raises the hormone that makes somebody hungry and lowers the
+    one that says they have had enough, and the appetite that
+    follows lands the day AFTER. A panel comparing a night with
+    the same date's eating would be reading the wrong pair and
+    would look entirely correct, so what is compared is written
+    out for the reader rather than left in the arithmetic.
+
+    And it stops there. No score, no grade for a night, and no
+    target for one: section 18 is explicit that this is never
+    turned into a sleep score. */
+function AfterAShortNight({
+  days, profile, today,
+}: { days: Day[]; profile: Profile | null; today: string }) {
+  const at = dayNumber(today);
+  const engine = useMemo(() => bodyAndTarget(days, profile, at), [days, profile, at]);
+  const nights = useMemo(
+    () => afterShortNights({ days, targetKcal: engine?.kcal }),
+    [days, engine],
+  );
+
+  return (
+    <section aria-labelledby="dt-sleep-h">
+      <h2 id="dt-sleep-h">
+        <T en="Days after a short night" bn="কম ঘুমের পরের দিনগুলো" />
+      </h2>
+      <p className="dt-intro">
+        <T
+          en="A night here is set against what you ate the day after it rather than the same day, because the appetite that follows a short night arrives the following day. What is below is two averages out of your own log: no cause is claimed between them, nothing is scored, and no night is graded."
+          bn="এখানে একটা রাতের ঘুমের পাশে রাখা হয় তার পরের দিন আপনি কী খেয়েছেন, ওই দিনের খাওয়া নয়, কারণ কম ঘুমের পর ক্ষুধা বাড়ে তার পরের দিন। নিচে আপনার নিজের খাতা থেকে নেওয়া দুটো গড়: এদের মধ্যে কারণ আর ফলের কোনো দাবি করা হয়নি, কিছুতে নম্বর দেওয়া হয়নি, আর কোনো রাতকে ভালো বা খারাপ বলা হয়নি।"
+        />
+      </p>
+
+      {nights === null ? (
+        <p className="dt-hint">
+          <T
+            en={`${NIGHTS_LEAST} days after a night under ${SHORT_NIGHT_HOURS} hours and ${NIGHTS_LEAST} after a longer one, and this fills in. Hours are not on the log form yet: a sheet you bring in on the import page can carry them, and a night with nothing written down the day after is not a pair.`}
+            bn={`${digits(SHORT_NIGHT_HOURS, "bn")} ঘণ্টার কম ঘুমের পরে ${digits(NIGHTS_LEAST, "bn")} দিন আর তার বেশি ঘুমের পরে ${digits(NIGHTS_LEAST, "bn")} দিন লেখা থাকলে এটা ভরে উঠবে। খাতার ফর্মে এখনো ঘণ্টার ঘর নেই: আমদানির পাতায় আনা একটা শিটে ঘণ্টা থাকতে পারে, আর যে রাতের পরের দিন কিছুই লেখা নেই সেটা জোড়া হয় না।`}
+          />
+        </p>
+      ) : (
+        <>
+          <ul className="dt-tag-counts">
+            <li>
+              <span>
+                <T
+                  en={`After a night under ${nights.short} hours`}
+                  bn={`${digits(nights.short, "bn")} ঘণ্টার কম ঘুমের পরের দিন`}
+                />
+                <span className="dt-row-src">
+                  <T
+                    en={`${nights.afterShort.days} days`}
+                    bn={`${digits(nights.afterShort.days, "bn")} দিন`}
+                  />
+                </span>
+              </span>
+              <span className="mono">
+                <T
+                  en={`${round(nights.afterShort.meanKcal)} kcal a day`}
+                  bn={`দিনে ${digits(round(nights.afterShort.meanKcal), "bn")} ক্যালোরি`}
+                />
+              </span>
+            </li>
+            <li>
+              <span>
+                <T en="After every other night" bn="বাকি সব রাতের পরের দিন" />
+                <span className="dt-row-src">
+                  <T
+                    en={`${nights.afterRest.days} days`}
+                    bn={`${digits(nights.afterRest.days, "bn")} দিন`}
+                  />
+                </span>
+              </span>
+              <span className="mono">
+                <T
+                  en={`${round(nights.afterRest.meanKcal)} kcal a day`}
+                  bn={`দিনে ${digits(round(nights.afterRest.meanKcal), "bn")} ক্যালোরি`}
+                />
+              </span>
+            </li>
+          </ul>
+
+          <p className="dt-said">
+            <T
+              en={`${round(nights.afterShort.meanKcal)} kcal a day on the ${nights.afterShort.days} days that followed a night under ${nights.short} hours, against ${round(nights.afterRest.meanKcal)} on the ${nights.afterRest.days} days that followed a longer one. That is ${round(Math.abs(nights.diff))} kcal ${nights.diff >= 0 ? "more" : "less"} a day.`}
+              bn={`${digits(nights.short, "bn")} ঘণ্টার কম ঘুমের পরের ${digits(nights.afterShort.days, "bn")} দিনে দিনে ${digits(round(nights.afterShort.meanKcal), "bn")} ক্যালোরি, আর তার বেশি ঘুমের পরের ${digits(nights.afterRest.days, "bn")} দিনে ${digits(round(nights.afterRest.meanKcal), "bn")}। অর্থাৎ দিনে ${digits(round(Math.abs(nights.diff)), "bn")} ক্যালোরি ${nights.diff >= 0 ? "বেশি" : "কম"}।`}
+            />
+          </p>
+
+          {nights.targetKcal === null || nights.overTarget === null
+            || nights.restOverTarget === null ? (
+              <p className="dt-hint">
+                <T
+                  en="A target on the goal page puts these two beside it as well as beside each other, which is the sentence the plan asks for."
+                  bn="লক্ষ্যের পাতায় একটা লক্ষ্য দিলে এই দুটো কেবল একে অন্যের পাশে নয়, লক্ষ্যের পাশেও বসবে, আর পরিকল্পনায় ঠিক সেই কথাটাই চাওয়া হয়েছে।"
+                />
+              </p>
+            ) : (
+              <p className="dt-said">
+                <T
+                  en={`Against your own target of ${round(nights.targetKcal)} a day, the days after a short night sit ${round(Math.abs(nights.overTarget))} ${nights.overTarget >= 0 ? "above" : "below"} it and the rest ${round(Math.abs(nights.restOverTarget))} ${nights.restOverTarget >= 0 ? "above" : "below"}.`}
+                  bn={`দিনে ${digits(round(nights.targetKcal), "bn")} ক্যালোরির নিজের লক্ষ্যের সাপেক্ষে, কম ঘুমের পরের দিনগুলো তার ${digits(round(Math.abs(nights.overTarget)), "bn")} ${nights.overTarget >= 0 ? "উপরে" : "নিচে"}, আর বাকিগুলো ${digits(round(Math.abs(nights.restOverTarget)), "bn")} ${nights.restOverTarget >= 0 ? "উপরে" : "নিচে"}।`}
+                />
+              </p>
+            )}
+
+          <p className="dt-coverage">
+            <T
+              en={`${nights.nights} of your rows carry an hours figure and ${nights.pairs} of those have a day with food written down after them, between ${nights.from} and ${nights.to}, which is ${nights.span} days. Your own middle night over them is ${one(nights.medianHours)} hours.`}
+              bn={`আপনার ${digits(nights.nights, "bn")}টি সারিতে ঘুমের ঘণ্টা লেখা আছে, তার ${digits(nights.pairs, "bn")}টির পরের দিনে খাবারও লেখা আছে, ${digits(nights.from, "bn")} থেকে ${digits(nights.to, "bn")} পর্যন্ত, অর্থাৎ ${digits(nights.span, "bn")} দিনে। ওই রাতগুলোর মধ্যে আপনার মাঝারি রাত ${digits(one(nights.medianHours), "bn")} ঘণ্টার।`}
+            />
+          </p>
+        </>
+      )}
+
+      <p className="dt-why">
+        <T
+          en="Described and not explained. Short sleep raises the hormone that makes you hungry and lowers the one that says you have had enough, and that is why the comparison is offset by a day; whether it is what your own two numbers are made of is not something a log can say. There is no sleep score here, no grade for a night, and no target for one either."
+          bn="এটা বর্ণনা, ব্যাখ্যা নয়। কম ঘুমে ক্ষুধা বাড়ানোর হরমোন বাড়ে আর পেট ভরার সংকেত দেওয়া হরমোন কমে, আর সেজন্যই তুলনাটা একদিন সরিয়ে করা হয়; আপনার নিজের এই দুটো সংখ্যা সত্যিই তাই দিয়ে তৈরি কি না, সেটা খাতা বলতে পারে না। এখানে ঘুমের কোনো নম্বর নেই, কোনো রাতকে ভালো বা খারাপ বলা হয়নি, আর ঘুমের কোনো লক্ষ্যও নেই।"
+        />
+      </p>
     </section>
   );
 }
@@ -1006,7 +1143,7 @@ function PriceOfFood({ place, month }: { place: Place; month: string }) {
       ) : null}
 
       <p className="dt-said">
-        <T en="Prices checked in" bn="দাম যাচাই করা হয়েছে" />
+        <T en="Prices checked" bn="দাম যাচাই করা হয়েছে" />
         <Priced on={checked} now={month} lang={lang} />
       </p>
       <p className="dt-why">

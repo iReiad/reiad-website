@@ -59,6 +59,7 @@ import { Note } from "../ui/note";
 import { T, TBlock, digits, useToolLang } from "./lang";
 import { Term } from "./glossary";
 import { Spark } from "./widgets";
+import { Invite } from "./invite";
 
 /** How far back the page reads. Long enough to hold a phase, its
     fortnight and the weeks either side of it, and short enough to
@@ -356,12 +357,10 @@ export function KetoPanel() {
             />
           </>
         ) : (
-          <p className="dt-invite">
-            <T
-              en="A phase is a row in your account, so the clock can carry on while the tab is shut and be the same clock on your phone. Everything below this works signed out."
-              bn="একটা পর্ব আপনার অ্যাকাউন্টে একটা সারি, তাই ট্যাব বন্ধ থাকলেও ঘড়ি চলতে থাকে আর ফোনেও একই ঘড়ি দেখায়। এর নিচের সবকিছু অ্যাকাউন্ট ছাড়াও কাজ করে।"
-            />
-          </p>
+          <Invite
+            en="A phase is a row in your account, so the clock can carry on while the tab is shut and be the same clock on your phone. Everything below this works signed out."
+            bn="একটা পর্ব আপনার অ্যাকাউন্টে একটা সারি, তাই ট্যাব বন্ধ থাকলেও ঘড়ি চলতে থাকে আর ফোনেও একই ঘড়ি দেখায়। এর নিচের সবকিছু অ্যাকাউন্ট ছাড়াও কাজ করে।"
+          />
         )}
       </section>
 
@@ -1237,12 +1236,10 @@ function Ketones({
           </span>
         </div>
       ) : (
-        <p className="dt-invite">
-          <T
-            en="A reading is a row in your account, like a weight. The note under this field is the part worth reading either way."
-            bn="ওজনের মতোই, একটা মাপ আপনার অ্যাকাউন্টে একটা সারি। তবু এই ঘরের নিচের কথাটা দুই দিকেই পড়ার মতো।"
-          />
-        </p>
+        <Invite
+          en="A reading is a row in your account, like a weight. The note under this field is the part worth reading either way."
+          bn="ওজনের মতোই, একটা মাপ আপনার অ্যাকাউন্টে একটা সারি। তবু এই ঘরের নিচের কথাটা দুই দিকেই পড়ার মতো।"
+        />
       )}
 
       {/* THE NOTE, WHERE THE FIELD IS. Section 7 asks for it here

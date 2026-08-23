@@ -24,6 +24,7 @@ import { who, getDays, isoDate, shiftDate, type Who } from "../../lib/diet-api";
 import { Note } from "../ui/note";
 import { T, TBlock, digits, useToolLang } from "./lang";
 import { Term } from "./glossary";
+import { Invite } from "./invite";
 
 const SYMPTOMS: Array<{ en: string; bn: string; withEn: string; withBn: string }> = [
   { en: "Headache, fatigue or cramp in the first fortnight of keto",
@@ -82,10 +83,20 @@ export function JournalPanel() {
 
   if (!answered) return <div className="dt-board-wait" aria-busy="true" />;
   if (!w) {
-    return <p className="dt-invite"><T
-      en="A journal belongs to an account, so it is there on your phone too."
-      bn="খাতা অ্যাকাউন্টের সঙ্গে থাকে, তাই ফোনেও পাবেন।"
-    /></p>;
+    return (
+      <Invite
+        en="A journal belongs to an account, so it is there on your phone too."
+        bn="খাতা অ্যাকাউন্টের সঙ্গে থাকে, তাই ফোনেও পাবেন।"
+        shows={[
+          { en: "Hunger from one to five, day by day, which climbs before the trend moves.",
+            bn: "দিনে দিনে এক থেকে পাঁচে ক্ষুধা, যা ধারা নড়ার আগেই ওঠে।" },
+          { en: "How often each of the twelve tags came up over the last ninety days.",
+            bn: "গত নব্বই দিনে বারোটা চিহ্নের কোনটা কতবার এসেছে।" },
+          { en: "Your own lines, kept as written and never counted.",
+            bn: "আপনার নিজের লেখা কথা, যেমন লিখেছেন তেমনই থাকে, গোনা হয় না।" },
+        ]}
+      />
+    );
   }
 
   return (

@@ -8195,7 +8195,7 @@
     --follows: 0;
   }
 
-  :is(.dt-figure, .dt-season-row, .dt-recipe,
+  :is(.dt-figure, .dt-season-row, .dt-recipe, .dt-invite-shows,
       .tile, .chart-card, .verdict-card, .model-bar, .signal, .glance-item,
       .topic-tag, .card-chip, .gt-chip, .risk-chip, .tab-count,
       .pledge, .hub-pledge, .id-card, .res, .cv-item, .note,
@@ -8273,7 +8273,7 @@
       .reader-panel, .signin, .pane-bar, .model-drivers,
       .news-window, .preflight, .slash-menu, .studio-tools,
       .course-rail, .csv-panel, .deck-foot, .toast, .dt-set, .dt-lang,
-      .dt-figure, .dt-season-row, .dt-recipe,
+      .dt-figure, .dt-season-row, .dt-recipe, .dt-invite-shows,
       .tile, .chart-card, .verdict-card, .model-bar, .signal, .glance-item,
       .topic-tag, .card-chip, .gt-chip, .risk-chip, .tab-count,
       .pledge, .hub-pledge, .id-card, .res, .cv-item, .note,
@@ -9403,6 +9403,26 @@
   .dt-symptoms, .dt-diary { max-inline-size: 70ch; }
 
   .dt-invite { display: grid; gap: var(--s-5); max-inline-size: 52ch; justify-items: start; }
+
+  .dt-invite-shows {
+    background: var(--panel);
+    border: 1px solid var(--hairline);
+    border-inline-start: 3px solid var(--accent);
+    border-radius: var(--radius-card);
+    display: grid;
+    gap: var(--s-3);
+    padding: var(--s-5);
+    inline-size: 100%;
+  }
+  .dt-invite-h {
+    color: var(--ink-soft);
+    font-family: var(--font-mono);
+    font-size: var(--t-0);
+    letter-spacing: 0.04em;
+    margin: 0;
+    text-transform: uppercase;
+  }
+  .dt-invite-shows ul { display: grid; gap: var(--s-3); margin: 0; padding-inline-start: 1.2em; }
 
   .dt-invite-line {
     display: flex;

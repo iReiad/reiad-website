@@ -17,7 +17,7 @@
    in the migration that no part of the tool can ever put a value
    in. Every one of those renders perfectly.
 
-   Six questions, and each one is a rule DIET.md states and
+   Seven questions, and each one is a rule DIET.md states and
    nothing else holds:
 
    1. EVERY PAGE THAT PRINTS A TARGET PRINTS THE MEDICAL ADVICE
@@ -51,6 +51,11 @@
    6. EVERY `diet_*` COLUMN IS REACHED, or is named as not built
       yet with the section that will build it. This is the one
       that stops the schema drifting away from the tool.
+
+   7. WHAT HAPPENS AFTER A GOAL IS REACHED IS SAID ONCE, on the
+      goal page. Section 6 puts it there and only there: said
+      twice it is a slogan, and said away from the projection it
+      is a scare.
 
    ---- what "reached" means, and why it is not "written" ----
 
@@ -571,8 +576,6 @@ const UNUSED: Record<string, string> = {
   "diet_profile.units": "section 22, stone and pounds and feet and inches offered beside metric",
   "diet_profile.activity": "section 26, the onboarding questions, which is what asks it",
   "diet_profile.goal_weight_kg": "section 5, for the reader who names one anyway",
-  "diet_profile.band_low_kg": "section 6, maintenance is a band rather than a number",
-  "diet_profile.band_high_kg": "section 6, the other end of the same band",
   "diet_profile.board": "section 24, the reader arranges the widgets",
 
   /* The day. The tape's other three and the fields no form
@@ -797,6 +800,47 @@ for (const key of Object.keys(UNUSED)) {
     "outlived what it exempted reads as covering something and covers nothing.");
 }
 
+/* ------------------------------------------------------------
+   7. The honest sentence is said once, on the goal page
+
+   Section 6 puts it in exactly one place: "on the goal page,
+   once, where the projection ends". Both halves are the rule.
+
+   Said TWICE it stops being a fact and becomes a slogan, and
+   said on a page where nobody is looking at how long this will
+   take it is a scare rather than the reason maintenance is a
+   built phase here. It is also the one sentence in this tool
+   that argues for the tool, which is what makes it the one most
+   likely to get copied on to a second panel by somebody who
+   liked it.
+   ------------------------------------------------------------ */
+
+const REGAIN_EN = /strongest predictor of not doing so is continuing to weigh/;
+const REGAIN_BN = /লক্ষ্যে পৌঁছানোর পরেও/;
+
+const saysRegain = TOOL_FILES
+  .filter((f) => REGAIN_EN.test(uncommented(SOURCE.get(f) as string)));
+const saysRegainBn = TOOL_FILES
+  .filter((f) => REGAIN_BN.test(uncommented(SOURCE.get(f) as string)));
+
+if (saysRegain.length !== 1) {
+  fail(saysRegain.length
+    ? `what happens after a goal is reached is said in ${saysRegain.length} files`
+    : "nothing says what happens after a goal is reached",
+  saysRegain.length ? saysRegain.join(", ") : "",
+  "DIET.md section 6: on the goal page, ONCE, where the projection ends.",
+  "Most people regain a meaningful part of what they lose, and the strongest",
+  "predictor of not doing so is continuing to weigh and log afterwards.");
+} else if (!saysRegain[0].endsWith("goal-panel.tsx")) {
+  fail(`it is on ${relative(COMPONENTS, saysRegain[0])} rather than the goal page`,
+    "DIET.md section 6 puts it where the projection ends. Anywhere else it is",
+    "a scare rather than the reason holding is a built phase here.");
+} else if (saysRegainBn.length !== 1) {
+  fail("what happens after a goal is reached is said in English only",
+    "Section 23: the switch changes everything on the page, and this is the",
+    "one sentence in the tool that argues for the tool.");
+}
+
 /* ------------------------------------------------------------ */
 console.log(failures
   ? `\n${failures} problem(s): the diet tool has stopped keeping one of DIET.md's\n`
@@ -804,5 +848,6 @@ console.log(failures
   : `diet: ${disclaimed} of the ${targeted} pages that print a target say so, ${phrases} phrases\n`
     + `      in both languages across ${pages.length} pages, ${widgets} widgets with an empty\n`
     + `      state, ${entries.length} glossary entries linked, ${TAGS.length} tags and ${MARKS.length} marks as written\n`
-    + `      down, and ${columns} columns across ${tables.length} tables filled or named.\n`);
+    + `      down, ${columns} columns across ${tables.length} tables filled or named, and what\n`
+    + "      happens after a goal is reached said once.\n");
 process.exit(failures ? 1 : 0);

@@ -31,6 +31,12 @@
    login could not have reached anyone either. Bump this whenever a
    precached file changes.
 
+   v199: /fallback.css. Fourteen cards on the front door were
+        fourteen paragraphs in one typeface, so each page has a
+        glyph in its own colour now. And a page that needs an
+        account says what it draws once there is one, rather than
+        being a dead end with no way to sign in from it.
+
    v198: /fallback.css. An out of date price is drawn as one:
         a dotted gold underline rather than a colour on its own,
         because a colour alone is no signal to a reader who
@@ -1776,7 +1782,7 @@
    imports (crumbs, audience, learn progress) and the hub is a
    different page. Without a bump, a returning reader would be
    served the v3 app.js forever and none of it would appear. */
-const VERSION = "v198";
+const VERSION = "v199";
 const SHELL = `shell-${VERSION}`;
 const RUNTIME = `runtime-${VERSION}`;
 

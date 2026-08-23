@@ -78,6 +78,7 @@ import { Field } from "../ui/field";
 import { Note } from "../ui/note";
 import { T, TBlock, digits, useToolLang } from "./lang";
 import { FoodPicker } from "./food-picker";
+import { Invite } from "./invite";
 
 /** The four macros, in both languages, in the order a label
     prints them. A fifth would be a decision rather than a tweak:
@@ -405,12 +406,18 @@ export function RecipePanel() {
 
   if (!w) {
     return (
-      <p className="dt-invite">
-        <T
-          en="A recipe belongs to an account, so the dish you built on this laptop is one tap on your phone."
-          bn="রান্নার হিসাব অ্যাকাউন্টের সঙ্গে থাকে, তাই এই কম্পিউটারে বানানো রান্নাটা ফোনেও এক চাপে পাওয়া যায়।"
-        />
-      </p>
+      <Invite
+        en="A recipe belongs to an account, so the dish you built on this laptop is one tap on your phone."
+        bn="রান্নার হিসাব অ্যাকাউন্টের সঙ্গে থাকে, তাই এই কম্পিউটারে বানানো রান্নাটা ফোনেও এক চাপে পাওয়া যায়।"
+        shows={[
+          { en: "A dish built once out of the library, and one portion of it logged in a tap after that.",
+            bn: "একবার বানানো একটা রান্না, তারপর থেকে তার এক ভাগ এক চাপে খাতায় ওঠে।" },
+          { en: "A pot for the week, shared out in whole ladles rather than fractions.",
+            bn: "সপ্তাহের এক হাঁড়ি, ভগ্নাংশ নয়, গোটা হাতা হিসেবে ভাগ করা।" },
+          { en: "The shopping list for it, with what each part costs where you are.",
+            bn: "তার বাজারের তালিকা, আর আপনার জায়গায় প্রতিটা জিনিসের দাম।" },
+        ]}
+      />
     );
   }
 

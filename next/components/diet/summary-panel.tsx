@@ -43,6 +43,7 @@ import { Button } from "../ui/button";
 import { ChipButton } from "../ui/chip";
 import { T, digits, useToolLang } from "./lang";
 import { BAND_WORDS, CUTS_WORDS, MARKERS, SEX_WORDS, medWords } from "./words";
+import { Invite } from "./invite";
 
 /** A row of the sheet. `value` is a string because every one of
     them is already formatted to its own precision by the time it
@@ -137,10 +138,20 @@ export function SummaryPanel() {
 
   if (!answered) return <div className="dt-board-wait" aria-busy="true" />;
   if (!w) {
-    return <p className="dt-invite"><T
-      en="This sheet is built from your own rows, which live on your account."
-      bn="এই কাগজটা আপনার নিজের তথ্য থেকে তৈরি, যা আপনার অ্যাকাউন্টে থাকে।"
-    /></p>;
+    return (
+      <Invite
+        en="This sheet is built from your own rows, which live on your account."
+        bn="এই কাগজটা আপনার নিজের তথ্য থেকে তৈরি, যা আপনার অ্যাকাউন্টে থাকে।"
+        shows={[
+          { en: "One printable page: weight and intake, the body, the clinic figures, and the medicines.",
+            bn: "ছাপার মতো এক পাতা: ওজন আর খাওয়া, শরীর, ডাক্তারের মাপ, আর ওষুধ।" },
+          { en: "Dates on every figure and the width of every estimate beside it.",
+            bn: "প্রতিটা সংখ্যার সঙ্গে তারিখ, আর প্রতিটা আন্দাজের পাশে তার ভুলের সীমা।" },
+          { en: "Which equation produced each number, so nothing on it has to be taken on trust.",
+            bn: "কোন সূত্র থেকে কোন সংখ্যা এসেছে, যাতে কিছুই বিশ্বাস করে নিতে না হয়।" },
+        ]}
+      />
+    );
   }
 
   const fat = body ? fatEstimate(body) : null;

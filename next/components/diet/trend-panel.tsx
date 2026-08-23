@@ -45,6 +45,7 @@ import { DEFAULT_PLACE } from "@reiad/shared/foods";
 import { ChipButton } from "../ui/chip";
 import { SeasonNote } from "./season-note";
 import { T, digits, useToolLang } from "./lang";
+import { Invite } from "./invite";
 
 const W = 720;
 const H = 260;
@@ -182,10 +183,22 @@ export function TrendPanel() {
 
   if (!answered) return <div className="dt-board-wait" aria-busy="true" />;
   if (!w) {
-    return <p className="dt-invite"><T
-      en="A trend needs a run of weighings, and those live on your account."
-      bn="ধারা দেখতে কয়েক দিনের ওজন লাগে, আর সেগুলো আপনার অ্যাকাউন্টে থাকে।"
-    /></p>;
+    return (
+      <Invite
+        en="A trend needs a run of weighings, and those live on your account."
+        bn="ধারা দেখতে কয়েক দিনের ওজন লাগে, আর সেগুলো আপনার অ্যাকাউন্টে থাকে।"
+        shows={[
+          { en: "The trend drawn over every scale reading, because hiding the readings would flatter you.",
+            bn: "প্রতিটা মাপের উপরে আঁকা ধারা, কারণ মাপগুলো লুকালে সেটা আপনাকে খুশি করার জন্য হতো।" },
+          { en: "The rate in kilos a week with its error bar, and what your own log says you burn.",
+            bn: "সপ্তাহে কত কেজি, তার ভুলের সীমা সহ, আর আপনার নিজের খাতা বলছে আপনি কত খরচ করেন।" },
+          { en: "Whether three flat weeks are a stall, and which of the four kinds it is.",
+            bn: "তিন সপ্তাহ স্থির থাকা সত্যিই আটকে যাওয়া কি না, আর হলে চারটার কোনটা।" },
+          { en: "What time of year it is, and where you are in a month if you turned that on.",
+            bn: "বছরের কোন সময় চলছে, আর চালু করে থাকলে মাসের কোথায় আছেন।" },
+        ]}
+      />
+    );
   }
 
   if (points.length < 2) {

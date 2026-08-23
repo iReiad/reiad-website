@@ -46,6 +46,7 @@ import {
 } from "../../lib/diet-api";
 import { Button } from "../ui/button";
 import { T, TBlock, digits, useToolLang } from "./lang";
+import { Invite } from "./invite";
 
 /** How far back the count reads. Two months is enough for a
     pattern and short enough that a thing somebody stopped eating
@@ -141,12 +142,10 @@ export function Usuals() {
 
   if (!w) {
     return (
-      <p className="dt-invite">
-        <T
-          en="Your usuals are worked out from what you have logged, so they need an account to be worked out from."
-          bn="আপনার নিয়মিত খাবারগুলো আপনার লেখা খাতা থেকেই বের করা হয়, তাই হিসাব করার জন্য একটা অ্যাকাউন্ট লাগে।"
-        />
-      </p>
+      <Invite
+        en="Your usuals are worked out from what you have logged, so they need an account to be worked out from."
+        bn="আপনার নিয়মিত খাবারগুলো আপনার লেখা খাতা থেকেই বের করা হয়, তাই হিসাব করার জন্য একটা অ্যাকাউন্ট লাগে।"
+      />
     );
   }
 

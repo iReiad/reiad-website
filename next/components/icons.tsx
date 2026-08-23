@@ -49,6 +49,15 @@ const SHELL: Partial<Record<IconName, string>> = {
      close up. */
   leaf: `<path d="M19 5c0 7.2-4.4 11.5-9.6 11.9C7 17.1 5 15.2 5 12.6 5 7.7 10.4 5 19 5Z"/>`
     + `<path d="M16 8 5.5 18.5"/>`,
+  /* The Save and the note under every byline. They asked for
+     these two names before either was drawn, so both buttons
+     shipped with a correctly sized empty svg beside the word.
+     A bookmark, and a sheet with a folded corner and two ruled
+     lines: both read at 20px, which is the only size either is
+     ever drawn at. */
+  keep: `<path d="M6.5 3.5h11v17l-5.5-4-5.5 4Z"/>`,
+  note: `<path d="M5.5 3.5h9L19 8v12.5H5.5Z"/><path d="M14.5 3.5V8H19"/>`
+    + `<path d="M8.5 12.5h7"/><path d="M8.5 16h4.5"/>`,
   person: SCHOOL_ICONS.deutsch?.person,
 };
 

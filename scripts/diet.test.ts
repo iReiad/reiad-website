@@ -54,6 +54,9 @@ import {
   oilPerMeal, OIL_KCAL_PER_ML,
   SEASONS, seasonsOn, seasonById, quietSeason, shiftedSeason, calendarKnownTo,
   type SeasonId,
+  BAND_MIN_KG, BAND_MAX_KG, BAND_OUT_DAYS, LOWEST_RATE_PCT, MAX_SURPLUS_KCAL,
+  bandWidth, suggestBand, bandWatch, gainWeekOne,
+  type MaintenanceBand,
 } from "../shared/diet.ts";
 
 const ROOT = join(dirname(fileURLToPath(import.meta.url)), "..");
@@ -1179,6 +1182,200 @@ for (const s of SEASONS) {
 }
 ok("an id nothing declares is null rather than a throw",
   seasonById("harvest" as SeasonId) === null);
+
+/* ---- 22. holding, which is the phase every diet ends in ----
+
+   `DIET.md` section 6. The rule that is easiest to break here is
+   the FIRST row of the table, because it asks for nothing to
+   happen: a band that speaks while the trend is inside it looks
+   like a working feature and is the failure. Every row is
+   asserted from the wrong side.
+
+   A reader here logs a weight three times a week and nothing
+   else, so every case below is built at that density. A watch
+   that needs daily rows is a watch that has quietly moved the
+   floor section 6 sets. */
+
+const BAND: MaintenanceBand = { lowKg: 71.3, highKg: 73.5 };
+
+/** Three weighings a week, which is section 6's stated floor. */
+const thrice = (upTo: number, kg: (day: number) => number): Point[] => {
+  const out: Point[] = [];
+  for (let d = 0; d <= upTo; d += 1) {
+    if (d % 7 === 0 || d % 7 === 2 || d % 7 === 4) out.push({ day: d, kg: kg(d) });
+  }
+  return out;
+};
+
+ok("band: the suggested width is section 6's two to three kilos",
+  bandWidth(55) >= BAND_MIN_KG && bandWidth(130) <= BAND_MAX_KG
+  && BAND_MIN_KG === 2 && BAND_MAX_KG === 3);
+ok("band: and it is wider for a bigger person, because the noise is",
+  bandWidth(110) > bandWidth(60),
+  "an ordinary day's swing is a smaller share of a heavier body");
+ok("band: DIET.md says the same two to three",
+  /two to three kilos wide/.test(PLAN));
+
+const suggested = suggestBand(72.4);
+near("band: a suggestion is centred on where the reader is",
+  (suggested.lowKg + suggested.highKg) / 2, 72.4, 0.06);
+ok("band: and is rounded to the tenth the column stores",
+  [suggested.lowKg, suggested.highKg]
+    .every((kg) => Math.abs(kg * 10 - Math.round(kg * 10)) < 1e-9),
+  "band_low_kg is numeric(5,1), so a suggestion with more digits is not what gets saved");
+
+/* ROW ONE, AND IT IS THE ONE THAT MATTERS. Inside the band the
+   tool says nothing: no message, no colour, no offer. */
+const holding = bandWatch({
+  band: BAND, weights: thrice(90, (d) => 72.4 + Math.sin(d) * 0.4), today: 90,
+});
+ok("band: inside it, the tool says nothing at all",
+  holding?.where === "inside" && holding.say === "nothing" && holding.offer === null,
+  "row one of section 6's table is the whole point of the phase");
+ok("band: and it is reading the trend rather than a reading",
+  bandWatch({
+    band: BAND,
+    weights: [...thrice(88, () => 72.4), { day: 90, kg: 75.9 }],
+    today: 90,
+  })?.where === "inside",
+  "one salty Tuesday is not two weeks outside a band");
+
+/* ROW TWO. Two weeks outside, and not before. */
+const outUnderTwoWeeks = bandWatch({
+  band: BAND, weights: thrice(90, (d) => 72.4 + Math.max(d - 62, 0) * 0.12), today: 90,
+});
+ok("band: outside, but not for two weeks yet, is still nothing",
+  outUnderTwoWeeks?.where === "above" && outUnderTwoWeeks.say === "nothing"
+  && outUnderTwoWeeks.daysOut < BAND_OUT_DAYS);
+
+const creeping = bandWatch({
+  band: BAND, weights: thrice(90, (d) => 72.4 + d * 0.024), today: 90,
+});
+ok("band: two weeks outside is one line and nothing more",
+  creeping?.where === "above" && creeping.say === "line" && creeping.offer === null,
+  "row two offers no phase: it states a fact and puts the burn beside it");
+ok("band: and it is two weeks, not a fortnight of readings",
+  BAND_OUT_DAYS === 14 && (creeping?.daysOut ?? 0) >= BAND_OUT_DAYS,
+  "at three weighings a week a count of rows would ask for over a month");
+
+/* ROW THREE. A full band's width outside, and the offer is the
+   gentlest rate in the table, in the direction that brings the
+   trend back. */
+const wayOut = bandWatch({
+  band: BAND, weights: thrice(120, (d) => 72.4 + d * 0.06), today: 120,
+});
+ok("band: further out than the band is wide offers a phase",
+  wayOut?.say === "offer" && wayOut.outByKg > wayOut.widthKg);
+ok("band: and the phase offered is the lowest rate in the table",
+  wayOut?.offer?.ratePct === LOWEST_RATE_PCT && LOWEST_RATE_PCT === 0.25
+  && LOWEST_RATE_PCT === Math.min(...RATES.map((r) => r.low)),
+  "section 6 says the lowest, and RATES is where that number lives");
+ok("band: above the band, the phase offered loses",
+  wayOut?.offer?.kind === "lose");
+
+const wayUnder = bandWatch({
+  band: BAND, weights: thrice(120, (d) => 72.4 - d * 0.06), today: 120,
+});
+ok("band: and below it, the phase offered GAINS",
+  wayUnder?.where === "below" && wayUnder.offer?.kind === "gain"
+  && wayUnder.offer.ratePct === LOWEST_RATE_PCT,
+  "a band can be left downwards, and offering a deficit there would be the tool"
+  + " reading its own table one way only");
+
+/* Null is the ordinary answer, and every reason for it is
+   honest rather than a failure. */
+ok("band: no weighings at all is null, not a verdict",
+  bandWatch({ band: BAND, weights: [], today: 90 }) === null);
+ok("band: a band of zero width is null rather than always outside",
+  bandWatch({
+    band: { lowKg: 72, highKg: 72 }, weights: thrice(90, () => 72.4), today: 90,
+  }) === null);
+ok("band: and a trend nobody has fed for three weeks says nothing",
+  bandWatch({
+    band: BAND, weights: thrice(120, (d) => 72.4 + d * 0.06), today: 120 + STALL_DAYS + 1,
+  }) === null,
+  "offering a deficit off a month-old reading is inventing a problem out of"
+  + " missing data, which is the same rule stall() already follows");
+
+/* ---- 23. gaining, which is the engine run backwards ----
+
+   Section 6. Two things are asserted from the wrong side: the
+   ceiling, because a surplus that quietly grows on a heavy
+   reader is the bulk this section refuses by name, and week
+   one, because it lies in this direction too and the reader who
+   is not told reads a refilled store as fat. */
+
+ok("gain: the rate ceiling is half a percent and DIET.md says so",
+  MAX_GAIN_PCT_PER_WEEK === 0.5
+  && /0\.25 to 0\.5% of bodyweight per week/.test(PLAN));
+ok("gain: only the gentle rate is offerable while gaining",
+  RATES.filter((r) => r.high <= MAX_GAIN_PCT_PER_WEEK).length === 1);
+ok("gain: DIET.md states the surplus ceiling this file uses",
+  PLAN.includes(`above roughly ${MAX_SURPLUS_KCAL} kcal`));
+
+/* THE RATE IS A PROXY AND STOPS BEING ONE ON A LARGE READER.
+   Half a percent of 130kg is 715 kcal a day, which is the
+   thousand-calorie bulk section 6 refuses. */
+const big: Body = { ...MAN, weightKg: 130 };
+const bulk = target({
+  body: big, maintenance: 3000, restingKcal: 2100, kind: "gain", ratePct: 0.5,
+});
+ok("gain: the surplus is capped in kilocalories, not only as a rate",
+  bulk.offset === MAX_SURPLUS_KCAL && bulk.floors.includes("surplus"),
+  "a percentage of bodyweight drifts above 500 kcal past about 100kg");
+ok("gain: and the delivered rate is reported after the cap, not before",
+  bulk.ratePct < 0.5 && bulk.ratePct > 0,
+  "a silent clamp is a lie of omission on the way up as well as down");
+const modest = target({ ...base, kind: "gain", ratePct: 0.5 });
+ok("gain: a surplus under the ceiling is untouched",
+  modest.floors.length === 0 && modest.offset < MAX_SURPLUS_KCAL);
+
+/* WEEK ONE LIES IN THIS DIRECTION TOO. An 80kg reader on a
+   330 kcal surplus: about 0.3kg of tissue and a kilo or so of
+   refilled glycogen, its water and a fuller gut. */
+const wk1 = gainWeekOne({ weightKg: 80, burn: 2500, intake: 2830 });
+near("gain: the surplus alone is the tissue, and nothing else is",
+  wk1.tissue, (330 * 7) / KCAL_PER_KG, 0.001);
+ok("gain: week one puts one to two kilos on the scale",
+  wk1.scale.low >= 1 && wk1.scale.low <= 2 && wk1.scale.high >= 1.5,
+  "section 6 states one to two kilos in a week containing no new tissue");
+ok("gain: DIET.md states the same one to two kilos",
+  /one to two\s+kilos on the scale in a week/.test(PLAN),
+  "the plan wraps that sentence, so the whitespace is the flexible part");
+ok("gain: and most of that week is not new tissue",
+  wk1.refillShare > 0.6 && wk1.refillShare < 1,
+  "a reader who reads a refilled store as fat quits in week two");
+ok("gain: the scale band is the tissue plus the refill band, both ends",
+  Math.abs(wk1.scale.low - (wk1.tissue + wk1.refill.low)) < 1e-9
+  && Math.abs(wk1.scale.high - (wk1.tissue + wk1.refill.high)) < 1e-9);
+
+const offKeto = gainWeekOne({
+  weightKg: 80, burn: 2500, intake: 2830, from: { protocol: "keto", days: 30 },
+});
+ok("gain: arriving off keto puts back more than arriving off ordinary eating",
+  offKeto.refill.mid > wk1.refill.mid,
+  "an empty store has more to refill, which is section 7 read the other way up");
+ok("gain: and none of that extra is counted as tissue",
+  Math.abs(offKeto.tissue - wk1.tissue) < 1e-9);
+
+const bigger = gainWeekOne({ weightKg: 80, burn: 2500, intake: 3000 });
+ok("gain: a larger surplus is more tissue",
+  bigger.tissue > wk1.tissue);
+ok("gain: day nought is nothing at all, rather than a week's worth",
+  gainWeekOne({ weightKg: 80, burn: 2500, intake: 2830, days: 0 }).scale.mid === 0);
+ok("gain: eating at maintenance is not a gain",
+  gainWeekOne({ weightKg: 80, burn: 2500, intake: 2500 }).tissue === 0);
+ok("gain: the refill share is never the whole of it and never nothing",
+  [wk1, offKeto, bigger].every((g) => g.refillShare > 0 && g.refillShare <= 1));
+
+/* And the water table still refuses to answer this question,
+   which is why `gainWeekOne` exists at all. */
+ok("gain: forecastChange still declines to split a surplus on its own",
+  forecastChange({
+    from: null, to: "gain", days: 7, weightKg: 80, burn: 2500, intake: 2830,
+  }).fatShareKnown === false,
+  "WATER.gain is zeros on purpose: calling a rise 100% fat is a claim about"
+  + " the one thing that model cannot see");
 
 /* ------------------------------------------------------------ */
 

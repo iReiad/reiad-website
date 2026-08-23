@@ -48,14 +48,16 @@ import { fileURLToPath } from "node:url";
    way every other node-side test here reads it: node cannot
    strip types from a file under `node_modules`. */
 import {
-  CALIBRATE_AFTER_DAYS, COVERAGE_FLOOR, HELD_BAND, MIN_CALIBRATION_GAP,
-  SLOTS, STALE_MONTHS,
-  adherence, againstBudget, calibration, costByTag, isStale, loggedDays,
-  monthsSince, per100kcal, portionsOf, proteinSplit, slotOf, spend,
-  proteinPrice, swaps, weekVsOwn,
+  CALIBRATE_AFTER_DAYS, COVERAGE_FLOOR, HELD_BAND, MEASURES,
+  MIN_CALIBRATION_GAP, SHORT_NIGHT_HOURS, SLOTS, STALE_MONTHS, TAPE_SPAN_DAYS,
+  adherence, afterShortNights, againstBudget, calibration, costByTag, isStale,
+  loggedDays, monthsSince, movement, per100kcal, portionsOf, proteinSplit,
+  slotOf, spend, proteinPrice, swaps, tape, weekVsOwn,
   type Item,
 } from "../shared/insights.ts";
-import { KCAL_PER_KG, trend, type Day, type Entry, type Point } from "../shared/diet.ts";
+import {
+  KCAL_PER_KG, STALL_DAYS, trend, type Day, type Entry, type Point,
+} from "../shared/diet.ts";
 import { FOODS, type Portion } from "../shared/foods.ts";
 
 const ROOT = join(dirname(fileURLToPath(import.meta.url)), "..");
@@ -558,6 +560,162 @@ const skewed: Item[] = [
 near("cost by tag: four rows at 10, 20, 30 and 900 have a middle of 25",
   costByTag(skewed, "BDT")[0].per1000Kcal, (25 / 200) * 1000, 0.001);
 
+/* ---- 8. days after a short night ----
+
+   THE OFFSET IS THE WHOLE READING. A night is paired with the
+   NEXT row's intake, because short sleep raises ghrelin and
+   lowers leptin overnight and the appetite it moves is the
+   following day's. This fixture is built so that the wrong
+   pairing comes out with the opposite sign rather than with a
+   smaller one: a reading off by a day would still look entirely
+   correct on a page. */
+
+const slept: Day[] = [];
+for (let n = 0; n < 20; n += 1) {
+  slept.push({
+    date: day(n),
+    /* Five hours on the even nights, eight on the odd ones. */
+    sleepHours: n % 2 === 0 ? 5 : 8,
+    /* And 2400 on the odd days, which are the days AFTER a short
+       night, against 2000 on the even ones. */
+    kcal: n % 2 === 0 ? 2000 : 2400,
+  });
+}
+const nights = afterShortNights({ days: slept, targetKcal: 2100 });
+
+ok("after a short night: it reads", nights !== null);
+near("after a short night: ten days follow one", nights?.afterShort.days ?? -1, 10, 0);
+near("after a short night: nine follow a longer one, because the last has no day after it",
+  nights?.afterRest.days ?? -1, 9, 0);
+near("after a short night: 2400 kcal on those days",
+  nights?.afterShort.meanKcal ?? 0, 2400, 0.001);
+near("after a short night: 2000 after a longer one",
+  nights?.afterRest.meanKcal ?? 0, 2000, 0.001);
+near("after a short night: which is 400 more", nights?.diff ?? 0, 400, 0.001);
+ok("after a short night: and the WRONG pairing would be 400 less, not 400 more",
+  (nights?.diff ?? 0) > 0,
+  "pairing a night with the same row's intake gives -400 on this fixture");
+near("after a short night: 300 above a target of 2100",
+  nights?.overTarget ?? 0, 300, 0.001);
+near("after a short night: and the rest sit 100 under it",
+  nights?.restOverTarget ?? 0, -100, 0.001);
+near("after a short night: twenty rows carry hours", nights?.nights ?? -1, 20, 0);
+near("after a short night: nineteen of them are pairs", nights?.pairs ?? -1, 19, 0);
+near("after a short night: the middle night is 6.5 hours",
+  nights?.medianHours ?? 0, 6.5, 0.001);
+ok("after a short night: the span is printed as dates and as days",
+  nights?.from === day(0) && nights?.to === day(18) && nights?.span === 19);
+near("after a short night: the line is seven hours", nights?.short ?? -1, SHORT_NIGHT_HOURS, 0);
+
+ok("after a short night: no target handed in is a null rather than a zero",
+  afterShortNights({ days: slept })?.overTarget === null);
+
+/* A night with nothing logged the next day is not a pair, which
+   is the difference between a night nobody wrote a dinner after
+   and a night after which nothing was eaten. */
+const unpaired = afterShortNights({
+  days: slept.map((d) => (d.date === day(1) ? { date: d.date, sleepHours: d.sleepHours } : d)),
+});
+near("after a short night: a night whose next day has no food is dropped",
+  unpaired?.afterShort.days ?? -1, 9, 0);
+
+ok("after a short night: five on each side is the floor and four is under it",
+  afterShortNights({ days: slept.slice(0, 8) }) === null);
+ok("after a short night: a log with no hours at all draws nothing",
+  afterShortNights({ days: owned }) === null);
+
+/* ---- 9. what moved, over the window a stall is read over ---- */
+
+const moved: Day[] = [];
+const stillWeights: Point[] = [];
+for (let n = 0; n < 42; n += 1) {
+  moved.push({ date: day(n), steps: n < 21 ? 8000 : 4500, kcal: 2000, weightKg: 80 });
+  stillWeights.push({ day: n, kg: 80 });
+}
+const walk = movement({
+  days: moved, todayISO: day(41), weights: stillWeights, dayOf, weightKg: 80,
+});
+
+ok("movement: it reads", walk !== null);
+near("movement: three weeks, which is the window a stall is read over",
+  walk?.days ?? -1, STALL_DAYS, 0);
+near("movement: the middle day of the near window is 4500", walk?.now ?? -1, 4500, 0);
+near("movement: and of the one before it 8000", walk?.before ?? -1, 8000, 0);
+near("movement: a fall of 3500 a day", walk?.change ?? 0, -3500, 0.001);
+near("movement: which is 44% of it", walk?.changePct ?? 0, -3500 / 8000, 0.0001);
+near("movement: 21 days of each carried a count", walk?.nowDays ?? -1, 21, 0);
+near("movement: and 21 before them", walk?.beforeDays ?? -1, 21, 0);
+
+/* The energy is a BAND, and most of its width is the stride
+   length rather than the walking. */
+ok("movement: the fall is worth about 77 to 117 kcal a day at 80 kg",
+  Math.abs((walk?.kcal?.high ?? 0) + 77.2) < 0.5 && Math.abs((walk?.kcal?.low ?? 0) + 116.7) < 0.5,
+  `got ${walk?.kcal?.low.toFixed(1)} to ${walk?.kcal?.high.toFixed(1)}`);
+ok("movement: with no weight there is no body to walk, so no band",
+  movement({ days: moved, todayISO: day(41), weights: stillWeights, dayOf })?.kcal === null);
+
+/* And the two facts that make the sentence worth printing. */
+ok("movement: the trend's interval spans zero, which is flat", walk?.flat === true);
+near("movement: fitted to 21 weighings", walk?.weighings ?? -1, 21, 0);
+near("movement: the log has not moved", walk?.intakeChange ?? 9e9, 0, 0.001);
+near("movement: 2000 a day over 21 logged days", walk?.intakeNow ?? 0, 2000, 0.001);
+near("movement: and 2000 over the 21 before", walk?.intakeBefore ?? 0, 2000, 0.001);
+ok("movement: the near window opens three weeks back", walk?.from === day(21));
+
+/* A rate that can tell a loss from a gain is not flat, and
+   saying otherwise would be this tool's worst mistake. */
+const falling: Point[] = stillWeights.map((p) => ({ day: p.day, kg: 80 - p.day * 0.07 }));
+ok("movement: a trend that is moving is not reported as flat",
+  movement({ days: moved, todayISO: day(41), weights: falling, dayOf })?.flat === false);
+
+ok("movement: seven days with a count in each window is the floor",
+  movement({
+    days: moved.map((d, i) => (i > 23 ? { ...d, steps: undefined } : d)),
+    todayISO: day(41), weights: stillWeights, dayOf,
+  }) === null);
+ok("movement: a log with no steps at all draws nothing",
+  movement({
+    days: moved.map((d) => ({ ...d, steps: undefined })),
+    todayISO: day(41), weights: stillWeights, dayOf,
+  }) === null);
+
+/* ---- 10. the tape, beside the scale ---- */
+
+const taped: Day[] = [
+  { date: day(14), waistCm: 94 },
+  { date: day(20), armCm: 33 },
+  { date: day(30), neckCm: 38 },
+  { date: day(38), hipCm: 100 },
+  { date: day(41), waistCm: 91, armCm: 33.4, hipCm: 99 },
+];
+const flatTrend: Point[] = [];
+for (let n = 14; n <= 41; n += 1) flatTrend.push({ day: n, kg: 80 });
+const measured = tape({ days: taped, trend: flatTrend, dayOf, today: 41 });
+
+ok("tape: it reads", measured !== null);
+near("tape: four weeks of it", measured?.span ?? -1, TAPE_SPAN_DAYS, 0);
+const waistSite = measured?.sites.find((s) => s.id === "waist");
+near("tape: the waist is 3 cm down", waistSite?.change ?? 0, -3, 0.001);
+near("tape: over 27 days", waistSite?.days ?? -1, 27, 0);
+ok("tape: and 3 cm is more than a tape measure can invent", waistSite?.read === true);
+ok("tape: an arm 0.4 cm up is drawn and is not called a change",
+  measured?.sites.find((s) => s.id === "arm")?.read === false);
+ok("tape: a hip measured twice three days apart is not a fortnight",
+  measured?.sites.every((s) => s.id !== "hip") === true);
+ok("tape: a neck measured once is not a pair",
+  measured?.sites.every((s) => s.id !== "neck") === true);
+near("tape: the trend has not moved over the same four weeks", measured?.kg ?? 9e9, 0, 0.001);
+near("tape: out of 28 trend points", measured?.weighings ?? -1, 28, 0);
+
+ok("tape: with no weighings the trend says nothing rather than nought",
+  tape({ days: taped, trend: [], dayOf, today: 41 })?.kg === null);
+ok("tape: no site with two readings a fortnight apart draws nothing",
+  tape({ days: [{ date: day(40), waistCm: 94 }, { date: day(41), waistCm: 91 }],
+    trend: flatTrend, dayOf, today: 41 }) === null);
+ok("tape: six sites, and the three with no form yet are simply absent",
+  MEASURES.length === 6
+  && MEASURES.every((m) => m.of({ date: day(0) }) === undefined));
+
 /* ---- 11. and the plan says these things ---- */
 
 const plan = readFileSync(join(ROOT, "DIET.md"), "utf8");
@@ -591,6 +749,31 @@ ok("section 17 still says a price is a fact with a date on it",
   /a price is a fact with a date on it/.test(seventeen));
 ok("section 17 still refuses a shop",
   /No affiliate links, no product recommendations/.test(seventeen));
+
+const eighteen = oneLine(plan.split("## 18. The body has a calendar")[1]
+  ?.split("\n## 19.")[0] ?? "");
+const nineteen = oneLine(plan.split("## 19. Movement,")[1]?.split("\n## 20.")[0] ?? "");
+
+ok("DIET.md still has a section 18 to read", eighteen.length > 500);
+ok("section 18 still asks for one optional field, hours",
+  /One optional field, hours/.test(eighteen));
+/* THE OFFSET, read out of the plan rather than remembered. A
+   reading that pairs a night with the same day's intake is off
+   by one and looks entirely correct. */
+ok("section 18 still says the days AFTER short nights are the ones read",
+  /days after short nights average so much above target/.test(eighteen));
+ok("section 18 still refuses a sleep score",
+  /never turned into a sleep score/.test(eighteen));
+
+ok("DIET.md still has a section 19 to read", nineteen.length > 500);
+ok("section 19 still makes a step count an input",
+  /step count is an input/.test(nineteen));
+ok("section 19 still names the stall that is a fall in walking",
+  /Your steps[\s>]*have fallen from about 8,000 a day to about 4,500/.test(nineteen));
+ok("section 19 still says the tape is what settles recomposition",
+  /it has the tape/.test(nineteen));
+ok("section 19 still refuses an exercise calorie database",
+  /No exercise calorie database/.test(nineteen));
 
 /* ------------------------------------------------------------ */
 

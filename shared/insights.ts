@@ -1,12 +1,14 @@
 /* ============================================================
-   shared/insights.ts: the readings section 16 asks for, and the
-   money arithmetic section 17 asks for.
+   shared/insights.ts: the readings a log earns. Section 16's,
+   section 17's money, section 18's one sleep reading and
+   section 19's two about movement.
 
-   `DIET.md` sections 16 and 17. `shared/diet.ts` already holds
-   three of section 16's readings (`topSources`, `byWeekday`,
-   `byHour`) and every one of them is imported rather than
-   written again: nothing in this file recomputes a total, an
-   hour or a slope.
+   `DIET.md` sections 16, 17, 18 and 19. `shared/diet.ts` already
+   holds three of section 16's readings (`topSources`,
+   `byWeekday`, `byHour`) and `shared/activity.ts` holds the step
+   arithmetic; every one of them is imported rather than written
+   again: nothing in this file recomputes a total, an hour, a
+   slope or a median step count.
 
    ---- the rule every function here obeys ----
 
@@ -51,9 +53,12 @@
    ============================================================ */
 
 import {
-  COVERAGE_FLOOR, KCAL_PER_KG, entryHour,
-  type Day, type Entry, type Point,
+  COVERAGE_FLOOR, KCAL_PER_KG, STALL_DAYS, entryHour, slopePerWeek,
+  type Day, type Entry, type Point, type Range,
 } from "./diet.ts";
+import {
+  SLEEP_HOURS, STEP_BASE_LEAST, shiftIso, stepShift, stepsKcal,
+} from "./activity.ts";
 
 /** One row of the portion library, as this file needs it.
 
@@ -99,6 +104,12 @@ const median = (xs: number[]): number => {
   const half = Math.floor(sorted.length / 2);
   return sorted.length % 2 ? sorted[half] : (sorted[half - 1] + sorted[half]) / 2;
 };
+
+/** Whole days from one ISO date to another. Arithmetic on two
+    dates rather than a clock, which is the rule at the top: the
+    caller still owns every origin and this owns none. */
+const daysBetween = (from: string, to: string): number =>
+  Math.round((Date.parse(`${to}T00:00:00Z`) - Date.parse(`${from}T00:00:00Z`)) / 86400000);
 
 /** What was actually eaten. A planned row is next week's dinner
     dated ahead, and counting it is a log that reports a meal
@@ -876,6 +887,370 @@ export function proteinPrice(items: Item[], currency: "BDT" | "GBP"): ProteinPri
     cheapestPer100g: rows[0].per,
     medianPer100g: middle,
     times: rows[0].per > 0 ? middle / rows[0].per : 0,
+  };
+}
+
+/* ------------------------------------------------------------
+   8. Days after a short night
+   ------------------------------------------------------------ */
+
+/** The line a night is under, in hours. `SLEEP_HOURS` in
+    `shared/activity.ts` draws the habit row against the same
+    seven and is imported rather than restated: two numbers for
+    one line is a page calling a night short beside a row calling
+    it long. */
+export const SHORT_NIGHT_HOURS = SLEEP_HOURS;
+
+/** The fewest pairs on each side of the line. Five, because a
+    mean of two days is a sentence about two days, and both
+    counts are printed beside the answer whatever they are. */
+export const NIGHTS_LEAST = 5;
+
+export interface AfterSleep {
+  /** The line a night was under, and the reader's own middle
+      night, so "short" can be read against their own nights
+      rather than only against the line. */
+  short: number;
+  medianHours: number;
+  /** Rows carrying an hours figure, and how many of those are
+      followed by a row with food on it. A night with nothing
+      logged the next day is not a pair. */
+  nights: number;
+  pairs: number;
+  /** The first and last night that made a pair, and the days
+      between them inclusive. */
+  from: string;
+  to: string;
+  span: number;
+  /** The two groups: days after a night under the line, and days
+      after every other night. */
+  afterShort: { days: number; meanKcal: number };
+  afterRest: { days: number; meanKcal: number };
+  /** After a short night minus after the rest. Positive is more. */
+  diff: number;
+  /** Section 18's sentence is "days after short nights average so
+      much above target", and these are the figures it is made
+      of. Null where the caller has no target, which is every
+      reader who has not answered the goal page. */
+  targetKcal: number | null;
+  overTarget: number | null;
+  restOverTarget: number | null;
+}
+
+/** Section 18's one sleep reading, and the whole of what an
+    hours field earns.
+
+    IT PAIRS A NIGHT WITH THE NEXT ROW'S INTAKE, NEVER THAT
+    ROW'S. Short sleep raises ghrelin and lowers leptin
+    overnight, so the appetite it moves is the FOLLOWING day's. A
+    reading that pairs a night with the same date's eating is
+    measuring the wrong pair and comes out looking entirely
+    correct, which is why the offset is written down here rather
+    than left to whoever reads the loop.
+
+    WHICH MAKES A ROW'S `sleepHours` THE NIGHT THAT BEGINS ON
+    THAT DATE, and anything filling the column has to mean the
+    same thing by it. A form labelled "last night" and a sheet
+    exported by an app that dates a night to the morning it ended
+    are both the other convention, and either one puts this
+    reading a day out with nothing on the page looking wrong. The
+    panel prints which pair it compared for the same reason.
+
+    It returns two means and no word for the difference between
+    them: section 16's rule, and section 18 is explicit that this
+    is never turned into a sleep score. */
+export function afterShortNights(opts: {
+  days: Day[];
+  /** The day's target, where the page has one. */
+  targetKcal?: number;
+  short?: number;
+  least?: number;
+}): AfterSleep | null {
+  const {
+    days, targetKcal, short = SHORT_NIGHT_HOURS, least = NIGHTS_LEAST,
+  } = opts;
+  const at = new Map(days.map((d) => [d.date, d]));
+
+  const hours: number[] = [];
+  const pairs: Array<{ date: string; hours: number; kcal: number }> = [];
+  for (const d of days) {
+    if (d.sleepHours == null) continue;
+    hours.push(d.sleepHours);
+    const next = at.get(shiftIso(d.date, 1));
+    if (!next || next.kcal == null || !(next.kcal > 0)) continue;
+    pairs.push({ date: d.date, hours: d.sleepHours, kcal: next.kcal });
+  }
+
+  const under = pairs.filter((p) => p.hours < short);
+  const rest = pairs.filter((p) => p.hours >= short);
+  if (under.length < least || rest.length < least) return null;
+
+  const shortMean = mean(under.map((p) => p.kcal));
+  const restMean = mean(rest.map((p) => p.kcal));
+  const dates = pairs.map((p) => p.date).sort();
+  const first = dates[0];
+  const last = dates[dates.length - 1];
+  const target = targetKcal != null && targetKcal > 0 ? targetKcal : null;
+
+  return {
+    short,
+    medianHours: median(hours),
+    nights: hours.length,
+    pairs: pairs.length,
+    from: first,
+    to: last,
+    span: daysBetween(first, last) + 1,
+    afterShort: { days: under.length, meanKcal: shortMean },
+    afterRest: { days: rest.length, meanKcal: restMean },
+    diff: shortMean - restMean,
+    targetKcal: target,
+    overTarget: target === null ? null : shortMean - target,
+    restOverTarget: target === null ? null : restMean - target,
+  };
+}
+
+/* ------------------------------------------------------------
+   9. What moved, over the window a stall is read over
+   ------------------------------------------------------------ */
+
+export interface Movement {
+  /** The window, in days, with the window of the same length
+      before it, and the date the near one opens on. */
+  days: number;
+  from: string;
+  /** The middle day of each half in steps, with how many days of
+      each carried a count. Null where a half carries none. */
+  now: number | null;
+  before: number | null;
+  nowDays: number;
+  beforeDays: number;
+  /** Now minus before, and the same as a share of before. */
+  change: number | null;
+  changePct: number | null;
+  /** What that change is worth in energy a day, at the weight
+      handed in. A band, and most of its width is the stride
+      length: `STEPS_PER_KM` in `shared/activity.ts` says so.
+      Null with no weight, because what a walk costs depends on
+      the body doing it. */
+  kcal: Range | null;
+  /** What the trend did across the near window: kg a week with
+      its own interval, and whether that interval spans zero,
+      which is `stall()`'s own test for flat. Null under three
+      weighings, which is `slopePerWeek()`'s refusal. */
+  rate: Range | null;
+  flat: boolean;
+  weighings: number;
+  /** What was logged over each window, as a mean a day, with the
+      days each was drawn from. */
+  intakeNow: number | null;
+  intakeBefore: number | null;
+  intakeDays: number;
+  intakeBeforeDays: number;
+  intakeChange: number | null;
+}
+
+/** Section 19's fourth stall, as three facts rather than as a
+    verdict: "your trend is flat and your log has not changed,
+    and your steps have fallen from about 8,000 a day to about
+    4,500 over the same three weeks."
+
+    The point is the SAME WINDOW. `stepShift()` already compares
+    one window of walking against the one before it and
+    `slopePerWeek()` already fits a rate; what is invisible
+    without putting them side by side is movement falling quietly
+    during a deficit, which is most of what adaptive
+    thermogenesis is in practice and the easiest of the four
+    stalls to answer.
+
+    NOTHING HERE CONCLUDES. `flat` is a statement about an
+    interval, not about a reader, and no field says what caused
+    what. */
+export function movement(opts: {
+  days: Day[];
+  todayISO: string;
+  /** The fittable weighings, marked days already removed, in the
+      caller's own day numbers, with the function that made them.
+      The weighings and not the trend, for the reason
+      `slopePerWeek()` gives: an average lags and would
+      understate a real loss. */
+  weights: Point[];
+  dayOf: (iso: string) => number;
+  /** The trend's weight today, for the energy band. */
+  weightKg?: number;
+  window?: number;
+  least?: number;
+}): Movement | null {
+  const {
+    days, todayISO, weights, dayOf, weightKg,
+    window = STALL_DAYS, least = STEP_BASE_LEAST,
+  } = opts;
+
+  const walked = stepShift(days, todayISO, window);
+  /* The same floor `stepBase()` reads a middle day under. A
+     median from three days is a number about three days, and
+     comparing two of those is a difference between two of them. */
+  if (walked.nowDays < least || walked.beforeDays < least) return null;
+
+  const from = shiftIso(todayISO, -(window - 1));
+  const eatenIn = (a: string, b: string): number[] => days
+    .filter((d) => d.date >= a && d.date <= b && d.kcal != null && (d.kcal as number) > 0)
+    .map((d) => d.kcal as number);
+  const nowKcal = eatenIn(from, todayISO);
+  const beforeKcal = eatenIn(shiftIso(todayISO, -(window * 2 - 1)), shiftIso(todayISO, -window));
+
+  const inside = weights.filter((p) => p.day >= dayOf(from) && p.day <= dayOf(todayISO));
+  const rate = slopePerWeek(inside);
+  const change = walked.now != null && walked.before != null
+    ? walked.now - walked.before
+    : null;
+
+  return {
+    days: window,
+    from,
+    now: walked.now,
+    before: walked.before,
+    nowDays: walked.nowDays,
+    beforeDays: walked.beforeDays,
+    change,
+    changePct: change != null && walked.before ? change / walked.before : null,
+    kcal: change != null && weightKg != null && weightKg > 0
+      ? stepsKcal(change, weightKg)
+      : null,
+    rate,
+    flat: rate != null && rate.low <= 0 && rate.high >= 0,
+    weighings: inside.length,
+    intakeNow: nowKcal.length ? mean(nowKcal) : null,
+    intakeBefore: beforeKcal.length ? mean(beforeKcal) : null,
+    intakeDays: nowKcal.length,
+    intakeBeforeDays: beforeKcal.length,
+    intakeChange: nowKcal.length && beforeKcal.length
+      ? mean(nowKcal) - mean(beforeKcal)
+      : null,
+  };
+}
+
+/* ------------------------------------------------------------
+   10. The tape, beside the scale
+   ------------------------------------------------------------ */
+
+export type MeasureId = "waist" | "hip" | "chest" | "thigh" | "arm" | "neck";
+
+/** Every site a day row can carry, and how to read one off it. A
+    TABLE RATHER THAN SIX BRANCHES, so a seventh site is a line
+    here and nothing else. Three of the six have no form offering
+    them yet, and a site with fewer than two readings is simply
+    absent rather than drawn empty. */
+export const MEASURES: ReadonlyArray<{
+  id: MeasureId; of: (d: Day) => number | undefined;
+}> = [
+  { id: "waist", of: (d) => d.waistCm },
+  { id: "hip", of: (d) => d.hipCm },
+  { id: "chest", of: (d) => d.chestCm },
+  { id: "thigh", of: (d) => d.thighCm },
+  { id: "arm", of: (d) => d.armCm },
+  { id: "neck", of: (d) => d.neckCm },
+];
+
+/** What a tape measure resolves on one person, in centimetres.
+    Under it the number is the measuring rather than the body.
+    `stall()` uses the same centimetre as its recomposition
+    threshold and should read this constant the next time
+    `shared/diet.ts` is opened. */
+export const TAPE_RESOLUTION_CM = 1;
+
+/** Four weeks, which is section 19's own example and the width a
+    centimetre is worth reading over. */
+export const TAPE_SPAN_DAYS = 28;
+
+/** And the least two readings of one site may be apart. A
+    centimetre three days apart is a tape held tighter. */
+export const TAPE_LEAST_DAYS = 14;
+
+export interface TapeSite {
+  id: MeasureId;
+  first: number;
+  last: number;
+  /** Last minus first. Negative is down. */
+  change: number;
+  /** Days between those two readings, and how many readings the
+      site carried in the span. */
+  days: number;
+  readings: number;
+  /** Whether the change is larger than what a tape resolves. */
+  read: boolean;
+}
+
+export interface Tape {
+  /** The span asked for, in days. */
+  span: number;
+  sites: TapeSite[];
+  /** What the trend did across the same span, in kg, and how
+      many trend points said so. Null under two, which is a span
+      the reader did not weigh. */
+  kg: number | null;
+  weighings: number;
+}
+
+/** The tape beside the scale, which is section 19's reading that
+    justifies the whole measurement set.
+
+    A flat weight with a falling waist is a change in what the
+    weight is made of rather than a stall, and it is the one kind
+    the tool can settle on its own. `stall()` already returns
+    that as a kind and only INSIDE a detected stall: three flat
+    weeks, nine weighings and half the days logged. This is the
+    same two facts side by side whether or not one was detected,
+    because a reader who is not stalled still cannot see this out
+    of a weight.
+
+    Two numbers per site and no word for the pair. */
+export function tape(opts: {
+  days: Day[];
+  /** The trend and never two readings off a scale: one weighing
+      is real weight plus a kilo or two of water, gut contents
+      and salt. */
+  trend: Point[];
+  dayOf: (iso: string) => number;
+  today: number;
+  span?: number;
+  least?: number;
+}): Tape | null {
+  const {
+    days, trend, dayOf, today, span = TAPE_SPAN_DAYS, least = TAPE_LEAST_DAYS,
+  } = opts;
+  const from = today - span + 1;
+
+  const sites: TapeSite[] = [];
+  for (const site of MEASURES) {
+    const rows = days
+      .map((d) => ({ day: dayOf(d.date), cm: site.of(d) }))
+      .filter((r): r is { day: number; cm: number } => r.cm != null)
+      .filter((r) => r.day >= from && r.day <= today)
+      .sort((a, b) => a.day - b.day);
+    if (rows.length < 2) continue;
+    const first = rows[0];
+    const last = rows[rows.length - 1];
+    const apart = last.day - first.day;
+    if (apart < least) continue;
+    sites.push({
+      id: site.id,
+      first: first.cm,
+      last: last.cm,
+      change: last.cm - first.cm,
+      days: apart,
+      readings: rows.length,
+      read: Math.abs(last.cm - first.cm) >= TAPE_RESOLUTION_CM,
+    });
+  }
+  if (!sites.length) return null;
+
+  const line = trend.filter((p) => p.day >= from && p.day <= today)
+    .sort((a, b) => a.day - b.day);
+  return {
+    span,
+    sites,
+    kg: line.length >= 2 ? line[line.length - 1].kg - line[0].kg : null,
+    weighings: line.length,
   };
 }
 

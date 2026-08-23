@@ -438,6 +438,11 @@ thing that makes the next block work.
 Every tracker assumes you want to lose. Two other things happen
 to people, and one of them is where every diet ends.
 
+**Built, and it is `/tools/diet/goal`**, the same page as `§5`:
+the direction is one chip on it, and a phase that comes after a
+goal is not a different tool. `bandWatch()`, `suggestBand()` and
+`gainWeekOne()` in `shared/diet.ts` are the arithmetic.
+
 ### Maintenance is a phase, with its own rules
 
 The great majority of weight lost is regained, and it is regained
@@ -459,6 +464,25 @@ week, and the tool must work properly at that density rather than
 scolding for missing meals. A tool that demands the same effort
 at maintenance as in a deficit is a tool that gets abandoned at
 exactly the point where abandoning it costs the most.
+`bandWatch()` reads weighings and never intakes, which is what
+makes that sentence true by construction rather than by care,
+and it counts ELAPSED days rather than readings, because a count
+of rows would ask for a month at three a week.
+
+**The two weeks gate both of the last two rows**, which the table
+does not say and which is the one way to read it wrongly. The
+third row's own test is distance, and the trend's half life is a
+week: a trend a full band's width outside has taken far longer
+than a fortnight to get there unless something has gone wrong
+with the water. An offer made off three days of that is an offer
+made off noise, and this phase's whole argument is that it does
+not speak off noise.
+
+**And nothing is said off a trend nobody has fed.** Three weeks
+without a weighing and `bandWatch()` returns null, on the same
+grounds `stall()` refuses a flat month with nothing logged: a
+tool that offers somebody a deficit off a month-old reading is
+inventing a problem out of its own missing data.
 
 ### And gaining is a real goal, in both places
 
@@ -474,12 +498,25 @@ add muscle deliberately. The engine reverses cleanly:
 - the protein floor is the same floor and matters more.
 - **no maximum-surplus bravado.** The tool will not offer a
   "bulk" of 1,000 kcal over maintenance, for the same reason it
-  will not offer 800 under it.
+  will not offer 800 under it. `MAX_SURPLUS_KCAL` is that in the
+  engine, and it is a SECOND ceiling rather than a restatement of
+  the rate above: half a percent of 130kg is 715 kcal a day, so
+  the percentage drifts above the mechanism it is a proxy for
+  somewhere around 100kg, and a reader heavy enough to want to
+  add muscle is exactly the reader it drifts for. `target()`
+  applies both and names whichever one bound, because a silent
+  clamp is a lie of omission going up as well as down.
 - the trend rules are identical, and week one still lies: a
   carbohydrate increase refills glycogen and puts one to two
   kilos on the scale in a week that contains no new tissue at
   all. `§7` is that arithmetic run backwards, and the tool says
-  so in the gaining direction too.
+  so in the gaining direction too. `gainWeekOne()` is that
+  arithmetic: the same store, the same three grams of water a
+  gram, coming back rather than leaving, and a gut carrying more
+  food than it was. `forecastChange()` deliberately declines the
+  question, because `WATER.gain` is zeros and calling a rise all
+  tissue would be a claim about the one thing that model cannot
+  see. Do not "fix" that row.
 
 ### The honest sentence about what happens when you stop
 
@@ -489,6 +526,13 @@ strongest predictor of not doing so is continuing to weigh and
 log after the goal is reached. That is not a scare and it is not
 a sales pitch for the tool. It is the reason maintenance is a
 built phase here rather than an empty screen.
+
+**Once is part of the rule, and `check-diet.ts` holds it.** Said
+twice it stops being a fact and becomes a slogan, and said away
+from the projection it is a scare rather than a reason. It is
+also the one sentence in this tool that argues for the tool,
+which is what makes it the one most likely to get copied on to a
+second panel by somebody who liked it.
 
 ---
 
@@ -2251,9 +2295,9 @@ this file so the prose and the code cannot drift.
 
 **`scripts/check-diet.ts`**, for the rules that are about pages
 rather than about numbers. It is in `check-all.ts` beside every
-other check. Six of the nine below are held; the three not yet
-held are marked, and each is waiting on the thing it would check
-existing:
+other check. Five of the nine below are held, plus two the list
+did not ask for; the four not yet held are marked ○, and each is
+waiting on the thing it would check existing:
 
 - ○ the floors are the ones `scripts/diet.test.ts` asserts, and
   no route recomputes a formula rather than importing it.
@@ -2281,6 +2325,10 @@ existing:
   with the section that will build it. A column nothing can fill
   breaks nothing, which is why it needed a check rather than a
   paragraph.
+- ✓ and a second the list did not ask for: what happens after a
+  goal is reached is said ONCE, on the goal page. `§6` puts it
+  there and only there, and it is the one sentence in the tool
+  that argues for the tool.
 
 **A `diet.test` under `next/`**, in a real browser, the way
 `next/admin.test.ts` drives `/admin`:

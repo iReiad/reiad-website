@@ -60,7 +60,28 @@ try {
    the way the food picker builds one, which is `loggedFrom()`
    over a real library row. A hand-written ingredient would prove
    the arithmetic against a shape nothing produces. */
+/* CI HAS NO `next/node_modules`, so `@reiad/shared` does not
+   resolve there and esbuild dies on the import rather than on
+   anything this file is about. That package IS a copy of
+   `shared/`, so the aliases point at the source instead: the
+   test runs everywhere, and it runs against the file somebody
+   edited rather than against a copy npm may have left stale.
+
+   Built out of the package's own `exports`, so a new module in
+   `shared/` needs no line here. */
+const { readFileSync } = await import("node:fs");
+const EXPORTS = JSON.parse(
+  readFileSync(join(ROOT, "shared", "package.json"), "utf8"),
+).exports as Record<string, string>;
+const alias = Object.fromEntries(
+  Object.entries(EXPORTS).map(([sub, file]) => [
+    `@reiad/shared${sub.slice(1)}`,
+    join(ROOT, "shared", file.replace(/^\.\//, "")),
+  ]),
+);
+
 const bundled = await build({
+  alias,
   stdin: {
     contents: `export * from "./lib/recipes.ts";
                export { byId, loggedFrom } from "@reiad/shared/foods";`,

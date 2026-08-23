@@ -489,6 +489,22 @@ export const MAX_LOSS_PCT_PER_WEEK = 1.0;
     adds muscle, whatever the training. */
 export const MAX_GAIN_PCT_PER_WEEK = 0.5;
 
+/** The same ceiling in kilocalories, and it is the one that
+    binds on a large reader.
+
+    A percentage of bodyweight is a proxy for "a surplus above
+    roughly 500 kcal adds fat faster than any body adds muscle",
+    and the proxy stops being one going up: half a percent of
+    130kg is 715 kcal a day, which IS the thousand-calorie bulk
+    section 6 refuses by name. `target()` applies both. */
+export const MAX_SURPLUS_KCAL = 500;
+
+/** The gentlest rate the table offers, which is what a
+    maintenance band offers when it has been left. Read out of
+    `RATES` rather than typed, so a fourth row cannot make it
+    stale. */
+export const LOWEST_RATE_PCT = Math.min(...RATES.map((r) => r.low));
+
 /** The absolute stop. Below this the tool declines and says why.
     It is not a warning and there is no argument that lifts it. */
 export const floorKcal = (sex: Sex): number => (sex === "male" ? 1500 : 1200);
@@ -496,7 +512,7 @@ export const floorKcal = (sex: Sex): number => (sex === "male" ? 1500 : 1200);
 /** No loss goal at all below this, on either set of cut-offs. */
 export const NO_LOSS_BELOW_BMI = 18.5;
 
-export type FloorHit = "absolute" | "resting" | "rate" | "underweight";
+export type FloorHit = "absolute" | "resting" | "rate" | "underweight" | "surplus";
 
 export interface Target {
   kcal: number;
@@ -558,6 +574,14 @@ export function target(opts: {
     if (kcal < restingKcal) { kcal = restingKcal; floors.push("resting"); }
     const hard = floorKcal(body.sex);
     if (kcal < hard) { kcal = hard; floors.push("absolute"); }
+  } else {
+    /* THE SURPLUS CEILING IS NOT THE RATE CEILING, and on a
+       large reader it is the one that binds: the rate is a
+       proxy for `MAX_SURPLUS_KCAL` and drifts above it past
+       about 100kg. Without this the tool offers the bulk
+       section 6 refuses by name. */
+    const top = maintenance + MAX_SURPLUS_KCAL;
+    if (kcal > top) { kcal = top; floors.push("surplus"); }
   }
 
   const delivered = Math.abs(kcal - maintenance) * 7 / KCAL_PER_KG;
@@ -721,6 +745,17 @@ export const GLYCOGEN_WATER_RATIO = 3;
     not fat: it is food that has not finished being food yet, and
     on a two day fast it is a kilogram of the drop. */
 const GUT_KG: Range = { low: 0.5, mid: 0.9, high: 1.5 };
+
+/** What sodium does to a glycogen figure, as a multiplier.
+
+    Sodium goes with the water on any large carbohydrate or
+    energy move and takes more water with it, in either
+    direction: about a third of the glycogen figure is the usual
+    order, and it is inside the range rather than stated as its
+    own number because nothing here can measure it. ONE TABLE,
+    because the drain, the rebound and the refill are the same
+    physical fact read three ways. */
+const WITH_SODIUM: Range = { low: 0.8, mid: 1.15, high: 1.5 };
 
 /** What a protocol takes off that is not fat.
 
@@ -917,15 +952,11 @@ export function forecastChange(c: Change): Forecast {
      without a gram of fat having left. */
   const gutShare = gutTaken(c.to, c.days, cut);
 
-  /* Sodium goes with the water on any large carbohydrate or
-     energy drop, and takes more water with it. A third of the
-     glycogen figure is the usual order, and it is inside the
-     range rather than stated as its own number because nothing
-     here can measure it. */
+  /* `WITH_SODIUM` is why this is a range at all. */
   const water: Range = {
-    low: newlyDrained * 0.8 + GUT_KG.low * gutShare,
-    mid: newlyDrained * 1.15 + GUT_KG.mid * gutShare,
-    high: newlyDrained * 1.5 + GUT_KG.high * gutShare,
+    low: newlyDrained * WITH_SODIUM.low + GUT_KG.low * gutShare,
+    mid: newlyDrained * WITH_SODIUM.mid + GUT_KG.mid * gutShare,
+    high: newlyDrained * WITH_SODIUM.high + GUT_KG.high * gutShare,
   };
 
   const fat = ((c.intake - c.burn) * c.days) / KCAL_PER_KG;
@@ -940,9 +971,9 @@ export function forecastChange(c: Change): Forecast {
      resumes, and the gut refills within a day or two of it. */
   const back = after * store;
   const rebound: Range = {
-    low: back * 0.8 + GUT_KG.low * gutShare,
-    mid: back * 1.15 + GUT_KG.mid * gutShare,
-    high: back * 1.5 + GUT_KG.high * gutShare,
+    low: back * WITH_SODIUM.low + GUT_KG.low * gutShare,
+    mid: back * WITH_SODIUM.mid + GUT_KG.mid * gutShare,
+    high: back * WITH_SODIUM.high + GUT_KG.high * gutShare,
   };
 
   const drop = Math.abs(scale.mid);
@@ -2209,6 +2240,258 @@ export function stall(opts: {
     burnKcalChange,
     intakeKcalChange,
     coverage,
+  };
+}
+
+/* ---------------------------------------------------------- */
+/* holding, which is a band and not a number                  */
+/* ---------------------------------------------------------- */
+
+/** The band the trend is allowed to move inside.
+
+    Section 6: maintenance is a BAND, and the tool says nothing
+    at all while the trend is in it. That silence is the feature,
+    because the phase every diet ends in is the one every tracker
+    leaves as an empty screen.
+
+    The two columns are `diet_profile.band_low_kg` and
+    `band_high_kg` and neither may be renamed. */
+export interface MaintenanceBand {
+  lowKg: number;
+  highKg: number;
+}
+
+/** How wide, in kilograms. Section 6 says two to three, and the
+    width follows bodyweight inside that because the noise does:
+    section 4's ordinary daily swing of one to two kilos is a
+    larger share of a 55kg reader than of a 110kg one. A band
+    narrower than the noise is a band that is always being left,
+    which is the same tool with a different colour on it. */
+export const BAND_MIN_KG = 2;
+export const BAND_MAX_KG = 3;
+export const BAND_PCT_OF_WEIGHT = 3;
+
+export const bandWidth = (weightKg: number): number =>
+  Math.min(Math.max((weightKg * BAND_PCT_OF_WEIGHT) / 100, BAND_MIN_KG), BAND_MAX_KG);
+
+/** A band centred on where the reader is, for somebody who has
+    not set one. Centred rather than hung off a goal weight,
+    because the day holding starts is the day the current weight
+    IS the goal. Rounded to the tenth the column stores, so what
+    is suggested is what is written. */
+export function suggestBand(trendKg: number): MaintenanceBand {
+  const half = bandWidth(trendKg) / 2;
+  const tenth = (kg: number): number => Math.round(kg * 10) / 10;
+  return { lowKg: tenth(trendKg - half), highKg: tenth(trendKg + half) };
+}
+
+/** Two weeks outside before anything is said at all. */
+export const BAND_OUT_DAYS = 14;
+
+export type BandState = "inside" | "above" | "below";
+
+export interface BandWatch {
+  where: BandState;
+  /** The TREND, never a reading: section 4, nothing in this tool
+      reacts to one weighing, and a band is exactly where that
+      would go wrong most often. */
+  trendKg: number;
+  /** Kilograms past the nearer edge. Zero inside. */
+  outByKg: number;
+  /** How wide the band is, which is also the distance that turns
+      a line into an offer. */
+  widthKg: number;
+  /** Days on this side, from the first weighing of the run to
+      the last, in ELAPSED days rather than in readings: section
+      6 puts the floor at a weight three times a week, and a
+      count of rows would ask for seven.
+
+      It is the LOW end of what the data supports, because the
+      trend crossed the edge somewhere between that weighing and
+      the one before it. Saying less is the right direction for
+      the one message this phase ever sends. */
+  daysOut: number;
+  /** The day the last weighing was, so a caller can say what the
+      reading is as of rather than implying it is today's. */
+  lastDay: number;
+  /** Section 6's three rows. `"nothing"` is the commonest answer
+      and it is the whole point of the phase: no message, no
+      colour, no notification. */
+  say: "nothing" | "line" | "offer";
+  /** The phase to offer where one is offered: gentle, at the
+      lowest rate in `RATES`, in the direction that brings the
+      trend back. Null everywhere else, including inside the
+      band, where there is nothing to offer. */
+  offer: { kind: GoalKind; ratePct: number } | null;
+}
+
+/** Where the trend sits against the band, and which of section
+    6's three rows that is.
+
+    Returns null for every honest reason to say nothing: no
+    weighings, no band, or a trend nobody has fed for three
+    weeks. Null is the ordinary answer and is not a failure.
+
+    IT DOES NOT SCOLD FOR MISSING MEALS and cannot: it reads
+    weighings and never intakes. A reader holding a weight is
+    logging a scale reading a few times a week and nothing else,
+    and section 6 says the tool must work properly at that
+    density. */
+export function bandWatch(opts: {
+  band: MaintenanceBand;
+  /** The fittable weighings, marked days already removed, on the
+      same footing as every other slope here. */
+  weights: Point[];
+  /** Today, in the same day numbers. */
+  today: number;
+}): BandWatch | null {
+  const { band, today } = opts;
+  const widthKg = band.highKg - band.lowKg;
+  const points = [...opts.weights].sort((a, b) => a.day - b.day);
+  if (!points.length || !(widthKg > 0)) return null;
+
+  const line = trend(points);
+  const now = line[line.length - 1];
+  /* NOTHING IS SAID OFF A TREND NOBODY HAS FED. `STALL_DAYS`
+     again and for the same reason: three weeks of silence is not
+     a reading about today, and offering somebody a deficit off
+     it would be the tool inventing a problem out of its own
+     missing data. */
+  if (today - now.day > STALL_DAYS) return null;
+
+  const sideOf = (kg: number): BandState =>
+    kg > band.highKg ? "above" : kg < band.lowKg ? "below" : "inside";
+  const where = sideOf(now.kg);
+  const outByKg = where === "above" ? now.kg - band.highKg
+    : where === "below" ? band.lowKg - now.kg
+      : 0;
+
+  let daysOut = 0;
+  if (where !== "inside") {
+    let i = line.length - 1;
+    while (i > 0 && sideOf(line[i - 1].kg) === where) i -= 1;
+    daysOut = now.day - line[i].day;
+  }
+
+  /* THE TWO WEEKS GATE BOTH ROWS, and that is a reading rather
+     than an omission. The offer's own test is distance, and the
+     trend's half life is a week, so a trend a full band's width
+     outside has taken far longer than a fortnight to get there
+     unless something is wrong with the water. Offering a deficit
+     off three days of that is offering it off noise. */
+  const say: BandWatch["say"] = where === "inside" || daysOut < BAND_OUT_DAYS
+    ? "nothing"
+    : outByKg > widthKg ? "offer" : "line";
+
+  return {
+    where,
+    trendKg: now.kg,
+    outByKg,
+    widthKg,
+    daysOut,
+    lastDay: now.day,
+    say,
+    offer: say === "offer"
+      ? { kind: where === "above" ? "lose" : "gain", ratePct: LOWEST_RATE_PCT }
+      : null,
+  };
+}
+
+/* ---------------------------------------------------------- */
+/* gaining, which is week one lying the other way up          */
+/* ---------------------------------------------------------- */
+
+/** How much of the glycogen store is empty in somebody eating
+    ordinarily. Not nought: a store is neither full at
+    maintenance nor empty, and this headroom is what a
+    carbohydrate increase fills in the first week of a surplus.
+    A reader arriving off keto or a fast has more than this and
+    hands in their own, through `from`. */
+const BASE_HEADROOM = 0.35;
+
+/** Days for the store to refill, which is `WATER.keto`'s drain
+    run backwards and about as quick. */
+const REFILL_TAU_DAYS = 2;
+
+export interface GainWeekOne {
+  /** What the scale will show. Positive is up. */
+  scale: Range;
+  /** What of it is new tissue. Arithmetic on a surplus, so it
+      has no business pretending to a spread it does not have,
+      and it is TISSUE rather than muscle: what a surplus adds is
+      some of each and this cannot tell them apart. */
+  tissue: number;
+  /** The rest: glycogen, the three grams of water each gram of
+      it holds, and a gut carrying more food than it was. */
+  refill: Range;
+  /** The share of the rise that is not new tissue. The sentence
+      a reader needs BEFORE week one rather than after week two,
+      which is when people quit in either direction. */
+  refillShare: number;
+}
+
+/** What the first week of a surplus puts on the scale, and how
+    little of it is new tissue.
+
+    Section 6: a carbohydrate increase refills glycogen and puts
+    one to two kilos on the scale in a week that contains no new
+    tissue at all. This is section 7's arithmetic run backwards,
+    the same store and the same water with it, coming back rather
+    than leaving, so `from` is the same shape `forecastChange()`
+    takes and means the same thing.
+
+    `forecastChange()` deliberately does not answer this:
+    `WATER.gain` is zeros, so a surplus there comes back with
+    `fatShareKnown: false` rather than with a flattering claim
+    that the whole rise is tissue. This is the answer it declines
+    to give, given honestly. */
+export function gainWeekOne(opts: {
+  weightKg: number;
+  /** Maintenance, learned where there is one. */
+  burn: number;
+  /** The target intake, above it. */
+  intake: number;
+  /** What was running before the surplus, where the page knows
+      it. How empty the store is when a surplus starts is what
+      decides how much of week one is refill, and a reader coming
+      off keto or a fast arrives with all of it to put back. */
+  from?: { protocol: Protocol; days: number; intake?: number } | null;
+  days?: number;
+}): GainWeekOne {
+  const { weightKg, burn, intake, from = null, days = 7 } = opts;
+  const span = Math.max(days, 0);
+  const store = glycogenKg(weightKg) * (1 + GLYCOGEN_WATER_RATIO);
+  const emptied = from
+    ? drainedBy(from.protocol, from.days,
+        from.intake === undefined ? null : cutOf(from.intake, burn))
+    : 0;
+  const headroom = Math.min(Math.max(emptied, BASE_HEADROOM), 1);
+  const back = store * headroom * (1 - Math.exp(-span / REFILL_TAU_DAYS));
+
+  /* The gut fills in proportion to how much more food is going
+     in, and is full at the largest surplus this tool will ever
+     set. Same shape as `gutTaken()`, same transit time, read the
+     other way. */
+  const surplus = Math.max(intake - burn, 0);
+  const gutShare = Math.min(surplus / MAX_SURPLUS_KCAL, 1)
+    * Math.min(span / GUT_DAYS, 1);
+
+  const refill: Range = {
+    low: back * WITH_SODIUM.low + GUT_KG.low * gutShare,
+    mid: back * WITH_SODIUM.mid + GUT_KG.mid * gutShare,
+    high: back * WITH_SODIUM.high + GUT_KG.high * gutShare,
+  };
+  const tissue = (surplus * span) / KCAL_PER_KG;
+  const scale: Range = {
+    low: tissue + refill.low,
+    mid: tissue + refill.mid,
+    high: tissue + refill.high,
+  };
+  return {
+    scale,
+    tissue,
+    refill,
+    refillShare: scale.mid > 0 ? Math.min(refill.mid / scale.mid, 1) : 0,
   };
 }
 
