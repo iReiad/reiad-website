@@ -64,6 +64,7 @@ import { ACCENTS, AUDIENCES, LADDER_SCHOOLS, NAV, ORDER } from "../../shared/nav
 import { bnNum } from "../../shared/schools.ts";
 import { GARDEN, GROWN, MOODS, SEASONS } from "../../shared/routine.ts";
 import { PACES, TARGET_KINDS } from "../../shared/profile.ts";
+import { HEADS } from "../../shared/heads.ts";
 
 /** Half an hour, the same as the market board next door. The
     furniture changes when somebody deploys, so a stale answer is
@@ -164,6 +165,19 @@ export function onRequest(context: RouteContext): Response | Promise<Response> {
           paces: PACES.map((pace) => ({ ...pace })),
           targetKinds: TARGET_KINDS.map((kind) => ({ ...kind })),
         },
+        /* What each hub page SAYS, with the counts already
+           resolved: a lede names a `COUNTS` key so that nobody
+           can type a number into a sentence, and a client should
+           not have to know that indirection to print one. The
+           same arrangement `door` uses one field up. */
+        heads: Object.fromEntries(
+          Object.entries(HEADS).map(([key, head]) => [key, {
+            ...head,
+            lede: head.count
+              ? head.lede.replace("{n}", bnNum(COUNTS[head.count]))
+              : head.lede,
+          }]),
+        ),
       }, {
         "Cache-Control": `public, max-age=${CACHE_SECONDS}`,
       }),

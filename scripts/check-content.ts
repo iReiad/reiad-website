@@ -62,6 +62,7 @@ import { readFileSync, readdirSync, existsSync } from "node:fs";
 import { dirname, join } from "node:path";
 import { fileURLToPath } from "node:url";
 import { PAGES, COUNTS, DOOR } from "../shared/content.ts";
+import { HEADS } from "../shared/heads.ts";
 import { nextOwns } from "../worker.js";
 import { METRICS, PILLARS } from "../aab/tools/stock.model.js";
 
@@ -370,11 +371,51 @@ for (const fact of DOOR.facts) {
   }
 }
 
+/* ------------------------------------------------------------
+   7. A number in a hub's lede is a SLOT, never a numeral
+   ------------------------------------------------------------
+
+   `HEADS` carries what each hub page says about itself, and a
+   lede that states a count names the `COUNTS` key that fills it
+   rather than holding a figure. Both halves have to be true and
+   each fails differently:
+
+   A `{n}` with no key ships the literal characters `{n}` to a
+   reader, on the site and in the app. A key with no `{n}` is a
+   count nobody ever prints, which is the shape this whole file
+   exists for: right on the day it was written, and then the
+   thing it counted grew and nothing said so.
+   ------------------------------------------------------------ */
+for (const [key, head] of Object.entries(HEADS)) {
+  const slot = head.lede.includes("{n}");
+  if (slot && !head.count) {
+    fail("drifted   shared/heads.ts",
+      `HEADS.${key} has a {n} in its lede and names no count.`,
+      "A reader gets the characters {n}, on the site and on a phone.");
+  }
+  if (head.count && !slot) {
+    fail("drifted   shared/heads.ts",
+      `HEADS.${key} names COUNTS.${head.count} and has no {n} to put it in.`,
+      "A count nobody prints is a count that cannot go stale visibly.");
+  }
+  if (head.count && typeof COUNTS[head.count] !== "number") {
+    fail("drifted   shared/heads.ts",
+      `HEADS.${key} names COUNTS.${head.count}, which is not a number.`);
+  }
+  for (const [what, said] of [["eyebrow", head.eyebrow], ["title", head.title],
+                              ["lede", head.lede]] as const) {
+    if (!said.trim()) {
+      fail("drifted   shared/heads.ts", `HEADS.${key} has an empty ${what}.`);
+    }
+  }
+}
+
 /* ------------------------------------------------------------ */
 console.log(
   failures
     ? `\n${failures} content problem(s): fix before deploying.`
     : `content checked: ${caseFiles.length} case studies listed and linked, ` +
-      `${PAGES.length} pages resolve, every count agrees with the data.`
+      `${PAGES.length} pages resolve, ${Object.keys(HEADS).length} hub heads hold ` +
+      "their slots, every count agrees with the data."
 );
 process.exit(failures ? 1 : 0);

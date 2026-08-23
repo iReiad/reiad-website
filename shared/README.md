@@ -62,6 +62,14 @@ this repository got written.
   once, and `unlisted` is how a section stays out of both menus
   while still being said once.
 
+- **`heads.ts`** what a hub page says about itself: the eyebrow,
+  the headline and the lede of the pages that are a list of
+  things rather than a piece of writing. Copy is data, so the
+  Android app draws these hubs with the site's own words instead
+  of a bare title. A number in a lede is a SLOT filled from
+  `COUNTS`, never typed, which is the rule at the top of
+  `CLAUDE.md`.
+
 - **`profile.ts`** the two vocabularies an account answers with:
   how often somebody means to practise, and the three kinds of
   target. Both are a CHECK constraint in Postgres and both were

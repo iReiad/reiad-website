@@ -125,6 +125,11 @@ const SOURCES = [
      sent would be an option the site offers and the app does
      not, on a screen that renders perfectly in both. */
   "shared/profile.ts",
+  /* What each hub page says about itself. A head added
+     there and not sent is a page the app draws with a bare
+     title, which is exactly what the front page did before
+     `DOOR` moved into `content.ts`. */
+  "shared/heads.ts",
 ];
 const tables = SOURCES.flatMap((path) => tablesIn(path).map((name) => ({ name, path })));
 

@@ -21,6 +21,7 @@ import { Button, ButtonLink } from "../../../../components/ui/button";
 import { Chip } from "../../../../components/ui/chip";
 import { InfoCard } from "../../../../components/deck";
 import { Eyebrow, SectionLabel } from "../../../../components/ui/label";
+import { HEADS } from "@reiad/shared/heads";
 
 export const metadata: Metadata = pageMeta({
   path: "/portfolio",
@@ -46,17 +47,11 @@ export default function Page() {
            three sections and an FAQ near the bottom of the page.
            ============================================================ */}
           <div className="hero">
-            <Eyebrow>Portfolio & services · Rony Reiad
-            </Eyebrow>
-            <h1>Models, analysis and writing: shown, not told.
-            </h1>
-            <p className="lede">
-              Freelance financial modeling, data analysis and finance writing. Every
-          engagement starts with a short brief and ends with working files you
-          own, not screenshots. The case studies below are live: open one and drag
-          the assumptions about.
-        
-            </p>
+            {/* Out of `shared/heads.ts`, which is what the
+                Android app draws this hub from too. */}
+            <Eyebrow>{HEADS.portfolio.eyebrow}</Eyebrow>
+            <h1>{HEADS.portfolio.title}</h1>
+            <p className="lede">{HEADS.portfolio.lede}</p>
             <div className="hero-actions">
               <ButtonLink kind="solid" href="/contact">Start a project
               </ButtonLink>
