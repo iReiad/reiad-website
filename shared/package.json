@@ -15,6 +15,7 @@
     "./foods": "./foods.ts",
     "./insights": "./insights.ts",
     "./activity": "./activity.ts",
-    "./csv": "./csv.ts"
+    "./csv": "./csv.ts",
+    "./bundle": "./bundle.ts"
   }
 }
