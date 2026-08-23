@@ -42,7 +42,14 @@ const SECTION_WORDS: Record<string, string> = {
 
 const SWAP_MS = 7000;
 
-export function PulseCard() {
+/** The rotating tile, and under it, at the board's `tall` size,
+    the next few pieces as rows.
+
+    `limit` is how many pieces the widget SHOWS at once: 1 is the
+    tile alone, rotating through six; more is the tile plus the
+    list, which is what makes `tall` a different drawing rather
+    than the same one stretched. */
+export function PulseCard({ limit = 1 }: { limit?: number } = {}) {
   const [pieces, setPieces] = useState<Piece[]>([]);
   const [at, setAt] = useState(0);
   const paused = useRef(false);
@@ -75,6 +82,24 @@ export function PulseCard() {
   const piece = pieces[at] ?? null;
   const href = piece ? `/${piece.section}/${piece.slug}.html` : "/insights";
 
+  if (limit > 1) {
+    return (
+      <div className="grid gap-2">
+        <Tile piece={piece} pieces={pieces} at={at} href={href} paused={paused} />
+        <PulseRows pieces={pieces.slice(0, limit)} skip={at} />
+      </div>
+    );
+  }
+  return (
+    <Tile piece={piece} pieces={pieces} at={at} href={href} paused={paused} />
+  );
+}
+
+/** The tile itself, shared by both sizes of the widget. */
+function Tile({ piece, pieces, at, href, paused }: {
+  piece: Piece | null; pieces: Piece[]; at: number; href: string;
+  paused: { current: boolean };
+}) {
   return (
     <a className="gate-tile min-h-[150px] col-span-2 lg:col-span-6" data-glow="card" href={href}
       /* The colour of whichever piece is showing, not a fixed one.
@@ -128,5 +153,26 @@ export function PulseCard() {
         ) : null}
       </span>
     </a>
+  );
+}
+
+/* The rest of the tall widget: the pieces the tile is NOT
+   showing, as quiet rows. Split from the tile so the wide board
+   renders no list markup at all rather than a hidden one. */
+function PulseRows({ pieces, skip }: { pieces: Piece[]; skip: number }) {
+  const rest = pieces.filter((_, i) => i !== skip);
+  if (!rest.length) return null;
+  return (
+    <ul className="gp-rows">
+      {rest.map((p) => (
+        <li key={p.slug}>
+          <a href={`/${p.section}/${p.slug}.html`}
+            lang={p.lang === "bn" ? "bn" : undefined}>
+            <span className="truncate">{p.title}</span>
+            <Icon name="chevron" size={13} />
+          </a>
+        </li>
+      ))}
+    </ul>
   );
 }

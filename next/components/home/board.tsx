@@ -55,14 +55,29 @@ const DRAWABLE = ["continue", "progress", "pulse", "market", "schools", "tools",
 
 const KINDS = new Map(WIDGETS.map((k) => [k.id, k]));
 
+/** Written out rather than templated, because `check-css.ts`
+    reads class names as literals: `board-${"{"}size{"}"}` is
+    three rules styling nothing as far as it can see, and a rule
+    it cannot see used is a rule it will one day be right
+    about. */
+const SIZE_CLASS: Record<WidgetSize, string> = {
+  small: "board-small",
+  wide: "board-wide",
+  tall: "board-tall",
+};
+
 /* ---------- the widgets this page can draw ---------- */
 
-function Widget({ id }: { id: string }) {
+function Widget({ id, size }: { id: string; size: WidgetSize }) {
   switch (id) {
     case "continue": return <ContinueCard />;
     case "progress": return <SchoolMeters />;
-    case "pulse": return <PulseCard />;
-    case "market": return <MarketPulse />;
+    /* The two feeds are the kinds a size genuinely changes: at
+       `wide` each shows its first story and at `tall` the
+       morning's worth. A size that only stretched the same
+       drawing would be a stretch wearing a size's name. */
+    case "pulse": return <PulseCard limit={size === "tall" ? 4 : 1} />;
+    case "market": return <MarketPulse limit={size === "tall" ? undefined : 3} />;
     case "schools": return <NavBand group="learn" />;
     case "tools": return <NavBand group="make" />;
     case "stock": return <StockTile />;
@@ -171,7 +186,7 @@ export function Board() {
         {placed.map((p, at) => {
           const kind = KINDS.get(p.id);
           return (
-            <div key={p.id} className={p.size === "half" ? "board-half" : "board-full"}>
+            <div key={p.id} className={SIZE_CLASS[p.size]}>
               {arranging && kind ? (
                 <Strip
                   kind={kind} placed={p}
@@ -187,7 +202,7 @@ export function Board() {
                 />
               ) : null}
               <div className={arranging ? "opacity-70" : undefined}>
-                <Widget id={p.id} />
+                <Widget id={p.id} size={p.size} />
               </div>
             </div>
           );
@@ -260,7 +275,9 @@ function Strip({ kind, placed, first, last, onUp, onDown, onResize, onRemove }: 
       {other ? (
         <Button
           kind="quiet" size="sm" onClick={onResize}
-          aria-label={`${kind.bn}: ${other === "half" ? "ছোট করুন" : "বড় করুন"}`}
+          aria-label={`${kind.bn}: ${
+            other === "small" ? "ছোট করুন" : other === "tall" ? "লম্বা করুন" : "চওড়া করুন"
+          }`}
         >
           <Icon name="menu" size={15} />
         </Button>
@@ -288,8 +305,13 @@ function moved(placed: Placed[], from: number, to: number): Placed[] {
   return out;
 }
 
+/** The next size along, wrapping, or null where the kind offers
+    one: a resize control on a widget with one size is a control
+    that does nothing twice. */
 function otherSize(kind: WidgetKind, size: WidgetSize): WidgetSize | null {
-  return kind.sizes.find((s) => s !== size) ?? null;
+  if (kind.sizes.length < 2) return null;
+  const at = kind.sizes.indexOf(size);
+  return kind.sizes[(at + 1) % kind.sizes.length] ?? null;
 }
 
 function firstSize(kind: WidgetKind): WidgetSize {

@@ -43,15 +43,28 @@
    feature first and put on the board second.
    ============================================================ */
 
-/** How wide a widget runs. Two, because a phone is one column
-    wide and anything finer is a grid nobody can drag on.
+/** How much room a widget takes, in a phone home screen's own
+    three steps.
 
-    `full` is the row. `half` is half of it, and two halves sit
-    side by side; on a narrow phone a half still runs the full
-    width, because 160dp of glass with a number in it is not
-    legible and pretending otherwise is how a dashboard becomes
-    decoration. */
-export type WidgetSize = "half" | "full";
+    `small` is half the row and roughly square, and two smalls
+    sit side by side. `wide` is the row at a reading's height.
+    `tall` is the row with room for a LIST in it, and it is the
+    difference between a headline widget showing one story and
+    showing the morning's four: the kind draws differently at
+    each size it offers, which is what makes this a size rather
+    than a stretch.
+
+    ---- `half` and `full` are still read, for ever ----
+
+    They were the first two sizes and they are inside real
+    accounts under `home-board`, so `parsePlaced` reads them as
+    `small` and `wide` on the way in. They are never written
+    back: `storedOf` writes the three above, and a board saved
+    today round-trips through them. Removing the aliases would
+    not break anything visibly, it would quietly empty the board
+    of everybody who arranged it before this shipped, which is
+    the storage-key rule at the top of CLAUDE.md. */
+export type WidgetSize = "small" | "wide" | "tall";
 
 /** What has to be true before a widget has anything to say.
 
@@ -91,74 +104,74 @@ export const WIDGETS: readonly WidgetKind[] = [
     id: "continue",
     bn: "যেখানে ছিলেন", en: "Where you left off",
     note: "যে পাঠটা শেষ করেননি, সেটাতে এক টোকায় ফিরে যান।",
-    sizes: ["full"], needs: "school", icon: "book",
+    sizes: ["wide"], needs: "school", icon: "book",
   },
   {
     id: "progress",
     bn: "কতটা হলো", en: "How far you are",
     note: "প্রতিটা স্কুলে কত পাঠ পড়া হয়েছে, একটা করে বৃত্তে।",
-    sizes: ["full", "half"], needs: "school", icon: "gauge",
+    sizes: ["wide", "small", "tall"], needs: "school", icon: "gauge",
   },
   {
     id: "streak",
     bn: "যে দিনগুলো এসেছেন", en: "A year of days",
     note: "এক বছরের প্রতিটা দিন, যেদিন কিছু করেছেন সেদিন ভরাট। "
       + "কোনো আগুন নেই, কিছু লাল হয় না।",
-    sizes: ["full"], needs: "account", icon: "calendar",
+    sizes: ["wide"], needs: "account", icon: "calendar",
   },
   {
     id: "diet",
     bn: "আজকের খাওয়া", en: "Today's log",
     note: "আজ যা লেখা হয়েছে তার যোগফল, আর যেটা ঠিক করেছেন তার পাশে।",
-    sizes: ["full", "half"], needs: "account", icon: "leaf",
+    sizes: ["wide", "small"], needs: "account", icon: "leaf",
   },
   {
     id: "routine",
     bn: "আজকের রুটিন", en: "Today's routine",
     note: "আজকের কাজগুলো, আর কয়টা টিক পড়েছে।",
-    sizes: ["full"], needs: "account", icon: "calendar",
+    sizes: ["wide", "tall"], needs: "account", icon: "calendar",
   },
   {
     id: "target",
     bn: "লক্ষ্য", en: "A target",
     note: "যে লক্ষ্যটা চলছে, তার বার সহ।",
-    sizes: ["full", "half"], needs: "account", icon: "gauge",
+    sizes: ["wide", "small"], needs: "account", icon: "gauge",
   },
   {
     id: "library",
     bn: "পরে পড়ব", en: "Saved to read",
     note: "যেগুলো রেখে দিয়েছেন, সবচেয়ে নতুনটা আগে।",
-    sizes: ["full"], needs: "account", icon: "keep",
+    sizes: ["wide", "tall"], needs: "account", icon: "keep",
   },
   {
     id: "pulse",
     bn: "নতুন লেখা", en: "Latest writing",
     note: "সবচেয়ে নতুন লেখাগুলো, একটার পর একটা।",
-    sizes: ["full"], icon: "pen",
+    sizes: ["tall", "wide"], icon: "pen",
   },
   {
     id: "market",
     bn: "বাজারের খবর", en: "Market pulse",
     note: "আজকের শিরোনামগুলো, একেকটা একেকটা ঘরে।",
-    sizes: ["full"], needs: "network", icon: "spark",
+    sizes: ["tall", "wide"], needs: "network", icon: "spark",
   },
   {
     id: "stock",
     bn: "শেয়ার যাচাই", en: "Stock check",
     note: "একটা টিকার লিখুন, রায়টা এখানেই।",
-    sizes: ["full", "half"], icon: "gauge",
+    sizes: ["wide", "small"], icon: "gauge",
   },
   {
     id: "schools",
     bn: "যা যা শেখানো হয়", en: "The schools",
     note: "ছয়টা স্কুল, একেকটা তার নিজের রঙে।",
-    sizes: ["full"], icon: "skills",
+    sizes: ["tall", "wide"], icon: "skills",
   },
   {
     id: "tools",
     bn: "যন্ত্রপাতি", en: "The tools",
     note: "ক্যালকুলেটর, রুটিন, খাদ্য আর বাকিগুলো।",
-    sizes: ["full"], icon: "calculator",
+    sizes: ["wide", "tall"], icon: "calculator",
   },
 ];
 
@@ -174,12 +187,12 @@ export const WIDGETS: readonly WidgetKind[] = [
     is the page saying who it is, and a board with no heading on
     it is a settings screen. */
 export const HOME_DEFAULT: readonly string[] = [
-  "continue:full",
-  "progress:full",
-  "pulse:full",
-  "market:full",
-  "schools:full",
-  "tools:full",
+  "continue:wide",
+  "progress:wide",
+  "pulse:tall",
+  "market:tall",
+  "schools:wide",
+  "tools:wide",
 ];
 
 /** One thing on the board: which kind, and how wide. */
@@ -188,7 +201,11 @@ export interface Placed {
   readonly size: WidgetSize;
 }
 
-const SIZES: readonly WidgetSize[] = ["half", "full"];
+const SIZES: readonly WidgetSize[] = ["small", "wide", "tall"];
+
+/** The first two sizes, as real boards spell them. Read for
+    ever, written never: see the note on `WidgetSize`. */
+const SIZE_ALIASES: Record<string, WidgetSize> = { half: "small", full: "wide" };
 
 /** `"progress:half"` as a pair, or null.
 
@@ -203,9 +220,10 @@ export function parsePlaced(entry: string, known: Iterable<string>): Placed | nu
   const [id, size] = entry.split(":");
   const ids = new Set(known);
   if (!ids.has(id)) return null;
-  const wide = SIZES.includes(size as WidgetSize) ? (size as WidgetSize) : null;
-  if (!wide) return null;
-  return { id, size: wide };
+  const named = SIZE_ALIASES[size]
+    ?? (SIZES.includes(size as WidgetSize) ? (size as WidgetSize) : null);
+  if (!named) return null;
+  return { id, size: named };
 }
 
 /** A stored layout as a list of placings, with anything this

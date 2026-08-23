@@ -31,6 +31,12 @@
    login could not have reached anyone either. Bump this whenever a
    precached file changes.
 
+   v209: /fallback.css. The board's three sizes: `board-small`,
+   `board-wide` and `board-tall` replace the first two, and the
+   tall pulse widget's `.gp-rows`. A returning visitor on the old
+   stylesheet would meet class names it has never heard of and a
+   board with no grid.
+
    v208: /fallback.css. `@layer board`: the front page is a board
         the reader arranges, and the two pages served as files
         link the stylesheet by name.
@@ -1847,7 +1853,7 @@
    imports (crumbs, audience, learn progress) and the hub is a
    different page. Without a bump, a returning reader would be
    served the v3 app.js forever and none of it would appear. */
-const VERSION = "v208";
+const VERSION = "v209";
 const SHELL = `shell-${VERSION}`;
 const RUNTIME = `runtime-${VERSION}`;
 

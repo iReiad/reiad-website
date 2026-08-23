@@ -64,7 +64,10 @@ type State =
   | { kind: "ready"; feed: NewsFeed; staleFrom: number | null }
   | { kind: "unreachable" };
 
-export function MarketPulse() {
+/** `limit` caps the stories drawn, for the board's `wide` size:
+    the hub and the tall widget show the feed whole. Undefined is
+    the whole feed, which is what every existing caller gets. */
+export function MarketPulse({ limit }: { limit?: number } = {}) {
   const [state, setState] = useState<State>({ kind: "idle" });
   /* Every press of Try again is a new attempt, and the number is
      also the answer to "has this already had its second chance":
@@ -125,7 +128,7 @@ export function MarketPulse() {
         {state.kind === "ready" ? (
           <>
             <div className="news-grid" ref={gridRef}>
-              {state.feed.items.map((item) => (
+              {(limit ? state.feed.items.slice(0, limit) : state.feed.items).map((item) => (
                 <NewsCard key={item.url} item={item}
                           onOpen={(it, from) => setStory({ item: it, from })} />
               ))}

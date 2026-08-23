@@ -50,13 +50,16 @@ for (const kind of WIDGETS) {
   ok(`${kind.id} names an icon`, kind.icon.trim().length > 0);
 }
 
-/* `full` first wherever both are offered, because the first is
-   what a widget gets when it is added and a board that starts
-   half-width reads as a board somebody has already fiddled
-   with. */
+/* The row or taller first wherever more than one is offered,
+   because the first is what a widget gets when it is added and
+   a board that starts half-width reads as a board somebody has
+   already fiddled with. Which of `wide` and `tall` leads is the
+   kind's own choice: a board of headlines is a LIST and arrives
+   with room for one. */
 for (const kind of WIDGETS) {
   if (kind.sizes.length < 2) continue;
-  is(`${kind.id} is added at full width`, kind.sizes[0], "full");
+  ok(`${kind.id} is added at the row's width`, kind.sizes[0] !== "small",
+    `${kind.id} arrives at "${kind.sizes[0]}"`);
 }
 
 /* ------------------------------------------------------------
@@ -104,26 +107,43 @@ is("an empty layout gives the default too",
    this browser has never heard of; the board has to come back
    one card short rather than not at all. */
 is("a widget this build cannot draw is dropped, not fatal",
-  storedOf(layoutOf(["pulse:full", "hologram:full", "schools:full"], all)),
-  ["pulse:full", "schools:full"]);
+  storedOf(layoutOf(["pulse:wide", "hologram:wide", "schools:wide"], all)),
+  ["pulse:wide", "schools:wide"]);
 
 is("a size this build does not know is dropped",
-  storedOf(layoutOf(["pulse:enormous", "schools:full"], all)),
-  ["schools:full"]);
+  storedOf(layoutOf(["pulse:enormous", "schools:wide"], all)),
+  ["schools:wide"]);
+
+/* THE BOARDS ALREADY IN ACCOUNTS. `half` and `full` were the
+   first two sizes and `home-board` holds them in real rows, so
+   they are read for ever and written never: a board saved before
+   the three sizes existed comes back whole, spelled the new way.
+   The day this fails is the day everybody who arranged a board
+   before the sizes shipped opens an empty page. */
+is("the first two sizes are read for ever",
+  storedOf(layoutOf(["pulse:full", "stock:half"], all)),
+  ["pulse:wide", "stock:small"]);
+
+is("and never written back",
+  storedOf(layoutOf(["schools:full"], all)).some((s) => s.includes("full")),
+  false);
 
 is("rubbish is dropped", storedOf(layoutOf(["", ":", "pulse"], all)), []);
+
+is("an alias still needs a real widget in front of it",
+  layoutOf(["hologram:half"], all).length, 0);
 
 /* A reader who has emptied their board gets an empty board. It
    is not the same as never having arranged one, and falling back
    to the default there would be the page overruling them. */
 is("an entry list that parses to nothing stays nothing",
-  layoutOf(["nothing:full"], all).length, 0);
+  layoutOf(["nothing:wide"], all).length, 0);
 
 is("one of each, and the first wins",
-  storedOf(layoutOf(["pulse:full", "pulse:half"], all)), ["pulse:full"]);
+  storedOf(layoutOf(["pulse:wide", "pulse:small"], all)), ["pulse:wide"]);
 
 is("the order is the reader's",
-  layoutOf(["tools:full", "schools:full", "pulse:full"], all).map((p) => p.id),
+  layoutOf(["tools:wide", "schools:wide", "pulse:wide"], all).map((p) => p.id),
   ["tools", "schools", "pulse"]);
 
 /* `drawable` is what the CALLER can draw, which is not the
@@ -132,11 +152,11 @@ is("the order is the reader's",
    catalogue is. */
 is("a build that draws two widgets draws two",
   storedOf(layoutOf([...HOME_DEFAULT], ["pulse", "schools"])),
-  ["pulse:full", "schools:full"]);
+  ["pulse:tall", "schools:wide"]);
 
 is("a round trip is the identity",
-  storedOf(layoutOf(["market:full", "stock:half"], all)),
-  ["market:full", "stock:half"]);
+  storedOf(layoutOf(["market:tall", "stock:small"], all)),
+  ["market:tall", "stock:small"]);
 
 /* ------------------------------------------------------------ */
 const total = passed + failures.length;
