@@ -7,7 +7,7 @@ There are three renderers of this site now: the Worker in
 Next.js route in `next/`. Anything all of them must say the same
 way lives here, and nowhere else.
 
-Today that is thirteen files and a directory of four, and
+Today that is fourteen files and a directory of four, and
 `check-types.ts` fails if one of them is not described below.
 That check exists because this line said six while nine were
 here: `nav.ts` and `routine.ts` arrived in two changes that had
@@ -75,6 +75,17 @@ this repository got written.
   range rather than a number, so a caller cannot take the point
   value without having been handed its width. `DIET.md` is the
   plan and `scripts/diet.test.ts` is what holds the two together.
+
+- **`insights.ts`** the readings `DIET.md` section 16 asks for
+  and the money arithmetic section 17 asks for, over what
+  `diet.ts` already computes rather than recomputing any of it.
+  The rule every function here obeys: a templated sentence is a
+  sentence somebody has to be able to check, so none of them
+  returns a verdict. Each returns the FIGURES a sentence is made
+  of, with the span it was measured over and how much of that
+  span was written down, and the panel prints the arithmetic
+  beside the answer. A reader who cannot follow the sum will not
+  believe the number, and they are right not to.
 
 - **`csv.ts`** a file somebody exported from another app, read.
   A parser, a guess at what each column is with HOW SURE it is,

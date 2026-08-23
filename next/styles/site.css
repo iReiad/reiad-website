@@ -12284,7 +12284,7 @@ German for day, and .tag is what the site has always called
      Written as one gradient rather than as a pseudo-element for
      the reason at the top of this layer: `::after` is taken on
      half of these already. */
-  :is(.dt-figure,
+  :is(.dt-figure, .dt-season-row, .dt-recipe,
       .tile, .chart-card, .verdict-card, .model-bar, .signal, .glance-item,
       .topic-tag, .card-chip, .gt-chip, .risk-chip, .tab-count,
       .pledge, .hub-pledge, .id-card, .res, .cv-item, .note,
@@ -12483,7 +12483,7 @@ German for day, and .tag is what the site has always called
       .reader-panel, .signin, .pane-bar, .model-drivers,
       .news-window, .preflight, .slash-menu, .studio-tools,
       .course-rail, .csv-panel, .deck-foot, .toast, .dt-set, .dt-lang,
-      .dt-figure,
+      .dt-figure, .dt-season-row, .dt-recipe,
       .tile, .chart-card, .verdict-card, .model-bar, .signal, .glance-item,
       .topic-tag, .card-chip, .gt-chip, .risk-chip, .tab-count,
       .pledge, .hub-pledge, .id-card, .res, .cv-item, .note,
@@ -14151,6 +14151,171 @@ German for day, and .tag is what the site has always called
     inline-size: 100%;
     max-inline-size: 34rem;
   }
+
+
+  /* A SENTENCE BESIDE A CONTROL GETS ITS OWN LINE WHEN IT IS
+     LONG. The row is flex, so a hint with twenty words in it
+     otherwise shares the line with the button and wraps into a
+     ribbon four characters wide. A basis of 22ch is the switch:
+     "That did not save. Try again." stays beside its button, and
+     the explanation of what a range does to a day drops under
+     it. The measure is capped for the same reason every other
+     block of prose here is: past about 62 characters the eye
+     loses the start of the next line. */
+  .dt-measure-row > .dt-hint {
+    flex: 1 1 22ch;
+    max-inline-size: 62ch;
+  }
+
+  /* AND NOTHING IN THE ROW MAY REFUSE TO SHRINK. A flex item's
+     `min-width` is `auto`, which means its content is its floor,
+     so one long label ("How much of it you ate, in grams", or a
+     pot named by somebody who types) pushes the row wider than
+     the column it sits in and the whole page gains a horizontal
+     scrollbar. That has happened here before. The pot rows put
+     two labelled number boxes on one line, which is where it
+     would happen next. */
+  .dt-measure-row > * {
+    min-inline-size: 0;
+  }
+
+  /* ---- the recipes, the pots and the shopping list ----
+
+     Nine class names the panel has been rendering since it was
+     written and the stylesheet had a rule for none of them, so
+     every pot was an unstyled bullet list with a button under
+     it. The page worked perfectly, which is why it survived. */
+
+  .dt-recipe-mine, .dt-recipe-pots, .dt-recipe-build {
+    display: grid;
+    gap: var(--s-5);
+  }
+  .dt-recipe-list {
+    display: grid;
+    gap: var(--s-4);
+    grid-template-columns: repeat(auto-fit, minmax(min(100%, 21rem), 1fr));
+    list-style: none;
+    margin: 0;
+    padding: 0;
+  }
+  .dt-recipe {
+    background: var(--panel);
+    border: 1px solid var(--hairline);
+    border-radius: var(--radius-card);
+    display: grid;
+    gap: var(--s-4);
+    padding: var(--s-5);
+  }
+  .dt-recipe-name {
+    font-size: var(--t-2);
+    font-weight: 600;
+    margin: 0;
+  }
+  .dt-recipe .dt-why, .dt-recipe .dt-hint { margin: 0; }
+
+  /* What one portion or one share comes to, which is the figure
+     the reader came for. */
+  .dt-recipe-sum {
+    display: grid;
+    gap: var(--s-3);
+    justify-items: start;
+  }
+  .dt-recipe-macros {
+    color: var(--ink-soft);
+    display: flex;
+    flex-wrap: wrap;
+    font-size: var(--t-0);
+    font-variant-numeric: tabular-nums;
+    gap: var(--s-3) var(--s-5);
+    list-style: none;
+    margin: 0;
+    padding: 0;
+  }
+
+  /* Three columns and the last two are numbers, so they line up
+     down the page rather than following the name across it. */
+  .dt-shop-list {
+    display: grid;
+    gap: var(--s-3);
+    list-style: none;
+    margin: 0;
+    max-inline-size: 46rem;
+    padding: 0;
+  }
+  .dt-shop-list > li {
+    align-items: baseline;
+    border-block-end: 1px solid var(--hairline);
+    display: grid;
+    gap: var(--s-4);
+    grid-template-columns: 1fr auto auto;
+    padding-block-end: var(--s-3);
+  }
+  .dt-shop-list > li:last-child { border-block-end: 0; }
+  .dt-shop-list .dt-hit-por, .dt-shop-list .mono {
+    color: var(--ink-soft);
+    font-size: var(--t-0);
+    font-variant-numeric: tabular-nums;
+    white-space: nowrap;
+  }
+
+  /* ---- the calendar, which changes what a flat month means ---- */
+
+  .dt-season { display: grid; gap: var(--s-5); max-inline-size: 70ch; }
+  .dt-season-list {
+    display: grid;
+    gap: var(--s-4);
+    grid-template-columns: repeat(auto-fit, minmax(min(100%, 17rem), 1fr));
+    list-style: none;
+    margin: 0;
+    padding: 0;
+  }
+  /* An accent rail down the left, the same signal a GoCard uses,
+     because a season is a fact about today rather than a place to
+     go: rail without arrow, and it is an `li` rather than an `a`. */
+  .dt-season-row {
+    background: var(--panel);
+    border: 1px solid var(--hairline);
+    border-inline-start: 3px solid var(--accent, var(--hairline));
+    border-radius: var(--radius-card);
+    display: grid;
+    gap: var(--s-3);
+    padding: var(--s-5);
+  }
+  .dt-season-name {
+    align-items: baseline;
+    display: flex;
+    flex-wrap: wrap;
+    font-size: var(--t-2);
+    gap: var(--s-3);
+    margin: 0;
+  }
+  .dt-season-flag {
+    background: color-mix(in oklab, var(--accent, var(--hairline)) 16%, transparent);
+    border-radius: var(--radius-xs);
+    color: var(--ink-soft);
+    font-size: var(--t-0);
+    font-weight: 500;
+    padding: 0.1em 0.5em;
+    white-space: nowrap;
+  }
+  .dt-season-when {
+    color: var(--ink-soft);
+    font-size: var(--t-0);
+    font-variant-numeric: tabular-nums;
+    margin: 0;
+  }
+  .dt-season-bar {
+    background: color-mix(in oklab, var(--accent, var(--hairline)) 18%, transparent);
+    block-size: 4px;
+    border-radius: var(--radius-pill);
+    overflow: hidden;
+  }
+  .dt-season-bar > span {
+    background: var(--accent, var(--ink-soft));
+    block-size: 100%;
+    display: block;
+  }
+  .dt-season .dt-said { margin: 0; }
 
   .dt-stall {
     display: grid;

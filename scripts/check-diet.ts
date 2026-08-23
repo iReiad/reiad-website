@@ -573,8 +573,6 @@ const UNUSED: Record<string, string> = {
   "diet_profile.goal_weight_kg": "section 5, for the reader who names one anyway",
   "diet_profile.band_low_kg": "section 6, maintenance is a band rather than a number",
   "diet_profile.band_high_kg": "section 6, the other end of the same band",
-  "diet_profile.food_budget": "section 17, what food costs",
-  "diet_profile.budget_currency": "section 17, beside the budget",
   "diet_profile.board": "section 24, the reader arranges the widgets",
 
   /* The day. The tape's other three and the fields no form
@@ -587,8 +585,6 @@ const UNUSED: Record<string, string> = {
 
   /* What was eaten. */
   "diet_entries.meal": "section 13, meals rather than only foods, which is what names one",
-  "diet_entries.est_low": "section 14, a range for food eaten out",
-  "diet_entries.est_high": "section 14, the other end of it",
   "diet_entries.planned": "section 13, a week's plan is the same rows dated ahead",
   "diet_entries.fetched_on": "section 12, so a stale figure can be found and refreshed",
 

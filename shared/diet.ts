@@ -1794,6 +1794,232 @@ export function cycleOverCycle(opts: {
 }
 
 /* ---------------------------------------------------------- */
+/* the calendar, which changes what a flat month means        */
+/* ---------------------------------------------------------- */
+
+export type SeasonId =
+  | "ramadan" | "eid-fitr" | "eid-adha"
+  | "winter" | "christmas"
+  | "heat" | "monsoon"
+  | "puja" | "boishakh";
+
+/** A stretch of the year that changes how the numbers read.
+
+    NONE OF THESE CHANGE THE ARITHMETIC. A December rise is a
+    real rise and is trended like every other; what a season
+    changes is what a flat month MEANS, which is a sentence on
+    the page rather than a coefficient in a sum.
+
+    Two fields reach code and the rest is copy. `quiet` says a
+    flat trend inside this is not offered as a stall, for the
+    same reason a flat fortnight inside a luteal phase is not.
+    `shifted` says the eating window has moved, so an empty
+    afternoon is not a missed day. */
+export interface Season {
+  id: SeasonId;
+  /** Where it is drawn. A fast is kept in London too; a monsoon
+      is not. */
+  where: Place[];
+  en: string;
+  bn: string;
+  /** What it does to the reading, in one sentence. */
+  readEn: string;
+  readBn: string;
+  quiet: boolean;
+  shifted: boolean;
+}
+
+export const SEASONS: Season[] = [
+  {
+    id: "ramadan", where: ["bd", "uk"],
+    en: "Ramadan", bn: "রমজান",
+    readEn: "The eating window moves to suhoor and iftar, so an empty afternoon is not a missed day. A morning weight taken while fasting is largely a hydration reading.",
+    readBn: "খাওয়ার সময় সাহরি আর ইফতারে সরে যায়, তাই দুপুরে কিছু না লেখা মানে দিন বাদ পড়া নয়। রোজা রেখে সকালে ওজন মাপলে সেটা মূলত পানির হিসাব।",
+    quiet: true, shifted: true,
+  },
+  {
+    id: "eid-fitr", where: ["bd", "uk"],
+    en: "Eid al-Fitr", bn: "ঈদুল ফিতর",
+    readEn: "A feast, and the days around it are a refeed rather than a failure. Annotated, not counted.",
+    readBn: "উৎসবের খাওয়া, ব্যর্থতা নয়। এই দিনগুলো চিহ্ন হিসেবে থাকে, হিসাবে ধরা হয় না।",
+    quiet: true, shifted: false,
+  },
+  {
+    id: "eid-adha", where: ["bd", "uk"],
+    en: "Eid al-Adha", bn: "ঈদুল আজহা",
+    readEn: "A week of meat, and a rise across it is the same refeed. Annotated, not counted.",
+    readBn: "কয়েক দিন মাংসের খাওয়া। ওজন বাড়লে সেটাও উৎসবের হিসাব, ব্যর্থতা নয়।",
+    quiet: true, shifted: false,
+  },
+  {
+    id: "winter", where: ["uk"],
+    en: "British winter", bn: "বিলেতের শীত",
+    readEn: "Weight rises across a British winter on average, vitamin D falls, and the dark ends the outdoor half of moving about. A December rise is the norm rather than an emergency.",
+    readBn: "বিলেতে শীতে গড়পড়তা ওজন বাড়ে, ভিটামিন ডি কমে, আর অন্ধকারে বাইরের হাঁটাচলা বন্ধ হয়। ডিসেম্বরে ওজন বাড়া স্বাভাবিক, বিপদ নয়।",
+    quiet: true, shifted: false,
+  },
+  {
+    id: "christmas", where: ["uk"],
+    en: "Christmas and New Year", bn: "বড়দিন ও নববর্ষ",
+    readEn: "The single most annotated fortnight in the British year. Two weeks of it move a trend and nothing about that is a failure.",
+    readBn: "বিলেতের বছরের সবচেয়ে বেশি খাওয়ার দুই সপ্তাহ। এতে ওজনের রেখা নড়বে, আর সেটা ব্যর্থতা নয়।",
+    quiet: true, shifted: false,
+  },
+  {
+    id: "heat", where: ["bd"],
+    en: "The summer heat", bn: "গরমের সময়",
+    readEn: "Appetite falls in extreme heat, so a light week is the weather rather than discipline, and the water lost is not fat.",
+    readBn: "প্রচণ্ড গরমে ক্ষুধা কমে যায়। কম খাওয়ার সপ্তাহটা আবহাওয়ার, আর যে পানি ঝরে সেটা চর্বি নয়।",
+    quiet: false, shifted: false,
+  },
+  {
+    id: "monsoon", where: ["bd"],
+    en: "The monsoon", bn: "বর্ষা",
+    readEn: "Heavy rain takes the walking out of a day, so a flat month here is the weather rather than a stall.",
+    readBn: "ভারী বৃষ্টিতে হাঁটাচলা কমে যায়। এই সময়ে ওজন এক জায়গায় থাকলে সেটা আবহাওয়ার, আটকে যাওয়া নয়।",
+    quiet: true, shifted: false,
+  },
+  {
+    id: "puja", where: ["bd"],
+    en: "Durga Puja", bn: "দুর্গাপূজা",
+    readEn: "Food-centred, and read the same way as Eid: annotated, not counted.",
+    readBn: "খাওয়ার উৎসব, ঈদের মতোই পড়া হয়: চিহ্ন থাকে, হিসাবে ধরা হয় না।",
+    quiet: true, shifted: false,
+  },
+  {
+    id: "boishakh", where: ["bd"],
+    en: "Pohela Boishakh", bn: "পহেলা বৈশাখ",
+    readEn: "One day of panta, ilish and sweets. It moves a day and not a trend.",
+    readBn: "একদিনের পান্তা, ইলিশ আর মিষ্টি। একটা দিন নড়ে, রেখা নয়।",
+    quiet: false, shifted: false,
+  },
+];
+
+export const seasonById = (id: SeasonId): Season | null =>
+  SEASONS.find((s) => s.id === id) ?? null;
+
+/** The half of the year this calendar can compute: a month and a
+    day, which wraps the new year where it has to. */
+const FIXED: Array<{ id: SeasonId; from: [number, number]; to: [number, number] }> = [
+  { id: "winter",    from: [11, 1],  to: [2, 28] },
+  { id: "christmas", from: [12, 20], to: [1, 2] },
+  { id: "heat",      from: [4, 1],   to: [5, 31] },
+  { id: "monsoon",   from: [6, 1],   to: [9, 30] },
+  { id: "boishakh",  from: [4, 14],  to: [4, 14] },
+];
+
+/** THE MOVING HALF IS A TABLE AND HAS TO BE. Ramadan and the two
+    Eids fall about eleven days earlier against this calendar
+    every year, Durga Puja moves against it too, and the day any
+    of them begins is settled by local sighting, so Dhaka and
+    London can differ by one. These are the ordinary estimates
+    and being a day out is normal.
+
+    IT RUNS OUT ON PURPOSE. Past the last row for an id,
+    `seasonsOn` returns nothing for that id rather than
+    extrapolating, and `calendarKnownTo` is what a page asks so
+    it can say the dates are not known yet instead of drawing a
+    fast in the wrong fortnight. Add rows. Do not compute
+    them. */
+const MOVING: Array<{ id: SeasonId; from: string; to: string }> = [
+  { id: "ramadan",  from: "2026-02-18", to: "2026-03-19" },
+  { id: "eid-fitr", from: "2026-03-20", to: "2026-03-22" },
+  { id: "eid-adha", from: "2026-05-27", to: "2026-05-29" },
+  { id: "puja",     from: "2026-10-17", to: "2026-10-21" },
+
+  { id: "ramadan",  from: "2027-02-08", to: "2027-03-09" },
+  { id: "eid-fitr", from: "2027-03-10", to: "2027-03-12" },
+  { id: "eid-adha", from: "2027-05-17", to: "2027-05-19" },
+  { id: "puja",     from: "2027-10-07", to: "2027-10-11" },
+
+  { id: "ramadan",  from: "2028-01-28", to: "2028-02-26" },
+  { id: "eid-fitr", from: "2028-02-27", to: "2028-02-29" },
+  { id: "eid-adha", from: "2028-05-05", to: "2028-05-07" },
+  { id: "puja",     from: "2028-09-24", to: "2028-09-28" },
+
+  { id: "ramadan",  from: "2029-01-16", to: "2029-02-14" },
+  { id: "eid-fitr", from: "2029-02-15", to: "2029-02-17" },
+  { id: "eid-adha", from: "2029-04-24", to: "2029-04-26" },
+
+  { id: "ramadan",  from: "2030-01-05", to: "2030-02-03" },
+  { id: "eid-fitr", from: "2030-02-04", to: "2030-02-06" },
+  { id: "eid-adha", from: "2030-04-14", to: "2030-04-16" },
+];
+
+/** A whole day, UTC, so the same ISO date is the same number
+    wherever this runs. A season is a range of dates and never a
+    moment, so there is no hour here to get wrong. */
+const dayNo = (iso: string): number =>
+  Math.round(Date.UTC(+iso.slice(0, 4), +iso.slice(5, 7) - 1, +iso.slice(8, 10)) / 86400000);
+
+/** The last date the moving table can answer for, as an ISO
+    date, or null where it holds nothing for that id. With no id,
+    the earliest of those, because a page saying "known to" has
+    to mean all of them. */
+export function calendarKnownTo(id?: SeasonId): string | null {
+  const ids = id ? [id] : [...new Set(MOVING.map((r) => r.id))];
+  const ends: string[] = [];
+  for (const one of ids) {
+    const dates = MOVING.filter((r) => r.id === one).map((r) => r.to).sort();
+    if (!dates.length) return null;
+    ends.push(dates[dates.length - 1]);
+  }
+  return ends.length ? ends.sort()[0] : null;
+}
+
+export interface SeasonNow {
+  season: Season;
+  /** One-based, so a page can say "day 12 of 30". */
+  day: number;
+  of: number;
+}
+
+/** Which seasons a date is inside, in the place the reader eats.
+
+    An empty array is the ordinary answer for most of the year
+    and is not a failure. */
+export function seasonsOn(opts: { date: string; place: Place }): SeasonNow[] {
+  const today = dayNo(opts.date);
+  const year = +opts.date.slice(0, 4);
+  const out: SeasonNow[] = [];
+
+  const add = (id: SeasonId, start: number, end: number): void => {
+    const season = seasonById(id);
+    if (!season || !season.where.includes(opts.place)) return;
+    const day = today - start + 1;
+    const of = end - start + 1;
+    if (day < 1 || day > of) return;
+    out.push({ season, day, of });
+  };
+
+  for (const row of FIXED) {
+    /* A range whose end sorts before its start wraps the new
+       year, so it may have begun in December of the year
+       before. Both candidates are tried and `add` drops the one
+       the date is not inside. */
+    const wraps = row.from[0] * 100 + row.from[1] > row.to[0] * 100 + row.to[1];
+    for (const startY of wraps ? [year - 1, year] : [year]) {
+      add(
+        row.id,
+        Math.round(Date.UTC(startY, row.from[0] - 1, row.from[1]) / 86400000),
+        Math.round(Date.UTC(wraps ? startY + 1 : startY, row.to[0] - 1, row.to[1]) / 86400000),
+      );
+    }
+  }
+  for (const row of MOVING) add(row.id, dayNo(row.from), dayNo(row.to));
+  return out;
+}
+
+/** Whether a flat trend on this date should be left alone. */
+export const quietSeason = (opts: { date: string; place: Place }): Season | null =>
+  seasonsOn(opts).find((s) => s.season.quiet)?.season ?? null;
+
+/** Whether the eating window has moved, so nothing should read
+    an empty afternoon as a day nobody logged. */
+export const shiftedSeason = (opts: { date: string; place: Place }): Season | null =>
+  seasonsOn(opts).find((s) => s.season.shifted)?.season ?? null;
+
+/* ---------------------------------------------------------- */
 /* stalls, and telling the four kinds apart                   */
 /* ---------------------------------------------------------- */
 
@@ -1883,6 +2109,12 @@ export function stall(opts: {
       is not reported as a stall, because it is the artefact this
       whole tool is meant to see through rather than repeat. */
   cycle?: CyclePlace | null;
+  /** The season today falls in, where one of them is quiet.
+      Section 18: a flat month inside a monsoon, a British
+      winter or a Ramadan is the calendar rather than a stall,
+      and it arrives on a schedule exactly as the luteal phase
+      does. */
+  season?: Season | null;
 }): Stall | null {
   /* THE LUTEAL PHASE IS NOT A STALL, and reporting one there is
      the single most costly false positive this function can
@@ -1890,6 +2122,8 @@ export function stall(opts: {
      population, and the drop that disproves it arrives a few
      days after the reader has already quit. */
   if (opts.cycle?.phase === "luteal") return null;
+  /* AND NEITHER IS A QUIET SEASON, for the same reason. */
+  if (opts.season?.quiet) return null;
   const from = opts.today - STALL_DAYS;
   const window = opts.weights.filter((p) => p.day >= from);
   /* Three weeks of weighings, and enough of them: nine readings

@@ -188,6 +188,33 @@ export function LogForm({
           <T en="Eaten today" bn="আজ যা খেয়েছেন" />
           <span className="mono"> {digits(Math.round(totals.kcal), lang)}</span>
         </h3>
+
+        {/* HOW MUCH OF TODAY IS A GUESS. `DIET.md` section 14: a
+            restaurant plate is not knowable, so its midpoint is
+            in the figure above and its width is here, rather than
+            hidden inside a decimal that reads as a measurement. A
+            day with two of them is a wider band, the same way a
+            sparse micronutrient day is drawn faintly.
+
+            HALF THE SUMMED WIDTH IS THE WORST CASE, all the
+            guesses wrong in the same direction. Two guesses that
+            missed independently would be narrower than this, and
+            claiming that narrower figure would be the tool being
+            more certain than it has any right to be, which is the
+            direction this whole tool is arranged against. */}
+        {totals.spread > 0 ? (
+          <p className="dt-hint">
+            <T
+              en={`Give or take ${Math.round(totals.spread / 2)}, because ${
+                entries.filter((e) => !e.planned && e.estLow != null && e.estHigh != null).length
+              } of these were not weighed by anybody.`}
+              bn={`${digits(Math.round(totals.spread / 2), "bn")} এদিক-ওদিক হতে পারে, কারণ এর মধ্যে ${
+                digits(entries.filter((e) => !e.planned && e.estLow != null && e.estHigh != null).length, "bn")
+              }টা কেউ মেপে দেখেনি।`}
+            />
+          </p>
+        ) : null}
+
         {entries.length === 0
           ? (
             <p className="dt-hint">

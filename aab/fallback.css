@@ -8195,7 +8195,7 @@
     --follows: 0;
   }
 
-  :is(.dt-figure,
+  :is(.dt-figure, .dt-season-row, .dt-recipe,
       .tile, .chart-card, .verdict-card, .model-bar, .signal, .glance-item,
       .topic-tag, .card-chip, .gt-chip, .risk-chip, .tab-count,
       .pledge, .hub-pledge, .id-card, .res, .cv-item, .note,
@@ -8273,7 +8273,7 @@
       .reader-panel, .signin, .pane-bar, .model-drivers,
       .news-window, .preflight, .slash-menu, .studio-tools,
       .course-rail, .csv-panel, .deck-foot, .toast, .dt-set, .dt-lang,
-      .dt-figure,
+      .dt-figure, .dt-season-row, .dt-recipe,
       .tile, .chart-card, .verdict-card, .model-bar, .signal, .glance-item,
       .topic-tag, .card-chip, .gt-chip, .risk-chip, .tab-count,
       .pledge, .hub-pledge, .id-card, .res, .cv-item, .note,
@@ -9214,6 +9214,138 @@
     inline-size: 100%;
     max-inline-size: 34rem;
   }
+
+  .dt-measure-row > .dt-hint {
+    flex: 1 1 22ch;
+    max-inline-size: 62ch;
+  }
+
+  .dt-measure-row > * {
+    min-inline-size: 0;
+  }
+
+  .dt-recipe-mine, .dt-recipe-pots, .dt-recipe-build {
+    display: grid;
+    gap: var(--s-5);
+  }
+  .dt-recipe-list {
+    display: grid;
+    gap: var(--s-4);
+    grid-template-columns: repeat(auto-fit, minmax(min(100%, 21rem), 1fr));
+    list-style: none;
+    margin: 0;
+    padding: 0;
+  }
+  .dt-recipe {
+    background: var(--panel);
+    border: 1px solid var(--hairline);
+    border-radius: var(--radius-card);
+    display: grid;
+    gap: var(--s-4);
+    padding: var(--s-5);
+  }
+  .dt-recipe-name {
+    font-size: var(--t-2);
+    font-weight: 600;
+    margin: 0;
+  }
+  .dt-recipe .dt-why, .dt-recipe .dt-hint { margin: 0; }
+
+  .dt-recipe-sum {
+    display: grid;
+    gap: var(--s-3);
+    justify-items: start;
+  }
+  .dt-recipe-macros {
+    color: var(--ink-soft);
+    display: flex;
+    flex-wrap: wrap;
+    font-size: var(--t-0);
+    font-variant-numeric: tabular-nums;
+    gap: var(--s-3) var(--s-5);
+    list-style: none;
+    margin: 0;
+    padding: 0;
+  }
+
+  .dt-shop-list {
+    display: grid;
+    gap: var(--s-3);
+    list-style: none;
+    margin: 0;
+    max-inline-size: 46rem;
+    padding: 0;
+  }
+  .dt-shop-list > li {
+    align-items: baseline;
+    border-block-end: 1px solid var(--hairline);
+    display: grid;
+    gap: var(--s-4);
+    grid-template-columns: 1fr auto auto;
+    padding-block-end: var(--s-3);
+  }
+  .dt-shop-list > li:last-child { border-block-end: 0; }
+  .dt-shop-list .dt-hit-por, .dt-shop-list .mono {
+    color: var(--ink-soft);
+    font-size: var(--t-0);
+    font-variant-numeric: tabular-nums;
+    white-space: nowrap;
+  }
+
+  .dt-season { display: grid; gap: var(--s-5); max-inline-size: 70ch; }
+  .dt-season-list {
+    display: grid;
+    gap: var(--s-4);
+    grid-template-columns: repeat(auto-fit, minmax(min(100%, 17rem), 1fr));
+    list-style: none;
+    margin: 0;
+    padding: 0;
+  }
+
+  .dt-season-row {
+    background: var(--panel);
+    border: 1px solid var(--hairline);
+    border-inline-start: 3px solid var(--accent, var(--hairline));
+    border-radius: var(--radius-card);
+    display: grid;
+    gap: var(--s-3);
+    padding: var(--s-5);
+  }
+  .dt-season-name {
+    align-items: baseline;
+    display: flex;
+    flex-wrap: wrap;
+    font-size: var(--t-2);
+    gap: var(--s-3);
+    margin: 0;
+  }
+  .dt-season-flag {
+    background: color-mix(in oklab, var(--accent, var(--hairline)) 16%, transparent);
+    border-radius: var(--radius-xs);
+    color: var(--ink-soft);
+    font-size: var(--t-0);
+    font-weight: 500;
+    padding: 0.1em 0.5em;
+    white-space: nowrap;
+  }
+  .dt-season-when {
+    color: var(--ink-soft);
+    font-size: var(--t-0);
+    font-variant-numeric: tabular-nums;
+    margin: 0;
+  }
+  .dt-season-bar {
+    background: color-mix(in oklab, var(--accent, var(--hairline)) 18%, transparent);
+    block-size: 4px;
+    border-radius: var(--radius-pill);
+    overflow: hidden;
+  }
+  .dt-season-bar > span {
+    background: var(--accent, var(--ink-soft));
+    block-size: 100%;
+    display: block;
+  }
+  .dt-season .dt-said { margin: 0; }
 
   .dt-stall {
     display: grid;

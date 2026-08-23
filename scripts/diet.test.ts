@@ -52,6 +52,8 @@ import {
   totalFor,
   stall, STALL_DAYS, cyclePlace, cycleOverCycle, LUTEAL_DAYS,
   oilPerMeal, OIL_KCAL_PER_ML,
+  SEASONS, seasonsOn, seasonById, quietSeason, shiftedSeason, calendarKnownTo,
+  type SeasonId,
 } from "../shared/diet.ts";
 
 const ROOT = join(dirname(fileURLToPath(import.meta.url)), "..");
@@ -1069,6 +1071,114 @@ ok("and it never reads as zero, which is the number it replaces",
    kcal: this constant has to agree with that. */
 ok("two tablespoons of oil is about 240 kcal, as section 14 says",
   Math.abs(30 * OIL_KCAL_PER_ML - 249) < 12);
+
+/* ------------------------------------------------------------
+   the calendar, which changes what a flat month means
+
+   Section 18. None of this is arithmetic and all of it decides
+   what the arithmetic MEANS, so the failure mode is a page that
+   draws a fast in the wrong fortnight or calls a British
+   December an emergency. Both look completely normal.
+   ------------------------------------------------------------ */
+
+const on = (date: string, place: "bd" | "uk"): SeasonId[] =>
+  seasonsOn({ date, place }).map((s) => s.season.id);
+
+ok("most of the year is no season at all, and that is the ordinary answer",
+  on("2026-08-05", "uk").length === 0);
+
+/* Ramadan 2026 runs 18 February to 19 March, give or take the
+   sighting. Inside, on the edges, and outside. */
+ok("Ramadan is on in the middle of it", on("2026-03-05", "bd").includes("ramadan"));
+ok("and on its first day", on("2026-02-18", "bd").includes("ramadan"));
+ok("and on its last", on("2026-03-19", "bd").includes("ramadan"));
+ok("and not the day before it starts", !on("2026-02-17", "bd").includes("ramadan"));
+ok("and not the day after it ends", !on("2026-03-20", "bd").includes("ramadan"));
+
+/* A FAST IS KEPT IN LONDON TOO. The seasons split by place and
+   this is the one that must not: a Bangladeshi reader in the UK
+   is the reader this whole tool was written for. */
+ok("Ramadan is drawn in the UK as well as in Bangladesh",
+  on("2026-03-05", "uk").includes("ramadan"));
+ok("but the monsoon is not", !on("2026-07-04", "uk").includes("monsoon"));
+ok("and a British winter is not drawn in Dhaka",
+  !on("2025-12-25", "bd").includes("winter"));
+
+/* THE WRAP. Two of the fixed seasons cross the new year, and a
+   range whose end sorts before its start is the whole of what
+   says so. Getting this wrong hides Christmas on 1 January and
+   the British winter for the whole of January and February. */
+ok("Christmas is on, on Christmas Day", on("2025-12-25", "uk").includes("christmas"));
+ok("and still on, on New Year's Day", on("2026-01-01", "uk").includes("christmas"));
+ok("and off on the third of January", !on("2026-01-03", "uk").includes("christmas"));
+ok("the British winter runs through January",
+  on("2026-01-20", "uk").includes("winter"));
+ok("and through February", on("2026-02-20", "uk").includes("winter"));
+ok("and is off in March", !on("2026-03-20", "uk").includes("winter"));
+
+/* Two at once is normal and the shape has to allow it. */
+const yule = on("2025-12-25", "uk");
+ok("Christmas falls inside the British winter, so both are on",
+  yule.includes("winter") && yule.includes("christmas"));
+ok("and Pohela Boishakh falls inside the summer heat",
+  on("2026-04-14", "bd").includes("heat") && on("2026-04-14", "bd").includes("boishakh"));
+
+/* The day count is what a page prints, and off-by-one here
+   reads as a fast that started yesterday. */
+const ramadanNow = seasonsOn({ date: "2026-02-18", place: "bd" })
+  .find((s) => s.season.id === "ramadan");
+ok("the first day of a season is day one, not day zero", ramadanNow?.day === 1);
+ok("and Ramadan 2026 is thirty days long", ramadanNow?.of === 30);
+
+/* THE TABLE RUNS OUT, AND THAT IS THE DESIGN. A lunar date
+   cannot be computed here and extrapolating one would put a
+   fast a fortnight out within a few years. */
+ok("past the end of the table there is no Ramadan rather than a guessed one",
+  !on("2031-03-01", "bd").includes("ramadan"));
+ok("and the page can find out how far the table goes",
+  calendarKnownTo("ramadan") === "2030-02-03");
+ok("with no id it is the earliest of them, because 'known to' has to mean all",
+  calendarKnownTo() === "2028-09-28");
+ok("a fixed season still answers past the moving table",
+  on("2031-07-04", "bd").includes("monsoon"));
+
+/* The two fields that reach code. */
+ok("a monsoon month is quiet, so a flat trend inside it is not a stall",
+  quietSeason({ date: "2026-07-04", place: "bd" })?.id === "monsoon");
+ok("and the summer heat is not, because appetite falling is a fall and not a flat",
+  quietSeason({ date: "2026-05-01", place: "bd" }) === null);
+ok("Ramadan is the one that moves the eating window",
+  shiftedSeason({ date: "2026-03-05", place: "uk" })?.id === "ramadan");
+ok("and nothing else is, because nothing else changes when a day is eaten",
+  SEASONS.filter((s) => s.shifted).length === 1);
+
+/* A quiet season suppresses a stall exactly as the luteal phase
+   does, and for the same reason: it arrives on a schedule. */
+const flatMonsoon: Point[] = Array.from({ length: 21 }, (_, i) => ({ day: i, kg: 80 + (i % 2) * 0.1 }));
+const ateMonsoon = Array.from({ length: 21 }, (_, i) => ({ day: i, kcal: 2000 }));
+ok("three flat weeks with a full log is a stall in an ordinary month",
+  stall({ weights: flatMonsoon, intakes: ateMonsoon, today: 20 }) !== null);
+ok("and the same three weeks inside a monsoon is not",
+  stall({
+    weights: flatMonsoon, intakes: ateMonsoon, today: 20,
+    season: quietSeason({ date: "2026-07-04", place: "bd" }),
+  }) === null);
+ok("but a season that is not quiet does not suppress it",
+  stall({
+    weights: flatMonsoon, intakes: ateMonsoon, today: 20,
+    season: seasonById("boishakh"),
+  }) !== null);
+
+/* Copy, not decoration: a season with no sentence in one of the
+   two languages is a card that renders half empty. */
+for (const s of SEASONS) {
+  ok(`${s.id} has a name and a sentence in both languages`,
+    !!s.en && !!s.bn && s.readEn.length > 20 && s.readBn.length > 20);
+  ok(`${s.id} is drawn somewhere`, s.where.length > 0);
+  ok(`${s.id} can be looked up by its own id`, seasonById(s.id)?.id === s.id);
+}
+ok("an id nothing declares is null rather than a throw",
+  seasonById("harvest" as SeasonId) === null);
 
 /* ------------------------------------------------------------ */
 

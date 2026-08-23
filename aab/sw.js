@@ -31,6 +31,14 @@
    login could not have reached anyone either. Bump this whenever a
    precached file changes.
 
+   v197: /fallback.css. What time of year it is: a monsoon, a
+        British winter and a month of fasting all flatten three
+        weeks on a schedule, so none of them is reported as a
+        stall now. Plus a rule for the nine recipe and pot class
+        names the panel had been rendering unstyled since it was
+        written, and two that stop a long hint forcing a
+        horizontal scrollbar.
+
    v196: /fallback.css. A CSV from another app, with a preview of
         exactly what would be written before anything is.
 
@@ -1763,7 +1771,7 @@
    imports (crumbs, audience, learn progress) and the hub is a
    different page. Without a bump, a returning reader would be
    served the v3 app.js forever and none of it would appear. */
-const VERSION = "v196";
+const VERSION = "v197";
 const SHELL = `shell-${VERSION}`;
 const RUNTIME = `runtime-${VERSION}`;
 

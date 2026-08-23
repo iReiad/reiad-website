@@ -420,7 +420,13 @@ export async function getOwnFoods(w: Who): Promise<OwnFood[]> {
 export async function saveOwnFood(w: Who, food: OwnFood): Promise<boolean> {
   const r = await call("diet_foods", {
     method: "POST",
-    headers: { prefer: "return=minimal" },
+    /* AN UPSERT, because this is called twice about one row: once
+       to write the dish and again after every portion or share to
+       bump `uses` and `last_used`. A plain POST with an id that
+       already exists is a 409, so the second call has been
+       failing silently since the day it was written, and a pot
+       that never ages off the hob is what that looks like. */
+    headers: { prefer: "return=minimal,resolution=merge-duplicates" },
     body: JSON.stringify({ ...food, user_id: w.id,
       updated_at: new Date().toISOString() }),
   }, w);

@@ -8,6 +8,14 @@
    section 14 with a yield on it, so the tenth time it is cooked
    costs one tap instead of six searches.
 
+   And section 14's own three, which are here because they are
+   the same argument one level down: what a Bangladeshi kitchen
+   serves is a POT rather than a plated portion, what a
+   restaurant serves is a RANGE rather than a number, and what
+   most people will actually measure with is a HAND rather than
+   a scale. Each of the three is arithmetic over plain objects,
+   so each is asserted in `next/recipes.test.ts` with no browser.
+
    Nothing here renders. It is the arithmetic, in a `.ts` rather
    than beside the panel, because node runs a `.ts` with no build
    step and cannot import a `.tsx` at all: `next/recipes.test.ts`
@@ -48,7 +56,7 @@
    is the conservative one.
    ============================================================ */
 
-import { entryHour, type Entry } from "@reiad/shared/diet";
+import { entryHour, type Entry, type Range } from "@reiad/shared/diet";
 import {
   COVERAGE_KEYS, byId, loggedFrom, scaleTo,
   type CoverageKey, type FoundFood, type ScaledPortion,
@@ -70,20 +78,33 @@ export const SERVING = "portion";
     of your usuals. Section 13's own number. */
 export const USUAL_AT = 3;
 
-export interface Recipe {
+/** What went in, whatever it turns out to be. A recipe is this
+    with a yield on it and a pot is this without one, and the
+    arithmetic below is the same arithmetic for both: the only
+    difference is who decided how many parts to cut it into. */
+export interface Dish {
   /** The `diet_foods` row's id, absent until it has been
       saved. It becomes the entry's `sourceId`, which is what
       makes a logged portion traceable back to the dish. */
   id?: string;
   en: string;
   bn?: string;
-  /** Portions the pot makes. The migration refuses a recipe row
-      without one, because a recipe with no yield cannot produce
-      a portion and a portion is the whole of what it is for. */
-  serves: number;
+  /** Portions the pot makes. A recipe carries one and the
+      migration refuses a recipe row without one, because a
+      recipe with no yield cannot produce a portion and a portion
+      is the whole of what it is for. On a POT it is how many
+      people ate, which the cook may not have counted, and a pot
+      nobody counted can still be halved. */
+  serves?: number;
   parts: Part[];
   uses?: number;
   lastUsed?: string;
+}
+
+/** A dish that states its yield, which is what makes a portion
+    of it a thing that exists. */
+export interface Recipe extends Dish {
+  serves: number;
 }
 
 const MACRO_KEYS = ["protein", "carbs", "fat", "fibre"] as const;
@@ -129,7 +150,7 @@ export interface Pot {
  * The pot: every ingredient added up, with what is missing kept
  * rather than rounded away.
  */
-export function pot(recipe: Recipe): Pot {
+export function pot(recipe: Dish): Pot {
   const silent: Part[] = [];
   const floors = new Set<string>();
   const macros: Partial<Record<MacroKey, number>> = {};
@@ -172,7 +193,7 @@ export function pot(recipe: Recipe): Pot {
 
   const carried = COVERAGE_KEYS.filter((key) => micros[key] !== undefined);
 
-  if (!bearing || !(recipe.serves > 0)) {
+  if (!bearing || !(recipe.serves !== undefined && recipe.serves > 0)) {
     return { food: null, silent, floors, bearing, micros: carried };
   }
 
@@ -201,7 +222,7 @@ export function pot(recipe: Recipe): Pot {
 /** `n` servings of it, or null. The refusal is `scaleTo`'s and
     is deliberately not softened: an amount that cannot be
     scaled honestly produces nothing. */
-export function servingsOf(recipe: Recipe, n: number): ScaledPortion | null {
+export function servingsOf(recipe: Dish, n: number): ScaledPortion | null {
   const made = pot(recipe);
   return made.food ? scaleTo(made.food, { n, unit: SERVING }) : null;
 }
@@ -215,12 +236,298 @@ export function servingsOf(recipe: Recipe, n: number): ScaledPortion | null {
  * `sourceId` is the recipe, so a portion can still be traced
  * back to what it was a portion of.
  */
-export function logRecipe(recipe: Recipe, n: number): Omit<Entry, "date"> | null {
+export function logRecipe(
+  recipe: Dish, n: number, source = "recipe",
+): Omit<Entry, "date"> | null {
   const made = pot(recipe);
   if (!made.food) return null;
   return loggedFrom(made.food, { n, unit: SERVING },
-    { source: "recipe", sourceId: recipe.id });
+    { source, sourceId: recipe.id });
 }
+
+/* ------------------------------------------------------------
+   The shared pot, and a share of it
+
+   `DIET.md` section 14. Western trackers assume a plated
+   portion. A pot of curry for five and "I had some" is not a
+   portion, and forcing it into one is why people stop logging in
+   week two. So a dish can be logged as a POT and a SHARE: what
+   went in, which the portion library can mostly price, and then
+   a fraction of it.
+
+   ---- a share is a serving of a pot just cut ----
+
+   A recipe states its yield ONCE, when it is written: four
+   portions, for ever. A pot is cut differently every time
+   somebody takes from it, and the reader says how in the same
+   breath as how much: a half, two ladles out of ten, one of the
+   five who ate. So a share is two numbers, `took` out of
+   `outOf`, and a pot stated for `outOf` portions is a recipe
+   that serves `outOf`.
+
+   That is the whole of it, and it is why there is no second
+   division in this file: `servingsOf` already divides a pot by
+   its yield through `scaleTo`, and a share hands it a yield the
+   reader named a second ago.
+
+   IT IS ALSO THE ONLY VERSION THAT IS EXACT. A fraction has to
+   reach `diet_entries.qty`, which is `numeric(9,2)`, so a third
+   stored as a fraction is 0.33 and a third of every pot would be
+   logged one percent light, for ever, in the flattering
+   direction. Two whole numbers do not round.
+   ------------------------------------------------------------ */
+
+/** How much of the pot was taken: `took` parts out of the
+    `outOf` the reader has just cut it into. A half is one of
+    two, two ladles out of ten is two of ten, and one share of
+    the five who ate is one of five. */
+export interface Share {
+  took: number;
+  outOf: number;
+}
+
+/**
+ * The share as a fraction of the pot, or null.
+ *
+ * THE ONE REFUSAL HERE THAT IS NOT `scaleTo`'s. That function
+ * would happily scale a pot by 1.4, and 1.4 pots is not a share
+ * of one pot: a reader who types twelve ladles out of ten has
+ * slipped, and logging it would put a figure in the day that no
+ * pot ever held. Nothing is written and the panel says why.
+ */
+export function fractionOf(share: Share): number | null {
+  const { took, outOf } = share;
+  if (!Number.isFinite(took) || !Number.isFinite(outOf)) return null;
+  if (!(outOf > 0) || !(took > 0) || took > outOf) return null;
+  return took / outOf;
+}
+
+/** That share of the pot, or null. */
+export function shareOf(dish: Dish, share: Share): ScaledPortion | null {
+  if (fractionOf(share) === null) return null;
+  return servingsOf({ ...dish, serves: share.outOf }, share.took);
+}
+
+/**
+ * What taking a share writes, or null.
+ *
+ * `source` is `pot` rather than `recipe`, which the migration's
+ * own `diet_entries_source_known` already allows: the two are a
+ * different promise about the number. A recipe's portion is a
+ * yield somebody decided once and cooks to; a share is a
+ * fraction of one evening's pot, and a reader looking at a month
+ * of rows should be able to tell them apart.
+ */
+export function logShare(dish: Dish, share: Share): Omit<Entry, "date"> | null {
+  if (fractionOf(share) === null) return null;
+  return logRecipe({ ...dish, serves: share.outOf }, share.took, "pot");
+}
+
+/** The ways a pot actually gets divided, in the words a reader
+    would use. Plain Bangla rather than the formal fractions:
+    "তিন ভাগের এক ভাগ" is what somebody says out loud and
+    "এক তৃতীয়াংশ" is what a textbook says. Ladles and the
+    household count are the two the panel asks for in numbers,
+    because neither is a fixed word. */
+export const SHARES: Array<Share & { id: string; en: string; bn: string }> = [
+  { id: "half", en: "a half", bn: "অর্ধেক", took: 1, outOf: 2 },
+  { id: "third", en: "a third", bn: "তিন ভাগের এক ভাগ", took: 1, outOf: 3 },
+  { id: "quarter", en: "a quarter", bn: "চার ভাগের এক ভাগ", took: 1, outOf: 4 },
+  { id: "fifth", en: "a fifth", bn: "পাঁচ ভাগের এক ভাগ", took: 1, outOf: 5 },
+  { id: "all", en: "all of it", bn: "পুরোটা", took: 1, outOf: 1 },
+];
+
+/** How long a pot stays on the hob. Section 14: the tool holds
+    the pot FOR THE REST OF THE WEEK, so the same dish tomorrow
+    is two taps. Seven days rather than "until it is finished",
+    because nothing here can know when a pot is empty, and a list
+    that only ever grows is the friction this page exists to
+    remove. */
+export const HOB_DAYS = 7;
+
+/** Whole days from one ISO date to another, positive where the
+    second is later.
+
+    `Date.UTC` on the three parts rather than `new Date(iso)`,
+    which parses a bare date as UTC midnight and is then read
+    back in local time: west of Greenwich that is yesterday, and
+    a pot cooked today would be a day old the moment it was
+    saved. */
+const daysBetween = (from: string, to: string): number | null => {
+  const at = (iso: string): number | null => {
+    const m = /^(\d{4})-(\d{2})-(\d{2})$/.exec(iso);
+    return m ? Date.UTC(Number(m[1]), Number(m[2]) - 1, Number(m[3])) : null;
+  };
+  const a = at(from);
+  const b = at(to);
+  return a === null || b === null ? null : Math.round((b - a) / 86_400_000);
+};
+
+/**
+ * The pots still worth offering, freshest first.
+ *
+ * `lastUsed` on a pot is the day it was cooked or the day it was
+ * last taken from, whichever is later, which is exactly the
+ * question "is this still on the hob". A pot with no date at all
+ * has just been put on and nothing has touched it since, so it
+ * leads rather than being dropped.
+ */
+const stillOn = (dish: Dish, today: string, days: number): boolean => {
+  if (!dish.lastUsed) return true;
+  const old = daysBetween(dish.lastUsed, today);
+  /* A date this cannot read is a date this cannot judge, and
+     hiding a pot over an unparseable string would be losing
+     somebody's dinner to a regex. A date AHEAD of today is a
+     device whose clock is out, and it is on the hob too. */
+  return old === null || old <= days;
+};
+
+/** Freshest first, and a pot with no date leads: `undefined` is
+    the pot just put on and nothing has touched it since. */
+const byFreshest = (a: Dish, b: Dish): number =>
+  (b.lastUsed ?? "9999-99-99").localeCompare(a.lastUsed ?? "9999-99-99");
+
+/** Whole days since this pot was last somebody's dinner, or
+    null where the row does not say. The panel prints it, because
+    "is this still on the hob" is the only question the list is
+    really asking and a date makes a reader work it out. */
+export function daysOld(dish: Dish, today: string): number | null {
+  if (!dish.lastUsed) return null;
+  const old = daysBetween(dish.lastUsed, today);
+  return old === null || old < 0 ? null : old;
+}
+
+export function onTheHob(dishes: Dish[], today: string, days = HOB_DAYS): Dish[] {
+  return dishes.filter((d) => stillOn(d, today, days)).sort(byFreshest);
+}
+
+/** The pots this has stopped offering, so a page can say how
+    many rather than making them disappear. */
+export function offTheHob(dishes: Dish[], today: string, days = HOB_DAYS): Dish[] {
+  return dishes.filter((d) => !stillOn(d, today, days)).sort(byFreshest);
+}
+
+/* ------------------------------------------------------------
+   A plate nobody can weigh
+
+   `DIET.md` section 14. A restaurant plate is not knowable. A
+   plate of kacchi biryani is somewhere between 700 and 1,100
+   kcal and anybody who tells you it is 863 is reading a number
+   invented by a website.
+
+   So eating out is logged as a RANGE: the midpoint goes into the
+   day's total, and the width goes into `est_low` and `est_high`,
+   which `totalFor()` in `shared/diet.ts` adds up as the day's
+   spread. A day with two restaurant meals is drawn with a wider
+   band, the same way a sparse micronutrient day is drawn
+   faintly. That is more honest than a false decimal and it costs
+   the reader nothing.
+   ------------------------------------------------------------ */
+
+/**
+ * How wide a plate somebody else cooked is, either way.
+ *
+ * A fifth, and it is section 14's own example generalised rather
+ * than a figure invented here: the kacchi biryani plate that
+ * section puts between 700 and 1,100 kcal is 900 give or take 22
+ * percent, and `biryani-plate` in `shared/foods.ts` says in its
+ * own comment that its figure is that midpoint. A reader who
+ * knows better than a fifth types the two numbers instead, which
+ * is what `outRange()` is for.
+ */
+export const OUT_SPREAD = 0.2;
+
+/**
+ * A figure with the width of a restaurant plate on it, or null.
+ *
+ * SYMMETRIC ON PURPOSE, so the midpoint IS the figure that came
+ * out of the library row and the entry's macros still follow
+ * from its energy. A band that moved the middle would leave a
+ * row whose own numbers do not agree with each other, which is
+ * the rule `loggedFrom()` already keeps two files away.
+ */
+export function widened(kcal: number, spread = OUT_SPREAD): Range | null {
+  if (!Number.isFinite(kcal) || kcal <= 0) return null;
+  if (!Number.isFinite(spread) || spread < 0 || spread >= 1) return null;
+  return {
+    low: round(kcal * (1 - spread), 1),
+    mid: round(kcal, 1),
+    high: round(kcal * (1 + spread), 1),
+  };
+}
+
+/**
+ * Two figures a reader gave for a plate they did not cook, or
+ * null.
+ *
+ * The midpoint is the total's, the width is the day's
+ * confidence, and a pair the wrong way round is a slip rather
+ * than a range: nothing is written and the page says so, because
+ * quietly swapping them would be this tool deciding it knows
+ * what somebody meant.
+ */
+export function outRange(low: number, high: number): Range | null {
+  if (!Number.isFinite(low) || !Number.isFinite(high)) return null;
+  if (low <= 0 || high <= 0 || high < low) return null;
+  return { low: round(low, 1), mid: round((low + high) / 2, 1), high: round(high, 1) };
+}
+
+/**
+ * The one-tap "small extras" for a day.
+ *
+ * Section 14: the tea with sugar, the biscuit with it, the
+ * mishti at somebody's house, the handful of something while
+ * cooking. None of it gets logged and all of it is eaten.
+ *
+ * Two sweet teas is about 80, a biscuit about 50, one piece of
+ * mishti about 120, so a light day of it is 60 and a heavy one
+ * is 240. It is not accurate. It is FAR more accurate than the
+ * nothing that would otherwise be recorded, which is the whole
+ * of the argument, and it is logged as a range for the same
+ * reason a restaurant plate is.
+ */
+export const EXTRAS: Range = { low: 60, mid: 150, high: 240 };
+
+/* ------------------------------------------------------------
+   The honest option: do not weigh anything
+
+   `DIET.md` section 14. Kitchen scales are rare in most
+   Bangladeshi kitchens and unpopular in most British ones.
+   Weighing food is the most accurate method and it is the method
+   most people abandon, so a hand is a FIRST-CLASS input here
+   rather than a fallback.
+
+   The hand scales with the person, which is the property that
+   makes it work at all. It is roughly 20 percent accurate rather
+   than roughly 5 percent accurate, and 20 percent accurate every
+   day for a year beats 5 percent accurate for eleven days. The
+   tool says that in one sentence and then gets out of the way.
+   ------------------------------------------------------------ */
+
+export interface Hand {
+  id: string;
+  en: string;
+  bn: string;
+  /** What it is a portion OF. Section 14's table has four rows
+      and these are the four: a fifth would be a decision rather
+      than a tweak. */
+  enOf: string;
+  bnOf: string;
+  /** What one of them weighs on an adult, to the nearest five
+      grams: a palm is a piece of meat or fish about as thick as
+      the hand, a cupped hand is half a teacup of cooked rice or
+      dal, a fist is a cup of vegetables, and a thumb is a
+      tablespoon of oil. Every one is an estimate of an estimate
+      and the page says so. */
+  grams: number;
+}
+
+export const HANDS: Hand[] = [
+  { id: "palm", en: "a palm", bn: "এক তালু", enOf: "protein", bnOf: "প্রোটিন", grams: 100 },
+  { id: "cupped", en: "a cupped hand", bn: "এক আঁজলা", enOf: "carbohydrate", bnOf: "শর্করা", grams: 90 },
+  { id: "fist", en: "a fist", bn: "এক মুঠো", enOf: "vegetables", bnOf: "সবজি", grams: 85 },
+  { id: "thumb", en: "a thumb", bn: "এক বুড়ো আঙুল", enOf: "fat", bnOf: "চর্বি", grams: 15 },
+];
 
 /* ------------------------------------------------------------
    Reading a row back
@@ -299,6 +606,31 @@ export function toRecipe(row: StoredFood): Recipe | null {
     en: label,
     bn: text(row.label_bn),
     serves,
+    parts: partsOf(row.parts),
+    uses: num(row.uses),
+    lastUsed: text(row.last_used),
+  };
+}
+
+/** A stored row as a pot, or null where the row is not one.
+ *
+ * A POT NEEDS NO YIELD, which is the whole difference from
+ * `toRecipe` above and the reason there are two of these rather
+ * than one with a flag: `serves` on a pot is how many people ate
+ * from it, the cook may never have counted, and a pot nobody
+ * counted can still be halved. A `serves` of nought is dropped
+ * rather than kept, because it would divide by nothing.
+ */
+export function toPot(row: StoredFood): Dish | null {
+  if (row.kind !== "pot") return null;
+  const label = text(row.label);
+  if (!label) return null;
+  const serves = num(row.serves);
+  return {
+    id: row.id,
+    en: label,
+    bn: text(row.label_bn),
+    serves: serves !== undefined && serves > 0 ? serves : undefined,
     parts: partsOf(row.parts),
     uses: num(row.uses),
     lastUsed: text(row.last_used),
@@ -463,7 +795,7 @@ const libraryRow = (part: Part) =>
     ? byId(part.sourceId.slice("library:".length))
     : undefined;
 
-export function shoppingList(recipes: Recipe[]): ShopList {
+export function shoppingList(dishes: Dish[]): ShopList {
   /* Gathered first and priced afterwards, out of the TOTAL
      amount rather than per ingredient. Pricing each appearance
      and adding the money up rounds three times where this
@@ -472,8 +804,8 @@ export function shoppingList(recipes: Recipe[]): ShopList {
      amount. */
   const by = new Map<string, { part: Part; qty: number; known: boolean }>();
 
-  for (const recipe of recipes) {
-    for (const part of recipe.parts) {
+  for (const dish of dishes) {
+    for (const part of dish.parts) {
       const qty = num(part.qty);
       const key = `${part.sourceId ?? part.label.trim().toLowerCase()}|${part.unit ?? ""}`;
       const seen = by.get(key);

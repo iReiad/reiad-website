@@ -35,6 +35,27 @@
    `parts` and its yield in `serves`. Logging it writes ONE
    `diet_entries` row carrying its own numbers, so editing the
    recipe later does not rewrite what was eaten last month.
+
+   ---- and a pot is the same builder with a different answer ----
+
+   `DIET.md` section 14. A pot of curry for five and "I had some"
+   is not a portion, and forcing it into one is why people stop
+   logging in week two. So the one builder below asks a second
+   question, which is the whole difference: is this a dish you
+   will cook again, or one pot for this week?
+
+   A recipe answers with a YIELD and hands out portions for ever.
+   A pot answers with WHO ATE, or with nothing at all, and hands
+   out a SHARE: a half, a third, two ladles out of ten. It sits
+   on the hob for a week so the same dish tomorrow is two taps,
+   and a household of four eating one curry is four different
+   intakes and one piece of data entry, which is the only version
+   of this that anybody sustains.
+
+   TWO SECTIONS AND ONE BUILDER, deliberately. Three copies of
+   the same twelve lines is the failure this repository keeps
+   naming, and the difference between the two is one field, one
+   verb and how much you say you took.
    ============================================================ */
 
 import { useEffect, useMemo, useState } from "react";
@@ -43,8 +64,9 @@ import {
   DEFAULT_PLACE, portionWords, type FoundFood, type Place,
 } from "@reiad/shared/foods";
 import {
-  SERVING, logRecipe, pot, servingsOf, shoppingList, toRecipe,
-  type Part, type Recipe,
+  SERVING, SHARES, daysOld, fractionOf, logRecipe, logShare, offTheHob, onTheHob,
+  pot, servingsOf, shareOf, shoppingList, toPot, toRecipe,
+  type Dish, type Part, type Recipe, type Share,
 } from "../../lib/recipes";
 import {
   addEntry, getOwnFoods, getProfile, isoDate, clockTime, saveOwnFood, who,
@@ -109,6 +131,61 @@ const potMacros = (food: FoundFood): Record<string, number> => {
   return out;
 };
 
+/** What went in, under a fold. One component rather than the
+    same eight lines in the recipe list and again in the pot
+    list, which is the copy this file's header is about. */
+function WhatIsInIt({ dish, lang }: { dish: Dish; lang: "en" | "bn" }) {
+  return (
+    <details className="dt-free">
+      <summary><T en="What is in it" bn="এতে কী কী আছে" /></summary>
+      <ul className="dt-eaten-list">
+        {dish.parts.map((part, at) => (
+          <li key={`${dish.id ?? dish.en}-${at}`}>
+            <span>{partName(part, lang)}</span>
+            <span className="dt-hit-por">{partAmount(part, lang)}</span>
+            <span className="mono">
+              {part.kcal === undefined ? "" : digits(Math.round(part.kcal), lang)}
+            </span>
+            <span className="dt-src">{part.source ?? ""}</span>
+          </li>
+        ))}
+      </ul>
+    </details>
+  );
+}
+
+/** The share a pot offers before anybody has touched it: the
+    household count where the reader gave one, because that IS
+    this household's normal share, and a half otherwise. Already
+    chosen, which is what makes the same dinner tomorrow one tap
+    on Log this share. */
+const firstShare = (dish: Dish): Share =>
+  dish.serves ? { took: 1, outOf: dish.serves } : { took: 1, outOf: 2 };
+
+/** Whether the last press landed. Said the same way under a
+    portion and under a share, because it is the same write and a
+    reader should not have to learn it twice. */
+function Wrote({ state }: { state?: "going" | "done" | "failed" }) {
+  if (state === "done") {
+    return (
+      <p className="dt-hint">
+        <T en="In today's log." bn="আজকের খাতায় উঠেছে।" />
+      </p>
+    );
+  }
+  if (state === "failed") {
+    return (
+      <p className="dt-hint">
+        <T
+          en="That did not save. It will go up when the connection comes back."
+          bn="এটা জমা হয়নি। সংযোগ ফিরলে চলে যাবে।"
+        />
+      </p>
+    );
+  }
+  return null;
+}
+
 export function RecipePanel() {
   const lang = useToolLang();
   const [w, setW] = useState<Who | null>(null);
@@ -119,7 +196,12 @@ export function RecipePanel() {
   const [loaded, setLoaded] = useState(false);
 
   /* The dish being built. Nothing is written until Save, so a
-     half-built recipe is never a row somebody has to tidy up. */
+     half-built recipe is never a row somebody has to tidy up.
+
+     `kind` is the one question that makes this two builders: a
+     recipe hands out portions for ever and a pot hands out a
+     share of this week's dinner. */
+  const [kind, setKind] = useState<"recipe" | "pot">("recipe");
   const [en, setEn] = useState("");
   const [bn, setBn] = useState("");
   const [serves, setServes] = useState("4");
@@ -131,6 +213,16 @@ export function RecipePanel() {
   const [portions, setPortions] = useState<Record<string, string>>({});
   const [logged, setLogged] = useState<Record<string, "going" | "done" | "failed">>({});
   const [shopping, setShopping] = useState<string[]>([]);
+
+  /* How much of each pot was taken, keyed by its row id. Two
+     numbers rather than a fraction: see `logShare()`, where two
+     whole numbers are the only version that does not round a
+     third down to 0.33 and log every pot one percent light. */
+  const [shares, setShares] = useState<Record<string, Share>>({});
+  /* Pots older than a week are still there and are not in the
+     way. A list that only grows is the friction this page is
+     against. */
+  const [showOld, setShowOld] = useState(false);
 
   useEffect(() => {
     let live = true;
@@ -170,58 +262,112 @@ export function RecipePanel() {
     [rows],
   );
 
-  const draft: Recipe = {
+  /** And every row that is a pot. A pot needs no yield, so the
+      two readers are two functions rather than one with a flag:
+      `serves` on a pot is how many ate and the cook may never
+      have counted. */
+  const pots = useMemo(
+    () => rows.map(toPot).filter((p): p is Dish => p !== null),
+    [rows],
+  );
+  const today = isoDate();
+  const hob = useMemo(() => onTheHob(pots, today), [pots, today]);
+  const older = useMemo(() => offTheHob(pots, today), [pots, today]);
+
+  const shareFor = (dish: Dish): Share => shares[dish.id ?? ""] ?? firstShare(dish);
+
+  /** THE PATCH IS MERGED ON TO THIS POT'S OWN SHARE, not on to a
+      fixed half. A pot cooked for five offers one of five before
+      anybody touches it, and merging a typed `took` on to a
+      half would have quietly moved the reader from a fifth to a
+      half of the same pot: a doubled dinner nobody pressed. */
+  const setShare = (dish: Dish, patch: Partial<Share>): void => {
+    const id = dish.id ?? "";
+    setShares((s) => ({ ...s, [id]: { ...(s[id] ?? firstShare(dish)), ...patch } }));
+  };
+
+  const draft: Dish = {
     en: en.trim(),
     bn: bn.trim() || undefined,
-    serves: num(serves) ?? 0,
+    /* A pot may be cooked for nobody in particular, and the
+       builder's box is empty rather than nought in that case.
+       `serves` of nought is not a yield and `pot()` refuses it,
+       which is the right answer for a recipe and the wrong
+       question for a pot. */
+    serves: kind === "recipe" ? num(serves) ?? 0 : num(serves),
     parts,
   };
   const made = pot(draft);
   const each = servingsOf(draft, 1);
+  /** The whole pot, for a dish that may state no yield at all.
+      One of one is the whole of it, through the same `scaleTo`
+      every other figure on this page goes through. */
+  const whole = shareOf(draft, { took: 1, outOf: 1 });
+
+  /** Whether the builder has enough to save. A recipe needs a
+      yield, because a portion is the whole of what it is for; a
+      pot needs only something in it that carries a figure. */
+  const buildable = kind === "recipe" ? made.food !== null : whole !== null;
 
   const save = async (): Promise<void> => {
-    if (!w || !made.food || !draft.en) return;
+    if (!w || !buildable || !draft.en) return;
     setSaving("saving");
     /* THE ROW STATES ITS FIGURES FOR THE WHOLE POT, which is
        what `qty` and `unit` mean everywhere else in this tool:
        the numbers are for `qty` of `unit`. Anything reading this
        row later, including the Android app, can then scale it
-       with the same `scaleTo()` a library row goes through. */
+       with the same `scaleTo()` a library row goes through.
+
+       A recipe states them for its yield in portions and a pot
+       states them for one pot, which is the only honest reading
+       of a dish nobody cut into a fixed number of parts. */
+    const asRecipe = kind === "recipe" && made.food !== null;
+    const figures = asRecipe ? made.food : whole;
     const row: OwnFood = {
       label: draft.en,
       label_bn: draft.bn,
-      kind: "recipe",
+      kind,
       parts: draft.parts,
       serves: draft.serves,
-      qty: draft.serves,
-      unit: SERVING,
-      kcal: made.food.kcal,
-      macros: potMacros(made.food),
-      source: "recipe",
+      qty: asRecipe ? draft.serves : 1,
+      unit: asRecipe ? SERVING : "pot",
+      kcal: figures?.kcal,
+      macros: asRecipe && made.food
+        ? potMacros(made.food)
+        : whole?.macros ?? {},
+      source: kind,
       /* Counted rather than remembered: what is on the page comes
          from the log, and these two are the row's own cache of it
          so that something reading `diet_foods` alone can order by
          them without fetching a year of entries. A recipe has
-         been cooked no times on the day it is written. */
+         been cooked no times on the day it is written.
+
+         ON A POT `last_used` IS THE DAY IT WENT ON THE HOB, and
+         then the day it was last taken from. Both answer the one
+         question the pot list asks, which is whether this is
+         still somebody's dinner. */
       uses: 0,
-      last_used: undefined,
+      last_used: kind === "pot" ? today : undefined,
     };
     const ok = await saveOwnFood(w, row);
     if (!ok) { setSaving("failed"); return; }
     setSaving("");
-    setEn(""); setBn(""); setServes("4"); setParts([]);
+    setEn(""); setBn(""); setServes(kind === "recipe" ? "4" : ""); setParts([]);
     setRows(await getOwnFoods(w));
   };
 
-  const log = async (recipe: Recipe): Promise<void> => {
-    const id = recipe.id;
-    if (!w || !id) return;
-    const n = num(portions[id] ?? "1") ?? 1;
-    const row = logRecipe(recipe, n);
-    /* Null is a refusal, and nothing is written. See the banner
-       under the builder: a pot that cannot be divided honestly
-       does not get logged as a guess. */
-    if (!row) return;
+  /**
+   * One entry, out of a dish, dated now.
+   *
+   * ONE WRITER FOR BOTH, because a portion of a recipe and a
+   * share of a pot differ in the row they produce and in nothing
+   * that happens afterwards. `row` is null wherever the
+   * arithmetic refused, and a refusal writes nothing rather than
+   * a guess: the pot lists say why, above the button.
+   */
+  const write = async (dish: Dish, row: Omit<Entry, "date"> | null): Promise<void> => {
+    const id = dish.id;
+    if (!w || !id || !row) return;
     setLogged((state) => ({ ...state, [id]: "going" }));
     const wrote = await addEntry(w, {
       ...row, date: isoDate(), atTime: clockTime(),
@@ -234,15 +380,24 @@ export function RecipePanel() {
     void saveOwnFood(w, {
       ...(rows.find((r) => r.id === id) ?? {}),
       id,
-      label: recipe.en,
-      uses: (recipe.uses ?? 0) + 1,
+      label: dish.en,
+      uses: (dish.uses ?? 0) + 1,
       last_used: isoDate(),
     });
   };
 
+  const log = (recipe: Recipe): Promise<void> =>
+    write(recipe, logRecipe(recipe, num(portions[recipe.id ?? ""] ?? "1") ?? 1));
+
+  const take = (dish: Dish): Promise<void> =>
+    write(dish, logShare(dish, shareFor(dish)));
+
+  /* Pots and recipes both, because a pot is a dish you may well
+     cook again and its ingredients are a shopping list either
+     way. */
   const chosen = useMemo(
-    () => recipes.filter((r) => r.id && shopping.includes(r.id)),
-    [recipes, shopping],
+    () => [...recipes, ...pots].filter((d) => d.id && shopping.includes(d.id)),
+    [recipes, pots, shopping],
   );
   const shop = useMemo(() => shoppingList(chosen), [chosen]);
 
@@ -261,15 +416,18 @@ export function RecipePanel() {
 
   return (
     <div className="dt-recipes">
+      {/* ONE LINE FOR BOTH LISTS. The dishes and the pots come
+          out of the same fetch, so two waiting lines would be two
+          sentences about one request. */}
+      {!loaded ? (
+        <p className="dt-intro">
+          <T en="Fetching what you have built." bn="আপনি যা বানিয়েছেন তা আনা হচ্ছে।" />
+        </p>
+      ) : null}
+
       {/* ---- what is already built ---- */}
       <section className="dt-recipe-mine" aria-labelledby="dt-rec-mine-h">
         <h2 id="dt-rec-mine-h"><T en="Your dishes" bn="আপনার রান্না" /></h2>
-
-        {!loaded ? (
-          <p className="dt-intro">
-            <T en="Fetching what you have built." bn="আপনি যা বানিয়েছেন তা আনা হচ্ছে।" />
-          </p>
-        ) : null}
 
         {loaded && !recipes.length ? (
           <p className="dt-hint">
@@ -332,52 +490,223 @@ export function RecipePanel() {
                   </ChipButton>
                 </div>
 
-                {state === "done" ? (
-                  <p className="dt-hint">
-                    <T en="In today's log." bn="আজকের খাতায় উঠেছে।" />
-                  </p>
-                ) : null}
-                {state === "failed" ? (
-                  <p className="dt-hint">
-                    <T
-                      en="That did not save. It will go up when the connection comes back."
-                      bn="এটা জমা হয়নি। সংযোগ ফিরলে চলে যাবে।"
-                    />
-                  </p>
-                ) : null}
-
-                <details className="dt-free">
-                  <summary><T en="What is in it" bn="এতে কী কী আছে" /></summary>
-                  <ul className="dt-eaten-list">
-                    {recipe.parts.map((part, at) => (
-                      <li key={`${id}-${at}`}>
-                        <span>{partName(part, lang)}</span>
-                        <span className="dt-hit-por">{partAmount(part, lang)}</span>
-                        <span className="mono">
-                          {part.kcal === undefined
-                            ? "" : digits(Math.round(part.kcal), lang)}
-                        </span>
-                        <span className="dt-src">{part.source ?? ""}</span>
-                      </li>
-                    ))}
-                  </ul>
-                </details>
+                <Wrote state={state} />
+                <WhatIsInIt dish={recipe} lang={lang} />
               </li>
             );
           })}
         </ul>
       </section>
 
+      {/* ---- the pot on the hob ---- */}
+      <section className="dt-recipe-pots" aria-labelledby="dt-rec-pots-h">
+        <h2 id="dt-rec-pots-h"><T en="On the hob" bn="চুলায় যা আছে" /></h2>
+
+        {loaded && !pots.length ? (
+          <TBlock
+            en={<p className="dt-hint">Nothing on the hob. A pot is a curry cooked for the
+              house rather than a dish with a fixed yield: put in what went in it,
+              then take a half, a third, two ladles out of ten. It stays here for a
+              week, so the same dinner tomorrow is two taps, and four people eating
+              one curry is four different intakes and one piece of typing.</p>}
+            bn={<p className="dt-hint">চুলায় কিছু নেই। এক পাত্র মানে বাড়ির জন্য রান্না
+              করা তরকারি, আগে থেকে ভাগ ঠিক করা কোনো রান্না নয়: পাত্রে যা যা গেছে দিন,
+              তারপর অর্ধেক নিন, তিন ভাগের এক ভাগ নিন, বা দশ হাতার মধ্যে দুই হাতা।
+              এটা এক সপ্তাহ এখানে থাকে, তাই কালকের একই রাতের খাবার দুই চাপ, আর এক
+              তরকারি চারজন খেলে চার রকম হিসাব হয় আর লেখা হয় একবার।</p>}
+          />
+        ) : null}
+
+        <ul className="dt-recipe-list">
+          {(showOld ? [...hob, ...older] : hob).map((dish) => {
+            const id = dish.id as string;
+            const which = pot(dish);
+            const share = shareFor(dish);
+            const taken = shareOf(dish, share);
+            const all = shareOf(dish, { took: 1, outOf: 1 });
+            const state = logged[id];
+            const fed = dish.serves;
+            const age = daysOld(dish, today);
+            /* A box somebody has just cleared is an unanswered
+               question rather than a mistake, and it gets its own
+               sentence: telling a reader they cannot take more
+               than the pot held, because the box is empty, is the
+               tool blaming them for its own state. */
+            const unsaid = !Number.isFinite(share.took) || !Number.isFinite(share.outOf)
+              || share.took <= 0 || share.outOf <= 0;
+            return (
+              <li key={id} className="dt-recipe">
+                <p className="dt-recipe-name">
+                  <T en={dish.en} bn={dish.bn ?? dish.en} />
+                </p>
+                <p className="dt-why">
+                  <T
+                    en={`${all ? `The whole pot is ${said(Math.round(all.kcal), which.floors.has("kcal"), "en")} kcal` : "Nothing in this pot carries a figure"}${
+                      fed ? `, cooked for ${fed}` : ""
+                    }${age === null ? "" : age === 0 ? ", from today"
+                      : age === 1 ? ", from yesterday" : `, from ${age} days ago`}.`}
+                    bn={`${all ? `পুরো পাত্রে ${said(Math.round(all.kcal), which.floors.has("kcal"), "bn")} ক্যালোরি` : "এই পাত্রের কোনো কিছুরই হিসাব নেই"}${
+                      fed ? `, ${digits(fed, "bn")} জনের জন্য রান্না` : ""
+                    }${age === null ? "" : age === 0 ? ", আজকের" : age === 1 ? ", গতকালের"
+                      : `, ${digits(age, "bn")} দিন আগের`}।`}
+                  />
+                </p>
+
+                {/* HOW MUCH OF IT YOU HAD, which is a fraction
+                    rather than a portion. The chips fill the two
+                    boxes and the boxes are the answer, so "two
+                    ladles out of ten" needs no chip of its own. */}
+                <div className="dt-tags" role="group"
+                     aria-label={lang === "bn" ? "কতটা খেয়েছেন" : "How much of it you had"}>
+                  {SHARES.map((s) => (
+                    <ChipButton
+                      key={s.id}
+                      pressed={share.took === s.took && share.outOf === s.outOf}
+                      onClick={() => setShare(dish, { took: s.took, outOf: s.outOf })}
+                    >
+                      <T en={s.en} bn={s.bn} />
+                    </ChipButton>
+                  ))}
+                  {fed !== undefined && !SHARES.some((s) => s.outOf === fed) ? (
+                    <ChipButton
+                      pressed={share.took === 1 && share.outOf === fed}
+                      onClick={() => setShare(dish, { took: 1, outOf: fed })}
+                    >
+                      <T
+                        en={`one of ${fed}`}
+                        bn={`${digits(fed, "bn")} ভাগের এক ভাগ`}
+                      />
+                    </ChipButton>
+                  ) : null}
+                </div>
+
+                <div className="dt-measure-row">
+                  <Field
+                    id={`dt-took-${id}`}
+                    type="number" inputMode="decimal" step="1" min={0}
+                    label={<T en="Parts you took" bn="কয় ভাগ নিয়েছেন" />}
+                    value={Number.isFinite(share.took) ? String(share.took) : ""}
+                    onChange={(e) => setShare(dish, {
+                      took: e.target.value === "" ? Number.NaN : Number(e.target.value),
+                    })}
+                  />
+                  <Field
+                    id={`dt-of-${id}`}
+                    type="number" inputMode="decimal" step="1" min={0}
+                    label={<T en="Out of" bn="মোট কয় ভাগের" />}
+                    hint={<T
+                      en="Ten if you counted ladles, five if five of you ate."
+                      bn="হাতা গুনলে দশ, পাঁচজন খেলে পাঁচ।"
+                    />}
+                    value={Number.isFinite(share.outOf) ? String(share.outOf) : ""}
+                    onChange={(e) => setShare(dish, {
+                      outOf: e.target.value === "" ? Number.NaN : Number(e.target.value),
+                    })}
+                  />
+                </div>
+
+                <p className="dt-value">
+                  {taken ? (
+                    <T
+                      en={`That share is ${said(Math.round(taken.kcal), which.floors.has("kcal"), "en")} kcal${
+                        taken.macros.protein !== undefined
+                          ? `, ${said(taken.macros.protein, which.floors.has("protein"), "en")} g protein` : ""
+                      }.`}
+                      bn={`ওই ভাগে ${said(Math.round(taken.kcal), which.floors.has("kcal"), "bn")} ক্যালোরি${
+                        taken.macros.protein !== undefined
+                          ? `, ${said(taken.macros.protein, which.floors.has("protein"), "bn")} গ্রাম প্রোটিন` : ""
+                      }।`}
+                    />
+                  ) : unsaid ? (
+                    <T
+                      en="Say how much of it you had: press a part above, or count the ladles."
+                      bn="কতটা খেয়েছেন লিখুন: উপরের কোনো ভাগে চাপুন, বা হাতা গুনে বলুন।"
+                    />
+                  ) : fractionOf(share) === null ? (
+                    <T
+                      en="Nobody can take more out of a pot than went into it. Say a smaller part, or say it was all of it, and nothing is logged until you do."
+                      bn="পাত্রে যা আছে তার চেয়ে বেশি কেউ নিতে পারে না। ছোট কোনো ভাগ লিখুন, বা বলুন পুরোটাই খেয়েছেন; তার আগে কিছুই লেখা হবে না।"
+                    />
+                  ) : (
+                    <T
+                      en="Nothing in this pot carries a figure, so a share of it cannot be worked out and nothing is logged. Open it up and give one ingredient an amount."
+                      bn="এই পাত্রের কোনো কিছুরই হিসাব নেই, তাই এর কোনো ভাগ বের করা যায় না আর কিছুই লেখা হবে না। খুলে অন্তত একটা উপকরণের পরিমাণ দিন।"
+                    />
+                  )}
+                </p>
+
+                <div className="dt-measure-row">
+                  <Button
+                    kind="solid"
+                    disabled={state === "going" || !taken}
+                    onClick={() => void take(dish)}
+                  >
+                    <T en="Log this share" bn="এই ভাগটা লিখুন" />
+                  </Button>
+                  <ChipButton
+                    pressed={shopping.includes(id)}
+                    onClick={() => setShopping((s) =>
+                      s.includes(id) ? s.filter((x) => x !== id) : [...s, id])}
+                  >
+                    <T en="On the list" bn="বাজারের তালিকায়" />
+                  </ChipButton>
+                </div>
+
+                <Wrote state={state} />
+                <WhatIsInIt dish={dish} lang={lang} />
+              </li>
+            );
+          })}
+        </ul>
+
+        {older.length ? (
+          <div className="dt-measure-row">
+            <ChipButton pressed={showOld} onClick={() => setShowOld(!showOld)}>
+              <T
+                en={`${older.length} older pot${older.length === 1 ? "" : "s"}`}
+                bn={`${digits(older.length, "bn")}টা পুরোনো পাত্র`}
+              />
+            </ChipButton>
+            <span className="dt-hint">
+              <T
+                en="A pot drops off this list after a week. Nothing is deleted: this tool cannot know when a pot is empty, and a list that only ever grows is the friction this page is against."
+                bn="এক সপ্তাহ পর পট এই তালিকা থেকে সরে যায়। কিছু মুছে ফেলা হয় না: পাত্র কখন খালি হলো তা এই যন্ত্র জানে না, আর যে তালিকা কেবল বাড়ে সেটাই এই পাতার শত্রু।"
+              />
+            </span>
+          </div>
+        ) : null}
+      </section>
+
       {/* ---- building one ---- */}
       <section className="dt-recipe-build" aria-labelledby="dt-rec-build-h">
         <h2 id="dt-rec-build-h"><T en="Build a dish" bn="একটা রান্না বানান" /></h2>
         <TBlock
-          en={<p className="dt-intro">Put in what went in the pot, then say how many
-            portions it made. From then on, eating it is one tap and a
-            fraction.</p>}
-          bn={<p className="dt-intro">পাত্রে যা যা গেছে সব দিন, তারপর বলুন কয় ভাগ
-            হয়েছে। এরপর থেকে এটা খাওয়া মানে এক চাপ আর একটা ভাগ।</p>}
+          en={<p className="dt-intro">Put in what went in the pot. Then say either how
+            many portions it makes, which keeps it for ever, or who ate from it
+            tonight, which keeps it for a week and hands out shares.</p>}
+          bn={<p className="dt-intro">পাত্রে যা যা গেছে সব দিন। তারপর বলুন হয় কয় ভাগ
+            হয়, যাতে এটা চিরকাল থেকে যায়, নয়তো আজ কারা খেয়েছে, যাতে এটা এক সপ্তাহ
+            থাকে আর ভাগ করে দেয়।</p>}
         />
+
+        {/* THE ONE QUESTION THAT MAKES THIS TWO BUILDERS. A
+            recipe is a yield and lasts; a pot is this week's
+            dinner and is taken from in fractions. */}
+        <div className="dt-tags" role="group"
+             aria-label={lang === "bn" ? "এটা কী ধরনের" : "Which of the two this is"}>
+          <ChipButton
+            pressed={kind === "recipe"}
+            onClick={() => { setKind("recipe"); setServes("4"); }}
+          >
+            <T en="A dish you will cook again" bn="যে রান্না আবার হবে" />
+          </ChipButton>
+          <ChipButton
+            pressed={kind === "pot"}
+            onClick={() => { setKind("pot"); setServes(""); }}
+          >
+            <T en="One pot, for this week" bn="এক পাত্র, এই সপ্তাহের" />
+          </ChipButton>
+        </div>
 
         <div className="dt-form">
           <Field
@@ -396,12 +725,24 @@ export function RecipePanel() {
           />
           <Field
             id="dt-rec-serves" type="number" inputMode="decimal" min={0.5} step="0.5"
-            label={<T en="Portions it makes" bn="কয় ভাগ হয়" />}
+            label={kind === "recipe"
+              ? <T en="Portions it makes" bn="কয় ভাগ হয়" />
+              : <T en="How many ate from it" bn="কয়জন খেয়েছে" />}
+            hint={kind === "recipe" ? undefined : (
+              <T
+                en="Not required. It becomes the share this pot offers first, and a pot nobody counted can still be halved."
+                bn="না দিলেও চলে। এটাই হবে এই পাত্র থেকে প্রথমে যে ভাগটা দেখানো হয়, আর কেউ না গুনলেও পাত্র অর্ধেক করা যায়।"
+              />
+            )}
             value={serves} onChange={(e) => setServes(e.target.value)}
           />
         </div>
 
-        <FoodPicker onPick={(e: Omit<Entry, "date">) => setParts((p) => [...p, e])} place={place} />
+        <FoodPicker
+          onPick={(e: Omit<Entry, "date">) => setParts((p) => [...p, e])}
+          place={place}
+          ingredient
+        />
 
         {parts.length ? (
           <ul className="dt-eaten-list">
@@ -431,9 +772,15 @@ export function RecipePanel() {
           </p>
         )}
 
-        {/* WHAT IT COMES TO, and what it does not. */}
+        {/* WHAT IT COMES TO, and what it does not.
+
+            A recipe is shown per portion, because that is the
+            unit it will hand out for ever. A pot is shown WHOLE,
+            because the unit it hands out is a fraction the reader
+            has not chosen yet, and dividing by a yield nobody
+            gave would be this page inventing one. */}
         <div className="dt-recipe-sum">
-          {made.food && each ? (
+          {kind === "recipe" && made.food && each ? (
             <>
               <p className="dt-value">
                 <T
@@ -457,17 +804,53 @@ export function RecipePanel() {
               </ul>
               <p className="dt-why">
                 <T
-                  en={`The whole pot is ${said(Math.round(made.food.kcal), made.floors.has("kcal"), "en")} kcal, divided by ${draft.serves}.`}
-                  bn={`পুরো পাত্র ${said(Math.round(made.food.kcal), made.floors.has("kcal"), "bn")} ক্যালোরি, ${digits(draft.serves, "bn")} দিয়ে ভাগ।`}
+                  en={`The whole pot is ${said(Math.round(made.food.kcal), made.floors.has("kcal"), "en")} kcal, divided by ${draft.serves ?? 0}.`}
+                  bn={`পুরো পাত্র ${said(Math.round(made.food.kcal), made.floors.has("kcal"), "bn")} ক্যালোরি, ${digits(draft.serves ?? 0, "bn")} দিয়ে ভাগ।`}
+                />
+              </p>
+            </>
+          ) : kind === "pot" && whole ? (
+            <>
+              <p className="dt-value">
+                <T
+                  en={`${said(Math.round(whole.kcal), made.floors.has("kcal"), "en")} kcal in the whole pot`}
+                  bn={`পুরো পাত্রে ${said(Math.round(whole.kcal), made.floors.has("kcal"), "bn")} ক্যালোরি`}
+                />
+              </p>
+              <ul className="dt-recipe-macros">
+                {MACROS.map((m) => {
+                  const value: number | undefined = whole.macros[m.key];
+                  if (value === undefined) return null;
+                  return (
+                    <li key={m.key}>
+                      <T
+                        en={`${said(value, made.floors.has(m.key), "en")} g ${m.en}`}
+                        bn={`${said(value, made.floors.has(m.key), "bn")} গ্রাম ${m.bn}`}
+                      />
+                    </li>
+                  );
+                })}
+              </ul>
+              <p className="dt-why">
+                <T
+                  en="Nothing is divided yet. Put the pot on, and then say how much of it you had: a half, a third, two ladles out of ten."
+                  bn="এখনো কিছু ভাগ করা হয়নি। পাত্রটা চুলায় তুলে দিন, তারপর বলুন কতটা খেয়েছেন: অর্ধেক, তিন ভাগের এক ভাগ, বা দশ হাতার মধ্যে দুই হাতা।"
                 />
               </p>
             </>
           ) : (
             <p className="dt-hint">
-              <T
-                en="A portion needs two things: something in the pot that carries a figure, and how many portions it makes."
-                bn="এক ভাগ বের করতে দুটো জিনিস লাগে: পাত্রে এমন কিছু যার হিসাব আছে, আর কয় ভাগ হয়েছে।"
-              />
+              {kind === "recipe" ? (
+                <T
+                  en="A portion needs two things: something in the pot that carries a figure, and how many portions it makes."
+                  bn="এক ভাগ বের করতে দুটো জিনিস লাগে: পাত্রে এমন কিছু যার হিসাব আছে, আর কয় ভাগ হয়েছে।"
+                />
+              ) : (
+                <T
+                  en="A pot needs one thing: something in it that carries a figure. Who ate is optional."
+                  bn="পাত্রের জন্য একটা জিনিসই লাগে: এর মধ্যে এমন কিছু যার হিসাব আছে। কারা খেয়েছে সেটা না বললেও চলে।"
+                />
+              )}
             </p>
           )}
 
@@ -484,7 +867,7 @@ export function RecipePanel() {
             </Note>
           ) : null}
 
-          {made.food && !made.micros.length ? (
+          {(made.food || whole) && !made.micros.length ? (
             <p className="dt-why">
               <T
                 en="Nutrients past the four above are carried only where every ingredient states one, so most pots with oil in them carry none. It is the safe way round: a dish claiming iron that only half of it stated would make the day look better read than it was."
@@ -496,10 +879,12 @@ export function RecipePanel() {
           <div className="dt-measure-row">
             <Button
               kind="solid"
-              disabled={!made.food || !draft.en || saving === "saving"}
+              disabled={!buildable || !draft.en || saving === "saving"}
               onClick={() => void save()}
             >
-              <T en="Save this dish" bn="রান্নাটা রাখুন" />
+              {kind === "recipe"
+                ? <T en="Save this dish" bn="রান্নাটা রাখুন" />
+                : <T en="Put the pot on" bn="পাত্রটা চুলায় তুলুন" />}
             </Button>
             {saving === "failed" ? (
               <span className="dt-hint">

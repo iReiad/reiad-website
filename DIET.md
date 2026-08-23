@@ -1149,6 +1149,33 @@ accurate, and 20% accurate every day for a year beats 5% accurate
 for eleven days. The tool says that in one sentence and then gets
 out of the way.
 
+### Where each of these is, now that they are built
+
+All four are live. This table is here because a section
+describing four features without saying which of them exist is
+the failure at the top of `CLAUDE.md` wearing a plan's hat.
+
+| | |
+| --- | --- |
+| the oil calibration | `oilPerMeal()` in `shared/diet.ts`, asked once a month on `/tools/diet/foods`, three columns on `diet_profile` |
+| the shared pot | `next/lib/recipes.ts` and the second half of `/tools/diet/recipes`. `diet_foods.kind` is `pot`, `parts` is what went in it, `serves` is how many ate |
+| a share of it | two whole numbers, `took` out of `outOf`, so a third is an exact third. A FRACTION would have had to reach `diet_entries.qty`, which is `numeric(9,2)`, and 0.33 of every pot is one percent light for ever, in the flattering direction |
+| cooked against raw | in the name of every rice, dal and grain row in `shared/foods.ts`, in both languages, with `raw` on the row |
+| eating out | `widened()` and `outRange()` in `next/lib/recipes.ts`, offered in the food picker, written to `diet_entries.est_low` and `est_high`. The width is a fifth either way, which is this section's own 700 to 1,100 generalised |
+| small extras | one tap in the food picker, 150 kcal with 60 to 240 on it, logged as a range for the same reason a plate is |
+| hand portions | four chips beside the amount box, wherever the row states what its own portion weighs. A row that does not say refuses a hand rather than guessing one |
+
+`next/recipes.test.ts` is the guard for the pot, the share, the
+range and the hands: 115 checks, no browser.
+
+**The one thing still to draw is the day's own width.**
+`DayTotal.spread` in `shared/diet.ts` adds up every entry's
+`est_high` minus its `est_low`, and it has been able to since the
+day it was written. A day with two restaurant meals in it should
+be drawn with a wider band, the same way a sparse micronutrient
+day is drawn faintly, and until something reads that field the
+honest half of eating out is stored and never shown.
+
 ---
 
 ## 15. Nutrition beyond calories, and how honest it can be
@@ -1282,6 +1309,42 @@ generated here, and it is worth a check of its own: the generated
 sentences come from a small, listed set of templates, and the
 check reads that list.
 
+### What is built
+
+`shared/insights.ts` is the arithmetic and
+`next/components/diet/insights-panel.tsx` draws it, on
+`/tools/diet/nutrition` beside `§15`, out of the same fetch that
+page already makes. Eight of the nine readings above are there:
+where the calories are and which days go over were already on
+that page, and the protein split, the swap, protein and fibre per
+100 kcal, this week against the reader's own average, adherence
+against the trend and the deficit calibration landed with the
+panel. Every one of them prints the span it was measured over and
+how many days of that span were written down, and every one has a
+sentence for having too little data rather than a zero.
+
+**A year in one page is the one still to build**, and it is not
+an oversight. It wants the phases from `§10` and the seasons from
+`§18` drawn on one trend, it is a page rather than a panel, and
+it says once a year, so before there is a year of log it can only
+draw its own empty state. It belongs with `§18`.
+
+Two things the building of it turned up, both of them the reason
+a templated sentence has to be checked rather than written:
+
+- **The deficit calibration is a circle unless the burn it is
+  compared against comes out of the equations.** `learnedBurn()`
+  derives maintenance FROM the trend, so a prediction made with
+  that figure and then checked against the trend comes back at a
+  hundred percent, for everybody, every time, and nothing about
+  the page would look wrong. It is compared against Mifflin plus
+  the activity answer, which knows nothing about the weighings.
+- **A swap finder offers raw rice for cooked rice.** Both are
+  staples, both are weighed, and one is 365 kcal per 100 g
+  against the other's 130, so it is the largest saving in any
+  Bangladeshi log and it is the cooking water printed as advice.
+  `swaps()` refuses a pair whose `raw` flags differ.
+
 ---
 
 ## 17. What food costs, which is the one question this site is already for
@@ -1344,6 +1407,48 @@ list that resolves to a shop.** Prices are reference figures for
 arithmetic. The moment this tool recommends where to buy
 something it stops being a calculator and starts being an
 advertisement, and it will not.
+
+### What is built
+
+The price table on `/tools/diet/foods` was the first half of this
+and was there before the second. The second is on
+`/tools/diet/nutrition`: a weekly budget written to
+`diet_profile.food_budget` and `budget_currency`, the spend
+plotted against the intake, and the three ratios, a day, a
+thousand calories and a hundred grams of protein. All of them are
+over the share of the log this site has a price for, that share
+is printed beside them, and under `§15`'s coverage floor nothing
+is drawn at all. A row priced in the other currency is not
+converted, because an exchange rate is a fact with no date on it.
+A price older than six months is drawn greyed with its own date.
+
+**One of the two priced recommendations holds and the other does
+not, in the shape it is written in above.** `costByTag()` over
+the committed prices puts the middle staple row at ৳66 per 1000
+kcal against ৳200 for the middle protein row in Bangladesh, and
+£1.03 against £3.59 in Britain. So keto really does cost about
+three times as much per calorie, and the page says so with the
+two figures beside it. But the multiple is 3.0 in Bangladesh and
+3.5 in Britain, so "substantially more in Bangladesh" is not what
+these prices say, and it is either that sentence or the prices
+that needs correcting.
+
+"A higher protein target costs more" is not a fact about the
+protein rows either, and the assertion written for it failed the
+first time it ran. Dal is tagged as both a staple and a protein
+and rice carries protein, so the middle protein row and the
+middle staple row are within a rounding of each other per gram of
+protein in both tables. What is true is the SPREAD inside the
+group, which is what the page prints instead: ৳59 per 100 g of
+protein at the cheap end, which is mug dal, against ৳455 for the
+middle of the priced rows that carry protein, about eight times.
+That spread is the whole reason a cost per gram of protein table
+is worth having.
+
+**Still not built**: the wire to `targets` in `§30`, so that a
+food budget is a spending target of the account's rather than a
+column of its own; and `diet_foods.price`, which is what a dish
+somebody cooked themselves cost.
 
 ---
 

@@ -33,7 +33,7 @@
 import { useEffect, useMemo, useState } from "react";
 import {
   cycleOverCycle, cyclePlace, learnedHere, markNamed, protocolName,
-  slopePerWeek, stall, STALL_DAYS,
+  quietSeason, slopePerWeek, stall, STALL_DAYS,
   stretches, trend, weighings,
   type Day, type Phase, type Point, type Stall, type StallKind,
 } from "@reiad/shared/diet";
@@ -41,7 +41,9 @@ import {
   who, getDays, getPhases, getProfile, dayNumber, isoDate, shiftDate,
   type Profile, type Who,
 } from "../../lib/diet-api";
+import { DEFAULT_PLACE } from "@reiad/shared/foods";
 import { ChipButton } from "../ui/chip";
+import { SeasonNote } from "./season-note";
 import { T, digits, useToolLang } from "./lang";
 
 const W = 720;
@@ -145,6 +147,13 @@ export function TrendPanel() {
       : null
   ), [profile, fittable, today]);
 
+  /* WHAT TIME OF YEAR IT IS, in the place the reader eats. A
+     monsoon, a British winter and a month of fasting all flatten
+     three weeks on a schedule, exactly as the luteal phase does,
+     and a stall reported inside one is the same false positive. */
+  const where = profile?.place ?? DEFAULT_PLACE;
+  const season = useMemo(() => quietSeason({ date: today, place: where }), [today, where]);
+
   const stalled = useMemo(() => {
     const now = dayNumber(today);
     const intakes = inSpan.filter((d) => d.kcal != null)
@@ -167,8 +176,9 @@ export function TrendPanel() {
       burnThen: burnAt(now - STALL_DAYS),
       burnNow: burnAt(now),
       cycle: place,
+      season,
     });
-  }, [fittable, inSpan, phases, today, place]);
+  }, [fittable, inSpan, phases, today, place, season]);
 
   if (!answered) return <div className="dt-board-wait" aria-busy="true" />;
   if (!w) {
@@ -283,6 +293,8 @@ export function TrendPanel() {
           </tbody>
         </table>
       </details>
+
+      <SeasonNote date={today} place={where} />
 
       {place ? (
         <section className="dt-cycle" aria-labelledby="dt-cycle-h">
