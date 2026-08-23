@@ -41,7 +41,7 @@ import type { Metadata } from "next";
 import { ContinueCard } from "../../components/door";
 import { FeaturedCard } from "../../components/featured";
 import { PulseCard } from "../../components/pulse-card";
-import { MarketPulse } from "../../components/market-pulse";
+import { Board } from "../../components/home/board";
 import { SectionLabel } from "../../components/ui/label";
 import { Icon } from "../../components/icons";
 import { pageMeta } from "../../lib/pageMeta";
@@ -214,33 +214,18 @@ export default function HomePage() {
 
         </section>
 
-        {/* ---- the market board ----
+        {/* ---- the board ----
 
-            The same component the Insights hub draws, on the
-            front page, because the front page is where somebody
-            arriving at the site actually is. It was one click
-            deeper for as long as it existed and the Android app
-            had it nowhere at all, which is how a live feed that
-            refreshes every half hour reaches nobody.
+            Under the door, and it is the reader's rather than
+            this file's: which widgets, in what order, at what
+            width. `shared/widgets.ts` is the catalogue and the
+            Android app draws the same board from the same list.
 
-            Its own section rather than a tile in the deck: a
-            tile is one link and this is a board of them, and the
-            deck's grid would give it three columns of a
-            twelve-column row. It reads its own data in the
-            browser, so nothing above it waits for it. */}
+            The deck above stays, because the door is not a
+            widget: it is the page saying who it is, and a board
+            with no heading over it is a settings screen. */}
         <section className="mt-[var(--step)]">
-          <div className="pulse-head">
-            <SectionLabel className="flex-1">
-              বাজারের খবর · <span lang="en">Market pulse</span>
-            </SectionLabel>
-          </div>
-          <MarketPulse />
-          <p className="pulse-note">
-            <span lang="bn">
-              তিনটা সূত্র থেকে আধঘণ্টা পর পর নিজে থেকে বাছাই করা, কোনো সম্পাদকীয় বিচার নয়।
-            </span>{" "}
-            <a href="/insights#pulse">কীভাবে বাছাই হয়</a>
-          </p>
+          <Board />
         </section>
       </div>
     </main>

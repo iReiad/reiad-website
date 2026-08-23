@@ -31,6 +31,10 @@
    login could not have reached anyone either. Bump this whenever a
    precached file changes.
 
+   v208: /fallback.css. `@layer board`: the front page is a board
+        the reader arranges, and the two pages served as files
+        link the stylesheet by name.
+
    v207: /sync.js. `home-board` joins the synced keys: the front
         page is a board the reader arranges, and the arrangement
         follows the account between devices. A `mark` rather than
@@ -1843,7 +1847,7 @@
    imports (crumbs, audience, learn progress) and the hub is a
    different page. Without a bump, a returning reader would be
    served the v3 app.js forever and none of it would appear. */
-const VERSION = "v207";
+const VERSION = "v208";
 const SHELL = `shell-${VERSION}`;
 const RUNTIME = `runtime-${VERSION}`;
 

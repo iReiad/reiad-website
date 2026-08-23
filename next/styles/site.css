@@ -17,7 +17,7 @@
    hide content on an older engine.
    ============================================================ */
 
-@layer tokens, base, layout, components, menu, tools, tw, article, studio, work, money, workbook, deutsch, quran, english, reads, check, about, shell, deck, courses, routine, diet, admin, glow, utilities;
+@layer tokens, base, layout, components, menu, tools, tw, article, studio, work, money, workbook, deutsch, quran, english, reads, check, about, shell, deck, board, courses, routine, diet, admin, glow, utilities;
 
 /* ============================================================
    TOKENS
@@ -10737,6 +10737,95 @@ German for day, and .tag is what the site has always called
    IS the rest of this site, so the only new thing here is the
    two-column shape and the rail down the left of it.
    ============================================================ */
+/* ============================================================
+   @layer board: the front page a reader arranges.
+
+   LAYOUT AND NOTHING ELSE. Every surface on the board is a
+   component that already has one: `.gate-tile`, `.pane`, the
+   pulse cards and the meters. Nothing here paints a ground or an
+   edge, which is what keeps it off `check-material.ts`'s books
+   and out of the way of `@layer glow`.
+
+   The controls are `.btn` and `.icon-btn`, which are already
+   `control`s on the material system, rather than a fourth kind of
+   button invented for one page.
+   ============================================================ */
+@layer board {
+
+  .board {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: var(--step);
+    align-items: start;
+  }
+
+  .board-full { grid-column: 1 / -1; }
+
+  /* A half runs the FULL width on a phone. 160px of glass with a
+     number in it is not legible, and pretending otherwise is how
+     a dashboard becomes decoration. The size is still stored,
+     because the same board is read on a laptop. */
+  .board-half { grid-column: 1 / -1; }
+
+  @media (min-width: 800px) {
+    .board-half { grid-column: span 1; }
+  }
+
+  /* The arranging strip, ABOVE its widget rather than over it: an
+     overlay on glass is a second surface on a surface. No ground
+     and no edge, so this is a row of controls rather than a
+     surface holding them. */
+  .board-strip {
+    display: flex; align-items: center; gap: 6px;
+    margin-bottom: 8px; min-height: 44px;
+
+    & > span { flex: 1; min-width: 0; color: var(--ink-soft); font-size: var(--t-1); }
+    & button { display: inline-grid; place-items: center; }
+  }
+
+  /* Down, and the resize mark, out of the one chevron the icon
+     set has: a second drawing of the same arrow is a second
+     drawing to keep in step. */
+  .board-strip button:nth-of-type(2) svg { transform: rotate(90deg); }
+  .board-strip button:nth-of-type(1) svg { transform: rotate(-90deg); }
+
+  .board-picker {
+    margin-top: var(--step);
+
+    & > .btn { margin-top: var(--gap); }
+  }
+
+  .board-offers {
+    list-style: none; margin: 0 0 var(--gap); padding: 0;
+    display: flex; flex-direction: column; gap: 10px;
+
+    & li {
+      display: flex; align-items: center; gap: 12px;
+      padding: 10px 0;
+      border-bottom: 1px solid var(--hairline);
+    }
+    & li > span:nth-child(2) { flex: 1; }
+  }
+
+  /* How far you are, per school. A count and never a bar: the
+     denominator is a school's own ladder, one fetch deeper, and a
+     bar drawn against a guess disagrees with that school's hub. */
+  .meters-list {
+    list-style: none; margin: 0; padding: 0;
+    display: flex; flex-direction: column;
+
+    & a {
+      display: flex; align-items: center; gap: 10px;
+      min-height: 44px; text-decoration: none; color: inherit;
+    }
+    & svg { color: var(--accent); flex: none; }
+    & b { margin-left: auto; font-size: var(--t-1); color: var(--ink-soft); }
+    & b[data-done="yes"] { color: var(--accent); }
+  }
+
+  .meters-none { color: var(--ink-soft); font-size: var(--t-1); margin: 4px 0 10px; }
+}
+
 @layer courses {
 
   /* ---------- the shape ---------- */
