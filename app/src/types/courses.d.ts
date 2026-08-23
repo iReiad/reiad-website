@@ -39,6 +39,16 @@ export interface CourseSummary {
     videos: number;
     pending: number;
 }
+/** What the one-course answer says about the programme it is in.
+
+    Sent beside the course rather than inside it, so nothing that
+    reads a course has to know about certificates. Absent only
+    from an older Worker's answer, which is the one case a course
+    page names the level instead of the certificate. */
+export interface ProgrammeName {
+    slug: string;
+    title: string;
+}
 /** One row of `listForBrowser()`: a programme, its totals, and
     the courses in it.
 

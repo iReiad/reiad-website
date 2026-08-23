@@ -264,10 +264,6 @@ const pct = (done, total) => total > 0 ? Math.round((done / total) * 100) : 0;
     a card comes through here from the row the API sent, never
     from a sentence somebody typed. */
 const count = (n, thing) => `${n} ${thing}${n === 1 ? "" : "s"}`;
-/** A slug as words. Only for the programme crumb on a course
-    page, which knows the slug out of the address and cannot know
-    the title without fetching the whole shelf for one label. */
-const words = (slug) => decodeURIComponent(slug).replace(/[-_]+/g, " ").replace(/^./, (c) => c.toUpperCase());
 /** What a card says it holds. `lead` is the programme's course
     count, which a course row has nothing to say in place of. */
 const totals = (row, lead) => (lead ? `${lead}, ` : "")
@@ -483,7 +479,7 @@ function drawProgramme(root, programme) {
     The deep link is the point of this page. A reader coming back
     to a course wants the lesson they have not done, not a table
     of contents they have to read to find it. */
-function drawCourse(root, programme, course) {
+function drawCourse(root, programme, holder, course) {
     name(course.title);
     const rungs = laddered(programme, course);
     const read = readSet();
@@ -491,10 +487,12 @@ function drawCourse(root, programme, course) {
     const next = nextUp(rungs, read);
     root.append(el("header", { class: "hub-hero" }, [
         el("span", { class: "hub-eyebrow mono" }, [
-            /* Up from a course is its programme, and the slug is the
-               only name of it this page has: it fetched one course, and
-               the titles live on the shelf. */
-            el("a", { href: programmeUrl(programme) }, [words(programme)]),
+            /* The certificate's own name, which came with the course.
+               The level word is the failure path, for an older Worker
+               that sends no `programme`: a title made out of the slug
+               would print a second, different name beside the trail's,
+               which fetched the real one. */
+            el("a", { href: programmeUrl(programme) }, [holder?.title ?? "Programme"]),
             ` · Course ${course.n}`,
         ]),
         el("h1", {}, [course.title]),
@@ -1021,11 +1019,13 @@ export function whereAmI(path) {
        confuse. The routes are shells, so the URL is the only thing
        that ever said which view this is.
   
-       AN ADDRESS FROM BEFORE THE PROGRAMME CANNOT BE READ, and
-       nothing here pretends otherwise: it has one segment fewer and
-       no suffix saying so, so `/skills/courses/<course>/<module>`
-       is now a course inside a programme. One reader has this
-       section and their bookmarks are one press of the shelf away. */
+       AN ADDRESS FROM BEFORE THE PROGRAMME CANNOT BE READ HERE, and
+       nothing pretends otherwise: it has one segment fewer and no
+       suffix saying so, so `/skills/courses/<course>` is a
+       programme as far as this function can tell. `start()` is
+       where a course bookmark of that shape is recognised and
+       moved, because that needs the shelf and this needs only the
+       path. */
     if (!parts.length || programme === "index.html")
         return { view: "catalogue" };
     if (parts.length === 1)
@@ -1092,20 +1092,44 @@ export async function start(root) {
             return drawCatalogue(root, programmes);
         const programme = programmes.find((p) => p.slug === where.programme);
         if (!programme) {
+            /* AN ADDRESS FROM BEFORE THE PROGRAMME. `/skills/courses/
+               <course>` was live until a certificate got a segment of
+               its own, so every course bookmark anybody holds is this
+               shape. The shelf names every course under its programme
+               and has already arrived, so this is answered rather than
+               refused, with no second request.
+      
+               `replace`, not `href`: a bookmark that moved should not
+               leave the dead address in the history for Back to walk
+               into.
+      
+               It is here rather than in `aab/_redirects` because that
+               file is a public asset, and a rule per course slug there
+               would publish the catalogue this section exists to keep
+               unpublished. */
+            const holder = programmes.find((p) => p.courses.some((c) => c.slug === where.programme));
+            if (holder) {
+                location.replace(courseUrl(holder.slug, where.programme));
+                return;
+            }
             note(root, "No such programme", `Nothing in this catalogue is called “${where.programme}”.`);
             return;
         }
         return drawProgramme(root, programme);
     }
     /* A course is named the way its address names it: the programme
-       and then the course. */
+       and then the course. The answer carries the programme's own
+       name beside the course, which is the only place a page below
+       the shelf can learn it without fetching the shelf. */
     const answer = await api(`/${where.programme}/${where.course}`);
     if (!answer.ok || !answer.data)
         return refuse(root, answer);
     const course = answer.data.course;
+    const holder = answer.data.programme ?? null;
     root.replaceChildren();
-    if (where.view === "course")
-        return drawCourse(root, where.programme, course);
+    if (where.view === "course") {
+        return drawCourse(root, where.programme, holder, course);
+    }
     const mod = course.modules.find((m) => m.slug === where.module);
     if (!mod) {
         note(root, "No such module", `${course.title} has no module called “${where.module}”.`);

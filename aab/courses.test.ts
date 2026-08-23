@@ -254,14 +254,19 @@ interface Scenario {
   status?: number;
   ticketFails?: { status: number; message: string } | null;
   quizBody?: QuizAnswer | null;
+  /** A course answered without the programme's name, which is an
+      older Worker answering a newer page. */
+  unnamed?: boolean;
 }
 
 /** What a visit leaves behind: the page, where the continue button
-    went, every endpoint that was asked for, and anything opened in
-    a new tab. */
+    went, where an address that moved was replaced with, every
+    endpoint that was asked for, and anything opened in a new
+    tab. */
 interface Visit {
   document: Document;
   went: () => string | null;
+  moved: () => string | null;
   asked: string[];
   opened: () => string | null;
 }
@@ -272,12 +277,16 @@ interface Visit {
     next, which is the whole point of the ticks. */
 async function visit(
   path: string, store: Map<string, string>,
-  { reader = { id: "admin" }, status = 200, ticketFails = null, quizBody = null }: Scenario = {},
+  {
+    reader = { id: "admin" }, status = 200, ticketFails = null, quizBody = null,
+    unnamed = false,
+  }: Scenario = {},
 ): Promise<Visit> {
   const { window, document } = parseHTML(SHELL);
   const listeners = new Map<string, Array<(e: Event) => void>>();
   const asked: string[] = [];
   let gone: string | null = null;
+  let swapped: string | null = null;
   let opened: string | null = null;
 
   Object.assign(globalThis, {
@@ -321,7 +330,17 @@ async function visit(
       } else if (path.startsWith("/quiz/")) {
         body = quizBody ?? QUIZ_BODY;
       } else if (COURSES_AT[path]) {
-        body = { ok: true, course: COURSES_AT[path] };
+        /* The programme travels BESIDE the course, and its title
+           is the shelf's own, so the crumb a course page draws
+           and the one the shelf draws cannot say two things. */
+        const holder = CATALOGUE.find((p) => p.slug === path.split("/")[1]);
+        body = {
+          ok: true,
+          course: COURSES_AT[path],
+          programme: unnamed || !holder
+            ? undefined
+            : { slug: holder.slug, title: holder.title },
+        };
       }
 
       /* An address the Worker would not route. Answered as one,
@@ -346,14 +365,19 @@ async function visit(
     },
   });
 
-  /* `location.href = …` is how the continue button navigates, so
-     the stub records it rather than following it. */
+  /* `location.href = …` is how the continue button navigates and
+     `location.replace()` is how an address that moved is answered,
+     so the stub records both rather than following either. They
+     are kept apart because which one was used is the difference
+     between leaving a dead address in the reader's history and
+     not. */
   Object.defineProperty(globalThis, "location", {
     configurable: true,
     value: {
       pathname: path,
       set href(to: string | null) { gone = to; },
       get href(): string | null { return gone; },
+      replace: (to: string) => { swapped = to; },
     },
   });
 
@@ -366,7 +390,9 @@ async function visit(
      immediately. */
   await new Promise<void>((go) => { setTimeout(go, 0); });
 
-  return { document, went: () => gone, asked, opened: () => opened };
+  return {
+    document, went: () => gone, moved: () => swapped, asked, opened: () => opened,
+  };
 }
 
 const text = (doc: ParentNode, sel: string): string =>
@@ -887,20 +913,35 @@ console.log("\n--- the course page deep-links ---");
     doc.querySelector(".resume")?.getAttribute("href")
       === `${AT}/week-one/welcome`);
 
-  /* Up from a course is its programme. The title of it is on the
-     shelf and this page fetched one course, so the crumb says the
-     slug as words rather than fetching the shelf for one label. */
+  /* Up from a course is its programme, named by the title that
+     came with the course. Not by one made out of the slug, which
+     would print a second, different name beside the trail's. */
   ok("the way up is the programme, not the shelf",
     doc.querySelector(".hub-eyebrow a")?.getAttribute("href")
       === "/skills/courses/data-analytics",
     doc.querySelector(".hub-eyebrow a")?.getAttribute("href"));
-  ok("and it is named rather than left as a slug",
-    text(doc, ".hub-eyebrow a") === "Data analytics", text(doc, ".hub-eyebrow a"));
+  ok("and it is the certificate's own name",
+    text(doc, ".hub-eyebrow a") === CATALOGUE[0].title,
+    text(doc, ".hub-eyebrow a"));
 
   ok("every module card links inside the programme",
     all(doc, ".course-modules a").every((a) =>
       a.getAttribute("href")?.startsWith(`${AT}/`)),
     all(doc, ".course-modules a")[0]?.getAttribute("href"));
+}
+
+{
+  /* An older Worker answering a newer page: the course arrives
+     with no programme beside it. The crumb names the LEVEL and
+     still goes to the right place, rather than guessing a title
+     out of the slug. */
+  const { document: doc } = await visit(AT, new Map(), { unnamed: true });
+
+  ok("a course answered without its programme's name still has the way up",
+    doc.querySelector(".hub-eyebrow a")?.getAttribute("href")
+      === "/skills/courses/data-analytics");
+  ok("and says the level rather than inventing a title",
+    text(doc, ".hub-eyebrow a") === "Programme", text(doc, ".hub-eyebrow a"));
 }
 
 {
@@ -1049,9 +1090,26 @@ console.log("\n--- one programme ---");
 }
 
 {
-  const { document: doc } = await visit("/skills/courses/nothing", new Map());
+  /* `/skills/courses/<course>` was live until a certificate got a
+     segment of its own, so every course bookmark anybody holds is
+     that shape and it now reads as a programme. The shelf names
+     every course, so the page moves the reader on rather than
+     telling them a course that is in the catalogue is not. */
+  const { document: doc, moved } = await visit(
+    "/skills/courses/foundations", new Map());
+
+  ok("a course bookmark from before the programme is moved on",
+    moved() === "/skills/courses/data-analytics/foundations", String(moved()));
+  ok("and is not refused as a programme",
+    !doc.querySelector(".course-note"), text(doc, ".course-note h1"));
+}
+
+{
+  const { document: doc, moved } = await visit("/skills/courses/nothing", new Map());
   ok("a programme nobody has says so",
     text(doc, ".course-note h1") === "No such programme");
+  /* A redirect that fires on everything is not a redirect. */
+  ok("and is not sent anywhere", moved() === null, String(moved()));
 }
 
 /* ============================================================ */

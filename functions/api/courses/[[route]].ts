@@ -256,13 +256,22 @@ export async function onRequest(context: CoursesContext): Promise<Response> {
   const course = programme && parts.length === 2
     ? courseOf(programme, parts[1])
     : null;
-  if (!course) return fail("no-such-course", 404);
+  if (!programme || !course) return fail("no-such-course", 404);
 
   return methods(request, {
     /* No Cache-Control, deliberately. This is a per-reader answer
        behind a permission check, and the one thing that must not
        happen is a shared cache holding it for the next person. */
-    GET: async () => ok({ course: forBrowser(course) }),
+    GET: async () => ok({
+      course: forBrowser(course),
+      /* Beside the course rather than inside it: a programme is
+         the other thing this address names, not a field of a
+         course, and `forBrowser()` is also what the module and
+         lesson pages read. It is here so a course page can name
+         the certificate it is in without a second request and
+         without inventing a title out of the slug. */
+      programme: { slug: programme.slug, title: programme.title },
+    }),
   });
 }
 
