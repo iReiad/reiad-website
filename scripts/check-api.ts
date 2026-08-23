@@ -173,6 +173,10 @@ const SERVER_ONLY = {
   tools: "the Android app reads the calculators' words from it. No browser does: "
     + "the stock check imports the same table as an ES module at "
     + "/tools/stock.i18n.js, which shared/tool-strings.ts is compiled to",
+  foods: "the Android app reads the portion library from it. No browser does: "
+    + "the diet tool imports shared/foods.ts directly, so the rows are in the "
+    + "route's own bundle. /api/diet/food is the different thing next door, a "
+    + "lookup against two third-party databases, and the browser does ask for that",
 };
 
 for (const mount of mounts) {

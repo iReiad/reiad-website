@@ -139,6 +139,15 @@ const SOURCES = [
      phone has never heard of, on two boards that both look
      finished. */
   "shared/widgets.ts",
+  /* The portion library and the nutrient panel. A food row
+     is the most literal case this check has of a table that
+     goes stale: eighty-three rows in two languages, each
+     carrying a citation, and a second copy in the app would
+     have parted company the first time somebody added a
+     dish. `shared/diet.ts` is deliberately NOT here beside
+     it, because that file is arithmetic and the app's own
+     port of it needs a release when a formula changes. */
+  "shared/foods.ts",
 ];
 const tables = SOURCES.flatMap((path) => tablesIn(path).map((name) => ({ name, path })));
 
@@ -157,7 +166,11 @@ const tables = SOURCES.flatMap((path) => tablesIn(path).map((name) => ({ name, p
    new file read as held back. The failure that shape produces is
    this check reporting a problem that is not one, which is worse
    than useless: it teaches a reader to add an exemption. */
-const ENDPOINTS = ["functions/api/site.ts", "functions/api/tools.ts"];
+const ENDPOINTS = [
+  "functions/api/site.ts",
+  "functions/api/tools.ts",
+  "functions/api/foods.ts",
+];
 const imported = new Set(
   ENDPOINTS.flatMap((path) =>
     [...readFileSync(join(ROOT, path), "utf8")

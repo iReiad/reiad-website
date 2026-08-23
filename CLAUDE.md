@@ -324,15 +324,33 @@ job.
 | a piece, a lesson, a stage, edited prose | has it, next fetch |
 | a school, a tool, a case study, a term, a menu entry, a count | has it, next fetch |
 | a new field on a section, a new flag on a nav item | has it, next fetch |
+| a food row, a nutrient, a unit word, a portion's figures | has it, next fetch |
 | a new calculator's arithmetic | needs a release |
 | a new article block class, a new sanitiser class | needs a release |
 | a new storage key | needs a release, and see the rule above about renaming one |
 
-The top three rows are true because `functions/api/site.ts`
-SPREADS the tables rather than mapping them field by field. Pick
-fields by hand and it looks identical on the day it is written,
-then silently drops whatever somebody adds a year later, which is
-this file's opening failure wearing a different hat.
+The top four rows are true because the endpoints SPREAD the tables
+rather than mapping them field by field. Pick fields by hand and it
+looks identical on the day it is written, then silently drops
+whatever somebody adds a year later, which is this file's opening
+failure wearing a different hat.
+
+**Three endpoints answer the app**, and the split is about what a
+reader pays for rather than about tidiness. `/api/site` is the
+furniture and is fetched on every cold start. `/api/tools` is the
+calculators' 366 phrases. `/api/foods` is the portion library and
+the nutrient panel, 57 KB, and it has a route of its own because a
+reader who never opens the diet tool should not download the food
+library to see the front page.
+
+**A nutrient added to a food row reaches the app with nothing
+published, and that is a property of the app rather than of the
+endpoint.** Nothing in `core/.../diet/Foods.kt` names one: a
+`Portion` is built out of a `JsonObject` and every numeric field
+that is not structural lands in a map, so the two lists that split
+a scaled row (`COVERAGE_KEYS` and `MACRO_KEYS`) are sent rather
+than written down twice. A Kotlin class with nineteen fields on it
+would decode the new row perfectly and drop the new figure.
 
 **`check-app-surface.ts` is what holds it**, because the prose
 alone would not. A fifteenth table in `shared/content.ts` that
