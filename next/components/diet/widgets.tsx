@@ -30,7 +30,8 @@
    ============================================================ */
 
 import Link from "next/link";
-import type { ReactNode } from "react";
+import type { CSSProperties, ReactNode } from "react";
+import { dietPage } from "../../lib/diet-pages";
 import { T, digits } from "./lang";
 
 /** The frame. `href` is required rather than optional, because
@@ -42,8 +43,24 @@ export function Widget({ href, title, children, wide }: {
   children: ReactNode;
   wide?: boolean;
 }) {
+  /* A WIDGET WEARS THE COLOUR OF THE PAGE IT OPENS, out of the
+     same table the strip dot, the page frame and the front
+     door's deck read. Nine widgets in one accent were nine
+     identical tiles, and four of them go to the same page, which
+     a reader could only find out by pressing them.
+
+     The sparkline and the fourteen day strip both draw from
+     `--accent`, so they follow without being told. A widget
+     pointing somewhere that is not a page of this tool keeps
+     the section's own colour rather than losing one. */
+  const tone = dietPage(href)?.tone;
   return (
-    <Link href={href} className="dt-w" data-wide={wide ? "" : undefined}>
+    <Link
+      href={href}
+      className="dt-w"
+      data-wide={wide ? "" : undefined}
+      style={tone ? { "--accent": tone } as CSSProperties : undefined}
+    >
       <span className="dt-w-title">{title}</span>
       <span className="dt-w-body">{children}</span>
     </Link>

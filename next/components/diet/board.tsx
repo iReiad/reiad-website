@@ -431,7 +431,7 @@ export function DietBoard() {
             target, and `best` sits beside `current` because a
             number that can only fall is a number people stop
             looking at. */}
-        <Widget href="/tools/diet/trend" title={<T en="Days logged" bn="যত দিন লেখা" />}>
+        <Widget href="/tools/diet/habits" title={<T en="Days logged" bn="যত দিন লেখা" />}>
           {/* A ZERO IS NOT A COUNT OF NOTHING, it is a run that
               has not started, and a big grey 0 on the widget
               that is supposed to be encouraging is the one place
@@ -567,7 +567,7 @@ export function DietBoard() {
               />}
         </Widget>
 
-        <Widget href="/tools/diet/trend" title={<T en="Steps" bn="পদক্ষেপ" />}>
+        <Widget href="/tools/diet/habits" title={<T en="Steps" bn="পদক্ষেপ" />}>
           {day?.steps
             ? (
               <>
