@@ -31,6 +31,10 @@
    login could not have reached anyone either. Bump this whenever a
    precached file changes.
 
+   v195: /fallback.css. Four questions before nine empty widgets:
+        a reader who has just signed in lands on the questions
+        rather than on a board waiting for their answers.
+
    v194: /fallback.css. The oil calibration: one question once a
         month, which is the largest unlogged item in most home
         cooking.
@@ -1756,7 +1760,7 @@
    imports (crumbs, audience, learn progress) and the hub is a
    different page. Without a bump, a returning reader would be
    served the v3 app.js forever and none of it would appear. */
-const VERSION = "v194";
+const VERSION = "v195";
 const SHELL = `shell-${VERSION}`;
 const RUNTIME = `runtime-${VERSION}`;
 

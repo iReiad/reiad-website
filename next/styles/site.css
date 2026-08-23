@@ -14055,6 +14055,28 @@ German for day, and .tag is what the site has always called
      not a stall at all, so drawing it as an alert would tell a
      reader the opposite of what it says. The rail is the page's
      own accent, like every other lead figure. */
+  /* The first ninety seconds. Four boxes and two buttons, and
+     nothing else on the page: a reader who has just signed in
+     should see the four questions rather than nine widgets all
+     saying they are waiting for the answers. */
+  .dt-onboard { display: grid; gap: var(--s-5); max-inline-size: 60ch; }
+  .dt-onboard-form {
+    display: grid;
+    gap: var(--s-5);
+    grid-template-columns: repeat(auto-fit, minmax(min(100%, 14rem), 1fr));
+    align-items: start;
+  }
+  .dt-onboard-go { display: flex; gap: var(--s-4); flex-wrap: wrap; align-items: center; }
+  /* A refusal, not a validation message: the dashed edge is the
+     one this stylesheet uses for the end of the road. */
+  .dt-onboard-stop {
+    border: 1px dashed var(--danger);
+    border-radius: var(--radius-card);
+    padding: var(--s-5);
+    color: var(--ink-soft);
+    margin: 0;
+  }
+
   /* One question, once a month, about a kitchen rather than a
      meal. Three boxes on one row, because they are one question
      asked three ways and splitting them would read as three. */

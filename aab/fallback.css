@@ -9136,6 +9136,23 @@
 
   @media print { .dt-nearby { display: none; } }
 
+  .dt-onboard { display: grid; gap: var(--s-5); max-inline-size: 60ch; }
+  .dt-onboard-form {
+    display: grid;
+    gap: var(--s-5);
+    grid-template-columns: repeat(auto-fit, minmax(min(100%, 14rem), 1fr));
+    align-items: start;
+  }
+  .dt-onboard-go { display: flex; gap: var(--s-4); flex-wrap: wrap; align-items: center; }
+
+  .dt-onboard-stop {
+    border: 1px dashed var(--danger);
+    border-radius: var(--radius-card);
+    padding: var(--s-5);
+    color: var(--ink-soft);
+    margin: 0;
+  }
+
   .dt-oil-form {
     display: grid;
     gap: var(--s-4);

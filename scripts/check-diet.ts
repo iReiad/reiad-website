@@ -576,7 +576,6 @@ const UNUSED: Record<string, string> = {
   "diet_profile.food_budget": "section 17, what food costs",
   "diet_profile.budget_currency": "section 17, beside the budget",
   "diet_profile.board": "section 24, the reader arranges the widgets",
-  "diet_profile.onboarded_at": "section 26, getting in",
 
   /* The day. The tape's other three and the fields no form
      offers yet. */
