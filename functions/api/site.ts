@@ -65,7 +65,9 @@ import { bnNum } from "../../shared/schools.ts";
 import { GARDEN, GROWN, MOODS, SEASONS } from "../../shared/routine.ts";
 import { PACES, TARGET_KINDS } from "../../shared/profile.ts";
 import { HEADS } from "../../shared/heads.ts";
-import { DIET_WORDS } from "../../shared/diet-words.ts";
+import {
+  DIET_WORDS, BMI_BANDS, WHTR_BANDS, SEX_FORMS, CUT_SETS,
+} from "../../shared/diet-words.ts";
 import { WIDGETS, HOME_DEFAULT } from "../../shared/widgets.ts";
 
 /** Half an hour, the same as the market board next door. The
@@ -176,7 +178,17 @@ export function onRequest(context: RouteContext): Response | Promise<Response> {
            app draws the same figures and would otherwise carry a
            second copy of every sentence in Kotlin, which is what
            `shared/` exists to prevent. */
-        dietWords: { ...DIET_WORDS },
+        dietWords: {
+          phrases: { ...DIET_WORDS },
+          /* The four keyed by a TOKEN the arithmetic returns
+             rather than by a phrase id, so a band the app
+             computes has a word without the app holding eight
+             Bangla sentences of its own. */
+          bmiBands: { ...BMI_BANDS },
+          whtrBands: { ...WHTR_BANDS },
+          sexForms: { ...SEX_FORMS },
+          cutSets: { ...CUT_SETS },
+        },
         /* What the front page can be made of, and what a reader
            who has arranged nothing gets.
 

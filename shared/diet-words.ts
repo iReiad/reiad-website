@@ -84,3 +84,51 @@ export const DIET_WORDS: Record<string, Phrase> = {
 "dt.f.hip": { en: "Hip, cm", bn: "নিতম্ব, সেমি" },
 "dt.f.cuts": { en: "Which BMI cut-offs", bn: "কোন বিএমআই সীমা" },
 };
+
+/* ============================================================
+   The four tables keyed by a TOKEN rather than by a phrase id.
+
+   `next/components/diet/words.ts` held these and re-exports them
+   now. They moved for the reason everything else in this file
+   did: the Android app draws the same figures, so a band printed
+   in Kotlin would be a second copy of eight Bangla sentences that
+   nothing holds to these.
+
+   Keyed by the token the arithmetic in `shared/diet.ts` returns,
+   which is what makes them checkable: `check-diet.ts` asserts
+   that every token those functions can produce has a word here,
+   in both directions, so a fifth band added to `bmiBand()` fails
+   rather than printing `raised` at a reader.
+   ============================================================ */
+
+/** What a BMI band means, in words. The tokens are `bmiBand()`'s. */
+export const BMI_BANDS: Record<string, Phrase> = {
+  under:   { en: "under the healthy range", bn: "স্বাস্থ্যকর সীমার নিচে" },
+  healthy: { en: "in the healthy range", bn: "স্বাস্থ্যকর সীমার মধ্যে" },
+  raised:  { en: "above the healthy range", bn: "স্বাস্থ্যকর সীমার উপরে" },
+  high:    { en: "well above the healthy range", bn: "অনেকটাই উপরে" },
+};
+
+/** The same for waist to height, whose tokens are `whtrBand()`'s. */
+export const WHTR_BANDS: Record<string, Phrase> = {
+  low:     { en: "below 0.4", bn: "০.৪ এর নিচে" },
+  healthy: { en: "under 0.5, which is the mark to aim for", bn: "০.৫ এর নিচে, যেটাই লক্ষ্য" },
+  raised:  { en: "0.5 or above", bn: "০.৫ বা তার বেশি" },
+  high:    { en: "0.6 or above", bn: "০.৬ বা তার বেশি" },
+};
+
+/** Which form of the two equations was used. Not a statement
+    about the reader: `sex` on this site is which fitted constant
+    Mifflin-St Jeor and the tape method take, and the sheet says
+    so rather than printing the token. */
+export const SEX_FORMS: Record<string, Phrase> = {
+  male:   { en: "the male form of the equations", bn: "সূত্রের পুরুষ রূপ" },
+  female: { en: "the female form of the equations", bn: "সূত্রের নারী রূপ" },
+};
+
+/** Which BMI action points are in use, with the numbers in them,
+    because a clinician reading the sheet needs the numbers. */
+export const CUT_SETS: Record<string, Phrase> = {
+  general: { en: "25 and 30, the general cut-offs", bn: "২৫ আর ৩০, সাধারণ সীমা" },
+  asian:   { en: "23 and 27.5, the WHO Asian cut-offs", bn: "২৩ আর ২৭.৫, বিশ্ব স্বাস্থ্য সংস্থার এশীয় সীমা" },
+};

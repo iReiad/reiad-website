@@ -1259,7 +1259,12 @@ const BAND_TABLE = "BAND_WORDS";
 const CUTS_TABLE = "CUTS_WORDS";
 const words = read(`${COMPONENTS}/words.ts`);
 for (const table of [BAND_TABLE, CUTS_TABLE]) {
+  /* `export const NAME` or `NAME` in an export list, because the
+     strings themselves moved to `shared/diet-words.ts` so the
+     Android app draws the same bands: what this question needs is
+     that the NAME still resolves here, which a re-export does. */
   if (new RegExp(`export const ${table}\\b`).test(words)) continue;
+  if (new RegExp(`\\bas ${table}\\s*,|\\bas ${table}\\s*\\}|^\\s*${table}\\s*,`, "m").test(words)) continue;
   fail(`${COMPONENTS}/words.ts no longer exports ${table}`,
     "It is what a page drawing a BMI band is recognised by below, and what says",
     "which cut-offs were used. Point this question at the new name.");
