@@ -52,6 +52,7 @@ import {
   totalFor,
   stall, STALL_DAYS, cyclePlace, cycleOverCycle, LUTEAL_DAYS,
   oilPerMeal, OIL_KCAL_PER_ML,
+  TAPE_RESOLUTION_CM,
   SEASONS, seasonsOn, seasonById, quietSeason, shiftedSeason, calendarKnownTo,
   type SeasonId,
   BAND_MIN_KG, BAND_MAX_KG, BAND_OUT_DAYS, LOWEST_RATE_PCT, MAX_SURPLUS_KCAL,
@@ -1376,6 +1377,66 @@ ok("gain: forecastChange still declines to split a surplus on its own",
   }).fatShareKnown === false,
   "WATER.gain is zeros on purpose: calling a rise 100% fat is a claim about"
   + " the one thing that model cannot see");
+
+/* ------------------------------------------------------------
+   the fourth stall: walking less
+
+   Section 19. The moving nobody plans is the largest variable in
+   what anybody burns and it falls quietly during a deficit, so a
+   flat three weeks with an unchanged log is reported as the log
+   drifting, which is the tool accusing somebody of creeping
+   portions when what happened is that they stopped walking.
+
+   BOTH TESTS OR NEITHER, and that is what these assert. A fifth
+   off 2,000 steps is 400 steps and about ten kilocalories, which
+   is not a stall; a thousand off 20,000 is not a change of habit
+   either.
+   ------------------------------------------------------------ */
+
+const flatWeights: Point[] = Array.from({ length: 21 }, (_, i) => ({ day: i, kg: 82 + (i % 2) * 0.1 }));
+const steadyIntake = Array.from({ length: 21 }, (_, i) => ({ day: i, kcal: 2100 }));
+const stalledWith = (extra: Record<string, number | undefined>) =>
+  stall({ weights: flatWeights, intakes: steadyIntake, today: 20, ...extra });
+
+ok("8,000 steps down to 4,500 is a fall in walking, not a log that drifted",
+  stalledWith({ stepsThen: 8000, stepsNow: 4500 })?.kind === "moved-less");
+ok("and the page gets both medians, because the sentence names both",
+  stalledWith({ stepsThen: 8000, stepsNow: 4500 })?.stepsThen === 8000
+  && stalledWith({ stepsThen: 8000, stepsNow: 4500 })?.stepsNow === 4500);
+
+ok("a fifth off two thousand steps is four hundred steps and is not a stall",
+  stalledWith({ stepsThen: 2000, stepsNow: 1600 })?.kind !== "moved-less");
+ok("and a thousand off twenty thousand is not a change of habit either",
+  stalledWith({ stepsThen: 20000, stepsNow: 19000 })?.kind !== "moved-less");
+
+ok("walking MORE is never this kind",
+  stalledWith({ stepsThen: 4500, stepsNow: 8000 })?.kind !== "moved-less");
+ok("and a reader who logs no steps at all gets silence rather than a fall",
+  stalledWith({})?.kind !== "moved-less");
+ok("one half of the pair is not a comparison",
+  stalledWith({ stepsThen: 8000 })?.kind !== "moved-less");
+
+/* THE ORDER IS THE ORDER OF CONFIDENCE. A waist falling is
+   measured on the reader; a fall in walking is measured off the
+   log; a drifted target is a burn this tool inferred. */
+ok("a falling waist still wins, because it is the one the tool can settle",
+  stall({
+    weights: flatWeights, intakes: steadyIntake, today: 20,
+    waists: [{ day: 0, cm: 92 }, { day: 20, cm: 89 }],
+    stepsThen: 8000, stepsNow: 4500,
+  })?.kind === "recomposition");
+ok("but the fall in walking is still offered underneath it",
+  stall({
+    weights: flatWeights, intakes: steadyIntake, today: 20,
+    waists: [{ day: 0, cm: 92 }, { day: 20, cm: 89 }],
+    stepsThen: 8000, stepsNow: 4500,
+  })?.also.includes("moved-less") === true);
+ok("and it beats a drifted target, which is inferred rather than counted",
+  stalledWith({ stepsThen: 8000, stepsNow: 4500, burnThen: 2600, burnNow: 2400 })?.kind === "moved-less");
+
+/* One centimetre, said once. */
+ok("the tape's resolution is one constant rather than two that can disagree",
+  TAPE_RESOLUTION_CM === 1);
 
 /* ------------------------------------------------------------ */
 

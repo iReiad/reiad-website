@@ -79,6 +79,7 @@ export function LogForm({
   const lang = useToolLang();
   const [weight, setWeight] = useState("");
   const [steps, setSteps] = useState("");
+  const [slept, setSlept] = useState("");
   const [note, setNote] = useState("");
 
   /* Seeded from the row rather than held as the truth. The row
@@ -88,8 +89,9 @@ export function LogForm({
   useEffect(() => {
     setWeight(day?.weightKg != null ? String(day.weightKg) : "");
     setSteps(day?.steps != null ? String(day.steps) : "");
+    setSlept(day?.sleepHours != null ? String(day.sleepHours) : "");
     setNote(day?.note ?? "");
-  }, [day?.date, day?.weightKg, day?.steps, day?.note]);
+  }, [day?.date, day?.weightKg, day?.steps, day?.sleepHours, day?.note]);
 
   const totals = totalFor(entries);
   const tags = new Set(day?.tags ?? []);
@@ -160,6 +162,27 @@ export function LogForm({
           value={steps}
           onChange={(e) => setSteps(e.target.value)}
           onBlur={() => onDay({ steps: num(steps) })}
+        />
+        {/* WHICH NIGHT, WRITTEN INTO THE LABEL, because it is
+            invisible when it is wrong. A row's hours are the
+            night that ENDED on this row's morning, which is the
+            same night as this row's morning weighing and the
+            same night Apple Health, Fitbit and Oura date to this
+            row. `afterShortNights()` pairs it with this row's
+            own intake for that reason. */}
+        <Field
+          id="dt-sleep-today" type="number" inputMode="decimal" step="0.5"
+          min={0} max={24}
+          label={<T en="Sleep last night, hours" bn="গত রাতে ঘুম, ঘণ্টা" />}
+          hint={(
+            <T
+              en="The night that ended this morning, the same one this morning's weight came after. It is optional, it is never scored, and the only thing read out of it is what you ate on the days that followed a short one."
+              bn="আজ সকালে যে রাতটা শেষ হয়েছে, আজকের ওজন যার পরে মাপা। এটা না দিলেও চলে, এতে কোনো নম্বর দেওয়া হয় না, আর এর থেকে কেবল একটা জিনিসই পড়া হয়: কম ঘুমের পরের দিনগুলোয় আপনি কী খেয়েছেন।"
+            />
+          )}
+          value={slept}
+          onChange={(e) => setSlept(e.target.value)}
+          onBlur={() => onDay({ sleepHours: num(slept) })}
         />
       </div>
 

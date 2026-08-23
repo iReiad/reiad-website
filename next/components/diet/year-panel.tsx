@@ -340,17 +340,28 @@ export function YearPanel() {
     );
   }
 
+  /* ONE WEIGHING IS STILL DRAWN, and two are what draw a line.
+     A reader on their first day should see the mark they just
+     made sitting in the year rather than an empty frame, so the
+     dot and the axis label are on `anyPoint` and only the two
+     paths are on `drawLine`. */
+  const anyPoint = points.length >= 1;
   const drawLine = points.length >= 2;
-  const ys = drawLine ? [...points.map((p) => p.kg), ...line.map((p) => p.kg)] : [];
-  const y0 = drawLine ? Math.min(...ys) : 0;
-  const y1 = drawLine ? Math.max(...ys) : 0;
+  const ys = anyPoint ? [...points.map((p) => p.kg), ...line.map((p) => p.kg)] : [];
+  const y0 = anyPoint ? Math.min(...ys) : 0;
+  const y1 = anyPoint ? Math.max(...ys) : 0;
 
   const px = (d: number): number => {
     const at = PAD.l + ((d - x0) / (x1 - x0)) * (W - PAD.l - PAD.r);
     return Math.min(Math.max(at, PAD.l), W - PAD.r);
   };
+  /* Halfway up where every reading is the same weight, which is
+     what one weighing is. At the top of the plot it would read as
+     a high one. */
   const py = (kg: number): number =>
-    PAD.t + (y1 === y0 ? 0 : (1 - (kg - y0) / (y1 - y0)) * (PLOT_B - PAD.t));
+    y1 === y0
+      ? PAD.t + (PLOT_B - PAD.t) / 2
+      : PAD.t + (1 - (kg - y0) / (y1 - y0)) * (PLOT_B - PAD.t);
   const path = (ps: Point[]): string =>
     ps.map((p, i) => `${i ? "L" : "M"}${px(p.day).toFixed(1)},${py(p.kg).toFixed(1)}`).join("");
 
@@ -423,8 +434,11 @@ export function YearPanel() {
               <title>{s.season[lang]}</title>
             </rect>
           ))}
+          {/* Inside the strip rather than above it: above, a name
+              sits exactly where the trend line runs on a reader
+              whose weight is near the bottom of the year. */}
           {seasons.filter((s) => px(s.to + 1) - px(s.from) > 40).map((s) => (
-            <text className="dt-ax" key={`${s.key}-name`} x={px(s.from) + 3} y={SEASON_TOP - 3}>
+            <text className="dt-ax" key={`${s.key}-name`} x={px(s.from) + 3} y={SEASON_TOP + 9}>
               {s.season[lang]}
             </text>
           ))}
@@ -432,12 +446,19 @@ export function YearPanel() {
           {/* The axis, labelled, because it does not start at zero
               and a clipped axis with no label exaggerates every
               wobble. */}
-          {drawLine ? (
+          {anyPoint ? (
             <>
               <text className="dt-ax" x={4} y={py(y1) + 4}>{digits(y1.toFixed(1), lang)}</text>
-              <text className="dt-ax" x={4} y={py(y0) + 4}>{digits(y0.toFixed(1), lang)}</text>
               <line className="dt-ax-line" x1={PAD.l} y1={py(y1)} x2={W - PAD.r} y2={py(y1)} />
-              <line className="dt-ax-line" x1={PAD.l} y1={py(y0)} x2={W - PAD.r} y2={py(y0)} />
+              {y1 === y0 ? null : (
+                <>
+                  <text className="dt-ax" x={4} y={py(y0) + 4}>
+                    {digits(y0.toFixed(1), lang)}
+                  </text>
+                  <line className="dt-ax-line"
+                        x1={PAD.l} y1={py(y0)} x2={W - PAD.r} y2={py(y0)} />
+                </>
+              )}
             </>
           ) : null}
 
@@ -459,19 +480,19 @@ export function YearPanel() {
             <>
               <path className="dt-scale-line" d={path(points)} />
               <path className="dt-trend-line" d={path(line)} />
-              {/* A marked day is a ring and an ordinary one a dot:
-                  a shape rather than a colour, and it is still
-                  drawn. Left out of the slope is not hidden from
-                  the reader. */}
-              {points.map((p) => (
-                <circle
-                  key={p.day} className="dt-dot"
-                  data-marked={markedDays.has(p.day) ? "" : undefined}
-                  cx={px(p.day)} cy={py(p.kg)} r={markedDays.has(p.day) ? 3.2 : 1.6}
-                />
-              ))}
             </>
           ) : null}
+          {/* A marked day is a ring and an ordinary one a dot: a
+              shape rather than a colour, and it is still drawn.
+              Left out of the slope is not hidden from the
+              reader. */}
+          {points.map((p) => (
+            <circle
+              key={p.day} className="dt-dot"
+              data-marked={markedDays.has(p.day) ? "" : undefined}
+              cx={px(p.day)} cy={py(p.kg)} r={markedDays.has(p.day) ? 3.2 : 1.6}
+            />
+          ))}
 
           {/* WHERE THE LOG REACHES. Without it the shaded year
               ahead has no edge and the drawing says nothing about
@@ -494,11 +515,14 @@ export function YearPanel() {
         </figcaption>
       </figure>
 
+      {/* `.dt-intro` and not `.dt-hint`: this is the first thing
+          said about the chart above rather than a note beside a
+          control, and a hint is set at ten and a half pixels. */}
       {!drawLine ? (
-        <p className="dt-hint">
+        <p className="dt-intro">
           <T
-            en="Two weighings draw a line, so there is no trend on this year yet. The frame above is the year itself: the seasons are already on it, and the line fills in from the left as you weigh."
-            bn="দুই দিনের ওজনে রেখা আঁকা হয়, তাই এই বছরে এখনো কোনো ধারা নেই। উপরের ছকটাই বছরটা: ঋতুগুলো আগেই বসানো আছে, আর আপনি ওজন লিখতে থাকলে রেখাটা বাঁ দিক থেকে ভরে উঠবে।"
+            en="Two weighings draw a line, so there is no trend on this year yet. The frame above is the year itself: the seasons are already on it, every weighing is marked as you make it, and the line fills in from the left."
+            bn="দুই দিনের ওজনে রেখা আঁকা হয়, তাই এই বছরে এখনো কোনো ধারা নেই। উপরের ছকটাই বছরটা: ঋতুগুলো আগেই বসানো আছে, আপনি যত ওজন লিখবেন প্রতিটাই সেখানে বসবে, আর রেখাটা বাঁ দিক থেকে ভরে উঠবে।"
           />
         </p>
       ) : null}

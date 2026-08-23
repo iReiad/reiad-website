@@ -58,6 +58,7 @@ import {
 import {
   KCAL_PER_KG, STALL_DAYS, trend, type Day, type Entry, type Point,
 } from "../shared/diet.ts";
+import { shiftIso } from "../shared/activity.ts";
 import { FOODS, type Portion } from "../shared/foods.ts";
 
 const ROOT = join(dirname(fileURLToPath(import.meta.url)), "..");
@@ -562,61 +563,78 @@ near("cost by tag: four rows at 10, 20, 30 and 900 have a middle of 25",
 
 /* ---- 8. days after a short night ----
 
-   THE OFFSET IS THE WHOLE READING. A night is paired with the
-   NEXT row's intake, because short sleep raises ghrelin and
-   lowers leptin overnight and the appetite it moves is the
-   following day's. This fixture is built so that the wrong
-   pairing comes out with the opposite sign rather than with a
-   smaller one: a reading off by a day would still look entirely
-   correct on a page. */
+   THE PAIRING IS THE WHOLE READING. A row's hours are the night
+   that ENDED on that row's morning, so they pair with that
+   row's own intake: the reader woke from that night and ate
+   their way through that day. This fixture alternates, so
+   pairing a row's hours with the day before or the day after
+   comes out with the OPPOSITE sign rather than with a smaller
+   one, and both are asserted. A reading a day out in either
+   direction looks entirely correct on a page, so a test is the
+   only thing that can notice. */
 
 const slept: Day[] = [];
 for (let n = 0; n < 20; n += 1) {
   slept.push({
     date: day(n),
-    /* Five hours on the even nights, eight on the odd ones. */
+    /* Five hours on the even rows, eight on the odd ones. */
     sleepHours: n % 2 === 0 ? 5 : 8,
-    /* And 2400 on the odd days, which are the days AFTER a short
-       night, against 2000 on the even ones. */
-    kcal: n % 2 === 0 ? 2000 : 2400,
+    /* And 2400 kcal on those same even rows, which are the days
+       that followed a short night. */
+    kcal: n % 2 === 0 ? 2400 : 2000,
   });
 }
 const nights = afterShortNights({ days: slept, targetKcal: 2100 });
 
 ok("after a short night: it reads", nights !== null);
-near("after a short night: ten days follow one", nights?.afterShort.days ?? -1, 10, 0);
-near("after a short night: nine follow a longer one, because the last has no day after it",
-  nights?.afterRest.days ?? -1, 9, 0);
+near("after a short night: ten rows follow one", nights?.afterShort.days ?? -1, 10, 0);
+near("after a short night: ten follow a longer one", nights?.afterRest.days ?? -1, 10, 0);
 near("after a short night: 2400 kcal on those days",
   nights?.afterShort.meanKcal ?? 0, 2400, 0.001);
 near("after a short night: 2000 after a longer one",
   nights?.afterRest.meanKcal ?? 0, 2000, 0.001);
 near("after a short night: which is 400 more", nights?.diff ?? 0, 400, 0.001);
-ok("after a short night: and the WRONG pairing would be 400 less, not 400 more",
-  (nights?.diff ?? 0) > 0,
-  "pairing a night with the same row's intake gives -400 on this fixture");
 near("after a short night: 300 above a target of 2100",
   nights?.overTarget ?? 0, 300, 0.001);
 near("after a short night: and the rest sit 100 under it",
   nights?.restOverTarget ?? 0, -100, 0.001);
 near("after a short night: twenty rows carry hours", nights?.nights ?? -1, 20, 0);
-near("after a short night: nineteen of them are pairs", nights?.pairs ?? -1, 19, 0);
+near("after a short night: all twenty are pairs", nights?.pairs ?? -1, 20, 0);
 near("after a short night: the middle night is 6.5 hours",
   nights?.medianHours ?? 0, 6.5, 0.001);
 ok("after a short night: the span is printed as dates and as days",
-  nights?.from === day(0) && nights?.to === day(18) && nights?.span === 19);
+  nights?.from === day(0) && nights?.to === day(19) && nights?.span === 20);
 near("after a short night: the line is seven hours", nights?.short ?? -1, SHORT_NIGHT_HOURS, 0);
+
+/* THE OFFSET, FROM BOTH SIDES. `shiftIso` is what a wrong
+   version of this function would reach for, so the test reaches
+   for it too and shows what it would have reported. */
+const offsetBy = (by: number): number => {
+  const at = new Map(slept.map((d) => [d.date, d]));
+  const meanOf = (wantShort: boolean): number => {
+    const xs = slept
+      .filter((d) => ((d.sleepHours as number) < SHORT_NIGHT_HOURS) === wantShort)
+      .map((d) => at.get(shiftIso(d.date, by))?.kcal)
+      .filter((k): k is number => k != null);
+    return xs.reduce((a, b) => a + b, 0) / xs.length;
+  };
+  return meanOf(true) - meanOf(false);
+};
+ok("after a short night: pairing with the day AFTER flips the sign",
+  offsetBy(1) < 0, `it would report ${offsetBy(1)}`);
+ok("after a short night: and so does pairing with the day before",
+  offsetBy(-1) < 0, `it would report ${offsetBy(-1)}`);
 
 ok("after a short night: no target handed in is a null rather than a zero",
   afterShortNights({ days: slept })?.overTarget === null);
 
-/* A night with nothing logged the next day is not a pair, which
-   is the difference between a night nobody wrote a dinner after
-   and a night after which nothing was eaten. */
+/* A row with hours on it and nothing eaten written down is not a
+   pair, which is the difference between a day nobody logged and
+   a day on which nothing was eaten. */
 const unpaired = afterShortNights({
-  days: slept.map((d) => (d.date === day(1) ? { date: d.date, sleepHours: d.sleepHours } : d)),
+  days: slept.map((d) => (d.date === day(0) ? { date: d.date, sleepHours: d.sleepHours } : d)),
 });
-near("after a short night: a night whose next day has no food is dropped",
+near("after a short night: a row with hours and no food is dropped",
   unpaired?.afterShort.days ?? -1, 9, 0);
 
 ok("after a short night: five on each side is the floor and four is under it",

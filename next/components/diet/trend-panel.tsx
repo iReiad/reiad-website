@@ -41,6 +41,7 @@ import {
   who, getDays, getPhases, getProfile, dayNumber, isoDate, shiftDate,
   type Profile, type Who,
 } from "../../lib/diet-api";
+import { stepShift } from "@reiad/shared/activity";
 import { DEFAULT_PLACE } from "@reiad/shared/foods";
 import { ChipButton } from "../ui/chip";
 import { SeasonNote } from "./season-note";
@@ -155,6 +156,11 @@ export function TrendPanel() {
   const where = profile?.place ?? DEFAULT_PLACE;
   const season = useMemo(() => quietSeason({ date: today, place: where }), [today, where]);
 
+  /* THE FOURTH STALL NEEDS A FOURTH FACT. `stepShift()` already
+     computes the middle day over a window and the window before
+     it, so nothing here recomputes a median. */
+  const walked = useMemo(() => stepShift(inSpan, today, STALL_DAYS), [inSpan, today]);
+
   const stalled = useMemo(() => {
     const now = dayNumber(today);
     const intakes = inSpan.filter((d) => d.kcal != null)
@@ -176,10 +182,12 @@ export function TrendPanel() {
       today: now,
       burnThen: burnAt(now - STALL_DAYS),
       burnNow: burnAt(now),
+      stepsThen: walked.before ?? undefined,
+      stepsNow: walked.now ?? undefined,
       cycle: place,
       season,
     });
-  }, [fittable, inSpan, phases, today, place, season]);
+  }, [fittable, inSpan, phases, today, place, season, walked]);
 
   if (!answered) return <div className="dt-board-wait" aria-busy="true" />;
   if (!w) {
@@ -458,6 +466,12 @@ function Stalled({ it }: { it: Stall }) {
       then: "Fat cells that have given up their contents hold water for a while and then release it, which looks like nothing for ten days and then a kilo overnight. A reader nine days into that looks exactly like a reader who has stopped losing. This is the one that cannot be ruled out and the one worth waiting a week for.",
       thenBn: "যে চর্বিকোষ তার ভেতরের জিনিস ছেড়ে দিয়েছে সেটা কিছুদিন পানি ধরে রাখে, তারপর ছাড়ে, যেটা দেখতে দশ দিন কিছুই না, তারপর এক রাতে এক কেজি। এমন নয় দিনের মাথায় থাকা একজনকে দেখতে ঠিক থেমে যাওয়া একজনের মতোই লাগে। এটাই বাদ দেওয়া যায় না, আর এটার জন্যই এক সপ্তাহ অপেক্ষা করা উচিত।",
     },
+    "moved-less": {
+      en: "You are walking less than you were",
+      bn: "আগের চেয়ে কম হাঁটছেন",
+      then: "The moving you do not plan is the largest variable in what anybody burns, it is hundreds of calories a day, and it falls quietly during a deficit. Your log has not changed and your trend has flattened, and the thing that moved is how much you walked. That is not a stall and it is the easiest of these to answer.",
+      thenBn: "না ভেবে যে নড়াচড়া করেন সেটাই খরচের সবচেয়ে বড় ওঠানামা, দিনে কয়েকশো ক্যালোরির মতো, আর ঘাটতির সময় সেটা চুপচাপ কমে যায়। আপনার খাতা বদলায়নি, ধারা সমান হয়ে গেছে, আর যেটা বদলেছে সেটা আপনার হাঁটা। এটা আটকে যাওয়া নয়, আর এগুলোর মধ্যে এটার উত্তরই সবচেয়ে সহজ।",
+    },
     "hard-part": {
       en: "This is a hard part, and it may have no fix",
       bn: "এটা কঠিন একটা সময়, আর এর হয়তো কোনো সমাধান নেই",
@@ -490,6 +504,14 @@ function Stalled({ it }: { it: Stall }) {
           <p className="dt-why">
             <T en={`Your waist is ${Math.abs(it.waistCmChange).toFixed(1)} cm down over the same three weeks.`}
                bn={`একই তিন সপ্তাহে আপনার কোমর ${digits(Math.abs(it.waistCmChange).toFixed(1), "bn")} সেমি কমেছে।`} />
+          </p>
+        ) : null}
+        {it.kind === "moved-less" && it.stepsThen != null && it.stepsNow != null ? (
+          <p className="dt-why">
+            <T
+              en={`Your middle day has gone from about ${Math.round(it.stepsThen)} steps to about ${Math.round(it.stepsNow)} over the same three weeks.`}
+              bn={`একই তিন সপ্তাহে আপনার মাঝারি দিন প্রায় ${digits(Math.round(it.stepsThen), "bn")} কদম থেকে প্রায় ${digits(Math.round(it.stepsNow), "bn")} কদমে নেমেছে।`}
+            />
           </p>
         ) : null}
         {it.kind === "target-drifted" && it.burnKcalChange != null ? (

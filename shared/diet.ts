@@ -2067,6 +2067,16 @@ export const shiftedSeason = (opts: { date: string; place: Place }): Season | nu
     reasons NOT to worry. */
 export const STALL_DAYS = 21;
 
+/** What a tape measure resolves on one person, in centimetres.
+
+    Read by `stall()`, which calls a waist falling by this much
+    over three weeks a recomposition rather than a stall, and by
+    `tape()` in `shared/insights.ts`, which refuses to call a
+    change a change under it. ONE CONSTANT, because two of them
+    is a page saying a waist has moved beside a page saying it
+    has not. */
+export const TAPE_RESOLUTION_CM = 1;
+
 export type StallKind =
   /** Trend flat and the waist is falling. Not a stall at all:
       section 19's recomposition, and the one kind the tool can
@@ -2075,6 +2085,10 @@ export type StallKind =
   /** Trend flat and the learned maintenance has fallen. The
       target was right and has stopped being right. */
   | "target-drifted"
+  /** Trend flat, the log unchanged, and the walking down.
+      Section 19's fourth stall: entirely invisible without a
+      step count and the easiest of them to answer. */
+  | "moved-less"
   /** Trend flat and the logged intake has not moved. The most
       common of the four, and the tool says so WITHOUT ACCUSING
       ANYBODY: portions creep, and a kitchen scale is not a
@@ -2110,6 +2124,11 @@ export interface Stall {
   waistCmChange?: number;
   burnKcalChange?: number;
   intakeKcalChange?: number;
+  /** The middle day of walking over the window before, and over
+      the window. Absent where either half carries no step count,
+      which is silence and not a fall. */
+  stepsThen?: number;
+  stepsNow?: number;
   /** How much of the window has an intake logged. Under a half
       and no stall is reported at all. */
   coverage: number;
@@ -2135,6 +2154,14 @@ export function stall(opts: {
       the target having drifted. */
   burnThen?: number;
   burnNow?: number;
+  /** The reader's middle day of walking over the window before
+      and over the window, from `stepShift()` in
+      `shared/activity.ts`. The MEDIAN of each and never the
+      mean: one 25,000 step day in a month of 4,000s is a wedding
+      rather than a change of habit. Absent for a reader who logs
+      no steps, which is most of them, and absent is not a fall. */
+  stepsThen?: number;
+  stepsNow?: number;
   /** Where today falls in a cycle, where the reader has turned
       that on. Section 18: a flat trend inside the luteal phase
       is not reported as a stall, because it is the artefact this
@@ -2194,6 +2221,10 @@ export function stall(opts: {
     ? opts.burnNow - opts.burnThen
     : undefined;
 
+  const stepsChange = opts.stepsThen != null && opts.stepsNow != null
+    ? opts.stepsNow - opts.stepsThen
+    : null;
+
   /* The order is the order of confidence, not of likelihood.
      Recomposition first because it is the only one the tool can
      settle on its own; the hard part last because it is what is
@@ -2205,8 +2236,16 @@ export function stall(opts: {
 
   /* A centimetre over three weeks is outside what a tape measure
      can resolve on one person, so it is the threshold. */
-  if (waistCmChange != null && waistCmChange <= -1) {
+  if (waistCmChange != null && waistCmChange <= -TAPE_RESOLUTION_CM) {
     kind = "recomposition";
+  /* SECOND, BECAUSE IT IS MEASURED. A fall in walking is two
+     medians off the log; a drifted target is a burn this tool
+     inferred. BOTH TESTS, because a fifth off 2,000 steps is 400
+     steps and about 10 kcal, which is not a stall, and 1,000
+     steps off 20,000 is not a change of habit either. */
+  } else if (stepsChange != null && opts.stepsThen != null
+    && stepsChange <= -1000 && stepsChange <= -0.2 * opts.stepsThen) {
+    kind = "moved-less";
   } else if (burnKcalChange != null && burnKcalChange <= -100) {
     kind = "target-drifted";
   } else if (intakeKcalChange != null && Math.abs(intakeKcalChange) < 100) {
@@ -2218,6 +2257,9 @@ export function stall(opts: {
   }
   if (kind !== "target-drifted" && burnKcalChange != null && burnKcalChange < 0) {
     also.push("target-drifted");
+  }
+  if (kind !== "moved-less" && stepsChange != null && stepsChange < 0) {
+    also.push("moved-less");
   }
   if (kind !== "log-drifted" && intakeKcalChange != null && intakeKcalChange > 0) {
     also.push("log-drifted");
@@ -2239,6 +2281,8 @@ export function stall(opts: {
     waistCmChange,
     burnKcalChange,
     intakeKcalChange,
+    stepsThen: opts.stepsThen,
+    stepsNow: opts.stepsNow,
     coverage,
   };
 }

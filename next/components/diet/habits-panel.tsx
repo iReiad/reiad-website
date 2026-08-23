@@ -69,6 +69,7 @@ import {
   type Profile, type Who,
 } from "../../lib/diet-api";
 import { Meter } from "../deck";
+import { Invite } from "./invite";
 import { Note } from "../ui/note";
 import { T, TBlock, digits, useToolLang } from "./lang";
 import { Waiting } from "./widgets";
@@ -133,8 +134,8 @@ const ROWS: Record<HabitId, {
     en: "Slept the night", bn: "রাতের ঘুম",
     fromEn: "Read off the hours on each day's row.",
     fromBn: "প্রতিদিনের সারিতে লেখা ঘণ্টা থেকে।",
-    waitEn: "The log form has no hours field yet. A sheet brought in on the import page can carry them, and the nutrition page reads them for what you ate the day after a short night.",
-    waitBn: "খাতার ফর্মে এখনো ঘণ্টার ঘর নেই। আমদানির পাতায় আনা শিটে ঘণ্টা থাকতে পারে, আর কম ঘুমের পরের দিন কী খেয়েছেন তা পুষ্টির পাতায় পড়া হয়।",
+    waitEn: "The log form has no hours field yet. A sheet brought in on the import page can carry them, and the nutrition page reads a night against what you ate on the day it ended.",
+    waitBn: "খাতার ফর্মে এখনো ঘণ্টার ঘর নেই। আমদানির পাতায় আনা শিটে ঘণ্টা থাকতে পারে, আর পুষ্টির পাতায় একটা রাতের সঙ্গে মেলানো হয় যে দিনে সেটা শেষ হয়েছে সেই দিনের খাওয়া।",
   },
 };
 
@@ -268,12 +269,20 @@ export function HabitsPanel() {
 
   if (!w) {
     return (
-      <p className="dt-invite">
-        <T
-          en="A run of days is a run of rows, and those live on your account. Nothing here asks you to do anything new: it is the log you already keep, read back."
-          bn="কয়েক দিনের হিসাব মানে কয়েক দিনের সারি, আর সেগুলো আপনার অ্যাকাউন্টে থাকে। এখানে নতুন কিছু করতে বলা হচ্ছে না: আপনি যে খাতাটা এমনিতেই রাখেন, সেটাই পড়ে শোনানো হয়।"
-        />
-      </p>
+      <Invite
+        en="A run of days is a run of rows, and those live on your account. Nothing here asks you to do anything new: it is the log you already keep, read back."
+        bn="কয়েক দিনের হিসাব মানে কয়েক দিনের সারি, আর সেগুলো আপনার অ্যাকাউন্টে থাকে। এখানে নতুন কিছু করতে বলা হচ্ছে না: আপনি যে খাতাটা এমনিতেই রাখেন, সেটাই পড়ে শোনানো হয়।"
+        shows={[
+          { en: "Seven daily things read off columns your log already carries, each as a run of days with your best run beside it.",
+            bn: "সাতটা রোজকার জিনিস, আপনার খাতায় আগে থেকেই থাকা ঘর থেকে পড়া, প্রতিটির সঙ্গে টানা কত দিন আর সবচেয়ে লম্বা ধারা কত।" },
+          { en: "Your walking, your trend and your log over the same three weeks, which is the only way a quiet fall in walking is visible at all.",
+            bn: "একই তিন সপ্তাহে আপনার হাঁটা, ওজনের ধারা আর খাতা, আর চুপচাপ হাঁটা কমে যাওয়া কেবল এভাবেই চোখে পড়ে।" },
+          { en: "What the tape says beside what the scale did, which is the one kind of stall that is not a stall.",
+            bn: "ফিতা কী বলছে আর দাঁড়িপাল্লা কী করেছে, পাশাপাশি, আর আটকে যাওয়ার যে ধরনটা আসলে আটকে যাওয়া নয় সেটা এটাই।" },
+          { en: "Where the last fortnight points, as a band and never a date, and what more walking would do to it.",
+            bn: "শেষ দুই সপ্তাহ কোন দিকে যাচ্ছে, একটা সীমা হিসেবে, কখনো তারিখ নয়, আর আরও হাঁটলে তাতে কী হবে।" },
+        ]}
+      />
     );
   }
 

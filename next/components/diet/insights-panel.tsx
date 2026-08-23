@@ -510,13 +510,13 @@ function ThisWeek({ days, today }: { days: Day[]; today: string }) {
 /** `DIET.md` section 18, and the whole of what an hours field
     earns: one plain observation of the kind section 16 allows.
 
-    IT IS OFFSET BY A DAY AND THE PAGE SAYS SO. Short sleep
-    raises the hormone that makes somebody hungry and lowers the
-    one that says they have had enough, and the appetite that
-    follows lands the day AFTER. A panel comparing a night with
-    the same date's eating would be reading the wrong pair and
-    would look entirely correct, so what is compared is written
-    out for the reader rather than left in the arithmetic.
+    WHICH NIGHT, WRITTEN OUT FOR THE READER. A row's hours are
+    the night that ended on that row's morning, so they are set
+    against that row's own eating: what a short night changes is
+    the appetite of the day that follows it, and that day is this
+    one. A panel a day out in either direction would look
+    entirely correct, so what is compared is said in the copy
+    rather than left in the arithmetic.
 
     And it stops there. No score, no grade for a night, and no
     target for one: section 18 is explicit that this is never
@@ -538,16 +538,16 @@ function AfterAShortNight({
       </h2>
       <p className="dt-intro">
         <T
-          en="A night here is set against what you ate the day after it rather than the same day, because the appetite that follows a short night arrives the following day. What is below is two averages out of your own log: no cause is claimed between them, nothing is scored, and no night is graded."
-          bn="এখানে একটা রাতের ঘুমের পাশে রাখা হয় তার পরের দিন আপনি কী খেয়েছেন, ওই দিনের খাওয়া নয়, কারণ কম ঘুমের পর ক্ষুধা বাড়ে তার পরের দিন। নিচে আপনার নিজের খাতা থেকে নেওয়া দুটো গড়: এদের মধ্যে কারণ আর ফলের কোনো দাবি করা হয়নি, কিছুতে নম্বর দেওয়া হয়নি, আর কোনো রাতকে ভালো বা খারাপ বলা হয়নি।"
+          en="The hours on a day are the night you woke from that morning, so they are set against what you ate on that same day: what a short night changes is the appetite of the day that follows it, and that day is this one. What is below is two averages out of your own log: no cause is claimed between them, nothing is scored, and no night is graded."
+          bn="কোনো দিনের ঘরে লেখা ঘণ্টা মানে সেই দিন সকালে যে ঘুম থেকে উঠেছেন, তাই তার পাশে রাখা হয় ওই দিনেরই খাওয়া: কম ঘুম যে দিনের ক্ষুধা বদলায় সেটা তার পরের দিন, আর সেই দিনটাই এই দিন। নিচে আপনার নিজের খাতা থেকে নেওয়া দুটো গড়: এদের মধ্যে কারণ আর ফলের কোনো দাবি করা হয়নি, কিছুতে নম্বর দেওয়া হয়নি, আর কোনো রাতকে ভালো বা খারাপ বলা হয়নি।"
         />
       </p>
 
       {nights === null ? (
         <p className="dt-hint">
           <T
-            en={`${NIGHTS_LEAST} days after a night under ${SHORT_NIGHT_HOURS} hours and ${NIGHTS_LEAST} after a longer one, and this fills in. Hours are not on the log form yet: a sheet you bring in on the import page can carry them, and a night with nothing written down the day after is not a pair.`}
-            bn={`${digits(SHORT_NIGHT_HOURS, "bn")} ঘণ্টার কম ঘুমের পরে ${digits(NIGHTS_LEAST, "bn")} দিন আর তার বেশি ঘুমের পরে ${digits(NIGHTS_LEAST, "bn")} দিন লেখা থাকলে এটা ভরে উঠবে। খাতার ফর্মে এখনো ঘণ্টার ঘর নেই: আমদানির পাতায় আনা একটা শিটে ঘণ্টা থাকতে পারে, আর যে রাতের পরের দিন কিছুই লেখা নেই সেটা জোড়া হয় না।`}
+            en={`${NIGHTS_LEAST} days after a night under ${SHORT_NIGHT_HOURS} hours and ${NIGHTS_LEAST} after a longer one, and this fills in. Hours are not on the log form yet: a sheet you bring in on the import page can carry them, and a day with hours on it and no food written down is not a pair.`}
+            bn={`${digits(SHORT_NIGHT_HOURS, "bn")} ঘণ্টার কম ঘুমের পরে ${digits(NIGHTS_LEAST, "bn")} দিন আর তার বেশি ঘুমের পরে ${digits(NIGHTS_LEAST, "bn")} দিন লেখা থাকলে এটা ভরে উঠবে। খাতার ফর্মে এখনো ঘণ্টার ঘর নেই: আমদানির পাতায় আনা একটা শিটে ঘণ্টা থাকতে পারে, আর যে দিনে ঘুমের ঘণ্টা আছে অথচ খাবার লেখা নেই সেটা জোড়া হয় না।`}
           />
         </p>
       ) : (
@@ -618,8 +618,8 @@ function AfterAShortNight({
 
           <p className="dt-coverage">
             <T
-              en={`${nights.nights} of your rows carry an hours figure and ${nights.pairs} of those have a day with food written down after them, between ${nights.from} and ${nights.to}, which is ${nights.span} days. Your own middle night over them is ${one(nights.medianHours)} hours.`}
-              bn={`আপনার ${digits(nights.nights, "bn")}টি সারিতে ঘুমের ঘণ্টা লেখা আছে, তার ${digits(nights.pairs, "bn")}টির পরের দিনে খাবারও লেখা আছে, ${digits(nights.from, "bn")} থেকে ${digits(nights.to, "bn")} পর্যন্ত, অর্থাৎ ${digits(nights.span, "bn")} দিনে। ওই রাতগুলোর মধ্যে আপনার মাঝারি রাত ${digits(one(nights.medianHours), "bn")} ঘণ্টার।`}
+              en={`${nights.nights} of your rows carry an hours figure and ${nights.pairs} of those carry food as well, between ${nights.from} and ${nights.to}, which is ${nights.span} days. Your own middle night over them is ${one(nights.medianHours)} hours.`}
+              bn={`আপনার ${digits(nights.nights, "bn")}টি সারিতে ঘুমের ঘণ্টা লেখা আছে, তার ${digits(nights.pairs, "bn")}টিতে খাবারও লেখা আছে, ${digits(nights.from, "bn")} থেকে ${digits(nights.to, "bn")} পর্যন্ত, অর্থাৎ ${digits(nights.span, "bn")} দিনে। ওই রাতগুলোর মধ্যে আপনার মাঝারি রাত ${digits(one(nights.medianHours), "bn")} ঘণ্টার।`}
             />
           </p>
         </>
@@ -627,8 +627,8 @@ function AfterAShortNight({
 
       <p className="dt-why">
         <T
-          en="Described and not explained. Short sleep raises the hormone that makes you hungry and lowers the one that says you have had enough, and that is why the comparison is offset by a day; whether it is what your own two numbers are made of is not something a log can say. There is no sleep score here, no grade for a night, and no target for one either."
-          bn="এটা বর্ণনা, ব্যাখ্যা নয়। কম ঘুমে ক্ষুধা বাড়ানোর হরমোন বাড়ে আর পেট ভরার সংকেত দেওয়া হরমোন কমে, আর সেজন্যই তুলনাটা একদিন সরিয়ে করা হয়; আপনার নিজের এই দুটো সংখ্যা সত্যিই তাই দিয়ে তৈরি কি না, সেটা খাতা বলতে পারে না। এখানে ঘুমের কোনো নম্বর নেই, কোনো রাতকে ভালো বা খারাপ বলা হয়নি, আর ঘুমের কোনো লক্ষ্যও নেই।"
+          en="Described and not explained. Short sleep raises the hormone that makes you hungry and lowers the one that says you have had enough, which is why a night is read against the day it ended on rather than the day before it; whether it is what your own two numbers are made of is not something a log can say. There is no sleep score here, no grade for a night, and no target for one either."
+          bn="এটা বর্ণনা, ব্যাখ্যা নয়। কম ঘুমে ক্ষুধা বাড়ানোর হরমোন বাড়ে আর পেট ভরার সংকেত দেওয়া হরমোন কমে, আর সেজন্যই একটা রাতকে মেলানো হয় যে দিনে সেটা শেষ হয়েছে সেই দিনের খাওয়ার সঙ্গে, তার আগের দিনের সঙ্গে নয়; আপনার নিজের এই দুটো সংখ্যা সত্যিই তাই দিয়ে তৈরি কি না, সেটা খাতা বলতে পারে না। এখানে ঘুমের কোনো নম্বর নেই, কোনো রাতকে ভালো বা খারাপ বলা হয়নি, আর ঘুমের কোনো লক্ষ্যও নেই।"
         />
       </p>
     </section>

@@ -581,7 +581,6 @@ const UNUSED: Record<string, string> = {
   /* The day. The tape's other three and the fields no form
      offers yet. */
   "diet_days.sodium_mg": "section 15, the day's rollup of what the entries already carry",
-  "diet_days.sleep_hours": "section 18, the calendar",
   "diet_days.chest_cm": "section 2, the rest of the measurement set",
   "diet_days.thigh_cm": "section 2, the same",
   "diet_days.arm_cm": "section 2, the same",

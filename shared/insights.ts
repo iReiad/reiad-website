@@ -912,12 +912,12 @@ export interface AfterSleep {
       rather than only against the line. */
   short: number;
   medianHours: number;
-  /** Rows carrying an hours figure, and how many of those are
-      followed by a row with food on it. A night with nothing
-      logged the next day is not a pair. */
+  /** Rows carrying an hours figure, and how many of those also
+      carry food. A day with hours on it and nothing eaten
+      written down is not a pair. */
   nights: number;
   pairs: number;
-  /** The first and last night that made a pair, and the days
+  /** The first and last row that made a pair, and the days
       between them inclusive. */
   from: string;
   to: string;
@@ -940,21 +940,28 @@ export interface AfterSleep {
 /** Section 18's one sleep reading, and the whole of what an
     hours field earns.
 
-    IT PAIRS A NIGHT WITH THE NEXT ROW'S INTAKE, NEVER THAT
-    ROW'S. Short sleep raises ghrelin and lowers leptin
-    overnight, so the appetite it moves is the FOLLOWING day's. A
-    reading that pairs a night with the same date's eating is
-    measuring the wrong pair and comes out looking entirely
-    correct, which is why the offset is written down here rather
-    than left to whoever reads the loop.
+    A ROW'S HOURS ARE THE NIGHT THAT ENDED ON THAT ROW'S
+    MORNING, so they pair with that row's OWN intake. Short
+    sleep raises ghrelin and lowers leptin overnight and what it
+    moves is the day that follows the night: the reader woke from
+    it that morning and ate their way through that day, which is
+    this row.
 
-    WHICH MAKES A ROW'S `sleepHours` THE NIGHT THAT BEGINS ON
-    THAT DATE, and anything filling the column has to mean the
-    same thing by it. A form labelled "last night" and a sheet
-    exported by an app that dates a night to the morning it ended
-    are both the other convention, and either one puts this
-    reading a day out with nothing on the page looking wrong. The
-    panel prints which pair it compared for the same reason.
+    Three things settle that and they point the same way.
+    `weightKg` on a row is that morning's weighing, so the whole
+    row hangs off one morning and its sleep has to mean the same
+    night or the row means two things at once. Every importer
+    agrees: Apple Health, Fitbit and Oura all date a night to the
+    morning it ended, and `shared/csv.ts` maps `sleep`, `hours
+    slept` and `time asleep` out of exactly those. And a form
+    reads "last night", which is that same night again, so a
+    typed row and an imported row agree by construction rather
+    than by anybody remembering.
+
+    OFFSET IT BY A DAY IN EITHER DIRECTION AND IT IS MEASURING
+    THE WRONG PAIR while looking entirely correct, which is why
+    the convention is written here, asserted from both sides in
+    `scripts/insights.test.ts`, and printed on the panel.
 
     It returns two means and no word for the difference between
     them: section 16's rule, and section 18 is explicit that this
@@ -969,16 +976,14 @@ export function afterShortNights(opts: {
   const {
     days, targetKcal, short = SHORT_NIGHT_HOURS, least = NIGHTS_LEAST,
   } = opts;
-  const at = new Map(days.map((d) => [d.date, d]));
 
   const hours: number[] = [];
   const pairs: Array<{ date: string; hours: number; kcal: number }> = [];
   for (const d of days) {
     if (d.sleepHours == null) continue;
     hours.push(d.sleepHours);
-    const next = at.get(shiftIso(d.date, 1));
-    if (!next || next.kcal == null || !(next.kcal > 0)) continue;
-    pairs.push({ date: d.date, hours: d.sleepHours, kcal: next.kcal });
+    if (d.kcal == null || !(d.kcal > 0)) continue;
+    pairs.push({ date: d.date, hours: d.sleepHours, kcal: d.kcal });
   }
 
   const under = pairs.filter((p) => p.hours < short);
