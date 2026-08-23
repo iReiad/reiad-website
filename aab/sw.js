@@ -31,6 +31,10 @@
    login could not have reached anyone either. Bump this whenever a
    precached file changes.
 
+   v194: /fallback.css. The oil calibration: one question once a
+        month, which is the largest unlogged item in most home
+        cooking.
+
    v193: /fallback.css. The cycle reading: a flat trend in the
         luteal phase is no longer reported as a stall, and the
         trend can be read cycle to cycle.
@@ -1752,7 +1756,7 @@
    imports (crumbs, audience, learn progress) and the hub is a
    different page. Without a bump, a returning reader would be
    served the v3 app.js forever and none of it would appear. */
-const VERSION = "v193";
+const VERSION = "v194";
 const SHELL = `shell-${VERSION}`;
 const RUNTIME = `runtime-${VERSION}`;
 

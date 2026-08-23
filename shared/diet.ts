@@ -1977,3 +1977,75 @@ export function stall(opts: {
     coverage,
   };
 }
+
+/* ---------------------------------------------------------- */
+/* the oil nobody measures                                    */
+/* ---------------------------------------------------------- */
+
+/** Energy in a millilitre of cooking oil.
+
+    Every common cooking oil is within a few percent of this:
+    soybean, mustard, sunflower, rapeseed and palm are all
+    roughly 9 kcal a gram at about 0.92 g a millilitre. Ghee is
+    the same to within the width of this estimate. So the oil
+    does not need naming, which is one question fewer. */
+export const OIL_KCAL_PER_ML = 8.3;
+
+export interface OilPerMeal {
+  /** Kilocalories to add to one home-cooked meal, with the width
+      of the estimate on it. */
+  kcal: Range;
+  /** The arithmetic, so the page can show it rather than assert
+      it: a figure a reader cannot check is a figure they will
+      not believe, and this one is going into their log. */
+  mlPerMeal: number;
+  people: number;
+  meals: number;
+}
+
+/** The household calibrated, rather than the dish.
+
+    `DIET.md` section 14. A curry's oil is poured, not weighed,
+    and it is invisible in the finished dish: two tablespoons is
+    about 240 kcal and it is routine to use more. Across a week of
+    home cooking this is frequently THE SINGLE LARGEST UNLOGGED
+    ITEM IN THE ENTIRE DIET, larger than any snack anybody feels
+    guilty about.
+
+    One question, once a month, and the bottle comes with its own
+    scale printed on the side. It is an estimate and it is
+    labelled as one, and it is enormously better than the zero
+    that is there now.
+
+    The band is wide on purpose: a household does not divide its
+    oil evenly, the week was not typical, and some of it is still
+    in the pan. Plus or minus a third is honest, and a narrow
+    figure here would be the flattering-direction error this
+    whole file is arranged against, in reverse. */
+export function oilPerMeal(opts: {
+  /** Millilitres the household got through in the week. */
+  mlWeek?: number;
+  /** How many people ate from it. */
+  people?: number;
+  /** Home-cooked meals in the week, across the household. Seven
+      days times however many meals a day are cooked at home. */
+  meals?: number;
+}): OilPerMeal | null {
+  const { mlWeek, people, meals } = opts;
+  if (!mlWeek || !people || !meals) return null;
+  if (mlWeek <= 0 || people <= 0 || meals <= 0) return null;
+  /* A household getting through more than five litres a week, or
+     cooking more than a hundred meals, is a typo or a
+     restaurant, and either way this arithmetic says nothing
+     useful about one person's dinner. */
+  if (mlWeek > 5000 || people > 20 || meals > 100) return null;
+
+  const mlPerMeal = mlWeek / people / meals;
+  const mid = mlPerMeal * OIL_KCAL_PER_ML;
+  return {
+    kcal: range(mid, mid / 3),
+    mlPerMeal,
+    people,
+    meals,
+  };
+}

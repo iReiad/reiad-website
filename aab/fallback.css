@@ -9136,6 +9136,14 @@
 
   @media print { .dt-nearby { display: none; } }
 
+  .dt-oil-form {
+    display: grid;
+    gap: var(--s-4);
+    grid-template-columns: repeat(auto-fit, minmax(min(100%, 13rem), 1fr));
+    align-items: start;
+    margin-block-end: var(--step);
+  }
+
   .dt-cycle { display: grid; gap: var(--s-5); max-inline-size: 70ch; }
   .dt-cycle-set { display: grid; gap: var(--s-5); justify-items: start; }
   .dt-cycle-when {

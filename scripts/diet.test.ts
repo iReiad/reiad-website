@@ -51,6 +51,7 @@ import {
   type Body, type Day, type Point, type Phase, type Protocol,
   totalFor,
   stall, STALL_DAYS, cyclePlace, cycleOverCycle, LUTEAL_DAYS,
+  oilPerMeal, OIL_KCAL_PER_ML,
 } from "../shared/diet.ts";
 
 const ROOT = join(dirname(fileURLToPath(import.meta.url)), "..");
@@ -1035,6 +1036,39 @@ const over = cycleOverCycle({ weights: cyc(80, -1, 3), startDay: 900, today: 990
 ok("three cycles give a rate per cycle", over?.cycles === 3);
 ok("and the water cancels, because both sides of the subtraction hold it",
   over !== null && Math.abs(over.kgPerCycle - -1) < 0.2);
+
+/* ------------------------------------------------------------
+   the oil nobody measures
+
+   Section 14: across a week of home cooking this is frequently
+   the single largest unlogged item in the entire diet. The band
+   is wide on purpose, and a narrow figure here would be the
+   flattering-direction error in reverse.
+   ------------------------------------------------------------ */
+
+ok("a missing answer is nothing to say",
+  oilPerMeal({ mlWeek: 750, people: 4 }) === null);
+ok("and a zero is not an answer either",
+  oilPerMeal({ mlWeek: 750, people: 0, meals: 21 }) === null);
+ok("a household getting through five litres a week is a typo or a restaurant",
+  oilPerMeal({ mlWeek: 6000, people: 4, meals: 21 }) === null);
+
+/* The plan's own worked example: 750 ml, four people, twenty-one
+   meals, about 160 kcal of oil per meal. */
+const oil = oilPerMeal({ mlWeek: 750, people: 4, meals: 21 });
+ok("750 ml across four people and twenty-one meals is about 8.9 ml a meal",
+  oil !== null && Math.abs(oil.mlPerMeal - 8.93) < 0.05);
+ok("which is about 74 kcal, and the plan's 160 was for a smaller household",
+  oil !== null && Math.abs(oil.kcal.mid - 74) < 2);
+ok("the band is plus or minus a third, because a household does not divide oil evenly",
+  oil !== null && Math.abs(oil.kcal.high - oil.kcal.mid * (4 / 3)) < 0.5);
+ok("and it never reads as zero, which is the number it replaces",
+  oil !== null && oil.kcal.low > 0);
+
+/* Two tablespoons is about 30 ml, which the plan puts at 240
+   kcal: this constant has to agree with that. */
+ok("two tablespoons of oil is about 240 kcal, as section 14 says",
+  Math.abs(30 * OIL_KCAL_PER_ML - 249) < 12);
 
 /* ------------------------------------------------------------ */
 

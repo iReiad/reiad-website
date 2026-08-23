@@ -14055,6 +14055,17 @@ German for day, and .tag is what the site has always called
      not a stall at all, so drawing it as an alert would tell a
      reader the opposite of what it says. The rail is the page's
      own accent, like every other lead figure. */
+  /* One question, once a month, about a kitchen rather than a
+     meal. Three boxes on one row, because they are one question
+     asked three ways and splitting them would read as three. */
+  .dt-oil-form {
+    display: grid;
+    gap: var(--s-4);
+    grid-template-columns: repeat(auto-fit, minmax(min(100%, 13rem), 1fr));
+    align-items: start;
+    margin-block-end: var(--step);
+  }
+
   /* Where the reader is in a month, and the rate that actually
      removes the water rather than averaging over it. */
   .dt-cycle { display: grid; gap: var(--s-5); max-inline-size: 70ch; }

@@ -575,9 +575,6 @@ const UNUSED: Record<string, string> = {
   "diet_profile.band_high_kg": "section 6, the other end of the same band",
   "diet_profile.food_budget": "section 17, what food costs",
   "diet_profile.budget_currency": "section 17, beside the budget",
-  "diet_profile.oil_ml_week": "section 14, the oil calibration",
-  "diet_profile.oil_people": "section 14, per household rather than per dish",
-  "diet_profile.oil_meals": "section 14, the third of the three",
   "diet_profile.board": "section 24, the reader arranges the widgets",
   "diet_profile.onboarded_at": "section 26, getting in",
 
