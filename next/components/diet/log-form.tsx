@@ -24,10 +24,33 @@
    No red, no target line across the input, no message when a
    number is larger than another number. The tool's job at this
    moment is to accept what happened.
+
+   ---- a planned row is not an eaten one ----
+
+   Section 13's week plan is these same rows dated ahead with
+   `planned` set, so a day being logged can hold both. `totalFor`
+   has always excluded them and this list did not, so a plan for
+   tonight would have been drawn in the eaten list, with its
+   energy beside it, under a total that left it out. Splitting
+   them is the fix and the tick is the other half: a plan becomes
+   a log by clearing one flag, which is one row and not a second.
+
+   ---- and Enter means what it says ----
+
+   Every box here writes on blur, and a keyboard has no blur
+   until something else is focused: a reader who typed this
+   morning's weight, pressed Enter and closed the tab lost it.
+   Enter commits and stays put rather than blurring, because a
+   blur to the body sends the next Tab back to the top of the
+   page.
    ============================================================ */
 
-import { useEffect, useState } from "react";
-import { MARKS, TAGS, markNamed, totalFor, type Day, type Entry } from "@reiad/shared/diet";
+import { useEffect, useState, type KeyboardEvent } from "react";
+import {
+  MARKS, TAGS, byMeal, markNamed, totalFor,
+  type Day, type Entry,
+} from "@reiad/shared/diet";
+import { clockTime, markEaten, who, type Who } from "../../lib/diet-api";
 import { Button } from "../ui/button";
 import { ChipButton } from "../ui/chip";
 import { Field } from "../ui/field";
@@ -93,7 +116,38 @@ export function LogForm({
     setNote(day?.note ?? "");
   }, [day?.date, day?.weightKg, day?.steps, day?.sleepHours, day?.note]);
 
-  const totals = totalFor(entries);
+  /* Who, for the one write this form makes on its own: ticking
+     a planned row is a PATCH on that row rather than a new
+     entry, so it cannot go through `onEntry`. Everything else
+     here still goes up through the props. */
+  const [w, setW] = useState<Who | null>(null);
+  useEffect(() => {
+    let live = true;
+    const paint = (): void => {
+      void who().then((me) => { if (live) setW(me); });
+    };
+    paint();
+    document.addEventListener("account:changed", paint);
+    return () => { live = false; document.removeEventListener("account:changed", paint); };
+  }, []);
+
+  /* Which planned rows this page has already ticked. The record
+     is the row and this is only what has not come back down yet:
+     the props are re-read from the account on the next load, and
+     nothing is drawn from here that is not also in `entries`. */
+  const [had, setHad] = useState<Record<string, "going" | "done" | "failed">>({});
+
+  /* ONE MAP, AND EVERY READING BELOW FOLLOWS IT. A row ticked a
+     second ago is eaten, and the list, the total and the plan
+     have to agree about that or the day shows a number that does
+     not add up to the rows above it. */
+  const rows = entries.map((e) =>
+    (e.id && had[e.id] === "done" ? { ...e, planned: false } : e));
+  const eaten = rows.filter((e) => !e.planned);
+  const plan = rows.filter((e) => e.planned);
+  const meals = byMeal(rows);
+
+  const totals = totalFor(rows);
   const tags = new Set(day?.tags ?? []);
   const marks = new Set(day?.marks ?? []);
 
@@ -101,6 +155,42 @@ export function LogForm({
     const next = new Set(set);
     if (next.has(id)) next.delete(id); else next.add(id);
     return [...next];
+  };
+
+  /** Enter commits the box it was pressed in, and leaves the
+      caret where it is. Not a blur: see the header. */
+  const onEnter = (write: () => void) =>
+    (e: KeyboardEvent<HTMLInputElement>): void => {
+      if (e.key !== "Enter") return;
+      e.preventDefault();
+      write();
+    };
+
+  /**
+   * A planned row becomes an eaten one.
+   *
+   * The row keeps its id, its figures and the meal it was
+   * planned for, and the day's rollup is recomputed from what is
+   * on the page rather than added to, so a double press cannot
+   * count a dinner twice.
+   */
+  const hadIt = async (row: Entry): Promise<void> => {
+    const id = row.id;
+    if (!w || !id || !ready) return;
+    setHad((state) => ({ ...state, [id]: "going" }));
+    /* The clock, or noon on a day being filled in afterwards,
+       which is the rule the board already logs by: a Tuesday
+       written up on Thursday must not put every meal at half
+       past nine at night. */
+    const at = date === today ? clockTime() : "12:00";
+    const ok = await markEaten(w, id, at);
+    setHad((state) => ({ ...state, [id]: ok ? "done" : "failed" }));
+    if (!ok) return;
+    const after = totalFor([...eaten, { ...row, planned: false }]);
+    onDay({
+      kcal: Math.round(after.kcal), proteinG: after.protein,
+      carbsG: after.carbs, fatG: after.fat, fibreG: after.fibre,
+    });
   };
 
   return (
@@ -155,6 +245,7 @@ export function LogForm({
           value={weight}
           onChange={(e) => setWeight(e.target.value)}
           onBlur={() => onDay({ weightKg: num(weight) })}
+          onKeyDown={onEnter(() => onDay({ weightKg: num(weight) }))}
         />
         <Field
           id="dt-steps-today" type="number" inputMode="numeric" step="100" min={0}
@@ -162,6 +253,7 @@ export function LogForm({
           value={steps}
           onChange={(e) => setSteps(e.target.value)}
           onBlur={() => onDay({ steps: num(steps) })}
+          onKeyDown={onEnter(() => onDay({ steps: num(steps) }))}
         />
         {/* WHICH NIGHT, WRITTEN INTO THE LABEL, because it is
             invisible when it is wrong. A row's hours are the
@@ -183,6 +275,7 @@ export function LogForm({
           value={slept}
           onChange={(e) => setSlept(e.target.value)}
           onBlur={() => onDay({ sleepHours: num(slept) })}
+          onKeyDown={onEnter(() => onDay({ sleepHours: num(slept) }))}
         />
       </div>
 
@@ -229,16 +322,16 @@ export function LogForm({
           <p className="dt-hint">
             <T
               en={`Give or take ${Math.round(totals.spread / 2)}, because ${
-                entries.filter((e) => !e.planned && e.estLow != null && e.estHigh != null).length
+                eaten.filter((e) => e.estLow != null && e.estHigh != null).length
               } of these were not weighed by anybody.`}
               bn={`${digits(Math.round(totals.spread / 2), "bn")} এদিক-ওদিক হতে পারে, কারণ এর মধ্যে ${
-                digits(entries.filter((e) => !e.planned && e.estLow != null && e.estHigh != null).length, "bn")
+                digits(eaten.filter((e) => e.estLow != null && e.estHigh != null).length, "bn")
               }টা কেউ মেপে দেখেনি।`}
             />
           </p>
         ) : null}
 
-        {entries.length === 0
+        {eaten.length === 0
           ? (
             <p className="dt-hint">
               <T
@@ -247,38 +340,109 @@ export function LogForm({
               />
             </p>
           )
-          : (
-            <ul className="dt-eaten-list">
-              {entries.map((e, i) => (
-                <li key={e.id ?? i}>
-                  <span>{lang === "bn" && e.labelBn ? e.labelBn : e.label}</span>
-                  <span className="mono">{digits(Math.round(e.kcal ?? 0), lang)}</span>
-                  {/* Where the number came from, on every row. A
-                      reader has to be able to tell a figure this
-                      site checked from a stranger's. */}
-                  {e.source && e.source !== "free"
-                    ? <span className="dt-src">{e.source}</span> : null}
-                  {/* A MISTYPE HAS TO BE UNDOABLE. Without this
-                      the list was a list that could only grow,
-                      and one wrong 2,500 sat in the day's total
-                      and in the learned maintenance for ever. */}
-                  {e.id ? (
-                    <button
-                      type="button" className="dt-drop"
-                      onClick={() => onRemove(e.id as string)}
-                      disabled={!ready}
-                      aria-label={lang === "bn"
-                        ? `${e.labelBn ?? e.label} মুছুন`
-                        : `Remove ${e.label}`}
-                    >
-                      <span aria-hidden="true">&times;</span>
-                    </button>
-                  ) : null}
-                </li>
-              ))}
-            </ul>
-          )}
+          : meals.map((group) => (
+            /* UNDER THE MEAL IT BELONGS TO. `byMeal` reads the
+               row's own `meal` column and falls back to the hour
+               it was eaten, so a day logged before that column
+               was ever written still groups. A meal with nothing
+               in it is not drawn, which is why this is a map
+               rather than four headings. */
+            <div className="dt-meal" key={group.meal?.id ?? "loose"}>
+              <h4 className="dt-meal-h">
+                {group.meal
+                  ? <T en={group.meal.en} bn={group.meal.bn} />
+                  : <T en="Not placed" bn="সময় লেখা নেই" />}
+                <span className="mono">{digits(Math.round(group.total.kcal), lang)}</span>
+              </h4>
+              <ul className="dt-eaten-list">
+                {group.entries.map((e, i) => (
+                  <li key={e.id ?? i}>
+                    <span>{lang === "bn" && e.labelBn ? e.labelBn : e.label}</span>
+                    <span className="mono">{digits(Math.round(e.kcal ?? 0), lang)}</span>
+                    {/* Where the number came from, on every row. A
+                        reader has to be able to tell a figure this
+                        site checked from a stranger's. */}
+                    {e.source && e.source !== "free"
+                      ? <span className="dt-src">{e.source}</span> : null}
+                    {/* A MISTYPE HAS TO BE UNDOABLE. Without this
+                        the list was a list that could only grow,
+                        and one wrong 2,500 sat in the day's total
+                        and in the learned maintenance for ever. */}
+                    {e.id ? (
+                      <button
+                        type="button" className="dt-drop"
+                        onClick={() => onRemove(e.id as string)}
+                        disabled={!ready}
+                        aria-label={lang === "bn"
+                          ? `${e.labelBn ?? e.label} মুছুন`
+                          : `Remove ${e.label}`}
+                      >
+                        <span aria-hidden="true">&times;</span>
+                      </button>
+                    ) : null}
+                  </li>
+                ))}
+              </ul>
+            </div>
+          ))}
       </div>
+
+      {/* WHAT WAS PLANNED FOR THIS DAY, AND NOT YET EATEN.
+          Section 13: plan on Sunday, tick through the week. The
+          tick is the whole of what makes a plan worth writing,
+          and it is one press: the row is already there, with its
+          own numbers, and eating it clears a flag. Nothing here
+          counts towards the day until it is pressed, and a plan
+          nobody kept is left alone rather than marked. */}
+      {plan.length ? (
+        <div className="dt-plan">
+          <h3>
+            <T en="Planned, not yet eaten" bn="ঠিক করা ছিল, এখনো খাওয়া হয়নি" />
+            <span className="mono"> {digits(Math.round(totalFor(rows, "planned").kcal), lang)}</span>
+          </h3>
+          <ul className="dt-eaten-list">
+            {plan.map((e, i) => (
+              <li key={e.id ?? `p-${i}`}>
+                <span>{lang === "bn" && e.labelBn ? e.labelBn : e.label}</span>
+                <span className="mono">{digits(Math.round(e.kcal ?? 0), lang)}</span>
+                <Button
+                  size="sm"
+                  disabled={!ready || !e.id || had[e.id] === "going"}
+                  onClick={() => void hadIt(e)}
+                >
+                  <T en="I had this" bn="এটা খেয়েছি" />
+                </Button>
+                {e.id ? (
+                  <button
+                    type="button" className="dt-drop"
+                    onClick={() => onRemove(e.id as string)}
+                    disabled={!ready}
+                    aria-label={lang === "bn"
+                      ? `${e.labelBn ?? e.label} পরিকল্পনা থেকে বাদ দিন`
+                      : `Drop ${e.label} from the plan`}
+                  >
+                    <span aria-hidden="true">&times;</span>
+                  </button>
+                ) : null}
+              </li>
+            ))}
+          </ul>
+          {Object.values(had).includes("failed") ? (
+            <p className="dt-hint">
+              <T
+                en="One of those did not save. It is still on the plan, so press it again when the connection is back."
+                bn="ওগুলোর একটা জমা হয়নি। সেটা পরিকল্পনাতেই আছে, নেট ফিরলে আবার চাপুন।"
+              />
+            </p>
+          ) : null}
+          <p className="dt-why">
+            <T
+              en="A plan is not a target. What was planned and what was eaten are two numbers side by side, and neither one is a pass mark."
+              bn="পরিকল্পনা কোনো লক্ষ্য নয়। কী ঠিক করা ছিল আর কী খাওয়া হয়েছে, দুটো সংখ্যা পাশাপাশি থাকে; এর কোনোটাই পাশ-ফেলের হিসাব নয়।"
+            />
+          </p>
+        </div>
+      ) : null}
 
       <fieldset className="dt-set">
         <legend><T en="How today was" bn="আজকের দিনটা কেমন" /></legend>
@@ -317,6 +481,7 @@ export function LogForm({
           value={note}
           onChange={(e) => setNote(e.target.value)}
           onBlur={() => onDay({ note: note.trim() || undefined })}
+          onKeyDown={onEnter(() => onDay({ note: note.trim() || undefined }))}
         />
       </fieldset>
 

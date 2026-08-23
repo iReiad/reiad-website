@@ -344,35 +344,47 @@ export async function getEntries(w: Who, from: string, to?: string): Promise<Ent
   return r.ok && r.data ? r.data.map(toEntry) : [];
 }
 
+/** An entry as a row, WITHOUT `user_id`, `origin` or an id.
+
+    One mapper, because `addEntry` and `importEntries` both build
+    this and a field one of them dropped would be a column the
+    log fills and an import does not. Those three are the
+    caller's: an id out of a file is a collision, a `user_id`
+    out of a file is silently refused, and the origin is what
+    tells a logged year from an imported one. */
+const fromEntry = (e: Entry): EntryRow => ({
+  entry_date: e.date,
+  /* THE CLOCK GOES IN `at_time` AND THE MEAL STAYS A MEAL.
+     This wrote "HH:MM" into `meal` for a while, which left the
+     hour readable only by a regex and left no row on this site
+     carrying a breakfast, a lunch or a dinner, so section 16's
+     reading of how protein is spread across a day had nothing
+     to read. */
+  at_time: e.atTime ?? null,
+  meal: e.meal ?? null,
+  label: e.label,
+  label_bn: e.labelBn ?? null,
+  qty: e.qty ?? null,
+  unit: e.unit ?? null,
+  kcal: e.kcal ?? null,
+  macros: e.macros ?? {},
+  micros: e.micros ?? {},
+  est_low: e.estLow ?? null,
+  est_high: e.estHigh ?? null,
+  planned: e.planned ?? false,
+  /* WHERE THE NUMBER CAME FROM, on every row, and what it was
+     copied from. The log must not depend on a public database
+     still being there next year, and a history that changed
+     because somebody edited an entry in one would be worse
+     than one that went missing: nothing would announce it. */
+  source: e.source ?? "free",
+  source_id: e.sourceId ?? null,
+});
+
 export async function addEntry(w: Who, e: Entry): Promise<Entry | null> {
   const row: EntryRow & { user_id: string } = {
+    ...fromEntry(e),
     user_id: w.id,
-    entry_date: e.date,
-    /* THE CLOCK GOES IN `at_time` AND THE MEAL STAYS A MEAL.
-       This wrote "HH:MM" into `meal` for a while, which left the
-       hour readable only by a regex and left no row on this site
-       carrying a breakfast, a lunch or a dinner, so section 16's
-       reading of how protein is spread across a day had nothing
-       to read. */
-    at_time: e.atTime ?? null,
-    meal: e.meal ?? null,
-    label: e.label,
-    label_bn: e.labelBn ?? null,
-    qty: e.qty ?? null,
-    unit: e.unit ?? null,
-    kcal: e.kcal ?? null,
-    macros: e.macros ?? {},
-    micros: e.micros ?? {},
-    est_low: e.estLow ?? null,
-    est_high: e.estHigh ?? null,
-    planned: e.planned ?? false,
-    /* WHERE THE NUMBER CAME FROM, on every row, and what it was
-       copied from. The log must not depend on a public database
-       still being there next year, and a history that changed
-       because somebody edited an entry in one would be worse
-       than one that went missing: nothing would announce it. */
-    source: e.source ?? "free",
-    source_id: e.sourceId ?? null,
     origin: "logged",
   };
   const r = await call<EntryRow[]>("diet_entries", {
@@ -398,6 +410,31 @@ export async function addEntry(w: Who, e: Entry): Promise<Entry | null> {
 
 export async function removeEntry(w: Who, id: string): Promise<boolean> {
   const r = await call(`diet_entries?id=eq.${id}`, { method: "DELETE" }, w);
+  return r.ok;
+}
+
+/**
+ * A planned row becomes an eaten one.
+ *
+ * `DIET.md` section 13 and the migration beside `planned`: a
+ * week's plan is not a seventh table, it is these rows dated
+ * ahead, and a plan becomes a log by CLEARING ONE FLAG. So this
+ * is an update rather than an insert and a delete: the row keeps
+ * its id, its figures, its source and the meal it was planned
+ * for, and nothing downstream can tell a kept plan from a
+ * logged dinner, which is the point.
+ *
+ * The clock is written here because a planned row has none: what
+ * a plan knows is the day, and the hour is a fact about eating
+ * it. Without it `entryHour()` reads null and the by-hour
+ * reading loses every meal anybody planned.
+ */
+export async function markEaten(w: Who, id: string, atTime: string): Promise<boolean> {
+  const r = await call(`diet_entries?id=eq.${id}`, {
+    method: "PATCH",
+    headers: { prefer: "return=minimal" },
+    body: JSON.stringify({ planned: false, at_time: atTime }),
+  }, w);
   return r.ok;
 }
 
@@ -446,6 +483,18 @@ export async function saveOwnFood(w: Who, food: OwnFood): Promise<boolean> {
     body: JSON.stringify({ ...food, user_id: w.id,
       updated_at: new Date().toISOString() }),
   }, w);
+  return r.ok;
+}
+
+/** A saved dish, meal or item, gone.
+
+    A list that can only grow is the friction section 13 exists
+    to remove: a meal assembled once out of a week nobody eats
+    any more sits at the top of the one-tap list for ever. The
+    rows it has already written are untouched, because a logged
+    entry carries its own numbers and never points at this. */
+export async function removeOwnFood(w: Who, id: string): Promise<boolean> {
+  const r = await call(`diet_foods?id=eq.${id}`, { method: "DELETE" }, w);
   return r.ok;
 }
 
@@ -516,24 +565,84 @@ export async function importDays(
   return { written, failed };
 }
 
-/** Undone as one operation, which is what `origin` is for. */
+/**
+ * The same, for what was eaten.
+ *
+ * A PLAIN INSERT, not an upsert, and no id from the caller.
+ * `diet_entries` has no natural key: two eggs at eight in the
+ * morning are two rows and merging them would be the tool
+ * deciding somebody ate one. An id out of a file either
+ * collides with a live row or resurrects a deleted one, so the
+ * database mints them.
+ *
+ * NO `user_id` FROM THE CALLER EITHER. Row level security
+ * refuses a foreign one silently, and a silent refusal is a
+ * page reporting a successful import of nothing.
+ */
+export async function importEntries(
+  w: Who, entries: Entry[], origin: string,
+): Promise<{ written: number; failed: number }> {
+  if (!entries.length) return { written: 0, failed: 0 };
+  /* Chunked and sequential for `importDays`'s reasons: a request
+     size, and a bad connection that twelve parallel requests
+     make worse. */
+  const SIZE = 100;
+  let written = 0;
+  let failed = 0;
+  for (let at = 0; at < entries.length; at += SIZE) {
+    const slice = entries.slice(at, at + SIZE);
+    const r = await call("diet_entries", {
+      method: "POST",
+      headers: { prefer: "return=minimal" },
+      body: JSON.stringify(slice.map((e) => ({
+        ...fromEntry(e), user_id: w.id, origin,
+      }))),
+    }, w);
+    if (r.ok) written += slice.length; else failed += slice.length;
+  }
+  return { written, failed };
+}
+
+/**
+ * Undone as one operation, which is what `origin` is for.
+ *
+ * THE ENTRIES FIRST, THEN THE DAYS. A failure halfway leaves the
+ * days that still explain what the entries were, rather than a
+ * few hundred orphaned foods under dates nothing describes.
+ */
 export async function undoImport(w: Who, origin: string): Promise<boolean> {
+  const stamped = encodeURIComponent(origin);
+  const eaten = await call(
+    `diet_entries?user_id=eq.${w.id}&origin=eq.${stamped}`,
+    { method: "DELETE" }, w,
+  );
+  if (!eaten.ok) return false;
   const r = await call(
-    `diet_days?user_id=eq.${w.id}&origin=eq.${encodeURIComponent(origin)}`,
+    `diet_days?user_id=eq.${w.id}&origin=eq.${stamped}`,
     { method: "DELETE" }, w,
   );
   return r.ok;
 }
 
-/** Which imports this account carries, so one can be undone by
-    name rather than by remembering what was imported when. */
+/**
+ * Which imports this account carries, so one can be undone by
+ * name rather than by remembering what was imported when.
+ *
+ * BOTH TABLES, because an import writes both and a day row is
+ * not guaranteed. A copy of an account holds entries for every
+ * date something was eaten and a `diet_days` row only where
+ * something was measured, so an origin whose entries all landed
+ * on dates that carry no day row would be an import nothing
+ * could name, and `undoImport` is by name.
+ */
 export async function importOrigins(w: Who): Promise<string[]> {
-  const r = await call<Array<{ origin: string }>>(
-    `diet_days?user_id=eq.${w.id}&origin=neq.logged&select=origin`,
+  const asked = ["diet_days", "diet_entries"].map((table) => call<Array<{ origin: string }>>(
+    `${table}?user_id=eq.${w.id}&origin=neq.logged&select=origin`,
     { method: "GET" }, w,
-  );
-  if (!r.ok || !r.data) return [];
-  return [...new Set(r.data.map((d) => d.origin))].sort();
+  ));
+  const found = await Promise.all(asked);
+  const names = found.flatMap((r) => (r.ok && r.data ? r.data.map((d) => d.origin) : []));
+  return [...new Set(names)].sort();
 }
 
 /* ---------------------------------------------------------- */

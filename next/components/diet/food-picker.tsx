@@ -78,9 +78,26 @@
    summary, because a thing that takes two taps to log is a thing
    that does not get logged. `next/lib/recipes.ts` holds all
    three sets of figures and `next/recipes.test.ts` asserts them.
+
+   ---- and the whole of it works without a mouse ----
+
+   Section 13: type, arrow, enter. The results are a roving
+   tabindex, which is the account page's pattern and the only one
+   this site has, so the list is ONE tab stop rather than six and
+   the arrows walk it. Enter on the search box takes the first
+   result, Enter in the amount box ADDS IT, and Escape backs out
+   of the step.
+
+   The amount box is the one that matters. Every path here ended
+   at a button four tab stops past the field somebody had just
+   typed in: the unit chips, the four hand chips and the ate-out
+   chip all sit between the number and Add, so a reader who never
+   touches a pointer typed a portion and then pressed Tab five
+   times, or gave up. A form that cannot be submitted from the
+   field it ends in is a form that looks finished.
    ============================================================ */
 
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState, type KeyboardEvent } from "react";
 import type { Entry } from "@reiad/shared/diet";
 import {
   DEFAULT_PLACE, barcodeOf, loggedFrom, portionWords, scaleTo,
@@ -233,6 +250,35 @@ export function FoodPicker({ onPick, place = DEFAULT_PLACE, ingredient = false }
      about one plate rather than a setting. */
   const [out, setOut] = useState(false);
 
+  /* WHICH RESULT THE ARROWS ARE ON. A roving tabindex, so the
+     list is one tab stop and not one per result, which is the
+     account page's arrangement and the only one this site has.
+     It is an index rather than an id because the list is
+     rebuilt on every keystroke and an id would point at a
+     result that is no longer there. */
+  const [active, setActive] = useState(0);
+  const hitRefs = useRef<Array<HTMLButtonElement | null>>([]);
+
+  /** The search box, by id rather than by ref. `<Field>` renders
+      the input and does not forward one, and the id is already
+      the thing its own label is wired to, so there is nothing
+      here that can come to name a box that is not the box. */
+  const focusBox = (): void => {
+    (document.getElementById("dt-food-q") as HTMLInputElement | null)?.focus();
+  };
+
+  /** Focus one result, or the search box for anything before the
+      first. Clamped rather than wrapped: a list that wraps from
+      the last result back to the first hides the end of itself
+      from somebody holding the arrow key down. */
+  const focusHit = (at: number): void => {
+    if (at < 0) { focusBox(); setActive(0); return; }
+    const to = Math.min(at, hits.length - 1);
+    if (to < 0) return;
+    setActive(to);
+    hitRefs.current[to]?.focus();
+  };
+
   useEffect(() => {
     const asked = q.trim();
     setChosen(null);
@@ -292,6 +338,12 @@ export function FoodPicker({ onPick, place = DEFAULT_PLACE, ingredient = false }
 
     return () => { live = false; stop.abort(); window.clearTimeout(timer); };
   }, [q, place]);
+
+  /* The arrows start at the top of whatever is on screen now.
+     Without this the roving index survives a new search and
+     Tab lands on the fourth result of a list the reader has
+     never seen. */
+  useEffect(() => { setActive(0); }, [hits]);
 
   /* Opening the step does not log anything. The box opens at the
      portion the row STATES, in the row's own unit, which is the
@@ -353,13 +405,61 @@ export function FoodPicker({ onPick, place = DEFAULT_PLACE, ingredient = false }
     setOut(false);
     setQ("");
     setHits([]);
+    /* BACK TO THE BOX, because the next thing somebody logs is
+       the next thing they ate. Landing on the body instead means
+       the following Tab starts at the top of the page, and a
+       reader adding four items to a dinner walks the whole form
+       four times. */
+    focusBox();
   };
+
+  /** Out of the step, back to where the choosing happens. Escape
+      is the one key a reader presses without being told to, so
+      it has to mean the same thing here as it does in the
+      account menu: put this away and leave me where I was. */
+  const backOut = (): void => {
+    setChosen(null);
+    setOut(false);
+    focusBox();
+  };
+
+  /** The search box. Down goes into the list, Enter takes the
+      first result. Enter rather than "focus the first and let
+      them press it again": a repeat dinner has to be three
+      interactions and this is one of the three. */
+  const onSearchKey = (e: KeyboardEvent<HTMLInputElement>): void => {
+    if (!hits.length) return;
+    if (e.key === "ArrowDown") { e.preventDefault(); focusHit(0); return; }
+    if (e.key === "Enter") { e.preventDefault(); take(hits[0]); }
+  };
+
+  /** One result. The arrows walk the list, Escape leaves it, and
+      Enter is the button's own. */
+  const onHitKey = (e: KeyboardEvent<HTMLButtonElement>, at: number): void => {
+    if (e.key === "ArrowDown") { e.preventDefault(); focusHit(at + 1); return; }
+    if (e.key === "ArrowUp") { e.preventDefault(); focusHit(at - 1); return; }
+    if (e.key === "Escape") { e.preventDefault(); focusBox(); }
+  };
+
+  /** Enter in a field ADDS, where there is something to add.
+      `disabled` is the same test the button uses, so a field that
+      refuses and a button that is greyed out refuse together
+      rather than one of them being a second opinion. */
+  const onEnter = (run: () => void, allowed: boolean) =>
+    (e: KeyboardEvent<HTMLInputElement>): void => {
+      if (e.key !== "Enter") return;
+      e.preventDefault();
+      if (allowed) run();
+    };
 
   /** A plate nobody weighed, out of two numbers and a name.
       NOTHING BUT ENERGY: a plate this tool did not see the
       making of has no composition it can state, and a protein
       figure borrowed from a row that was never this plate would
       be a confident number about somebody else's kitchen. */
+  const plateReady = plate.label.trim() !== ""
+    && outRange(Number(plate.low), Number(plate.high)) !== null;
+
   const fromPlate = (): void => {
     const range = outRange(Number(plate.low), Number(plate.high));
     const label = plate.label.trim();
@@ -390,6 +490,18 @@ export function FoodPicker({ onPick, place = DEFAULT_PLACE, ingredient = false }
     });
   };
 
+  /** A name and a number, which is always a valid entry. Named
+      rather than inline, because Enter in either box and the
+      button have to run the SAME thing: two copies of a writer
+      is how one of them keeps a field the other drops. */
+  const freeReady = free.label.trim() !== "" && Number(free.kcal) > 0;
+
+  const addFree = (): void => {
+    if (!freeReady) return;
+    onPick({ label: free.label.trim(), kcal: Number(free.kcal), source: "free" });
+    setFree({ label: "", kcal: "" });
+  };
+
   /** The packet, as a per 100 g row. Nothing is invented: a field
       left empty stays absent all the way into the log. */
   const packet = (): FoundFood | null => {
@@ -409,6 +521,8 @@ export function FoodPicker({ onPick, place = DEFAULT_PLACE, ingredient = false }
     };
   };
 
+  const packetReady = packet() !== null && Number(sheet.grams) > 0;
+
   const fromPacket = (): void => {
     const food = packet();
     if (!food) return;
@@ -427,8 +541,15 @@ export function FoodPicker({ onPick, place = DEFAULT_PLACE, ingredient = false }
         id="dt-food-q" type="search" autoComplete="off"
         label={<T en="Add something you ate" bn="যা খেয়েছেন যোগ করুন" />}
         placeholder={lang === "bn" ? "ভাত, ডিম, রুটি…" : "rice, egg, bread…"}
+        hint={(
+          <T
+            en="Type, then the down arrow for the list and enter to take one. Enter on its own takes the first."
+            bn="লিখুন, তারপর নিচের তির চেপে তালিকায় যান আর এন্টার চেপে একটা নিন। সরাসরি এন্টার চাপলে প্রথমটাই নেওয়া হয়।"
+          />
+        )}
         value={q}
         onChange={(e) => setQ(e.target.value)}
+        onKeyDown={onSearchKey}
       />
 
       {looking ? <p className="dt-hint"><T en="Looking" bn="খোঁজা হচ্ছে" /></p> : null}
@@ -462,6 +583,10 @@ export function FoodPicker({ onPick, place = DEFAULT_PLACE, ingredient = false }
               type="number" inputMode="decimal" step="any" min={0}
               value={amount}
               onChange={(e) => setAmount(e.target.value)}
+              onKeyDown={(e) => {
+                if (e.key === "Escape") { e.preventDefault(); backOut(); return; }
+                onEnter(add, preview !== null)(e);
+              }}
             />
             {chosen.grams !== undefined && chosen.unit !== "g" ? (
               <div className="dt-tags" role="group"
@@ -587,18 +712,31 @@ export function FoodPicker({ onPick, place = DEFAULT_PLACE, ingredient = false }
             <Button kind="solid" disabled={!preview} onClick={add}>
               <T en="Add it" bn="যোগ করুন" />
             </Button>
-            <Button onClick={() => setChosen(null)}>
+            <Button onClick={backOut}>
               <T en="Not that" bn="এটা নয়" />
             </Button>
+            <span className="dt-hint">
+              <T
+                en="Enter in the box above adds it, escape goes back."
+                bn="উপরের ঘরে এন্টার চাপলেই যোগ হবে, এস্কেপ চাপলে ফিরে যাবেন।"
+              />
+            </span>
           </div>
         </div>
       ) : null}
 
       {!chosen && hits.length > 0 ? (
         <ul className="dt-hits">
-          {hits.map((h) => (
+          {hits.map((h, at) => (
             <li key={h.id}>
-              <button type="button" className="dt-hit" onClick={() => take(h)}>
+              <button
+                type="button" className="dt-hit"
+                ref={(el) => { hitRefs.current[at] = el; }}
+                tabIndex={at === Math.min(active, hits.length - 1) ? 0 : -1}
+                onFocus={() => setActive(at)}
+                onKeyDown={(e) => onHitKey(e, at)}
+                onClick={() => take(h)}
+              >
                 <span className="dt-hit-name">
                   <T en={h.en} bn={h.bn ?? h.en} />
                   {h.brand ? <span className="dt-hit-brand"> {h.brand}</span> : null}
@@ -702,6 +840,7 @@ export function FoodPicker({ onPick, place = DEFAULT_PLACE, ingredient = false }
             placeholder={lang === "bn" ? "কী খেয়েছেন" : "What you ate"}
             value={free.label}
             onChange={(e) => setFree((f) => ({ ...f, label: e.target.value }))}
+            onKeyDown={onEnter(addFree, freeReady)}
           />
           <input
             className="dt-picker-box dt-picker-num" type="number" inputMode="numeric"
@@ -709,14 +848,9 @@ export function FoodPicker({ onPick, place = DEFAULT_PLACE, ingredient = false }
             placeholder={lang === "bn" ? "ক্যালোরি" : "kcal"}
             value={free.kcal}
             onChange={(e) => setFree((f) => ({ ...f, kcal: e.target.value }))}
+            onKeyDown={onEnter(addFree, freeReady)}
           />
-          <Button
-            disabled={!free.label.trim() || !Number(free.kcal)}
-            onClick={() => {
-              onPick({ label: free.label.trim(), kcal: Number(free.kcal), source: "free" });
-              setFree({ label: "", kcal: "" });
-            }}
-          >
+          <Button disabled={!freeReady} onClick={addFree}>
             <T en="Add" bn="যোগ" />
           </Button>
         </div>
@@ -766,11 +900,9 @@ export function FoodPicker({ onPick, place = DEFAULT_PLACE, ingredient = false }
               type="number" inputMode="decimal" step="any" min={0}
               value={sheet.grams}
               onChange={(e) => setSheet((s) => ({ ...s, grams: e.target.value }))}
+              onKeyDown={onEnter(fromPacket, packetReady)}
             />
-            <Button
-              disabled={!packet() || !(Number(sheet.grams) > 0)}
-              onClick={fromPacket}
-            >
+            <Button disabled={!packetReady} onClick={fromPacket}>
               <T en="Add" bn="যোগ" />
             </Button>
           </div>
@@ -802,24 +934,24 @@ export function FoodPicker({ onPick, place = DEFAULT_PLACE, ingredient = false }
               label={<T en="What it was" bn="কী খেয়েছিলেন" />}
               value={plate.label}
               onChange={(e) => setPlate((p) => ({ ...p, label: e.target.value }))}
+              onKeyDown={onEnter(fromPlate, plateReady)}
             />
             <Field
               id="dt-out-low" type="number" inputMode="decimal" step="any" min={0}
               label={<T en="The least it could have been, kcal" bn="সবচেয়ে কম যত হতে পারে, ক্যালোরি" />}
               value={plate.low}
               onChange={(e) => setPlate((p) => ({ ...p, low: e.target.value }))}
+              onKeyDown={onEnter(fromPlate, plateReady)}
             />
             <Field
               id="dt-out-high" type="number" inputMode="decimal" step="any" min={0}
               label={<T en="And the most, kcal" bn="আর সবচেয়ে বেশি, ক্যালোরি" />}
               value={plate.high}
               onChange={(e) => setPlate((p) => ({ ...p, high: e.target.value }))}
+              onKeyDown={onEnter(fromPlate, plateReady)}
             />
             <div className="dt-measure-row">
-              <Button
-                disabled={!plate.label.trim() || !outRange(Number(plate.low), Number(plate.high))}
-                onClick={fromPlate}
-              >
+              <Button disabled={!plateReady} onClick={fromPlate}>
                 <T en="Add" bn="যোগ" />
               </Button>
               {plate.low && plate.high

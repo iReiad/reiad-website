@@ -2089,6 +2089,41 @@ erase that removes all of it. `§30`. **The importer reads the
 exporter's format**, so this tool can be left and returned to,
 which is the only real test of whether an export is honest.
 
+**Built, and the test had been failing quietly.**
+`aab/src/account-page.ts` has written all six diet tables into
+that file since the day those tables existed, and the importer
+read CSV and nothing else, so a reader could take their whole
+account away and bring none of it back. Both halves worked
+perfectly on their own, which is exactly why nothing said so.
+`shared/bundle.ts` reads it now and `/tools/diet/import` takes a
+`.json` beside a `.csv`.
+
+**Two of the six come back, and the schema is what decides
+which.** `diet_days` and `diet_entries` are the tables carrying
+an `origin` column, and `origin` is the only thing that makes
+"undone as one operation" above possible. A table this cannot
+offer to undo is a table it does not write, so the other four are
+NAMED on the preview screen with the reason rather than dropped
+silently: a copy that quietly restores two thirds of an account
+is worse than one that restores a third and says which.
+
+`diet_profile` would be refused even if it grew the column, and
+it is the one worth writing down. It is a single row holding a
+reader's height, their medicines and whether they track a cycle.
+A file written over it is destructive in the one direction nobody
+notices: every page still renders, with somebody else's body in
+it.
+
+**Neither the file's `user_id` nor its row ids are carried**, and
+`scripts/bundle.test.ts` asserts both as ABSENCES, which is the
+only way to assert one. A foreign `user_id` is refused by row
+level security silently, so the page would report a successful
+import of nothing; a carried row id either collides with a live
+row or resurrects a deleted one. The same test reads the origin
+column list out of the migration and the table list out of the
+exporter rather than repeating either, so a seventh table cannot
+appear at one end and go unnoticed at the other.
+
 ### And offline, because Dhaka
 
 The network is not dependable everywhere this will be used, and a
