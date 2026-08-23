@@ -1,7 +1,7 @@
 #!/usr/bin/env node
 /* ============================================================
    check-courses.ts: the third-party course section, held to the
-   four things about it that are easy to get quietly wrong.
+   eight things about it that are easy to get quietly wrong.
 
        node scripts/check-courses.ts
 
@@ -61,14 +61,24 @@
       and the `Lesson` interface in the browser module describes
       it. A field added to one and not the other is `undefined`
       where a title should be.
-   ============================================================ */
+
+   8. A TICK ID THAT GAINED THE SEGMENT THE ADDRESS GAINED.
+      `courses-read` holds `<course>/<module>/<lesson>` in real
+      browsers. Putting the programme in front of it is the one
+      change here that loses somebody's ticks rather than moving
+      them, and it is the change a reader tidying `lessonId()`
+      against `lessonUrl()` would think was obviously right.
+
+   The sections below are numbered in reading order and are not
+   one per reason: reason 4 is checked inside section 1, where
+   every slug is walked anyway. ============================== */
 
 import { readFileSync, existsSync } from "node:fs";
 import { join, dirname } from "node:path";
 import { fileURLToPath } from "node:url";
 import { execFileSync } from "node:child_process";
 import {
-  COURSES, PROGRAMMES, CATALOGUE, forBrowser, laddered, catalogueCounts,
+  COURSES, PROGRAMMES, CATALOGUE, forBrowser, laddered, catalogueCounts, lessonId,
   programmeFor, programmeUrl, courseUrl, moduleUrl, lessonUrl, ID_FIELDS,
 } from "../shared/courses.ts";
 import { nextOwns } from "../worker.js";
@@ -220,7 +230,60 @@ for (const course of COURSES) {
 }
 
 /* ============================================================
-   2. Nothing under next/ imports the catalogue
+   2. A tick id is still three segments, and none of them is the
+      programme
+
+   The address gained a segment when programmes arrived and the
+   tick did not. `courses-read` and `courses-last` hold
+   `<course>/<module>/<lesson>` in real browsers and
+   `courses-answers` holds it with two more on the end, so putting
+   the programme in front of any of them does not move somebody's
+   ticks, it loses them.
+
+   The uniqueness rule above protects the CONSEQUENCE of that:
+   two courses sharing a slug would share one set of ticks. This
+   protects the change itself, which is the likelier one to be
+   made, because `lessonId()` and `lessonUrl()` sit four lines
+   apart in `shared/courses.ts` and one of them takes a programme.
+   Making the other match looks like tidying and is the single
+   most expensive edit anybody can make to this section.
+   ============================================================ */
+
+for (const programme of PROGRAMMES) {
+  for (const course of programme.courses) {
+    for (const mod of course.modules) {
+      for (const lesson of mod.lessons) {
+        const id = lessonId(course.slug, mod.slug, lesson.slug);
+        const parts = id.split("/");
+        if (parts.length !== 3) {
+          say(`the tick id for ${id} has ${parts.length} segments where it must have 3: `
+            + "the address gained the programme and the tick must not");
+        }
+        /* Compared segment by segment rather than with `includes`,
+           because a course legitimately called
+           `google-data-analytics-capstone-...` contains its own
+           programme's slug and is not a bug. What would be a bug
+           is the programme standing as a segment of its own. */
+        if (parts.includes(programme.slug)) {
+          say(`the tick id for ${id} carries the programme ${programme.slug} as a segment, `
+            + "which orphans every tick already filed under the old id");
+        }
+        /* The address, by contrast, MUST carry it, and must carry
+           the tick's three segments after it. The two rules are
+           one rule looked at from each end, and writing only the
+           first would pass a `lessonId` that had quietly become
+           `lessonUrl` with the prefix stripped back off. */
+        const url = lessonUrl(programme.slug, course.slug, mod.slug, lesson.slug);
+        if (url !== `/skills/courses/${programme.slug}/${id}`) {
+          say(`${url} is not /skills/courses/<programme>/ followed by the tick id ${id}`);
+        }
+      }
+    }
+  }
+}
+
+/* ============================================================
+   3. Nothing under next/ imports the catalogue
    ============================================================ */
 
 const grep = (pattern: string, path: string): string[] => {
@@ -289,7 +352,7 @@ for (const line of grep("shared/courses", join(ROOT, "next"))) {
 }
 
 /* ============================================================
-   3. The two copies of the address rules agree
+   4. The two copies of the address rules agree
    ============================================================ */
 
 const sharedSrc = readFileSync(join(ROOT, "shared", "courses.ts"), "utf8");
@@ -413,7 +476,7 @@ if (existsSync(listing)) {
 }
 
 /* ============================================================
-   7. The wire format is what the browser expects
+   8. The wire format is what the browser expects
    ============================================================ */
 
 /** The field names of one `export interface` in the browser
@@ -468,7 +531,7 @@ if (!sample) {
 }
 
 /* ============================================================
-   Every storage key this section writes is one the account carries
+   9. Every storage key this section writes is one the account carries
 
    `aab/src/courses.ts` names its keys as `*_KEY` constants and
    `aab/src/sync.ts` lists what an account owns. A key in the first
@@ -505,7 +568,7 @@ if (!sample) {
 }
 
 /* ============================================================
-   9. What CLAUDE.md says the catalogue holds
+   10. What CLAUDE.md says the catalogue holds
 
    That row states five numbers about a generated file, which is
    the shape of claim the rule at the top of that very file is

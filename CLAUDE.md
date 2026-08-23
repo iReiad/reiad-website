@@ -1167,9 +1167,10 @@ node scripts/check-rls.ts  # a Supabase table created with no row-level
                             # security on it, which has no symptom at all, or
                             # a second table readable by anyone
 node scripts/check-courses.ts # a Drive id that is not one, the private course
-                            # catalogue leaking into a public bundle, or the
+                            # catalogue leaking into a public bundle, the
                             # Worker and the browser disagreeing about where
-                            # a lesson lives
+                            # a lesson lives, or a tick id that gained the
+                            # segment the address gained
 node scripts/check-api.ts  # the browser asking for an endpoint the Worker
                             # stopped routing, which breaks nothing and
                             # quietly switches a feature off
@@ -1899,6 +1900,13 @@ the whole catalogue and not only inside its programme, or two
 certificates each holding a "Foundations" would share one set of
 ticks; `check-courses.ts` fails on a collision, and the fix is
 renaming a Drive folder.
+
+It also fails on the edit itself, which is the likelier one to be
+made: `lessonId()` and `lessonUrl()` sit four lines apart in
+`shared/courses.ts` and one of them takes a programme, so making
+the other match reads as tidying. It is the single most expensive
+edit anybody can make to this section, because every tick already
+filed is orphaned rather than moved, and every page still renders.
 
 | | |
 | --- | --- |
