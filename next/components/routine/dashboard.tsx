@@ -57,6 +57,7 @@ import {
   everMarked, flock, garden, seasonOf, greeting, moodColour, bandTasks,
   exportName, toExport,
   type Band, type Task, type RoutineShape, type Entry,
+  GROWN,
 } from "@reiad/shared/routine";
 import { runtimeModule } from "../account/runtime";
 import { Button, ButtonLink } from "../ui/button";
@@ -72,8 +73,6 @@ const BN = Array.from({ length: 10 }, (_, i) => String.fromCharCode(0x09e6 + i))
 const bn = (n: number | string): string => String(n).replace(/\d/g, (d) => BN[Number(d)]);
 const pct = (v: number): string => `${Math.round(v * 100)}%`;
 
-const BIRDS = "brd";
-const PLANTS = "pln";
 
 /* ---------- the ring ----------
 
@@ -267,8 +266,8 @@ export function RoutineDashboard() {
   const ribbon = moodRibbon(entries, today, 84);
   const notes = written(entries).slice(0, 5);
   const waiting = neverMarked(shape, entries);
-  const birds = everMarked(entries, BIRDS);
-  const plants = everMarked(entries, PLANTS);
+  const birds = everMarked(entries, GROWN.birds);
+  const plants = everMarked(entries, GROWN.plants);
   const season = seasonOf(today);
   const hi = greeting(new Date().getHours());
   const live = [...shape.bands].sort((a, b) => a.order - b.order);

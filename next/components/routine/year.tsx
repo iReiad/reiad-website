@@ -32,6 +32,7 @@ import {
   done, heat, consistency, neverMarked, changed, balance,
   everMarked, flock, garden, seasonOf, echo, written, moodColour,
   type Band, type Task, type RoutineShape, type Entry, type Cell,
+  GROWN,
 } from "@reiad/shared/routine";
 import { runtimeModule } from "../account/runtime";
 import { Button } from "../ui/button";
@@ -48,8 +49,6 @@ const bn = (n: number | string): string => String(n).replace(/\d/g, (d) => BN[Nu
 /** The two tasks that have a drawing behind them, and the tasks
     are named by id rather than by label because a reader can
     rename anything and the birds should not leave when they do. */
-const BIRDS = "brd";
-const PLANTS = "pln";
 
 const dayLabel = (iso: string): string => new Intl.DateTimeFormat("en-GB", {
   day: "numeric", month: "long", year: "numeric", timeZone: "UTC",
@@ -263,8 +262,8 @@ export function RoutineYear() {
   const shares = balance(shape, entries);
   const season = seasonOf(today);
   const back = echo(entries, today);
-  const birds = everMarked(entries, BIRDS);
-  const plants = everMarked(entries, PLANTS);
+  const birds = everMarked(entries, GROWN.birds);
+  const plants = everMarked(entries, GROWN.plants);
 
   /* The one task worth a sentence: the most-marked thing, said
      factually. Two numbers, no arrow, no verdict. */

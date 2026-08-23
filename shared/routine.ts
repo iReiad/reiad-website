@@ -597,6 +597,24 @@ export function balance(
 export const everMarked = (entries: Entry[], taskId: string): number =>
   entries.filter((e) => (e.marks[taskId] ?? 0) > 0).length;
 
+/**
+ * The two task ids the drawings hang on.
+ *
+ * `brd` and `pln` are rows of the shipped template, and an id is
+ * never reused and never removed, so these are as stable as any
+ * key in this file. They are HERE rather than in the components
+ * because there were three copies of them, one in
+ * `dashboard.tsx`, one in `year.tsx` and one in `print.tsx`, and
+ * a fourth was about to be written into the Android app from a
+ * guess: `birds` and `plants`, which are not the ids and would
+ * have drawn an empty sky on every phone while every check
+ * passed.
+ *
+ * A routine that does not carry these tasks draws neither, which
+ * is right: the flock belongs to a person who feeds birds.
+ */
+export const GROWN = { birds: "brd", plants: "pln" } as const;
+
 /** How many birds are on the page.
 
     Thresholds rather than a ratio, so the flock grows in visible
