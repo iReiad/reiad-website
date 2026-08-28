@@ -545,6 +545,14 @@ export const getLesson = cache(async (
        it, so the route does the same rather than an empty
        article. */
     body: row?.body ?? "",
+    /* The other half of the pair, and the lesson's interactive
+       parts. Both are columns rather than fields in `meta`, and
+       the reason is the ladder query one function up: `stagesOf()`
+       reads `meta` for every lesson of a school, so a second body
+       in there would put a third of a megabyte of English on a
+       page that shows titles. MONEY.md has the argument. */
+    bodyEn: row?.bodyEn ?? "",
+    blocks: row?.blocks ?? "{}",
     prev: siblings[here - 1] ?? null,
     next: siblings[here + 1] ?? null,
   };

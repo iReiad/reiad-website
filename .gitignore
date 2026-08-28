@@ -54,3 +54,12 @@ shared/*.js
 shared/*.d.ts
 shared/curricula/*.js
 shared/curricula/*.d.ts
+
+# The SQL the two seeders write, which is the rows and not the
+# source of them: `schools.sql` from import-schools.ts and
+# `money.sql` from seed-money.ts, two megabytes of it. Both are
+# built in a workflow run and handed straight to wrangler, and a
+# `git add -A` after running one by hand would otherwise commit a
+# second copy of every lesson.
+/schools.sql
+/money.sql

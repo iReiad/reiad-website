@@ -187,6 +187,55 @@ export function getLast(school: string, known?: Set<string>): Bookmark | null {
   return value;
 }
 
+/* ---------- the ticks INSIDE a lesson ----------
+
+   A lesson's own tick is about the whole page. A checkpoint is
+   one thing done inside it, and `aab/checkpoints.js` has stored
+   those under `<school>-checks` since before this school's
+   progress was React. `aab/sync.js` carries all four keys, so
+   nothing here invents a storage key: a `drill` block writes the
+   same set the checklists in the prose write.
+
+   The ids do not collide, because they are a segment longer. A
+   checklist item is `<lesson>#<n>` and a drill step is
+   `<lesson>#<mount>#<n>`, and `checkpointStats()` splits on the
+   first `#` either way, so the account page counts both without
+   knowing there are two kinds. */
+
+const CHECK_KEY: Record<string, string> = {
+  money: "learn-checks",
+  deutsch: "deutsch-checks",
+  english: "english-checks",
+  quran: "quran-checks",
+};
+
+export function checkSet(school: string): Set<string> {
+  const raw = readJSON<unknown>(CHECK_KEY[school] ?? `${school}-checks`, []);
+  if (!Array.isArray(raw)) return new Set();
+  return new Set(raw.filter((id): id is string => typeof id === "string"));
+}
+
+/** Add or remove one checkpoint, and say which it ended up as. */
+export function toggleCheck(school: string, id: string): boolean {
+  const key = CHECK_KEY[school] ?? `${school}-checks`;
+  const set = checkSet(school);
+  const now = !set.has(id);
+  if (now) set.add(id); else set.delete(id);
+  writeJSON(key, [...set]);
+  /* Both events, because two different things are listening. The
+     React meters hear `reiad:progress`; `aab/checkpoints.js` and
+     the account page's own counters hear the school's own event,
+     which is what that module has dispatched since it was
+     written. A tick that updated one of the two would be a page
+     whose numbers disagree with each other. */
+  announce();
+  try {
+    document.dispatchEvent(
+      new CustomEvent(`${school === "money" ? "learn" : school}:progress`));
+  } catch { /* SSR */ }
+  return now;
+}
+
 /* ---------- telling the page something changed ---------- */
 
 const EVENT = "reiad:progress";

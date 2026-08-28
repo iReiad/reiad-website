@@ -25,10 +25,10 @@ export interface TreeStage {
 
 export const SCHOOL_STAGES: Record<string, TreeStage[]> = {
   money: [
-    { slug: "start", label: "হাতেখড়ি", kicker: "ধাপ ০", lessons: 8 },
-    { slug: "basics-1", label: "শব্দগুলো শিখুন", kicker: "ভিত্তি · ধাপ ১", lessons: 18 },
-    { slug: "basics-2", label: "বাজারটা পড়তে শিখুন", kicker: "ভিত্তি · ধাপ ২", lessons: 21 },
-    { slug: "basics-3", label: "নিজে যাচাই করুন", kicker: "ভিত্তি · ধাপ ৩", lessons: 13 },
+    { slug: "start", label: "হাতেখড়ি", kicker: "পর্যায় ০", lessons: 11 },
+    { slug: "basics-1", label: "শব্দগুলো শিখুন", kicker: "ভিত্তি · পর্যায় ১", lessons: 28 },
+    { slug: "basics-2", label: "বাজারটা পড়তে শিখুন", kicker: "ভিত্তি · পর্যায় ২", lessons: 25 },
+    { slug: "basics-3", label: "নিজে যাচাই করুন", kicker: "ভিত্তি · পর্যায় ৩", lessons: 17 },
   ],
   deutsch: [
     { slug: "stufe-1", label: "একদম শুরু থেকে", kicker: "Stufe 1", lessons: 14 },

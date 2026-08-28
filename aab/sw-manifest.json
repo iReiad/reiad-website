@@ -1,8 +1,8 @@
 {
-  "version": "v210",
+  "version": "v211",
   "hashes": {
     "/offline.html": "bd9144e7162be323",
-    "/fallback.css": "dc1d19164850825b",
+    "/fallback.css": "e582fd2cdea3a0ba",
     "/app.js": "d0b5bf300691d393",
     "/content.js": "024dccae1b55cc61",
     "/api.js": "a7bab41d860a4806",
@@ -20,8 +20,8 @@
     "/activation.js": "f3233d3de4e153e7",
     "/tilt.js": "e8e4e9e8c10e7810",
     "/money/reader.js": "4abf83585f45cfbb",
-    "/money/curriculum.js": "97bc5942b1b018d1",
-    "/money/icons.js": "ce344b09ef1b1c5e",
+    "/money/curriculum.js": "666ea98df3b837b5",
+    "/money/icons.js": "940d5354240e9745",
     "/schools/progress.js": "35c47e4e057ccbc9",
     "/schools/hub.js": "aef3e9b4a5705d67",
     "/schools/workbook.js": "8db38af75a95b5b4",

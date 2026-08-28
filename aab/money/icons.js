@@ -71,6 +71,14 @@ const PATHS = {
   // compass, reading the market
   compass: `<circle cx="12" cy="12" r="8.5"/>` + P("M14.8 9.2l-1.9 4.6-4.7 1.9 1.9-4.6 4.7-1.9Z"),
 
+  // target: the goal, decided before the money
+  target: `<circle cx="12" cy="12" r="8.5"/>` + `<circle cx="12" cy="12" r="4.5"/>` +
+    `<circle cx="12" cy="12" r="1"/>`,
+
+  // scale: how much risk is yours to take, weighed
+  scale: P("M12 4v16") + P("M6 20h12") + P("M4 8h16") +
+    P("M4 8l-2 5a3 3 0 0 0 4 0L4 8Z") + P("M20 8l-2 5a3 3 0 0 0 4 0L20 8Z"),
+
   // magnifier, checking it yourself
   magnifier: `<circle cx="10.5" cy="10.5" r="6.5"/>` + P("M15.3 15.3 21 21") + P("M8 10.5h5") + P("M10.5 8v5"),
 

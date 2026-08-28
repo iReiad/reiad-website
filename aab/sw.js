@@ -31,6 +31,22 @@
    login could not have reached anyone either. Bump this whenever a
    precached file changes.
 
+   v211: /fallback.css, /money/icons.js and /money/curriculum.js.
+        The money school rebuilt: a পর্যায় is a stage and a ধাপ is
+        a step, and every lesson is two bodies now with
+        interactive blocks between them. Eighty-one lessons where
+        there were sixty. The stylesheet gained a `lesson` layer
+        for those blocks, the icon set gained a target and a
+        scale, and the ladder the browser reads is compiled from
+        shared/curricula/money.ts. A cached copy of any of the
+        three draws a hub whose rungs stop at the sixtieth, or
+        cards with an empty square where a drawing goes.
+
+        It was two entries, v207 and v208, written on a branch
+        while main took both numbers for the board and for
+        sync.js. Renumbered rather than renumbering main's: a
+        VERSION that has shipped is a cache key in real browsers.
+
    v210: /sync.js. The base is stored per account ("sync-base",
          not a synced key), the reconcile commits it only after
          the push lands, and a failed exchange keeps it: adopt
@@ -1860,7 +1876,7 @@
    imports (crumbs, audience, learn progress) and the hub is a
    different page. Without a bump, a returning reader would be
    served the v3 app.js forever and none of it would appear. */
-const VERSION = "v210";
+const VERSION = "v211";
 const SHELL = `shell-${VERSION}`;
 const RUNTIME = `runtime-${VERSION}`;
 

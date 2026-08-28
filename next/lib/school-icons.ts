@@ -9,7 +9,7 @@
    this and fails if what is committed differs, so the four
    browser modules stay the source and this stays a copy.
 
-   103 drawings, across 4 schools.
+   105 drawings, across 4 schools.
    ============================================================ */
 
 export const SCHOOL_ICONS: Record<string, Record<string, string>> = {
@@ -25,6 +25,8 @@ export const SCHOOL_ICONS: Record<string, Record<string, string>> = {
     "seed": "<path d=\"M12 21v-7\"/><path d=\"M12 14c0-3.3 2.7-6 6-6 0 3.3-2.7 6-6 6Z\"/><path d=\"M12 16c0-2.5-2-4.5-4.5-4.5C7.5 14 9.5 16 12 16Z\"/>",
     "book": "<path d=\"M4 4.5A1.5 1.5 0 0 1 5.5 3H19v15H5.5A1.5 1.5 0 0 0 4 19.5Z\"/><path d=\"M4 19.5A1.5 1.5 0 0 1 5.5 21H19v-3\"/><path d=\"M8 7.5h7\"/><path d=\"M8 11h5\"/>",
     "compass": "<circle cx=\"12\" cy=\"12\" r=\"8.5\"/><path d=\"M14.8 9.2l-1.9 4.6-4.7 1.9 1.9-4.6 4.7-1.9Z\"/>",
+    "target": "<circle cx=\"12\" cy=\"12\" r=\"8.5\"/><circle cx=\"12\" cy=\"12\" r=\"4.5\"/><circle cx=\"12\" cy=\"12\" r=\"1\"/>",
+    "scale": "<path d=\"M12 4v16\"/><path d=\"M6 20h12\"/><path d=\"M4 8h16\"/><path d=\"M4 8l-2 5a3 3 0 0 0 4 0L4 8Z\"/><path d=\"M20 8l-2 5a3 3 0 0 0 4 0L20 8Z\"/>",
     "magnifier": "<circle cx=\"10.5\" cy=\"10.5\" r=\"6.5\"/><path d=\"M15.3 15.3 21 21\"/><path d=\"M8 10.5h5\"/><path d=\"M10.5 8v5\"/>",
     "cap": "<path d=\"M2.5 9 12 4.5 21.5 9 12 13.5 2.5 9Z\"/><path d=\"M6.5 11v5c0 1.5 2.5 2.8 5.5 2.8s5.5-1.3 5.5-2.8v-5\"/><path d=\"M21.5 9v5\"/>",
     "scroll": "<path d=\"M6 3h11a1.5 1.5 0 0 1 1.5 1.5V19a2 2 0 0 1-2 2H7\"/><path d=\"M6 3a2 2 0 0 0-2 2v1.5h2.5\"/><path d=\"M7 21a2 2 0 0 0 2-2V6.5H6.5\"/><path d=\"M11 9.5h4.5\"/><path d=\"M11 13h4.5\"/>",

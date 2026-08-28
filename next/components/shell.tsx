@@ -109,9 +109,17 @@ const BOOT = `(function(){var d=document.documentElement;try{`
      the server and the other on the client, which is the error
      that blanked every calculator on this site for a day. */
   + `var l=localStorage.getItem("tool-lang");`
-  + `d.setAttribute("data-tool-lang",l==="bn"?"bn":"en")}catch(e){`
+  + `d.setAttribute("data-tool-lang",l==="bn"?"bn":"en");`
+  /* THE SAME KEY, THE OTHER DEFAULT. A lesson of a school is
+     Bangla unless somebody has said English, and a calculator is
+     English unless somebody has said Bangla, so null means
+     different things to the two and both answers are right for
+     what they open. One key still, because a reader who has
+     chosen has chosen once. MONEY.md says this again where
+     somebody adding a school will see it. */
+  + `d.setAttribute("data-read-lang",l==="en"?"en":"bn")}catch(e){`
   + `d.setAttribute("data-rail","open");d.setAttribute("data-glass","frost");`
-  + `d.setAttribute("data-tool-lang","en")}})()`;
+  + `d.setAttribute("data-tool-lang","en");d.setAttribute("data-read-lang","bn")}})()`;
 
 /** Which nav item is marked as where you are.
 
@@ -220,7 +228,8 @@ export function SiteShell({
   children: ReactNode;
 }) {
   /* `suppressHydrationWarning` on both, because the boot script
-     below writes `data-theme`, `data-audience`, `data-rail` and,
+     below writes `data-theme`, `data-audience`, `data-rail`,
+     `data-read-lang` and,
      on the home page, `data-hl` onto the root before React sees
      any of it. Without this React treats an attribute it did not
      render as a mismatch and takes it off, which is a reader's

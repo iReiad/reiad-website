@@ -33,6 +33,7 @@ import { schoolIcon } from "../lib/school-icons";
 import { SiteScripts } from "./scripts";
 import { LadderMeter, Resume } from "./progress";
 import { Eyebrow, SectionLabel } from "./ui/label";
+import { Stars } from "./lesson/stars";
 import { Button, ButtonLink } from "./ui/button";
 
 export async function stageMeta(section: string, slug: string): Promise<Metadata> {
@@ -237,6 +238,12 @@ export async function StagePage({ section, slug }: { section: string; slug: stri
                         <p>{String(lesson.blurb ?? "")}</p>
                         <span className="lesson-card-foot mono">
                           {soon ? "আসছে" : `${bnDigits(Number(lesson.minutes ?? 0))} মিনিট`}
+                          {/* How much this rung matters, from
+                              `meta.stars`. Compact here: the card
+                              already carries a blurb and the
+                              sentence under the marks belongs on
+                              the lesson itself. */}
+                          {lesson.stars ? <Stars n={lesson.stars} compact /> : null}
                         </span>
                       </a>
                     );

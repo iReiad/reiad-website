@@ -236,6 +236,17 @@ CREATE TABLE IF NOT EXISTS school_lessons (
   status     TEXT NOT NULL DEFAULT 'live',
   meta       TEXT NOT NULL DEFAULT '{}',
   body       TEXT NOT NULL DEFAULT '',
+  -- The same lesson in English, and the interactive parts.
+  --
+  -- Two columns rather than two more keys in `meta`, and the
+  -- reason is one query: `stagesOf()` reads `meta` for every
+  -- lesson of a school to draw a ladder, so a second body in
+  -- there would put a third of a megabyte of English on a page
+  -- that shows titles. Neither is selected by the ladder query
+  -- and both are selected by `lessonOf()`, which is the one
+  -- place a lesson's words are wanted. MONEY.md says this again.
+  body_en    TEXT NOT NULL DEFAULT '',
+  blocks     TEXT NOT NULL DEFAULT '{}',
   updated_at TEXT NOT NULL,
   PRIMARY KEY (school, stage, slug)
 );

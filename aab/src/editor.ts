@@ -70,6 +70,13 @@ const ATTRS: Record<string, string[]> = {
   IMG: ["src", "alt", "width", "height", "loading", "decoding"],
   TD: ["colspan", "rowspan"],
   TH: ["colspan", "rowspan"],
+  /* The one data attribute a body may carry: `<div class="mount"
+     data-mount="pe-lab">`, which the lesson route replaces with a
+     quiz, a lab or a figure. Without this line the scrub below
+     takes it off, the div survives as an empty box, and every
+     interactive part of a lesson disappears the first time
+     somebody opens it in the Studio and presses save. */
+  DIV: ["data-mount"],
 };
 
 /* The class names the stylesheet actually knows about: the same list
@@ -93,6 +100,9 @@ export const KEEP_CLASSES: Set<string> = new Set([
   "at-a-glance", "at-a-glance-label", "side-note", "side-note-label",
   "step-list", "checklist", "figures", "fig",
   "table-scroll", "term", "note", "ex",
+  /* Where an interactive block goes: an empty div the lesson
+     route replaces with a quiz, a lab or a figure. MONEY.md. */
+  "mount",
 ]);
 
 /* Which tags may carry one of those classes. The server's

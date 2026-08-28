@@ -252,6 +252,21 @@ const NOT_GLASS = new Map<string, string>([
   ["gt-disc",             "a mark: the gate tile's icon disc"],
   ["gt-live",             "a mark: the gate tile's live dot"],
 
+  /* THE SIX MARKS A FIGURE IS DRAWN OUT OF. A lesson's figures
+     are HTML rather than SVG, because every label in one is two
+     labels, so the pieces of the drawing are elements: a beam, a
+     dot, a swatch, a numbered disc, a circle. Every one of them
+     is a line or a shape a few pixels across, inside a figure
+     that is already on the material, and a cut edge on a nine
+     pixel dot is detail nobody can resolve. MONEY.md says why
+     the figures are HTML at all. */
+  ["ls-fig-beam",   "a mark: the 4px beam of a see-saw, drawn inside a figure that is glass"],
+  ["ls-fig-circle", "a mark: one of two overlapping circles in a venn, aria-hidden"],
+  ["ls-fig-dot",    "a mark: an 11px dot on a timeline, one per point"],
+  ["ls-fig-mark",   "a mark: a 19px numbered disc pointing into a mock screen"],
+  ["ls-fig-swatch", "a mark: an 11px key square beside the part of a bar it names"],
+  ["ls-key-swatch", "a mark: a 12x3px line in a chart legend"],
+
   ["heat-cell",  "a cell: one square of a year of days, and there are 365"],
   ["conf-cell",  "a cell: one square of a correlation matrix"],
   ["macro-cell", "a cell: one square of the macro grid"],

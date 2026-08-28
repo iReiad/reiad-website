@@ -296,6 +296,17 @@ export interface SchoolLessonRow {
       has written yet, which is a real state and not a gap: the
       route draws a waiting page for it. */
   body: string;
+  /** The same lesson in English, empty where nobody has written
+      one. `body` is the learning language and is what a reader
+      with JavaScript off gets; this is the other half of the
+      pair the stylesheet chooses between. */
+  body_en: string;
+  /** The lesson's interactive and drawn parts, as JSON: a map of
+      mount id to block. Said once and shown in both languages,
+      because a quiz whose options were written twice is a quiz
+      that can disagree with itself. `shared/lesson.ts` is the
+      shape and MONEY.md is why. */
+  blocks: string;
   updated_at: string;
 }
 

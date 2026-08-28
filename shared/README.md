@@ -7,7 +7,7 @@ There are three renderers of this site now: the Worker in
 Next.js route in `next/`. Anything all of them must say the same
 way lives here, and nowhere else.
 
-Today that is seventeen files and a directory of four, and
+Today that is nineteen files and a directory of four, and
 `check-types.ts` fails if one of them is not described below.
 That check exists because this line said six while nine were
 here: `nav.ts` and `routine.ts` arrived in two changes that had
@@ -44,6 +44,20 @@ this repository got written.
 - **`schools.ts`** the four curricula, read out of D1 in the shape
   the site already speaks, plus the ladder's arithmetic: a lesson's
   URL, its progress id, its label.
+
+- **`lesson.ts`** what an interactive part of a money school
+  lesson is: the eleven block kinds, the `{ bn, en }` pair every
+  string in one is said as, the mount markers a body carries and
+  the splitter that reads them, and the validator both
+  `check-money.ts` and the Studio run. `MONEY.md` is the whole
+  argument.
+
+- **`lesson-labs.ts`** the arithmetic behind every `lab` block,
+  under a named model, and the ranges and defaults of its own
+  sliders. A block names a model and a model is code, for the
+  reason `CLAUDE.md` gives about a calculator needing a release:
+  a formula stored in a database row is code where nothing
+  typechecks it.
 
 - **`rows.ts`** what a row of this database actually is. The set of
   values each status column may hold, written once as a constant

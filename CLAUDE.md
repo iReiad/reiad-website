@@ -1178,6 +1178,12 @@ node scripts/check-crons.ts # a scheduled job the Worker is no longer listening 
 node scripts/check-pieces.ts # a written piece nothing on the site links to
 node scripts/check-headers.ts # a page a Worker built, served with no CSP
 node scripts/check-schools.ts # a ladder the browser and the builders disagree about
+node scripts/check-money.ts # a money school lesson whose two languages mount
+                            # different blocks, a block naming a kind or a lab
+                            # model that does not exist, a mount inside a list
+                            # that closes the list early, a lesson with no
+                            # stars, a `needs` pointing forwards, and a lesson
+                            # that renders as a stub
 node scripts/check-rows.ts # a description of the database that has stopped
                             # being true, or a handler keeping its own copy
                             # of a vocabulary
