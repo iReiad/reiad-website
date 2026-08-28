@@ -12281,10 +12281,15 @@ German for day, and .tag is what the site has always called
     display: flex; align-items: center; gap: var(--s-6);
     flex-wrap: wrap; margin: var(--s-7) 0 0;
   }
-  .ls-missing { font-size: var(--t-4); color: var(--ink-soft); }
+  .ls-missing { font-size: var(--t-4); color: var(--ink-soft); text-wrap: pretty; }
 
   /* The one sentence every interactive block ends on, and the
-     one place a tone becomes a colour in this layer. */
+     one place a tone becomes a colour in this layer.
+
+     `text-wrap` because these four were paragraphs until a `<p>`
+     holding a `TBlock`, which is two divs, was found to be why
+     43 lessons re-rendered on hydration. The base layer gives it
+     to `p` and it inherits, so a div has to ask. */
   .ls-verdict, .ls-why {
     margin: var(--s-5) 0 0;
     padding: var(--s-6) var(--s-7);
@@ -12292,6 +12297,7 @@ German for day, and .tag is what the site has always called
     border-inline-start: 3px solid var(--hairline);
     border-radius: var(--radius-xs);
     font-size: var(--t-4);
+    text-wrap: pretty;
   }
   :is(.ls-verdict, .ls-why)[data-tone="good"] { border-inline-start-color: var(--accent); }
   :is(.ls-verdict, .ls-why)[data-tone="warn"] { border-inline-start-color: var(--gold); }
@@ -12329,7 +12335,10 @@ German for day, and .tag is what the site has always called
   .ls-opt-text { flex: 1; }
 
   .ls-answer { margin-top: var(--s-7); }
-  .ls-answer-head { font-family: var(--font-bn-serif); font-size: var(--t-6); margin: 0; }
+  .ls-answer-head {
+    font-family: var(--font-bn-serif); font-size: var(--t-6); margin: 0;
+    text-wrap: pretty;
+  }
   .ls-reset {
     appearance: none; cursor: pointer; font: inherit; font-size: var(--t-2);
     padding: var(--s-3) var(--s-6);

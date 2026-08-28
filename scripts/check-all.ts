@@ -84,6 +84,11 @@ const STAGES: Array<[stage: string, entries: Entry[]]> = [
     "scripts/check-surfaces.ts",
     "scripts/check-components.ts",
     "scripts/check-jsx-space.ts",
+    /* The other half of the JSX the compiler cannot see: that one
+       is a space the transform ate, this one is a paragraph
+       holding a block, which the parser rearranges and React then
+       refuses to adopt. */
+    "scripts/check-jsx-nesting.ts",
     "scripts/check-scale.ts",
     "scripts/check-prefixes.ts",
     "scripts/check-selfref.ts",

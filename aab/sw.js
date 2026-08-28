@@ -31,6 +31,15 @@
    login could not have reached anyone either. Bump this whenever a
    precached file changes.
 
+   v212: /fallback.css. A lesson block's verdict was a <p> holding
+        a TBlock, which is two divs, and a block element closes an
+        open paragraph in the parser: the DOM was not the tree, so
+        React threw away the server's markup on 43 of the money
+        school's lessons and re-rendered, losing the theme, the
+        rail and the reading language the boot script had already
+        set. Six holders are divs now, and they ask for the
+        `text-wrap` a paragraph was giving them.
+
    v211: /fallback.css, /money/icons.js and /money/curriculum.js.
         The money school rebuilt: a পর্যায় is a stage and a ধাপ is
         a step, and every lesson is two bodies now with
@@ -1876,7 +1885,7 @@
    imports (crumbs, audience, learn progress) and the hub is a
    different page. Without a bump, a returning reader would be
    served the v3 app.js forever and none of it would appear. */
-const VERSION = "v211";
+const VERSION = "v212";
 const SHELL = `shell-${VERSION}`;
 const RUNTIME = `runtime-${VERSION}`;
 

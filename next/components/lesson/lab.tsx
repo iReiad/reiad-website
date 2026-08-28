@@ -243,12 +243,12 @@ export function Lab({ block }: { block: LabBlock }) {
      lesson and a missing calculator must never take it down. */
   if (!model) {
     return (
-      <p className="ls-missing">
+      <div className="ls-missing">
         <TBlock s={{
           bn: "এই হিসাবটা এখনো এই সংস্করণে নেই। লেখাটা পড়ে যান, অঙ্কটা পরের বার।",
           en: "This calculator is not in this version yet. The lesson reads without it.",
         }} />
-      </p>
+      </div>
     );
   }
 
@@ -299,9 +299,9 @@ export function Lab({ block }: { block: LabBlock }) {
       ) : null}
 
       {result.verdict ? (
-        <p className="ls-verdict" data-tone={result.verdict.tone}>
+        <div className="ls-verdict" data-tone={result.verdict.tone}>
           <TBlock s={result.verdict.text} />
-        </p>
+        </div>
       ) : null}
 
       <p className="ls-actions">

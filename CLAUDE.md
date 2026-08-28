@@ -1174,6 +1174,9 @@ node scripts/check-icons.ts # an icon name that resolves to nothing, so the page
                             # draws a correctly sized empty svg
 node scripts/check-jsx-space.ts # a sentence running into the link inside it,
                             # because JSX ate the line break before the element
+node scripts/check-jsx-nesting.ts # a paragraph holding a block element, which
+                            # the parser rearranges, so React refuses the
+                            # server's markup and re-renders the whole page
 node scripts/check-crons.ts # a scheduled job the Worker is no longer listening for
 node scripts/check-pieces.ts # a written piece nothing on the site links to
 node scripts/check-headers.ts # a page a Worker built, served with no CSP
@@ -1283,6 +1286,13 @@ node next/keep.test.ts             # the Save and the note under a byline: nothi
                                    # answered, and neither control writing over the
                                    # other's column of the one row (109 checks,
                                    # needs Playwright and a browser, skips without)
+node next/lesson.test.ts           # every kind of lesson block, every shape a
+                                   # figure takes and every model behind a lab,
+                                   # hydrated one page at a time: a block whose
+                                   # markup the browser rearranges takes the
+                                   # reader's theme, rail and language with it
+                                   # (150 checks, needs Playwright and a browser,
+                                   # skips without)
 node aab/schools/progress.test.ts  # a school's ticks filed under a key that is
                                    # not the one in somebody's browser, and the
                                    # three schools' shared engine (119 checks)
