@@ -512,7 +512,36 @@ export function blockProblems(
       break;
     }
   }
+
+  /* A block's words are rendered as TEXT, by `T` in
+     `lesson/lang.tsx`, and never as HTML. A cross-link written
+     into a `why` therefore reaches the reader as the literal
+     characters of an anchor tag in the middle of a sentence, on
+     a page that renders perfectly. Eight of them shipped that
+     way before this asked. Prose carries links; a block carries
+     words. */
+  for (const found of markupIn(b)) at(`${found} holds markup, and a block's words are rendered as text`);
+
   return out;
+}
+
+const TAG = /<\/?[a-z][^>]*>/i;
+
+/** Every path inside a block whose string value holds a tag. A
+    walk rather than a check per kind, because the eleven kinds
+    put their words in eleven shapes and a twelfth would arrive
+    unguarded. */
+function markupIn(value: unknown, path: string[] = []): string[] {
+  if (typeof value === "string") {
+    return TAG.test(value) ? [path.join(".") || "a string"] : [];
+  }
+  if (Array.isArray(value)) {
+    return value.flatMap((v, i) => markupIn(v, [...path, String(i + 1)]));
+  }
+  if (value && typeof value === "object") {
+    return Object.entries(value).flatMap(([k, v]) => markupIn(v, [...path, k]));
+  }
+  return [];
 }
 
 /** Bangla digits, from `shared/schools.ts` rather than a second

@@ -2341,8 +2341,8 @@ ${mount("fund-quiz")}
               text: { bn: "ঝুঁকিগুলো আলাদা নয়, তাই ছড়ানোটা কম", en: "The risks are not different, so the spreading is thinner than it looks" },
               right: true,
               why: {
-                bn: "ঠিক। ডাইভারসিফিকেশনের কাজ হলো এমন জিনিস একসঙ্গে রাখা যেগুলো একসঙ্গে পড়ে না। ত্রিশটা ব্যাংক একসঙ্গেই পড়ে। <a class=\"term\" href=\"/money/terms/diversification.html\">ডাইভারসিফিকেশনের</a> লেখাটায় এটাই মূল কথা।",
-                en: "Right. Diversification means holding things that do not fall together, and thirty banks fall together. The <a class=\"term\" href=\"/money/terms/diversification.html\">diversification</a> lesson is built on this point.",
+                bn: "ঠিক। ডাইভারসিফিকেশনের কাজ হলো এমন জিনিস একসঙ্গে রাখা যেগুলো একসঙ্গে পড়ে না। ত্রিশটা ব্যাংক একসঙ্গেই পড়ে। ডাইভারসিফিকেশনের লেখাটায় এটাই মূল কথা।",
+                en: "Right. Diversification means holding things that do not fall together, and thirty banks fall together. The diversification lesson is built on this point.",
               },
             },
             {
@@ -4810,8 +4810,8 @@ ${mount("bv-quiz")}
         },
       ],
       caption: {
-        bn: "পিবি একা পড়লে বাঁ দিকের দুইটা ঘর আলাদা করা যায় না। <a class=\"term\" href=\"/money/terms/roe.html\">আরওই</a> দিয়ে আলাদা করা যায়।",
-        en: "Read alone, a P/B cannot separate the two left squares. <a class=\"term\" href=\"/money/terms/roe.html\">ROE</a> separates them.",
+        bn: "পিবি একা পড়লে বাঁ দিকের দুইটা ঘর আলাদা করা যায় না। আরওই দিয়ে আলাদা করা যায়।",
+        en: "Read alone, a P/B cannot separate the two left squares. ROE separates them.",
       },
     },
     "bv-quiz": {
@@ -4865,8 +4865,8 @@ ${mount("bv-quiz")}
               text: { bn: "এই ব্যবসার জন্য পিবি ভুল মাপকাঠি", en: "P/B is the wrong yardstick for this business" },
               right: true,
               why: {
-                bn: "ঠিক। এখানে <a class=\"term\" href=\"/money/terms/pe-ratio.html\">পিই</a>, বিক্রির অনুপাত বা নগদ প্রবাহের অনুপাত বেশি কাজের। কোন অনুপাত কোন ব্যবসায় খাটে তা জানাটাই অনুপাত জানার চেয়ে বেশি দরকারি।",
-                en: "Right. Here a <a class=\"term\" href=\"/money/terms/pe-ratio.html\">P/E</a>, a sales multiple or a cash flow multiple works better. Knowing which ratio suits which business is more useful than knowing the ratio.",
+                bn: "ঠিক। এখানে পিই, বিক্রির অনুপাত বা নগদ প্রবাহের অনুপাত বেশি কাজের। কোন অনুপাত কোন ব্যবসায় খাটে তা জানাটাই অনুপাত জানার চেয়ে বেশি দরকারি।",
+                en: "Right. Here a P/E, a sales multiple or a cash flow multiple works better. Knowing which ratio suits which business is more useful than knowing the ratio.",
               },
             },
             {
