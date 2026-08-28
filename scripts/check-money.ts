@@ -40,7 +40,7 @@ import { readFileSync } from "node:fs";
 import { dirname, join } from "node:path";
 import { fileURLToPath } from "node:url";
 import { STAGES, stageLessons } from "../shared/curricula/money.ts";
-import { FIGURE_SHAPES } from "../shared/lesson.ts";
+import { FIGURE_SHAPES, splitBody } from "../shared/lesson.ts";
 import { LAB_IDS } from "../shared/lesson-labs.ts";
 import { problemsIn, readWritten } from "./seed-money.ts";
 
@@ -73,30 +73,43 @@ for (const line of problemsIn(written)) fail(line);
    tag in another, so the browser closes the list early and the
    rest of it becomes a second list after the block. It renders,
    and it renders wrong. */
-const MOUNT_LINE = /<div\s+(?:class="mount"|data-mount=)/;
+const CONTAINER = /<(\/?)(ul|ol|li|table|thead|tbody|tr|figure|blockquote|div)\b[^>]*>/g;
+
+/** How many container elements are still open at the end of a
+    chunk of HTML. A tag walk rather than a DOM parse, because
+    node has no DOM and pulling one in for one question is a
+    dependency for one question. Only block containers count: an
+    `<em>` left open across a mount is not something a body these
+    files write can do, and the ones that are, a list, a table, a
+    figure, a blockquote, a div, are all here. */
+const openAt = (html: string): number => {
+  let depth = 0;
+  for (const m of html.matchAll(CONTAINER)) depth += m[1] === "/" ? -1 : 1;
+  return depth;
+};
+
 for (const [stage, lessons] of Object.entries(written)) {
   for (const [slug, content] of Object.entries(lessons)) {
     for (const [lang, body] of [["bn", content.bn], ["en", content.en]] as const) {
-      const depth = { at: 0 };
-      /* A tag walk rather than a DOM parse, because node has no
-         DOM and pulling one in for this would be a dependency
-         for one question. Only the block containers count: an
-         `<em>` open across a mount is not possible in a body
-         these files write, and the ones that are, a list, a
-         table, a figure, a blockquote, a div, are all here. */
-      const CONTAINER = /<(\/?)(ul|ol|li|table|thead|tbody|tr|figure|blockquote|div)\b[^>]*>/g;
-      for (const m of body.matchAll(CONTAINER)) {
-        const isMount = MOUNT_LINE.test(body.slice(m.index, (m.index ?? 0) + 40));
-        if (isMount) {
-          if (depth.at > 0) {
-            fail(`${stage}/${slug} (${lang}): a mount sits inside ${depth.at} open element(s)`,
-              "A mount is a top level element of a body. `splitBody()` cuts the",
-              "string there, so a list holding one closes early and the rest of it",
-              "becomes a second list under the block.");
-          }
-          continue;
+      /* `splitBody()` cuts at exactly the markers the route cuts
+         at, so the pieces here are the pieces the browser will
+         be handed. Counting depth over each piece in turn is
+         then the same question the route asks. */
+      const { parts } = splitBody(body);
+      let depth = 0;
+      for (const [n, part] of parts.entries()) {
+        depth += openAt(part);
+        if (n < parts.length - 1 && depth !== 0) {
+          fail(`${stage}/${slug} (${lang}): a mount sits inside ${depth} open element(s)`,
+            "A mount is a top level element of a body. `splitBody()` cuts the",
+            "string there, so a list holding one closes early and the rest of it",
+            "becomes a second list under the block.");
         }
-        depth.at += m[1] === "/" ? -1 : 1;
+      }
+      if (depth !== 0) {
+        fail(`${stage}/${slug} (${lang}): ${Math.abs(depth)} unclosed or stray tag(s)`,
+          "The body does not balance. A sanitiser will close what is open and the",
+          "result is markup nobody wrote.");
       }
     }
   }

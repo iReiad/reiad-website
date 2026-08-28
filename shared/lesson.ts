@@ -173,8 +173,10 @@ export interface FigureBlock extends BlockBase {
       the two arms of a `scale`. Nothing else reads it. */
   axes?: { x?: [Say, Say]; y?: [Say, Say] };
   /** The mock screen a `callouts` figure points at, and the root
-      of a `tree`. */
-  screen?: { title?: Say; rows: { label: Say; value: Say }[] };
+      of a `tree`. `rows` is optional because a tree uses the
+      title alone; `blockProblems` requires the rows on a
+      `callouts`, which is where they mean something. */
+  screen?: { title?: Say; rows?: { label: Say; value: Say }[] };
   caption?: Say;
 }
 
