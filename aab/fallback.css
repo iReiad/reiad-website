@@ -8268,7 +8268,7 @@
     display: flex; align-items: center; gap: var(--s-6);
     flex-wrap: wrap; margin: var(--s-7) 0 0;
   }
-  .ls-missing { font-size: var(--t-4); color: var(--ink-soft); }
+  .ls-missing { font-size: var(--t-4); color: var(--ink-soft); text-wrap: pretty; }
 
   .ls-verdict, .ls-why {
     margin: var(--s-5) 0 0;
@@ -8277,6 +8277,7 @@
     border-inline-start: 3px solid var(--hairline);
     border-radius: var(--radius-xs);
     font-size: var(--t-4);
+    text-wrap: pretty;
   }
   :is(.ls-verdict, .ls-why)[data-tone="good"] { border-inline-start-color: var(--accent); }
   :is(.ls-verdict, .ls-why)[data-tone="warn"] { border-inline-start-color: var(--gold); }
@@ -8312,7 +8313,10 @@
   .ls-opt-text { flex: 1; }
 
   .ls-answer { margin-top: var(--s-7); }
-  .ls-answer-head { font-family: var(--font-bn-serif); font-size: var(--t-6); margin: 0; }
+  .ls-answer-head {
+    font-family: var(--font-bn-serif); font-size: var(--t-6); margin: 0;
+    text-wrap: pretty;
+  }
   .ls-reset {
     -webkit-appearance: none;
     appearance: none; cursor: pointer; font: inherit; font-size: var(--t-2);

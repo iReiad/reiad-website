@@ -49,9 +49,9 @@ import { useReadLang } from "./lang-switch";
 function Why({ s, tone }: { s: Say | undefined; tone?: string }) {
   if (!s) return null;
   return (
-    <p className="ls-why" data-tone={tone ?? "plain"}>
+    <div className="ls-why" data-tone={tone ?? "plain"}>
       <TBlock s={s} />
-    </p>
+    </div>
   );
 }
 
@@ -193,11 +193,11 @@ export function Order({ block, id }: { block: OrderBlock; id: string }) {
         <Again onClick={() => { setOrder(shuffled(answer.map((_, i) => i), `${id}-again`)); setShown(false); }} />
       </p>
       {shown ? (
-        <p className="ls-verdict" data-tone={right ? "good" : "warn"}>
+        <div className="ls-verdict" data-tone={right ? "good" : "warn"}>
           <TBlock s={right
             ? { bn: "পুরোটাই ঠিক ক্রমে।", en: "All of it, in the right order." }
             : { bn: "কয়েকটা জায়গা বদলাতে হবে। সবুজগুলো ঠিক আছে।", en: "A few need moving. The green ones are already right." }} />
-        </p>
+        </div>
       ) : null}
     </div>
   );
@@ -267,11 +267,11 @@ export function Match({ block, id }: { block: MatchBlock; id: string }) {
         <Again onClick={() => { setJoined({}); setHeld(null); }} />
       </p>
       {done ? (
-        <p className="ls-verdict" data-tone={right ? "good" : "warn"}>
+        <div className="ls-verdict" data-tone={right ? "good" : "warn"}>
           <TBlock s={right
             ? { bn: "সবগুলো মিলেছে।", en: "Every one of them." }
             : { bn: "লালগুলো অন্য জোড়ার। ওগুলোতে চাপ দিয়ে আবার মেলান।", en: "The red ones belong elsewhere. Press one and pair it again." }} />
-        </p>
+        </div>
       ) : (
         <p className="ls-foot mono">
           <TPair bn="বাঁ দিকের একটায় চাপ দিন, তারপর ডান দিকের একটায়।"
@@ -384,7 +384,7 @@ export function Reveal({ block }: { block: RevealBlock }) {
       ) : null}
       {open ? (
         <div className="ls-answer">
-          <p className="ls-answer-head"><TBlock s={block.answer} /></p>
+          <div className="ls-answer-head"><TBlock s={block.answer} /></div>
           <Why s={block.why} />
         </div>
       ) : (
