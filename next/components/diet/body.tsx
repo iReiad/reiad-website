@@ -161,17 +161,17 @@ export function BodyPanel() {
           <legend><T en="The four it needs" bn="যে চারটি লাগবেই" /></legend>
           <Field
             id="dt-height" type="number" inputMode="decimal" min={50} max={250} step="0.5"
-            label={<T en="Height, cm" bn="উচ্চতা, সেমি" />}
+            label={<T k="dt.f.height" />}
             value={heightCm} onChange={(e) => setHeight(e.target.value)}
           />
           <Field
             id="dt-weight" type="number" inputMode="decimal" min={20} max={400} step="0.1"
-            label={<T en="Weight, kg" bn="ওজন, কেজি" />}
+            label={<T k="dt.f.weight" />}
             value={weightKg} onChange={(e) => setWeight(e.target.value)}
           />
           <Field
             id="dt-age" type="number" inputMode="numeric" min={18} max={120} step="1"
-            label={<T en="Age, years" bn="বয়স, বছর" />}
+            label={<T k="dt.f.age" />}
             value={ageYears} onChange={(e) => setAge(e.target.value)}
           />
           <Select
@@ -191,7 +191,7 @@ export function BodyPanel() {
           <Select
             id="dt-ancestry" value={ancestry}
             onChange={(e) => setAncestry(e.target.value as Ancestry)}
-            label={<T en="Which BMI cut-offs" bn="কোন বিএমআই সীমা" />}
+            label={<T k="dt.f.cuts" />}
             hint={(
               <T
                 en="The WHO recommends lower action points for Asian populations, and the NHS says the same. This follows you, not the country you are in."
@@ -248,17 +248,17 @@ export function BodyPanel() {
           </p>
           <Field
             id="dt-waist" type="number" inputMode="decimal" min={30} max={250} step="0.5"
-            label={<T en="Waist, cm" bn="কোমর, সেমি" />}
+            label={<T k="dt.f.waist" />}
             value={waistCm} onChange={(e) => setWaist(e.target.value)}
           />
           <Field
             id="dt-neck" type="number" inputMode="decimal" min={20} max={80} step="0.5"
-            label={<T en="Neck, cm" bn="গলা, সেমি" />}
+            label={<T k="dt.f.neck" />}
             value={neckCm} onChange={(e) => setNeck(e.target.value)}
           />
           <Field
             id="dt-hip" type="number" inputMode="decimal" min={40} max={250} step="0.5"
-            label={<T en="Hip, cm" bn="নিতম্ব, সেমি" />}
+            label={<T k="dt.f.hip" />}
             value={hipCm} onChange={(e) => setHip(e.target.value)}
             disabled={sex === "male"}
             hint={sex === "male"
@@ -322,17 +322,17 @@ export function BodyPanel() {
 function Coming() {
   const WAITING: Array<{ h: ReactNode; needs: { en: string; bn: string }; lead?: true }> = [
     {
-      h: <T en="Waist to height" bn="কোমর ও উচ্চতার অনুপাত" />,
+      h: <T k="dt.whtr.head" />,
       needs: { en: "a waist and a height", bn: "কোমর আর উচ্চতা" },
       lead: true,
     },
     { h: <>BMI</>, needs: { en: "a height and a weight", bn: "উচ্চতা আর ওজন" } },
     {
-      h: <T en="Body fat" bn="শরীরের চর্বি" />,
+      h: <T k="dt.fat.head" />,
       needs: { en: "a waist and a neck", bn: "কোমর আর গলা" },
     },
     {
-      h: <T en="Lean mass" bn="চর্বি ছাড়া ভর" />,
+      h: <T k="dt.lean.head" />,
       needs: { en: "the same tape measurements", bn: "ওই একই ফিতার মাপ" },
     },
     {
@@ -344,7 +344,7 @@ function Coming() {
   return (
     <div className="dt-readout">
       <h2 className="dt-readout-h">
-        <T en="What that says about you" bn="এতে আপনার সম্পর্কে যা বোঝা যায়" />
+        <T k="dt.body.head" />
       </h2>
       {WAITING.map((w, i) => (
         <div
@@ -388,7 +388,7 @@ function Coming() {
 function TooYoung() {
   return (
     <div className="dt-readout dt-readout-stop" role="note">
-      <h2 className="dt-readout-h"><T en="What that says about you" bn="এতে আপনার সম্পর্কে যা বোঝা যায়" /></h2>
+      <h2 className="dt-readout-h"><T k="dt.body.head" /></h2>
       <div className="dt-figure dt-figure-lead">
         <h3><T en="This tool cannot answer for you" bn="এই টুল আপনার জন্য উত্তর দিতে পারে না" /></h3>
         <TBlock
@@ -436,7 +436,7 @@ function Readout({ body, lang }: { body: Body; lang: ToolLang }) {
   return (
     <div className="dt-readout">
       <h2 className="dt-readout-h">
-        <T en="What that says about you" bn="এতে আপনার সম্পর্কে যা বোঝা যায়" />
+        <T k="dt.body.head" />
       </h2>
       {/* Waist to height leads. It is the number with the better
           evidence behind it and the one that needs no assumption
@@ -444,49 +444,40 @@ function Readout({ body, lang }: { body: Body; lang: ToolLang }) {
       {ratio === null
         ? (
           <div className="dt-figure dt-figure-lead dt-figure-empty">
-            <h3><T en="Waist to height" bn="কোমর ও উচ্চতার অনুপাত" /></h3>
+            <h3><T k="dt.whtr.head" /></h3>
             <p>
-              <T
-                en="A waist measurement gives you this, and it is the better of the two."
-                bn="কোমরের মাপ দিলেই এটা পাওয়া যাবে, আর দুটোর মধ্যে এটাই ভালো।"
-              />
+              <T k="dt.whtr.empty" />
             </p>
           </div>
         )
         : (
           <div className="dt-figure dt-figure-lead">
-            <h3><T en="Waist to height" bn="কোমর ও উচ্চতার অনুপাত" /></h3>
+            <h3><T k="dt.whtr.head" /></h3>
             <p className="dt-value"><T en={round(ratio, 2)} bn={digits(round(ratio, 2), "bn")} /></p>
             <p className="dt-said">
               <T en={WHTR_WORDS[whtrBand(ratio)].en} bn={WHTR_WORDS[whtrBand(ratio)].bn} />
             </p>
             <p className="dt-why">
-              <T
-                en="Predicts cardiometabolic risk better than BMI across ethnicities, and needs one tape measure. "
-                bn="বিভিন্ন জাতিগোষ্ঠীর ক্ষেত্রে বিএমআইয়ের চেয়ে ভালো ইঙ্গিত দেয়, আর লাগে শুধু একটা ফিতা। "
-              />
+              <T k="dt.whtr.why" />{" "}
               <Term id="whtr" en="What this ratio is" bn="এই অনুপাতটা কী" />
             </p>
           </div>
         )}
 
       <div className="dt-figure">
-        <h3>BMI</h3>
+        <h3><T k="dt.bmi.head" /></h3>
         <p className="dt-value"><T en={round(value)} bn={digits(round(value), "bn")} /></p>
         <p className="dt-said">
           <T en={BAND_WORDS[band].en} bn={BAND_WORDS[band].bn} />
         </p>
         <p className="dt-why">
-          <T
-            en="Mass over height squared. It cannot tell muscle from fat and says nothing about where the fat is, which is the part that matters. "
-            bn="ওজনকে উচ্চতার বর্গ দিয়ে ভাগ। এটি পেশি আর চর্বির পার্থক্য বোঝে না, আর চর্বি কোথায় জমেছে তা বলে না, যেটাই আসল ব্যাপার। "
-          />
+          <T k="dt.bmi.why" />{" "}
           <Term id="bmi" en="More on BMI" bn="বিএমআই নিয়ে আরও" />
         </p>
       </div>
 
       <div className="dt-figure">
-        <h3><T en="Body fat" bn="শরীরের চর্বি" /></h3>
+        <h3><T k="dt.fat.head" /></h3>
         <p className="dt-value">
           <T
             en={`${Math.round(fat.pct.low)} to ${Math.round(fat.pct.high)}%`}
@@ -495,25 +486,15 @@ function Readout({ body, lang }: { body: Body; lang: ToolLang }) {
           />
         </p>
         <p className="dt-said">
-          <T
-            en={fat.method === "navy"
-              ? "From the tape, plus or minus about 3 to 4 points"
-              : "From BMI, plus or minus about 5 points"}
-            bn={fat.method === "navy"
-              ? "ফিতার মাপ থেকে, প্রায় ৩ থেকে ৪ পয়েন্ট এদিক ওদিক"
-              : "বিএমআই থেকে, প্রায় ৫ পয়েন্ট এদিক ওদিক"}
-          />
+          <T k={fat.method === "navy" ? "dt.fat.navy" : "dt.fat.bmi"} />
         </p>
         <p className="dt-why">
-          <T
-            en="A range rather than a number, because that is what the method can support. Anything printing one decimal place here is making it up."
-            bn="একটা সংখ্যা নয়, একটা সীমা, কারণ পদ্ধতিটা এর বেশি বলতে পারে না। এখানে দশমিকের ঘর দেখালে সেটা বানানো।"
-          />
+          <T k="dt.fat.why" />
         </p>
       </div>
 
       <div className="dt-figure">
-        <h3><T en="Lean mass" bn="চর্বি ছাড়া ভর" /></h3>
+        <h3><T k="dt.lean.head" /></h3>
         <p className="dt-value"><T en={`${round(fat.leanKg)} kg`} bn={`${digits(round(fat.leanKg), "bn")} কেজি`} /></p>
         <p className="dt-said">
           <T
@@ -523,10 +504,7 @@ function Readout({ body, lang }: { body: Body; lang: ToolLang }) {
           />
         </p>
         <p className="dt-why">
-          <T
-            en="What the protein floor is worked out from, and the number that tells a lifter their BMI is lying. "
-            bn="প্রোটিনের সর্বনিম্ন হিসাব এখান থেকেই আসে, আর যিনি ভার তোলেন তাঁকে এটাই বলে দেয় বিএমআই ভুল বলছে। "
-          />
+          <T k="dt.lean.why" />{" "}
           <Term id="lean" en="Lean mass and FFMI" bn="চর্বি ছাড়া ভর আর এফএফএমআই" />
         </p>
       </div>

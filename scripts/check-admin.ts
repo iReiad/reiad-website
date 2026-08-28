@@ -78,6 +78,14 @@ const PUBLIC: Record<string, string> = {
     + "/tools/stock.i18n.js and a native client cannot. Every phrase in it is "
     + "already rendered on a public page, in both languages, and there is "
     + "nothing else in it: no reader, no row, no number about anybody.",
+  "foods.ts":
+    "the diet tool's portion library, which the browser gets by importing "
+    + "shared/foods.ts into the route's own bundle and a native client cannot. "
+    + "Eighty-three rows of this site's own reference figures, every one of "
+    + "them already rendered on /tools/diet/foods, which needs no account: "
+    + "there is no reader in it, no row of anybody's log and no number about "
+    + "a person. Not to be confused with diet/[[route]].ts above, which is "
+    + "the lookup against two third-party databases.",
 };
 
 const files: string[] = [];

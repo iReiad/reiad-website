@@ -43,6 +43,7 @@ import { fileURLToPath } from "node:url";
 import { SCHOOL_ICONS } from "../next/lib/school-icons.ts";
 import { DIET_PAGES } from "../next/lib/diet-pages.ts";
 import { DIET_ICONS } from "../next/components/diet/icons.ts";
+import { WIDGETS } from "../shared/widgets.ts";
 
 const ROOT = join(dirname(fileURLToPath(import.meta.url)), "..");
 const LIST = process.argv.includes("--list");
@@ -130,6 +131,22 @@ for (const file of files) {
   }
 }
 
+/* ---------- 1b. the widget catalogue ----------
+
+   `shared/widgets.ts` is outside the walk above, which reads
+   `next/` only, and every kind in it names an icon that BOTH
+   this site and the Android app draw. An icon that resolves to
+   nothing here is a correctly sized empty box in the picker,
+   beside eleven that are not. */
+
+for (const kind of WIDGETS) {
+  if (known(kind.icon) && !empty.has(kind.icon)) continue;
+  bad += 1;
+  console.error(`\n  x the ${kind.id} widget asks for the icon "${kind.icon}"`);
+  console.error("        which this site does not draw. The catalogue is shared with"
+    + "\n        the app, so a name here has to exist in both icon sets.");
+}
+
 /* ---------- 2. the diet tool's two tables, both directions ---------- */
 
 for (const page of DIET_PAGES) {
@@ -168,4 +185,5 @@ if (bad) {
   process.exit(1);
 }
 console.log(`icons: ${used} literal name(s) in next/ all draw something, `
+  + `${WIDGETS.length} widget kinds do too, `
   + `and ${DIET_PAGES.length} diet pages each have one.`);

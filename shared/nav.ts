@@ -70,6 +70,21 @@ export interface NavItem {
       and gives it a card of its own, which is the one place the
       person who can open it will look. */
   unlisted?: boolean;
+  /** This entry IS its group's own front page.
+
+      A fact rather than an instruction, and each reader decides
+      what to do with it. `/skills` drops it, because a card
+      linking to the page you are already on is a dead card.
+      The app's group tab does the same, and takes that page's
+      head out of `shared/heads.ts` so the tab reads as the hub
+      rather than as a list with the hub sitting inside it.
+
+      It is here because it was written into one page instead:
+      `/skills` filtered `key !== "skills"`, so a second reader
+      of the same table had no way to know, and the Android
+      app's Learning tab opened with a card titled দক্ষতা that
+      took you to a copy of the list you were looking at. */
+  hub?: boolean;
   /** One Bangla sentence: what you would actually get. Only the
       six learning entries carry one, because only they are listed
       on a page that has room for a sentence. */
@@ -103,7 +118,7 @@ export const NAV: NavGroup[] = [
     label: "শেখা · Learning",
     accent: "var(--green)",
     items: [
-      { label: "All skills", sub: "দক্ষতা", href: "/skills", icon: "skills", key: "skills" },
+      { label: "All skills", sub: "দক্ষতা", href: "/skills", icon: "skills", key: "skills", hub: true },
       {
         label: "Money", sub: "টাকা ও শেয়ার", href: "/money",
         icon: "coins", key: "money", kind: "কোর্স", ladder: true, accent: "var(--green)",
@@ -154,7 +169,10 @@ export const NAV: NavGroup[] = [
     label: "কাজে লাগান · Tools",
     accent: "var(--gold)",
     items: [
-      { label: "Calculators", sub: "ক্যালকুলেটর", href: "/tools", icon: "calculator", key: "tools" },
+      {
+        label: "Calculators", sub: "ক্যালকুলেটর", href: "/tools",
+        icon: "calculator", key: "tools", hub: true,
+      },
       { label: "Stock check", sub: "শেয়ার যাচাই", href: "/tools/stock", icon: "gauge", key: "stock" },
       { label: "Live portfolio", sub: "লাইভ পোর্টফোলিও", href: "/tools/live", icon: "wallet", key: "live" },
       /* A day of somebody's own. Listed like everything else,
@@ -176,7 +194,7 @@ export const NAV: NavGroup[] = [
     label: "পড়া · Reading",
     accent: "var(--green)",
     items: [
-      { label: "Insights", href: "/insights", icon: "pen", key: "insights" },
+      { label: "Insights", href: "/insights", icon: "pen", key: "insights", hub: true },
     ],
   },
   {
@@ -184,7 +202,7 @@ export const NAV: NavGroup[] = [
     label: "Work",
     accent: "var(--plum)",
     items: [
-      { label: "Portfolio", href: "/portfolio", icon: "briefcase", key: "portfolio" },
+      { label: "Portfolio", href: "/portfolio", icon: "briefcase", key: "portfolio", hub: true },
       { label: "About", href: "/about", icon: "person", key: "about" },
       { label: "Contact", href: "/contact", icon: "mail", key: "contact" },
     ],

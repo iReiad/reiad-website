@@ -130,6 +130,24 @@ const SOURCES = [
      title, which is exactly what the front page did before
      `DOOR` moved into `content.ts`. */
   "shared/heads.ts",
+  /* The diet tool's own readouts. Copy is data, so a
+     sentence reworded on the site is reworded on a phone. */
+  "shared/diet-words.ts",
+  /* What the front page can be made of. The catalogue is
+     data and each side's DRAWING is code, so a kind added
+     here and not sent is a widget the site offers and the
+     phone has never heard of, on two boards that both look
+     finished. */
+  "shared/widgets.ts",
+  /* The portion library and the nutrient panel. A food row
+     is the most literal case this check has of a table that
+     goes stale: eighty-three rows in two languages, each
+     carrying a citation, and a second copy in the app would
+     have parted company the first time somebody added a
+     dish. `shared/diet.ts` is deliberately NOT here beside
+     it, because that file is arithmetic and the app's own
+     port of it needs a release when a formula changes. */
+  "shared/foods.ts",
 ];
 const tables = SOURCES.flatMap((path) => tablesIn(path).map((name) => ({ name, path })));
 
@@ -148,7 +166,11 @@ const tables = SOURCES.flatMap((path) => tablesIn(path).map((name) => ({ name, p
    new file read as held back. The failure that shape produces is
    this check reporting a problem that is not one, which is worse
    than useless: it teaches a reader to add an exemption. */
-const ENDPOINTS = ["functions/api/site.ts", "functions/api/tools.ts"];
+const ENDPOINTS = [
+  "functions/api/site.ts",
+  "functions/api/tools.ts",
+  "functions/api/foods.ts",
+];
 const imported = new Set(
   ENDPOINTS.flatMap((path) =>
     [...readFileSync(join(ROOT, path), "utf8")

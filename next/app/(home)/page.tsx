@@ -41,6 +41,8 @@ import type { Metadata } from "next";
 import { ContinueCard } from "../../components/door";
 import { FeaturedCard } from "../../components/featured";
 import { PulseCard } from "../../components/pulse-card";
+import { Board } from "../../components/home/board";
+import { SectionLabel } from "../../components/ui/label";
 import { Icon } from "../../components/icons";
 import { pageMeta } from "../../lib/pageMeta";
 import { SCHOOL_ACCENTS } from "@reiad/shared/nav";
@@ -210,6 +212,20 @@ export default function HomePage() {
             dek="তিন ধাপে ষাট দিন, শব্দ চেনা থেকে সূরা পড়া।"
             go="শুরু করুন" />
 
+        </section>
+
+        {/* ---- the board ----
+
+            Under the door, and it is the reader's rather than
+            this file's: which widgets, in what order, at what
+            width. `shared/widgets.ts` is the catalogue and the
+            Android app draws the same board from the same list.
+
+            The deck above stays, because the door is not a
+            widget: it is the page saying who it is, and a board
+            with no heading over it is a settings screen. */}
+        <section className="mt-[var(--step)]">
+          <Board />
         </section>
       </div>
     </main>

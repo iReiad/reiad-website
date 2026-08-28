@@ -489,6 +489,55 @@ console.log("\na tick made on another device");
 }
 
 /* ============================================================
+   8b. a reload does not eat what the reader just did
+
+   The Android app shipped this bug and a person met it as
+   "settings and cards rearranging are NOT working": `base` lived
+   only in memory, so the first exchange after every fresh start
+   ADOPTED, and adopt writes the account's copy of every mark
+   over the device's. The site had the same window, one page-load
+   wide. `base` is stored now ("sync-base", keyed to the account),
+   so a reload resumes the conversation instead of starting one,
+   and the board a reader arranged a moment before reloading is
+   theirs, locally and on the account.
+   ============================================================ */
+console.log("\na reload right after arranging the board");
+{
+  const f = await make({
+    accountRows: [{
+      key: "home-board",
+      value: { board: ["continue:wide"], ts: 1000 },
+      updated_at: old,
+    }],
+    device: { "reiad-session": session("u-reload") },
+    user: REAL_USER("u-reload"),
+  });
+  await open(f);
+
+  /* The reader arranges the board, and reloads before thinking
+     about it: a fresh page, a fresh module, no in-memory base. */
+  await f.p.evaluate(() => {
+    localStorage.setItem(
+      "home-board",
+      JSON.stringify({ board: ["pulse:tall", "continue:wide"], ts: Date.now() }),
+    );
+  });
+  await open(f);
+
+  check("the arrangement survives the reload",
+    ((await local(f.p, "home-board")) as { board?: string[] } | null)?.board ?? [],
+    ["pulse:tall", "continue:wide"]);
+  check("and the account was brought up to it",
+    (f.state.rows.get("home-board")?.value as { board?: string[] } | undefined)?.board ?? [],
+    ["pulse:tall", "continue:wide"]);
+  check("the conversation is recorded for the next load",
+    await f.p.evaluate(() => JSON.parse(localStorage.getItem("sync-base") ?? "{}").who ?? null),
+    "u-reload");
+  noErrors(f);
+  await f.ctx.close();
+}
+
+/* ============================================================
    9. what came down is announced
 
    `sync.js` writes the account's rows straight into localStorage,

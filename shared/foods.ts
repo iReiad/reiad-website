@@ -1729,7 +1729,17 @@ export interface ScaledPortion {
   grams?: number;
 }
 
-const MACRO_KEYS = ["protein", "carbs", "fat", "fibre"] as const;
+/** The four a `DayTotal` holds at the top level, and the ones
+    `scaleTo` puts in `macros` rather than in `micros`.
+
+    EXPORTED because it is a vocabulary and the Android app has
+    to split a scaled row the same way this file does. It reached
+    the phone by being derived from `NUTRIENTS`, which was right
+    on the day it was written and would part company the moment a
+    fifth `reads: "total"` row arrived: this file would go on
+    scaling four and the app would scale five. `/api/foods` sends
+    it, so there is one list. */
+export const MACRO_KEYS = ["protein", "carbs", "fat", "fibre"] as const;
 
 /**
  * The row at the amount that was actually eaten, or `null`.

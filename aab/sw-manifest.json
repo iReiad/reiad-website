@@ -1,15 +1,15 @@
 {
-  "version": "v208",
+  "version": "v211",
   "hashes": {
     "/offline.html": "bd9144e7162be323",
-    "/fallback.css": "473bddaf3bd53099",
+    "/fallback.css": "e582fd2cdea3a0ba",
     "/app.js": "d0b5bf300691d393",
     "/content.js": "024dccae1b55cc61",
     "/api.js": "a7bab41d860a4806",
     "/pieces.js": "abb6a19a6cc1ea76",
     "/signin.js": "04186a24b7112174",
     "/account.js": "1ff54b3b7e40165d",
-    "/sync.js": "58b60e86e5ac7709",
+    "/sync.js": "aee1940c7e427d65",
     "/account-page.js": "ddcf81f5fb6b2964",
     "/streak.js": "49344fc7d99e4925",
     "/photo.js": "658dcc6546e422ee",

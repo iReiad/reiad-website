@@ -6,7 +6,7 @@
    a stylesheet whose name carries a hash. Edit the source and run
    the generator. */
 
-@layer tokens, base, layout, components, menu, tools, tw, article, studio, work, money, workbook, deutsch, quran, english, reads, check, about, shell, deck, courses, routine, diet, admin, lesson, glow, utilities;
+@layer tokens, base, layout, components, menu, tools, tw, article, studio, work, money, workbook, deutsch, quran, english, reads, check, about, shell, deck, board, courses, routine, diet, admin, lesson, glow, utilities;
 
 @layer tokens {
 
@@ -7163,6 +7163,84 @@
   @media (width <= 620px) {
     .slimbar-nav { display: none; }
   }
+}
+
+@layer board {
+
+  .board {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: var(--step);
+    align-items: start;
+  }
+
+  .board-wide,
+  .board-tall { grid-column: 1 / -1; }
+
+  .board-small { grid-column: 1 / -1; }
+
+  @media (min-width: 460px) {
+    .board-small { grid-column: span 1; }
+  }
+
+  .board-strip {
+    display: flex; align-items: center; gap: 6px;
+    margin-bottom: 8px; min-height: 44px;
+
+    & > span { flex: 1; min-width: 0; color: var(--ink-soft); font-size: var(--t-1); }
+    & button { display: inline-grid; place-items: center; }
+  }
+
+  .board-strip button:nth-of-type(2) svg { transform: rotate(90deg); }
+  .board-strip button:nth-of-type(1) svg { transform: rotate(-90deg); }
+
+  .gp-rows {
+    display: grid; gap: 4px; margin: 0; padding: 0; list-style: none;
+
+    & a {
+      display: flex; align-items: center; gap: 8px;
+      min-height: 44px; padding: 6px 14px;
+      border-radius: var(--radius-sm);
+      color: var(--ink); text-decoration: none;
+      font-size: var(--t-2);
+
+      & > span { flex: 1; min-width: 0; }
+      & svg { color: var(--ink-soft); flex: none; }
+    }
+  }
+
+  .board-picker {
+    margin-top: var(--step);
+
+    & > .btn { margin-top: var(--gap); }
+  }
+
+  .board-offers {
+    list-style: none; margin: 0 0 var(--gap); padding: 0;
+    display: flex; flex-direction: column; gap: 10px;
+
+    & li {
+      display: flex; align-items: center; gap: 12px;
+      padding: 10px 0;
+      border-bottom: 1px solid var(--hairline);
+    }
+    & li > span:nth-child(2) { flex: 1; }
+  }
+
+  .meters-list {
+    list-style: none; margin: 0; padding: 0;
+    display: flex; flex-direction: column;
+
+    & a {
+      display: flex; align-items: center; gap: 10px;
+      min-height: 44px; text-decoration: none; color: inherit;
+    }
+    & svg { color: var(--accent); flex: none; }
+    & b { margin-left: auto; font-size: var(--t-1); color: var(--ink-soft); }
+    & b[data-done="yes"] { color: var(--accent); }
+  }
+
+  .meters-none { color: var(--ink-soft); font-size: var(--t-1); margin: 4px 0 10px; }
 }
 
 @layer courses {

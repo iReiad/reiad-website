@@ -76,6 +76,12 @@ this repository got written.
   once, and `unlisted` is how a section stays out of both menus
   while still being said once.
 
+- **`diet-words.ts`** the diet tool's own readouts, in both
+  languages. Its own table rather than a corner of
+  `tool-strings.ts`, because `stringKeys` in the stock fixture is
+  "every phrase the stock check can render" and a diet phrase in
+  that list makes the app's assertion weaker for both tools.
+
 - **`heads.ts`** what a hub page says about itself: the eyebrow,
   the headline and the lede of the pages that are a list of
   things rather than a piece of writing. Copy is data, so the
@@ -83,6 +89,16 @@ this repository got written.
   of a bare title. A number in a lede is a SLOT filled from
   `COUNTS`, never typed, which is the rule at the top of
   `CLAUDE.md`.
+
+- **`widgets.ts`** the catalogue of what the front page can be
+  made of, and the layout a reader who has arranged nothing gets.
+  The catalogue is DATA, so a widget renamed here is renamed on a
+  phone at the next fetch; a widget's DRAWING is code on each
+  side, so both sides SKIP a kind they cannot draw rather than
+  leaving a blank rectangle with a title on it. `layoutOf()` is
+  the parse, and it drops what it cannot read rather than
+  failing: a board one card short is recoverable and a board that
+  will not load is not.
 
 - **`profile.ts`** the two vocabularies an account answers with:
   how often somebody means to practise, and the three kinds of

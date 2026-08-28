@@ -20,38 +20,25 @@
 
 export interface Words { en: string; bn: string }
 
-/** What a BMI band means, in words. The tokens are `bmiBand()`'s
-    in `shared/diet.ts` and must stay in step with it. */
-export const BAND_WORDS: Record<string, Words> = {
-  under:   { en: "under the healthy range", bn: "স্বাস্থ্যকর সীমার নিচে" },
-  healthy: { en: "in the healthy range", bn: "স্বাস্থ্যকর সীমার মধ্যে" },
-  raised:  { en: "above the healthy range", bn: "স্বাস্থ্যকর সীমার উপরে" },
-  high:    { en: "well above the healthy range", bn: "অনেকটাই উপরে" },
-};
+/* ---- four of them live in `shared/` now ----
 
-/** The same for waist to height, whose tokens are `whtrBand()`'s. */
-export const WHTR_WORDS: Record<string, Words> = {
-  low:     { en: "below 0.4", bn: "০.৪ এর নিচে" },
-  healthy: { en: "under 0.5, which is the mark to aim for", bn: "০.৫ এর নিচে, যেটাই লক্ষ্য" },
-  raised:  { en: "0.5 or above", bn: "০.৫ বা তার বেশি" },
-  high:    { en: "0.6 or above", bn: "০.৬ বা তার বেশি" },
-};
+   They are re-exported here under the names every component on
+   this page already uses, so nothing else changed. What moved is
+   where the STRINGS are: the Android app draws the same figures,
+   and a band printed in Kotlin would be a second copy of eight
+   Bangla sentences with nothing holding the two together. Copy is
+   DATA by the contract at the top of `CLAUDE.md`, so these reach
+   a phone through `/api/site` and a reworded band arrives at the
+   next fetch.
 
-/** Which form of the two equations was used. Not a statement
-    about the reader: `sex` on this site is which fitted constant
-    Mifflin-St Jeor and the tape method take, and the sheet says
-    so rather than printing the token. */
-export const SEX_WORDS: Record<string, Words> = {
-  male:   { en: "the male form of the equations", bn: "সূত্রের পুরুষ রূপ" },
-  female: { en: "the female form of the equations", bn: "সূত্রের নারী রূপ" },
-};
-
-/** Which BMI action points are in use, with the numbers in them,
-    because a clinician reading the sheet needs the numbers. */
-export const CUTS_WORDS: Record<string, Words> = {
-  general: { en: "25 and 30, the general cut-offs", bn: "২৫ আর ৩০, সাধারণ সীমা" },
-  asian:   { en: "23 and 27.5, the WHO Asian cut-offs", bn: "২৩ আর ২৭.৫, বিশ্ব স্বাস্থ্য সংস্থার এশীয় সীমা" },
-};
+   `Phrase` and `Words` are the same shape, which is why the
+   re-export needs no adapter. */
+export {
+  BMI_BANDS as BAND_WORDS,
+  WHTR_BANDS as WHTR_WORDS,
+  SEX_FORMS as SEX_WORDS,
+  CUT_SETS as CUTS_WORDS,
+} from "@reiad/shared/diet-words";
 
 export interface Med {
   id: string;

@@ -31,23 +31,43 @@
    login could not have reached anyone either. Bump this whenever a
    precached file changes.
 
-   v208: /money/curriculum.js. পর্যায় ২ and পর্যায় ৩ of the money
-        school, fifty-two lessons where there were twenty-eight
-        placeholders: how a market moves, when to buy and sell,
-        what exists to buy, who regulates what, reading a quote,
-        and then the whole of checking a company yourself. The
-        ladder the browser reads is compiled from
-        shared/curricula/money.ts, so a cached copy of it draws
-        a hub whose rungs stop at the twenty-eighth.
+   v211: /fallback.css, /money/icons.js and /money/curriculum.js.
+        The money school rebuilt: a পর্যায় is a stage and a ধাপ is
+        a step, and every lesson is two bodies now with
+        interactive blocks between them. Eighty-one lessons where
+        there were sixty. The stylesheet gained a `lesson` layer
+        for those blocks, the icon set gained a target and a
+        scale, and the ladder the browser reads is compiled from
+        shared/curricula/money.ts. A cached copy of any of the
+        three draws a hub whose rungs stop at the sixtieth, or
+        cards with an empty square where a drawing goes.
 
-   v207: /fallback.css and /money/icons.js. The money school
-        rebuilt: a পর্যায় is a stage and a ধাপ is a step, three
-        lessons before the eight, and every lesson is two bodies
-        now with interactive blocks between them. The stylesheet
-        gained a `lesson` layer for those blocks and the icon set
-        gained a target and a scale for the two new starter
-        lessons. A cached copy of either draws the new cards with
-        an empty square where a drawing goes.
+        It was two entries, v207 and v208, written on a branch
+        while main took both numbers for the board and for
+        sync.js. Renumbered rather than renumbering main's: a
+        VERSION that has shipped is a cache key in real browsers.
+
+   v210: /sync.js. The base is stored per account ("sync-base",
+         not a synced key), the reconcile commits it only after
+         the push lands, and a failed exchange keeps it: adopt
+         no longer eats a mark made before a page's first
+         exchange or after a failed one, which is the same bug
+         the Android app shipped and fixed the same day.
+
+   v209: /fallback.css. The board's three sizes: `board-small`,
+   `board-wide` and `board-tall` replace the first two, and the
+   tall pulse widget's `.gp-rows`. A returning visitor on the old
+   stylesheet would meet class names it has never heard of and a
+   board with no grid.
+
+   v208: /fallback.css. `@layer board`: the front page is a board
+        the reader arranges, and the two pages served as files
+        link the stylesheet by name.
+
+   v207: /sync.js. `home-board` joins the synced keys: the front
+        page is a board the reader arranges, and the arrangement
+        follows the account between devices. A `mark` rather than
+        a `set`, because a board is replaced and not accumulated.
 
    v206: /fallback.css. A meal saved out of a day that already
         happened, a week planned ahead, and the whole log worked
@@ -1856,7 +1876,7 @@
    imports (crumbs, audience, learn progress) and the hub is a
    different page. Without a bump, a returning reader would be
    served the v3 app.js forever and none of it would appear. */
-const VERSION = "v208";
+const VERSION = "v211";
 const SHELL = `shell-${VERSION}`;
 const RUNTIME = `runtime-${VERSION}`;
 
