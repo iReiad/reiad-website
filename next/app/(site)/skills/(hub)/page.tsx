@@ -52,9 +52,14 @@ const bn = (n: number) => String(n).replace(/\d/g, (d) => "০১২৩৪৫৬
 
 export default function SkillsPage() {
   /* Everything in the learning group except the link back to this
-     page, which is where the reader already is. */
+     page, which is where the reader already is.
+
+     Read off `hub` rather than off this page's own key, because
+     the same sentence has to be true for a second reader of the
+     same table: the Android app's Learning tab drew that card
+     and it took you to a copy of the list you were looking at. */
   const learn = (NAV.find((g) => g.id === "learn")?.items ?? [])
-    .filter((item) => item.key !== "skills");
+    .filter((item) => !item.hub);
 
   /* The unlisted ones are not skills this site teaches, so they
      are out of the list AND out of the number above it. They get

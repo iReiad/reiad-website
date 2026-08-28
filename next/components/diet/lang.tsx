@@ -45,6 +45,7 @@
 
 import { useEffect, useState, type ReactNode } from "react";
 import { bnNum } from "@reiad/shared/schools";
+import { DIET_WORDS } from "@reiad/shared/diet-words";
 
 /** One phrase, twice.
 
@@ -52,11 +53,32 @@ import { bnNum } from "@reiad/shared/schools";
     screen reader which voice to use, and what lets the
     stylesheet give Bangla its own leading, which is 1.9 against
     English's 1.7. */
-export function T({ en, bn }: { en: ReactNode; bn: ReactNode }) {
+export function T({ en, bn, k }: {
+  en?: ReactNode;
+  bn?: ReactNode;
+  /** A key of `DIET_WORDS` in `shared/diet-words.ts`, which is
+      where a phrase belongs once more than one runtime says it:
+      the Android app draws these same figures and would
+      otherwise carry a second copy of every sentence.
+
+      Both halves still go into the DOM and the stylesheet still
+      picks, so this changes where the words come from and
+      nothing about how the page behaves with no JavaScript. */
+  k?: string;
+}) {
+  const said = k ? DIET_WORDS[k] : undefined;
+  if (k && !said) {
+    /* Loud rather than blank. A missing key rendering as nothing
+       is a sentence that quietly disappears from a page that
+       looks finished, which is the failure this whole repository
+       keeps returning to. `check-diet.ts` fails on one too, so
+       this is the second line of defence and not the first. */
+    return <span className="t-en" lang="en">{`[${k}]`}</span>;
+  }
   return (
     <>
-      <span className="t-en" lang="en">{en}</span>
-      <span className="t-bn" lang="bn">{bn}</span>
+      <span className="t-en" lang="en">{said ? said.en : en}</span>
+      <span className="t-bn" lang="bn">{said ? said.bn : bn}</span>
     </>
   );
 }

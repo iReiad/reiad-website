@@ -149,6 +149,7 @@ const STAGES: Array<[stage: string, entries: Entry[]]> = [
     "scripts/routine.test.ts",
     "scripts/diet.test.ts", "scripts/csv.test.ts",
     "scripts/insights.test.ts", "scripts/activity.test.ts",
+    "scripts/widgets.test.ts",
     /* `next/research.test.ts` is deliberately not here beside its
        sibling: it needs a browser, and without one it exits 0
        having asserted nothing, which is the silent skip this

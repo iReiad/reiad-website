@@ -31,6 +31,28 @@
    login could not have reached anyone either. Bump this whenever a
    precached file changes.
 
+   v210: /sync.js. The base is stored per account ("sync-base",
+         not a synced key), the reconcile commits it only after
+         the push lands, and a failed exchange keeps it: adopt
+         no longer eats a mark made before a page's first
+         exchange or after a failed one, which is the same bug
+         the Android app shipped and fixed the same day.
+
+   v209: /fallback.css. The board's three sizes: `board-small`,
+   `board-wide` and `board-tall` replace the first two, and the
+   tall pulse widget's `.gp-rows`. A returning visitor on the old
+   stylesheet would meet class names it has never heard of and a
+   board with no grid.
+
+   v208: /fallback.css. `@layer board`: the front page is a board
+        the reader arranges, and the two pages served as files
+        link the stylesheet by name.
+
+   v207: /sync.js. `home-board` joins the synced keys: the front
+        page is a board the reader arranges, and the arrangement
+        follows the account between devices. A `mark` rather than
+        a `set`, because a board is replaced and not accumulated.
+
    v206: /fallback.css. A meal saved out of a day that already
         happened, a week planned ahead, and the whole log worked
         from the keyboard. Plus the band: copying yesterday
@@ -1838,7 +1860,7 @@
    imports (crumbs, audience, learn progress) and the hub is a
    different page. Without a bump, a returning reader would be
    served the v3 app.js forever and none of it would appear. */
-const VERSION = "v206";
+const VERSION = "v210";
 const SHELL = `shell-${VERSION}`;
 const RUNTIME = `runtime-${VERSION}`;
 
