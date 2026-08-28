@@ -4,7 +4,8 @@
    the prose beside it.
 
        node scripts/seed-money.ts --check       validate, write nothing
-       node scripts/seed-money.ts --out-dir tmp/money   the SQL
+       node scripts/seed-money.ts --out-dir tmp/money   the SQL, chunked
+       node scripts/seed-money.ts --out money.sql       the SQL, one file
        node scripts/seed-money.ts --snapshot    refresh the backup
        node scripts/seed-money.ts --list        what is written, what is not
 
@@ -257,6 +258,34 @@ const LESSON_SQL = (r: Row): string => {
     + ` ON CONFLICT(school, stage, slug) DO UPDATE SET ${sets};`;
 };
 
+/** Everything of this school's that the ladder no longer names.
+
+    The upserts alone would leave a rung behind for every lesson
+    that has been renamed or dropped, and a ladder drawn from the
+    rows shows it: `basics-2` held twenty-one lessons under the
+    old ladder and holds twenty-five different ones under this
+    one, so without this the stage would draw forty-odd. It is
+    keyed on `stage || '/' || slug` rather than a row value so
+    that it reads the same in D1, in sqlite and in a diff.
+
+    It runs LAST, after every upsert, and that order is the whole
+    of its safety: a run that stops halfway has written new rows
+    and not yet removed old ones, which is a ladder with too much
+    on it. The other order leaves one with too little. */
+const PRUNE_SQL = (rows: Rows): string[] => {
+  const keys = (list: string[]): string => list.map((v) => lit(v)).join(", ");
+  return [
+    `DELETE FROM school_lessons WHERE school = ${lit(SCHOOL)}`
+    + ` AND stage || '/' || slug NOT IN (`
+    + keys(rows.lessons.map((r) => `${String(r.stage)}/${String(r.slug)}`)) + `);`,
+    `DELETE FROM school_sections WHERE school = ${lit(SCHOOL)}`
+    + ` AND stage || '/' || ident NOT IN (`
+    + keys(rows.sections.map((r) => `${String(r.stage)}/${String(r.ident)}`)) + `);`,
+    `DELETE FROM school_stages WHERE school = ${lit(SCHOOL)}`
+    + ` AND slug NOT IN (` + keys(rows.stages.map((r) => String(r.slug))) + `);`,
+  ];
+};
+
 /* ---------- running it ----------
 
    Behind a guard, because `check-money.ts` imports `problemsIn`
@@ -325,12 +354,32 @@ if (outDir) {
   }
   if (batch.length) files.push(batch.join("\n"));
 
+  files.push(PRUNE_SQL(rows).join("\n"));
+
   files.forEach((sql, i) => {
     writeFileSync(join(dir, `money-${String(i).padStart(3, "0")}.sql`), `${sql}\n`);
   });
   console.log(`wrote ${files.length} file(s) to ${outDir}, `
     + `${rows.stages.length} stage(s), ${rows.sections.length} section(s), `
     + `${rows.lessons.length} lesson(s).`);
+}
+
+/* One file, for the wrangler command in
+   `.github/workflows/seed-money.yml`. `--out-dir` exists for the
+   HTTP API, which has a request limit; wrangler streams a file
+   and does not. */
+const outFile = arg("out");
+if (outFile) {
+  const sql = [
+    ...rows.stages.map(STAGE_SQL),
+    ...rows.sections.map(SECTION_SQL),
+    ...rows.lessons.map(LESSON_SQL),
+    ...PRUNE_SQL(rows),
+  ].join("\n");
+  writeFileSync(join(ROOT, outFile), `${sql}\n`);
+  console.log(`wrote ${outFile}, ${rows.stages.length} stage(s), `
+    + `${rows.sections.length} section(s), ${rows.lessons.length} lesson(s), `
+    + `and 3 prune statement(s).`);
 }
 
 if (has("snapshot")) {
@@ -356,7 +405,7 @@ if (has("snapshot")) {
   console.log(`content/schools.backup.json refreshed.`);
 }
 
-if (!has("list") && !outDir && !has("snapshot")) {
+if (!has("list") && !outDir && !outFile && !has("snapshot")) {
   console.log(`seed-money: nothing to complain about. `
     + `${rows.lessons.filter((r) => r.body !== null).length} of ${rows.lessons.length} lesson(s) written.`);
 }

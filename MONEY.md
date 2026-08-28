@@ -175,6 +175,26 @@ node scripts/seed-money.ts --snapshot       # refresh content/schools.backup.jso
 `--out` and never a `>` redirect, for the reason
 `import-schools.ts` gives at length: the shell creates the file
 before node runs, and an empty file imports perfectly.
+`--out-dir` writes the same SQL in numbered chunks instead, each
+a whole number of lessons, for applying it through the HTTP API,
+which has a request limit where wrangler does not.
+
+**The file ends in three DELETEs and the order is the point.**
+The upserts alone leave a rung behind for every lesson that has
+been renamed or dropped: `basics-2` held twenty-one lessons under
+the old ladder and holds twenty-five different ones under this
+one, so without the prune that stage would draw forty-odd. It
+runs last, after every upsert, because a run that stops halfway
+should leave a ladder with too much on it rather than too little.
+
+**Seeding it is a workflow, not a terminal.**
+`.github/workflows/seed-money.yml`, dispatched by hand, and the
+sibling of `import-schools.yml` for exactly the reasons the note
+at the top of that file gives: the two commands have failed twice
+here for reasons that had nothing to do with the SQL. It
+validates, refuses a file with too few queries in it, writes, and
+then asks the database what is in it, because a tick on a job
+that wrote nothing is what wasted those two attempts.
 
 ## The checks
 
@@ -192,6 +212,7 @@ node scripts/check-money.ts    # everything below
 - `meta.needs` points backwards, at lessons that exist
 - every class used in a body survives both sanitisers
 - a mount is a top level element
+- no block's words hold markup, because a block is rendered as text
 
 `check-schools.ts` already fails if the ladder and the snapshot
 disagree about which lessons exist. `check-css.ts` already fails

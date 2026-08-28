@@ -1,0 +1,131 @@
+# ============================================================
+# Write the money school's rows into D1, from a browser.
+#
+#   GitHub → Actions → "Seed the money school into D1" → Run workflow
+#
+# The sibling of import-schools.yml, and it exists for the same
+# reason: the alternative is two commands in a terminal, and that
+# has failed twice here for reasons that had nothing to do with
+# the SQL. Nobody types anything in this one either.
+#
+# ---- why the money school has its own ----
+#
+# import-schools.yml fills all four curricula from
+# `import-schools.ts`, which knows the ladder and no prose. The
+# money school's prose lives in `scripts/money/*.ts` now, in two
+# languages with interactive blocks beside it, and
+# `seed-money.ts` is what turns those into rows. Pointing the
+# older workflow at them would make it a second thing that knows
+# what a money lesson is.
+#
+# ---- what it does to the rows it does not write ----
+#
+# It upserts, so a lesson the ladder marks `soon` keeps whatever
+# the database holds: the four stages above ভিত্তি are exactly
+# that, and INSERT OR REPLACE would have emptied twenty-nine
+# rows. Then it prunes, in three DELETEs at the end of the file,
+# so a lesson the ladder no longer names does not go on drawing a
+# rung. That order is deliberate and `seed-money.ts` says why.
+#
+# ---- the one thing it needs ----
+#
+# The CLOUDFLARE_API_TOKEN repository secret, the same one
+# import-schools.yml uses, and the note at the top of that file
+# says how to make one. Without it this stops before it touches
+# anything.
+#
+# ---- and one thing it deliberately does not do ----
+#
+# It does not run on a push or on a schedule. This rewrites every
+# lesson of one school, and a job that can do that must never be
+# able to start on its own.
+# ============================================================
+
+name: Seed the money school into D1
+
+on:
+  workflow_dispatch:
+    inputs:
+      target:
+        description: "Which database"
+        required: true
+        default: remote
+        type: choice
+        options: [remote, local]
+
+permissions:
+  contents: read
+
+concurrency:
+  group: seed-money
+  cancel-in-progress: false
+
+jobs:
+  seed:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@v5
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "22"
+
+      - name: Check the token is there
+        run: |
+          if [ -z "${{ secrets.CLOUDFLARE_API_TOKEN }}" ]; then
+            echo "::error::CLOUDFLARE_API_TOKEN is not set. See the note at the"
+            echo "::error::top of .github/workflows/import-schools.yml for how"
+            echo "::error::to make one. Nothing was changed."
+            exit 1
+          fi
+
+      # The generator validates before it writes: a body that
+      # mounts a block it does not have, a lab naming a model that
+      # is not implemented, or two bodies that mount different
+      # things all stop it here rather than reaching a reader.
+      - name: Check the lessons
+        run: node scripts/check-money.ts
+
+      - name: Build the SQL
+        run: node scripts/seed-money.ts --out money.sql
+
+      # The failure import-schools.yml was written for: an empty
+      # file that imports perfectly and writes nothing. 140
+      # upserts and 3 deletes is what the generator prints;
+      # anything under 100 means it did not do its job.
+      - name: Refuse to import an empty file
+        run: |
+          queries=$(grep -c '^\(INSERT\|DELETE\)' money.sql || true)
+          size=$(wc -c < money.sql)
+          echo "money.sql: $size bytes, $queries queries"
+          if [ "$queries" -lt 100 ]; then
+            echo "::error::Only $queries queries in the file. Expected around 143."
+            echo "::error::Nothing was written."
+            exit 1
+          fi
+
+      - name: Write it
+        env:
+          CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+        run: |
+          npx --yes wrangler@4 d1 execute reiad \
+            --${{ inputs.target }} --file=money.sql --yes
+
+      # What the run is for. A tick on a job that wrote nothing is
+      # the thing that wasted two attempts on the older workflow,
+      # so the last thing it does is ask the database what is in
+      # it now. Eighty-one of the money school's lessons should
+      # come back written in both languages.
+      - name: Say what is in there now
+        env:
+          CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+        run: |
+          npx --yes wrangler@4 d1 execute reiad --${{ inputs.target }} --json \
+            --command "SELECT stage,
+                 COUNT(*) AS lessons,
+                 SUM(CASE WHEN body <> '' THEN 1 ELSE 0 END) AS bangla,
+                 SUM(CASE WHEN body_en <> '' THEN 1 ELSE 0 END) AS english,
+                 SUM(CASE WHEN blocks <> '{}' THEN 1 ELSE 0 END) AS with_blocks
+               FROM school_lessons WHERE school = 'money'
+               GROUP BY stage ORDER BY stage"
