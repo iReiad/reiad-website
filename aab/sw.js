@@ -31,6 +31,15 @@
    login could not have reached anyone either. Bump this whenever a
    precached file changes.
 
+   v208: /money/curriculum.js. পর্যায় ২ and পর্যায় ৩ of the money
+        school, fifty-two lessons where there were twenty-eight
+        placeholders: how a market moves, when to buy and sell,
+        what exists to buy, who regulates what, reading a quote,
+        and then the whole of checking a company yourself. The
+        ladder the browser reads is compiled from
+        shared/curricula/money.ts, so a cached copy of it draws
+        a hub whose rungs stop at the twenty-eighth.
+
    v207: /fallback.css and /money/icons.js. The money school
         rebuilt: a পর্যায় is a stage and a ধাপ is a step, three
         lessons before the eight, and every lesson is two bodies
@@ -1847,7 +1856,7 @@
    imports (crumbs, audience, learn progress) and the hub is a
    different page. Without a bump, a returning reader would be
    served the v3 app.js forever and none of it would appear. */
-const VERSION = "v207";
+const VERSION = "v208";
 const SHELL = `shell-${VERSION}`;
 const RUNTIME = `runtime-${VERSION}`;
 
