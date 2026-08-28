@@ -89,8 +89,15 @@ type Table = "stages" | "sections" | "lessons";
 const COLUMNS: Record<Table, string[]> = {
   stages: ["school", "slug", "position", "title", "status", "meta"],
   sections: ["school", "stage", "ident", "position", "title", "meta"],
+  /* `body_en` and `blocks` arrived with the money school's
+     rewrite, 28 August 2026. They are columns rather than fields
+     in `meta` because the ladder query reads `meta` for every
+     lesson of a school and a second body in there would put a
+     third of a megabyte of English on a page that shows titles.
+     MONEY.md has the argument; they are backed up here like
+     everything else a row holds. */
   lessons: ["school", "stage", "slug", "section", "position", "title",
-            "minutes", "status", "meta", "body"],
+            "minutes", "status", "meta", "body", "body_en", "blocks"],
 };
 
 /** The order rows are written in, and it is not the order they
@@ -229,7 +236,8 @@ export async function d1FromSnapshot(
       position INTEGER, title TEXT, meta TEXT, updated_at TEXT DEFAULT '');
     CREATE TABLE school_lessons (school TEXT, stage TEXT, slug TEXT,
       section TEXT, position INTEGER, title TEXT, minutes INTEGER,
-      status TEXT, meta TEXT, body TEXT, updated_at TEXT DEFAULT '');
+      status TEXT, meta TEXT, body TEXT, body_en TEXT DEFAULT '',
+      blocks TEXT DEFAULT '{}', updated_at TEXT DEFAULT '');
   `);
 
   for (const [table, columns] of Object.entries(COLUMNS)) {

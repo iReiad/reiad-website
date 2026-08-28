@@ -42,6 +42,9 @@ import { SiteScripts } from "../../../../components/scripts";
 import { Keep } from "../../../../components/keep";
 import { LessonTick } from "../../../../components/progress";
 import { Eyebrow } from "../../../../components/ui/label";
+import { LessonBody } from "../../../../components/lesson/body";
+import { ReadLangSwitch } from "../../../../components/lesson/lang-switch";
+import { Stars } from "../../../../components/lesson/stars";
 
 type Params = Promise<{ section: string; slug: string; lesson: string }>;
 
@@ -81,7 +84,7 @@ export default async function LessonPage({ params }: { params: Params }) {
   const found = await getLesson(section, slug, lesson);
   if (!found) notFound();
 
-  const { school, look, stage, stages, lesson: it, body, prev, next } = found;
+  const { school, look, stage, stages, lesson: it, body, bodyEn, blocks, prev, next } = found;
 
   /* "Written" is the body, not the status. A lesson marked live
      whose prose is empty is a real state and the builders draw
@@ -139,6 +142,19 @@ export default async function LessonPage({ params }: { params: Params }) {
           <p className="one-liner">{String(it.blurb ?? "")}</p>
           <p className="lesson-meta mono">{meta}</p>
 
+          {/* How much this one matters, out of `meta.stars`, so
+              it is data and the ladder card, this page and the
+              Android app all read one number. A ladder of eighty
+              equally weighted rungs is a ladder nobody can budget
+              three evenings against. */}
+          {it.stars ? <p className="lesson-stars"><Stars n={it.stars} /></p> : null}
+
+          {/* The language pair, and only where there is a second
+              language to switch to. A switch that does nothing is
+              worse than none: it says the English is missing
+              rather than not written. */}
+          {bodyEn.trim() ? <ReadLangSwitch /> : null}
+
           {/* The same row a piece carries under its byline, and
               the same two questions, so a reader who learned them
               on an article does not have to find them again here.
@@ -159,8 +175,16 @@ export default async function LessonPage({ params }: { params: Params }) {
                sanitised on the way into the row by
                `functions/_lib/sanitise.ts`. Rendered rather than
                escaped for the same reason an article's body is:
-               it is the writing. */
-            <div dangerouslySetInnerHTML={{ __html: body }} />
+               it is the writing.
+
+               Both bodies go in, and the blocks between them:
+               `components/lesson/body.tsx` cuts each body at its
+               mount markers and interleaves. The prose is
+               rendered twice, once per language, and each block
+               once, because a block holds state and two of them
+               would be two quizzes. */
+            <LessonBody bn={body} en={bodyEn} blocks={blocks}
+                        lesson={String(it.id)} school={school} />
           )}
 
           {/* The tick, and only for the school whose progress is

@@ -7,6 +7,8 @@
     "./look": "./look.ts",
     "./headers": "./headers.ts",
     "./schools": "./schools.ts",
+    "./lesson": "./lesson.ts",
+    "./lesson-labs": "./lesson-labs.ts",
     "./rows": "./rows.ts",
     "./content": "./content.ts",
     "./nav": "./nav.ts",

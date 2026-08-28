@@ -83,6 +83,12 @@ export interface SchoolLessonRow extends SchoolLesson {
   school: string;
   stage: string;
   body: string;
+  /** The same lesson in English, empty where nobody wrote one. */
+  bodyEn: string;
+  /** The lesson's blocks, still JSON: parsing them is the
+      renderer's job and this file is the door the rows come
+      through. `shared/lesson.ts` has the shape and the parser. */
+  blocks: string;
 }
 
 export interface LadderedLesson extends SchoolLesson {
@@ -175,11 +181,18 @@ export async function lessonOf(
   ).bind(school, String(stage), String(slug).replace(/\.html$/i, "")).first();
 
   if (!row) return null;
+  const got = row as Record<string, unknown>;
   return {
-    ...lessonFrom(row as Record<string, unknown>),
-    school: (row as Record<string, unknown>).school,
-    stage: (row as Record<string, unknown>).stage,
-    body: (row as Record<string, unknown>).body,
+    ...lessonFrom(got),
+    school: got.school,
+    stage: got.stage,
+    body: got.body,
+    /* `?? ""` rather than a cast, because a database that has not
+       had the column added yet answers `undefined` here and a
+       lesson with no English half is a real state: 205 of them
+       were exactly that on the day the column arrived. */
+    bodyEn: String(got.body_en ?? ""),
+    blocks: String(got.blocks ?? "{}"),
   } as SchoolLessonRow;
 }
 

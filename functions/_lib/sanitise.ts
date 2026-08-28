@@ -26,7 +26,14 @@ const ALLOWED: Record<string, string[]> = {
   p: ["class"], h2: [], h3: [], ul: ["class"], ol: ["class"], li: [],
   blockquote: [],
   strong: [], em: [], br: [], hr: [], code: [], sup: [], sub: [],
-  figure: ["class"], figcaption: [], div: ["class"],
+  figure: ["class"], figcaption: [],
+  /* `data-mount` is the ONE data attribute a body may carry, and
+     it is inert: an empty div naming a block the route renders in
+     its place. See `splitBody()` in `shared/lesson.ts`. It is
+     narrow on purpose, because `class` is already governed by the
+     allowlist below and a general `data-*` would be styling and
+     behaviour smuggled past both. */
+  div: ["class", "data-mount"],
   table: [], thead: [], tbody: [], tr: [], th: ["colspan", "rowspan"],
   td: ["colspan", "rowspan"],
   a: ["href", "title", "class", "rel"],
@@ -49,6 +56,9 @@ const ALLOWED_CLASSES: Set<string> = new Set([
   "at-a-glance", "at-a-glance-label", "side-note", "side-note-label",
   "step-list", "checklist", "figures", "fig",
   "table-scroll", "term", "note", "ex",
+  /* Where an interactive block goes. The div is empty and the
+     route replaces it; MONEY.md has the whole arrangement. */
+  "mount",
 ]);
 
 const SAFE_URL = /^(https?:\/\/|mailto:|\/|#)/i;

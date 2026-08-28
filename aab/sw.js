@@ -31,6 +31,15 @@
    login could not have reached anyone either. Bump this whenever a
    precached file changes.
 
+   v207: /fallback.css and /money/icons.js. The money school
+        rebuilt: a পর্যায় is a stage and a ধাপ is a step, three
+        lessons before the eight, and every lesson is two bodies
+        now with interactive blocks between them. The stylesheet
+        gained a `lesson` layer for those blocks and the icon set
+        gained a target and a scale for the two new starter
+        lessons. A cached copy of either draws the new cards with
+        an empty square where a drawing goes.
+
    v206: /fallback.css. A meal saved out of a day that already
         happened, a week planned ahead, and the whole log worked
         from the keyboard. Plus the band: copying yesterday
@@ -1838,7 +1847,7 @@
    imports (crumbs, audience, learn progress) and the hub is a
    different page. Without a bump, a returning reader would be
    served the v3 app.js forever and none of it would appear. */
-const VERSION = "v206";
+const VERSION = "v207";
 const SHELL = `shell-${VERSION}`;
 const RUNTIME = `runtime-${VERSION}`;
 
