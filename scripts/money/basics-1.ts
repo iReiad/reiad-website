@@ -2827,4 +2827,1812 @@ ${mount("sp-quiz")}
     },
   },
 },
+
+/* ---------------------------------------------------------- */
+"fdr": {
+  bn: `
+<p>এফডিআর, ফিক্সড ডিপোজিট রিসিট, হলো ব্যাংকে নির্দিষ্ট মেয়াদে টাকা রেখে নির্দিষ্ট হারে মুনাফা নেওয়া। বাংলাদেশে প্রায় প্রতিটা পরিবার এটা চেনে, আর অনেকের কাছে সঞ্চয় মানেই এফডিআর।</p>
+
+<p>জিনিসটা যা মনে হয় তার চেয়ে একটু আলাদা, আর পার্থক্যটা বোঝা দরকার। এফডিআরে আপনি ব্যাংককে টাকা ধার দিচ্ছেন। ব্যাংক ওই টাকা অন্য কাউকে বেশি সুদে ধার দেয়, আর পার্থক্যটা তার আয়। আপনি একজন পাওনাদার, মালিক নন, আর এইজন্যই আপনার রিটার্ন নির্দিষ্ট: ব্যাংক ভালো করুক বা খারাপ, আপনি ওই চুক্তির হারটাই পাবেন।</p>
+
+<div class="at-a-glance">
+<p class="at-a-glance-label">এক নজরে</p>
+<ul>
+<li>ব্যাংককে ধার দেওয়া, নির্দিষ্ট মেয়াদে নির্দিষ্ট হারে।</li>
+<li>মুনাফায় উৎসে কর কাটা হয়, আর টিআইএন না থাকলে বেশি।</li>
+<li>মেয়াদের আগে ভাঙলে হার কমে, প্রায়ই অনেকটাই।</li>
+<li>ব্যাংক ডুবলে আমানত বিমার একটা সীমা আছে, আর সেটা জেনে রাখা দরকার।</li>
+<li>মূল্যস্ফীতির পর আসল রিটার্ন প্রায়ই শূন্যের কাছাকাছি বা নিচে।</li>
+</ul>
+</div>
+
+<h2>হারটা কীভাবে ঠিক হয়</h2>
+
+<p>ব্যাংক আপনাকে যে হার দেয় সেটা আকাশ থেকে আসে না। তিনটা জিনিস সেটা ঠিক করে: বাংলাদেশ ব্যাংকের নীতি সুদহার, ব্যাংকের নিজের টাকার প্রয়োজন, আর প্রতিযোগিতা।</p>
+
+<p>নীতি সুদহার বাড়লে সব ব্যাংকের আমানতের হার বাড়ে, কারণ সরকারের ট্রেজারি বিলেই তখন বেশি পাওয়া যায় আর ব্যাংকগুলোকে তার সঙ্গে প্রতিযোগিতা করতে হয়। এইজন্যই <a class="term" href="/money/basics-2/bangladesh-bank.html">বাংলাদেশ ব্যাংকের</a> সিদ্ধান্ত আপনার এফডিআরের হারে গিয়ে ঠেকে, আর এইজন্যই ওই খবরগুলো পড়া কাজের।</p>
+
+<div class="ex"><b>উদাহরণ:</b> একই দিনে দুইটা ব্যাংক দুই রকম হার দিতে পারে, আর প্রায়ই দেয়। যে ব্যাংকের টাকার টান বেশি সে বেশি হার দেয়, আর টাকার টান থাকার একটা কারণ খেলাপি ঋণ। মানে সবচেয়ে বেশি হার দেওয়া ব্যাংকটাই সবচেয়ে নিরাপদ নাও হতে পারে। হার তুলনা করার সময় ব্যাংকটার নাম আর অবস্থাও দেখুন, কেবল সংখ্যাটা নয়।</div>
+
+<h2>আসল রিটার্ন</h2>
+
+${mount("fdr-lab")}
+
+<p>উপরের হিসাবটা এই পাঠশালায় বারবার ফিরে আসে, কারণ এটাই সেই সংখ্যা যা মানুষ কখনো হিসাব করেন না। ঘোষিত হার একটা বিজ্ঞাপন; কর কাটার পর আর মূল্যস্ফীতির পর যা থাকে সেটাই আপনার।</p>
+
+<h2>ভাঙার শাস্তি</h2>
+
+<p>এফডিআরের একটা বৈশিষ্ট্য যা কেনার সময় কেউ পড়েন না: মেয়াদের আগে ভাঙলে সুদের হার নাটকীয়ভাবে কমে যায়। একটা তিন বছরের এফডিআর এগারো মাসে ভাঙলে আপনি হয়তো তিন বছরের হার নয়, সেভিংস অ্যাকাউন্টের হার পাবেন, আর কিছু ক্ষেত্রে জরিমানাও।</p>
+
+<p>এইজন্যই <a class="term" href="/money/start/money-first.html">জরুরি তহবিল</a> এফডিআরে রাখা উচিত নয়। জরুরি অবস্থা মেয়াদ শেষ হওয়ার অপেক্ষা করে না, আর যেদিন টাকা লাগবে সেদিন এফডিআর ভাঙা মানে বছরের পুরো সুদটা হারানো।</p>
+
+${mount("fdr-figure")}
+
+<h2>ব্যাংক ডুবলে</h2>
+
+<p>বাংলাদেশে আমানত বিমা ব্যবস্থা আছে: একটা ব্যাংক অবসায়িত হলে প্রতি আমানতকারীকে একটা নির্দিষ্ট সীমা পর্যন্ত ফেরত দেওয়ার ব্যবস্থা। সীমার সংখ্যাটা সরকার বদলায়, তাই এখানে লেখা নেই, আর বাংলাদেশ ব্যাংকের সাইট থেকে জেনে নেওয়া যায়।</p>
+
+<p>বাস্তবে বাংলাদেশে বড় ব্যাংক ডুবতে দেওয়া হয় না, একীভূত করা হয় বা সহায়তা দেওয়া হয়। তবু বিষয়টা জানা থাকা ভালো, আর তার একটা ব্যবহারিক ফল আছে: বড় অঙ্কের আমানত একটা ব্যাংকে না রেখে দুই-তিনটায় ভাগ করা একটা যুক্তিসঙ্গত সতর্কতা।</p>
+
+<h2>এফডিআর কার জন্য</h2>
+
+<p>উত্তরটা <a class="term" href="/money/start/your-goal.html">লক্ষ্যের</a> লেখাটার সঙ্গে মেলে: যে টাকা এক থেকে তিন বছরে লাগবে আর যার অঙ্কটা নিশ্চিত থাকা দরকার। বিয়ের খরচ, ভর্তির ফি, ব্যবসার একটা নির্দিষ্ট কিস্তি। এই টাকা শেয়ারে রাখা ভুল, আর এফডিআরে রাখা ঠিক।</p>
+
+<p>যে টাকা দশ বছরে লাগবে, সেটা এফডিআরে রাখা মানে দশ বছর মূল্যস্ফীতির সঙ্গে সমানে দৌড়ে জায়গায় দাঁড়িয়ে থাকা।</p>
+
+<h2>নিজে যাচাই করুন</h2>
+
+${mount("fdr-quiz")}
+`,
+  en: `
+<p>A fixed deposit, an FDR, is money placed with a bank for a fixed term at a fixed rate. Nearly every family in Bangladesh knows it, and for many people saving simply means an FDR.</p>
+
+<p>It is slightly different from what it seems, and the difference is worth understanding. In an FDR you are lending to the bank. The bank lends that money on at a higher rate and keeps the difference. You are a creditor, not an owner, and that is why your return is fixed: whether the bank does well or badly, you get the contracted rate.</p>
+
+<div class="at-a-glance">
+<p class="at-a-glance-label">At a glance</p>
+<ul>
+<li>Lending to a bank, at a fixed rate for a fixed term.</li>
+<li>Tax is withheld on the profit, and more of it without a TIN.</li>
+<li>Breaking it early cuts the rate, often sharply.</li>
+<li>Deposit insurance exists with a cap, and the cap is worth knowing.</li>
+<li>After inflation the real return is usually near zero or below it.</li>
+</ul>
+</div>
+
+<h2>How the rate is set</h2>
+
+<p>The rate a bank offers does not come from nowhere. Three things set it: Bangladesh Bank's policy rate, the bank's own need for money, and competition.</p>
+
+<p>When the policy rate rises, deposit rates rise across banks, because government treasury bills now pay more and banks have to compete with them. That is why a <a class="term" href="/money/basics-2/bangladesh-bank.html">Bangladesh Bank</a> decision reaches your FDR rate, and why those news items are worth reading.</p>
+
+<div class="ex"><b>Example:</b> Two banks can offer different rates on the same day, and often do. A bank short of funds offers more, and one reason for being short of funds is bad loans. So the bank offering the highest rate is not necessarily the safest. When comparing rates, look at the bank as well as the number.</div>
+
+<h2>The real return</h2>
+
+${mount("fdr-lab")}
+
+<p>This calculation recurs throughout this school, because it is the sum nobody performs. The advertised rate is an advertisement; what survives tax and inflation is yours.</p>
+
+<h2>The penalty for breaking</h2>
+
+<p>One feature of an FDR that nobody reads at the counter: break it early and the rate falls dramatically. Break a three year deposit at eleven months and you may get the savings account rate instead of the three year rate, and in some cases a penalty on top.</p>
+
+<p>Which is exactly why an <a class="term" href="/money/start/money-first.html">emergency fund</a> does not belong in an FDR. An emergency does not wait for maturity, and breaking one on the day you need the money means losing the year's interest.</p>
+
+${mount("fdr-figure")}
+
+<h2>If a bank fails</h2>
+
+<p>Bangladesh has deposit insurance: if a bank is wound up, each depositor is covered up to a set limit. The government changes the limit, so it is not written here, and Bangladesh Bank's site has it.</p>
+
+<p>In practice large banks here are not allowed to fail; they are merged or supported. It is still worth knowing, and there is a practical consequence: splitting a large deposit across two or three banks rather than one is a reasonable precaution.</p>
+
+<h2>Who a fixed deposit is for</h2>
+
+<p>The answer matches the <a class="term" href="/money/start/your-goal.html">goals</a> lesson: money needed in one to three years whose amount has to be certain. A wedding, an admission fee, a known business instalment. That money is wrong in shares and right in a deposit.</p>
+
+<p>Money needed in ten years, left in a deposit, spends ten years running level with inflation and standing still.</p>
+
+<h2>Check yourself</h2>
+
+${mount("fdr-quiz")}
+`,
+  blocks: {
+    "fdr-lab": {
+      kind: "lab",
+      model: "fdr-real",
+      title: { bn: "এফডিআরের আসল রিটার্ন", en: "What a fixed deposit really returns" },
+      preset: { rate: 8.5, tax: 10, inflation: 9 },
+    },
+    "fdr-figure": {
+      kind: "figure",
+      shape: "matrix",
+      title: { bn: "কোন টাকা কোথায়", en: "Which money goes where" },
+      axes: {
+        x: [{ bn: "টাকা লাগতে পারে যেকোনো দিন", en: "Might be needed any day" }, { bn: "তারিখটা জানা", en: "The date is known" }],
+        y: [{ bn: "১ বছরের কম", en: "Under a year" }, { bn: "১ থেকে ৩ বছর", en: "One to three years" }],
+      },
+      parts: [
+        { text: { bn: "সেভিংস অ্যাকাউন্ট", en: "A savings account" }, note: { bn: "জরুরি তহবিল এখানে, এফডিআরে নয়", en: "The emergency fund lives here, not in a deposit" }, tone: "good" },
+        { text: { bn: "এক থেকে তিন বছরের এফডিআর", en: "A one to three year deposit" }, note: { bn: "এখানেই এফডিআর সবচেয়ে ভালো কাজ করে", en: "This is where a deposit does its best work" }, tone: "lead" },
+        { text: { bn: "সেভিংস, বা খুব ছোট মেয়াদের এফডিআর", en: "Savings, or a very short deposit" }, note: { bn: "ভাঙার শাস্তির চেয়ে কম সুদ ভালো", en: "Less interest beats a breakage penalty" }, tone: "plain" },
+        { text: { bn: "তিন মাস বা ছয় মাসের এফডিআর", en: "A three or six month deposit" }, note: { bn: "তারিখ জানা থাকলে মেয়াদটাও মিলিয়ে নিন", en: "If the date is known, match the term to it" }, tone: "plain" },
+      ],
+      caption: {
+        bn: "এফডিআরের মেয়াদটা টাকার দরকারের তারিখের সঙ্গে মেলানোই পুরো কৌশল।",
+        en: "Matching the term to the date you need the money is the whole technique.",
+      },
+    },
+    "fdr-quiz": {
+      kind: "quiz",
+      title: { bn: "দুইটা প্রশ্ন", en: "Two questions" },
+      questions: [
+        {
+          ask: {
+            bn: "একটা ব্যাংক অন্যদের চেয়ে ২% বেশি হার দিচ্ছে। এতে কী ভাবা উচিত?",
+            en: "A bank is offering 2% more than the others. What should you think?",
+          },
+          options: [
+            {
+              text: { bn: "সুযোগ, সবচেয়ে বেশি হার নেওয়া উচিত", en: "An opportunity: take the highest rate" },
+              why: {
+                bn: "হতে পারে, আর প্রশ্নটা আগে করা দরকার: বেশি দিচ্ছে কেন? যে ব্যাংকের হাতে টাকা কম তাকে বেশি দিতে হয়, আর টাকা কম থাকার একটা সাধারণ কারণ খেলাপি ঋণ।",
+                en: "Possibly, and one question comes first: why more? A bank short of funds has to pay more, and a common reason for being short is bad loans.",
+              },
+            },
+            {
+              text: { bn: "কেন বেশি দিচ্ছে সেটা খোঁজা উচিত", en: "Find out why they are paying more" },
+              right: true,
+              why: {
+                bn: "ঠিক। ব্যাংকটার খেলাপি ঋণের হার আর মূলধন পর্যাপ্ততা বাংলাদেশ ব্যাংকের প্রকাশিত তথ্যে থাকে। ২% বাড়তি সুদের বিপরীতে যদি আমানত ফেরত পাওয়া নিয়ে প্রশ্ন থাকে, বিনিময়টা ভালো না।",
+                en: "Right. A bank's bad loan ratio and capital adequacy are in Bangladesh Bank's published data. Two extra points of interest against a question over getting your money back is not a good trade.",
+              },
+            },
+            {
+              text: { bn: "এড়িয়ে যাওয়া উচিত, বেশি হার মানেই বিপদ", en: "Avoid it: a high rate always means danger" },
+              why: {
+                bn: "এতটাও না। নতুন ব্যাংক বাজারে ঢুকতে বেশি দেয়, আর সেটা স্বাভাবিক প্রতিযোগিতা। কথাটা এড়িয়ে যাওয়ার নয়, কারণ জানার।",
+                en: "Not that far. New banks pay up to win business, which is ordinary competition. The point is not avoidance, it is knowing the reason.",
+              },
+            },
+          ],
+        },
+        {
+          ask: {
+            bn: "তিন বছরের এফডিআর দশ মাসে ভাঙলে কী হয়?",
+            en: "What happens if you break a three year deposit at ten months?",
+          },
+          options: [
+            {
+              text: { bn: "দশ মাসের সুদটা পাবেন, তিন বছরের হারে", en: "You get ten months of interest at the three year rate" },
+              why: {
+                bn: "না, আর এটাই সবচেয়ে সাধারণ ভুল ধারণা। মেয়াদপূর্ব ভাঙায় ব্যাংক অনেক কম হার প্রয়োগ করে, প্রায়ই সেভিংস অ্যাকাউন্টের হার।",
+                en: "No, and this is the commonest misunderstanding. On early encashment the bank applies a far lower rate, often the savings account rate.",
+              },
+            },
+            {
+              text: { bn: "অনেক কম হার পাবেন, আর কখনো জরিমানাও", en: "A much lower rate, and sometimes a penalty" },
+              right: true,
+              why: {
+                bn: "ঠিক, আর এইজন্যই মেয়াদটা টাকার দরকারের তারিখের সঙ্গে মেলাতে হয়। যে টাকা কখন লাগবে জানা নেই, সেটা এফডিআরে নয়, সেভিংসে।",
+                en: "Right, and this is why the term has to match the date. Money whose date you do not know belongs in savings, not in a deposit.",
+              },
+            },
+            {
+              text: { bn: "আসল টাকাও কমে যায়", en: "You lose part of the principal" },
+              why: {
+                bn: "সাধারণত না, আসল ফেরত পাওয়া যায়। যা হারান তা হলো সুদ, আর কখনো একটা ছোট ফি।",
+                en: "Usually not: the principal comes back. What you lose is interest, and sometimes a small fee.",
+              },
+            },
+          ],
+        },
+      ],
+    },
+  },
+},
+
+/* ---------------------------------------------------------- */
+"bond": {
+  bn: `
+<p>বন্ড হলো ধার দেওয়ার দলিল। একটা কোম্পানি বা সরকার টাকা ধার নেয় আর বিনিময়ে একটা কাগজ দেয় যাতে লেখা থাকে: আমি আপনাকে বছরে এত টাকা সুদ দেব, আর এত বছর পর মূল টাকাটা ফেরত দেব।</p>
+
+<p>এই এক লাইনেই <a class="term" href="/money/terms/share.html">শেয়ারের</a> সঙ্গে পুরো পার্থক্যটা আছে। শেয়ার মালিকানা, বন্ড পাওনাদারি। মালিক হিসেবে আপনি লাভের ভাগ পান আর লোকসানও, আর পাওনাদার হিসেবে আপনি নির্দিষ্ট টাকা পান, কোম্পানি যত ভালোই করুক।</p>
+
+<div class="at-a-glance">
+<p class="at-a-glance-label">এক নজরে</p>
+<ul>
+<li>বন্ডে আপনি পাওনাদার, তাই লাইনে শেয়ারহোল্ডারদের আগে।</li>
+<li>কুপন হলো বার্ষিক সুদ, আর সেটা অভিহিত মূল্যের ওপর হিসাব হয়।</li>
+<li>বাজারদর অভিহিত মূল্যের উপরে বা নিচে হতে পারে, আর তখন আসল ইল্ড বদলায়।</li>
+<li>দাম আর ইল্ড উল্টো দিকে চলে, সবসময়।</li>
+<li>বাংলাদেশে কর্পোরেট বন্ডের বাজার এখনো ছোট, আর বেশিরভাগ সুকুক ও সরকারি।</li>
+</ul>
+</div>
+
+<h2>তিনটা সংখ্যা</h2>
+
+<p>একটা বন্ড বুঝতে তিনটা সংখ্যা লাগে, আর মানুষ প্রথম দুইটাই দেখেন।</p>
+
+${mount("bond-figure")}
+
+<p>অভিহিত মূল্য হলো মেয়াদ শেষে যা ফেরত আসবে। কুপন হলো বার্ষিক সুদের হার, আর সেটা সবসময় অভিহিত মূল্যের ওপর হিসাব হয়, বাজারদরের ওপর নয়। বাজারদর হলো আজ কেউ ওই বন্ডটার জন্য যত দিতে রাজি।</p>
+
+<h2>দাম আর ইল্ড উল্টো দিকে চলে</h2>
+
+<p>এটা বন্ড বোঝার একমাত্র জিনিস যা সত্যিই বুঝতে হয়, আর একবার বুঝলে আর ভুল হয় না।</p>
+
+<p>ধরুন একটা বন্ডের অভিহিত মূল্য ১,০০০ টাকা আর কুপন ৮%, মানে বছরে ৮০ টাকা। এখন বাজারে নতুন বন্ডে ১০% দেওয়া শুরু হলো। আপনার ৮% বন্ডটা কেউ ১,০০০ টাকায় কিনবে কেন, যখন একই টাকায় ১০০ টাকা পাওয়া যায়? কিনবে না। তাই আপনার বন্ডটার দাম নেমে যাবে, প্রায় ৮০০ টাকায়, যাতে ৮০ টাকা সুদটা নতুন ক্রেতার জন্য ১০% হয়।</p>
+
+<p>উল্টোটাও তাই। সুদের হার কমলে আপনার পুরনো ৮% বন্ডটা হঠাৎ আকর্ষণীয় হয়ে ওঠে, আর তার দাম উপরে যায়। এইজন্যই বলা হয় সুদের হার আর বন্ডের দাম উল্টো দিকে চলে, আর এইজন্যই বন্ডধারীরা সুদের হারের খবর গভীরভাবে দেখেন।</p>
+
+${mount("bond-lab")}
+
+<h2>ঝুঁকি কোথায়</h2>
+
+<p>বন্ডে দুই রকম ঝুঁকি আছে, আর মানুষ প্রথমটাকেই একমাত্র ঝুঁকি ভাবেন।</p>
+
+<p>প্রথমটা হলো খেলাপির ঝুঁকি: যে ধার নিয়েছে সে ফেরত দিতে না পারা। সরকারের ক্ষেত্রে এটা কার্যত শূন্য, কারণ সরকার নিজের মুদ্রায় ধার নিলে সে সবসময় শোধ করতে পারে। কোম্পানির ক্ষেত্রে এটা আসল, আর এইজন্যই কর্পোরেট বন্ডে ইল্ড বেশি: বাড়তি ইল্ডটা ওই ঝুঁকির দাম।</p>
+
+<p>দ্বিতীয়টা হলো সুদের হারের ঝুঁকি, আর এটাই বেশি অবহেলিত। সরকারি বন্ডেও এটা পুরোপুরি থাকে। আপনি যদি ৮% কুপনের দশ বছরের বন্ড কিনে থাকেন আর তিন বছর পর বাজারে ১২% পাওয়া যেতে থাকে, আপনার বন্ডটার দাম অনেক নিচে নেমে যাবে। মেয়াদ পর্যন্ত ধরে রাখলে আপনি ১,০০০ টাকাই ফেরত পাবেন, তাই ক্ষতিটা কেবল কাগজে; কিন্তু ওই সাত বছর আপনি বাজারের চেয়ে কম হারে আটকে থাকবেন।</p>
+
+<p>এই দুইটার ফল একটাই ব্যবহারিক নিয়মে দাঁড়ায়: <strong>বন্ডের মেয়াদটা আপনার নিজের সময়ের সঙ্গে মেলান।</strong> পাঁচ বছর পর টাকা লাগলে পাঁচ বছরের বন্ড কিনুন, দশ বছরেরটা নয়।</p>
+
+<h2>কর্পোরেট আর সরকারি</h2>
+
+<div class="table-scroll">
+<table>
+<thead>
+<tr><th></th><th>সরকারি বন্ড</th><th>কর্পোরেট বন্ড</th></tr>
+</thead>
+<tbody>
+<tr><td>ধার নিচ্ছে</td><td>সরকার</td><td>একটা কোম্পানি</td></tr>
+<tr><td>ফেরত না পাওয়ার ঝুঁকি</td><td>কার্যত নেই</td><td>আছে, কোম্পানিভেদে</td></tr>
+<tr><td>ইল্ড</td><td>কম</td><td>বেশি, ঝুঁকির বিনিময়ে</td></tr>
+<tr><td>বাংলাদেশে বাজার</td><td>বড়, তবে বেশিরভাগ ব্যাংকের হাতে</td><td>ছোট, ব্যক্তির জন্য কম সুযোগ</td></tr>
+</tbody>
+</table>
+</div>
+
+<p>বাংলাদেশে ব্যক্তিগত বিনিয়োগকারীর জন্য বন্ড এখনো সহজলভ্য নয়। সরকারি বন্ডের বেশিরভাগ ব্যাংক আর বিমা কোম্পানির হাতে যায়, আর কর্পোরেট বন্ডের সংখ্যা কম। কিছু সুকুক তালিকাভুক্ত হয়েছে আর সেগুলো ডিএসইতে কেনা যায়। <a class="term" href="/money/terms/treasury-bill.html">ট্রেজারি বিল ও বন্ডের</a> লেখায় সরকারি দিকটা আছে।</p>
+
+<div class="note">বন্ড নিরাপদ শব্দটা সাবধানে ব্যবহার করা দরকার। সরকারি বন্ডে ফেরত না পাওয়ার ঝুঁকি প্রায় নেই, আর দামের ঝুঁকি আছে: সুদের হার বাড়লে আপনার বন্ডের বাজারদর পড়ে, আর মেয়াদের আগে বেচলে সেই ক্ষতিটা আসল। মেয়াদ পর্যন্ত ধরে রাখলে ওই ক্ষতি হয় না, তাই বন্ডে মেয়াদটা আপনার সময়ের সঙ্গে মেলানো জরুরি।</div>
+
+<h2>নিজে যাচাই করুন</h2>
+
+${mount("bond-quiz")}
+`,
+  en: `
+<p>A bond is a lending document. A company or a government borrows money and hands back a paper saying: I will pay you this much interest a year, and return the principal in this many years.</p>
+
+<p>That one line contains the whole difference from a <a class="term" href="/money/terms/share.html">share</a>. A share is ownership; a bond is a debt owed to you. As an owner you take a share of the profit and of the loss; as a creditor you take a fixed amount however well the company does.</p>
+
+<div class="at-a-glance">
+<p class="at-a-glance-label">At a glance</p>
+<ul>
+<li>A bondholder is a creditor and stands ahead of shareholders in the queue.</li>
+<li>The coupon is the annual interest, computed on the face value.</li>
+<li>The market price can be above or below face, which changes the real yield.</li>
+<li>Price and yield move in opposite directions, always.</li>
+<li>Bangladesh's corporate bond market is still small, and most issues are government or sukuk.</li>
+</ul>
+</div>
+
+<h2>Three numbers</h2>
+
+<p>Understanding a bond takes three numbers, and people look at the first two.</p>
+
+${mount("bond-figure")}
+
+<p>Face value is what comes back at maturity. The coupon is the annual interest rate, always computed on face value and never on the market price. The market price is what somebody will pay for the bond today.</p>
+
+<h2>Price and yield move opposite ways</h2>
+
+<p>This is the one thing about bonds you genuinely have to understand, and once you do it never confuses you again.</p>
+
+<p>Say a bond has a face value of 1,000 and an 8% coupon, so 80 taka a year. Now new bonds start paying 10%. Why would anybody pay 1,000 for your 8% bond when the same money buys 100 a year? They would not. So your bond's price falls, to about 800, so that the 80 taka works out to 10% for a new buyer.</p>
+
+<p>The reverse holds too. When rates fall your old 8% bond suddenly looks attractive and its price rises. That is why interest rates and bond prices move in opposite directions, and why bondholders watch rate news closely.</p>
+
+${mount("bond-lab")}
+
+<h2>Where the risk is</h2>
+
+<p>Bonds carry two risks, and people treat the first as if it were the only one.</p>
+
+<p>The first is default: the borrower being unable to repay. For a government borrowing in its own currency this is effectively zero, because it can always pay. For a company it is real, and it is why corporate bonds yield more: the extra yield is the price of that risk.</p>
+
+<p>The second is interest rate risk, and it is the neglected one. Government bonds carry it in full. Buy a ten year bond with an 8% coupon and three years later the market pays 12%, and your bond's price is far below where you bought it. Held to maturity you still get the 1,000 back, so the loss stays on paper; you spend seven years locked into a below-market rate all the same.</p>
+
+<p>Both come down to one practical rule: <strong>match the bond's term to your own horizon.</strong> If the money is needed in five years, buy the five year bond, not the ten.</p>
+
+<h2>Corporate and government</h2>
+
+<div class="table-scroll">
+<table>
+<thead>
+<tr><th></th><th>Government bond</th><th>Corporate bond</th></tr>
+</thead>
+<tbody>
+<tr><td>Who is borrowing</td><td>The government</td><td>A company</td></tr>
+<tr><td>Risk of not being repaid</td><td>Effectively none</td><td>Real, and varies by company</td></tr>
+<tr><td>Yield</td><td>Lower</td><td>Higher, in exchange for the risk</td></tr>
+<tr><td>The market here</td><td>Large, mostly held by banks</td><td>Small, little access for individuals</td></tr>
+</tbody>
+</table>
+</div>
+
+<p>Bonds are still not easy for individual investors to reach in Bangladesh. Most government issues go to banks and insurers, and corporate issues are few. Some sukuk have listed and can be bought on DSE. The <a class="term" href="/money/terms/treasury-bill.html">treasury bills and bonds</a> lesson covers the government side.</p>
+
+<div class="note">The word safe needs care here. A government bond carries almost no risk of not being repaid, and it does carry price risk: when rates rise its market price falls, and selling before maturity makes that loss real. Held to maturity the loss does not occur, so matching the term to your horizon is what matters in bonds.</div>
+
+<h2>Check yourself</h2>
+
+${mount("bond-quiz")}
+`,
+  blocks: {
+    "bond-figure": {
+      kind: "figure",
+      shape: "flow",
+      title: { bn: "একটা বন্ডের তিনটা সংখ্যা", en: "The three numbers on a bond" },
+      parts: [
+        { text: { bn: "অভিহিত মূল্য", en: "Face value" }, note: { bn: "মেয়াদ শেষে যা ফেরত আসবে, ধরুন ১,০০০ টাকা", en: "What comes back at maturity, say 1,000 taka" } },
+        { text: { bn: "কুপন", en: "Coupon" }, note: { bn: "বছরে কত সুদ, অভিহিত মূল্যের ওপর হিসাব", en: "The yearly interest, computed on face value" }, tone: "lead" },
+        { text: { bn: "বাজারদর", en: "Market price" }, note: { bn: "আজ কেউ যত দিতে রাজি, আর এটাই নড়ে", en: "What somebody will pay today, and this is what moves" }, tone: "warn" },
+      ],
+      caption: {
+        bn: "প্রথম দুইটা চুক্তিতে লেখা আর বদলায় না। তৃতীয়টা প্রতিদিন বদলায়, আর ওটাই ইল্ড ঠিক করে।",
+        en: "The first two are written into the contract and never change. The third changes daily, and it sets the yield.",
+      },
+    },
+    "bond-lab": {
+      kind: "lab",
+      model: "bond",
+      title: { bn: "কুপন, দাম আর আসল ইল্ড", en: "Coupon, price and the real yield" },
+      note: {
+        bn: "বাজারদরটা অভিহিত মূল্যের নিচে আর উপরে নিয়ে দেখুন ইল্ড কীভাবে উল্টো দিকে যায়।",
+        en: "Push the market price below and above face value and watch the yield move the other way.",
+      },
+      preset: { face: 1000, coupon: 8, price: 950, years: 5 },
+    },
+    "bond-quiz": {
+      kind: "quiz",
+      title: { bn: "দুইটা প্রশ্ন", en: "Two questions" },
+      questions: [
+        {
+          ask: {
+            bn: "বাংলাদেশ ব্যাংক নীতি সুদহার বাড়াল। আপনার হাতে থাকা পুরনো বন্ডের বাজারদরের কী হবে?",
+            en: "Bangladesh Bank raises the policy rate. What happens to the market price of the old bond you hold?",
+          },
+          options: [
+            {
+              text: { bn: "বাড়বে, কারণ সুদ বেড়েছে", en: "It rises, because rates rose" },
+              why: {
+                bn: "উল্টো। আপনার বন্ডের কুপন চুক্তিতে বাঁধা, তাই সেটা বাড়ে না। নতুন বন্ড বেশি দিলে পুরনোটার আকর্ষণ কমে, আর আকর্ষণ কমা মানে দাম কমা।",
+                en: "The opposite. Your coupon is fixed in the contract, so it does not rise. If new bonds pay more, the old one is less attractive, and less attractive means a lower price.",
+              },
+            },
+            {
+              text: { bn: "কমবে, যাতে একই কুপন নতুন ক্রেতার জন্য বেশি ইল্ড হয়", en: "It falls, so the same coupon becomes a higher yield for a new buyer" },
+              right: true,
+              why: {
+                bn: "ঠিক, আর এটাই বন্ডের সবচেয়ে গুরুত্বপূর্ণ নিয়ম। মেয়াদ পর্যন্ত ধরে রাখলে আপনি অভিহিত মূল্য ফেরত পাবেন আর এই দাম কমাটা কেবল কাগজে থাকবে; মেয়াদের আগে বেচলে ক্ষতিটা আসল হয়ে যাবে।",
+                en: "Right, and it is the most important rule in bonds. Hold to maturity and you get face value back and the fall stays on paper; sell early and the loss becomes real.",
+              },
+            },
+            {
+              text: { bn: "কিছুই হবে না, বন্ডের দাম নড়ে না", en: "Nothing: bond prices do not move" },
+              why: {
+                bn: "বন্ডের দাম প্রতিদিন নড়ে, আর সুদের হারই তার প্রধান চালক। কুপনটা স্থির, দামটা নয়।",
+                en: "Bond prices move daily and interest rates are the main driver. The coupon is fixed; the price is not.",
+              },
+            },
+          ],
+        },
+        {
+          ask: {
+            bn: "একটা কোম্পানি বন্ধ হয়ে গেল। বন্ডধারী আর শেয়ারহোল্ডার, কে আগে টাকা পাবেন?",
+            en: "A company winds up. Who is paid first, the bondholder or the shareholder?",
+          },
+          options: [
+            {
+              text: { bn: "বন্ডধারী", en: "The bondholder" },
+              right: true,
+              why: {
+                bn: "ঠিক। বন্ডধারী পাওনাদার আর শেয়ারহোল্ডার মালিক, আর আইনে পাওনাদার আগে। এই একটা পার্থক্যই ব্যাখ্যা করে কেন বন্ডে রিটার্ন কম আর নিশ্চয়তা বেশি।",
+                en: "Right. A bondholder is a creditor and a shareholder is an owner, and the law pays creditors first. That single difference explains why bonds return less and promise more.",
+              },
+            },
+            {
+              text: { bn: "শেয়ারহোল্ডার, কারণ তারা মালিক", en: "The shareholder, because they are the owner" },
+              why: {
+                bn: "মালিকানা মানে শেষে দাঁড়ানো। মালিক ঝুঁকির শেষ ভাগটা নেন, আর সেইজন্যই লাভের অসীম অংশটাও তারই।",
+                en: "Ownership means standing at the back. The owner takes the last slice of risk, which is also why the unlimited upside is theirs.",
+              },
+            },
+            {
+              text: { bn: "দুইজন সমানভাবে", en: "Both equally" },
+              why: {
+                bn: "না, আর এই ক্রমটাই বন্ড আর শেয়ারের ঝুঁকির পার্থক্য তৈরি করে। ক্রম ছাড়া দুইটা একই জিনিস হয়ে যেত।",
+                en: "No, and that ordering is what creates the difference in risk between them. Without it the two would be the same instrument.",
+              },
+            },
+          ],
+        },
+      ],
+    },
+  },
+},
+
+/* ---------------------------------------------------------- */
+"treasury-bill": {
+  bn: `
+<p>সরকারেরও টাকা ধার করতে হয়, আর সেটা করে দুইভাবে: সাধারণ মানুষের কাছ থেকে <a class="term" href="/money/terms/sanchayapatra.html">সঞ্চয়পত্রের</a> মাধ্যমে, আর ব্যাংক ও প্রাতিষ্ঠানিক বিনিয়োগকারীদের কাছ থেকে ট্রেজারি বিল ও বন্ডের মাধ্যমে।</p>
+
+<p>এই লেখাটা এই কারণে গুরুত্বপূর্ণ নয় যে আপনি ট্রেজারি বিল কিনবেন, কারণ ব্যক্তি বিনিয়োগকারীর জন্য এটা সহজলভ্য নয়। এটা গুরুত্বপূর্ণ কারণ <strong>দেশের সব সুদের হার এখান থেকে মাপা শুরু হয়।</strong> আপনার এফডিআরের হার, ব্যাংকের ঋণের সুদ, কোম্পানির ধারের খরচ, এমনকি শেয়ারের যুক্তিসঙ্গত দাম, সবকিছুর ভিত্তিতে এই একটা সংখ্যা।</p>
+
+<div class="at-a-glance">
+<p class="at-a-glance-label">এক নজরে</p>
+<ul>
+<li>বিল এক বছরের কম মেয়াদের, বন্ড এক বছরের বেশি।</li>
+<li>বিল কেনা হয় ছাড়ে আর মেয়াদ শেষে অভিহিত মূল্য ফেরত আসে, আলাদা সুদ নেই।</li>
+<li>নিলামে দাম ঠিক হয়, বাংলাদেশ ব্যাংক প্রতি সপ্তাহে নিলাম ডাকে।</li>
+<li>এই হারই ঝুঁকিহীন হার, আর বাকি সব হার এর ওপরে বসে।</li>
+<li>ইল্ড কার্ভ, মানে বিভিন্ন মেয়াদের হারের রেখাটা, অর্থনীতির একটা পাঠ।</li>
+</ul>
+</div>
+
+<h2>বিল আর বন্ডের পার্থক্য</h2>
+
+<p>দুইটার মধ্যে পার্থক্য মেয়াদ আর সুদ দেওয়ার ধরনে।</p>
+
+<div class="table-scroll">
+<table>
+<thead>
+<tr><th></th><th>ট্রেজারি বিল</th><th>ট্রেজারি বন্ড</th></tr>
+</thead>
+<tbody>
+<tr><td>মেয়াদ</td><td>৯১, ১৮২ বা ৩৬৪ দিন</td><td>২, ৫, ১০, ১৫ বা ২০ বছর</td></tr>
+<tr><td>সুদ কীভাবে</td><td>ছাড়ে কেনা, অভিহিত মূল্যে ফেরত</td><td>প্রতি ছয় মাসে কুপন</td></tr>
+<tr><td>কে কেনে</td><td>মূলত ব্যাংক</td><td>ব্যাংক, বিমা, পেনশন তহবিল</td></tr>
+<tr><td>কী বোঝায়</td><td>স্বল্পমেয়াদি সুদের হার</td><td>দীর্ঘমেয়াদি প্রত্যাশা</td></tr>
+</tbody>
+</table>
+</div>
+
+<p>বিলে আলাদা কোনো সুদ দেওয়া হয় না। আপনি ৯,৫০০ টাকায় একটা ১০,০০০ টাকার বিল কেনেন, আর এক বছর পর ১০,০০০ পান। ৫০০ টাকাই আপনার আয়, আর সেটা প্রায় ৫.৩% ইল্ড। এই কাঠামোকে বলে জিরো কুপন।</p>
+
+<h2>ঝুঁকিহীন হার কেন সবকিছুর ভিত্তি</h2>
+
+<p>এই ধারণাটা এই পাঠশালার সবচেয়ে দরকারি ধারণাগুলোর একটা, আর এটা সহজ। সরকারকে টাকা ধার দিলে ফেরত না পাওয়ার ঝুঁকি প্রায় নেই। তাই ওই হারটা হলো সেই ন্যূনতম, যার চেয়ে কম পেলে কেউ কোনো ঝুঁকি নেবে না।</p>
+
+${mount("tbill-figure")}
+
+<p>ধরুন সরকারের এক বছরের বিলে ৯% পাওয়া যাচ্ছে। এখন একটা কোম্পানি আপনার কাছে বন্ড নিয়ে এল ৯.৫% এ। আপনি নেবেন না, কারণ মাত্র ০.৫% বাড়তির জন্য একটা কোম্পানির খেলাপি হওয়ার ঝুঁকি নেওয়া অর্থহীন। কোম্পানিকে হয়তো ১৪% দিতে হবে। ওই পার্থক্যটাকে বলে ঝুঁকি প্রিমিয়াম।</p>
+
+<p>শেয়ারের ক্ষেত্রেও একই যুক্তি, কেবল সংখ্যাটা অনিশ্চিত। যদি ঝুঁকিহীন হার ৯% হয়, শেয়ার থেকে দীর্ঘমেয়াদে অন্তত ১৪% থেকে ১৬% আশা না করলে শেয়ারে টাকা রাখার কোনো কারণ নেই। এইজন্যই সুদের হার বাড়লে শেয়ারের দাম পড়ে: ঝুঁকিহীন বিকল্পটা আকর্ষণীয় হয়ে ওঠে।</p>
+
+<h2>ইল্ড কার্ভ, আর সেটা কী বলে</h2>
+
+<p>বিভিন্ন মেয়াদের সরকারি ঋণের হার একটা রেখায় বসালে যা পাওয়া যায় তার নাম ইল্ড কার্ভ। স্বাভাবিক অবস্থায় এই রেখাটা উপরের দিকে ওঠে: বিশ বছরের বন্ডে তিন মাসের বিলের চেয়ে বেশি হার, কারণ বেশি সময়ের জন্য টাকা আটকে রাখার বাড়তি দাম আছে।</p>
+
+<p>রেখাটা যখন উল্টে যায়, মানে স্বল্পমেয়াদি হার দীর্ঘমেয়াদির চেয়ে বেশি হয়ে যায়, তখন সেটা একটা সংকেত: বাজার মনে করছে ভবিষ্যতে সুদ কমবে, আর সাধারণত সুদ কমে মন্দার সময়। উন্নত বাজারে এই সংকেতটা মন্দার পূর্বাভাস হিসেবে বেশ নির্ভরযোগ্য প্রমাণিত হয়েছে।</p>
+
+<div class="note">বাংলাদেশে ইল্ড কার্ভের সংকেতটা উন্নত বাজারের মতো নির্ভরযোগ্য নয়, কারণ বাজারটা ছোট আর সরকারি ঋণের চাহিদা প্রায়ই নীতিগত কারণে চালিত। তবু হারগুলোর দিক দেখা কাজের: বাংলাদেশ ব্যাংক প্রতি সপ্তাহের নিলামের ফল প্রকাশ করে, আর সেটা বিনামূল্যে পড়া যায়।</div>
+
+<h2>এটা আপনার কী কাজে লাগে</h2>
+
+<p>তিনটা কাজে। এক, আপনার এফডিআরের হারটা যুক্তিসঙ্গত কি না তা মাপার একটা মাপকাঠি পান: ট্রেজারি হারের চেয়ে অনেক নিচে হলে ব্যাংক আপনাকে কম দিচ্ছে। দুই, শেয়ার থেকে কতটা রিটার্ন আশা করা যুক্তিসঙ্গত তার একটা ভিত্তি পান। তিন, সুদের হারের খবরগুলো হঠাৎ অর্থবহ হয়ে ওঠে, কারণ আপনি জানেন সেগুলো কোথায় গিয়ে ঠেকে।</p>
+
+<h2>নিজে যাচাই করুন</h2>
+
+${mount("tbill-quiz")}
+`,
+  en: `
+<p>The government has to borrow too, and it does so two ways: from the public through <a class="term" href="/money/terms/sanchayapatra.html">savings certificates</a>, and from banks and institutions through treasury bills and bonds.</p>
+
+<p>This lesson is not important because you will buy a treasury bill, which is not readily available to individuals. It is important because <strong>every interest rate in the country is measured from here.</strong> Your deposit rate, a bank's lending rate, a company's cost of debt, even a reasonable price for a share, all rest on this one number.</p>
+
+<div class="at-a-glance">
+<p class="at-a-glance-label">At a glance</p>
+<ul>
+<li>Bills run under a year, bonds over a year.</li>
+<li>Bills are bought at a discount and repay face value; there is no separate interest.</li>
+<li>Prices are set at auction, and Bangladesh Bank auctions weekly.</li>
+<li>This rate is the risk-free rate, and everything else sits above it.</li>
+<li>The yield curve, the line of rates across maturities, is a reading of the economy.</li>
+</ul>
+</div>
+
+<h2>Bills against bonds</h2>
+
+<p>The difference is the term and the way interest is paid.</p>
+
+<div class="table-scroll">
+<table>
+<thead>
+<tr><th></th><th>Treasury bill</th><th>Treasury bond</th></tr>
+</thead>
+<tbody>
+<tr><td>Term</td><td>91, 182 or 364 days</td><td>2, 5, 10, 15 or 20 years</td></tr>
+<tr><td>How interest works</td><td>Bought at a discount, repaid at face</td><td>A coupon every six months</td></tr>
+<tr><td>Who buys</td><td>Mostly banks</td><td>Banks, insurers, pension funds</td></tr>
+<tr><td>What it tells you</td><td>Short-term rates</td><td>Long-term expectations</td></tr>
+</tbody>
+</table>
+</div>
+
+<p>A bill pays no separate interest. You buy a 10,000 taka bill for 9,500 and receive 10,000 a year later. The 500 is your income and it works out to about 5.3%. That structure is called zero coupon.</p>
+
+<h2>Why the risk-free rate underpins everything</h2>
+
+<p>This is one of the most useful ideas in the whole school, and it is simple. Lending to the government carries almost no risk of not being repaid. So that rate is the floor below which nobody will take any risk at all.</p>
+
+${mount("tbill-figure")}
+
+<p>Say a one year government bill pays 9%. Now a company offers you a bond at 9.5%. You decline, because taking a company's default risk for half a point is pointless. That company may have to offer 14%. The difference is the risk premium.</p>
+
+<p>The same logic holds for shares, only the number is uncertain. If the risk-free rate is 9%, there is no reason to hold shares unless you expect at least 14% to 16% over the long run. Which is why share prices fall when rates rise: the risk-free alternative has become attractive.</p>
+
+<h2>The yield curve, and what it says</h2>
+
+<p>Plot the rates on government debt across maturities and you get the yield curve. Normally it slopes upward: a twenty year bond pays more than a three month bill, because tying money up for longer has a price.</p>
+
+<p>When the line inverts, when short rates exceed long ones, it is a signal: the market expects rates to fall, and rates usually fall in a recession. In developed markets this has been a fairly reliable warning.</p>
+
+<div class="note">The signal is less reliable in Bangladesh than in developed markets, because the market is small and demand for government debt is often policy driven. Watching the direction is still useful: Bangladesh Bank publishes each week's auction results, free to read.</div>
+
+<h2>What this does for you</h2>
+
+<p>Three things. It gives you a yardstick for whether your deposit rate is reasonable: far below the treasury rate and the bank is short-changing you. It gives you a base for what to expect from shares. And interest rate news suddenly means something, because you know where it lands.</p>
+
+<h2>Check yourself</h2>
+
+${mount("tbill-quiz")}
+`,
+  blocks: {
+    "tbill-figure": {
+      kind: "figure",
+      shape: "steps",
+      title: { bn: "প্রতিটা হার তার আগেরটার ওপরে বসে", en: "Every rate sits on the one below it" },
+      parts: [
+        { text: { bn: "ট্রেজারি বিল", en: "Treasury bill" }, note: { bn: "ঝুঁকিহীন হার, বাকি সবার ভিত্তি", en: "The risk-free rate, the base of everything" }, tone: "good" },
+        { text: { bn: "ব্যাংক আমানত", en: "Bank deposit" }, note: { bn: "ব্যাংকের ঝুঁকির জন্য সামান্য বেশি", en: "Slightly more, for the bank's own risk" } },
+        { text: { bn: "কর্পোরেট বন্ড", en: "Corporate bond" }, note: { bn: "কোম্পানি খেলাপি হওয়ার ঝুঁকির দাম", en: "The price of a company's default risk" }, tone: "warn" },
+        { text: { bn: "শেয়ার", en: "Shares" }, note: { bn: "সবচেয়ে বেশি প্রত্যাশা, আর কোনো নিশ্চয়তা নেই", en: "The highest expectation, and no guarantee at all" }, tone: "bad" },
+      ],
+      caption: {
+        bn: "নিচের ধাপটা নড়লে উপরের সবগুলো নড়ে। এইজন্যই বাংলাদেশ ব্যাংকের সিদ্ধান্তের দিনে শেয়ারবাজার নড়ে।",
+        en: "Move the bottom step and every step above it moves. That is why the market reacts on a Bangladesh Bank decision day.",
+      },
+    },
+    "tbill-quiz": {
+      kind: "quiz",
+      title: { bn: "দুইটা প্রশ্ন", en: "Two questions" },
+      questions: [
+        {
+          ask: {
+            bn: "এক বছরের ট্রেজারি বিলে ১০% পাওয়া যাচ্ছে। একটা কোম্পানি তার বন্ডে ১০.৫% দিচ্ছে। এতে কী ভাবা উচিত?",
+            en: "A one year treasury bill pays 10%. A company offers 10.5% on its bond. What should you think?",
+          },
+          options: [
+            {
+              text: { bn: "ভালো, ০.৫% বেশি পাওয়া যাচ্ছে", en: "Good: half a point more" },
+              why: {
+                bn: "০.৫% একটা কোম্পানির খেলাপি হওয়ার ঝুঁকির অনেক কম দাম। সরকার শোধ করবেই, কোম্পানি নাও করতে পারে, আর ওই পার্থক্যটার দাম আধা শতাংশ নয়।",
+                en: "Half a point is far too little for a company's default risk. The government will pay; the company might not, and the price of that difference is not 0.5%.",
+              },
+            },
+            {
+              text: { bn: "ঝুঁকির তুলনায় বাড়তি রিটার্নটা খুব কম", en: "The extra return is far too small for the risk" },
+              right: true,
+              why: {
+                bn: "ঠিক। এই তুলনাটাই ঝুঁকিহীন হার জানার আসল কাজ। বাড়তি ঝুঁকির জন্য বাড়তি কত পাচ্ছেন, সেই প্রশ্নটা প্রতিটা বিনিয়োগে করা যায়, আর ঝুঁকিহীন হারটা না জানলে প্রশ্নটাই করা যায় না।",
+                en: "Right. That comparison is the real use of knowing the risk-free rate. How much extra am I paid for the extra risk is a question you can ask of any investment, and you cannot ask it without the base.",
+              },
+            },
+            {
+              text: { bn: "কোম্পানির বন্ড সবসময় খারাপ", en: "Corporate bonds are always bad" },
+              why: {
+                bn: "না। ওই একই কোম্পানি ১৫% দিলে হিসাবটা অন্যরকম হতো। প্রশ্নটা যন্ত্রের নয়, দামের।",
+                en: "No. At 15% from the same company the sum looks different. The question is not the instrument, it is the price.",
+              },
+            },
+          ],
+        },
+        {
+          ask: {
+            bn: "ট্রেজারি বিলের হার ৬% থেকে ১১% এ উঠল। শেয়ারবাজারে সাধারণত কী হয়?",
+            en: "The treasury bill rate goes from 6% to 11%. What usually happens in the share market?",
+          },
+          options: [
+            {
+              text: { bn: "দাম পড়ে, কারণ ঝুঁকিহীন বিকল্পটা আকর্ষণীয় হয়ে ওঠে", en: "Prices fall, because the risk-free alternative got attractive" },
+              right: true,
+              why: {
+                bn: "ঠিক, আর দুই দিক থেকেই। এক, ব্যাংকে নিশ্চিত ১১% পাওয়া গেলে মানুষ শেয়ারের জন্য কম দাম দিতে রাজি হয়। দুই, ঋণে চলা কোম্পানিগুলোর সুদ খরচ বেড়ে লাভ কমে।",
+                en: "Right, and from both directions. A guaranteed 11% at the bank makes people pay less for shares, and companies carrying debt see their interest bill rise and their profit fall.",
+              },
+            },
+            {
+              text: { bn: "দাম বাড়ে, কারণ অর্থনীতি ভালো চলছে", en: "Prices rise, because the economy is doing well" },
+              why: {
+                bn: "সুদ বাড়ানো হয় সাধারণত মূল্যস্ফীতি ঠেকাতে, আর সেটা অর্থনীতিকে ধীর করার জন্যই করা হয়। উঁচু সুদ শেয়ারের জন্য প্রায় কখনোই ভালো খবর নয়।",
+                en: "Rates are usually raised to fight inflation, which is done precisely to slow the economy. High rates are almost never good news for shares.",
+              },
+            },
+            {
+              text: { bn: "কিছুই হয় না, দুইটা আলাদা বাজার", en: "Nothing: they are separate markets" },
+              why: {
+                bn: "একই টাকা দুই জায়গায় যেতে পারে, তাই বাজার দুইটা আলাদা নয়, প্রতিদ্বন্দ্বী। উপরের ছবিটাই এই কথাটা বলে।",
+                en: "The same money can go to either, so they are not separate markets, they are competitors. The figure above is that point.",
+              },
+            },
+          ],
+        },
+      ],
+    },
+  },
+},
+
+/* ---------------------------------------------------------- */
+"dividend": {
+  bn: `
+<p>ডিভিডেন্ড হলো কোম্পানির লাভ থেকে শেয়ারহোল্ডারদের দেওয়া ভাগ। বছরের হিসাব শেষ হলে পরিচালনা পর্ষদ সিদ্ধান্ত নেন লাভের কতটা ব্যবসায় রাখা হবে আর কতটা মালিকদের হাতে দেওয়া হবে, আর দ্বিতীয় অংশটাই ডিভিডেন্ড।</p>
+
+<p>বাংলাদেশে এই বিষয়টা নিয়ে সবচেয়ে বেশি ভুল বোঝাবুঝি হয়, আর তার কারণ ঘোষণার ভাষা। কোম্পানি বলে ২৫% ডিভিডেন্ড, আর নতুন বিনিয়োগকারী ভাবেন তার বিনিয়োগের ২৫%। আসলে সংখ্যাটা অভিহিত মূল্যের ওপর, আর অভিহিত মূল্য প্রায় সব কোম্পানিতেই ১০ টাকা।</p>
+
+<div class="at-a-glance">
+<p class="at-a-glance-label">এক নজরে</p>
+<ul>
+<li>ঘোষিত শতাংশ অভিহিত মূল্যের ওপর, বাজারদরের ওপর নয়।</li>
+<li>নগদ ডিভিডেন্ড টাকা, বোনাস ডিভিডেন্ড কেবল বেশি শেয়ার।</li>
+<li>রেকর্ড ডেটের আগে কিনলে ডিভিডেন্ড পাবেন, পরে কিনলে না।</li>
+<li>ডিভিডেন্ড দেওয়ার দিন দাম প্রায় ততটাই কমে, আর সেটা স্বাভাবিক।</li>
+<li>উচ্চ ইল্ড আকর্ষণীয়, আর প্রায়ই সেটা দাম পড়ে যাওয়ার ফল।</li>
+</ul>
+</div>
+
+<h2>২৫% ডিভিডেন্ড মানে কত টাকা</h2>
+
+${mount("div-reveal")}
+
+<h2>নগদ আর বোনাস</h2>
+
+<p>বাংলাদেশে কোম্পানি দুই রকম ডিভিডেন্ড দেয়, আর দুইটা সম্পূর্ণ আলাদা জিনিস।</p>
+
+${mount("div-compare")}
+
+<p>নগদ ডিভিডেন্ডে আপনার ব্যাংক অ্যাকাউন্টে টাকা আসে। বোনাস ডিভিডেন্ডে আপনি বেশি শেয়ার পান, আর দাম আনুপাতিকভাবে কমে যায়, তাই আপনার মোট সম্পদ একই থাকে। বোনাস কেবল পাইটাকে আরও ছোট টুকরায় কাটে।</p>
+
+<p>তবু বাংলাদেশে বোনাস ঘোষণার দিনে প্রায়ই দাম বাড়ে, আর সেটা ভুল বোঝার ফল। বিএসইসি সময়ে সময়ে বোনাস ডিভিডেন্ডের ওপর নিয়ন্ত্রণ আরোপ করেছে ঠিক এই কারণেই: বোনাস দিয়ে কোম্পানি নগদ ধরে রাখে আর শেয়ারহোল্ডাররা মনে করেন কিছু পেয়েছেন।</p>
+
+<h2>রেকর্ড ডেট আর দামের সমন্বয়</h2>
+
+<p>ডিভিডেন্ড কে পাবেন তা ঠিক হয় একটা নির্দিষ্ট দিনে, যার নাম রেকর্ড ডেট। ওই দিনে যার নামে শেয়ার আছে, ডিভিডেন্ড তার। এর একদিন আগে থেকে শেয়ারটা এক্স-ডিভিডেন্ড হিসেবে লেনদেন হয়, মানে যিনি এখন কিনবেন তিনি এই ডিভিডেন্ডটা পাবেন না।</p>
+
+<p>আর ঠিক সেদিন দাম কমে যায়, প্রায় ডিভিডেন্ডের সমান। এটা কোনো পতন নয়, এটা হিসাব: কোম্পানির ভেতর থেকে ওই টাকাটা বেরিয়ে গেছে, তাই কোম্পানিটা ততটাই কম দামি। নতুন বিনিয়োগকারীরা এই দিনটাকে দাম পড়ার দিন ভেবে আতঙ্কিত হন।</p>
+
+${mount("div-flow")}
+
+<div class="note">ডিভিডেন্ড ধরার জন্য রেকর্ড ডেটের ঠিক আগে কেনা একটা পুরনো কৌশল, আর সেটা কাজ করে না। আপনি ডিভিডেন্ডটা পাবেন আর পরদিন দাম ততটাই কমবে, তাই আপনার হাতে একই টাকা থাকবে। এর ওপর ডিভিডেন্ডে উৎসে কর কাটা হবে আর কমিশনও দিতে হবে, তাই কৌশলটা আসলে ক্ষতিকর।</div>
+
+<h2>ডিভিডেন্ড দেওয়া কি ভালো লক্ষণ</h2>
+
+<p>এই প্রশ্নটার সহজ উত্তর নেই, আর দুইটা দিকই বোঝা দরকার।</p>
+
+<p>পক্ষে: নগদ ডিভিডেন্ড দিতে হলে সত্যিকারের নগদ লাগে, আর কাগজে লাভ দেখানো যায় যেখানে নগদ দেখানো যায় না। যে কোম্পানি বছরের পর বছর নগদ ডিভিডেন্ড দিয়ে যাচ্ছে, তার হিসাবে বড় ধরনের কারচুপি থাকা কঠিন। এইজন্য ডিভিডেন্ডের ইতিহাস একটা ভালো স্বাস্থ্য পরীক্ষা, বিশেষ করে এমন বাজারে যেখানে হিসাবের মান সব কোম্পানিতে সমান নয়।</p>
+
+<p>বিপক্ষে: যে টাকা মালিকদের দিয়ে দেওয়া হলো, সেটা আর ব্যবসায় খাটল না। একটা দ্রুত বাড়ন্ত কোম্পানির উচিত টাকাটা নতুন কারখানায় লাগানো, কারণ সেখানে সেটা বছরে ২০% আনতে পারে, আর আপনি ওই টাকা হাতে পেয়ে হয়তো ব্যাংকে ৮% পাবেন। তাই সব ভালো কোম্পানি ডিভিডেন্ড দেয় না, আর না দেওয়াটা দোষ নয়।</p>
+
+<p>ব্যবহারিক নিয়মটা এই: <strong>ডিভিডেন্ডের সংখ্যা দেখে বিচার করবেন না, ডিভিডেন্ডের ইতিহাস আর কারণ দেখে করুন।</strong> পাঁচ বছর ধরে নিয়মিত নগদ ডিভিডেন্ড একটা তথ্য; এক বছরের বড় ডিভিডেন্ড প্রায়ই কিছুই না, আর কখনো কখনো সেটা প্রতিষ্ঠাতাদের টাকা বের করে নেওয়ার পথ।</p>
+
+<h2>ইল্ড, আর উঁচু ইল্ডের ফাঁদ</h2>
+
+${mount("div-lab")}
+
+<p>ডিভিডেন্ড ইল্ড হলো বার্ষিক নগদ ডিভিডেন্ড ভাগ বাজারদর। ১৪% ইল্ড দেখতে দারুণ লাগে, আর একটা প্রশ্ন সবসময় করা দরকার: ইল্ডটা উঁচু কেন? দুইটাই কারণ হতে পারে। ডিভিডেন্ড বেড়েছে, যা ভালো। বা দাম পড়েছে, যা সাধারণত মানে বাজার ধরে নিয়েছে ডিভিডেন্ডটা কাটা পড়বে।</p>
+
+<p>দ্বিতীয়টা বেশি সাধারণ। ইল্ড একটা ভগ্নাংশ, আর ভগ্নাংশের নিচের সংখ্যাটা পড়লে ভগ্নাংশ বাড়ে, উপরের সংখ্যাটা না বেড়েই।</p>
+
+<h2>নিজে যাচাই করুন</h2>
+
+${mount("div-quiz")}
+`,
+  en: `
+<p>A dividend is the share of profit a company hands to its shareholders. When the year's accounts close, the board decides how much stays in the business and how much goes to the owners, and the second part is the dividend.</p>
+
+<p>This is the most misunderstood topic in the Bangladeshi market, and the cause is the language of the announcement. A company declares a 25% dividend and a new investor hears 25% of their investment. The percentage is on the face value, and face value in almost every listed company here is 10 taka.</p>
+
+<div class="at-a-glance">
+<p class="at-a-glance-label">At a glance</p>
+<ul>
+<li>The declared percentage is on face value, not on the market price.</li>
+<li>A cash dividend is money; a bonus dividend is only more shares.</li>
+<li>Buy before the record date and you receive it; buy after and you do not.</li>
+<li>The price drops by about the dividend on the ex date, and that is normal.</li>
+<li>A high yield is attractive, and it is often the result of a falling price.</li>
+</ul>
+</div>
+
+<h2>How much money is a 25% dividend</h2>
+
+${mount("div-reveal")}
+
+<h2>Cash and bonus</h2>
+
+<p>Companies here declare two kinds of dividend, and they are entirely different things.</p>
+
+${mount("div-compare")}
+
+<p>A cash dividend puts money in your bank account. A bonus dividend gives you more shares while the price falls proportionally, so your total wealth is unchanged. A bonus simply cuts the pie into smaller slices.</p>
+
+<p>Prices still often rise on bonus announcements here, and that is a misunderstanding at work. BSEC has restricted bonus dividends from time to time for exactly this reason: a bonus lets a company keep its cash while shareholders feel they received something.</p>
+
+<h2>The record date and the price adjustment</h2>
+
+<p>Who receives a dividend is settled on a particular day, the record date. Whoever holds the share that day gets it. From the day before, the share trades ex-dividend, meaning a buyer from now on does not receive this one.</p>
+
+<p>And on that day the price falls by roughly the dividend. That is not a decline, it is arithmetic: the money has left the company, so the company is worth that much less. New investors see the day as a crash.</p>
+
+${mount("div-flow")}
+
+<div class="note">Buying just before the record date to catch the dividend is an old idea and it does not work. You receive the dividend and the price falls by the same amount the next day, so you hold the same value. On top of that, tax is withheld from the dividend and you paid commission, so the manoeuvre actually loses money.</div>
+
+<h2>Is paying a dividend a good sign</h2>
+
+<p>There is no simple answer, and both sides are worth understanding.</p>
+
+<p>For: paying a cash dividend requires actual cash, and profit can be shown on paper where cash cannot. A company paying cash year after year is a hard place to hide large accounting problems. So a dividend history is a decent health check, particularly in a market where accounting quality varies between companies.</p>
+
+<p>Against: money handed to owners is money not working in the business. A fast growing company should be putting it into a new plant, where it might return 20% a year, while you receive it and put it in a bank at 8%. So not every good company pays a dividend, and not paying is not a failing.</p>
+
+<p>The practical rule: <strong>judge by the history and the reason, not by the size of the number.</strong> Five years of steady cash dividends is information; one large dividend in one year is often nothing, and occasionally it is a route for founders to take money out.</p>
+
+<h2>Yield, and the high-yield trap</h2>
+
+${mount("div-lab")}
+
+<p>Dividend yield is the annual cash dividend divided by the price. A 14% yield looks marvellous, and one question always follows: why is it high? Two causes are possible. The dividend rose, which is good. Or the price fell, which usually means the market expects the dividend to be cut.</p>
+
+<p>The second is more common. A yield is a fraction, and when the bottom of a fraction falls the fraction rises without the top going anywhere.</p>
+
+<h2>Check yourself</h2>
+
+${mount("div-quiz")}
+`,
+  blocks: {
+    "div-reveal": {
+      kind: "reveal",
+      title: { bn: "ঘোষণাটা পড়ুন", en: "Read the announcement" },
+      ask: {
+        bn: "একটা কোম্পানি ২৫% নগদ ডিভিডেন্ড ঘোষণা করল। আপনার কাছে ৫০০টা শেয়ার আছে, যেগুলো আপনি ৮০ টাকা করে কিনেছেন। আপনি কত টাকা পাবেন?",
+        en: "A company declares a 25% cash dividend. You hold 500 shares bought at 80 taka each. How much money do you get?",
+      },
+      choices: [
+        { bn: "১০,০০০ টাকা, বিনিয়োগের ২৫%", en: "10,000 taka: 25% of what I invested" },
+        { bn: "১,২৫০ টাকা", en: "1,250 taka" },
+        { bn: "জানা যাবে না, আরও তথ্য লাগবে", en: "Cannot tell without more information" },
+      ],
+      answer: {
+        bn: "১,২৫০ টাকা। অভিহিত মূল্য ১০ টাকা, তাই শেয়ারপ্রতি ২.৫০ টাকা, গুণ ৫০০।",
+        en: "1,250 taka. Face value is 10 taka, so 2.50 a share, times 500.",
+      },
+      why: {
+        bn: "বাংলাদেশে প্রায় প্রতিটা তালিকাভুক্ত কোম্পানির অভিহিত মূল্য ১০ টাকা, আর ডিভিডেন্ডের শতাংশ সবসময় ওই সংখ্যার ওপর। ২৫% মানে ১০ টাকার ২৫%, অর্থাৎ শেয়ারপ্রতি ২.৫০ টাকা। আপনার ৫০০টা শেয়ারে ১,২৫০ টাকা, উৎসে কর কাটার আগে। আপনার বিনিয়োগ ছিল ৪০,০০০ টাকা, তাই আপনার প্রকৃত ইল্ড ৩.১%, ২৫% নয়। এই একটা ভুল বোঝাবুঝির কারণে বহু মানুষ ডিভিডেন্ড ঘোষণার খবরে শেয়ার কেনেন আর পরে হতাশ হন। আসল সংখ্যাটা সবসময় হিসাব করে নিন: ঘোষিত শতাংশ গুণ ১০, ভাগ আপনার কেনা দাম।",
+        en: "Almost every listed company here has a face value of 10 taka, and the dividend percentage is always on that number. 25% means 25% of 10, so 2.50 a share. On 500 shares that is 1,250 taka before withholding. You invested 40,000, so your actual yield is 3.1%, not 25%. This single misunderstanding is why so many people buy on a dividend announcement and are disappointed later. Always convert: the declared percentage times 10, divided by the price you paid.",
+      },
+    },
+    "div-compare": {
+      kind: "compare",
+      title: { bn: "নগদ আর বোনাস", en: "Cash and bonus" },
+      columns: [
+        { bn: "নগদ ডিভিডেন্ড", en: "Cash dividend" },
+        { bn: "বোনাস ডিভিডেন্ড", en: "Bonus dividend" },
+      ],
+      rows: [
+        {
+          label: { bn: "আপনি কী পান", en: "What you receive" },
+          cells: [{ bn: "ব্যাংক অ্যাকাউন্টে টাকা", en: "Money in your bank account" }, { bn: "বেশি সংখ্যক শেয়ার", en: "More shares" }],
+        },
+        {
+          label: { bn: "আপনার মোট সম্পদ", en: "Your total wealth" },
+          cells: [{ bn: "বাড়ে, নগদ হাতে আসে", en: "Rises: cash arrives" }, { bn: "একই থাকে", en: "Unchanged" }],
+          best: 0,
+        },
+        {
+          label: { bn: "কোম্পানির নগদ", en: "The company's cash" },
+          cells: [{ bn: "কমে", en: "Falls" }, { bn: "একই থাকে", en: "Unchanged" }],
+        },
+        {
+          label: { bn: "দামে প্রভাব", en: "Effect on the price" },
+          cells: [{ bn: "ডিভিডেন্ডের সমান কমে", en: "Falls by the dividend" }, { bn: "আনুপাতিকভাবে কমে", en: "Falls proportionally" }],
+        },
+        {
+          label: { bn: "কর", en: "Tax" },
+          cells: [{ bn: "উৎসে কাটা হয়", en: "Withheld at source" }, { bn: "নগদ নেই, তাই তখন নেই", en: "No cash, so none then" }],
+        },
+      ],
+    },
+    "div-flow": {
+      kind: "figure",
+      shape: "timeline",
+      title: { bn: "ঘোষণা থেকে টাকা পর্যন্ত", en: "From announcement to money" },
+      parts: [
+        { text: { bn: "পরিচালনা পর্ষদ ডিভিডেন্ড সুপারিশ করে", en: "The board recommends a dividend" }, note: { bn: "ঘোষণার দিন", en: "Declaration" } },
+        { text: { bn: "এই দিন থেকে যিনি কিনবেন তিনি এই ডিভিডেন্ড পাবেন না", en: "Buyers from this day do not receive it" }, note: { bn: "এক্স-ডিভিডেন্ড", en: "Ex-dividend" }, tone: "warn" },
+        { text: { bn: "দাম প্রায় ডিভিডেন্ডের সমান কমে, আর এটা পতন নয়", en: "The price falls by about the dividend, and this is not a crash" }, note: { bn: "একই দিন", en: "Same day" }, tone: "warn" },
+        { text: { bn: "যার নামে শেয়ার আছে, ডিভিডেন্ড তার", en: "Whoever holds the share receives it" }, note: { bn: "রেকর্ড ডেট", en: "Record date" } },
+        { text: { bn: "বার্ষিক সাধারণ সভায় শেয়ারহোল্ডাররা অনুমোদন দেন", en: "Shareholders approve it at the AGM" }, note: { bn: "এজিএম", en: "AGM" } },
+        { text: { bn: "ব্যাংক অ্যাকাউন্টে টাকা আসে, কর কেটে", en: "The money arrives, net of tax" }, note: { bn: "কয়েক সপ্তাহ পর", en: "Weeks later" }, tone: "good" },
+      ],
+    },
+    "div-lab": {
+      kind: "lab",
+      model: "dividend",
+      title: { bn: "ইল্ড কত, আর কার ওপর", en: "The yield, and on what" },
+      note: {
+        bn: "এখনকার দাম কমিয়ে দেখুন। ডিভিডেন্ড না বাড়লেও ইল্ড কীভাবে বাড়ে লক্ষ করুন।",
+        en: "Lower the current price and watch the yield rise without the dividend changing.",
+      },
+      preset: { price: 50, bought: 30, dividend: 3, shares: 500 },
+    },
+    "div-quiz": {
+      kind: "quiz",
+      title: { bn: "দুইটা প্রশ্ন", en: "Two questions" },
+      questions: [
+        {
+          ask: {
+            bn: "একটা শেয়ারের ডিভিডেন্ড ইল্ড ১৫%, যেখানে খাতের গড় ৫%। প্রথমে কী জিজ্ঞেস করবেন?",
+            en: "A share yields 15% where the sector average is 5%. What do you ask first?",
+          },
+          options: [
+            {
+              text: { bn: "কখন কিনব", en: "When do I buy" },
+              why: {
+                bn: "এটাই সবচেয়ে সাধারণ প্রতিক্রিয়া আর এটাই ফাঁদ। এত বেশি ইল্ড সাধারণত একটা সমস্যার সংকেত, পুরস্কার নয়।",
+                en: "The commonest reaction and the trap. A yield that far above the sector is usually a signal of a problem rather than a reward.",
+              },
+            },
+            {
+              text: { bn: "ইল্ডটা উঁচু কেন, ডিভিডেন্ড বেড়েছে না দাম পড়েছে", en: "Why is it high: did the dividend rise or did the price fall" },
+              right: true,
+              why: {
+                bn: "ঠিক, আর উত্তরটা খুঁজতে গত তিন বছরের ডিভিডেন্ড আর দাম দুইটাই দেখতে হবে। দাম পড়ে ইল্ড উঠলে বাজার সম্ভবত ধরে নিয়েছে পরের বছর ডিভিডেন্ড কাটা পড়বে, আর কাটা পড়লে ইল্ডটা কাগজেই থেকে যাবে।",
+                en: "Right, and answering it means looking at three years of dividends and of price. If the price fell, the market is probably pricing a cut next year, and if it is cut the yield was never real.",
+              },
+            },
+            {
+              text: { bn: "কিছুই না, ১৫% তো ভালো", en: "Nothing: 15% is good" },
+              why: {
+                bn: "১৫% ভালো যদি সেটা পরের বছরও থাকে। ডিভিডেন্ড কোম্পানির সিদ্ধান্ত, চুক্তি নয়, আর যে কোম্পানি চাপে আছে সে প্রথমে ডিভিডেন্ডই কাটে।",
+                en: "It is good if it is there next year. A dividend is a decision, not a contract, and a company under pressure cuts the dividend first.",
+              },
+            },
+          ],
+        },
+        {
+          ask: {
+            bn: "এক্স-ডিভিডেন্ড দিনে শেয়ারের দাম ২.৫০ টাকা কমল, আর ডিভিডেন্ড ছিল ২.৫০ টাকা। এতে কী বোঝায়?",
+            en: "On the ex-dividend day the price falls 2.50 and the dividend was 2.50. What does that mean?",
+          },
+          options: [
+            {
+              text: { bn: "শেয়ারটা খারাপ করছে", en: "The share is performing badly" },
+              why: {
+                bn: "না, এটা স্বাভাবিক আর প্রত্যাশিত। টাকাটা কোম্পানি থেকে বেরিয়ে গেছে, তাই কোম্পানিটা ঠিক ততটাই কম দামি। আপনার হাতে দাম কমেছে আর নগদ এসেছে, মোট একই।",
+                en: "No, this is normal and expected. The money left the company, so the company is worth that much less. You lost price and gained cash; the total is the same.",
+              },
+            },
+            {
+              text: { bn: "কিছুই হয়নি, টাকাটা কেবল দাম থেকে নগদে সরেছে", en: "Nothing: the value moved from price into cash" },
+              right: true,
+              why: {
+                bn: "ঠিক, আর এটা জানা থাকলে ওই দিনের লাল সংখ্যাটা দেখে ভয় পাওয়ার কিছু থাকে না। এটাই কারণ রেকর্ড ডেটের আগে ডিভিডেন্ড ধরার জন্য কেনা কাজ করে না।",
+                en: "Right, and knowing it removes the fright of the red number that day. It is also why buying just before the record date to catch a dividend does not work.",
+              },
+            },
+            {
+              text: { bn: "কোম্পানি ভুল হিসাব করেছে", en: "The company made an accounting error" },
+              why: {
+                bn: "না, এটা এক্সচেঞ্জের একটা স্বাভাবিক সমন্বয়, আর প্রতিটা ডিভিডেন্ডেই হয়, পৃথিবীর সব বাজারে।",
+                en: "No, it is a routine exchange adjustment and it happens on every dividend, in every market in the world.",
+              },
+            },
+          ],
+        },
+      ],
+    },
+  },
+},
+
+/* ---------------------------------------------------------- */
+"bonus-rights": {
+  bn: `
+<p>বাংলাদেশের বাজারে দুইটা ঘোষণা নিয়মিত আসে যেগুলো নতুন বিনিয়োগকারীদের সবচেয়ে বেশি বিভ্রান্ত করে: বোনাস শেয়ার আর রাইট শেয়ার। দুইটাই শেয়ার সংখ্যা বাড়ায়, আর দুইটার অর্থ সম্পূর্ণ আলাদা।</p>
+
+<p>এক লাইনে পার্থক্যটা এই: <strong>বোনাস শেয়ারে আপনার কাছ থেকে কিছু চাওয়া হয় না, আর রাইট শেয়ারে আরও টাকা চাওয়া হয়।</strong> এই এক পার্থক্য থেকেই বাকি সবকিছু বেরিয়ে আসে।</p>
+
+<div class="at-a-glance">
+<p class="at-a-glance-label">এক নজরে</p>
+<ul>
+<li>বোনাস শেয়ারে আপনার সম্পদ বাড়ে না, কেবল টুকরার সংখ্যা বাড়ে।</li>
+<li>রাইট শেয়ার মানে কোম্পানি আপনার কাছে নতুন করে টাকা চাইছে।</li>
+<li>রাইটে অংশ না নিলে আপনার মালিকানার অনুপাত কমে যায়।</li>
+<li>দুইটার পরই দাম আনুপাতিকভাবে সমন্বয় হয়, আর সেটা পতন নয়।</li>
+<li>বারবার রাইট ইস্যু করা কোম্পানি একটা সতর্ক সংকেত।</li>
+</ul>
+</div>
+
+<h2>বোনাস শেয়ার: পিৎজা আরও ছোট টুকরায়</h2>
+
+<p>কোম্পানি বলল, প্রতি দশটা শেয়ারের বিপরীতে দুইটা বোনাস শেয়ার। আপনার ১০০টা শেয়ার ছিল, এখন ১২০টা। শুনতে উপহারের মতো, আর নয়।</p>
+
+<p>কারণটা সহজ। কোম্পানির ভেতরে কিছুই বদলায়নি: একই কারখানা, একই বিক্রি, একই লাভ, একই নগদ। কেবল মালিকানাটা এখন বেশি টুকরায় ভাগ করা। তাই প্রতিটা টুকরার দাম আনুপাতিকভাবে কমে যায়, আর <a class="term" href="/money/terms/market-cap.html">বাজারমূল্য</a> ঠিক আগের জায়গায় থাকে।</p>
+
+${mount("bonus-figure")}
+
+<p>তাহলে কোম্পানি বোনাস দেয় কেন? দুইটা কারণ। প্রথমটা সৎ: শেয়ারের দাম খুব বেশি হয়ে গেলে ছোট বিনিয়োগকারীদের জন্য কেনা কঠিন হয়, তাই টুকরাগুলো ছোট করলে বাজার তরল হয়। দ্বিতীয়টা কম সৎ: নগদ ডিভিডেন্ড দিলে কোম্পানি থেকে টাকা বেরিয়ে যায়, বোনাস দিলে যায় না, আর শেয়ারহোল্ডাররা মনে করেন কিছু পেয়েছেন। বিএসইসি এই কারণেই বোনাস ডিভিডেন্ডের ওপর নিয়ন্ত্রণ আরোপ করেছে সময়ে সময়ে।</p>
+
+<h2>রাইট শেয়ার: কোম্পানি টাকা চাইছে</h2>
+
+<p>রাইট ইস্যু সম্পূর্ণ আলাদা জিনিস। কোম্পানির নতুন টাকা দরকার, আর সে নতুন শেয়ার ইস্যু করছে, বাজারদরের চেয়ে কম দামে, আর আগে বিদ্যমান শেয়ারহোল্ডারদের কেনার সুযোগ দিচ্ছে।</p>
+
+<p>ধরুন দুইটা শেয়ারের বিপরীতে একটা রাইট শেয়ার, ২০ টাকা দরে, যেখানে বাজারদর ৪০ টাকা। আপনার ২০০টা শেয়ার আছে, তাই আপনি ১০০টা নতুন শেয়ার ২০ টাকায় কিনতে পারবেন, মানে ২,০০০ টাকা লাগবে।</p>
+
+${mount("rights-flow")}
+
+<p>এখানে সিদ্ধান্তটা আসলে দুইটা প্রশ্নের: কোম্পানিটা এই টাকা দিয়ে কী করবে, আর আপনার কাছে টাকাটা আছে কি না। প্রথম প্রশ্নটা বেশি গুরুত্বপূর্ণ, আর উত্তরটা রাইট ইস্যুর নথিতে লেখা থাকে।</p>
+
+<h2>অংশ না নিলে কী হয়</h2>
+
+<p>এটাই রাইট ইস্যুর সবচেয়ে গুরুত্বপূর্ণ অংশ। আপনি যদি রাইটে অংশ না নেন, নতুন শেয়ারগুলো অন্যরা কিনে নেবে, আর কোম্পানিতে আপনার মালিকানার অনুপাত কমে যাবে। একে বলে ডাইলিউশন।</p>
+
+<p>বাংলাদেশে অনেক ক্ষেত্রে রাইট এনটাইটেলমেন্ট বিক্রি করার সুযোগও থাকে না, যা উন্নত বাজারে থাকে। মানে অংশ না নেওয়ার খরচটা এখানে সরাসরি: আপনার অংশটা ছোট হয়ে যায় আর তার বিনিময়ে আপনি কিছুই পান না।</p>
+
+<div class="note">বারবার রাইট ইস্যু করা একটা সতর্ক সংকেত। যে কোম্পানি প্রতি দুই-তিন বছরে শেয়ারহোল্ডারদের কাছে হাত পাতে, সে সম্ভবত নিজের ব্যবসা থেকে যথেষ্ট নগদ তৈরি করতে পারছে না। একটা কোম্পানির রাইট ইস্যুর ইতিহাস দেখা তার নগদ প্রবাহ দেখার একটা সহজ প্রক্সি, আর সেটা ডিএসইর সাইটেই পাওয়া যায়।</div>
+
+<h2>দাম কেন সমন্বয় হয়</h2>
+
+<p>দুইটার পরই দাম কমে, আর দুইটাতেই সেটা গণিত। বোনাসে টুকরা বাড়ে বলে দাম কমে। রাইটে সস্তায় নতুন শেয়ার ইস্যু হয় বলে গড় দাম কমে: পুরনো ২০০টা ৪০ টাকায় আর নতুন ১০০টা ২০ টাকায় মিলে গড় দাঁড়ায় প্রায় ৩৩.৩৩ টাকা।</p>
+
+<p>এই সমন্বিত দামকে বলে থিওরেটিক্যাল এক্স-রাইটস প্রাইস। বাজার সবসময় ঠিক ওই দামে খোলে না, কিন্তু সেটাই হিসাবের ভিত্তি। যিনি এই অঙ্কটা জানেন না, তিনি এক্স-রাইটস দিনে দাম দেখে ভাবেন কোম্পানিটার কিছু হয়েছে।</p>
+
+<h2>নিজে যাচাই করুন</h2>
+
+${mount("bonus-quiz")}
+`,
+  en: `
+<p>Two announcements arrive regularly in this market and confuse new investors more than anything else: bonus shares and rights shares. Both increase the share count, and they mean completely different things.</p>
+
+<p>In one line: <strong>a bonus share asks nothing of you, and a rights share asks for more money.</strong> Everything else follows from that difference.</p>
+
+<div class="at-a-glance">
+<p class="at-a-glance-label">At a glance</p>
+<ul>
+<li>A bonus share does not increase your wealth, only the number of pieces.</li>
+<li>A rights issue is the company asking you for fresh money.</li>
+<li>Not taking up a rights issue shrinks your share of the company.</li>
+<li>The price adjusts proportionally after both, and that is not a fall.</li>
+<li>Repeated rights issues are a warning sign.</li>
+</ul>
+</div>
+
+<h2>Bonus shares: the same pizza, more slices</h2>
+
+<p>The company announces two bonus shares for every ten held. You had 100 shares and now you have 120. It sounds like a gift and it is not.</p>
+
+<p>The reason is simple. Nothing inside the company changed: the same plant, the same sales, the same profit, the same cash. Only the ownership is now cut into more pieces. So each piece falls proportionally in price and the <a class="term" href="/money/terms/market-cap.html">market cap</a> sits exactly where it was.</p>
+
+${mount("bonus-figure")}
+
+<p>Why do it then? Two reasons. The honest one: when a share price gets very high it becomes hard for small investors to buy, and smaller pieces make the market more liquid. The less honest one: a cash dividend takes money out of the company and a bonus does not, while shareholders feel they received something. This is exactly why BSEC has restricted bonus dividends from time to time.</p>
+
+<h2>Rights shares: the company is asking for money</h2>
+
+<p>A rights issue is a different thing entirely. The company needs new money, so it issues new shares below the market price and offers existing shareholders the first chance to buy them.</p>
+
+<p>Say one rights share for every two held, priced at 20 against a market price of 40. You hold 200 shares, so you may buy 100 new ones at 20, which needs 2,000 taka.</p>
+
+${mount("rights-flow")}
+
+<p>The decision is really two questions: what will the company do with the money, and do you have it. The first matters more, and the answer is in the rights issue document.</p>
+
+<h2>What happens if you do not take it up</h2>
+
+<p>This is the important part. If you do not take up the rights, others buy the new shares and your proportional ownership of the company shrinks. That is dilution.</p>
+
+<p>In Bangladesh there is often no way to sell a rights entitlement, which developed markets allow. So the cost of not participating is direct: your slice gets smaller and you receive nothing for it.</p>
+
+<div class="note">Repeated rights issues are a warning. A company that comes back to its shareholders every two or three years probably cannot generate enough cash from its own business. Looking up a company's rights issue history is a cheap proxy for looking at its cash flow, and it is on DSE's site.</div>
+
+<h2>Why the price adjusts</h2>
+
+<p>The price falls after both, and both times it is arithmetic. After a bonus there are more pieces so each is worth less. After a rights issue new shares were sold cheaply, so the average cost falls: 200 old at 40 and 100 new at 20 averages to about 33.33.</p>
+
+<p>That adjusted price is called the theoretical ex-rights price. The market does not always open exactly there, and it is the basis of the calculation. Somebody who does not know this sum looks at the ex-rights day and assumes something happened to the company.</p>
+
+<h2>Check yourself</h2>
+
+${mount("bonus-quiz")}
+`,
+  blocks: {
+    "bonus-figure": {
+      kind: "figure",
+      shape: "scale",
+      title: { bn: "বোনাসের আগে আর পরে", en: "Before a bonus and after" },
+      parts: [
+        {
+          text: { bn: "আগে: ১০০ শেয়ার, ৬০ টাকা করে", en: "Before: 100 shares at 60" },
+          note: { bn: "মোট ৬,০০০ টাকা", en: "6,000 taka in total" },
+          value: 6000,
+          tone: "plain",
+        },
+        {
+          text: { bn: "পরে: ১২০ শেয়ার, ৫০ টাকা করে", en: "After: 120 shares at 50" },
+          note: { bn: "মোট ৬,০০০ টাকা", en: "6,000 taka in total" },
+          value: 6000,
+          tone: "plain",
+        },
+      ],
+      caption: {
+        bn: "পাল্লা সমান, আর এটাই পুরো কথা। বোনাস শেয়ার সম্পদ তৈরি করে না, ভাগ করে।",
+        en: "The beam is level, which is the whole point. A bonus does not create wealth, it divides it.",
+      },
+    },
+    "rights-flow": {
+      kind: "figure",
+      shape: "flow",
+      title: { bn: "একটা রাইট ইস্যু, ধাপে ধাপে", en: "A rights issue, step by step" },
+      parts: [
+        { text: { bn: "কোম্পানির নতুন টাকা দরকার", en: "The company needs new money" }, note: { bn: "নতুন কারখানা, ঋণ শোধ, বা মূলধন ঘাটতি", en: "A new plant, paying down debt, or a capital shortfall" } },
+        { text: { bn: "বিএসইসির অনুমোদন", en: "BSEC approval" }, note: { bn: "কেন টাকা দরকার তা নথিতে লিখতে হয়", en: "The reason has to be written into the document" } },
+        { text: { bn: "শেয়ারহোল্ডারদের প্রস্তাব", en: "The offer to shareholders" }, note: { bn: "বাজারদরের নিচে, নির্দিষ্ট অনুপাতে", en: "Below market price, at a set ratio" }, tone: "lead" },
+        { text: { bn: "আপনি টাকা দেন বা দেন না", en: "You pay or you do not" }, note: { bn: "না দিলে আপনার অংশ ছোট হয়ে যায়", en: "If you do not, your slice shrinks" }, tone: "warn" },
+        { text: { bn: "দাম সমন্বয় হয়", en: "The price adjusts" }, note: { bn: "পুরনো আর নতুনের গড়ে", en: "To the average of old and new" } },
+      ],
+    },
+    "bonus-quiz": {
+      kind: "quiz",
+      title: { bn: "দুইটা প্রশ্ন", en: "Two questions" },
+      questions: [
+        {
+          ask: {
+            bn: "একটা কোম্পানি গত ছয় বছরে তিনবার রাইট ইস্যু করেছে। এতে কী ভাবা উচিত?",
+            en: "A company has done three rights issues in six years. What should you make of that?",
+          },
+          options: [
+            {
+              text: { bn: "ভালো, কোম্পানিটা বাড়ছে", en: "Good: the company is growing" },
+              why: {
+                bn: "বাড়তেও পারে, আর প্রশ্নটা হলো টাকাটা কোথায় যাচ্ছে। প্রতিটা রাইট ইস্যুর নথিতে লেখা থাকে, আর তিনবারের তিনটা কারণ পড়লে ছবিটা পরিষ্কার হয়ে যায়।",
+                en: "It might be, and the question is where the money goes. Each rights document says, and reading all three makes the picture clear.",
+              },
+            },
+            {
+              text: { bn: "কোম্পানিটা নিজের ব্যবসা থেকে যথেষ্ট নগদ তৈরি করতে পারছে না", en: "The business is not generating enough cash on its own" },
+              right: true,
+              why: {
+                bn: "ঠিক, আর এটাই সবচেয়ে সম্ভাব্য ব্যাখ্যা। একটা সুস্থ কোম্পানি বৃদ্ধির টাকা মূলত নিজের লাভ থেকে দেয়। বারবার শেয়ারহোল্ডারদের কাছে হাত পাতা মানে ব্যবসাটা নিজের খরচ মেটাচ্ছে না, আর সেটা পর্যায় ৩-এর নগদ প্রবাহের পাতায় গিয়ে যাচাই করা যায়।",
+                en: "Right, and it is the likeliest explanation. A healthy company funds growth mostly from its own profit. Coming back repeatedly means the business is not paying for itself, and that can be verified on the cash flow page in stage 3.",
+              },
+            },
+            {
+              text: { bn: "রাইট ইস্যু বেআইনি", en: "Rights issues are not allowed" },
+              why: {
+                bn: "একেবারেই বৈধ আর বিএসইসির অনুমোদন লাগে। প্রশ্নটা বৈধতার নয়, ফ্রিকোয়েন্সির।",
+                en: "They are entirely legal and require BSEC approval. The question is not legality, it is frequency.",
+              },
+            },
+          ],
+        },
+        {
+          ask: {
+            bn: "আপনার ২০০টা শেয়ার আছে, দাম ৪০ টাকা। কোম্পানি দুইটার বিপরীতে একটা রাইট দিচ্ছে ২০ টাকায়। আপনি অংশ নিলে আপনার গড় খরচ কত দাঁড়াবে?",
+            en: "You hold 200 shares at 40. The company offers one rights share for every two at 20. If you take it up, what is your average cost?",
+          },
+          options: [
+            {
+              text: { bn: "৪০ টাকাই থাকবে", en: "It stays at 40" },
+              why: {
+                bn: "না, কারণ আপনি ১০০টা নতুন শেয়ার ২০ টাকায় কিনছেন, যা গড়টা নামিয়ে দেয়। মোট খরচ ৮,০০০ যোগ ২,০০০ সমান ১০,০০০, শেয়ার ৩০০টা।",
+                en: "No: you bought 100 new shares at 20, which pulls the average down. Total cost is 8,000 plus 2,000, over 300 shares.",
+              },
+            },
+            {
+              text: { bn: "প্রায় ৩৩.৩৩ টাকা", en: "About 33.33" },
+              right: true,
+              why: {
+                bn: "ঠিক। ১০,০০০ ভাগ ৩০০ সমান ৩৩.৩৩। বাজারও প্রায় এই দামেই খুলবে, আর সেটাকে থিওরেটিক্যাল এক্স-রাইটস প্রাইস বলে। মানে দাম ৪০ থেকে ৩৩-এ নামা কোনো ক্ষতি নয়, কেবল হিসাব।",
+                en: "Right: 10,000 divided by 300 is 33.33. The market opens near there too, which is the theoretical ex-rights price. So a move from 40 to 33 is not a loss, it is arithmetic.",
+              },
+            },
+            {
+              text: { bn: "২০ টাকা", en: "20" },
+              why: {
+                bn: "না, ওটা কেবল নতুন শেয়ারগুলোর দাম। আপনার পুরনো ২০০টা এখনো ৪০ টাকায় কেনা, তাই গড়টা দুইটার মাঝখানে বসবে, শেয়ার সংখ্যা অনুযায়ী ওজন দিয়ে।",
+                en: "No, that is only the price of the new ones. Your old 200 still cost 40, so the average sits between the two, weighted by counts.",
+              },
+            },
+          ],
+        },
+      ],
+    },
+  },
+},
+
+/* ---------------------------------------------------------- */
+"eps": {
+  bn: `
+<p>ইপিএস, আর্নিংস পার শেয়ার, হলো প্রতি শেয়ারে কোম্পানির আয়। হিসাবটা এক লাইনের: বছরের নিট মুনাফা ভাগ মোট শেয়ার সংখ্যা।</p>
+
+<p>এই একটা সংখ্যা কেন এত গুরুত্বপূর্ণ, তার কারণটা তুলনা। একটা কোম্পানি ৫০ কোটি টাকা লাভ করেছে আর আরেকটা ৮ কোটি, এই তথ্যটা প্রায় অকেজো, কারণ কোম্পানি দুইটার আকার আলাদা আর শেয়ার সংখ্যাও আলাদা। কিন্তু প্রথমটার ইপিএস ৩ টাকা আর দ্বিতীয়টার ৯ টাকা, এই তথ্যটা একটা প্রকৃত তুলনা: আপনার হাতের একটা শেয়ার কতটা আয় করছে।</p>
+
+<div class="at-a-glance">
+<p class="at-a-glance-label">এক নজরে</p>
+<ul>
+<li>ইপিএস = নিট মুনাফা ভাগ শেয়ার সংখ্যা। প্রতি শেয়ারে কত আয়।</li>
+<li>ইপিএস বাড়া মানে ব্যবসা ভালো, বা শেয়ার সংখ্যা কমেছে, বা একবারের কোনো লাভ এসেছে।</li>
+<li>একটা বছরের ইপিএস দিয়ে কিছু বোঝা যায় না, পাঁচ বছরের ধারাটা বোঝা যায়।</li>
+<li>ডাইলুটেড ইপিএস ধরে নেয় সব সম্ভাব্য শেয়ার ইস্যু হয়ে গেছে, আর সেটাই বেশি সৎ।</li>
+<li><a class="term" href="/money/terms/pe-ratio.html">পিই রেশিওর</a> নিচের অর্ধেকটাই ইপিএস।</li>
+</ul>
+</div>
+
+<h2>কোথায় পাবেন</h2>
+
+<p>বাংলাদেশে তালিকাভুক্ত কোম্পানিগুলো প্রতি তিন মাসে হিসাব প্রকাশ করে, আর ইপিএস সেই বিবৃতির নিচের দিকে থাকে। ডিএসইর সাইটে প্রতিটা কোম্পানির পাতায় সর্বশেষ ইপিএস থাকে, আর বার্ষিক প্রতিবেদনে গত পাঁচ বছরেরটা থাকে।</p>
+
+<p>একটা জিনিস খেয়াল রাখতে হয়: ত্রৈমাসিক ইপিএস আর বার্ষিক ইপিএস এক জিনিস নয়। কোম্পানি তিন মাসের ইপিএস প্রকাশ করলে সেটাকে চার দিয়ে গুণ করে বার্ষিক ভাবা বিপজ্জনক, কারণ অনেক ব্যবসা মৌসুমি: বস্ত্র খাতে ক্রিসমাসের অর্ডার, খাদ্য খাতে রমজান, সিমেন্টে শুকনো মৌসুম।</p>
+
+<h2>ধারাটা দেখুন, একটা সংখ্যা নয়</h2>
+
+${mount("eps-chart")}
+
+<p>উপরের দুইটা কোম্পানির সর্বশেষ ইপিএস প্রায় সমান, আর তাদের গল্প একেবারে আলাদা। প্রথমটার আয় প্রতি বছর বেড়েছে, যা একটা ব্যবসার শক্তির চিহ্ন। দ্বিতীয়টার আয় ওঠানামা করেছে আর সর্বশেষ বছরে হঠাৎ লাফ দিয়েছে, যা প্রায়ই একবারের কোনো ঘটনার ফল: একটা জমি বিক্রি, একটা মামলার নিষ্পত্তি, বা একটা কর ছাড়।</p>
+
+<p>এইজন্য ইপিএস দেখার নিয়ম একটাই: <strong>অন্তত পাঁচ বছরের ধারা দেখুন, আর যে বছরটা অস্বাভাবিক সেটার কারণ খুঁজুন।</strong> কারণটা বার্ষিক প্রতিবেদনের নোটে থাকে।</p>
+
+<h2>ইপিএস বাড়ার তিনটা কারণ</h2>
+
+<p>এটা জানা দরকার, কারণ তিনটা তিন রকম খবর।</p>
+
+<ol class="step-list">
+<li><strong>ব্যবসা ভালো চলছে।</strong> বিক্রি বেড়েছে বা খরচ কমেছে, তাই লাভ বেড়েছে। এটাই একমাত্র টেকসই কারণ, আর এটাই খোঁজার জিনিস।</li>
+<li><strong>শেয়ার সংখ্যা কমেছে।</strong> কোম্পানি নিজের শেয়ার কিনে বাতিল করলে ভাগফলের নিচের সংখ্যাটা ছোট হয়, তাই ইপিএস বাড়ে যদিও লাভ একই। বাংলাদেশে এটা বিরল, উন্নত বাজারে সাধারণ।</li>
+<li><strong>একবারের কোনো লাভ।</strong> সম্পদ বিক্রি, বিনিময় হারের লাভ, বা কোনো এককালীন প্রাপ্তি। পরের বছর এটা থাকবে না, তাই এই ইপিএসের ওপর ভিত্তি করে দাম বসানো ভুল।</li>
+</ol>
+
+<div class="note">উল্টো দিকটাও সত্য: ইপিএস কমা সবসময় খারাপ খবর নয়। একটা কোম্পানি যদি নতুন কারখানায় বিনিয়োগ করে আর সেই বছরের অবচয় বেশি হয়, ইপিএস কমবে যদিও ব্যবসাটা আসলে শক্তিশালী হচ্ছে। সংখ্যাটার পেছনের কারণটাই আসল খবর।</div>
+
+<h2>ডাইলুটেড ইপিএস</h2>
+
+<p>কিছু কোম্পানির এমন যন্ত্র থাকে যা ভবিষ্যতে নতুন শেয়ারে রূপান্তরিত হতে পারে: রূপান্তরযোগ্য বন্ড, কর্মীদের শেয়ার অপশন। ডাইলুটেড ইপিএস ধরে নেয় ওই সবগুলো রূপান্তরিত হয়ে গেছে, তাই শেয়ার সংখ্যা বেশি আর ইপিএস কম।</p>
+
+<p>দুইটার মধ্যে ডাইলুটেড সংখ্যাটাই বেশি সৎ, কারণ ওটা সবচেয়ে খারাপ সম্ভাব্য অবস্থাটা দেখায়। যেখানে দুইটার মধ্যে বড় পার্থক্য, সেখানে কারণটা খুঁজে দেখা দরকার।</p>
+
+<h2>নিজে যাচাই করুন</h2>
+
+${mount("eps-quiz")}
+`,
+  en: `
+<p>EPS, earnings per share, is a company's profit divided by its share count. The arithmetic is one line: net profit for the year over the number of shares.</p>
+
+<p>Why that one number matters is comparison. Knowing one company made 50 crore and another 8 crore is nearly useless, because the companies are different sizes with different share counts. Knowing the first has an EPS of 3 and the second 9 is a real comparison: how much one share in your hand is earning.</p>
+
+<div class="at-a-glance">
+<p class="at-a-glance-label">At a glance</p>
+<ul>
+<li>EPS is net profit divided by share count: earnings per share you hold.</li>
+<li>EPS rises when the business improves, when the share count falls, or on a one-off gain.</li>
+<li>One year of EPS tells you nothing; five years of it tells you a lot.</li>
+<li>Diluted EPS assumes every possible share has been issued, and it is the honest one.</li>
+<li>EPS is the bottom half of the <a class="term" href="/money/terms/pe-ratio.html">P/E ratio</a>.</li>
+</ul>
+</div>
+
+<h2>Where to find it</h2>
+
+<p>Listed companies here publish accounts every three months, and EPS sits near the bottom of the statement. DSE's site carries the latest EPS on each company's page, and the annual report carries five years of it.</p>
+
+<p>One thing to watch: quarterly EPS and annual EPS are not the same thing. Multiplying a quarter by four is dangerous, because many businesses are seasonal: Christmas orders in garments, Ramadan in food, the dry season in cement.</p>
+
+<h2>Read the trend, not the number</h2>
+
+${mount("eps-chart")}
+
+<p>The two companies above have nearly the same latest EPS and completely different stories. The first grew its earnings every year, which is a sign of strength in the business. The second wandered and then jumped in the final year, which is usually a one-off: land sold, a case settled, a tax break.</p>
+
+<p>So there is one rule for reading EPS: <strong>look at five years, and find out why the odd year is odd.</strong> The reason is in the notes to the annual report.</p>
+
+<h2>Three reasons EPS rises</h2>
+
+<p>Worth knowing, because they are three different kinds of news.</p>
+
+<ol class="step-list">
+<li><strong>The business improved.</strong> Sales rose or costs fell, so profit rose. The only durable reason, and the one to look for.</li>
+<li><strong>The share count fell.</strong> A company buying back and cancelling its own shares shrinks the bottom of the fraction, so EPS rises with profit unchanged. Rare here, common in developed markets.</li>
+<li><strong>A one-off gain.</strong> An asset sold, an exchange gain, a windfall. It will not be there next year, so pricing the share off this EPS is a mistake.</li>
+</ol>
+
+<div class="note">The reverse holds too: falling EPS is not always bad news. If a company invests in a new plant and the depreciation that year is heavy, EPS falls while the business is actually getting stronger. The reason behind the number is the news.</div>
+
+<h2>Diluted EPS</h2>
+
+<p>Some companies carry instruments that could become new shares later: convertible bonds, employee share options. Diluted EPS assumes all of them converted, so the share count is higher and the EPS lower.</p>
+
+<p>Of the two, the diluted number is the honest one, because it shows the worst plausible case. Where the two differ a lot, the reason is worth finding.</p>
+
+<h2>Check yourself</h2>
+
+${mount("eps-quiz")}
+`,
+  blocks: {
+    "eps-chart": {
+      kind: "chart",
+      shape: "line",
+      title: { bn: "একই ইপিএস, দুইটা আলাদা গল্প", en: "The same EPS, two different stories" },
+      note: {
+        bn: "শেষ বছরে দুইটার ইপিএস প্রায় সমান। আগের চার বছর দেখুন।",
+        en: "Both end at nearly the same EPS. Look at the four years before.",
+      },
+      labels: ["2020", "2021", "2022", "2023", "2024"],
+      series: [
+        { name: { bn: "কোম্পানি ক", en: "Company A" }, values: [2.1, 2.8, 3.5, 4.4, 5.2], tone: "good" },
+        { name: { bn: "কোম্পানি খ", en: "Company B" }, values: [3.9, 2.2, 1.8, 2.4, 5.0], tone: "warn" },
+      ],
+      unit: { bn: "টাকা, প্রতি শেয়ারে", en: "taka per share" },
+      source: {
+        bn: "কাল্পনিক সংখ্যা, ধারাটা দেখানোর জন্য।",
+        en: "Illustrative figures, to show the shape.",
+      },
+    },
+    "eps-quiz": {
+      kind: "quiz",
+      title: { bn: "দুইটা প্রশ্ন", en: "Two questions" },
+      questions: [
+        {
+          ask: {
+            bn: "একটা কোম্পানির ইপিএস গত বছর ছিল ২.১ টাকা, এই বছর ৭.৮ টাকা। প্রথমে কী দেখবেন?",
+            en: "A company's EPS went from 2.1 to 7.8. What do you look at first?",
+          },
+          options: [
+            {
+              text: { bn: "শেয়ারটা কিনে ফেলব, আয় প্রায় চার গুণ", en: "Buy it: earnings almost quadrupled" },
+              why: {
+                bn: "এত বড় লাফ প্রায় কখনোই কেবল ব্যবসা থেকে আসে না। কারণটা না জেনে কেনা মানে একবারের একটা ঘটনার ওপর দাম দেওয়া, যা পরের বছর থাকবে না।",
+                en: "A jump that size almost never comes from the business alone. Buying without the reason means paying for a one-off that will not repeat.",
+              },
+            },
+            {
+              text: { bn: "বার্ষিক প্রতিবেদনের নোটে কারণটা খুঁজব", en: "Find the reason in the notes to the accounts" },
+              right: true,
+              why: {
+                bn: "ঠিক। সম্ভাব্য কারণ কয়েকটা: জমি বা কারখানা বিক্রি, বৈদেশিক মুদ্রার লাভ, একটা মামলার নিষ্পত্তি, বা একটা কর সুবিধা। এর কোনোটাই পরের বছর ফিরবে না। ব্যবসা থেকে আসা বৃদ্ধি চিনতে হলে বিক্রির সংখ্যাটাও একই হারে বেড়েছে কি না দেখুন।",
+                en: "Right. The usual candidates: land or plant sold, a foreign exchange gain, a settled case, a tax concession. None repeats. To tell whether the growth came from the business, check whether sales grew at a similar rate.",
+              },
+            },
+            {
+              text: { bn: "কিছুই দেখার নেই, ইপিএস বাড়া ভালো", en: "Nothing to check: rising EPS is good" },
+              why: {
+                bn: "ইপিএস বাড়া ভালো যদি সেটা টেকসই হয়। তিনটা কারণে ইপিএস বাড়ে আর কেবল একটাই পরের বছর থাকে, যা এই লেখার মূল কথা।",
+                en: "Rising EPS is good if it lasts. Three things raise EPS and only one of them is there next year, which is the point of this lesson.",
+              },
+            },
+          ],
+        },
+        {
+          ask: {
+            bn: "একটা কোম্পানির তিন মাসের ইপিএস ১.৫ টাকা। বার্ষিক ইপিএস কত হবে?",
+            en: "A company reports a quarterly EPS of 1.5. What will the annual EPS be?",
+          },
+          options: [
+            {
+              text: { bn: "৬ টাকা, চার দিয়ে গুণ", en: "6, multiplied by four" },
+              why: {
+                bn: "অনেক ক্ষেত্রেই না। ব্যবসা মৌসুমি হলে চারটা প্রান্তিক সমান হয় না। বস্ত্র খাতে বছরের একটা অংশে অর্ডার বেশি, খাদ্য খাতে রমজানের আগে বিক্রি বেশি, সিমেন্টে বর্ষায় নির্মাণ কম।",
+                en: "Often not. If the business is seasonal the four quarters differ. Garments have order-heavy periods, food peaks before Ramadan, cement slows in the monsoon.",
+              },
+            },
+            {
+              text: { bn: "জানা যাবে না, ব্যবসা মৌসুমি কি না দেখতে হবে", en: "Cannot tell: check whether the business is seasonal" },
+              right: true,
+              why: {
+                bn: "ঠিক। সবচেয়ে সহজ যাচাই হলো গত দুই বছরের প্রান্তিক সংখ্যাগুলো পাশাপাশি রাখা। যদি প্রতি বছর একই প্রান্তিকে বেশি হয়, ব্যবসাটা মৌসুমি, আর তখন গুণ করার বদলে গত বারো মাসের যোগফল নিতে হয়।",
+                en: "Right. The easiest check is to lay the last two years of quarters side by side. If the same quarter is strong every year the business is seasonal, and then you sum the trailing twelve months instead of multiplying.",
+              },
+            },
+            {
+              text: { bn: "১.৫ টাকাই, প্রান্তিক আর বার্ষিক এক", en: "1.5: quarterly and annual are the same" },
+              why: {
+                bn: "না, প্রান্তিক ইপিএস তিন মাসের আয়। বার্ষিকটা বারো মাসের, আর সেটা সবসময় বেশি, কেবল ঠিক চার গুণ না।",
+                en: "No: a quarterly EPS is three months of earnings. The annual figure covers twelve and is always larger, just not exactly four times.",
+              },
+            },
+          ],
+        },
+      ],
+    },
+  },
+},
+
+/* ---------------------------------------------------------- */
+"pe-ratio": {
+  bn: `
+<p>পিই রেশিও, প্রাইস টু আর্নিংস, হলো শেয়ারের দাম ভাগ প্রতি শেয়ারে আয়। দাম ৬০ টাকা আর <a class="term" href="/money/terms/eps.html">ইপিএস</a> ৪ টাকা হলে পিই ১৫।</p>
+
+<p>এই সংখ্যাটার সবচেয়ে সহজ ব্যাখ্যাটা সবচেয়ে কাজেরও: <strong>পিই বলে, আজকের আয়ের হারে কোম্পানিটার দাম উঠতে কত বছর লাগবে।</strong> পিই ১৫ মানে পনেরো বছরের লাভ দিয়ে আজকের দামটা শোধ হবে, যদি আয় ঠিক একই থাকে।</p>
+
+<div class="at-a-glance">
+<p class="at-a-glance-label">এক নজরে</p>
+<ul>
+<li>পিই = দাম ভাগ ইপিএস। আজকের আয়ে দাম উঠতে কত বছর।</li>
+<li>কম পিই সস্তা নয় আর বেশি পিই দামি নয়; পিই একটা প্রত্যাশা।</li>
+<li>তুলনা কেবল একই খাতের ভেতরে অর্থবহ।</li>
+<li>ইপিএস শূন্য বা ঋণাত্মক হলে পিই অর্থহীন হয়ে যায়।</li>
+<li>পিইর উল্টোটা, আয়ের ইল্ড, ব্যাংকের সুদের সঙ্গে সরাসরি তুলনীয়।</li>
+</ul>
+</div>
+
+<h2>নিজে নাড়িয়ে দেখুন</h2>
+
+${mount("pe-lab")}
+
+<h2>কম পিই মানে সস্তা নয়</h2>
+
+<p>এটাই এই লেখার সবচেয়ে গুরুত্বপূর্ণ কথা, আর এটা বুঝতে একটু সময় লাগে।</p>
+
+<p>একটা কোম্পানির পিই ৫ হলে তার মানে বাজার তাকে সস্তা দাম দিচ্ছে। প্রশ্নটা হলো কেন। সম্ভাব্য কারণ তিনটা। এক, বাজার ভুল করছে আর আপনি একটা সুযোগ পেয়েছেন। দুই, বাজার মনে করে আগামী বছরগুলোতে এই আয় থাকবে না। তিন, কোম্পানিটার সঙ্গে এমন কিছু আছে যা আপনি জানেন না: বড় ঋণ, একটা মামলা, একজন প্রধান ক্রেতা চলে যাওয়া।</p>
+
+<p>বাংলাদেশে দ্বিতীয় আর তৃতীয় কারণটাই বেশি সাধারণ। বস্ত্র খাতের অনেক কোম্পানির পিই দীর্ঘদিন ধরে খুব কম, আর সেটা সুযোগ নয়: বাজার ধরে নিয়েছে ওই আয় টেকসই নয়, আর অনেক ক্ষেত্রেই বাজার ঠিক ছিল।</p>
+
+<p>উল্টোটাও সত্য। পিই ৩৫ মানে বাজার প্রত্যাশা করছে আয় দ্রুত বাড়বে। প্রত্যাশাটা সত্যি হলে আজকের ৩৫ পিছিয়ে গিয়ে সস্তা মনে হবে; মিথ্যা হলে দাম অনেকটা পড়বে। উঁচু পিই মানে বেশি ঝুঁকি, দামি হওয়া নয়।</p>
+
+${mount("pe-matrix")}
+
+<h2>আয়ের ইল্ড: পিইর উল্টোটা</h2>
+
+<p>পিইর একটা উল্টো রূপ আছে যা প্রায় কেউ ব্যবহার করেন না আর যেটা অনেক বেশি স্বজ্ঞাত: আয়ের ইল্ড, মানে ইপিএস ভাগ দাম, শতাংশে।</p>
+
+<p>পিই ২০ মানে আয়ের ইল্ড ৫%। পিই ১০ মানে ১০%। এখন সংখ্যাটা সরাসরি ব্যাংকের সুদের হার বা <a class="term" href="/money/terms/treasury-bill.html">ট্রেজারি বিলের</a> সঙ্গে তুলনীয়। যদি ঝুঁকিহীন হার ৯% হয় আর একটা শেয়ারের আয়ের ইল্ড ৫%, আপনি প্রশ্ন করবেন: কম পাওয়ার বিনিময়ে ঝুঁকি নিচ্ছি কেন? উত্তর একটাই হতে পারে: আয়টা বাড়বে বলে আশা করছি। আর ওই আশাটাই যাচাই করার জিনিস।</p>
+
+<h2>কখন পিই কাজ করে না</h2>
+
+<ul class="checklist">
+<li>কোম্পানি লোকসানে থাকলে পিই ঋণাত্মক হয়, আর ঋণাত্মক পিইর কোনো ব্যাখ্যা নেই। ওই ক্ষেত্রে অন্য মাপ লাগে, যেমন <a class="term" href="/money/terms/book-value.html">পিবি</a> বা বিক্রির অনুপাত।</li>
+<li>আয়ে একবারের বড় কোনো লাভ থাকলে পিই কৃত্রিমভাবে কম দেখায়। ওই লাভটা বাদ দিয়ে হিসাব করুন।</li>
+<li>ব্যাংক আর বিমার পিই অন্য খাতের সঙ্গে তুলনীয় নয়, কারণ তাদের ব্যবসার কাঠামোই আলাদা।</li>
+<li>খুব চক্রাকার ব্যবসায়, যেমন সিমেন্ট বা ইস্পাত, চক্রের শীর্ষে পিই সবচেয়ে কম দেখায় আর তখনই কেনা সবচেয়ে বিপজ্জনক।</li>
+</ul>
+
+<div class="note">শেষ পয়েন্টটা সূক্ষ্ম আর দামি। একটা চক্রাকার কোম্পানির আয় শীর্ষে থাকলে ইপিএস বড়, তাই পিই ছোট, তাই সস্তা মনে হয়। কিন্তু ওই আয়টাই চক্রের নিচে গেলে অর্ধেক হয়ে যাবে আর পিই হঠাৎ দ্বিগুণ হয়ে যাবে, দাম না নড়েই। এইজন্য চক্রাকার ব্যবসায় গড় আয় দিয়ে হিসাব করাই ভালো।</div>
+
+<h2>নিজে যাচাই করুন</h2>
+
+${mount("pe-quiz")}
+`,
+  en: `
+<p>The P/E ratio, price to earnings, is the share price divided by <a class="term" href="/money/terms/eps.html">earnings per share</a>. A price of 60 and an EPS of 4 gives a P/E of 15.</p>
+
+<p>The simplest reading is also the most useful: <strong>a P/E says how many years of today's earnings it takes to repay today's price.</strong> A P/E of 15 means fifteen years of profit pays for the price, if earnings never change.</p>
+
+<div class="at-a-glance">
+<p class="at-a-glance-label">At a glance</p>
+<ul>
+<li>P/E is price over EPS: years of today's profit to repay the price.</li>
+<li>Low is not cheap and high is not dear; a P/E is an expectation.</li>
+<li>Comparison only means something inside a sector.</li>
+<li>With zero or negative earnings the ratio stops meaning anything.</li>
+<li>Its inverse, the earnings yield, compares directly with a bank rate.</li>
+</ul>
+</div>
+
+<h2>Move it yourself</h2>
+
+${mount("pe-lab")}
+
+<h2>A low P/E does not mean cheap</h2>
+
+<p>This is the most important sentence in the lesson and it takes a moment to sink in.</p>
+
+<p>A P/E of 5 means the market is pricing the company cheaply. The question is why. Three possibilities. The market is wrong and you have found an opportunity. The market thinks those earnings will not be there in the coming years. Or there is something about the company you do not know: heavy debt, a lawsuit, a departing major customer.</p>
+
+<p>In Bangladesh the second and third are the common ones. Many garment companies have carried very low P/Es for years, and it was not an opportunity: the market assumed the earnings were not durable, and it was often right.</p>
+
+<p>The reverse holds too. A P/E of 35 means the market expects earnings to grow fast. If the expectation is met, today's 35 will look cheap in hindsight; if it is not, the price falls a long way. A high P/E means more risk, not simply an expensive share.</p>
+
+${mount("pe-matrix")}
+
+<h2>Earnings yield: the P/E upside down</h2>
+
+<p>The ratio has an inverse almost nobody uses and it is far more intuitive: the earnings yield, EPS divided by price, as a percentage.</p>
+
+<p>A P/E of 20 is a 5% earnings yield. A P/E of 10 is 10%. Now the number compares directly with a bank rate or a <a class="term" href="/money/terms/treasury-bill.html">treasury bill</a>. If the risk-free rate is 9% and a share yields 5% on earnings, you ask: why am I taking risk to be paid less? Only one answer works: because I expect the earnings to grow. And that expectation is the thing to test.</p>
+
+<h2>When a P/E does not work</h2>
+
+<ul class="checklist">
+<li>A loss-making company gives a negative P/E, and a negative P/E has no interpretation. Use another measure there, like <a class="term" href="/money/terms/book-value.html">P/B</a> or a sales multiple.</li>
+<li>A big one-off gain in the earnings makes the P/E look artificially low. Strip the gain out and recompute.</li>
+<li>Bank and insurance P/Es are not comparable with other sectors, because the structure of the business is different.</li>
+<li>In a highly cyclical business such as cement or steel, the P/E looks lowest at the top of the cycle, which is exactly when buying is most dangerous.</li>
+</ul>
+
+<div class="note">That last point is subtle and expensive. A cyclical company at the top of its cycle has high earnings, so a small P/E, so it looks cheap. When the cycle turns, those earnings halve and the P/E doubles without the price moving at all. Which is why cyclical businesses are better valued on an average of several years' earnings.</div>
+
+<h2>Check yourself</h2>
+
+${mount("pe-quiz")}
+`,
+  blocks: {
+    "pe-lab": {
+      kind: "lab",
+      model: "pe",
+      title: { bn: "দাম, আয় আর প্রত্যাশা", en: "Price, earnings and expectation" },
+      note: {
+        bn: "আয়ের বৃদ্ধির হার বদলে দেখুন। উঁচু পিই কেবল তখনই যুক্তিসঙ্গত যখন ওই বৃদ্ধিটা সত্যিই ঘটে।",
+        en: "Change the growth rate. A high P/E is only reasonable if that growth actually arrives.",
+      },
+      preset: { price: 60, eps: 4, growth: 10 },
+    },
+    "pe-matrix": {
+      kind: "figure",
+      shape: "matrix",
+      title: { bn: "পিই আর যা আসলে ঘটে", en: "The P/E and what actually happens" },
+      axes: {
+        x: [{ bn: "আয় কমল", en: "Earnings fell" }, { bn: "আয় বাড়ল", en: "Earnings grew" }],
+        y: [{ bn: "কম পিইতে কেনা", en: "Bought at a low P/E" }, { bn: "উঁচু পিইতে কেনা", en: "Bought at a high P/E" }],
+      },
+      parts: [
+        {
+          text: { bn: "সবচেয়ে খারাপ ফলাফল", en: "The worst outcome" },
+          note: { bn: "প্রত্যাশা উঁচু ছিল আর ব্যবসা মেলেনি। দাম দুই দিক থেকে পড়ে।", en: "High expectation, business missed. The price falls from both sides." },
+          tone: "bad",
+        },
+        {
+          text: { bn: "প্রত্যাশা মিলল", en: "The expectation was met" },
+          note: { bn: "উঁচু পিই যুক্তিসঙ্গত ছিল, আর ভবিষ্যতেও থাকতে হবে।", en: "The high P/E was justified, and has to stay justified." },
+          tone: "plain",
+        },
+        {
+          text: { bn: "সস্তা ছিল কারণ ছিল", en: "Cheap for a reason" },
+          note: { bn: "বাজার আগেই জানত। এটাকে বলে ভ্যালু ট্র্যাপ।", en: "The market already knew. This is the value trap." },
+          tone: "warn",
+        },
+        {
+          text: { bn: "সবচেয়ে ভালো ফলাফল", en: "The best outcome" },
+          note: { bn: "কম দামে কিনে ব্যবসা ভালো হলো। পর্যায় ৩ এই ঘরটা খোঁজার পদ্ধতি।", en: "Bought cheap and the business improved. Stage 3 is a method for finding this square." },
+          tone: "good",
+        },
+      ],
+      caption: {
+        bn: "পিই একা কোনো ঘর বলে দেয় না। কোন ঘরে আছেন সেটা ঠিক করে আয়ের ভবিষ্যৎ, আর সেটাই খুঁজে বের করার কাজ।",
+        en: "A P/E does not name a square by itself. Which square you are in is decided by future earnings, and finding that out is the work.",
+      },
+    },
+    "pe-quiz": {
+      kind: "quiz",
+      title: { bn: "তিনটা প্রশ্ন", en: "Three questions" },
+      questions: [
+        {
+          ask: {
+            bn: "একটা সিমেন্ট কোম্পানির পিই ৪, আর খাতের গড় ১৪। প্রথমে কী ভাববেন?",
+            en: "A cement company trades at a P/E of 4 against a sector average of 14. What is your first thought?",
+          },
+          options: [
+            {
+              text: { bn: "সস্তা, কিনে ফেলা উচিত", en: "Cheap: buy it" },
+              why: {
+                bn: "সিমেন্ট একটা চক্রাকার ব্যবসা, আর চক্রের শীর্ষে পিই সবচেয়ে কম দেখায়। ওই আয়টা টেকসই কি না না জেনে কেনা মানে শীর্ষে কেনা।",
+                en: "Cement is cyclical, and a P/E looks lowest at the top of the cycle. Buying without asking whether those earnings last is buying at the peak.",
+              },
+            },
+            {
+              text: { bn: "আয়টা চক্রের শীর্ষের কি না দেখব", en: "Check whether the earnings are at a cycle peak" },
+              right: true,
+              why: {
+                bn: "ঠিক। গত পাঁচ থেকে সাত বছরের ইপিএস পাশাপাশি বসান। যদি এই বছরেরটা গড়ের চেয়ে অনেক বেশি হয়, তাহলে গড় দিয়ে পিই হিসাব করুন; সংখ্যাটা হয়তো ৪ নয়, ১১ হবে, আর তখন সস্তা ব্যাপারটা উবে যায়।",
+                en: "Right. Lay five to seven years of EPS side by side. If this year is far above the average, recompute the P/E on the average; the number may be 11 rather than 4, and the bargain evaporates.",
+              },
+            },
+            {
+              text: { bn: "খাতের গড়ই সঠিক, তাই কোম্পানিটা খারাপ", en: "The sector average is right, so the company is bad" },
+              why: {
+                bn: "খাতের গড় একটা প্রসঙ্গ, রায় নয়। কোম্পানিটা সত্যিই সস্তা হতে পারে। প্রশ্নটা কেন, আর উত্তরটা সংখ্যায় খুঁজতে হয়।",
+                en: "A sector average is context, not a verdict. The company might genuinely be cheap. The question is why, and the answer is found in the numbers.",
+              },
+            },
+          ],
+        },
+        {
+          ask: {
+            bn: "পিই ২৫ মানে আয়ের ইল্ড কত?",
+            en: "A P/E of 25 is an earnings yield of what?",
+          },
+          options: [
+            {
+              text: { bn: "৪%", en: "4%" },
+              right: true,
+              why: {
+                bn: "ঠিক, ১ ভাগ ২৫। এই রূপান্তরটা কাজের কারণ সংখ্যাটা এখন ব্যাংকের সুদের সঙ্গে সরাসরি তুলনীয়। ঝুঁকিহীন হার ৯% হলে ৪% আয়ের ইল্ডে শেয়ার কেনার একমাত্র যুক্তি হলো আয়টা দ্রুত বাড়বে।",
+                en: "Right: 1 divided by 25. The conversion is useful because the number now compares with a bank rate. With a risk-free rate of 9%, buying at a 4% earnings yield only makes sense if earnings will grow fast.",
+              },
+            },
+            {
+              text: { bn: "২৫%", en: "25%" },
+              why: {
+                bn: "না, ওটা পিই নিজেই। আয়ের ইল্ড হলো পিইর উল্টোটা: ১ ভাগ পিই, শতাংশে।",
+                en: "No, that is the P/E itself. The earnings yield is its inverse: one divided by the P/E, as a percentage.",
+              },
+            },
+            {
+              text: { bn: "১২.৫%", en: "12.5%" },
+              why: {
+                bn: "ওটা পিই ৮-এর ইল্ড। ২৫-এর ক্ষেত্রে ১ ভাগ ২৫ সমান ০.০৪, অর্থাৎ ৪%।",
+                en: "That would be a P/E of 8. For 25, one over 25 is 0.04, so 4%.",
+              },
+            },
+          ],
+        },
+        {
+          ask: {
+            bn: "একটা কোম্পানি লোকসানে, তাই তার পিই ঋণাত্মক। কী করবেন?",
+            en: "A company is loss-making so its P/E is negative. What now?",
+          },
+          options: [
+            {
+              text: { bn: "ঋণাত্মক পিই মানে খুব সস্তা", en: "A negative P/E means very cheap" },
+              why: {
+                bn: "ঋণাত্মক পিইর কোনো ব্যাখ্যা নেই। সংখ্যাটা গণিতগতভাবে হিসাব হয় আর অর্থগতভাবে কিছুই বোঝায় না।",
+                en: "A negative P/E has no interpretation. The number computes and means nothing.",
+              },
+            },
+            {
+              text: { bn: "অন্য মাপ ব্যবহার করব, যেমন পিবি বা বিক্রির অনুপাত", en: "Use another measure, such as P/B or a sales multiple" },
+              right: true,
+              why: {
+                bn: "ঠিক। লোকসানে থাকা কোম্পানির ক্ষেত্রে বইমূল্য বা বিক্রির তুলনায় দাম বেশি কাজের, আর সবচেয়ে বেশি কাজের প্রশ্নটা হলো লোকসানটা সাময়িক না কাঠামোগত। উত্তরটা নগদ প্রবাহে থাকে।",
+                en: "Right. For a loss-maker, price against book value or against sales works better, and the most useful question is whether the loss is temporary or structural. The answer is in the cash flow.",
+              },
+            },
+            {
+              text: { bn: "কোম্পানিটা সম্পূর্ণ এড়িয়ে যাব", en: "Avoid the company entirely" },
+              why: {
+                bn: "একটা যুক্তিসঙ্গত সতর্কতা, বিশেষ করে নতুনদের জন্য। কিন্তু নিয়ম হিসেবে এটা খুব কড়া: অনেক ভালো কোম্পানির এক-দুইটা লোকসানের বছর থাকে, আর কারণটাই সব বলে দেয়।",
+                en: "A reasonable caution, especially early on. As a rule it is too strict: plenty of good companies have a loss year or two, and the reason tells you everything.",
+              },
+            },
+          ],
+        },
+      ],
+    },
+  },
+},
+
+/* ---------------------------------------------------------- */
+"nav": {
+  bn: `
+<p>এনএভি, নেট অ্যাসেট ভ্যালু, হলো সম্পদ থেকে দায় বাদ দিলে যা থাকে, ভাগ ইউনিট বা শেয়ার সংখ্যা। শব্দটা সবচেয়ে বেশি ব্যবহৃত হয় <a class="term" href="/money/terms/mutual-fund.html">মিউচুয়াল ফান্ডের</a> ক্ষেত্রে, আর সেখানেই এটা সবচেয়ে অর্থবহ।</p>
+
+<p>একটা ফান্ডের ক্ষেত্রে হিসাবটা সরাসরি। ফান্ডের হাতে যত শেয়ার আছে তার আজকের বাজারদর, যোগ নগদ, বিয়োগ যা কিছু বাকি দেনা আছে, ভাগ মোট ইউনিট সংখ্যা। ফলাফলটা বলে দেয় আজ ফান্ডটা ভেঙে ফেললে প্রতি ইউনিটে কত পাওয়া যেত।</p>
+
+<div class="at-a-glance">
+<p class="at-a-glance-label">এক নজরে</p>
+<ul>
+<li>এনএভি = (সম্পদ বিয়োগ দায়) ভাগ ইউনিট সংখ্যা।</li>
+<li>ফান্ড প্রতি সপ্তাহে বা মাসে এনএভি প্রকাশ করে, আর তা প্রকাশ্য।</li>
+<li>ক্লোজড-এন্ড ফান্ডের বাজারদর এনএভির চেয়ে আলাদা হতে পারে, আর প্রায়ই কম হয়।</li>
+<li>দুই রকম এনএভি প্রকাশ হয়: বাজারদরে আর ক্রয়মূল্যে, আর প্রথমটাই আসল।</li>
+<li>কোম্পানির ক্ষেত্রে একই ধারণার নাম <a class="term" href="/money/terms/book-value.html">বইমূল্য</a>।</li>
+</ul>
+</div>
+
+<h2>দুইটা এনএভি, আর কোনটা দেখবেন</h2>
+
+<p>বাংলাদেশে ফান্ডগুলো সাধারণত দুইটা সংখ্যা প্রকাশ করে, আর পার্থক্যটা জানা দরকার।</p>
+
+${mount("nav-compare")}
+
+<p>বাজারদরে হিসাব করা এনএভি বলে আজ ফান্ডের সম্পদ বেচলে কত পাওয়া যেত। ক্রয়মূল্যে হিসাব করাটা বলে ফান্ড ওই সম্পদগুলো কিনতে কত খরচ করেছিল। বাজার পড়ে গেলে দ্বিতীয়টা প্রথমটার চেয়ে বেশি দেখায়, আর সেটা কোনো সান্ত্বনা নয়: আপনি বেচলে বাজারদরই পাবেন।</p>
+
+<p>তাই সিদ্ধান্ত নেওয়ার সময় বাজারদরে হিসাব করা এনএভিটাই দেখুন। কোনো ফান্ড কেবল ক্রয়মূল্যের সংখ্যাটা প্রকাশ করলে সেটা নিজেই একটা তথ্য।</p>
+
+<h2>বাজারদর আর এনএভির দূরত্ব</h2>
+
+<p>ওপেন-এন্ড ফান্ডে এই দূরত্ব থাকে না: আপনি এনএভিতেই কেনেন আর এনএভিতেই ফেরত দেন। ক্লোজড-এন্ড ফান্ডে দূরত্বটা থাকে, কারণ ইউনিটগুলো এক্সচেঞ্জে কেনাবেচা হয় আর দাম ঠিক হয় চাহিদা-জোগানে।</p>
+
+${mount("nav-figure")}
+
+<p>বাংলাদেশে ক্লোজড-এন্ড ফান্ড প্রায় সবসময় এনএভির নিচে থাকে, কখনো ৩০% থেকে ৪০% নিচে। কারণগুলো বাস্তব: ফান্ডের বার্ষিক খরচ ভবিষ্যতের রিটার্ন খাবে, ইউনিটগুলো পাতলা, আর মেয়াদ শেষ হতে অনেক দেরি বলে ছাড়টা বন্ধ হওয়ার কোনো নির্দিষ্ট দিন নেই।</p>
+
+<h2>কোম্পানির এনএভি</h2>
+
+<p>শব্দটা কোম্পানির ক্ষেত্রেও ব্যবহার হয়, আর তখন এটার মানে একটু আলাদা। একটা ফান্ডের সম্পদ হলো শেয়ার, যেগুলোর প্রতিদিনের বাজারদর আছে, তাই এনএভি একটা বাস্তব সংখ্যা। একটা কারখানার সম্পদ হলো জমি, ভবন, যন্ত্র আর মজুদ, যেগুলোর হিসাব বইতে লেখা থাকে ক্রয়মূল্য বিয়োগ অবচয় হিসেবে, আর সেটা আজকের বাজারদর নয়।</p>
+
+<p>এর ফলে দুইটা বিপরীত সমস্যা হয়। জমি অনেক আগে কেনা হলে বইতে যা লেখা তার চেয়ে আজ তার দাম অনেক বেশি, তাই এনএভি কম দেখায়। আবার পুরনো যন্ত্রপাতি বা অচল মজুদ বইতে যা লেখা তার চেয়ে কম দামি, তাই এনএভি বেশি দেখায়। বাংলাদেশে বস্ত্র আর প্রকৌশল খাতে দ্বিতীয়টা বেশি সাধারণ।</p>
+
+<p>তাই কোম্পানির ক্ষেত্রে এনএভি একটা সূচনা, উত্তর নয়। <a class="term" href="/money/terms/book-value.html">বইমূল্যের</a> লেখাটায় এই নিয়ে আরও আছে, আর পর্যায় ৩-এর স্থিতিপত্রের লেখাটায় সম্পদগুলো কীভাবে যাচাই করতে হয় তা আছে।</p>
+
+<h2>এনএভি দিয়ে যা করা যায়</h2>
+
+<p>তিনটা কাজ। এক, ফান্ডের কর্মক্ষমতা মাপা: এনএভি সময়ের সঙ্গে কেমন বেড়েছে সেটাই ফান্ড ম্যানেজারের আসল স্কোরকার্ড, বাজারদর নয়। দুই, ছাড় মাপা: বাজারদর আর এনএভির অনুপাত। তিন, ফান্ডের ভেতরে কী আছে বোঝা: এনএভির সঙ্গে ফান্ডগুলো তাদের পোর্টফোলিওর তালিকাও প্রকাশ করে।</p>
+
+<div class="note">এনএভি একটা হিসাব, একটা প্রতিশ্রুতি নয়। ফান্ডের হাতে যদি পাতলা শেয়ার থাকে, ওই শেয়ারগুলোর সর্বশেষ দাম ধরে হিসাব করা এনএভি বাস্তবে অর্জনযোগ্য নাও হতে পারে: বেচতে গেলে দাম পড়ে যাবে। তাই ফান্ডের পোর্টফোলিওতে কতটা তরল শেয়ার আছে সেটাও দেখার জিনিস।</div>
+
+<h2>নিজে যাচাই করুন</h2>
+
+${mount("nav-quiz")}
+`,
+  en: `
+<p>NAV, net asset value, is assets minus liabilities divided by the number of units or shares. The term is used most about <a class="term" href="/money/terms/mutual-fund.html">mutual funds</a>, and that is where it means most.</p>
+
+<p>For a fund the calculation is direct. Today's market value of everything the fund holds, plus cash, minus whatever it owes, divided by the units in issue. The result says what one unit would fetch if the fund were wound up today.</p>
+
+<div class="at-a-glance">
+<p class="at-a-glance-label">At a glance</p>
+<ul>
+<li>NAV is assets minus liabilities, over units.</li>
+<li>Funds publish it weekly or monthly, and it is public.</li>
+<li>A closed-end fund's market price can differ from NAV, and usually sits below it.</li>
+<li>Two NAVs get published, at market and at cost, and the first is the real one.</li>
+<li>The same idea for a company is called <a class="term" href="/money/terms/book-value.html">book value</a>.</li>
+</ul>
+</div>
+
+<h2>Two NAVs, and which to read</h2>
+
+<p>Funds here usually publish two numbers, and the difference is worth knowing.</p>
+
+${mount("nav-compare")}
+
+<p>NAV at market value says what the fund's holdings would fetch today. NAV at cost says what the fund paid for them. After a market fall the second is higher than the first, and that is no consolation: if you sell you receive market value.</p>
+
+<p>So read the market-value NAV when deciding anything. A fund publishing only the cost figure is itself telling you something.</p>
+
+<h2>The gap between price and NAV</h2>
+
+<p>Open-end funds have no gap: you buy at NAV and redeem at NAV. Closed-end funds do, because the units trade on the exchange and the price is set by supply and demand.</p>
+
+${mount("nav-figure")}
+
+<p>Closed-end funds in Bangladesh sit below NAV almost always, sometimes 30% to 40% below. The reasons are real: annual costs will eat future returns, the units are thin, and with maturity far away there is no particular day on which the discount has to close.</p>
+
+<h2>A company's NAV</h2>
+
+<p>The term is used for companies too, and there it means something slightly different. A fund's assets are shares with a daily market price, so its NAV is a real number. A factory's assets are land, buildings, machines and stock, carried in the books at cost less depreciation, which is not today's market value.</p>
+
+<p>That produces two opposite problems. Land bought long ago is worth far more today than the books say, so NAV understates. Old machinery or obsolete stock is worth less than the books say, so NAV overstates. In garments and engineering here the second is the common one.</p>
+
+<p>So for a company NAV is a starting point rather than an answer. The <a class="term" href="/money/terms/book-value.html">book value</a> lesson goes further, and stage 3's balance sheet lesson covers how to test the assets themselves.</p>
+
+<h2>What you can do with NAV</h2>
+
+<p>Three things. Measure the fund's performance: how NAV grew over time is the manager's actual scorecard, not the market price. Measure the discount: market price against NAV. And understand what is inside: funds publish their portfolio alongside the NAV.</p>
+
+<div class="note">NAV is a calculation, not a promise. If a fund holds thin shares, a NAV computed from their last traded prices may not be achievable: selling would push those prices down. So how much of the portfolio is liquid is worth looking at too.</div>
+
+<h2>Check yourself</h2>
+
+${mount("nav-quiz")}
+`,
+  blocks: {
+    "nav-compare": {
+      kind: "compare",
+      title: { bn: "বাজারদরে আর ক্রয়মূল্যে", en: "At market and at cost" },
+      columns: [
+        { bn: "বাজারদরে এনএভি", en: "NAV at market" },
+        { bn: "ক্রয়মূল্যে এনএভি", en: "NAV at cost" },
+      ],
+      rows: [
+        {
+          label: { bn: "কী মাপে", en: "What it measures" },
+          cells: [
+            { bn: "আজ বেচলে কত পাওয়া যাবে", en: "What selling today would fetch" },
+            { bn: "ফান্ড কত খরচ করেছিল", en: "What the fund paid" },
+          ],
+          best: 0,
+        },
+        {
+          label: { bn: "বাজার পড়লে", en: "After a market fall" },
+          cells: [{ bn: "কমে যায়", en: "Falls" }, { bn: "একই থাকে", en: "Stays put" }],
+        },
+        {
+          label: { bn: "সিদ্ধান্তে কাজে লাগে?", en: "Useful for a decision?" },
+          cells: [{ bn: "হ্যাঁ", en: "Yes" }, { bn: "প্রায় না", en: "Barely" }],
+          best: 0,
+        },
+      ],
+    },
+    "nav-figure": {
+      kind: "figure",
+      shape: "scale",
+      title: { bn: "এনএভি আর বাজারদর", en: "NAV against market price" },
+      parts: [
+        {
+          text: { bn: "প্রতি ইউনিটে এনএভি", en: "NAV per unit" },
+          note: { bn: "ফান্ডের হাতে যা আছে তার হিসাব", en: "What the fund actually holds" },
+          value: 14,
+          tone: "good",
+        },
+        {
+          text: { bn: "বাজারদর", en: "Market price" },
+          note: { bn: "আজ কেউ যত দিতে রাজি, আর ছাড়টা প্রায় ৩৬%", en: "What somebody will pay today: a 36% discount" },
+          value: 9,
+          tone: "warn",
+        },
+      ],
+      caption: {
+        bn: "ছাড়টা সুযোগ হতে পারে, আবার ভবিষ্যতের খরচ আর তারল্যের ঝুঁকির সৎ মূল্যায়নও হতে পারে। কোনটা, সেটা ফান্ডের নথিতে খুঁজতে হয়।",
+        en: "The discount can be an opportunity, or an honest verdict on future costs and thin liquidity. Which one is a question for the fund's own documents.",
+      },
+    },
+    "nav-quiz": {
+      kind: "quiz",
+      title: { bn: "দুইটা প্রশ্ন", en: "Two questions" },
+      questions: [
+        {
+          ask: {
+            bn: "একটা ক্লোজড-এন্ড ফান্ডের বাজারদর এক বছরে ৮ টাকা থেকে ৯ টাকা হয়েছে, আর এনএভি ১৪ থেকে ১৩ টাকায় নেমেছে। ফান্ড ম্যানেজার কেমন করলেন?",
+            en: "A closed-end fund's market price went from 8 to 9 in a year while NAV went from 14 to 13. How did the manager do?",
+          },
+          options: [
+            {
+              text: { bn: "ভালো, দাম বেড়েছে", en: "Well: the price rose" },
+              why: {
+                bn: "দাম বেড়েছে ছাড় কমার কারণে, ম্যানেজারের কাজের কারণে নয়। ম্যানেজারের হাতে যা ছিল সেটা কমেছে।",
+                en: "The price rose because the discount narrowed, not because of the manager's work. What the manager holds fell in value.",
+              },
+            },
+            {
+              text: { bn: "খারাপ, কারণ এনএভি কমেছে আর সেটাই তার স্কোরকার্ড", en: "Badly: NAV fell, and NAV is the scorecard" },
+              right: true,
+              why: {
+                bn: "ঠিক। বাজারদর বদলায় বিনিয়োগকারীদের মেজাজে; এনএভি বদলায় ম্যানেজার যা কিনেছেন তার মূল্যে। ফান্ড ম্যানেজারের কাজ বিচার করতে হলে এনএভির ধারাটা দেখতে হয়, আর সেটাকে সূচকের সঙ্গে মিলিয়ে দেখতে হয়।",
+                en: "Right. The market price moves with investor mood; NAV moves with the value of what the manager bought. To judge a manager, read the NAV series and compare it to the index.",
+              },
+            },
+            {
+              text: { bn: "বলা যাবে না", en: "Cannot say" },
+              why: {
+                bn: "বলা যাবে, আর সংখ্যাটা এখানেই আছে: এনএভি ১৪ থেকে ১৩, মানে ৭% ক্ষতি। প্রশ্নটা কেবল কোন সংখ্যাটা দেখতে হবে।",
+                en: "You can say, and the number is right here: NAV from 14 to 13 is a 7% loss. The only question was which number to read.",
+              },
+            },
+          ],
+        },
+        {
+          ask: {
+            bn: "একটা ওপেন-এন্ড ফান্ডের এনএভি ২৫ টাকা। আপনি কত দামে কিনবেন?",
+            en: "An open-end fund has a NAV of 25. What do you pay?",
+          },
+          options: [
+            {
+              text: { bn: "প্রায় ২৫ টাকা, ফান্ডের ফি যোগ করে", en: "About 25, plus the fund's own charge" },
+              right: true,
+              why: {
+                bn: "ঠিক। ওপেন-এন্ড ফান্ড এনএভি ধরে বেচে আর কেনে, তাই ছাড় বা প্রিমিয়াম হয় না। কিছু ফান্ড ঢোকা বা বেরোনোর সময় ছোট একটা ফি নেয়, আর সেটা নথিতে লেখা থাকে।",
+                en: "Right. An open-end fund transacts at NAV, so no discount or premium arises. Some charge a small entry or exit fee, which is set out in the documents.",
+              },
+            },
+            {
+              text: { bn: "যা বাজারে চলছে, চাহিদা অনুযায়ী", en: "Whatever the market says, by demand" },
+              why: {
+                bn: "ওটা ক্লোজড-এন্ড ফান্ডের ব্যাপার, যেগুলো এক্সচেঞ্জে কেনাবেচা হয়। ওপেন-এন্ড ফান্ডে বাজার বলে কিছু নেই, সরাসরি ফান্ডের সঙ্গে লেনদেন।",
+                en: "That is a closed-end fund, which trades on the exchange. An open-end fund has no market: you transact with the fund itself.",
+              },
+            },
+            {
+              text: { bn: "এনএভির ৩০% ছাড়ে", en: "At a 30% discount to NAV" },
+              why: {
+                bn: "ছাড় ক্লোজড-এন্ড ফান্ডে হয়, আর সেটার কারণ ইউনিটগুলো বাজারে হাত বদলায়। ওপেন-এন্ডে ছাড়ের কোনো জায়গা নেই।",
+                en: "Discounts happen in closed-end funds because their units change hands in a market. There is no room for one in an open-end fund.",
+              },
+            },
+          ],
+        },
+      ],
+    },
+  },
+},
 };
