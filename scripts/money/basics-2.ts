@@ -4087,4 +4087,2793 @@ ${mount("com-quiz")}
     },
   },
 },
+
+/* ---------------------------------------------------------- */
+"complements-substitutes": {
+  bn: `
+<p>দুইটা কোম্পানির মধ্যে সম্পর্ক দুই রকম হতে পারে, আর সম্পর্কটা জানা থাকলে একটা খবর পড়ে আপনি দুইটা কোম্পানির কথা ভাবতে পারবেন। <strong>পরিপূরক</strong> মানে একটার চাহিদা বাড়লে অন্যটারও বাড়ে। <strong>বিকল্প</strong> মানে একটার চাহিদা বাড়লে অন্যটার কমে।</p>
+
+<p>এটা অর্থনীতির একটা সাধারণ ধারণা, আর বিনিয়োগে এর ব্যবহারটা খুব বাস্তব: আপনার পোর্টফোলিও যদি অজান্তে পরিপূরক কোম্পানিতে ভরা থাকে, তাহলে আপনার বৈচিত্র্য কাগজে আছে আর বাস্তবে নেই।</p>
+
+<div class="at-a-glance">
+<p class="at-a-glance-label">এক নজরে</p>
+<ul>
+<li>পরিপূরক একসঙ্গে চলে, বিকল্প উল্টো দিকে চলে।</li>
+<li>একই খাতে না থেকেও দুইটা কোম্পানি পরিপূরক হতে পারে।</li>
+<li>বিকল্প থাকা মানে কোম্পানির দাম বাড়ানোর ক্ষমতা কম।</li>
+<li>একটা খবর পড়ে সবসময় জিজ্ঞেস করুন: এতে কার উপকার হলো।</li>
+<li>পোর্টফোলিওতে পরিপূরকের ভিড় ছদ্মবেশী ঘনত্ব।</li>
+</ul>
+</div>
+
+<h2>দুইটা সম্পর্ক, একটা ছবিতে</h2>
+
+${mount("cs-venn")}
+
+<p>সিমেন্ট আর রড পরিপূরক: বাড়ি বানাতে দুইটাই লাগে, তাই নির্মাণ বাড়লে দুইটার চাহিদাই বাড়ে। চা আর কফি বিকল্প: একটার দাম বাড়লে কিছু মানুষ অন্যটায় সরে যান।</p>
+
+<p>ব্যাপারটা কেবল পণ্যে সীমাবদ্ধ নয়। একটা এফডিআরের সুদের হার আর শেয়ারবাজারও একধরনের বিকল্প: <a class="term" href="/money/terms/fdr.html">এফডিআরে</a> ভালো রিটার্ন পাওয়া গেলে কিছু টাকা শেয়ার থেকে সরে যায়। এই কারণেই সুদের হার বাড়লে শেয়ারের দাম চাপে পড়ে।</p>
+
+<h2>খবর পড়ার নতুন অভ্যাস</h2>
+
+<p>একটা খবর পড়ে একটা কোম্পানির কথা ভাবা সহজ। দুইটা বা তিনটার কথা ভাবা অভ্যাসের ব্যাপার, আর সেই অভ্যাসটাই আপনাকে অন্যদের চেয়ে এগিয়ে রাখে।</p>
+
+${mount("cs-match")}
+
+<p>ধরুন খবর এল যে সরকার একটা বড় সেতু প্রকল্প অনুমোদন করেছে। সরাসরি উপকার সিমেন্ট আর রডের। এক ধাপ দূরে পরিবহন আর ভারী যন্ত্রপাতি। আরেক ধাপ দূরে ওই অঞ্চলের জমি আর দোকান। আর যাদের ক্ষতি? যারা ওই টাকাটা অন্য খাতে যাওয়ার আশা করছিলেন।</p>
+
+<h2>বিকল্প থাকা মানে দাম বাড়ানোর ক্ষমতা কম</h2>
+
+<p>এটা বিনিয়োগের জন্য সবচেয়ে দরকারি সিদ্ধান্ত এই ধারণা থেকে। একটা কোম্পানির পণ্যের যদি সহজ বিকল্প থাকে, তাহলে সে দাম বাড়াতে পারে না, কারণ ক্রেতা সরে যাবে। যদি সহজ বিকল্প না থাকে, তাহলে সে দাম বাড়াতে পারে, আর সেটাই দীর্ঘমেয়াদে মুনাফার সবচেয়ে বড় উৎস।</p>
+
+<div class="ex">
+<p><strong>দুইটা কোম্পানি, একই মূল্যস্ফীতি।</strong> প্রথমটা সাধারণ সাবান বানায়, যার বাজারে দশটা বিকল্প আছে। কাঁচামালের দাম ১০% বাড়লে সে দাম বাড়াতে গেলে ক্রেতা হারায়, তাই মুনাফার হার কমে। দ্বিতীয়টা একটা বিশেষায়িত ওষুধ বানায় যার বিকল্প নেই। সে দাম বাড়ায় আর ক্রেতা থাকে। দশ বছরে দুইটার ফলাফল আকাশ পাতাল।</p>
+</div>
+
+<p>তাই একটা কোম্পানি বিশ্লেষণ করার সময় একটা প্রশ্ন যোগ করুন: <strong>এই পণ্যের বিকল্প কতটা সহজ?</strong> উত্তরটা যত কঠিন, কোম্পানিটা তত শক্ত অবস্থানে।</p>
+
+<h2>পোর্টফোলিওতে ছদ্মবেশী ঘনত্ব</h2>
+
+<p><a class="term" href="/money/basics-2/sectors.html">খাত চিনুন</a> লেখায় দেখা হয়েছে একই খাতের কোম্পানি একসঙ্গে নড়ে। পরিপূরক সম্পর্ক এই সমস্যাটাকে খাতের সীমানা পার করিয়ে দেয়: দুইটা কোম্পানি আলাদা খাতে থেকেও একই ধাক্কায় নড়তে পারে।</p>
+
+${mount("cs-spot")}
+
+<p>এর সমাধান জটিল নয়। আপনার প্রতিটা শেয়ারের পাশে লিখুন এই কোম্পানির আয় কীসের উপর নির্ভর করে, এক বাক্যে। তারপর দেখুন কতগুলোর বাক্যে একই শব্দ আছে। যদি ছয়টার মধ্যে চারটাতে "নির্মাণ" থাকে, তাহলে আপনার চারটা শেয়ার নয়, একটা বাজি আছে।</p>
+
+<h2>বিকল্প আপনার নিজের সিদ্ধান্তেও আছে</h2>
+
+<p>শেষ একটা কথা, যা প্রায়ই ভুলে যাওয়া হয়। আপনার টাকা রাখার জায়গাগুলোও একে অন্যের বিকল্প। শেয়ার, এফডিআর, সঞ্চয়পত্র, সোনা, নিজের ব্যবসা: প্রতিটাতে টাকা রাখা মানে বাকিগুলোতে না রাখা।</p>
+
+<p>তাই একটা বিনিয়োগ ভালো কি না, এই প্রশ্নের সম্পূর্ণ রূপ হলো: এই মুহূর্তে আমার কাছে থাকা বিকল্পগুলোর তুলনায় এটা ভালো কি না। একটা ১০% রিটার্ন চমৎকার শোনায় যতক্ষণ না জানা যায় যে একই ঝুঁকিতে অন্য কোথাও ১৪% পাওয়া যাচ্ছিল।</p>
+
+<div class="checklist">
+<ul>
+<li>আপনার প্রতিটা শেয়ারের আয় কীসের উপর নির্ভর করে, এক বাক্যে লিখুন।</li>
+<li>একই শব্দ কতবার এসেছে গুনে দেখুন।</li>
+<li>প্রতিটা কোম্পানির পণ্যের সহজ বিকল্প আছে কি না লিখুন।</li>
+<li>আজকের এফডিআরের হার দেখে নিন, কারণ সেটাই আপনার সবচেয়ে কাছের বিকল্প।</li>
+</ul>
+</div>
+
+${mount("cs-quiz")}
+`,
+  en: `
+<p>Two companies can be related in one of two ways, and knowing which lets you read one headline and think about two companies. <strong>Complements</strong> means demand for one rises when demand for the other does. <strong>Substitutes</strong> means demand for one falls when demand for the other rises.</p>
+
+<p>It is an ordinary idea from economics, and its use in investing is very practical: if your portfolio is unknowingly full of complements, your diversification exists on paper and not in reality.</p>
+
+<div class="at-a-glance">
+<p class="at-a-glance-label">At a glance</p>
+<ul>
+<li>Complements move together; substitutes move against each other.</li>
+<li>Two companies can be complements without being in the same sector.</li>
+<li>Having substitutes means a company cannot easily raise prices.</li>
+<li>On reading any piece of news, always ask: who does this help?</li>
+<li>A crowd of complements in a portfolio is concentration in disguise.</li>
+</ul>
+</div>
+
+<h2>Two relationships, one picture</h2>
+
+${mount("cs-venn")}
+
+<p>Cement and steel rod are complements: building needs both, so construction activity lifts demand for both. Tea and coffee are substitutes: when one gets dearer, some people move to the other.</p>
+
+<p>It is not confined to goods. Deposit rates and the share market are a kind of substitute too: when <a class="term" href="/money/terms/fdr.html">fixed deposits</a> pay well, some money leaves shares. That is why rising rates put pressure on share prices.</p>
+
+<h2>A new habit for reading news</h2>
+
+<p>Reading a headline and thinking of one company is easy. Thinking of two or three is a habit, and that habit is what keeps you ahead of the room.</p>
+
+${mount("cs-match")}
+
+<p>Suppose the government approves a large bridge project. The direct beneficiaries are cement and steel. One step away sit transport and heavy machinery. Another step away sit land and shops in that district. And who loses? Anyone hoping that money would go to a different sector.</p>
+
+<h2>Substitutes mean weak pricing power</h2>
+
+<p>This is the most useful investing conclusion from the idea. If a company's product has easy substitutes, it cannot raise prices, because buyers move away. If it does not, it can raise prices, and that is the single largest source of long-run profit.</p>
+
+<div class="ex">
+<p><strong>Two companies, the same inflation.</strong> The first makes ordinary soap with ten alternatives on the shelf. When raw materials rise 10%, raising the price loses customers, so margins fall. The second makes a specialised medicine with no alternative. It raises the price and keeps its customers. Over ten years the two results are worlds apart.</p>
+</div>
+
+<p>So add one question when analysing a company: <strong>how easy is it to substitute this product?</strong> The harder the answer, the stronger the company's position.</p>
+
+<h2>Concentration in disguise</h2>
+
+<p>The lesson on <a class="term" href="/money/basics-2/sectors.html">sectors</a> showed that companies in one sector move together. Complementary relationships carry that problem across sector boundaries: two companies in different sectors can still move on the same shock.</p>
+
+${mount("cs-spot")}
+
+<p>The fix is not complicated. Beside each holding, write one sentence saying what its earnings depend on. Then look at how many sentences share a word. If four of six say "construction", you do not have four shares, you have one bet.</p>
+
+<h2>Substitutes exist in your own decisions too</h2>
+
+<p>One last thing, easily forgotten. The places you can put money are substitutes for one another. Shares, deposits, savings certificates, gold, your own business: putting money in one means not putting it in the others.</p>
+
+<p>So the complete form of the question "is this a good investment" is: is it better than the alternatives available to me right now? A 10% return sounds excellent until you learn that 14% was available at the same risk somewhere else.</p>
+
+<div class="checklist">
+<ul>
+<li>Write one sentence per holding on what its earnings depend on.</li>
+<li>Count how many times the same word appears.</li>
+<li>Note for each company whether its product has easy substitutes.</li>
+<li>Look up today's deposit rate, because that is your nearest alternative.</li>
+</ul>
+</div>
+
+${mount("cs-quiz")}
+`,
+  blocks: {
+    "cs-venn": {
+      kind: "figure",
+      shape: "venn",
+      title: { bn: "একসঙ্গে চলে, নাকি উল্টো দিকে", en: "Moving together, or against" },
+      note: { bn: "মাঝখানে যা আছে তা সময় আর প্রযুক্তির উপর নির্ভর করে দুইভাবেই কাজ করে।", en: "What sits in the middle works both ways, depending on the horizon and on technology." },
+      axes: {
+        x: [{ bn: "পরিপূরক", en: "Complements" }, { bn: "বিকল্প", en: "Substitutes" }],
+      },
+      parts: [
+        {
+          text: { bn: "সিমেন্ট আর রড, গাড়ি আর জ্বালানি", en: "Cement and rod, cars and fuel" },
+          note: { bn: "একটার চাহিদা বাড়লে অন্যটারও বাড়ে, কারণ একটা ছাড়া অন্যটা অর্থহীন।", en: "Demand for one lifts the other, because one is meaningless without the other." },
+          tone: "good",
+        },
+        {
+          text: { bn: "বিদ্যুৎ আর সৌর প্যানেল", en: "Grid power and solar panels" },
+          note: { bn: "স্বল্পমেয়াদে পরিপূরক, দীর্ঘমেয়াদে বিকল্প। প্রযুক্তি বদলালে সম্পর্কটাও বদলায়।", en: "Complements in the short run and substitutes in the long run. Technology changes the relationship." },
+          tone: "warn",
+        },
+        {
+          text: { bn: "চা আর কফি, এফডিআর আর শেয়ার", en: "Tea and coffee, deposits and shares" },
+          note: { bn: "একটার দাম বা রিটার্ন বাড়লে কিছু মানুষ অন্যটায় সরে যান।", en: "When one gets dearer or pays better, some people move to the other." },
+          tone: "bad",
+        },
+      ],
+      caption: {
+        bn: "সম্পর্কটা চিরস্থায়ী নয়। প্রযুক্তি বদলালে পরিপূরক বিকল্প হয়ে যেতে পারে, আর সেটাই একটা খাত ধ্বংস হওয়ার চেহারা।",
+        en: "The relationship is not permanent. Technology can turn a complement into a substitute, and that is what the destruction of a sector looks like.",
+      },
+    },
+    "cs-match": {
+      kind: "match",
+      title: { bn: "একটা খবর, কার উপকার", en: "One headline, who benefits" },
+      note: { bn: "বাঁ দিকের খবরের সঙ্গে ডান দিকের সবচেয়ে সরাসরি উপকারভোগী মেলান।", en: "Match each headline with the most direct beneficiary." },
+      pairs: [
+        { left: { bn: "বড় সেতু প্রকল্প অনুমোদন", en: "A large bridge project is approved" }, right: { bn: "সিমেন্ট আর ইস্পাত", en: "Cement and steel" } },
+        { left: { bn: "নীতি সুদের হার কমল", en: "The policy rate is cut" }, right: { bn: "ঋণনির্ভর কোম্পানি আর আবাসন", en: "Indebted companies and housing" } },
+        { left: { bn: "আন্তর্জাতিক বাজারে তেলের দাম পড়ল", en: "The world oil price falls" }, right: { bn: "পরিবহন আর প্লাস্টিক", en: "Transport and plastics" } },
+        { left: { bn: "টাকা ডলারের বিপরীতে দুর্বল হলো", en: "The taka weakens against the dollar" }, right: { bn: "রপ্তানিমুখী পোশাক কোম্পানি", en: "Export-facing garment companies" } },
+        { left: { bn: "এফডিআরের সুদ ১১% এ উঠল", en: "Deposit rates reach 11%" }, right: { bn: "শেয়ারের দামে চাপ", en: "Pressure on share prices" } },
+        { left: { bn: "সরকার ওষুধের দাম বেঁধে দিল", en: "Medicine prices are capped" }, right: { bn: "ওষুধ কোম্পানির মুনাফার হারে চাপ", en: "Pressure on pharmaceutical margins" } },
+      ],
+    },
+    "cs-spot": {
+      kind: "spot",
+      title: { bn: "এই পোর্টফোলিওতে ছদ্মবেশী ঘনত্ব কোথায়", en: "Where is the hidden concentration here" },
+      note: { bn: "ছয়টা কোম্পানি, ছয়টা আলাদা খাত। যেগুলো আসলে একই ধাক্কায় নড়ে, সেগুলোতে চাপুন।", en: "Six companies in six different sectors. Press the ones that really move on the same shock." },
+      source: { bn: "একজন পাঠকের কাল্পনিক পোর্টফোলিও", en: "An imaginary reader's portfolio" },
+      lines: [
+        {
+          text: { bn: "একটা সিমেন্ট কোম্পানি, ২০%", en: "A cement company, 20%" },
+          flag: { bn: "নির্মাণের উপর নির্ভরশীল। এই তালিকার তিনটা কোম্পানির আয়ের মূল চালিকাশক্তি এক।", en: "Depends on construction. Three companies in this list share one driver." },
+        },
+        {
+          text: { bn: "একটা ইস্পাত ও রড উৎপাদনকারী, ১৮%", en: "A steel and rod producer, 18%" },
+          flag: { bn: "সিমেন্টের পরিপূরক। নির্মাণ থামলে দুইটাই একসঙ্গে থামে, খাত আলাদা হলেও।", en: "A complement to cement. If construction stops, both stop together, different sectors or not." },
+        },
+        {
+          text: { bn: "একটা ওষুধ কোম্পানি, ১৫%", en: "A pharmaceutical company, 15%" },
+        },
+        {
+          text: { bn: "একটা রঙ ও নির্মাণ রাসায়নিক কোম্পানি, ১৭%", en: "A paints and construction chemicals company, 17%" },
+          flag: { bn: "তৃতীয়টা। রসায়ন খাতে লেখা থাকলেও এর ক্রেতা নির্মাণ, তাই এটাও একই বাজি।", en: "The third one. Filed under chemicals, but its customer is construction, so it is the same bet." },
+        },
+        {
+          text: { bn: "একটা টেলিকম কোম্পানি, ১৫%", en: "A telecoms company, 15%" },
+        },
+        {
+          text: { bn: "একটা খাদ্য ও ভোগ্যপণ্য কোম্পানি, ১৫%", en: "A food and consumer goods company, 15%" },
+        },
+      ],
+    },
+    "cs-quiz": {
+      kind: "quiz",
+      title: { bn: "দুইটা প্রশ্ন", en: "Two questions" },
+      questions: [
+        {
+          ask: {
+            bn: "দুইটা কোম্পানি, একই মুনাফা আর একই দাম। প্রথমটার পণ্যের দশটা সহজ বিকল্প আছে, দ্বিতীয়টার নেই। দীর্ঘমেয়াদে কোনটা ভালো করার সম্ভাবনা বেশি?",
+            en: "Two companies with the same profit and the same price. The first has ten easy substitutes for its product, the second has none. Which is more likely to do better over the long run?",
+          },
+          options: [
+            {
+              text: { bn: "দ্বিতীয়টা, কারণ সে দাম বাড়াতে পারে", en: "The second, because it can raise prices" },
+              right: true,
+              why: {
+                bn: "ঠিক। বিকল্প না থাকা মানে ক্রেতার যাওয়ার জায়গা নেই, তাই খরচ বাড়লে কোম্পানি সেটা দামে চাপিয়ে দিতে পারে আর মুনাফার হার ধরে রাখতে পারে। দশ বছরের মূল্যস্ফীতির পরে এই একটা পার্থক্যই বিশাল হয়ে দাঁড়ায়।",
+                en: "Right. No substitutes means the buyer has nowhere to go, so a rise in costs can be passed into the price and the margin holds. After a decade of inflation that single difference becomes enormous.",
+              },
+            },
+            {
+              text: { bn: "প্রথমটা, কারণ প্রতিযোগিতা কোম্পানিকে দক্ষ করে", en: "The first, because competition makes a company efficient" },
+              why: {
+                bn: "প্রতিযোগিতা দক্ষতা বাড়ায় ঠিকই, কিন্তু দক্ষতার লাভটা প্রতিযোগিতার কারণেই ক্রেতার কাছে চলে যায়, শেয়ারহোল্ডারের কাছে নয়। ভালো ব্যবসা আর ভালো বিনিয়োগ এক জিনিস নয়।",
+                en: "Competition does drive efficiency, and competition also passes the benefit of that efficiency to customers rather than shareholders. A good business and a good investment are not the same thing.",
+              },
+            },
+            {
+              text: { bn: "দুইটাই সমান, কারণ মুনাফা আর দাম এক", en: "Equally, since profit and price are the same" },
+              why: {
+                bn: "আজকের মুনাফা এক, আগামী দশ বছরেরটা নয়। বিনিয়োগে আপনি আজকের সংখ্যা কেনেন না, ভবিষ্যতের ধারা কেনেন, আর দাম বাড়ানোর ক্ষমতা সেই ধারার সবচেয়ে বড় নির্ধারক।",
+                en: "Today's profit is the same; the next ten years are not. In investing you are not buying today's number but a future stream, and pricing power is the largest determinant of that stream.",
+              },
+            },
+          ],
+        },
+        {
+          ask: {
+            bn: "আপনার পোর্টফোলিওতে একটা সিমেন্ট, একটা ইস্পাত আর একটা নির্মাণ রাসায়নিক কোম্পানি আছে, তিনটা আলাদা খাতে। এটা কেমন বৈচিত্র্য?",
+            en: "Your portfolio holds a cement company, a steel company and a construction chemicals company, in three different sectors. How diversified is that?",
+          },
+          options: [
+            {
+              text: { bn: "ভালো, কারণ তিনটা আলাদা খাত", en: "Good, because they are three different sectors" },
+              why: {
+                bn: "খাতের তালিকা একটা শ্রেণিবিন্যাস, আর ঝুঁকি সেটা মানে না। তিনটারই ক্রেতা নির্মাণ খাত, তাই নির্মাণ থামলে তিনটাই একসঙ্গে থামবে, তালিকায় যাই লেখা থাক।",
+                en: "A sector list is a classification, and risk does not respect it. All three sell into construction, so if construction stops all three stop together, whatever the list says.",
+              },
+            },
+            {
+              text: { bn: "দুর্বল, কারণ তিনটারই আয় নির্মাণের উপর নির্ভরশীল", en: "Weak, because all three depend on construction" },
+              right: true,
+              why: {
+                bn: "ঠিক। এরা পরস্পরের পরিপূরক, তাই একই ধাক্কায় নড়ে। পরীক্ষাটা খাতের নাম নয়: প্রতিটার আয় কীসের উপর নির্ভর করে সেটা এক বাক্যে লিখুন, আর দেখুন বাক্যগুলোতে একই শব্দ আছে কি না।",
+                en: "Right. They are complements, so they move on the same shock. The test is not the sector label: write one sentence per holding on what its earnings depend on and see whether the sentences share a word.",
+              },
+            },
+            {
+              text: { bn: "নির্ভর করে তিনটার আকার কেমন তার উপর", en: "It depends on how big the three companies are" },
+              why: {
+                bn: "আকার ঠিক করে ধাক্কাটা কতটা লাগবে, ধাক্কাটা একসঙ্গে লাগবে কি না সেটা নয়। বৈচিত্র্যের প্রশ্নটা কারণ নিয়ে, আকার নিয়ে নয়।",
+                en: "Size decides how hard the shock lands, not whether it lands on all three at once. Diversification is a question about causes, not about size.",
+              },
+            },
+          ],
+        },
+      ],
+    },
+  },
+},
+
+/* ---------------------------------------------------------- */
+"bsec": {
+  bn: `
+<p>বাংলাদেশ সিকিউরিটিজ অ্যান্ড এক্সচেঞ্জ কমিশন, সংক্ষেপে বিএসইসি, দেশের পুঁজিবাজারের নিয়ন্ত্রক। এর কাজটা এক বাক্যে বলা যায়: <strong>বাজারে যারা টাকা রাখেন তাদের সুরক্ষা দেওয়া, নিয়ম বানিয়ে আর সেই নিয়ম প্রয়োগ করে।</strong></p>
+
+<p>একজন সাধারণ বিনিয়োগকারীর জন্য বিএসইসি জানা দরকার তিনটা কারণে: কোন তথ্য কোম্পানিকে দিতেই হবে সেটা এরা ঠিক করে, কোন আচরণ অবৈধ সেটা এরা ঠিক করে, আর কিছু ভুল হলে অভিযোগ কোথায় যাবে সেটাও এরাই।</p>
+
+<div class="at-a-glance">
+<p class="at-a-glance-label">এক নজরে</p>
+<ul>
+<li>বিএসইসি নিয়ম বানায়, ডিএসই সেই নিয়মে বাজার চালায়।</li>
+<li>কোম্পানিকে যা জানাতে হবে, তার তালিকা বিএসইসির।</li>
+<li>কারসাজি আর ভেতরের খবরে লেনদেন, দুইটাই অবৈধ।</li>
+<li>নিয়ন্ত্রক দামের নিশ্চয়তা দেয় না, প্রক্রিয়ার নিশ্চয়তা দেয়।</li>
+<li>অভিযোগের একটা পথ আছে, আর সেটা ব্রোকার দিয়ে শুরু হয়।</li>
+</ul>
+</div>
+
+<h2>কে কী করে</h2>
+
+${mount("bsec-compare")}
+
+<p>বিভাজনটা এভাবে মনে রাখা সহজ: বিএসইসি আইন লেখে, ডিএসই খেলাটা চালায়, আর সিডিবিএল হিসাব রাখে কার কী আছে। তিনটা আলাদা প্রতিষ্ঠান, আর তিনটার কাছে অভিযোগ করার বিষয়ও আলাদা।</p>
+
+<h2>তথ্য প্রকাশের নিয়ম, যা আপনার সবচেয়ে বড় সুরক্ষা</h2>
+
+<p>বিএসইসির সবচেয়ে গুরুত্বপূর্ণ কাজটা নাটকীয় নয়: এটা ঠিক করে দেয় একটা তালিকাভুক্ত কোম্পানিকে কী কী জানাতেই হবে, আর কখন।</p>
+
+<p>প্রান্তিক আর বার্ষিক আর্থিক বিবরণী, লভ্যাংশের ঘোষণা, পরিচালকদের শেয়ার কেনাবেচা, বড় চুক্তি, কারখানায় অগ্নিকাণ্ড, মামলার রায়: এগুলো ঘোষণা করতে হয়, আর এই ঘোষণাগুলো সবার জন্য একসঙ্গে প্রকাশ পায়। এই একটা নিয়মই আপনাকে আর একজন প্রতিষ্ঠানিক বিনিয়োগকারীকে প্রায় একই তথ্যের সামনে দাঁড় করায়।</p>
+
+<div class="note">
+<p>এই কারণেই "আমার একজন লোক আছে যে আগে খবর পায়" শুনলে সন্দেহ করা উচিত। যদি খবরটা সত্যিই মূল্য সংবেদনশীল হয় আর প্রকাশের আগে জানা যায়, তাহলে সেটার উপর লেনদেন করা অবৈধ। আর যদি খবরটা সবাই জানে, তাহলে সেটা দামে ঢুকে গেছে।</p>
+</div>
+
+<h2>যা অবৈধ, আর কেন</h2>
+
+${mount("bsec-flow")}
+
+<p><strong>কারসাজি</strong> মানে কৃত্রিমভাবে দাম বা লেনদেনের পরিমাণ বাড়ানো: নিজেদের মধ্যে কেনাবেচা করে ব্যস্ততার ভুয়া চেহারা তৈরি করা, বা একসঙ্গে কিনে দাম তুলে তারপর সাধারণ মানুষের কাছে বেচে দেওয়া। বাংলাদেশে ১৯৯৬ আর ২০১০ দুইবারই তদন্তে এই ধরনের আচরণ পাওয়া গেছে।</p>
+
+<p><strong>ভেতরের খবরে লেনদেন</strong> মানে প্রকাশিত হয়নি এমন মূল্য সংবেদনশীল তথ্য জেনে কেনাবেচা করা। এটা অবৈধ কারণ এটা বাজারকে অসম করে দেয়, আর অসম বাজারে সাধারণ মানুষ টাকা রাখা বন্ধ করে দেন, যা শেষমেশ সবার ক্ষতি।</p>
+
+<h2>নিয়ন্ত্রক কী দেয় আর কী দেয় না</h2>
+
+<p>এটা পরিষ্কার থাকা দরকার, কারণ ভুল প্রত্যাশা থেকেই সবচেয়ে বেশি হতাশা আসে।</p>
+
+<p>নিয়ন্ত্রক <strong>দেয়</strong>: তথ্য প্রকাশের বাধ্যবাধকতা, ব্রোকার আর অ্যাসেট ম্যানেজারদের লাইসেন্স আর তদারকি, অসদাচরণের তদন্ত আর শাস্তি, আর অভিযোগের একটা পথ।</p>
+
+<p>নিয়ন্ত্রক <strong>দেয় না</strong>: আপনার লোকসানের ক্ষতিপূরণ, একটা কোম্পানির ব্যবসা ভালো চলার নিশ্চয়তা, বা দাম পড়বে না এমন প্রতিশ্রুতি। একটা কোম্পানি নিয়ম মেনে চলেও দেউলিয়া হতে পারে, আর সেটা নিয়ন্ত্রকের ব্যর্থতা নয়।</p>
+
+<h2>কিছু ভুল হলে কোথায় যাবেন</h2>
+
+<p>ক্রমটা জানা থাকলে সময় বাঁচে। প্রথমে ব্রোকারেজ হাউসের কাছে লিখিত অভিযোগ, আর অবশ্যই লিখিত: ফোনে বলা কথার কোনো প্রমাণ থাকে না। সন্তুষ্ট না হলে ডিএসইর বিনিয়োগকারী অভিযোগ বিভাগ। তাতেও না হলে বিএসইসি।</p>
+
+${mount("bsec-drill")}
+
+<p>একটা কথা যা অনেকে দেরিতে শেখেন: কাগজ রাখুন। প্রতিটা কনট্রাক্ট নোট, প্রতিটা বিবৃতি, প্রতিটা ইমেইল। অভিযোগের সময় আপনার হাতে কী প্রমাণ আছে সেটাই ঠিক করে দেয় ফলাফল, আর প্রমাণ তৈরি করতে হয় ঘটনার আগে, পরে নয়।</p>
+
+${mount("bsec-quiz")}
+`,
+  en: `
+<p>The Bangladesh Securities and Exchange Commission, or BSEC, is the regulator of this country's capital market. Its job can be put in one sentence: <strong>to protect the people who put money into the market, by making rules and enforcing them.</strong></p>
+
+<p>An ordinary investor needs to know about BSEC for three reasons: it decides what information a company must publish, it decides which behaviour is illegal, and it is where a complaint eventually goes when something is wrong.</p>
+
+<div class="at-a-glance">
+<p class="at-a-glance-label">At a glance</p>
+<ul>
+<li>BSEC makes the rules; the DSE runs the market under them.</li>
+<li>The list of what a company must disclose is BSEC's.</li>
+<li>Manipulation and insider dealing are both illegal.</li>
+<li>A regulator guarantees process, not prices.</li>
+<li>There is a route for complaints, and it starts with your broker.</li>
+</ul>
+</div>
+
+<h2>Who does what</h2>
+
+${mount("bsec-compare")}
+
+<p>An easy way to hold the division in your head: BSEC writes the law, the DSE runs the game, and CDBL keeps the record of who owns what. Three separate institutions, and three different kinds of complaint.</p>
+
+<h2>Disclosure rules, your largest protection</h2>
+
+<p>BSEC's most important work is not dramatic: it sets out what a listed company must tell the public, and when.</p>
+
+<p>Quarterly and annual accounts, dividend declarations, directors buying or selling their own shares, large contracts, a fire at a factory, the outcome of a case: all of it must be announced, and announcements reach everybody at once. That single rule puts you and an institutional investor in front of substantially the same information.</p>
+
+<div class="note">
+<p>Which is why "I have someone who hears things early" should raise suspicion. If the news really is price sensitive and known before publication, trading on it is illegal. And if everybody knows it, it is already in the price.</p>
+</div>
+
+<h2>What is illegal, and why</h2>
+
+${mount("bsec-flow")}
+
+<p><strong>Manipulation</strong> means artificially inflating a price or a volume: trading between related accounts to fake activity, or buying together to push a price up and then selling into the public. Investigations into both 1996 and 2010 found behaviour of this kind.</p>
+
+<p><strong>Insider dealing</strong> means trading on price-sensitive information that has not been published. It is illegal because it makes the market unequal, and in an unequal market ordinary people stop putting money in, which harms everybody in the end.</p>
+
+<h2>What a regulator gives, and what it does not</h2>
+
+<p>Being clear about this matters, because most disappointment comes from the wrong expectation.</p>
+
+<p>A regulator <strong>gives</strong>: mandatory disclosure, licensing and supervision of brokers and asset managers, investigation and punishment of misconduct, and a route for complaints.</p>
+
+<p>A regulator <strong>does not give</strong>: compensation for your losses, a guarantee that a company's business goes well, or a promise that prices will not fall. A company can follow every rule and still fail, and that is not a regulatory failure.</p>
+
+<h2>Where to go when something goes wrong</h2>
+
+<p>Knowing the sequence saves time. First a written complaint to the brokerage house, and written matters: a telephone conversation leaves no evidence. If that fails, the DSE's investor complaint department. If that fails, BSEC.</p>
+
+${mount("bsec-drill")}
+
+<p>One thing many people learn late: keep the paperwork. Every contract note, every statement, every email. What decides the outcome of a complaint is what evidence you hold, and evidence has to be created before the event rather than after it.</p>
+
+${mount("bsec-quiz")}
+`,
+  blocks: {
+    "bsec-compare": {
+      kind: "compare",
+      title: { bn: "তিনটা প্রতিষ্ঠান, তিনটা কাজ", en: "Three institutions, three jobs" },
+      columns: [
+        { bn: "বিএসইসি", en: "BSEC" },
+        { bn: "ডিএসই", en: "DSE" },
+        { bn: "সিডিবিএল", en: "CDBL" },
+      ],
+      rows: [
+        {
+          label: { bn: "মূল কাজ", en: "Main job" },
+          cells: [
+            { bn: "নিয়ম বানানো আর প্রয়োগ", en: "Making and enforcing rules" },
+            { bn: "লেনদেনের জায়গা চালানো", en: "Running the place where trading happens" },
+            { bn: "কার কী শেয়ার আছে, তার হিসাব", en: "The record of who owns which shares" },
+          ],
+        },
+        {
+          label: { bn: "লাইসেন্স দেয়?", en: "Does it license?" },
+          cells: [{ bn: "হ্যাঁ, ব্রোকার আর ম্যানেজারদের", en: "Yes, brokers and managers" }, { bn: "সদস্যপদ দেয়", en: "It grants membership" }, { bn: "না", en: "No" }],
+        },
+        {
+          label: { bn: "কোম্পানি তালিকাভুক্তি", en: "Listing a company" },
+          cells: [{ bn: "অনুমোদন দেয়", en: "Approves it" }, { bn: "তালিকাভুক্ত করে", en: "Lists it" }, { bn: "শেয়ার ডিম্যাট করে", en: "Dematerialises the shares" }],
+        },
+        {
+          label: { bn: "অভিযোগ করার ক্রম", en: "Order for complaints" },
+          cells: [{ bn: "তৃতীয়", en: "Third" }, { bn: "দ্বিতীয়", en: "Second" }, { bn: "শেয়ার হস্তান্তরের ব্যাপারে", en: "For share transfer matters" }],
+        },
+      ],
+    },
+    "bsec-flow": {
+      kind: "figure",
+      shape: "flow",
+      title: { bn: "একটা মূল্য সংবেদনশীল খবরের পথ", en: "The path of a price-sensitive piece of news" },
+      note: { bn: "কোন ধাপে জেনে লেনদেন করলে সেটা অবৈধ, সেটাই মূল প্রশ্ন।", en: "The question is at which step trading on it becomes illegal." },
+      parts: [
+        { text: { bn: "ঘটনাটা ঘটে", en: "The event happens" }, note: { bn: "একটা বড় চুক্তি, একটা ক্ষতি, একটা লভ্যাংশ সিদ্ধান্ত", en: "A large contract, a loss, a dividend decision" } },
+        { text: { bn: "কোম্পানির ভেতরে কয়েকজন জানেন", en: "A few people inside know" }, note: { bn: "এখানে জেনে লেনদেন করা অবৈধ", en: "Trading on it here is illegal" }, tone: "bad" },
+        { text: { bn: "কোম্পানি ঘোষণা পাঠায়", en: "The company files the announcement" }, note: { bn: "ডিএসইর মাধ্যমে, সবার জন্য একসঙ্গে", en: "Through the exchange, to everybody at once" } },
+        { text: { bn: "সবাই জানেন", en: "Everybody knows" }, note: { bn: "এখান থেকে লেনদেন বৈধ, আর খবরটা দামে ঢুকতে শুরু করেছে", en: "From here trading is legal, and the news is already entering the price" }, tone: "good" },
+        { text: { bn: "দাম নতুন জায়গায় বসে", en: "The price settles at a new level" }, note: { bn: "সাধারণত মিনিট বা ঘণ্টার মধ্যে, দিনের মধ্যে নয়", en: "Usually within minutes or hours, not days" } },
+      ],
+      caption: {
+        bn: "দ্বিতীয় ধাপে যিনি কেনেন তিনি তৃতীয় ধাপে যিনি বেচেন তার কাছ থেকে কেনেন, যিনি জানেন না। এই অসমতাই আইনটা যা ঠেকাতে চায়।",
+        en: "Whoever buys at the second step buys from someone at the third who does not know. That inequality is what the law exists to prevent.",
+      },
+    },
+    "bsec-drill": {
+      kind: "drill",
+      title: { bn: "অভিযোগের পথটা আগে থেকে চিনে রাখুন", en: "Learn the complaint route before you need it" },
+      note: { bn: "সমস্যা হওয়ার আগে করলে দশ মিনিট, পরে করলে দশ দিন।", en: "Ten minutes if you do it before a problem, ten days if you do it after." },
+      steps: [
+        {
+          text: { bn: "বিএসইসির ওয়েবসাইট খুলুন আর বিনিয়োগকারী অভিযোগের পাতাটা খুঁজে বের করুন।", en: "Open the BSEC website and find the investor complaint page." },
+        },
+        {
+          text: { bn: "ডিএসইর সাইটে বিনিয়োগকারী অভিযোগ বিভাগের যোগাযোগের তথ্য বের করুন।", en: "Find the contact details for the DSE's investor complaint department." },
+        },
+        {
+          text: { bn: "আপনার ব্রোকারের অভিযোগ কর্মকর্তার নাম আর ইমেইল জেনে নিন।", en: "Get the name and email of your broker's complaints officer." },
+          hint: { bn: "প্রতিটা লাইসেন্সপ্রাপ্ত ব্রোকারের এই তথ্য দেওয়ার কথা। না দিলে সেটাও একটা তথ্য।", en: "Every licensed broker is meant to provide this. If yours will not, that is information too." },
+        },
+        {
+          text: { bn: "তিনটা যোগাযোগের তথ্য এক জায়গায় লিখে রাখুন।", en: "Write all three sets of contact details in one place." },
+        },
+        {
+          text: { bn: "আপনার শেষ তিনটা কনট্রাক্ট নোট খুঁজে বের করুন আর নিরাপদে রাখুন।", en: "Find your last three contract notes and store them safely." },
+          hint: { bn: "কাগজ বা পিডিএফ, দুইটাই চলে। যা চলে না তা হলো স্মৃতি।", en: "Paper or PDF, either works. What does not work is memory." },
+        },
+        {
+          text: { bn: "আপনার ব্রোকারের লাইসেন্স নম্বর বিএসইসির তালিকায় মিলিয়ে দেখুন।", en: "Check your broker's licence number against the BSEC list." },
+        },
+      ],
+    },
+    "bsec-quiz": {
+      kind: "quiz",
+      title: { bn: "দুইটা প্রশ্ন", en: "Two questions" },
+      questions: [
+        {
+          ask: {
+            bn: "আপনার একটা শেয়ারের দাম ৪০% পড়েছে কারণ কোম্পানির মুনাফা কমেছে। বিএসইসি কি আপনাকে ক্ষতিপূরণ দেবে?",
+            en: "One of your shares is down 40% because the company's profit fell. Will BSEC compensate you?",
+          },
+          options: [
+            {
+              text: { bn: "না, কারণ ব্যবসার ঝুঁকি নিয়ন্ত্রকের দায় নয়", en: "No, because business risk is not the regulator's responsibility" },
+              right: true,
+              why: {
+                bn: "ঠিক। নিয়ন্ত্রক নিশ্চিত করে যে তথ্য ঠিকমতো প্রকাশ হয়েছে আর কেউ প্রতারণা করেনি। কোম্পানির মুনাফা কমা একটা ব্যবসায়িক ঘটনা, আর সেই ঝুঁকি নেওয়াই বিনিয়োগ। ক্ষতিপূরণ তখনই প্রশ্ন যখন প্রতারণা বা নিয়ম ভঙ্গ প্রমাণিত হয়।",
+                en: "Right. The regulator ensures information was disclosed properly and nobody cheated. A fall in profit is a business event, and taking that risk is what investing is. Compensation only becomes a question where fraud or a breach is established.",
+              },
+            },
+            {
+              text: { bn: "হ্যাঁ, বিনিয়োগকারী সুরক্ষা তহবিল থেকে", en: "Yes, from an investor protection fund" },
+              why: {
+                bn: "এমন তহবিল কিছু ক্ষেত্রে থাকে, কিন্তু সেগুলো ব্রোকারের ব্যর্থতা বা প্রতারণার মতো নির্দিষ্ট পরিস্থিতির জন্য, বাজারের স্বাভাবিক লোকসানের জন্য নয়। কোনো ব্যবস্থাই দাম পড়ার বিরুদ্ধে বীমা দেয় না।",
+                en: "Such funds exist in some jurisdictions, and they cover specific situations like broker failure or fraud, not ordinary market losses. No system insures against prices falling.",
+              },
+            },
+            {
+              text: { bn: "হ্যাঁ, যদি আপনি ৩০ দিনের মধ্যে অভিযোগ করেন", en: "Yes, if you complain within 30 days" },
+              why: {
+                bn: "সময়সীমার সঙ্গে এর সম্পর্ক নেই। অভিযোগ করা যায় নিয়ম ভঙ্গ হলে, লোকসান হলে নয়। এই দুইটা আলাদা জিনিস, আর পার্থক্যটাই সবচেয়ে গুরুত্বপূর্ণ।",
+                en: "Deadlines have nothing to do with it. A complaint is about a breach of rules, not about a loss. Those are different things, and the difference is the whole point.",
+              },
+            },
+          ],
+        },
+        {
+          ask: {
+            bn: "আপনার এক পরিচিত বলছেন একটা কোম্পানির প্রান্তিক ফলাফল দুর্দান্ত আসবে, তিনি ভেতর থেকে জানেন, আর এখনো ঘোষণা হয়নি। কী করবেন?",
+            en: "An acquaintance says a company's quarterly results will be excellent, that they know from inside, and that nothing has been announced. What do you do?",
+          },
+          options: [
+            {
+              text: { bn: "দ্রুত কিনে ফেলি, ঘোষণার আগে", en: "Buy quickly, before the announcement" },
+              why: {
+                bn: "এটা ভেতরের খবরে লেনদেন, আর সেটা অবৈধ। আইনি ঝুঁকির বাইরেও একটা ব্যবহারিক কথা আছে: এই ধরনের বেশিরভাগ তথ্য ভুল, অতিরঞ্জিত বা ইতিমধ্যে দামে ঢুকে যাওয়া, তাই ঝুঁকিটা যতটা বড় সুবিধাটা ততটা নয়।",
+                en: "That is insider dealing and it is illegal. Beyond the legal risk there is a practical point: most such information is wrong, exaggerated or already in the price, so the risk is large and the edge is not.",
+              },
+            },
+            {
+              text: { bn: "কিছু করি না, আর ঘোষণার পর নিজের যুক্তিতে সিদ্ধান্ত নিই", en: "Do nothing, and decide on my own reasoning after the announcement" },
+              right: true,
+              why: {
+                bn: "ঠিক। ঘোষণার পর তথ্যটা সবার, আর তখন সিদ্ধান্তটা আপনার নিজের বিশ্লেষণ থেকে আসে। আরেকটা কথা মনে রাখুন: যিনি সত্যিই ভেতরের খবর জানেন তিনি সাধারণত সেটা বলে বেড়ান না।",
+                en: "Right. After the announcement the information belongs to everybody, and the decision comes from your own analysis. And remember: someone who genuinely has inside information does not usually go around sharing it.",
+              },
+            },
+            {
+              text: { bn: "অন্যদের বলে দিই, যাতে তারাও লাভ করতে পারেন", en: "Pass it on so others can benefit too" },
+              why: {
+                bn: "প্রকাশিত হয়নি এমন মূল্য সংবেদনশীল তথ্য ছড়ানো নিজেও একটা সমস্যা, আর আপনি এমন কিছু ছড়াচ্ছেন যার সত্যতা আপনি যাচাই করতে পারেননি। যদি তথ্যটা ভুল হয়, ক্ষতি হবে যারা আপনাকে বিশ্বাস করেছেন তাদের।",
+                en: "Passing on unpublished price-sensitive information is itself a problem, and you would be spreading something you cannot verify. If it is wrong, the people who trusted you are the ones who lose.",
+              },
+            },
+          ],
+        },
+      ],
+    },
+  },
+},
+
+/* ---------------------------------------------------------- */
+"exchanges-cdbl": {
+  bn: `
+<p>আপনি অ্যাপে কেনার বোতামে চাপ দিলেন। কয়েক সেকেন্ড পরে লেখা এল, হয়ে গেছে। এর মাঝখানে অন্তত চারটা প্রতিষ্ঠান কাজ করেছে, আর তাদের কে কী করল সেটা জানা থাকলে দুইটা জিনিস সহজ হয়: টাকা বা শেয়ার দেরিতে এলে কোথায় জিজ্ঞেস করবেন, আর কোনটা কার দোষ।</p>
+
+<p>এই লেখাটা একটা লেনদেনের পুরো যাত্রাটা দেখায়, শুরু থেকে শেষ পর্যন্ত।</p>
+
+<div class="at-a-glance">
+<p class="at-a-glance-label">এক নজরে</p>
+<ul>
+<li>ডিএসই আর সিএসই দুইটা এক্সচেঞ্জ, ঢাকা আর চট্টগ্রাম।</li>
+<li>এক্সচেঞ্জ কেবল মেলায়; শেয়ারের মালিকানার হিসাব রাখে সিডিবিএল।</li>
+<li>আপনার শেয়ার বিও অ্যাকাউন্টে থাকে, ব্রোকারের কাছে নয়।</li>
+<li>লেনদেন আর নিষ্পত্তি দুইটা আলাদা ধাপ, আর সময়ও আলাদা।</li>
+<li>সমস্যা হলে কোন ধাপে হয়েছে সেটাই প্রথম প্রশ্ন।</li>
+</ul>
+</div>
+
+<h2>একটা কেনার পুরো যাত্রা</h2>
+
+${mount("exch-flow")}
+
+<p>খেয়াল করুন ব্রোকার দুইবার আসেন: একবার আপনার অর্ডার এক্সচেঞ্জে পাঠাতে, আরেকবার নিষ্পত্তির সময় টাকা আর শেয়ারের হিসাব মেলাতে। এই কারণেই বেশিরভাগ সমস্যার প্রথম গন্তব্য ব্রোকার।</p>
+
+<h2>এক্সচেঞ্জ কী করে আর কী করে না</h2>
+
+<p>একটা এক্সচেঞ্জ একটা মেলানোর যন্ত্র। এটা সব ক্রেতার অর্ডার আর সব বিক্রেতার অর্ডার এক জায়গায় জড়ো করে আর নিয়ম মেনে মেলায়: সবচেয়ে ভালো দাম আগে, একই দামে হলে যে আগে এসেছে সে আগে।</p>
+
+<p>এক্সচেঞ্জ দাম ঠিক করে না, কোম্পানির মান যাচাই করে না, আর আপনার লাভ লোকসানের সঙ্গে এর কোনো সম্পর্ক নেই। যা করে তা হলো: একটা স্বচ্ছ, নিয়মমাফিক জায়গা দেওয়া যেখানে দাম প্রকাশ্যে তৈরি হয়। <a class="term" href="/money/terms/dse.html">ডিএসই</a> লেখাটা এই যন্ত্রটার ভেতরটা দেখায়।</p>
+
+${mount("exch-compare")}
+
+<p>সিএসই চট্টগ্রামের এক্সচেঞ্জ, আর এটা ডিএসইর চেয়ে ছোট। বেশিরভাগ কোম্পানি দুইটাতেই তালিকাভুক্ত, আর দাম দুই জায়গায় সামান্য আলাদা হতে পারে, কারণ দুইটার অর্ডার বই আলাদা। বেশিরভাগ ব্যক্তি বিনিয়োগকারীর লেনদেন ডিএসইতে হয়, কারণ সেখানেই তারল্য বেশি।</p>
+
+<h2>সিডিবিএল, যেখানে আপনার শেয়ার আসলে থাকে</h2>
+
+<p>এটা সবচেয়ে কম বোঝা প্রতিষ্ঠান, অথচ আপনার মালিকানার প্রমাণ এখানেই। সেন্ট্রাল ডিপোজিটরি বাংলাদেশ লিমিটেড ইলেকট্রনিক আকারে রাখে কার কোন শেয়ার কতটা আছে।</p>
+
+<p>এর মানে একটা গুরুত্বপূর্ণ কথা: <strong>আপনার শেয়ার ব্রোকারের সম্পত্তি নয়।</strong> সেগুলো আপনার <a class="term" href="/money/terms/bo-account.html">বিও অ্যাকাউন্টে</a> আছে, যা আপনার নামে। ব্রোকার আপনার প্রতিনিধি, রক্ষক নন। এই কাঠামোটাই কারণ যে একটা ব্রোকারেজ হাউস বন্ধ হয়ে গেলেও আপনার শেয়ারগুলো আপনারই থাকে, যদিও প্রক্রিয়াটা ঝামেলার হতে পারে।</p>
+
+<div class="note">
+<p>সিডিবিএল থেকে আপনি নিজের অ্যাকাউন্টের বিবরণী নিতে পারেন, ব্রোকারের দেওয়া কাগজের উপর নির্ভর না করেই। বছরে একবার এটা মিলিয়ে দেখা একটা ভালো অভ্যাস, বিশেষ করে যদি আপনার ব্রোকার আপনার হয়ে সিদ্ধান্ত নেওয়ার সুযোগ পান।</p>
+</div>
+
+<h2>নিষ্পত্তি: লেনদেন আর হাতে পাওয়া এক নয়</h2>
+
+<p>আপনি আজ কিনলেন। শেয়ারগুলো আজই আপনার বিও অ্যাকাউন্টে ঢোকে না, আর বেচলে টাকাও আজ হাতে আসে না। এর মাঝে একটা নিষ্পত্তি চক্র আছে, যা কয়েক কার্যদিবস, আর <a class="term" href="/money/basics-2/share-categories.html">ক্যাটাগরি</a> ভেদে আলাদা হতে পারে।</p>
+
+<p>এটা নিয়ে দুইটা ব্যবহারিক কথা। প্রথমত, বেচার টাকা দিয়ে একই দিনে আবার কেনা যায় কি না, সেটা ব্রোকারের নিয়ম আর নিষ্পত্তির শর্তের উপর নির্ভর করে, তাই আগে জেনে নিন। দ্বিতীয়ত, যদি আপনার একটা নির্দিষ্ট তারিখে টাকা দরকার হয়, তাহলে নিষ্পত্তির দিন গুনে অন্তত এক সপ্তাহ আগে বেচুন।</p>
+
+${mount("exch-order")}
+
+<h2>কোথায় কোন অভিযোগ</h2>
+
+<p>সমস্যাটা কোন ধাপে, সেটাই ঠিক করে কার কাছে যাবেন। অর্ডার ঠিকমতো যায়নি, ভুল দামে হয়েছে, বা কমিশন বেশি কাটা হয়েছে: এগুলো ব্রোকারের। শেয়ার বিও অ্যাকাউন্টে ঢোকেনি বা মালিকানার হিসাবে গরমিল: এটা সিডিবিএলের দিক, তবে অভিযোগ ব্রোকারের মাধ্যমেই শুরু হয়। বাজারের নিয়ম নিয়ে অভিযোগ: ডিএসই, আর তারপর <a class="term" href="/money/basics-2/bsec.html">বিএসইসি</a>।</p>
+
+${mount("exch-quiz")}
+
+<div class="checklist">
+<ul>
+<li>আপনার বিও অ্যাকাউন্ট নম্বরটা লিখে নিরাপদে রাখুন।</li>
+<li>আপনার শেষ কনট্রাক্ট নোটে নিষ্পত্তির তারিখটা খুঁজে বের করুন।</li>
+<li>ব্রোকারকে জিজ্ঞেস করুন বেচার টাকা কবে তোলা যায়।</li>
+<li>সিডিবিএলের বিবরণী কীভাবে পাওয়া যায়, জেনে রাখুন।</li>
+</ul>
+</div>
+`,
+  en: `
+<p>You press buy in the app. A few seconds later it says done. In between, at least four institutions did something, and knowing who did what makes two things easier: where to ask when money or shares arrive late, and whose fault it is.</p>
+
+<p>This lesson follows one transaction the whole way through.</p>
+
+<div class="at-a-glance">
+<p class="at-a-glance-label">At a glance</p>
+<ul>
+<li>The DSE and CSE are two exchanges, in Dhaka and Chittagong.</li>
+<li>An exchange only matches; the record of ownership is kept by CDBL.</li>
+<li>Your shares sit in your BO account, not with your broker.</li>
+<li>Trading and settlement are two separate steps, on different clocks.</li>
+<li>When something goes wrong, the first question is which step it went wrong at.</li>
+</ul>
+</div>
+
+<h2>The whole journey of one purchase</h2>
+
+${mount("exch-flow")}
+
+<p>Notice the broker appears twice: once to send your order to the exchange, and again at settlement to reconcile money and shares. Which is why most problems begin at the broker.</p>
+
+<h2>What an exchange does and does not do</h2>
+
+<p>An exchange is a matching machine. It gathers every buyer's order and every seller's order in one place and matches them by rule: best price first, and among equal prices, whoever arrived first.</p>
+
+<p>An exchange does not set prices, does not judge the quality of a company, and has nothing to do with your gains or losses. What it does is provide a transparent, rule-bound place where prices are made in the open. The lesson on <a class="term" href="/money/terms/dse.html">the DSE</a> looks inside that machine.</p>
+
+${mount("exch-compare")}
+
+<p>The CSE is Chittagong's exchange and it is smaller than the DSE. Most companies are listed on both, and prices can differ slightly between them, because the two order books are separate. Most individual trading happens on the DSE, because that is where the liquidity is.</p>
+
+<h2>CDBL, where your shares actually sit</h2>
+
+<p>This is the least understood institution, and yet the proof of your ownership lives there. Central Depository Bangladesh Limited holds, electronically, the record of who owns how much of what.</p>
+
+<p>Which means something important: <strong>your shares are not your broker's property.</strong> They sit in your <a class="term" href="/money/terms/bo-account.html">BO account</a>, in your name. The broker is your agent, not your custodian. That structure is why your shares remain yours even if a brokerage house closes, though the process can be troublesome.</p>
+
+<div class="note">
+<p>You can obtain a statement of your account from CDBL rather than relying on the paperwork your broker sends. Reconciling the two once a year is a good habit, especially if your broker has any discretion over your account.</p>
+</div>
+
+<h2>Settlement: trading and receiving are not the same</h2>
+
+<p>You buy today. The shares do not arrive in your BO account today, and if you sell, the money does not arrive today either. In between is a settlement cycle, a few working days, and it can differ by <a class="term" href="/money/basics-2/share-categories.html">category</a>.</p>
+
+<p>Two practical points follow. First, whether you can buy again the same day with the proceeds of a sale depends on your broker's rules and settlement terms, so ask beforehand. Second, if you need money on a particular date, count the settlement days and sell at least a week early.</p>
+
+${mount("exch-order")}
+
+<h2>Which complaint goes where</h2>
+
+<p>Which step went wrong decides where you go. The order was not sent, was filled at the wrong price, or the commission was overcharged: those are the broker's. Shares did not arrive in the BO account, or the ownership record disagrees: that is the CDBL side, though the complaint still starts with your broker. A complaint about market rules: the DSE, and then <a class="term" href="/money/basics-2/bsec.html">BSEC</a>.</p>
+
+${mount("exch-quiz")}
+
+<div class="checklist">
+<ul>
+<li>Write down your BO account number and store it safely.</li>
+<li>Find the settlement date on your most recent contract note.</li>
+<li>Ask your broker when the proceeds of a sale can be withdrawn.</li>
+<li>Learn how to obtain a CDBL statement.</li>
+</ul>
+</div>
+`,
+  blocks: {
+    "exch-flow": {
+      kind: "figure",
+      shape: "flow",
+      title: { bn: "বোতাম থেকে বিও অ্যাকাউন্ট", en: "From the button to the BO account" },
+      note: { bn: "প্রতিটা ধাপে আলাদা একটা প্রতিষ্ঠান, আর আলাদা একটা সম্ভাব্য সমস্যা।", en: "A different institution at each step, and a different thing that can go wrong." },
+      parts: [
+        { text: { bn: "আপনি অর্ডার দিলেন", en: "You place the order" }, note: { bn: "অ্যাপ বা টার্মিনালে, ব্রোকারের কাছে", en: "In an app or terminal, to your broker" } },
+        { text: { bn: "ব্রোকার এক্সচেঞ্জে পাঠালেন", en: "The broker routes it to the exchange" }, note: { bn: "এখানে দেরি হলে দাম বদলে যেতে পারে", en: "A delay here can change the price you get" } },
+        { text: { bn: "এক্সচেঞ্জ মেলাল", en: "The exchange matches it" }, note: { bn: "সেরা দাম আগে, একই দামে আগে আসা আগে", en: "Best price first, and among equals whoever arrived first" }, tone: "lead" },
+        { text: { bn: "নিষ্পত্তি", en: "Settlement" }, note: { bn: "কয়েক কার্যদিবস। টাকা যায়, শেয়ার আসে।", en: "A few working days. Money goes out, shares come in." }, tone: "warn" },
+        { text: { bn: "সিডিবিএলে মালিকানা বদলাল", en: "CDBL updates the ownership record" }, note: { bn: "এখান থেকে শেয়ারগুলো আপনার নামে, আপনার বিও অ্যাকাউন্টে", en: "From here the shares are in your name, in your BO account" }, tone: "good" },
+      ],
+      caption: {
+        bn: "লেনদেন হয় সেকেন্ডে, মালিকানা বদলায় দিনে। এই দুইটার পার্থক্যই বেশিরভাগ বিভ্রান্তির উৎস।",
+        en: "The trade takes seconds and the ownership takes days. The gap between the two causes most of the confusion.",
+      },
+    },
+    "exch-compare": {
+      kind: "compare",
+      title: { bn: "তিনটা প্রতিষ্ঠান, তিনটা ভূমিকা", en: "Three institutions, three roles" },
+      columns: [
+        { bn: "ডিএসই", en: "DSE" },
+        { bn: "সিএসই", en: "CSE" },
+        { bn: "সিডিবিএল", en: "CDBL" },
+      ],
+      rows: [
+        {
+          label: { bn: "কী করে", en: "What it does" },
+          cells: [
+            { bn: "ঢাকার এক্সচেঞ্জ, অর্ডার মেলায়", en: "Dhaka's exchange, matches orders" },
+            { bn: "চট্টগ্রামের এক্সচেঞ্জ, একই কাজ", en: "Chittagong's exchange, the same job" },
+            { bn: "মালিকানার ইলেকট্রনিক হিসাব রাখে", en: "Keeps the electronic ownership record" },
+          ],
+        },
+        {
+          label: { bn: "তারল্য", en: "Liquidity" },
+          cells: [{ bn: "বেশি", en: "Higher" }, { bn: "কম", en: "Lower" }, { bn: "প্রযোজ্য নয়", en: "Not applicable" }],
+          best: 0,
+        },
+        {
+          label: { bn: "আপনার শেয়ার কি এখানে থাকে?", en: "Do your shares sit here?" },
+          cells: [{ bn: "না", en: "No" }, { bn: "না", en: "No" }, { bn: "হ্যাঁ, আপনার বিও অ্যাকাউন্টে", en: "Yes, in your BO account" }],
+        },
+        {
+          label: { bn: "দাম ঠিক করে?", en: "Does it set the price?" },
+          cells: [{ bn: "না, মেলায় মাত্র", en: "No, it only matches" }, { bn: "না", en: "No" }, { bn: "না", en: "No" }],
+        },
+      ],
+    },
+    "exch-order": {
+      kind: "order",
+      title: { bn: "একটা লেনদেনের ক্রম সাজান", en: "Put the steps of a trade in order" },
+      note: { bn: "বোতাম চাপা থেকে শেয়ার হাতে আসা পর্যন্ত।", en: "From pressing the button to the shares arriving." },
+      items: [
+        { text: { bn: "আপনি অ্যাপে লিমিট অর্ডার দিলেন", en: "You place a limit order in the app" } },
+        { text: { bn: "ব্রোকার অর্ডারটা এক্সচেঞ্জের বইতে পাঠালেন", en: "The broker sends it to the exchange's book" } },
+        { text: { bn: "একজন বিক্রেতার দামের সঙ্গে মিলে গেল", en: "It matches a seller's price" } },
+        { text: { bn: "কনট্রাক্ট নোট তৈরি হলো", en: "A contract note is produced" }, why: { bn: "এটাই আপনার প্রমাণ, তাই সংরক্ষণ করুন।", en: "This is your evidence; keep it." } },
+        { text: { bn: "নিষ্পত্তির দিনে টাকা কাটা হলো", en: "The money is taken on the settlement day" } },
+        { text: { bn: "সিডিবিএলে শেয়ার আপনার বিও অ্যাকাউন্টে জমা হলো", en: "CDBL credits the shares to your BO account" }, why: { bn: "এখান থেকে আপনি আইনত মালিক।", en: "From here you are the legal owner." } },
+      ],
+    },
+    "exch-quiz": {
+      kind: "quiz",
+      title: { bn: "দুইটা প্রশ্ন", en: "Two questions" },
+      questions: [
+        {
+          ask: {
+            bn: "আপনার ব্রোকারেজ হাউস হঠাৎ বন্ধ হয়ে গেল। আপনার শেয়ারগুলোর কী হবে?",
+            en: "Your brokerage house suddenly shuts down. What happens to your shares?",
+          },
+          options: [
+            {
+              text: { bn: "সেগুলো আপনার বিও অ্যাকাউন্টেই থাকে, কারণ মালিকানা সিডিবিএলের হিসাবে", en: "They stay in your BO account, because the ownership record is at CDBL" },
+              right: true,
+              why: {
+                bn: "ঠিক। এই কাঠামোটাই ডিম্যাট ব্যবস্থার সবচেয়ে বড় সুবিধা: শেয়ার ব্রোকারের ব্যালান্স শিটে নেই, আপনার নামের অ্যাকাউন্টে আছে। প্রক্রিয়াটা ঝামেলার হতে পারে আর সময় লাগতে পারে, কিন্তু মালিকানা নিয়ে প্রশ্ন থাকে না।",
+                en: "Right. That structure is the largest benefit of the dematerialised system: the shares are not on the broker's balance sheet, they are in an account in your name. The process can be slow and troublesome, but the ownership is not in question.",
+              },
+            },
+            {
+              text: { bn: "শেয়ারগুলো ব্রোকারের সম্পত্তি হিসেবে বিক্রি হয়ে যাবে", en: "They are sold as the broker's assets" },
+              why: {
+                bn: "না, আর এই ভুল ধারণাটা অনেকের আছে। ব্রোকার আপনার প্রতিনিধি, মালিক নন। তবে ব্রোকারের কাছে থাকা আপনার নগদ টাকা আলাদা প্রশ্ন, আর সেটাই বেশি ঝুঁকির।",
+                en: "No, and this misconception is common. The broker is your agent, not your owner. Cash held with the broker is a separate question, and it is the riskier one.",
+              },
+            },
+            {
+              text: { bn: "ডিএসই আপনার শেয়ার ধরে রাখে", en: "The DSE holds your shares" },
+              why: {
+                bn: "এক্সচেঞ্জ কোনো শেয়ার ধরে রাখে না। এটা কেবল অর্ডার মেলায়। হিসাব রাখার কাজটা সিডিবিএলের, আর দুইটা আলাদা প্রতিষ্ঠান।",
+                en: "An exchange holds no shares. It only matches orders. Record keeping belongs to CDBL, and they are separate institutions.",
+              },
+            },
+          ],
+        },
+        {
+          ask: {
+            bn: "আপনার ২০ তারিখে একটা নির্দিষ্ট অঙ্কের টাকা দরকার, আর সেটা শেয়ার বেচে আসবে। কবে বেচা উচিত?",
+            en: "You need a specific sum on the 20th, and it will come from selling shares. When should you sell?",
+          },
+          options: [
+            {
+              text: { bn: "১৯ তারিখে, তাহলে বাজারের সর্বশেষ দাম পাব", en: "On the 19th, to get the latest price" },
+              why: {
+                bn: "নিষ্পত্তি কয়েক কার্যদিবস নেয়, তাই ১৯ তারিখে বেচলে ২০ তারিখে টাকা হাতে থাকার সম্ভাবনা কম। ছুটি পড়লে আরও দেরি।",
+                en: "Settlement takes a few working days, so selling on the 19th is unlikely to put money in your hand on the 20th. A holiday makes it later still.",
+              },
+            },
+            {
+              text: { bn: "অন্তত এক সপ্তাহ আগে, নিষ্পত্তি আর ছুটির দিন হিসাব করে", en: "At least a week early, counting settlement and holidays" },
+              right: true,
+              why: {
+                bn: "ঠিক। নিষ্পত্তির দিন, ব্যাংকে টাকা পৌঁছানোর সময় আর সাপ্তাহিক ছুটি, তিনটাই যোগ হয়। আর একটা বাড়তি সুবিধা আছে: তাড়াহুড়ো না থাকলে আপনি খারাপ দামে বেচতে বাধ্য হন না।",
+                en: "Right. Settlement days, the time for money to reach the bank and weekends all add up. There is a second benefit too: without a rush you are not forced to sell at a bad price.",
+              },
+            },
+            {
+              text: { bn: "২০ তারিখ সকালে, বাজার খোলার সঙ্গে সঙ্গে", en: "On the morning of the 20th, at the open" },
+              why: {
+                bn: "লেনদেন হবে সেই দিনই, কিন্তু টাকা আসবে না। লেনদেন আর নিষ্পত্তি দুইটা আলাদা ঘড়িতে চলে, আর এই পার্থক্যটাই এখানে গুরুত্বপূর্ণ।",
+                en: "The trade happens that day and the money does not arrive. Trading and settlement run on separate clocks, and that difference is the whole point here.",
+              },
+            },
+          ],
+        },
+      ],
+    },
+  },
+},
+
+/* ---------------------------------------------------------- */
+"bangladesh-bank": {
+  bn: `
+<p>বাংলাদেশ ব্যাংক দেশের কেন্দ্রীয় ব্যাংক, আর একজন বিনিয়োগকারীর দৃষ্টিতে এর গুরুত্ব একটা কারণে: <strong>এই একটা প্রতিষ্ঠান টাকার দাম ঠিক করে, আর টাকার দাম বদলালে বাজারের প্রায় সবকিছু বদলায়।</strong></p>
+
+<p>এই লেখাটা কেন্দ্রীয় ব্যাংকের কাজগুলোর তালিকা নয়। এটা দেখায় কেন্দ্রীয় ব্যাংকের একটা সিদ্ধান্ত কীভাবে ধাপে ধাপে আপনার শেয়ারের দামে গিয়ে পৌঁছায়, আর খবরে কী দেখলে সতর্ক হতে হয়।</p>
+
+<div class="at-a-glance">
+<p class="at-a-glance-label">এক নজরে</p>
+<ul>
+<li>নীতি সুদের হার বাড়ানো মানে অর্থনীতিতে টাকার দাম বাড়ানো।</li>
+<li>সুদ বাড়লে ঋণনির্ভর কোম্পানির মুনাফা কমে আর এফডিআর আকর্ষণীয় হয়।</li>
+<li>মুদ্রাস্ফীতি বেশি হলে কেন্দ্রীয় ব্যাংক সুদ বাড়ায়, এটাই স্বাভাবিক প্রতিক্রিয়া।</li>
+<li>রিজার্ভ আর বিনিময় হারও এদের এখতিয়ারে, আর সেটা আমদানিনির্ভর কোম্পানির খরচে ঢোকে।</li>
+<li>মুদ্রানীতি বিবৃতি বছরে কয়েকবার আসে আর পড়ার মতো।</li>
+</ul>
+</div>
+
+<h2>একটা সিদ্ধান্ত, আর তার যাত্রা</h2>
+
+${mount("bb-flow")}
+
+<p>শৃঙ্খলটা লম্বা, আর প্রতিটা ধাপে কিছু সময় লাগে। এই কারণেই সুদের হারের সিদ্ধান্তের প্রভাব সঙ্গে সঙ্গে দেখা যায় না, আর যখন দেখা যায় তখন অনেকে অন্য কারণ খোঁজেন।</p>
+
+<h2>কেন্দ্রীয় ব্যাংকের হাতের যন্ত্রগুলো</h2>
+
+${mount("bb-match")}
+
+<p>প্রতিটা যন্ত্রের একটা উদ্দেশ্য আছে, আর প্রায় প্রতিটার একটা পার্শ্বপ্রতিক্রিয়া। সুদ বাড়ালে মুদ্রাস্ফীতি কমতে পারে আর প্রবৃদ্ধিও কমে। রিজার্ভ থেকে ডলার বিক্রি করলে টাকার মান ধরে রাখা যায় আর রিজার্ভ কমে। ঝুঁকিহীন সিদ্ধান্ত কেন্দ্রীয় ব্যাংকের হাতে নেই, কেবল ঝুঁকির বিনিময় আছে।</p>
+
+<h2>সুদের হার আর শেয়ারের দাম</h2>
+
+<p>সম্পর্কটা দুইভাবে কাজ করে, আর দুইটাই একই দিকে ঠেলে।</p>
+
+<p><strong>কোম্পানির দিক।</strong> যাদের ঋণ আছে তাদের সুদ খরচ বাড়ে, তাই মুনাফা কমে। নির্মাণ আর ভোগ্যপণ্যের চাহিদাও কমে, কারণ মানুষ কম ধার করে। এটা আয়ের দিক থেকে চাপ।</p>
+
+<p><strong>বিনিয়োগকারীর দিক।</strong> <a class="term" href="/money/terms/fdr.html">এফডিআর</a> বা <a class="term" href="/money/terms/treasury-bill.html">ট্রেজারি বিলে</a> ভালো রিটার্ন পাওয়া গেলে শেয়ারের ঝুঁকি নেওয়ার প্রয়োজন কমে যায়, তাই কিছু টাকা বাজার থেকে সরে যায়। এটা চাহিদার দিক থেকে চাপ।</p>
+
+${mount("bb-lab")}
+
+<p>যন্ত্রটাতে দুইটা জিনিস আলাদা করে নাড়িয়ে দেখুন: কোম্পানির ঋণ, আর সুদের হারের পরিবর্তন। বেশি ঋণওয়ালা কোম্পানিতে একই পরিবর্তন অনেক বেশি ক্ষতি করে, আর এটাই সুদ বাড়ার সময় প্রথমে দেখার জিনিস।</p>
+
+<h2>বিনিময় হার আর রিজার্ভ</h2>
+
+<p>বাংলাদেশ ব্যাংক বিনিময় হারের ব্যবস্থাপনায় ভূমিকা রাখে, আর এটা সরাসরি কোম্পানির খরচে যায়। <a class="term" href="/money/basics-2/interest-and-taka.html">সুদের হার আর টাকার মান</a> লেখাটা সেই শৃঙ্খলটা দেখিয়েছে। এখানে যোগ করার মতো একটা কথা: রিজার্ভ কমতে থাকলে আমদানির উপর বিধিনিষেধ আসতে পারে, আর সেটা যেসব কোম্পানি কাঁচামাল আমদানি করে তাদের উৎপাদনে সরাসরি আঘাত করে।</p>
+
+<div class="ex">
+<p><strong>একটা শৃঙ্খল, শুরু থেকে শেষ।</strong> রিজার্ভ চাপে পড়ল, তাই এলসি খোলা কঠিন হলো। একটা ইস্পাত কোম্পানি সময়মতো কাঁচামাল আনতে পারল না, তাই উৎপাদন কমল। বিক্রি কমল, কিন্তু স্থায়ী খরচ একই থাকল, তাই মুনাফার হার পড়ল। তিন মাস পরের প্রান্তিক ফলাফলে এটা দেখা গেল, আর তখন শেয়ারের দাম পড়ল। যিনি প্রথম ধাপটা দেখেছিলেন তিনি তিন মাস আগে জানতেন।</p>
+</div>
+
+<h2>মুদ্রানীতি বিবৃতি পড়া</h2>
+
+<p>বাংলাদেশ ব্যাংক নিয়মিত মুদ্রানীতি বিবৃতি প্রকাশ করে, আর এটা একজন বিনিয়োগকারীর জন্য বিনামূল্যের একটা ভালো তথ্যসূত্র। পুরোটা পড়ার দরকার নেই। তিনটা জিনিস খুঁজুন: নীতি সুদের হার নিয়ে কী বলা হয়েছে, মুদ্রাস্ফীতির লক্ষ্য কত, আর ঋণ প্রবৃদ্ধির লক্ষ্য কী।</p>
+
+<p>এই তিনটা থেকেই আপনি আগামী কয়েক মাসের দিকটা আন্দাজ করতে পারবেন, আর সেটা আপনার পোর্টফোলিওতে ঋণনির্ভর কোম্পানির ওজন কত হওয়া উচিত সেই সিদ্ধান্তে কাজে লাগবে।</p>
+
+<div class="checklist">
+<ul>
+<li>বাংলাদেশ ব্যাংকের সাইটে সর্বশেষ মুদ্রানীতি বিবৃতিটা খুঁজে বের করুন।</li>
+<li>বর্তমান নীতি সুদের হার লিখে রাখুন।</li>
+<li>আপনার প্রতিটা শেয়ারের ঋণ ইকুইটির তুলনায় কত, দেখুন।</li>
+<li>যেগুলোর ঋণ বেশি, সেগুলোর সুদ খরচ গত বছরের তুলনায় কত বেড়েছে দেখুন।</li>
+</ul>
+</div>
+
+${mount("bb-quiz")}
+`,
+  en: `
+<p>Bangladesh Bank is the country's central bank, and from an investor's point of view it matters for one reason: <strong>this single institution sets the price of money, and when the price of money changes, almost everything in the market changes.</strong></p>
+
+<p>This lesson is not a list of a central bank's functions. It traces how one decision there travels, step by step, to the price of your shares, and what to watch for in the news.</p>
+
+<div class="at-a-glance">
+<p class="at-a-glance-label">At a glance</p>
+<ul>
+<li>Raising the policy rate means raising the price of money in the economy.</li>
+<li>Higher rates cut the profits of indebted companies and make deposits attractive.</li>
+<li>When inflation is high a central bank raises rates; that is the normal response.</li>
+<li>Reserves and the exchange rate are also theirs, and they enter the costs of importers.</li>
+<li>The monetary policy statement comes out several times a year and is worth reading.</li>
+</ul>
+</div>
+
+<h2>One decision, and its journey</h2>
+
+${mount("bb-flow")}
+
+<p>The chain is long and each step takes time. That is why the effect of a rate decision is not visible immediately, and why, when it does become visible, many people go looking for a different explanation.</p>
+
+<h2>The tools in a central bank's hands</h2>
+
+${mount("bb-match")}
+
+<p>Each tool has a purpose and nearly every one has a side effect. Raising rates may lower inflation and it lowers growth too. Selling dollars from reserves supports the taka and depletes the reserves. A central bank has no risk-free decisions available, only exchanges of one risk for another.</p>
+
+<h2>Interest rates and share prices</h2>
+
+<p>The relationship works in two directions, and both push the same way.</p>
+
+<p><strong>The company side.</strong> Anyone with debt pays more interest, so profits fall. Demand for construction and consumer goods also falls, because people borrow less. That is pressure on earnings.</p>
+
+<p><strong>The investor side.</strong> When <a class="term" href="/money/terms/fdr.html">fixed deposits</a> or <a class="term" href="/money/terms/treasury-bill.html">treasury bills</a> pay well, there is less need to take share risk, so some money leaves the market. That is pressure on demand.</p>
+
+${mount("bb-lab")}
+
+<p>Move two things separately in the tool: the company's debt, and the change in rates. The same change hurts a heavily indebted company far more, and that is the first thing to look at when rates are rising.</p>
+
+<h2>The exchange rate and reserves</h2>
+
+<p>Bangladesh Bank plays a role in managing the exchange rate, and that goes straight into company costs. The lesson on <a class="term" href="/money/basics-2/interest-and-taka.html">interest rates and the taka</a> traced that chain. One thing to add here: when reserves come under pressure, restrictions on imports can follow, and those hit production directly at any company that imports its raw materials.</p>
+
+<div class="ex">
+<p><strong>One chain, start to finish.</strong> Reserves came under pressure, so opening letters of credit became difficult. A steel company could not bring in raw material on time, so output fell. Sales fell while fixed costs stayed the same, so margins dropped. It showed up in the quarterly results three months later, and the share price fell then. Anyone watching the first step knew three months earlier.</p>
+</div>
+
+<h2>Reading the monetary policy statement</h2>
+
+<p>Bangladesh Bank publishes a monetary policy statement regularly, and it is a good free source for an investor. You do not have to read all of it. Look for three things: what is said about the policy rate, what the inflation target is, and what the target is for credit growth.</p>
+
+<p>Those three give you a direction for the next few months, and that feeds directly into how much weight indebted companies should have in your portfolio.</p>
+
+<div class="checklist">
+<ul>
+<li>Find the latest monetary policy statement on the Bangladesh Bank site.</li>
+<li>Write down the current policy rate.</li>
+<li>Check the debt against equity for each of your holdings.</li>
+<li>For the indebted ones, see how much their interest bill grew against last year.</li>
+</ul>
+</div>
+
+${mount("bb-quiz")}
+`,
+  blocks: {
+    "bb-flow": {
+      kind: "figure",
+      shape: "flow",
+      title: { bn: "নীতি সুদের হার থেকে আপনার শেয়ার", en: "From the policy rate to your shares" },
+      note: { bn: "প্রতিটা তীরে কয়েক সপ্তাহ থেকে কয়েক মাস সময় লাগে।", en: "Each arrow takes weeks or months." },
+      parts: [
+        { text: { bn: "নীতি সুদের হার বাড়ল", en: "The policy rate rises" }, note: { bn: "কেন্দ্রীয় ব্যাংক ব্যাংকগুলোকে যে দামে টাকা ধার দেয়", en: "The price at which the central bank lends to banks" }, tone: "lead" },
+        { text: { bn: "ব্যাংকের ঋণের সুদ বাড়ল", en: "Bank lending rates rise" }, note: { bn: "নতুন ঋণে আগে, চলতি ঋণে পরে", en: "New loans first, existing ones later" } },
+        { text: { bn: "কোম্পানির সুদ খরচ বাড়ল", en: "Company interest bills rise" }, note: { bn: "যাদের ঋণ বেশি তাদের বেশি", en: "Most for those with the most debt" }, tone: "warn" },
+        { text: { bn: "মুনাফা কমল, চাহিদাও কমল", en: "Profits fall, and so does demand" }, note: { bn: "মানুষও কম ধার করে, তাই বিক্রি কমে", en: "People borrow less too, so sales fall" }, tone: "bad" },
+        { text: { bn: "শেয়ারের দামে চাপ", en: "Pressure on share prices" }, note: { bn: "একই সঙ্গে এফডিআর আকর্ষণীয় হওয়ায় টাকাও সরে যায়", en: "And money leaves as deposits become attractive" }, tone: "bad" },
+      ],
+      caption: {
+        bn: "উল্টো দিকেও একইভাবে কাজ করে। সুদ কমলে এই শৃঙ্খলের প্রতিটা ধাপ বিপরীত দিকে চলে, আর সেটাও কয়েক মাস সময় নেয়।",
+        en: "It works the same way in reverse. When rates fall every step runs the other way, and that also takes months.",
+      },
+    },
+    "bb-match": {
+      kind: "match",
+      title: { bn: "যন্ত্র আর তার কাজ", en: "Tool and purpose" },
+      note: { bn: "কেন্দ্রীয় ব্যাংকের হাতিয়ারগুলোর সঙ্গে সেগুলোর মূল উদ্দেশ্য মেলান।", en: "Match each central bank tool with what it is mainly for." },
+      pairs: [
+        { left: { bn: "নীতি সুদের হার", en: "The policy rate" }, right: { bn: "অর্থনীতিতে টাকার দাম ঠিক করা", en: "Setting the price of money in the economy" } },
+        { left: { bn: "নগদ জমার অনুপাত", en: "The cash reserve ratio" }, right: { bn: "ব্যাংক কতটা ঋণ দিতে পারবে তার সীমা", en: "Limiting how much banks can lend" } },
+        { left: { bn: "রিজার্ভ থেকে ডলার বিক্রি", en: "Selling dollars from reserves" }, right: { bn: "টাকার মান ধরে রাখা", en: "Supporting the taka" } },
+        { left: { bn: "ব্যাংক তদারকি আর পরিদর্শন", en: "Bank supervision and inspection" }, right: { bn: "আমানতকারীদের সুরক্ষা", en: "Protecting depositors" } },
+        { left: { bn: "মুদ্রানীতি বিবৃতি", en: "The monetary policy statement" }, right: { bn: "আগামী কয়েক মাসের দিক জানানো", en: "Signalling the direction of the coming months" } },
+      ],
+    },
+    "bb-lab": {
+      kind: "lab",
+      model: "rates",
+      title: { bn: "সুদ বাড়লে মুনাফার কী হয়", en: "What a rate rise does to profit" },
+      note: { bn: "ঋণের অঙ্কটা বাড়ান আর দেখুন একই সুদের পরিবর্তন কতটা বেশি ক্ষতি করে।", en: "Raise the debt figure and see how much more the same rate change costs." },
+      preset: { rate: 9, change: 3, pe: 14, debt: 600, profit: 60 },
+    },
+    "bb-quiz": {
+      kind: "quiz",
+      title: { bn: "দুইটা প্রশ্ন", en: "Two questions" },
+      questions: [
+        {
+          ask: {
+            bn: "মুদ্রাস্ফীতি ১১%, আর কেন্দ্রীয় ব্যাংক নীতি সুদের হার বাড়িয়েছে। আপনার পোর্টফোলিওতে প্রথমে কী দেখা উচিত?",
+            en: "Inflation is 11% and the central bank has raised the policy rate. What should you look at first in your portfolio?",
+          },
+          options: [
+            {
+              text: { bn: "কোন কোম্পানিগুলোর ঋণ সবচেয়ে বেশি", en: "Which companies carry the most debt" },
+              right: true,
+              why: {
+                bn: "ঠিক। সুদের হার বাড়ার প্রথম আর সবচেয়ে সরাসরি প্রভাব সুদ খরচে, আর সেটা ঋণের পরিমাণের সঙ্গে সরাসরি সমানুপাতিক। ঋণ ইকুইটির তুলনায় কত, আর সুদ খরচ পরিচালন মুনাফার কত অংশ খাচ্ছে, এই দুইটাই দেখার জিনিস।",
+                en: "Right. The first and most direct effect of a rate rise is on interest expense, and that scales directly with debt. Debt against equity, and what share of operating profit the interest bill eats, are the two things to look at.",
+              },
+            },
+            {
+              text: { bn: "কোন কোম্পানিগুলোর দাম সবচেয়ে বেশি পড়েছে", en: "Which companies have fallen the most" },
+              why: {
+                bn: "দামের পতন একটা ফলাফল, কারণ নয়। যা দেখা দরকার তা হলো কার আয় সত্যিই ক্ষতিগ্রস্ত হবে, কারণ সেটাই ঠিক করবে পতনটা সাময়িক নাকি স্থায়ী।",
+                en: "A fall is a result, not a cause. What you need is which earnings will actually be hurt, because that decides whether a fall is temporary or permanent.",
+              },
+            },
+            {
+              text: { bn: "কোন কোম্পানিগুলো সবচেয়ে বেশি লভ্যাংশ দেয়", en: "Which companies pay the biggest dividends" },
+              why: {
+                bn: "লভ্যাংশ গুরুত্বপূর্ণ, কিন্তু সুদের হারের প্রশ্নে এটা দ্বিতীয় সারির। উঁচু সুদের সময়ে লভ্যাংশের আকর্ষণ কমে যায়, কারণ এফডিআরও তখন ভালো দেয়, তাই এটা সুরক্ষা নয়।",
+                en: "Dividends matter, and on a rate question they are second order. High rates reduce the attraction of a dividend, because deposits pay well too, so it is not a shelter.",
+              },
+            },
+          ],
+        },
+        {
+          ask: {
+            bn: "একটা কোম্পানির হাতে প্রচুর নগদ আছে আর কোনো ঋণ নেই। সুদের হার বাড়লে এর কী হবে?",
+            en: "A company holds plenty of cash and has no debt. What happens to it when rates rise?",
+          },
+          options: [
+            {
+              text: { bn: "নগদের উপর সুদ বাড়ে, তাই কিছুটা উপকার হয়", en: "It earns more interest on the cash, so it benefits somewhat" },
+              right: true,
+              why: {
+                bn: "ঠিক, আর এটা প্রায়ই ভুলে যাওয়া দিক। সুদের হার বাড়া মানে সবার ক্ষতি নয়: যাদের নগদ আছে তারা বেশি আয় করে, আর ঋণে ডুবে থাকা প্রতিযোগীদের তুলনায় তাদের অবস্থান শক্ত হয়। মন্দার সময় নগদওয়ালা কোম্পানি সস্তায় প্রতিযোগী কিনতেও পারে।",
+                en: "Right, and it is the side people forget. A rate rise does not hurt everyone: cash-rich companies earn more, and their position relative to indebted competitors improves. In a downturn a cash-rich company can even buy a competitor cheaply.",
+              },
+            },
+            {
+              text: { bn: "কিছুই হয় না, কারণ ঋণ নেই", en: "Nothing happens, because it has no debt" },
+              why: {
+                bn: "ঋণের দিক থেকে কিছু হয় না ঠিকই, কিন্তু নগদের দিক থেকে হয়। আর চাহিদার দিকটাও আছে: সুদ বাড়লে সাধারণ চাহিদা কমে, তাই বিক্রি কমতে পারে, ঋণ থাকুক বা না থাকুক।",
+                en: "Nothing on the debt side, and something on the cash side. There is also the demand side: higher rates reduce general demand, so sales can fall whether or not there is debt.",
+              },
+            },
+            {
+              text: { bn: "নগদের মান কমে যায়, তাই ক্ষতি হয়", en: "The cash loses value, so it is worse off" },
+              why: {
+                bn: "মুদ্রাস্ফীতিতে নগদের ক্রয়ক্ষমতা কমে, এটা সত্যি, কিন্তু সুদের হার বাড়ার সরাসরি প্রভাব উল্টো: নগদের উপর আয় বাড়ে। দুইটা আলাদা প্রশ্ন, আর গুলিয়ে ফেললে সিদ্ধান্ত ভুল হয়।",
+                en: "Cash does lose purchasing power to inflation, and the direct effect of a rate rise is the opposite: the cash earns more. Two separate questions, and confusing them leads to a wrong decision.",
+              },
+            },
+          ],
+        },
+      ],
+    },
+  },
+},
+
+/* ---------------------------------------------------------- */
+"amcs-icb": {
+  bn: `
+<p><a class="term" href="/money/terms/mutual-fund.html">মিউচুয়াল ফান্ড</a> কী সেটা আগে দেখা হয়েছে: অনেকের টাকা এক জায়গায় করে একজন পেশাদার সেটা বিনিয়োগ করেন। এই লেখাটা সেই পেশাদারদের নিয়ে: তারা কারা, কীভাবে টাকা পান, আর তাদের স্বার্থ আপনার স্বার্থের সঙ্গে কোথায় মেলে আর কোথায় মেলে না।</p>
+
+<p>বাংলাদেশে এই জগতের কেন্দ্রে একটা বিশেষ প্রতিষ্ঠান আছে, ইনভেস্টমেন্ট করপোরেশন অব বাংলাদেশ বা আইসিবি, আর এটা একটা সাধারণ অ্যাসেট ম্যানেজার নয়।</p>
+
+<div class="at-a-glance">
+<p class="at-a-glance-label">এক নজরে</p>
+<ul>
+<li>অ্যাসেট ম্যানেজমেন্ট কোম্পানি তহবিল চালায় আর তার জন্য বার্ষিক ফি নেয়।</li>
+<li>ফি সম্পদের শতাংশে হয়, তাই তহবিল বড় হলে ম্যানেজারের আয় বাড়ে।</li>
+<li>ট্রাস্টি আর কাস্টোডিয়ান আলাদা, আর এটাই বিনিয়োগকারীর সুরক্ষা।</li>
+<li>আইসিবি রাষ্ট্রায়ত্ত, আর তহবিল ব্যবস্থাপনার বাইরেও এর ভূমিকা আছে।</li>
+<li>বন্ধ তহবিলের বাজারদর প্রায়ই এনএভির নিচে থাকে, আর তার কারণ আছে।</li>
+</ul>
+</div>
+
+<h2>একটা তহবিল কীভাবে সাজানো</h2>
+
+${mount("amc-flow")}
+
+<p>কাঠামোটার মূল কথা হলো ভাগ করা দায়িত্ব। অ্যাসেট ম্যানেজার সিদ্ধান্ত নেন কী কিনবেন, ট্রাস্টি দেখেন সিদ্ধান্তগুলো নিয়ম আর তহবিলের ঘোষিত উদ্দেশ্য মেনে হচ্ছে কি না, আর কাস্টোডিয়ান সম্পদগুলো আলাদা করে রাখেন।</p>
+
+<p>এই ভাগটা কেন গুরুত্বপূর্ণ: যিনি সিদ্ধান্ত নেন তিনি যদি সম্পদও নিজের কাছে রাখতেন, তাহলে অপব্যবহারের সুযোগ থাকত। আলাদা রাখা মানে একজনের ভুল বা অসততা অন্যজনের কাছে ধরা পড়ার সম্ভাবনা থাকে।</p>
+
+<h2>ফি, আর স্বার্থের প্রশ্ন</h2>
+
+<p>অ্যাসেট ম্যানেজার সাধারণত ব্যবস্থাপনার অধীনে থাকা সম্পদের একটা শতাংশ বার্ষিক ফি হিসেবে নেন। এর সঙ্গে ট্রাস্টি ফি, কাস্টোডিয়ান ফি আর অন্যান্য খরচ যোগ হয়। সব মিলিয়ে যেটা দাঁড়ায় সেটাকে বলে মোট ব্যয় অনুপাত।</p>
+
+${mount("amc-lab")}
+
+<p>যন্ত্রটাতে বার্ষিক খরচের শতাংশটা বাড়িয়ে দেখুন। ১% আর ২.৫% এর পার্থক্য এক বছরে সামান্য আর বিশ বছরে বিশাল, কারণ যে টাকাটা ফি হিসেবে গেল সেটা আর চক্রবৃদ্ধিতে অংশ নেয় না।</p>
+
+<div class="note">
+<p>একটা কথা পরিষ্কার থাকা দরকার: ফি নিজে খারাপ নয়। পেশাদার ব্যবস্থাপনার একটা দাম আছে, আর যিনি নিজে গবেষণা করার সময় বা আগ্রহ পান না তার জন্য সেটা যুক্তিসঙ্গত হতে পারে। প্রশ্নটা হলো ফি কত, আর তার বিনিময়ে কী পাচ্ছেন।</p>
+</div>
+
+<p>স্বার্থের একটা কাঠামোগত পার্থক্যও আছে। ম্যানেজারের আয় নির্ভর করে তহবিল কত বড় তার উপর, আর আপনার আয় নির্ভর করে তহবিল কত ভালো করে তার উপর। বেশিরভাগ সময় দুইটা একসঙ্গে চলে, কারণ ভালো করলে তহবিল বড় হয়। কিন্তু সবসময় নয়, আর এই ফাঁকটা জানা থাকা দরকার।</p>
+
+<h2>খোলা আর বন্ধ তহবিল</h2>
+
+${mount("amc-compare")}
+
+<p>বাংলাদেশে অনেক বন্ধ তহবিল স্টক এক্সচেঞ্জে লেনদেন হয়, আর সেগুলোর বাজারদর প্রায়ই <a class="term" href="/money/terms/nav.html">এনএভির</a> নিচে থাকে। এটাকে বলে ডিসকাউন্ট।</p>
+
+<p>ডিসকাউন্ট দেখে অনেকে ভাবেন এটা সুযোগ: এক টাকার সম্পদ আশি পয়সায় কিনছি। কখনো তাই, আর কখনো নয়। ডিসকাউন্টের কারণ হতে পারে কম তারল্য, উঁচু ফি, দুর্বল অতীত ফল, বা বাজারের সন্দেহ যে ঘোষিত এনএভি অতিরঞ্জিত। কেনার আগে জিজ্ঞেস করুন ডিসকাউন্টটা কেন আছে, আর সেটা কমার কোনো কারণ আছে কি না।</p>
+
+<h2>আইসিবি, আর কেন এটা আলাদা</h2>
+
+<p>ইনভেস্টমেন্ট করপোরেশন অব বাংলাদেশ একটা রাষ্ট্রায়ত্ত প্রতিষ্ঠান, আর এটা কেবল তহবিল চালায় না। এর ঐতিহাসিক ভূমিকা পুঁজিবাজারের বিকাশে সহায়তা করা, আর এই ভূমিকার একটা দিক প্রায়ই খবরে আসে: বাজার খারাপ সময়ে আইসিবি কেনে এমন প্রত্যাশা।</p>
+
+<p>এই প্রত্যাশাটা নিয়ে সতর্ক থাকা দরকার, দুই কারণে। প্রথমত, একটা প্রতিষ্ঠানের কেনার ক্ষমতার একটা সীমা আছে, আর একটা পুরো বাজারের পতন থামানোর মতো ক্ষমতা কারো নেই। দ্বিতীয়ত, কোনো প্রতিষ্ঠান কিনবে এই আশায় একটা শেয়ার কেনা আর সেই কোম্পানির ব্যবসা ভালো বলে কেনা, দুইটা সম্পূর্ণ আলাদা সিদ্ধান্ত, আর প্রথমটা বিনিয়োগ নয়।</p>
+
+<h2>তহবিল বাছাইয়ের সময় যা দেখবেন</h2>
+
+<p>চারটা জিনিস, আর সবগুলো তহবিলের নিজের প্রকাশিত কাগজেই পাওয়া যায়। মোট ব্যয় অনুপাত কত। তহবিলটা কী কী ধরে আছে, আর সেটা আপনার ইতিমধ্যে থাকা শেয়ারগুলোর সঙ্গে কতটা মেলে। গত তিন থেকে পাঁচ বছরের ফল, আর সেটা বাজারের সূচকের তুলনায় কেমন। আর ম্যানেজার কতদিন ধরে একই আছেন।</p>
+
+<div class="ex">
+<p><strong>একটা ভুল যা প্রায়ই হয়।</strong> একজন পাঠক পাঁচটা শেয়ার কিনেছেন, তিনটা ব্যাংক। তারপর বৈচিত্র্যের জন্য একটা মিউচুয়াল ফান্ড কিনেছেন। ফান্ডের বিবরণী দেখলে দেখা যায় তার সবচেয়ে বড় বিনিয়োগও ব্যাংকে। বৈচিত্র্য বাড়েনি, কেবল একটা ফি যোগ হয়েছে।</p>
+</div>
+
+<div class="checklist">
+<ul>
+<li>আপনার কাছে থাকা কোনো তহবিলের সর্বশেষ পোর্টফোলিও বিবরণী বের করুন।</li>
+<li>তার সবচেয়ে বড় পাঁচটা বিনিয়োগ আপনার নিজের শেয়ারের সঙ্গে মেলান।</li>
+<li>মোট ব্যয় অনুপাতটা খুঁজে বের করুন আর লিখে রাখুন।</li>
+<li>বন্ধ তহবিল হলে বাজারদর আর এনএভির পার্থক্য বের করুন।</li>
+</ul>
+</div>
+
+${mount("amc-quiz")}
+`,
+  en: `
+<p>An earlier lesson covered <a class="term" href="/money/terms/mutual-fund.html">what a mutual fund is</a>: many people's money pooled and invested by a professional. This lesson is about those professionals: who they are, how they get paid, and where their interests line up with yours and where they do not.</p>
+
+<p>At the centre of this world in Bangladesh sits a particular institution, the Investment Corporation of Bangladesh, and it is not an ordinary asset manager.</p>
+
+<div class="at-a-glance">
+<p class="at-a-glance-label">At a glance</p>
+<ul>
+<li>An asset management company runs funds and charges an annual fee for it.</li>
+<li>The fee is a percentage of assets, so a bigger fund pays the manager more.</li>
+<li>The trustee and the custodian are separate, and that separation is your protection.</li>
+<li>ICB is state owned and does more than manage funds.</li>
+<li>Closed-end funds often trade below NAV, and there are reasons for that.</li>
+</ul>
+</div>
+
+<h2>How a fund is arranged</h2>
+
+${mount("amc-flow")}
+
+<p>The point of the structure is divided responsibility. The asset manager decides what to buy, the trustee checks that those decisions follow the rules and the fund's stated purpose, and the custodian holds the assets separately.</p>
+
+<p>Why that division matters: if the person taking decisions also held the assets, there would be room for abuse. Keeping them apart means one party's error or dishonesty has a chance of being caught by another.</p>
+
+<h2>Fees, and the question of interests</h2>
+
+<p>An asset manager usually takes an annual fee as a percentage of assets under management. Trustee fees, custodian fees and other costs sit on top. What all of them come to together is the total expense ratio.</p>
+
+${mount("amc-lab")}
+
+<p>Raise the annual cost percentage in the tool. The difference between 1% and 2.5% is small over one year and enormous over twenty, because money paid as a fee no longer takes part in compounding.</p>
+
+<div class="note">
+<p>One thing should be clear: a fee is not bad in itself. Professional management has a price, and for someone with neither the time nor the interest to do their own research it can be entirely reasonable. The question is how much, and what you get for it.</p>
+</div>
+
+<p>There is also a structural difference in interests. The manager's income depends on how large the fund is; yours depends on how well it does. Most of the time those run together, because doing well attracts money. Not always, though, and the gap is worth knowing about.</p>
+
+<h2>Open-ended and closed-end funds</h2>
+
+${mount("amc-compare")}
+
+<p>Many closed-end funds here trade on the exchange, and their market price is often below <a class="term" href="/money/terms/nav.html">NAV</a>. That is called a discount.</p>
+
+<p>Seeing a discount, plenty of people think it is an opportunity: buying a taka of assets for eighty poisha. Sometimes it is, and sometimes it is not. A discount can be caused by thin liquidity, high fees, a poor record, or the market doubting that the stated NAV is realistic. Before buying, ask why the discount exists and whether there is any reason for it to narrow.</p>
+
+<h2>ICB, and why it is different</h2>
+
+<p>The Investment Corporation of Bangladesh is a state-owned institution, and it does more than run funds. Its historical role is supporting the development of the capital market, and one aspect of that role appears regularly in the news: the expectation that ICB buys when the market is weak.</p>
+
+<p>That expectation deserves caution for two reasons. First, any institution's capacity to buy has a limit, and nobody has the capacity to stop a whole market falling. Second, buying a share because you expect an institution to buy it, and buying it because the business is good, are two entirely different decisions, and the first is not investing.</p>
+
+<h2>What to look at when choosing a fund</h2>
+
+<p>Four things, all of them in the fund's own published documents. What the total expense ratio is. What the fund actually holds, and how much that overlaps with the shares you already own. Three to five years of results, and how those compare with the market index. And how long the same manager has been in place.</p>
+
+<div class="ex">
+<p><strong>A common mistake.</strong> A reader owns five shares, three of them banks. Then, for diversification, they buy a mutual fund. Reading the fund's statement shows its largest holdings are banks too. Diversification did not increase; only a fee was added.</p>
+</div>
+
+<div class="checklist">
+<ul>
+<li>Find the latest portfolio statement of any fund you hold.</li>
+<li>Compare its five largest holdings with your own shares.</li>
+<li>Find the total expense ratio and write it down.</li>
+<li>For a closed-end fund, work out the gap between market price and NAV.</li>
+</ul>
+</div>
+
+${mount("amc-quiz")}
+`,
+  blocks: {
+    "amc-flow": {
+      kind: "figure",
+      shape: "flow",
+      title: { bn: "একটা তহবিলের কাঠামো", en: "The structure of a fund" },
+      note: { bn: "চারটা আলাদা ভূমিকা, আর আলাদা থাকাটাই সুরক্ষা।", en: "Four separate roles, and the separation is the protection." },
+      parts: [
+        { text: { bn: "বিনিয়োগকারীরা", en: "Investors" }, note: { bn: "টাকা দেন, ইউনিট পান", en: "Put money in, receive units" } },
+        { text: { bn: "অ্যাসেট ম্যানেজার", en: "The asset manager" }, note: { bn: "কী কেনা হবে ঠিক করেন, আর বার্ষিক ফি নেন", en: "Decides what to buy, and takes an annual fee" }, tone: "lead" },
+        { text: { bn: "ট্রাস্টি", en: "The trustee" }, note: { bn: "দেখেন সিদ্ধান্তগুলো নিয়ম আর ঘোষিত উদ্দেশ্য মানছে কি না", en: "Checks the decisions against the rules and the stated purpose" } },
+        { text: { bn: "কাস্টোডিয়ান", en: "The custodian" }, note: { bn: "সম্পদগুলো আলাদা করে রাখেন, ম্যানেজারের কাছে নয়", en: "Holds the assets separately, not with the manager" }, tone: "good" },
+        { text: { bn: "তহবিলের সম্পদ", en: "The fund's assets" }, note: { bn: "শেয়ার, বন্ড আর নগদ। এনএভি এদের মোট মূল্য ভাগ ইউনিট।", en: "Shares, bonds and cash. NAV is their total value divided by units." } },
+      ],
+      caption: {
+        bn: "যিনি সিদ্ধান্ত নেন আর যিনি সম্পদ রাখেন, দুইজন আলাদা হওয়াই বিনিয়োগকারীর সবচেয়ে বড় কাঠামোগত সুরক্ষা।",
+        en: "That the person deciding and the person holding are different people is the investor's largest structural protection.",
+      },
+    },
+    "amc-lab": {
+      kind: "lab",
+      model: "fee-drag",
+      title: { bn: "বার্ষিক ফি কুড়ি বছরে কত", en: "What an annual fee costs over twenty years" },
+      note: { bn: "খরচের হার সামান্য বাড়িয়ে দেখুন শেষের সংখ্যাটা কতটা বদলায়।", en: "Nudge the cost rate up and watch how much the final number changes." },
+      preset: { capital: 500000, commission: 1.2, trades: 1, rate: 12, years: 20 },
+    },
+    "amc-compare": {
+      kind: "compare",
+      title: { bn: "খোলা আর বন্ধ তহবিল", en: "Open-ended and closed-end funds" },
+      columns: [
+        { bn: "খোলা তহবিল", en: "Open-ended" },
+        { bn: "বন্ধ তহবিল", en: "Closed-end" },
+      ],
+      rows: [
+        {
+          label: { bn: "কীভাবে কেনেন", en: "How you buy" },
+          cells: [
+            { bn: "সরাসরি তহবিলের কাছ থেকে, এনএভিতে", en: "From the fund itself, at NAV" },
+            { bn: "স্টক এক্সচেঞ্জে, বাজারদরে", en: "On the exchange, at the market price" },
+          ],
+        },
+        {
+          label: { bn: "দাম কত হবে", en: "What the price will be" },
+          cells: [{ bn: "এনএভি অনুযায়ী", en: "The NAV" }, { bn: "এনএভির উপরে বা নিচে, বাজার যা বলে", en: "Above or below NAV, whatever the market says" }],
+        },
+        {
+          label: { bn: "কখন বেরোতে পারেন", en: "When you can leave" },
+          cells: [
+            { bn: "তহবিলের নিয়ম অনুযায়ী, সাধারণত যেকোনো সময়", en: "Per the fund's rules, usually any time" },
+            { bn: "ক্রেতা পেলে, তাই তারল্যের উপর নির্ভর", en: "When a buyer exists, so it depends on liquidity" },
+          ],
+          best: 0,
+        },
+        {
+          label: { bn: "ডিসকাউন্টের সুযোগ", en: "Chance of a discount" },
+          cells: [{ bn: "নেই", en: "None" }, { bn: "থাকে, আর কারণ খোঁজা দরকার", en: "Yes, and the reason needs finding" }],
+        },
+        {
+          label: { bn: "ম্যানেজারের চাপ", en: "Pressure on the manager" },
+          cells: [
+            { bn: "টাকা তুলে নিলে বেচতে হয়, এমনকি খারাপ সময়ে", en: "Redemptions force selling, even at bad times" },
+            { bn: "নেই, তাই দীর্ঘমেয়াদি সিদ্ধান্ত সহজ", en: "None, so long-term decisions are easier" },
+          ],
+          best: 1,
+        },
+      ],
+    },
+    "amc-quiz": {
+      kind: "quiz",
+      title: { bn: "দুইটা প্রশ্ন", en: "Two questions" },
+      questions: [
+        {
+          ask: {
+            bn: "একটা বন্ধ তহবিলের এনএভি ১২ টাকা, কিন্তু বাজারে এটা ৮ টাকায় লেনদেন হচ্ছে। প্রথমে কী করবেন?",
+            en: "A closed-end fund has a NAV of 12 taka but trades at 8. What do you do first?",
+          },
+          options: [
+            {
+              text: { bn: "কিনে ফেলি, কারণ এক টাকার সম্পদ ৬৭ পয়সায় পাচ্ছি", en: "Buy, because I am getting a taka of assets for 67 poisha" },
+              why: {
+                bn: "ডিসকাউন্ট একটা প্রশ্ন, উত্তর নয়। ডিসকাউন্ট বছরের পর বছর একই থাকতে পারে বা বাড়তে পারে, আর তখন আপনার লাভ কেবল তহবিলের সম্পদ বাড়া থেকে আসে, ডিসকাউন্ট কমা থেকে নয়।",
+                en: "A discount is a question, not an answer. Discounts can persist for years or widen, and then your return comes only from the assets growing, not from the discount closing.",
+              },
+            },
+            {
+              text: { bn: "ডিসকাউন্টটা কেন আছে সেটা বের করি", en: "Find out why the discount exists" },
+              right: true,
+              why: {
+                bn: "ঠিক। সম্ভাব্য কারণ কয়েকটা: তারল্য কম, ফি বেশি, অতীত ফল দুর্বল, বা বাজার মনে করে ঘোষিত এনএভি বাস্তবসম্মত নয়। কারণটা জানলে তবেই বোঝা যায় ডিসকাউন্ট কমার কোনো সম্ভাবনা আছে কি না।",
+                en: "Right. The candidates are few: thin liquidity, high fees, a weak record, or a market that doubts the stated NAV. Only knowing the cause tells you whether the discount has any reason to narrow.",
+              },
+            },
+            {
+              text: { bn: "এড়িয়ে যাই, ডিসকাউন্ট মানেই খারাপ", en: "Avoid it; a discount always means something is wrong" },
+              why: {
+                bn: "এটাও অতিসরলীকরণ। কিছু ভালো তহবিল কেবল কম তারল্যের কারণে ডিসকাউন্টে থাকে, আর সেখানে দীর্ঘমেয়াদি ধারকের জন্য এটা সত্যিই সুবিধা। কাজটা যাচাই করা, ধরে নেওয়া নয়।",
+                en: "Also an oversimplification. Some good funds sit at a discount purely because of thin liquidity, and there it genuinely benefits a long-term holder. The job is to check rather than to assume.",
+              },
+            },
+          ],
+        },
+        {
+          ask: {
+            bn: "দুইটা তহবিল প্রায় একই শেয়ার ধরে আছে। একটার বার্ষিক খরচ ১%, অন্যটার ২.৫%। কুড়ি বছরে এর প্রভাব কী?",
+            en: "Two funds hold nearly the same shares. One costs 1% a year, the other 2.5%. What does that do over twenty years?",
+          },
+          options: [
+            {
+              text: { bn: "সামান্য, কারণ পার্থক্যটা মাত্র ১.৫%", en: "Very little, because the difference is only 1.5%" },
+              why: {
+                bn: "এটা বছরে ১.৫% নয়, এটা প্রতি বছর ১.৫% করে কুড়ি বছর, আর প্রতিটা বছরের ক্ষতি পরের বছরগুলোর ভিত্তিও ছোট করে দেয়। উপরের যন্ত্রটাতে সংখ্যাটা বদলে দেখুন।",
+                en: "It is not 1.5% once, it is 1.5% every year for twenty years, and each year's loss also shrinks the base for the following years. Change the number in the tool above and look.",
+              },
+            },
+            {
+              text: { bn: "বড়, কারণ ফি চক্রবৃদ্ধিতে অংশ নেওয়া টাকাটাই কমিয়ে দেয়", en: "Large, because the fee removes money that would have compounded" },
+              right: true,
+              why: {
+                bn: "ঠিক। ফি বছরে একবার কেটে নেওয়া একটা সংখ্যা নয়, এটা চক্রবৃদ্ধির হার থেকে সরাসরি বিয়োগ। ১২% এর জায়গায় ১০.৫% পাওয়া কুড়ি বছরে চূড়ান্ত অঙ্কের একটা বড় অংশ কেটে নেয়, আর সেটাই সবচেয়ে নিশ্চিত পার্থক্য।",
+                en: "Right. A fee is not a number taken once a year, it is a subtraction from the compounding rate itself. Getting 10.5% instead of 12% removes a large part of the final sum over twenty years, and it is the most certain difference of all.",
+              },
+            },
+            {
+              text: { bn: "কিছুই না, কারণ বেশি ফি মানে ভালো ব্যবস্থাপনা", en: "Nothing, because a higher fee means better management" },
+              why: {
+                bn: "ফি আর ফলাফলের মধ্যে এমন কোনো সম্পর্ক নেই। ফি নিশ্চিত আর ফলাফল অনিশ্চিত, আর প্রশ্নটার ভেতরেই লেখা আছে যে দুইটা তহবিল প্রায় একই শেয়ার ধরে আছে।",
+                en: "There is no such relationship between fee and result. The fee is certain and the result is not, and the question itself says the two funds hold nearly the same shares.",
+              },
+            },
+          ],
+        },
+      ],
+    },
+  },
+},
+
+/* ---------------------------------------------------------- */
+"choosing-a-broker": {
+  bn: `
+<p>ব্রোকার বাছাই একবার করা হয় আর তারপর বছরের পর বছর তার সঙ্গে থাকা হয়। এই কারণেই এটা এমন একটা সিদ্ধান্ত যা তাড়াহুড়ো করে নেওয়া উচিত নয়, অথচ বেশিরভাগ মানুষ নেন পরিচিত কারো সুপারিশে, একদিনে।</p>
+
+<p>এই লেখাটা একটা তালিকা দেয়: কী কী জিজ্ঞেস করবেন, কোন উত্তরগুলো সতর্কবার্তা, আর কোনটা আসলে গুরুত্বপূর্ণ আর কোনটা কেবল বিজ্ঞাপন।</p>
+
+<div class="at-a-glance">
+<p class="at-a-glance-label">এক নজরে</p>
+<ul>
+<li>কমিশনের হার গুরুত্বপূর্ণ, আর একমাত্র প্রশ্ন নয়।</li>
+<li>ব্রোকারের কাছে আপনার নগদ টাকা কীভাবে রাখা হয়, এটাই সবচেয়ে বড় প্রশ্ন।</li>
+<li>মার্জিন ঋণ বেচার চেষ্টা একটা সতর্কবার্তা, সুবিধা নয়।</li>
+<li>অ্যাপ কেমন কাজ করে সেটা রোজকার অভিজ্ঞতা, তাই আগে দেখে নিন।</li>
+<li>লাইসেন্স নম্বর বিএসইসির তালিকায় মিলিয়ে দেখা পাঁচ মিনিটের কাজ।</li>
+</ul>
+</div>
+
+<h2>আসল প্রশ্নগুলো</h2>
+
+${mount("brk-compare")}
+
+<p>ছকটার তৃতীয় সারিটা সবচেয়ে গুরুত্বপূর্ণ আর সবচেয়ে কম জিজ্ঞেস করা হয়। আপনার <a class="term" href="/money/terms/bo-account.html">বিও অ্যাকাউন্টে</a> থাকা শেয়ার সিডিবিএলের হিসাবে আপনার নামে, তাই সেটা তুলনামূলক নিরাপদ। কিন্তু ব্রোকারের কাছে যে নগদ টাকা পড়ে থাকে, সেটার সুরক্ষা আলাদা প্রশ্ন। জিজ্ঞেস করুন সেটা কোথায় রাখা হয়, আর গ্রাহকের টাকা প্রতিষ্ঠানের নিজের টাকা থেকে আলাদা রাখা হয় কি না।</p>
+
+<div class="note">
+<p>একটা সহজ অভ্যাস যা এই ঝুঁকিটা প্রায় শূন্যে নামিয়ে আনে: ব্রোকারের অ্যাকাউন্টে অপ্রয়োজনীয় নগদ রাখবেন না। কেনার আগে টাকা পাঠান, বেচার পরে টাকা তুলে নিন। যে টাকা কাজে লাগছে না সেটা আপনার ব্যাংক অ্যাকাউন্টে থাকুক।</p>
+</div>
+
+<h2>কমিশন, আর যা কমিশনের চেয়ে বড়</h2>
+
+<p>কমিশনের হার সহজে তুলনা করা যায়, তাই মানুষ সেটাই তুলনা করেন। কিন্তু <a class="term" href="/money/basics-2/cost-of-churn.html">বারবার কেনাবেচার দাম</a> লেখায় দেখা গেছে, একটা লেনদেনের খরচের একটা বড় অংশ স্প্রেড, আর সেটা ব্রোকার ঠিক করেন না।</p>
+
+<p>তাহলে ব্রোকার বাছাইয়ে কমিশনের ওজন কতটা? যিনি বছরে দুই তিনবার কেনেন তার জন্য ০.৩% আর ০.৪৫% এর পার্থক্য প্রায় কিছুই না। যিনি বছরে ত্রিশবার কেনেন তার জন্য এটা বড়, কিন্তু তার আসল সমস্যা কমিশন নয়, ত্রিশবার কেনা।</p>
+
+<h2>যেগুলো সতর্কবার্তা</h2>
+
+${mount("brk-spot")}
+
+<p>সবচেয়ে বড় সতর্কবার্তাটা হলো <a class="term" href="/money/terms/margin-loan.html">মার্জিন ঋণ</a> নিয়ে আগ্রহ। ব্রোকার মার্জিনে সুদ পান, তাই আপনাকে ধার নিতে উৎসাহিত করার একটা সরাসরি স্বার্থ তাদের আছে। এটা অসততা নয়, এটা কাঠামো, আর কাঠামোটা জানা থাকলে কথাগুলো অন্যভাবে শোনায়।</p>
+
+<h2>অ্যাপ আর সেবা</h2>
+
+<p>এটা তুচ্ছ মনে হয় যতক্ষণ না একদিন অ্যাপটা কাজ করে না আর আপনার একটা অর্ডার দেওয়ার দরকার। খোলার আগে দেখে নিন: অ্যাপটা কি সত্যিই কাজ করে, লাইভ দাম দেখা যায় কি না, অর্ডারের ইতিহাস পাওয়া যায় কি না, আর কনট্রাক্ট নোট নিজে নামানো যায় কি না।</p>
+
+<p>আর একটা প্রশ্ন যা কেউ করে না: অ্যাপ কাজ না করলে বিকল্প কী? একটা ফোন নম্বর যেখানে সত্যিই কেউ ধরেন, নাকি একটা ইমেইল যার উত্তর তিন দিনে আসে?</p>
+
+${mount("brk-drill")}
+
+<h2>বদলানো কি সম্ভব</h2>
+
+<p>হ্যাঁ, আর এটা জানা থাকা দরকার, কারণ এই জ্ঞানটাই আপনাকে খারাপ সেবা সহ্য করা থেকে বাঁচায়। শেয়ার এক ব্রোকার থেকে আরেক ব্রোকারে স্থানান্তর করা যায়, কারণ শেয়ারগুলো আসলে সিডিবিএলের হিসাবে আপনার নামেই আছে। প্রক্রিয়াটায় কাগজপত্র আর কিছু ফি লাগে, আর সময় লাগে।</p>
+
+<p>এই সম্ভাবনাটা মাথায় রাখলে একটা জিনিস সহজ হয়ে যায়: আপনি প্রথম ব্রোকারটা নিয়ে নিখুঁত সিদ্ধান্ত নেওয়ার চাপ থেকে মুক্তি পান। ছোট অঙ্ক দিয়ে শুরু করুন, ছয় মাস দেখুন, তারপর সিদ্ধান্ত নিন।</p>
+
+${mount("brk-quiz")}
+`,
+  en: `
+<p>You choose a broker once and then stay with them for years. Which is why it deserves more than a hurried decision, and yet most people make it in a day, on the recommendation of somebody they know.</p>
+
+<p>This lesson gives you a list: what to ask, which answers are warnings, and which things genuinely matter as against which are only advertising.</p>
+
+<div class="at-a-glance">
+<p class="at-a-glance-label">At a glance</p>
+<ul>
+<li>The commission rate matters, and it is not the only question.</li>
+<li>How your cash is held at the broker is the biggest question of all.</li>
+<li>Being sold a margin loan is a warning sign, not a benefit.</li>
+<li>How the app works is your daily experience, so look at it beforehand.</li>
+<li>Checking the licence number against the BSEC list takes five minutes.</li>
+</ul>
+</div>
+
+<h2>The questions that matter</h2>
+
+${mount("brk-compare")}
+
+<p>The third row of that table is the most important and the least asked. Shares in your <a class="term" href="/money/terms/bo-account.html">BO account</a> are recorded at CDBL in your name, so they are comparatively safe. But cash sitting with the broker is a separate question. Ask where it is held, and whether client money is kept apart from the firm's own.</p>
+
+<div class="note">
+<p>One simple habit reduces this risk to nearly nothing: do not leave idle cash in a broker's account. Send money before buying, withdraw it after selling. Money that is not working should sit in your bank account.</p>
+</div>
+
+<h2>Commission, and what is larger than commission</h2>
+
+<p>Commission rates are easy to compare, so that is what people compare. But as the lesson on <a class="term" href="/money/basics-2/cost-of-churn.html">the cost of churn</a> showed, a large part of the cost of a trade is the spread, and the broker does not set that.</p>
+
+<p>So how much weight should commission carry? For someone buying two or three times a year, the difference between 0.3% and 0.45% is next to nothing. For someone buying thirty times a year it is large, and their real problem is not the commission, it is the thirty times.</p>
+
+<h2>What counts as a warning</h2>
+
+${mount("brk-spot")}
+
+<p>The largest warning is enthusiasm about <a class="term" href="/money/terms/margin-loan.html">margin lending</a>. Brokers earn interest on margin, so they have a direct interest in encouraging you to borrow. That is not dishonesty, it is structure, and knowing the structure makes the conversation sound different.</p>
+
+<h2>The app and the service</h2>
+
+<p>This feels trivial until the day the app does not work and you need to place an order. Look before you open: does the app actually work, are live prices visible, is order history available, and can you download your own contract notes?</p>
+
+<p>And one question nobody asks: what is the fallback when the app fails? A phone number where somebody genuinely answers, or an email that gets a reply in three days?</p>
+
+${mount("brk-drill")}
+
+<h2>Can you change later</h2>
+
+<p>Yes, and knowing it matters, because that knowledge is what stops you tolerating bad service. Shares can be transferred from one broker to another, precisely because they are recorded at CDBL in your name. The process involves paperwork, some fees and some time.</p>
+
+<p>Keeping that possibility in mind makes one thing much easier: you are released from the pressure of getting the first choice perfect. Start with a small amount, watch for six months, then decide.</p>
+
+${mount("brk-quiz")}
+`,
+  blocks: {
+    "brk-compare": {
+      kind: "compare",
+      title: { bn: "যা জিজ্ঞেস করবেন, আর কেন", en: "What to ask, and why" },
+      note: { bn: "সব উত্তর লিখে রাখুন। মুখের কথা ছয় মাস পরে কেউ মনে রাখে না।", en: "Write every answer down. Nobody remembers a spoken answer six months later." },
+      columns: [
+        { bn: "প্রশ্ন", en: "The question" },
+        { bn: "কেন গুরুত্বপূর্ণ", en: "Why it matters" },
+      ],
+      rows: [
+        {
+          label: { bn: "কমিশনের হার কত", en: "What is the commission rate" },
+          cells: [
+            { bn: "দুই দিকেই, আর ন্যূনতম কত", en: "On both sides, and what the minimum is" },
+            { bn: "কম লেনদেন করলে ছোট, বেশি করলে বড়", en: "Small if you trade rarely, large if you trade often" },
+          ],
+        },
+        {
+          label: { bn: "আমার নগদ টাকা কোথায় থাকে", en: "Where is my cash held" },
+          cells: [
+            { bn: "গ্রাহকের টাকা কি আলাদা রাখা হয়", en: "Is client money kept separate" },
+            { bn: "সবচেয়ে বড় প্রশ্ন, আর সবচেয়ে কম জিজ্ঞেস করা", en: "The biggest question, and the least asked" },
+          ],
+          best: 1,
+        },
+        {
+          label: { bn: "বেচার টাকা কবে তোলা যায়", en: "When can sale proceeds be withdrawn" },
+          cells: [
+            { bn: "নিষ্পত্তির কত দিন পরে", en: "How many days after settlement" },
+            { bn: "টাকার দরকারের দিন গোনার জন্য", en: "So you can count back from the day you need money" },
+          ],
+        },
+        {
+          label: { bn: "কনট্রাক্ট নোট কীভাবে পাব", en: "How do I get contract notes" },
+          cells: [
+            { bn: "নিজে নামানো যায়, নাকি চাইতে হয়", en: "Can I download them, or must I ask" },
+            { bn: "অভিযোগের সময় এটাই আপনার প্রমাণ", en: "This is your evidence if you ever complain" },
+          ],
+        },
+        {
+          label: { bn: "লাইসেন্স নম্বর কত", en: "What is the licence number" },
+          cells: [
+            { bn: "বিএসইসির তালিকায় মিলিয়ে দেখার জন্য", en: "So you can check it against the BSEC list" },
+            { bn: "পাঁচ মিনিটের কাজ, আর একবারই করতে হয়", en: "Five minutes, and only once" },
+          ],
+        },
+      ],
+    },
+    "brk-spot": {
+      kind: "spot",
+      title: { bn: "একটা কথোপকথন, কোনগুলো সতর্কবার্তা", en: "A conversation: which lines are warnings" },
+      note: { bn: "একটা ব্রোকারেজ হাউসে প্রথম দিনের কথোপকথন। যেগুলোতে সতর্ক হওয়া দরকার সেগুলোতে চাপুন।", en: "A first conversation at a brokerage house. Press the lines that should raise your guard." },
+      source: { bn: "একটা কাল্পনিক প্রথম সাক্ষাৎ", en: "An imaginary first meeting" },
+      lines: [
+        {
+          text: { bn: "আমাদের কমিশন ০.৩৫%, দুই দিকেই, ন্যূনতম নেই।", en: "Our commission is 0.35%, both sides, with no minimum." },
+        },
+        {
+          text: { bn: "আপনি ১ লাখ দিলে আমরা আরও ১ লাখ মার্জিন দেব, তাহলে লাভ দ্বিগুণ হবে।", en: "Put in one lakh and we will lend you another, so your profit doubles." },
+          flag: { bn: "সতর্কবার্তা। লাভ দ্বিগুণ হলে লোকসানও দ্বিগুণ হয়, আর সেই কথাটা বলা হয়নি। ব্রোকার মার্জিনে সুদ পান, তাই এই পরামর্শে তার নিজের স্বার্থ আছে।", en: "A warning. If the profit doubles so does the loss, and that half was not said. The broker earns interest on margin, so there is an interest behind the advice." },
+        },
+        {
+          text: { bn: "কনট্রাক্ট নোট প্রতিটা লেনদেনের পর অ্যাপে চলে আসে, নামানো যায়।", en: "Contract notes appear in the app after every trade and can be downloaded." },
+        },
+        {
+          text: { bn: "আমাদের একজন বিশেষজ্ঞ আছেন, তিনি বলে দেন কোনটা কিনতে হবে, প্রায় সবসময় ঠিক হয়।", en: "We have an expert who tells you what to buy, and he is right nearly every time" },
+          flag: { bn: "সতর্কবার্তা। কেউ প্রায় সবসময় ঠিক হয় না, আর যে দাবি করে তার হয় হিসাব নেই নয়তো সততা নেই। আর সুপারিশ যত বেশি, লেনদেন তত বেশি, কমিশনও তত বেশি।", en: "A warning. Nobody is right nearly every time, and whoever claims it either keeps no record or is not being honest. And more recommendations means more trades, which means more commission." },
+        },
+        {
+          text: { bn: "গ্রাহকের টাকা আমাদের নিজের হিসাব থেকে আলাদা ব্যাংক অ্যাকাউন্টে রাখা হয়।", en: "Client money is held in a bank account separate from our own." },
+        },
+        {
+          text: { bn: "আপনি শুধু টাকাটা দিয়ে দিন, বাকিটা আমরা দেখব, আপনাকে কিছু দেখতে হবে না।", en: "Just give us the money and we will handle everything; you need not look at anything." },
+          flag: { bn: "সতর্কবার্তা। আপনার হয়ে কে সিদ্ধান্ত নিচ্ছেন আর কোন কর্তৃত্বে, সেটা লিখিতভাবে পরিষ্কার থাকা দরকার। মুখের কথায় দেওয়া কর্তৃত্ব পরে প্রমাণ করা যায় না।", en: "A warning. Who is deciding on your behalf and under what authority has to be clear in writing. Authority given verbally cannot be proved later." },
+        },
+        {
+          text: { bn: "আমাদের লাইসেন্স নম্বর এটা, বিএসইসির সাইটে মিলিয়ে দেখতে পারেন।", en: "Here is our licence number; you can check it on the BSEC site." },
+        },
+      ],
+    },
+    "brk-drill": {
+      kind: "drill",
+      title: { bn: "খোলার আগে ছয়টা কাজ", en: "Six things before you open an account" },
+      note: { bn: "সব মিলিয়ে এক ঘণ্টা, আর এটা আপনি বছরের পর বছর ব্যবহার করবেন।", en: "An hour in total, for something you will use for years." },
+      steps: [
+        {
+          text: { bn: "অন্তত তিনটা ব্রোকারেজ হাউসের কমিশন আর ন্যূনতম চার্জ লিখে ফেলুন।", en: "Write down the commission and minimum charges at three brokerage houses." },
+        },
+        {
+          text: { bn: "প্রত্যেককে জিজ্ঞেস করুন গ্রাহকের নগদ টাকা কীভাবে রাখা হয়, আর উত্তরটা লিখুন।", en: "Ask each how client cash is held, and write the answer down." },
+          hint: { bn: "যিনি স্পষ্ট উত্তর দিতে পারেন না, সেটাই একটা উত্তর।", en: "Whoever cannot give a clear answer has answered." },
+        },
+        {
+          text: { bn: "প্রত্যেকের লাইসেন্স নম্বর বিএসইসির তালিকায় মিলিয়ে দেখুন।", en: "Check each licence number against the BSEC list." },
+        },
+        {
+          text: { bn: "অ্যাপ বা ওয়েব টার্মিনালটা খুলে দেখুন, অন্তত দাম আর অর্ডারের পর্দা।", en: "Open the app or web terminal, at least the price and order screens." },
+        },
+        {
+          text: { bn: "গ্রাহক সেবার নম্বরে একবার ফোন করুন, আর দেখুন কতক্ষণে কেউ ধরেন।", en: "Call the customer service number once and see how long it takes for someone to answer." },
+          hint: { bn: "খোলার আগে যে সেবা, খোলার পরে সেটা সাধারণত এর চেয়ে ভালো হয় না।", en: "The service before you open is usually the best it will ever be." },
+        },
+        {
+          text: { bn: "একটা বাছুন, আর প্রথম ছয় মাস ছোট অঙ্ক দিয়ে চালান।", en: "Pick one, and run a small amount through it for six months." },
+        },
+      ],
+    },
+    "brk-quiz": {
+      kind: "quiz",
+      title: { bn: "দুইটা প্রশ্ন", en: "Two questions" },
+      questions: [
+        {
+          ask: {
+            bn: "দুইটা ব্রোকারেজ হাউস। প্রথমটার কমিশন ০.৩%, দ্বিতীয়টার ০.৪৫%। কিন্তু দ্বিতীয়টা গ্রাহকের টাকা আলাদা অ্যাকাউন্টে রাখে আর প্রথমটা এই প্রশ্নের স্পষ্ট উত্তর দেয়নি। কোনটা বাছবেন?",
+            en: "Two brokers. The first charges 0.3%, the second 0.45%. But the second keeps client money in a separate account and the first gave no clear answer to that question. Which do you choose?",
+          },
+          options: [
+            {
+              text: { bn: "দ্বিতীয়টা, কারণ টাকার সুরক্ষা কমিশনের চেয়ে বড়", en: "The second, because protecting the money matters more than the commission" },
+              right: true,
+              why: {
+                bn: "ঠিক। ০.১৫% পার্থক্য মানে ১ লাখ টাকার লেনদেনে ১৫০ টাকা। আর গ্রাহকের টাকা আলাদা না রাখার ঝুঁকি হলো পুরো অঙ্কটা। ছোট নিশ্চিত সাশ্রয়ের বিনিময়ে বড় অনিশ্চিত ঝুঁকি নেওয়া খারাপ বিনিময়। আর স্পষ্ট উত্তর না দেওয়াটা নিজেই একটা উত্তর।",
+                en: "Right. A 0.15% difference is 150 taka on a one lakh trade. The risk of client money not being segregated is the whole sum. Trading a small certain saving for a large uncertain risk is a poor exchange. And the refusal to answer clearly is itself an answer.",
+              },
+            },
+            {
+              text: { bn: "প্রথমটা, কারণ কমিশন কম মানে দীর্ঘমেয়াদে বেশি টাকা", en: "The first, because a lower commission means more money over time" },
+              why: {
+                bn: "কমিশন গুরুত্বপূর্ণ, আর এটা তখনই তুলনীয় যখন বাকি সব সমান। এখানে বাকি সব সমান নয়: একটা প্রতিষ্ঠান একটা মৌলিক প্রশ্নের উত্তর দিতে পারেনি, আর সেটা প্রথম সারির তথ্য।",
+                en: "Commission matters, and it is comparable only when everything else is equal. Here it is not: one firm could not answer a basic question, and that is first-order information.",
+              },
+            },
+            {
+              text: { bn: "প্রথমটা, আর নগদ টাকা কম রাখব", en: "The first, and I will keep little cash there" },
+              why: {
+                bn: "নগদ কম রাখা ভালো অভ্যাস, আর সেটা এই সমস্যাটার পুরো সমাধান নয়। যে প্রতিষ্ঠান একটা মৌলিক প্রশ্নের স্পষ্ট উত্তর দেয় না, তার অন্য প্রক্রিয়াগুলোও সাধারণত একই রকম হয়।",
+                en: "Keeping little cash there is a good habit and it is not a complete answer. A firm that will not answer a basic question clearly usually runs its other processes the same way.",
+              },
+            },
+          ],
+        },
+        {
+          ask: {
+            bn: "আপনার ব্রোকার প্রায় প্রতি সপ্তাহে ফোন করে বলেন কোন শেয়ার কিনতে হবে। এটা কেমন লক্ষণ?",
+            en: "Your broker calls almost every week to tell you what to buy. What kind of sign is that?",
+          },
+          options: [
+            {
+              text: { bn: "ভালো সেবা, তারা আমার জন্য কাজ করছেন", en: "Good service; they are working for me" },
+              why: {
+                bn: "প্রতিটা সুপারিশ একটা লেনদেন, আর প্রতিটা লেনদেন একটা কমিশন। সপ্তাহে একটা সুপারিশ মানে বছরে বায়ান্নটা, আর কোনো যুক্তিসঙ্গত বিনিয়োগ পরিকল্পনায় বছরে বায়ান্নটা ভালো সিদ্ধান্ত থাকে না।",
+                en: "Every recommendation is a trade and every trade is a commission. One a week is fifty-two a year, and no sensible investment plan contains fifty-two good decisions a year.",
+              },
+            },
+            {
+              text: { bn: "সতর্কবার্তা, কারণ ঘন ঘন সুপারিশ মানে ঘন ঘন কমিশন", en: "A warning, because frequent recommendations mean frequent commissions" },
+              right: true,
+              why: {
+                bn: "ঠিক, আর এটাকে বলে চার্নিং। এটা অসততা না হলেও কাঠামোগত স্বার্থের সংঘাত: তারা আয় করেন লেনদেন থেকে, আপনি আয় করেন ধরে রাখা থেকে। উত্তরটা সহজ: সুপারিশ শুনুন, নিজে যাচাই করুন, আর নিজের নিয়মে চলুন।",
+                en: "Right, and it has a name: churning. Even without dishonesty it is a structural conflict: they earn from transactions and you earn from holding. The answer is simple: listen, verify for yourself, and keep to your own rule.",
+              },
+            },
+            {
+              text: { bn: "নিরপেক্ষ, নির্ভর করে সুপারিশগুলো ভালো কি না তার উপর", en: "Neutral; it depends on whether the recommendations are good" },
+              why: {
+                bn: "সুপারিশের মান আলাদা প্রশ্ন, আর সংখ্যাটাই নিজে একটা সমস্যা। বায়ান্নটা লেনদেনের খরচ যেকোনো সুপারিশের সম্ভাব্য সুবিধার চেয়ে বড় হয়ে দাঁড়ায়, তাই মান যাই হোক ফলাফলটা খারাপ।",
+                en: "The quality of the recommendations is a separate question, and the frequency is a problem on its own. The cost of fifty-two trades outweighs the likely benefit of any recommendation, so the result is poor whatever the quality.",
+              },
+            },
+          ],
+        },
+      ],
+    },
+  },
+},
+
+/* ---------------------------------------------------------- */
+"reading-a-quote": {
+  bn: `
+<p>একটা শেয়ারের পাতা খুললে দশ বারোটা সংখ্যা একসঙ্গে দেখা যায়, আর নতুন অবস্থায় বেশিরভাগ মানুষ কেবল একটাই দেখেন: শেষ দাম। বাকিগুলো ওখানে আছে কারণ প্রতিটার একটা প্রশ্নের উত্তর আছে, আর একসঙ্গে পড়লে এরা একটা গল্প বলে।</p>
+
+<p>এই লেখাটা একটা কোটের প্রতিটা সংখ্যা ধরে ধরে দেখে, আর দেখায় কোন সংখ্যাটা কোন প্রশ্নের উত্তর। এটা পড়া শেষে আপনি একটা পর্দা দেখে বলতে পারবেন শেয়ারটার আজকের দিনটা কেমন গেছে আর সেখানে কিছু অস্বাভাবিক আছে কি না।</p>
+
+<div class="at-a-glance">
+<p class="at-a-glance-label">এক নজরে</p>
+<ul>
+<li>শেষ দাম একটা লেনদেনের দাম, বাজারের মূল্য নয়।</li>
+<li>বিড আর আস্ক বলে এই মুহূর্তে আপনি কত পাবেন বা দেবেন।</li>
+<li>লেনদেনের পরিমাণ ছাড়া দামের পরিবর্তনের কোনো ওজন নেই।</li>
+<li>সার্কিটের সীমা বলে আজ দাম সর্বোচ্চ কতদূর যেতে পারে।</li>
+<li>৫২ সপ্তাহের সর্বোচ্চ আর সর্বনিম্ন প্রেক্ষাপট দেয়, সংকেত নয়।</li>
+</ul>
+</div>
+
+<h2>একটা কোট, সংখ্যা ধরে ধরে</h2>
+
+${mount("quote-screen")}
+
+<p>মনে রাখুন সংখ্যাগুলো একে অন্যকে ব্যাখ্যা করে। দাম ৫% বেড়েছে, এটা একা কিছু বলে না। ৫% বেড়েছে গড়ের দশগুণ লেনদেনে, এটা একটা ঘটনা। ৫% বেড়েছে মাত্র বারোটা লেনদেনে, এটা প্রায় কিছুই নয়।</p>
+
+<h2>শেষ দাম আর যে দামে আপনি কিনবেন</h2>
+
+<p>শেষ দাম মানে সবচেয়ে শেষ যে লেনদেনটা হয়েছে তার দাম। এটা অতীত। আপনি যে দামে কিনবেন সেটা হলো আস্ক, অর্থাৎ এই মুহূর্তে সবচেয়ে কম দামে কেউ বেচতে রাজি সেই দাম। আর আপনি যে দামে বেচবেন সেটা বিড।</p>
+
+<p>এই তিনটার পার্থক্য বেশি লেনদেনের শেয়ারে সামান্য, আর কম লেনদেনের শেয়ারে বড়। <a class="term" href="/money/terms/liquidity.html">তারল্য</a> লেখাটা এই ফাঁকটা কেন গুরুত্বপূর্ণ তা দেখিয়েছে, আর <a class="term" href="/money/basics-2/order-types.html">অর্ডারের ধরন</a> লেখাটা দেখিয়েছে কীভাবে এই ফাঁকটা আপনার বিরুদ্ধে কাজ করে।</p>
+
+<div class="ex">
+<p><strong>একটা পর্দা, তিনটা সংখ্যা।</strong> শেষ দাম ৫০.২০। বিড ৪৯.৮০, আস্ক ৫০.৬০। আপনি এখন কিনলে দেবেন ৫০.৬০, আর সঙ্গে সঙ্গে বেচলে পাবেন ৪৯.৮০। অর্থাৎ কেনার মুহূর্তেই আপনি ০.৮০ টাকা, বা ১.৬% পিছিয়ে আছেন, কমিশনের আগেই। এই সংখ্যাটাই স্প্রেড, আর কোথাও লেখা থাকে না।</p>
+</div>
+
+<h2>লেনদেনের পরিমাণ, যা দামকে ওজন দেয়</h2>
+
+<p>একটা দামের পরিবর্তন কতটা গুরুত্বপূর্ণ, সেটা ঠিক করে কত টাকার লেনদেনে সেটা হয়েছে। ভলিউম মানে কতগুলো শেয়ার হাত বদলেছে, আর ভ্যালু মানে কত টাকার।</p>
+
+<p>দুইটাই দেখা দরকার, কারণ ৫ টাকার শেয়ারে দশ লাখ শেয়ার আর ৫০০ টাকার শেয়ারে দশ হাজার শেয়ার, দুইটাই ৫০ লাখ টাকা। ভলিউম দিয়ে বোঝা যায় কতজন মানুষ জড়িত, ভ্যালু দিয়ে বোঝা যায় কত টাকা নড়েছে।</p>
+
+<p>একটা কাজের অভ্যাস: আজকের ভলিউমকে গত এক মাসের গড় ভলিউমের সঙ্গে তুলনা করুন। গড়ের দ্বিগুণের বেশি হলে কিছু একটা ঘটেছে, আর সেটা খুঁজে বের করা উচিত।</p>
+
+<h2>সার্কিটের সীমা</h2>
+
+${mount("quote-lab")}
+
+<p><a class="term" href="/money/terms/circuit-breaker.html">সার্কিট ব্রেকার</a> ঠিক করে দেয় একদিনে দাম সর্বোচ্চ কতটা উপরে বা নিচে যেতে পারে। কোটের পাতায় এই দুইটা সীমা লেখা থাকে, আর দাম সীমার কাছাকাছি থাকলে সেটা জানা জরুরি।</p>
+
+<p>কেন জরুরি: দাম উপরের সীমায় আটকে থাকলে সেখানে কোনো বিক্রেতা নেই, তাই আপনি কিনতে পারবেন না, কেবল লাইনে দাঁড়াতে পারবেন। নিচের সীমায় আটকে থাকলে কোনো ক্রেতা নেই, তাই বেরোতে পারবেন না। যন্ত্রটাতে দেখুন টানা কয়েকদিন সীমায় আটকে থাকলে দাম কোথায় পৌঁছাতে পারে।</p>
+
+<h2>বাকি সংখ্যাগুলো</h2>
+
+${mount("quote-match")}
+
+<p>৫২ সপ্তাহের সর্বোচ্চ আর সর্বনিম্ন প্রেক্ষাপট দেয়। একটা শেয়ার তার সর্বনিম্নের কাছাকাছি আছে মানে এটা সস্তা নয়, মানে এটা এক বছরে পড়েছে, আর কেন পড়েছে সেটাই প্রশ্ন। একইভাবে সর্বোচ্চের কাছাকাছি থাকা মানে দামি নয়।</p>
+
+<p><a class="term" href="/money/terms/pe-ratio.html">পিই</a> আর <a class="term" href="/money/terms/eps.html">ইপিএস</a> কোটের পাতায় থাকে, আর এই দুইটাই দামকে ব্যবসার সঙ্গে যুক্ত করে। মনে রাখবেন এগুলো সাধারণত গত বারো মাসের হিসাবে, তাই সাম্প্রতিক কোনো পরিবর্তন এতে নেই।</p>
+
+<div class="note">
+<p>একটা জিনিস যা কোটে নেই আর সবচেয়ে গুরুত্বপূর্ণ: কোম্পানিটা কী করে। কোটের পাতা আপনাকে দাম আর লেনদেনের ছবি দেয়, ব্যবসার নয়। সিদ্ধান্তটা ওই পাতা থেকে আসতে পারে না।</p>
+</div>
+
+${mount("quote-drill")}
+
+${mount("quote-quiz")}
+`,
+  en: `
+<p>Open a share's page and a dozen numbers appear at once, and at first most people look at exactly one of them: the last price. The others are there because each answers a question, and read together they tell a story.</p>
+
+<p>This lesson goes through a quote number by number, and shows which number answers which question. By the end you will be able to look at a screen and say how the share's day went and whether anything about it is unusual.</p>
+
+<div class="at-a-glance">
+<p class="at-a-glance-label">At a glance</p>
+<ul>
+<li>The last price is the price of one trade, not the value of the market.</li>
+<li>Bid and ask tell you what you would get or pay right now.</li>
+<li>A price change carries no weight without the volume behind it.</li>
+<li>The circuit limits say how far the price can go today.</li>
+<li>The 52-week high and low give context, not a signal.</li>
+</ul>
+</div>
+
+<h2>A quote, number by number</h2>
+
+${mount("quote-screen")}
+
+<p>Remember that the numbers explain one another. The price is up 5%: on its own that says nothing. Up 5% on ten times the average volume is an event. Up 5% on twelve trades is close to nothing.</p>
+
+<h2>The last price and the price you will pay</h2>
+
+<p>The last price is the price of the most recent trade. That is the past. What you will pay is the ask, the lowest price at which somebody is willing to sell right now. What you would receive is the bid.</p>
+
+<p>The gap between these three is small in a heavily traded share and large in a thin one. The lesson on <a class="term" href="/money/terms/liquidity.html">liquidity</a> showed why the gap matters, and the lesson on <a class="term" href="/money/basics-2/order-types.html">order types</a> showed how it works against you.</p>
+
+<div class="ex">
+<p><strong>One screen, three numbers.</strong> Last price 50.20. Bid 49.80, ask 50.60. Buying now costs you 50.60, and selling immediately gets you 49.80. So at the moment of buying you are already 0.80 taka, or 1.6%, behind, before commission. That number is the spread, and it appears nowhere.</p>
+</div>
+
+<h2>Volume, which gives a price its weight</h2>
+
+<p>How important a price change is depends on how much trading produced it. Volume means how many shares changed hands; value means how much money did.</p>
+
+<p>You need both, because a million shares of a 5 taka share and ten thousand of a 500 taka share are both fifty lakh taka. Volume tells you how many people are involved; value tells you how much money moved.</p>
+
+<p>A useful habit: compare today's volume with the average of the past month. More than double the average means something happened, and it is worth finding out what.</p>
+
+<h2>The circuit limits</h2>
+
+${mount("quote-lab")}
+
+<p>A <a class="term" href="/money/terms/circuit-breaker.html">circuit breaker</a> sets how far a price may move up or down in one day. Both limits appear on the quote page, and when the price is near one of them, that matters.</p>
+
+<p>Why it matters: if the price is stuck at the upper limit there is no seller there, so you cannot buy, only queue. If it is stuck at the lower limit there is no buyer, so you cannot get out. Use the tool to see where a price can reach after several consecutive days at the limit.</p>
+
+<h2>The rest of the numbers</h2>
+
+${mount("quote-match")}
+
+<p>The 52-week high and low give context. A share near its low is not therefore cheap; it means it has fallen over a year, and why is the question. Equally, being near the high does not make it expensive.</p>
+
+<p><a class="term" href="/money/terms/pe-ratio.html">PE</a> and <a class="term" href="/money/terms/eps.html">EPS</a> appear on the quote page, and both connect the price to the business. Remember they are usually computed on the last twelve months, so any recent change is not in them.</p>
+
+<div class="note">
+<p>One thing is missing from the quote and it is the most important: what the company does. A quote page gives you a picture of price and trading, not of a business. The decision cannot come from that page.</p>
+</div>
+
+${mount("quote-drill")}
+
+${mount("quote-quiz")}
+`,
+  blocks: {
+    "quote-screen": {
+      kind: "figure",
+      shape: "callouts",
+      title: { bn: "একটা কোটের পাতা", en: "A quote page" },
+      note: { bn: "প্রতিটা সংখ্যার পাশে সেটা কোন প্রশ্নের উত্তর।", en: "Beside each number, the question it answers." },
+      screen: {
+        title: { bn: "একটা কাল্পনিক শেয়ার", en: "An imaginary share" },
+        rows: [
+          { label: { bn: "শেষ দাম", en: "Last price" }, value: { bn: "৫০.২০", en: "50.20" } },
+          { label: { bn: "পরিবর্তন", en: "Change" }, value: { bn: "+১.২০ (+২.৪৫%)", en: "+1.20 (+2.45%)" } },
+          { label: { bn: "বিড / আস্ক", en: "Bid / ask" }, value: { bn: "৪৯.৮০ / ৫০.৬০", en: "49.80 / 50.60" } },
+          { label: { bn: "ভলিউম", en: "Volume" }, value: { bn: "৪,২০,০০০ শেয়ার", en: "420,000 shares" } },
+          { label: { bn: "সার্কিটের সীমা", en: "Circuit limits" }, value: { bn: "৪৪.১০ / ৫৩.৯০", en: "44.10 / 53.90" } },
+          { label: { bn: "৫২ সপ্তাহ", en: "52 weeks" }, value: { bn: "৩৮.৫০ / ৬৭.৩০", en: "38.50 / 67.30" } },
+        ],
+      },
+      parts: [
+        { text: { bn: "সবচেয়ে শেষ লেনদেনটা কত দামে হলো", en: "What the most recent trade happened at" }, note: { bn: "এটা অতীত। আপনি এই দামে কিনতে পারবেন এমন নয়।", en: "This is the past. It is not necessarily a price you can get." }, at: 0 },
+        { text: { bn: "গতকালের শেষ দামের তুলনায় কতটা", en: "How far from yesterday's close" }, note: { bn: "শতাংশটা দেখুন, টাকার অঙ্ক নয়। ১ টাকা ৫ টাকার শেয়ারে বিশাল আর ৫০০ টাকারটায় সামান্য।", en: "Read the percentage rather than the amount. One taka is huge on a 5 taka share and trivial on a 500 taka one." }, at: 1 },
+        { text: { bn: "এখন বেচলে কত, এখন কিনলে কত", en: "What you get now, what you pay now" }, note: { bn: "এই দুইটার ফাঁকটাই স্প্রেড, আর এটাই আপনার অদৃশ্য খরচ।", en: "The gap between the two is the spread, and it is your invisible cost." }, tone: "lead", at: 2 },
+        { text: { bn: "আজ কতগুলো শেয়ার হাত বদলেছে", en: "How many shares changed hands today" }, note: { bn: "গত এক মাসের গড়ের সঙ্গে তুলনা করুন। দ্বিগুণের বেশি মানে কিছু ঘটেছে।", en: "Compare with the past month's average. More than double means something happened." }, at: 3 },
+        { text: { bn: "আজ দাম সর্বোচ্চ কতদূর যেতে পারে", en: "How far the price may move today" }, note: { bn: "সীমায় আটকে গেলে লেনদেন প্রায় থেমে যায়, আর তখন বেরোনো যায় না।", en: "Stuck at a limit, trading nearly stops, and then you cannot get out." }, tone: "warn", at: 4 },
+        { text: { bn: "এক বছরে কোথায় ছিল", en: "Where it has been over a year" }, note: { bn: "প্রেক্ষাপট, সংকেত নয়। সর্বনিম্নের কাছে থাকা সস্তা হওয়ার প্রমাণ নয়।", en: "Context, not a signal. Being near the low is not evidence of being cheap." }, at: 5 },
+      ],
+      caption: {
+        bn: "সংখ্যাগুলো একা পড়লে বিভ্রান্তিকর, একসঙ্গে পড়লে একটা দিনের গল্প।",
+        en: "Read alone these numbers mislead; read together they are the story of a day.",
+      },
+    },
+    "quote-lab": {
+      kind: "lab",
+      model: "circuit",
+      title: { bn: "সার্কিটের সীমা কীভাবে জমা হয়", en: "How circuit limits accumulate" },
+      note: { bn: "দিন সংখ্যা বাড়িয়ে দেখুন টানা সীমায় আটকে থাকলে দাম কোথায় যায়।", en: "Increase the number of days to see where a price ends up after consecutive limit moves." },
+      preset: { close: 100, limit: 10, days: 3 },
+    },
+    "quote-match": {
+      kind: "match",
+      title: { bn: "সংখ্যা আর প্রশ্ন", en: "Number and question" },
+      note: { bn: "কোটের প্রতিটা সংখ্যা কোন প্রশ্নের উত্তর দেয়, মেলান।", en: "Match each number on a quote with the question it answers." },
+      pairs: [
+        { left: { bn: "শেষ দাম", en: "Last price" }, right: { bn: "সবচেয়ে শেষ লেনদেনটা কত দামে হলো", en: "What did the most recent trade happen at" } },
+        { left: { bn: "বিড আর আস্ক", en: "Bid and ask" }, right: { bn: "এখন বেচলে কত, কিনলে কত", en: "What would I get now, what would I pay now" } },
+        { left: { bn: "ভলিউম", en: "Volume" }, right: { bn: "আজকের নড়াচড়ার পেছনে কতটা ওজন", en: "How much weight is behind today's move" } },
+        { left: { bn: "সার্কিটের সীমা", en: "Circuit limits" }, right: { bn: "আজ সর্বোচ্চ কতদূর যেতে পারে", en: "How far can it go today" } },
+        { left: { bn: "৫২ সপ্তাহের সর্বোচ্চ ও সর্বনিম্ন", en: "52-week high and low" }, right: { bn: "এক বছরে কোথায় কোথায় ছিল", en: "Where has it been over a year" } },
+        { left: { bn: "পিই", en: "PE" }, right: { bn: "আয়ের তুলনায় দামটা কেমন", en: "How does the price compare with earnings" } },
+      ],
+    },
+    "quote-drill": {
+      kind: "drill",
+      title: { bn: "একটা কোট নিজে পড়ুন", en: "Read one quote yourself" },
+      note: { bn: "যেকোনো একটা শেয়ার নিন, বিশেষ করে যেটা আপনার নেই। দশ মিনিট।", en: "Take any share, ideally one you do not own. Ten minutes." },
+      steps: [
+        { text: { bn: "ডিএসইর সাইটে একটা শেয়ারের কোটের পাতা খুলুন।", en: "Open a share's quote page on the DSE site." } },
+        {
+          text: { bn: "শেষ দাম, বিড আর আস্ক লিখে ফেলুন, আর স্প্রেডটা শতাংশে বের করুন।", en: "Write down last price, bid and ask, and work out the spread as a percentage." },
+          hint: { bn: "স্প্রেড ভাগ শেষ দাম, গুণ একশো।", en: "Spread divided by last price, times a hundred." },
+        },
+        { text: { bn: "আজকের ভলিউম আর গত এক মাসের গড় ভলিউম তুলনা করুন।", en: "Compare today's volume with the average over the past month." } },
+        {
+          text: { bn: "সার্কিটের দুইটা সীমা লিখুন, আর দেখুন দাম কোনটার কতটা কাছে।", en: "Write down both circuit limits and see how close the price is to each." },
+        },
+        {
+          text: { bn: "৫২ সপ্তাহের সর্বোচ্চ থেকে দাম কত শতাংশ নিচে, বের করুন।", en: "Work out how far below the 52-week high the price is, as a percentage." },
+        },
+        {
+          text: { bn: "এবার একটা কম লেনদেন হওয়া শেয়ারে একই কাজ করুন আর স্প্রেড দুইটা মিলিয়ে দেখুন।", en: "Now do the same on a thinly traded share and compare the two spreads." },
+          hint: { bn: "পার্থক্যটাই এই লেখার সবচেয়ে ব্যবহারিক পাঠ।", en: "That difference is the most practical lesson here." },
+        },
+      ],
+    },
+    "quote-quiz": {
+      kind: "quiz",
+      title: { bn: "তিনটা প্রশ্ন", en: "Three questions" },
+      questions: [
+        {
+          ask: {
+            bn: "একটা শেয়ারের শেষ দাম ১০০, বিড ৯৬ আর আস্ক ১০৪। এটা কী বলে?",
+            en: "A share's last price is 100, the bid is 96 and the ask is 104. What does that say?",
+          },
+          options: [
+            {
+              text: { bn: "শেয়ারটা কম লেনদেন হয়, আর কেনার সঙ্গে সঙ্গে আপনি ৮% পিছিয়ে থাকবেন", en: "It is thinly traded, and buying puts you 8% behind immediately" },
+              right: true,
+              why: {
+                bn: "ঠিক। ১০৪ এ কিনে ৯৬ এ বেচতে পারবেন, তাই একটা চক্রেই ৮% চলে যায়, কমিশনের আগে। এত বড় স্প্রেড প্রায় সবসময় কম তারল্যের চিহ্ন, আর এমন শেয়ারে ঢোকার আগে বেরোনোর খরচটা হিসাব করা দরকার।",
+                en: "Right. You buy at 104 and could sell at 96, so a round trip costs 8% before commission. A spread that wide is nearly always a sign of thin liquidity, and the cost of leaving should be calculated before entering.",
+              },
+            },
+            {
+              text: { bn: "শেয়ারটার দাম ১০০, তাই ১০০ টাকায় কেনা যাবে", en: "The price is 100, so it can be bought at 100" },
+              why: {
+                bn: "শেষ দাম একটা অতীত লেনদেনের দাম। এখন কেনার দাম আস্ক, অর্থাৎ ১০৪। এই পার্থক্যটা না বোঝাই নতুনদের সবচেয়ে ব্যয়বহুল ভুলগুলোর একটা।",
+                en: "The last price is the price of a past trade. What you pay now is the ask, 104. Not understanding this difference is one of the more expensive beginner mistakes.",
+              },
+            },
+            {
+              text: { bn: "শেয়ারটা খুব জনপ্রিয়, তাই দামের ফাঁক বেশি", en: "It is very popular, hence the wide gap" },
+              why: {
+                bn: "উল্টো। জনপ্রিয় আর বেশি লেনদেনের শেয়ারে স্প্রেড সরু হয়, কারণ দুই দিকেই অনেক অর্ডার থাকে। চওড়া স্প্রেড মানে অর্ডার কম।",
+                en: "The opposite. Popular, heavily traded shares have narrow spreads, because there are many orders on both sides. A wide spread means few orders.",
+              },
+            },
+          ],
+        },
+        {
+          ask: {
+            bn: "একটা শেয়ার আজ ৯% বেড়েছে, আর ভলিউম গত এক মাসের গড়ের বারো গুণ। প্রথমে কী করবেন?",
+            en: "A share is up 9% today on twelve times its average monthly volume. What do you do first?",
+          },
+          options: [
+            {
+              text: { bn: "কিনে ফেলি, স্পষ্টতই কিছু ভালো ঘটেছে", en: "Buy; clearly something good has happened" },
+              why: {
+                bn: "কিছু ঘটেছে ঠিকই, কিন্তু কী সেটা না জেনে কেনা মানে অনুমানে টাকা রাখা। আর যদি খবরটা প্রকাশ হয়ে থাকে, তাহলে সেটা ইতিমধ্যে দামে ঢুকে গেছে, তাই তাড়াহুড়োর কোনো সুবিধা নেই।",
+                en: "Something did happen, and buying without knowing what is putting money on a guess. And if the news is public it is already in the price, so hurrying buys you nothing.",
+              },
+            },
+            {
+              text: { bn: "ডিএসইর ঘোষণার পাতায় দেখি আজ এই কোম্পানির কী খবর এসেছে", en: "Check the DSE announcements page for today's news on this company" },
+              right: true,
+              why: {
+                bn: "ঠিক। বড় ভলিউমে বড় নড়াচড়া মানে সাধারণত একটা ঘোষণা: ফলাফল, লভ্যাংশ, একটা চুক্তি, একটা মামলার রায়। ঘোষণাটা পড়লে আপনি জানবেন নড়াচড়াটা যুক্তিসঙ্গত কি না, আর তখনই সিদ্ধান্ত নেওয়া যায়।",
+                en: "Right. A large move on large volume usually means an announcement: results, a dividend, a contract, the outcome of a case. Reading it tells you whether the move is justified, and only then can you decide.",
+              },
+            },
+            {
+              text: { bn: "অপেক্ষা করি, কারণ যা বাড়ে তা পড়ে", en: "Wait, because what goes up comes down" },
+              why: {
+                bn: "এটা একটা প্রবাদ, কৌশল নয়। কিছু শেয়ার ভালো খবরের পর নতুন উঁচু জায়গায় বসে যায় আর কখনো ফেরে না। প্রশ্নটা সবসময় একই: কী ঘটেছে, আর সেটা কোম্পানির ভবিষ্যৎ আয় বদলায় কি না।",
+                en: "That is a proverb, not a method. Some shares settle at a new higher level after good news and never come back. The question is always the same: what happened, and does it change the company's future earnings.",
+              },
+            },
+          ],
+        },
+        {
+          ask: {
+            bn: "একটা শেয়ার তার ৫২ সপ্তাহের সর্বনিম্নের খুব কাছে আছে। এটা কী বোঝায়?",
+            en: "A share is very close to its 52-week low. What does that mean?",
+          },
+          options: [
+            {
+              text: { bn: "এটা সস্তা, তাই কেনার ভালো সময়", en: "It is cheap, so it is a good time to buy" },
+              why: {
+                bn: "সর্বনিম্নের কাছে থাকা কেবল বলে দাম পড়েছে, সস্তা হওয়ার কথা বলে না। একটা কোম্পানির আয় যদি অর্ধেক হয়ে যায়, তাহলে দাম অর্ধেক হয়েও সেটা আগের মতোই দামি থাকে।",
+                en: "Being near a low says only that the price has fallen, not that it is cheap. If a company's earnings have halved, the price halving leaves it exactly as expensive as before.",
+              },
+            },
+            {
+              text: { bn: "এক বছরে দাম পড়েছে, আর কেন পড়েছে সেটাই এখন প্রশ্ন", en: "It has fallen over a year, and why is now the question" },
+              right: true,
+              why: {
+                bn: "ঠিক। সর্বনিম্ন একটা প্রেক্ষাপট, একটা সংকেত নয়। পতনের কারণ যদি সাময়িক হয় তাহলে সুযোগ, আর যদি ব্যবসার স্থায়ী অবনতি হয় তাহলে ফাঁদ। দুইটার চেহারা একই, আর পার্থক্যটা কেবল কোম্পানির হিসাব পড়ে বোঝা যায়।",
+                en: "Right. A low is context, not a signal. If the cause of the fall is temporary it is an opportunity; if the business has permanently deteriorated it is a trap. They look identical, and only the accounts tell them apart.",
+              },
+            },
+            {
+              text: { bn: "এটা আরও পড়বে, তাই দূরে থাকা উচিত", en: "It will fall further, so stay away" },
+              why: {
+                bn: "সর্বনিম্নের কাছে থাকা ভবিষ্যতের দিক সম্পর্কে কিছু বলে না। অনেক শেয়ার সর্বনিম্ন ছুঁয়ে ঘুরে দাঁড়ায় আর অনেকগুলো আরও পড়ে। উত্তরটা ছকে নেই, কোম্পানির হিসাবে আছে।",
+                en: "Being near a low says nothing about direction. Plenty of shares turn at a low and plenty fall further. The answer is not in the chart, it is in the accounts.",
+              },
+            },
+          ],
+        },
+      ],
+    },
+  },
+},
+
+/* ---------------------------------------------------------- */
+"apps-and-sites": {
+  bn: `
+<p>তথ্য খোঁজার জায়গা এখন অনেক, আর সেটাই সমস্যা। একটা শেয়ারের নাম লিখে খুঁজলে যা আসে তার মধ্যে থাকে অফিসিয়াল তথ্য, সংবাদমাধ্যমের প্রতিবেদন, ব্লগ, ইউটিউব, আর অসংখ্য মেসেজিং গ্রুপ। এদের নির্ভরযোগ্যতা এক নয়, আর পার্থক্যটা জানা না থাকলে গুজব আর ঘোষণা একই রকম দেখায়।</p>
+
+<p>এই লেখাটা একটা ক্রম দেয়: কোন তথ্য কোথা থেকে নেবেন, আর কোন উৎসকে কতটা ওজন দেবেন।</p>
+
+<div class="at-a-glance">
+<p class="at-a-glance-label">এক নজরে</p>
+<ul>
+<li>মূল উৎস সবসময় ডিএসইর নিজের সাইট আর কোম্পানির নিজের কাগজ।</li>
+<li>সংবাদমাধ্যম দ্রুত, আর দ্রুত মানে মাঝেমধ্যে ভুল।</li>
+<li>যে উৎস দাম ছাড়া কিছু বলে না, সেটা সিদ্ধান্তের ভিত্তি নয়।</li>
+<li>মেসেজিং গ্রুপে সুপারিশ আসে, আর সেখানে কেউ দায় নেয় না।</li>
+<li>একটা তথ্য দুই জায়গায় মিলিয়ে দেখা এক মিনিটের অভ্যাস।</li>
+</ul>
+</div>
+
+<h2>উৎসের সিঁড়ি</h2>
+
+${mount("app-bins")}
+
+<p>নিয়মটা সরল: <strong>যে তথ্যের উপর টাকা রাখছেন, সেটা মূল উৎসে মিলিয়ে নিন।</strong> মূল উৎস মানে যেখানে তথ্যটা প্রথম প্রকাশিত হয়েছে: ডিএসইর ঘোষণার পাতা, কোম্পানির নিজের ওয়েবসাইট, বাংলাদেশ ব্যাংক বা বিএসইসির নিজের প্রকাশনা।</p>
+
+<h2>কোথায় কী পাবেন</h2>
+
+${mount("app-compare")}
+
+<p>ডিএসইর সাইট দেখতে পুরনো ধাঁচের, আর এটাই সবচেয়ে নির্ভরযোগ্য জায়গা। এখানে প্রতিটা তালিকাভুক্ত কোম্পানির পাতা আছে যেখানে থাকে বর্তমান দাম, আর্থিক সারসংক্ষেপ, লভ্যাংশের ইতিহাস, শেয়ারহোল্ডিংয়ের বিন্যাস আর প্রতিটা ঘোষণা। <a class="term" href="/money/basics-3/dse-website.html">ডিএসইর সাইট থেকে যা পাবেন</a> লেখাটা এটার ভেতরটা ধরে ধরে দেখায়।</p>
+
+<div class="note">
+<p>ব্রোকারের অ্যাপ লেনদেনের জন্য, গবেষণার জন্য নয়। অনেক অ্যাপে সুপারিশ আর সংকেত থাকে, আর সেগুলোর পেছনে কোনো পদ্ধতি প্রকাশ করা হয় না। একটা সংকেত যার পদ্ধতি জানা নেই সেটা একটা মতামত, আর অন্যের মতামতের উপর নিজের টাকা রাখা যায় না।</p>
+</div>
+
+<h2>মেসেজিং গ্রুপ নিয়ে</h2>
+
+<p>এটা আলাদা করে বলা দরকার, কারণ বাংলাদেশে শেয়ারবাজারের অনেক আলোচনা হোয়াটসঅ্যাপ, টেলিগ্রাম আর ফেসবুক গ্রুপে হয়। এদের মধ্যে কিছু সত্যিই কাজের, যেখানে মানুষ হিসাব নিয়ে আলোচনা করেন। আর অনেকগুলো নয়।</p>
+
+<p>একটা সহজ পরীক্ষা: গ্রুপে যিনি একটা শেয়ার সুপারিশ করছেন, তিনি কি তার যুক্তিটা লিখছেন, নাকি কেবল নাম আর একটা লক্ষ্য দাম দিচ্ছেন? যুক্তি ছাড়া লক্ষ্য দাম একটা সংখ্যা যার পেছনে কিছু নেই। আর দ্বিতীয় প্রশ্ন: তিনি কি নিজে ওই শেয়ার ধরে আছেন, আর সেটা বলছেন?</p>
+
+${mount("app-quiz")}
+
+<h2>নিজের একটা ব্যবস্থা বানান</h2>
+
+<p>দিনে দশটা উৎস দেখার দরকার নেই। যা দরকার তা হলো একটা ছোট, নির্ভরযোগ্য ব্যবস্থা যা আপনি সত্যিই চালাতে পারবেন।</p>
+
+<p>একটা কাজের ব্যবস্থা এরকম হতে পারে। দৈনিক কিছুই না। সপ্তাহে একবার ডিএসইর ঘোষণার পাতায় আপনার শেয়ারগুলোর নাম খুঁজে দেখা, দশ মিনিট। প্রান্তিক ফলাফলের মৌসুমে কোম্পানির প্রতিবেদন পড়া। আর বছরে একবার বার্ষিক প্রতিবেদন।</p>
+
+<p>এটুকুই যথেষ্ট, আর এটুকু চালানো সম্ভব। যে ব্যবস্থা চালানো যায় না সেটা কোনো ব্যবস্থা নয়।</p>
+
+${mount("app-drill")}
+
+<div class="checklist">
+<ul>
+<li>ডিএসইর ঘোষণার পাতাটা বুকমার্ক করুন।</li>
+<li>আপনার প্রতিটা কোম্পানির নিজের ওয়েবসাইটের ঠিকানা এক জায়গায় লিখুন।</li>
+<li>সপ্তাহে একটা নির্দিষ্ট দিন ঠিক করুন দশ মিনিটের জন্য।</li>
+<li>যে গ্রুপগুলো কেবল নাম আর লক্ষ্য দাম দেয়, সেগুলোর নোটিফিকেশন বন্ধ করুন।</li>
+</ul>
+</div>
+`,
+  en: `
+<p>There are many places to find information now, and that is the problem. Search a share's name and you get official filings, press reports, blogs, videos and any number of messaging groups. They are not equally reliable, and without knowing the difference a rumour and an announcement look the same.</p>
+
+<p>This lesson gives you an order of precedence: where to take which information from, and how much weight each source deserves.</p>
+
+<div class="at-a-glance">
+<p class="at-a-glance-label">At a glance</p>
+<ul>
+<li>The primary source is always the DSE's own site and the company's own documents.</li>
+<li>The press is fast, and fast sometimes means wrong.</li>
+<li>A source that talks about nothing but price is not a basis for a decision.</li>
+<li>Messaging groups produce recommendations, and nobody there carries responsibility.</li>
+<li>Checking one fact in two places is a one-minute habit.</li>
+</ul>
+</div>
+
+<h2>The ladder of sources</h2>
+
+${mount("app-bins")}
+
+<p>The rule is simple: <strong>whatever you are putting money on, verify at the primary source.</strong> Primary means where it was first published: the DSE announcements page, the company's own website, or a Bangladesh Bank or BSEC publication.</p>
+
+<h2>Where to find what</h2>
+
+${mount("app-compare")}
+
+<p>The DSE site looks dated, and it is the most reliable place there is. It carries a page for each listed company with the current price, a financial summary, dividend history, the shareholding pattern and every announcement. The lesson on <a class="term" href="/money/basics-3/dse-website.html">what you can get from the DSE site</a> goes through it in detail.</p>
+
+<div class="note">
+<p>A broker's app is for trading, not for research. Many carry recommendations and signals with no published method behind them. A signal whose method you do not know is an opinion, and you cannot rest your own money on somebody else's opinion.</p>
+</div>
+
+<h2>About messaging groups</h2>
+
+<p>This deserves its own section, because a great deal of share market discussion here happens in WhatsApp, Telegram and Facebook groups. Some of them are genuinely useful, with people discussing accounts. Many are not.</p>
+
+<p>One easy test: when somebody recommends a share, do they write out their reasoning, or only give a name and a target price? A target price without reasoning is a number with nothing behind it. And the second question: do they hold the share themselves, and do they say so?</p>
+
+${mount("app-quiz")}
+
+<h2>Build yourself a routine</h2>
+
+<p>You do not need ten sources a day. What you need is a small, reliable routine you will actually keep to.</p>
+
+<p>A workable one looks like this. Nothing daily. Once a week, search your holdings' names on the DSE announcements page, ten minutes. During results season, read the company's report. And once a year, the annual report.</p>
+
+<p>That is enough, and it is sustainable. A routine you cannot keep to is not a routine.</p>
+
+${mount("app-drill")}
+
+<div class="checklist">
+<ul>
+<li>Bookmark the DSE announcements page.</li>
+<li>Write down each of your companies' own website addresses in one place.</li>
+<li>Pick one fixed day of the week for the ten minutes.</li>
+<li>Turn off notifications from groups that only give names and target prices.</li>
+</ul>
+</div>
+`,
+  blocks: {
+    "app-bins": {
+      kind: "bins",
+      title: { bn: "মূল উৎস আর দ্বিতীয় হাতের উৎস", en: "Primary sources and second-hand ones" },
+      note: { bn: "প্রতিটা উৎসকে ঠিক বাক্সে ফেলুন। মূল উৎস মানে যেখানে তথ্যটা প্রথম প্রকাশিত হয়েছে।", en: "Drop each source into the right box. Primary means where it was first published." },
+      bins: [
+        { id: "primary", label: { bn: "মূল উৎস", en: "Primary" }, tone: "good" },
+        { id: "secondary", label: { bn: "দ্বিতীয় হাতের", en: "Second-hand" }, tone: "warn" },
+      ],
+      items: [
+        {
+          text: { bn: "ডিএসইর ঘোষণার পাতা", en: "The DSE announcements page" },
+          bin: "primary",
+          why: { bn: "কোম্পানি এখানেই আনুষ্ঠানিকভাবে জানায়, আর সবাই একসঙ্গে দেখে।", en: "This is where a company files officially, and everybody sees it at once." },
+        },
+        {
+          text: { bn: "কোম্পানির বার্ষিক প্রতিবেদন", en: "The company's annual report" },
+          bin: "primary",
+          why: { bn: "নিরীক্ষিত হিসাব আর ব্যবস্থাপনার নিজের ভাষ্য, এক জায়গায়।", en: "Audited accounts and management's own account of the year, in one place." },
+        },
+        {
+          text: { bn: "একটা দৈনিক পত্রিকার বাজার প্রতিবেদন", en: "A daily newspaper's market report" },
+          bin: "secondary",
+          why: { bn: "দ্রুত আর কাজের, তবে সংক্ষিপ্ত করা আর ব্যাখ্যা করা। সংখ্যাটা মূল উৎসে মিলিয়ে নিন।", en: "Fast and useful, and both condensed and interpreted. Check the number at source." },
+        },
+        {
+          text: { bn: "বাংলাদেশ ব্যাংকের মুদ্রানীতি বিবৃতি", en: "A Bangladesh Bank monetary policy statement" },
+          bin: "primary",
+          why: { bn: "কেন্দ্রীয় ব্যাংক নিজের সিদ্ধান্ত নিজের ভাষায় বলছে।", en: "The central bank stating its own decision in its own words." },
+        },
+        {
+          text: { bn: "একটা ইউটিউব ভিডিও যেখানে বলা হচ্ছে কোনটা কিনতে হবে", en: "A video telling you what to buy" },
+          bin: "secondary",
+          why: { bn: "এটা কেবল দ্বিতীয় হাতের নয়, এটার একটা স্বার্থও থাকতে পারে। বক্তা নিজে ওই শেয়ার ধরে আছেন কি না, সেটা প্রায়ই বলা হয় না।", en: "Not merely second-hand: it can carry an interest too. Whether the speaker holds the share is usually not stated." },
+        },
+        {
+          text: { bn: "ব্রোকারের অ্যাপের কোটের পাতা", en: "The quote page in a broker's app" },
+          bin: "primary",
+          why: { bn: "দামের জন্য এটা মূল উৎসের সমান, কারণ এটা সরাসরি এক্সচেঞ্জ থেকে আসছে। তবে অ্যাপের সুপারিশ আলাদা জিনিস।", en: "For prices this counts as primary, because it comes straight from the exchange. Recommendations in the same app are a different thing." },
+        },
+      ],
+    },
+    "app-compare": {
+      kind: "compare",
+      title: { bn: "কোন প্রশ্নের উত্তর কোথায়", en: "Which question, which place" },
+      note: { bn: "বাঁ দিকে প্রশ্ন, তারপর কোথায় খুঁজবেন আর কেন সেখানেই।", en: "The question on the left, then where to look and why there." },
+      columns: [
+        { bn: "প্রথমে কোথায়", en: "Where to look first" },
+        { bn: "কেন সেখানেই", en: "Why there" },
+      ],
+      rows: [
+        {
+          label: { bn: "আজকের দাম কত", en: "What is today's price" },
+          cells: [
+            { bn: "ডিএসইর সাইট বা ব্রোকারের অ্যাপ", en: "The DSE site or your broker's app" },
+            { bn: "দুইটাই সরাসরি এক্সচেঞ্জ থেকে আসে", en: "Both come straight from the exchange" },
+          ],
+        },
+        {
+          label: { bn: "কোম্পানির নতুন ঘোষণা আছে কি", en: "Is there a new announcement" },
+          cells: [
+            { bn: "ডিএসইর ঘোষণার পাতা", en: "The DSE announcements page" },
+            { bn: "কোম্পানি এখানেই প্রথম জানায়, আর সবাই একসঙ্গে দেখে", en: "This is where a company files first, and everybody sees it at once" },
+          ],
+        },
+        {
+          label: { bn: "গত বছর কেমন গেল", en: "How was last year" },
+          cells: [
+            { bn: "কোম্পানির বার্ষিক প্রতিবেদন", en: "The company's annual report" },
+            { bn: "নিরীক্ষিত হিসাব, আর ব্যবস্থাপনার নিজের ব্যাখ্যা", en: "Audited accounts, plus management's own explanation" },
+          ],
+        },
+        {
+          label: { bn: "সুদের হার কোন দিকে যাচ্ছে", en: "Which way are rates going" },
+          cells: [
+            { bn: "বাংলাদেশ ব্যাংকের প্রকাশনা", en: "Bangladesh Bank publications" },
+            { bn: "সিদ্ধান্তটা যারা নেন তাদের নিজের কথা", en: "The words of the people taking the decision" },
+          ],
+        },
+        {
+          label: { bn: "একটা নিয়ম বদলেছে কি", en: "Has a rule changed" },
+          cells: [
+            { bn: "বিএসইসির নির্দেশনা", en: "BSEC directives" },
+            { bn: "সংবাদে সারাংশ আসে, শর্তগুলো আসে না", en: "The press carries a summary; the conditions it does not" },
+          ],
+        },
+      ],
+    },
+    "app-drill": {
+      kind: "drill",
+      title: { bn: "আপনার সাপ্তাহিক দশ মিনিট", en: "Your weekly ten minutes" },
+      note: { bn: "একবার সাজিয়ে নিলে প্রতি সপ্তাহে দশ মিনিটেই চলে।", en: "Set it up once and ten minutes a week is enough." },
+      steps: [
+        { text: { bn: "ডিএসইর ঘোষণার পাতাটা বুকমার্ক করুন।", en: "Bookmark the DSE announcements page." } },
+        {
+          text: { bn: "আপনার প্রতিটা কোম্পানির নিজের ওয়েবসাইটের বিনিয়োগকারী সম্পর্কিত পাতাটা খুঁজে বের করুন।", en: "Find the investor relations page on each of your companies' own websites." },
+          hint: { bn: "বেশিরভাগ কোম্পানি সেখানেই প্রতিবেদন আর নোটিশ রাখে।", en: "That is where most companies keep reports and notices." },
+        },
+        { text: { bn: "সপ্তাহের একটা নির্দিষ্ট দিন আর সময় ঠিক করুন, আর ক্যালেন্ডারে বসান।", en: "Fix one day and time each week and put it in your calendar." } },
+        {
+          text: { bn: "এই সপ্তাহে একবার করুন: প্রতিটা কোম্পানির নাম ঘোষণার পাতায় খুঁজুন।", en: "Do it once this week: search each company's name on the announcements page." },
+        },
+        {
+          text: { bn: "যেকোনো একটা ঘোষণা খুলে পুরোটা পড়ুন, শিরোনাম নয়।", en: "Open one announcement and read it in full rather than the headline." },
+        },
+        {
+          text: { bn: "যেসব গ্রুপ বা চ্যানেল কেবল নাম আর লক্ষ্য দাম দেয়, সেগুলোর নোটিফিকেশন বন্ধ করুন।", en: "Turn off notifications from any group or channel that only gives names and target prices." },
+        },
+      ],
+    },
+    "app-quiz": {
+      kind: "quiz",
+      title: { bn: "দুইটা প্রশ্ন", en: "Two questions" },
+      questions: [
+        {
+          ask: {
+            bn: "একটা গ্রুপে কেউ লিখেছেন: এই শেয়ারটা কিনুন, টার্গেট ৮০ টাকা। কী প্রশ্ন করবেন?",
+            en: "Somebody in a group writes: buy this share, target 80 taka. What do you ask?",
+          },
+          options: [
+            {
+              text: { bn: "৮০ কেন, আর তিনি নিজে ধরে আছেন কি না", en: "Why 80, and whether they hold it themselves" },
+              right: true,
+              why: {
+                bn: "ঠিক, আর দুইটা প্রশ্নই দরকার। প্রথমটা যুক্তির খোঁজ: ৮০ কি আয়ের কোনো হিসাব থেকে এসেছে, নাকি কেবল একটা সংখ্যা? দ্বিতীয়টা স্বার্থের খোঁজ: যিনি ইতিমধ্যে কিনে রেখেছেন তার আপনাকে কেনাতে উৎসাহ থাকতে পারে, আর সেটা বলা না হলে তথ্যটা অসম্পূর্ণ।",
+                en: "Right, and both questions are needed. The first looks for reasoning: does 80 come from any calculation on earnings, or is it just a number? The second looks for interest: somebody already holding has a reason to want you buying, and if that is unstated the information is incomplete.",
+              },
+            },
+            {
+              text: { bn: "কিছু জিজ্ঞেস করি না, ছোট অঙ্কে কিনে দেখি", en: "Ask nothing and try a small amount" },
+              why: {
+                bn: "ছোট অঙ্ক ক্ষতি কমায়, আর অভ্যাসটা তৈরি করে দেয়। যুক্তি ছাড়া কেনা যদি ছোট অঙ্কে ঠিক হয়, তাহলে বড় অঙ্কেও একদিন হবে। অভ্যাসটাই আসল ঝুঁকি।",
+                en: "A small amount limits the damage and builds the habit. If buying without reasoning is acceptable when small, one day it will be acceptable when large. The habit is the real risk.",
+              },
+            },
+            {
+              text: { bn: "গ্রুপের বাকিরা কী বলছেন সেটা দেখি", en: "See what the rest of the group says" },
+              why: {
+                bn: "একটা গ্রুপে দশজনের একমত হওয়া কোনো প্রমাণ নয়, কারণ দশজনের উৎস সাধারণত একই। এটাই ভিড়ের আচরণ, কেবল ছোট আকারে।",
+                en: "Ten people in a group agreeing is not evidence, because their source is usually the same one. That is crowd behaviour, at small scale.",
+              },
+            },
+          ],
+        },
+        {
+          ask: {
+            bn: "একটা পত্রিকায় পড়লেন যে একটা কোম্পানি ২৫% লভ্যাংশ ঘোষণা করেছে। পরের কাজ কী?",
+            en: "A newspaper says a company has declared a 25% dividend. What next?",
+          },
+          options: [
+            {
+              text: { bn: "ডিএসইর ঘোষণার পাতায় মূল ঘোষণাটা পড়ি", en: "Read the original filing on the DSE announcements page" },
+              right: true,
+              why: {
+                bn: "ঠিক, আর এক মিনিটের কাজ। মূল ঘোষণায় থাকে শর্তগুলো: নগদ নাকি বোনাস, কোন শ্রেণির শেয়ারহোল্ডারদের জন্য, রেকর্ড ডেট কবে, আর এজিএমে অনুমোদনের শর্ত আছে কি না। এই বিবরণগুলো সংক্ষিপ্ত প্রতিবেদনে প্রায়ই থাকে না।",
+                en: "Right, and it takes a minute. The filing carries the conditions: cash or bonus, for which class of shareholder, the record date, and whether it is subject to approval at the AGM. Those details are usually missing from a short report.",
+              },
+            },
+            {
+              text: { bn: "সঙ্গে সঙ্গে কিনি, লভ্যাংশ পাওয়ার জন্য", en: "Buy immediately to get the dividend" },
+              why: {
+                bn: "রেকর্ড ডেট পেরিয়ে গেলে কিনে লাভ নেই, আর দামও সাধারণত লভ্যাংশের সমান কমে যায় ওই তারিখে। শুধু লভ্যাংশের জন্য কেনা একটা পরিচিত ভুল, কারণ যা পান তা দামের পতনেই ফিরে যায়।",
+                en: "Buying after the record date gets you nothing, and the price normally falls by roughly the dividend on that date anyway. Buying just for a dividend is a familiar mistake, because what you receive comes back out of the price.",
+              },
+            },
+            {
+              text: { bn: "কিছুই না, ২৫% তো ভালোই", en: "Nothing; 25% sounds good anyway" },
+              why: {
+                bn: "২৫% অভিহিত মূল্যের শতাংশ, বাজারদরের নয়। ১০ টাকা অভিহিত মূল্যে ২৫% মানে ২.৫০ টাকা, আর শেয়ারটা যদি ১০০ টাকা হয় তাহলে সেটা ২.৫% ইল্ড। এই পার্থক্যটাই সবচেয়ে বেশি ভুল বোঝা হয়।",
+                en: "25% is a percentage of face value, not of the market price. On a 10 taka face value that is 2.50 taka, and if the share is 100 taka the yield is 2.5%. This is the most misunderstood distinction in dividends.",
+              },
+            },
+          ],
+        },
+      ],
+    },
+  },
+},
+
+/* ---------------------------------------------------------- */
+"watchlist": {
+  bn: `
+<p>ওয়াচলিস্ট মানে যেসব শেয়ার আপনি নজরে রাখছেন। বেশিরভাগ মানুষের ওয়াচলিস্টে বিশ পঁচিশটা নাম থাকে যেগুলোর কোনোটার সম্পর্কেই তারা কিছু জানেন না, আর সেই তালিকা দেখে তারা রোজ দাম দেখেন। এটা ওয়াচলিস্ট নয়, এটা একটা স্কোরবোর্ড।</p>
+
+<p>একটা কাজের ওয়াচলিস্ট আলাদা জিনিস: ছোট, কারণসহ, আর প্রতিটা নামের পাশে একটা শর্ত লেখা। এই লেখাটা দেখায় কীভাবে সেটা বানাতে হয়, আর কেন এটাই সবচেয়ে কম আলোচিত অথচ সবচেয়ে কার্যকর অভ্যাসগুলোর একটা।</p>
+
+<div class="at-a-glance">
+<p class="at-a-glance-label">এক নজরে</p>
+<ul>
+<li>ওয়াচলিস্ট নামের তালিকা নয়, শর্তের তালিকা।</li>
+<li>প্রতিটা নামের পাশে থাকবে: কেন আছে, আর কী হলে কিনবেন।</li>
+<li>আট থেকে বারোটার বেশি হলে আপনি আর নজর রাখছেন না।</li>
+<li>শর্তটা কেনার আগে লেখা হলে সিদ্ধান্তের সময় আবেগ কম থাকে।</li>
+<li>তিন মাস পর তালিকাটা কেটেছেঁটে ছোট করুন।</li>
+</ul>
+</div>
+
+<h2>একটা সারিতে কী কী থাকবে</h2>
+
+${mount("wl-steps")}
+
+<p>খেয়াল করুন প্রতিটা ঘরই একটা সিদ্ধান্তকে আগেভাগে নিয়ে ফেলার চেষ্টা। কেনার দিন আপনার মাথা ঠান্ডা থাকবে না, কারণ ওই দিন দাম নড়ছে আর সময় কম মনে হচ্ছে। তাই সিদ্ধান্তগুলো আগে নেওয়া, শান্ত অবস্থায়।</p>
+
+<div class="ex">
+<p><strong>একটা সারি, লেখা।</strong> কোম্পানি: একটা সিমেন্ট কোম্পানি। কেন আছে: দেশের নির্মাণ বাড়ছে আর এদের ঋণ কম। কী দেখছি: ডলারের দাম, কারণ ক্লিংকার আমদানি। কিনব যদি: পিই ১২ এর নিচে নামে অথবা দুই প্রান্তিকে নগদ প্রবাহ ইতিবাচক থাকে। কিনব না যদি: ঋণ ইকুইটির সমান হয়ে যায়। সর্বোচ্চ অঙ্ক: ২৫,০০০ টাকা।</p>
+</div>
+
+<h2>কেন তালিকাটা ছোট হতে হবে</h2>
+
+<p>একটা কোম্পানি সত্যিই নজরে রাখা মানে তার প্রান্তিক ফলাফল পড়া, ঘোষণাগুলো দেখা আর খাতের খবর রাখা। এটা প্রতি কোম্পানিতে বছরে কয়েক ঘণ্টার কাজ। বিশটা কোম্পানিতে এটা একটা খণ্ডকালীন চাকরি।</p>
+
+<p>বাস্তবে যা হয়: বিশটা নামের তালিকা মানে বিশটা নামের কোনোটাই সত্যিই দেখা হয় না, আর সিদ্ধান্তটা শেষে দাম দেখেই নেওয়া হয়। ছোট তালিকা আপনাকে বাধ্য করে বাছতে, আর বাছাই করাটাই বিনিয়োগের আসল কাজ।</p>
+
+${mount("wl-order")}
+
+<h2>শর্তটা দাম নিয়ে হবে না, ঘটনা নিয়ে</h2>
+
+<p>একটা সাধারণ ভুল হলো শর্ত লেখা এভাবে: "৪৫ টাকায় নামলে কিনব"। এটা একটা শর্ত বটে, আর এর পেছনে কিছু নেই। কেন ৪৫? কারণ সংখ্যাটা গোল, নাকি কারণ ৪৫ টাকায় পিই ১১ হয় যা খাতের গড়ের নিচে?</p>
+
+<p>ভালো শর্তগুলো সাধারণত ব্যবসা নিয়ে: দুই প্রান্তিকে নগদ প্রবাহ ইতিবাচক হলে, ঋণ কমতে শুরু করলে, নতুন কারখানা চালু হলে, বা মুনাফার হার আবার ১৫% এ ফিরলে। এগুলো মাপা যায়, আর এগুলোর পেছনে একটা যুক্তি আছে।</p>
+
+<div class="note">
+<p>দামের শর্ত ব্যবহার করা যায়, তবে সেটা যেন একটা হিসাব থেকে আসে। "পিই ১২ এর নিচে" একটা দামের শর্ত যার পেছনে যুক্তি আছে। "৪৫ টাকা" একটা ইচ্ছা।</p>
+</div>
+
+<h2>তালিকাটা কীভাবে ব্যবহার করবেন</h2>
+
+<p>সপ্তাহে একবার, দশ মিনিট। প্রতিটা নামের ঘোষণার পাতা দেখুন, আর শর্তটা পূরণ হয়েছে কি না দেখুন। বেশিরভাগ সপ্তাহে কিছুই হবে না, আর সেটাই স্বাভাবিক। যে সপ্তাহে একটা শর্ত পূরণ হবে, সেই সপ্তাহে আপনার কাছে ইতিমধ্যে একটা সিদ্ধান্ত লেখা আছে।</p>
+
+<p>প্রান্তিক ফলাফলের মৌসুমে একটু বেশি সময় লাগবে, কারণ তখন আপনার শর্তগুলোর বেশিরভাগ ওখানেই যাচাই হয়।</p>
+
+${mount("wl-drill")}
+
+<h2>তিন মাস পর কাটাছাঁট</h2>
+
+<p>প্রতি তিন মাসে তালিকাটা খুলে তিনটা প্রশ্ন করুন। এই কোম্পানিটা কেন তালিকায় আছে, আমি কি এখনো মনে করতে পারছি? গত তিন মাসে আমি কি এর কোনো খবর পড়েছি? শর্তটা কি এখনো অর্থবহ, নাকি পরিস্থিতি বদলে গেছে?</p>
+
+<p>তিনটার কোনোটার উত্তর না হলে নামটা কেটে দিন। কেটে দেওয়া মানে কোম্পানিটা খারাপ নয়, মানে এটা আপনার নজরের যোগ্য নয় এই মুহূর্তে, আর সেটা সৎ স্বীকারোক্তি।</p>
+
+<div class="checklist">
+<ul>
+<li>আপনার এখনকার ওয়াচলিস্টে কতগুলো নাম আছে গুনুন।</li>
+<li>প্রতিটার পাশে এক বাক্যে লিখুন কেন সেটা ওখানে আছে।</li>
+<li>যেগুলোর জন্য বাক্যটা লিখতে পারলেন না, সেগুলো কেটে দিন।</li>
+<li>বাকিগুলোর জন্য একটা করে কেনার শর্ত লিখুন, দাম নিয়ে নয়, ঘটনা নিয়ে।</li>
+</ul>
+</div>
+
+${mount("wl-quiz")}
+`,
+  en: `
+<p>A watchlist is the shares you are keeping an eye on. Most people's watchlists carry twenty or twenty-five names they know nothing about, and they look at the prices every day. That is not a watchlist, it is a scoreboard.</p>
+
+<p>A useful watchlist is a different object: short, with reasons, and a condition written beside every name. This lesson shows how to build one, and why it is among the least discussed and most effective habits there is.</p>
+
+<div class="at-a-glance">
+<p class="at-a-glance-label">At a glance</p>
+<ul>
+<li>A watchlist is a list of conditions, not a list of names.</li>
+<li>Beside each name: why it is there, and what would make you buy.</li>
+<li>Past eight to twelve names you are no longer watching anything.</li>
+<li>A condition written before you buy means less emotion when you decide.</li>
+<li>Every three months, cut the list down.</li>
+</ul>
+</div>
+
+<h2>What one row contains</h2>
+
+${mount("wl-steps")}
+
+<p>Notice that every field is an attempt to take a decision in advance. On the day you buy your head will not be clear, because the price is moving and time feels short. So the decisions get taken beforehand, calmly.</p>
+
+<div class="ex">
+<p><strong>One written row.</strong> Company: a cement producer. Why it is here: construction is growing and it has little debt. What I am watching: the dollar, because clinker is imported. I will buy if: the PE falls below 12, or cash flow is positive for two quarters. I will not buy if: debt reaches the level of equity. Maximum amount: 25,000 taka.</p>
+</div>
+
+<h2>Why the list has to be short</h2>
+
+<p>Genuinely watching a company means reading its quarterly results, following its announcements and keeping up with its sector. That is a few hours a year per company. Across twenty companies it is a part-time job.</p>
+
+<p>What actually happens: a list of twenty names means none of the twenty is really watched, and the decision ends up being made on the price. A short list forces you to choose, and choosing is the real work of investing.</p>
+
+${mount("wl-order")}
+
+<h2>The condition should be about an event, not a price</h2>
+
+<p>A common mistake is writing the condition as "buy if it falls to 45". That is a condition, and there is nothing behind it. Why 45? Because the number is round, or because at 45 the PE is 11, which is below the sector average?</p>
+
+<p>Good conditions are usually about the business: cash flow positive for two quarters, debt starting to fall, a new plant coming on line, margins back at 15%. Those are measurable, and there is reasoning behind them.</p>
+
+<div class="note">
+<p>A price condition is fine, as long as it comes out of a calculation. "PE below 12" is a price condition with reasoning behind it. "45 taka" is a wish.</p>
+</div>
+
+<h2>How to use the list</h2>
+
+<p>Once a week, ten minutes. Check the announcements page for each name and see whether a condition has been met. In most weeks nothing will have happened, and that is normal. In the week when a condition is met, you already have a decision written down.</p>
+
+<p>Results season takes a little longer, because most of your conditions are verified there.</p>
+
+${mount("wl-drill")}
+
+<h2>Pruning every three months</h2>
+
+<p>Every three months, open the list and ask three questions. Why is this company here, and can I still remember? Have I read anything about it in the past three months? Is the condition still meaningful, or has the situation changed?</p>
+
+<p>If any answer is no, cut the name. Cutting does not mean the company is bad; it means it does not deserve your attention right now, and that is an honest admission.</p>
+
+<div class="checklist">
+<ul>
+<li>Count how many names are on your current watchlist.</li>
+<li>Write one sentence beside each saying why it is there.</li>
+<li>Cut the ones where you could not write the sentence.</li>
+<li>For the rest, write one buying condition each, about an event rather than a price.</li>
+</ul>
+</div>
+
+${mount("wl-quiz")}
+`,
+  blocks: {
+    "wl-steps": {
+      kind: "figure",
+      shape: "steps",
+      title: { bn: "একটা ওয়াচলিস্টের সারি", en: "One row of a watchlist" },
+      note: { bn: "ছয়টা ঘর, আর প্রতিটাই একটা সিদ্ধান্ত আগেভাগে নেওয়া।", en: "Six fields, each of them a decision taken in advance." },
+      parts: [
+        { text: { bn: "কোম্পানি", en: "The company" }, note: { bn: "নাম আর টিকার কোড", en: "The name and the ticker" } },
+        { text: { bn: "কেন তালিকায়", en: "Why it is on the list" }, note: { bn: "এক বাক্য। লিখতে না পারলে সারিটা তৈরি হবে না।", en: "One sentence. If you cannot write it, the row does not get made." }, tone: "lead" },
+        { text: { bn: "কী নজরে রাখছি", en: "What I am watching" }, note: { bn: "যে একটা জিনিস বদলালে এই কোম্পানির আয় বদলায়", en: "The one thing that, when it changes, changes the earnings" } },
+        { text: { bn: "কিনব যদি", en: "I buy if" }, note: { bn: "একটা মাপা যায় এমন ঘটনা, একটা ইচ্ছা নয়", en: "A measurable event, not a wish" }, tone: "good" },
+        { text: { bn: "কিনব না যদি", en: "I do not buy if" }, note: { bn: "এই ঘরটা প্রায় কেউ লেখে না, আর এটাই সবচেয়ে বেশি বাঁচায়", en: "Almost nobody writes this field, and it saves the most" }, tone: "warn" },
+        { text: { bn: "সর্বোচ্চ অঙ্ক", en: "Maximum amount" }, note: { bn: "কেনার আগেই ঠিক করা, যাতে উত্তেজনায় বাড়ে না", en: "Set before buying, so excitement cannot raise it" } },
+      ],
+      caption: {
+        bn: "সারিটা এক জায়গায় থাকলেই হলো: একটা খাতা, একটা স্প্রেডশিট বা একটা নোট। যন্ত্রটা গুরুত্বপূর্ণ নয়, লেখাটা গুরুত্বপূর্ণ।",
+        en: "It only needs to live somewhere: a notebook, a spreadsheet, a note. The tool does not matter; the writing does.",
+      },
+    },
+    "wl-order": {
+      kind: "order",
+      title: { bn: "একটা নাম তালিকায় আসার ক্রম", en: "How a name gets on to the list" },
+      note: { bn: "নাম শোনা থেকে সারি লেখা পর্যন্ত।", en: "From hearing a name to writing the row." },
+      items: [
+        {
+          text: { bn: "কোথাও কোম্পানিটার নাম শুনলেন বা পড়লেন", en: "You hear or read the company's name somewhere" },
+          why: { bn: "এখানে কিছুই সিদ্ধান্ত নয়। নাম শোনা তথ্য নয়।", en: "Nothing is decided here. Hearing a name is not information." },
+        },
+        {
+          text: { bn: "কোম্পানিটা কী করে, তিন বাক্যে লিখুন", en: "Write three sentences on what it does" },
+          why: { bn: "লিখতে না পারলে এখানেই থামুন। এটাই সবচেয়ে বড় ছাঁকনি।", en: "If you cannot, stop here. This is the largest filter." },
+        },
+        {
+          text: { bn: "শেষ দুইটা প্রান্তিক ফলাফল পড়ুন", en: "Read the last two quarterly results" },
+          why: { bn: "আয়, মুনাফা আর নগদ প্রবাহ। এতেই বেশিরভাগ প্রশ্নের উত্তর থাকে।", en: "Revenue, profit and cash flow. Most questions are answered there." },
+        },
+        {
+          text: { bn: "এই কোম্পানির আয় কীসের উপর নির্ভর করে, বের করুন", en: "Work out what its earnings depend on" },
+          why: { bn: "এটাই পরে আপনার নজরে রাখার জিনিস হবে।", en: "This becomes the thing you watch." },
+        },
+        {
+          text: { bn: "কিনব যদি আর কিনব না যদি, দুইটাই লিখুন", en: "Write both the buy condition and the do-not-buy condition" },
+          why: { bn: "দ্বিতীয়টা ছাড়া প্রথমটার কোনো সীমা থাকে না।", en: "Without the second, the first has no boundary." },
+        },
+        {
+          text: { bn: "সর্বোচ্চ অঙ্ক ঠিক করে সারিটা তালিকায় বসান", en: "Set the maximum amount and add the row" },
+          why: { bn: "এখন এটা একটা ওয়াচলিস্টের সারি, একটা নাম নয়।", en: "Now it is a watchlist row rather than a name." },
+        },
+      ],
+    },
+    "wl-drill": {
+      kind: "drill",
+      title: { bn: "আজই একটা সারি লিখুন", en: "Write one row today" },
+      note: { bn: "একটা কোম্পানি, একটা সারি। বিশটা নয়।", en: "One company, one row. Not twenty." },
+      steps: [
+        {
+          text: { bn: "একটা কোম্পানি বাছুন যেটার নাম আপনি চেনেন কিন্তু হিসাব দেখেননি।", en: "Pick a company whose name you know but whose accounts you have not read." },
+        },
+        {
+          text: { bn: "তিন বাক্যে লিখুন সে কী বেচে, কে কেনে, আর টাকা কোথা থেকে আসে।", en: "Write three sentences: what it sells, who buys, where the money comes from." },
+        },
+        {
+          text: { bn: "ডিএসইর সাইটে তার শেষ দুইটা প্রান্তিক ফলাফল খুলে আয় আর মুনাফা লিখুন।", en: "Open its last two quarterly results on the DSE site and note revenue and profit." },
+        },
+        {
+          text: { bn: "এক বাক্যে লিখুন কী বদলালে এই কোম্পানির আয় বদলাবে।", en: "Write one sentence on what change would change its earnings." },
+          hint: { bn: "ডলার, সুদের হার, একটা কাঁচামালের দাম, একটা সরকারি সিদ্ধান্ত। সাধারণত একটা বা দুইটা।", en: "The dollar, rates, one raw material, a government decision. Usually one or two." },
+        },
+        {
+          text: { bn: "কিনব যদি আর কিনব না যদি, দুইটা শর্ত লিখুন।", en: "Write a buy condition and a do-not-buy condition." },
+        },
+        {
+          text: { bn: "সারিটা এমন জায়গায় রাখুন যেখানে আপনি সপ্তাহে একবার খুলবেন।", en: "Put the row somewhere you will open once a week." },
+        },
+      ],
+    },
+    "wl-quiz": {
+      kind: "quiz",
+      title: { bn: "দুইটা প্রশ্ন", en: "Two questions" },
+      questions: [
+        {
+          ask: {
+            bn: "আপনার ওয়াচলিস্টে একটা কোম্পানি আছে ছয় মাস ধরে, আর আপনি মনে করতে পারছেন না কেন যোগ করেছিলেন। কী করবেন?",
+            en: "A company has been on your watchlist for six months and you cannot remember why you added it. What do you do?",
+          },
+          options: [
+            {
+              text: { bn: "রেখে দিই, হয়তো কোনো কারণ ছিল", en: "Leave it; there was probably a reason" },
+              why: {
+                bn: "যে কারণ মনে নেই সেটা সিদ্ধান্তে কাজে লাগবে না। আর তালিকায় অকারণে থাকা নামগুলোই তালিকাটাকে বড় করে, আর বড় তালিকা মানে কোনোটাই আসলে দেখা হয় না।",
+                en: "A reason you cannot remember cannot help a decision. And names sitting there for no reason are what make a list long, and a long list means nothing is really watched.",
+              },
+            },
+            {
+              text: { bn: "কেটে দিই, আর দরকার হলে আবার যাচাই করে যোগ করি", en: "Cut it, and add it again after checking if it matters" },
+              right: true,
+              why: {
+                bn: "ঠিক। কেটে দেওয়া বিনামূল্যে, আর আবার যোগ করাও বিনামূল্যে। যা বিনামূল্যে নয় তা হলো একটা লম্বা তালিকা নিয়ে ঘোরা, কারণ সেটা আপনার প্রতিটা নামের জন্য বরাদ্দ মনোযোগ কমিয়ে দেয়।",
+                en: "Right. Cutting is free and re-adding is free. What is not free is carrying a long list, because it reduces the attention available for every name on it.",
+              },
+            },
+            {
+              text: { bn: "দাম দেখি, বেড়ে থাকলে রাখি", en: "Look at the price and keep it if it has risen" },
+              why: {
+                bn: "দাম বাড়া কোনো কারণ তৈরি করে না, এটা কেবল আপনাকে বলে যে অন্যরা কিনেছেন। ওয়াচলিস্টের পুরো উদ্দেশ্য হলো দাম নয় বরং যুক্তি দিয়ে চলা।",
+                en: "A rising price creates no reason; it only tells you others have bought. The whole purpose of a watchlist is to run on reasoning rather than on price.",
+              },
+            },
+          ],
+        },
+        {
+          ask: {
+            bn: "কোন কেনার শর্তটা বেশি কাজের?",
+            en: "Which buying condition is more useful?",
+          },
+          options: [
+            {
+              text: { bn: "দাম ৪০ টাকায় নামলে কিনব", en: "Buy if the price falls to 40" },
+              why: {
+                bn: "সংখ্যাটা কোথা থেকে এল? যদি একটা হিসাব থেকে আসে তাহলে ঠিক আছে, আর যদি কেবল আজকের দামের চেয়ে কম বলে বাছা হয়, তাহলে এটা একটা ইচ্ছা। আর একটা বিপদ আছে: দাম ৪০ এ নামতে পারে ঠিক সেই কারণে যা কোম্পানিটাকে আর কেনার যোগ্য রাখে না।",
+                en: "Where did the number come from? If it came from a calculation, fine; if it was picked because it is below today's price, it is a wish. And there is a danger: the price may reach 40 for exactly the reason that makes the company no longer worth buying.",
+              },
+            },
+            {
+              text: { bn: "টানা দুই প্রান্তিকে পরিচালন নগদ প্রবাহ ইতিবাচক হলে কিনব", en: "Buy if operating cash flow is positive for two consecutive quarters" },
+              right: true,
+              why: {
+                bn: "ঠিক। এটা ব্যবসার একটা মাপা যায় এমন উন্নতি, আর এটা পূরণ হলে কোম্পানিটা সত্যিই বদলেছে। দামের শর্ত কেবল বলে বাজার কী ভাবছে; ঘটনার শর্ত বলে ব্যবসাটা কী করছে। আর নগদ প্রবাহ বেছে নেওয়ার কারণ আছে: মুনাফার চেয়ে এটা সাজানো কঠিন।",
+                en: "Right. It is a measurable improvement in the business, and when it is met the company really has changed. A price condition tells you what the market thinks; an event condition tells you what the business is doing. And cash flow is chosen for a reason: it is harder to dress up than profit.",
+              },
+            },
+            {
+              text: { bn: "দুইটাই সমান, কারণ দুইটাই শর্ত", en: "Equally useful, since both are conditions" },
+              why: {
+                bn: "গঠনে দুইটাই শর্ত, আর তথ্যের দিক থেকে নয়। প্রথমটার পূরণ হওয়া কোম্পানি সম্পর্কে কিছুই বলে না, দ্বিতীয়টার পূরণ হওয়া একটা নির্দিষ্ট উন্নতির প্রমাণ।",
+                en: "Both are conditions in form and not in information. The first being met says nothing about the company; the second being met is evidence of a specific improvement.",
+              },
+            },
+          ],
+        },
+      ],
+    },
+  },
+},
+
+/* ---------------------------------------------------------- */
+"costs-and-taxes": {
+  bn: `
+<p>আপনার হাতে যা আসে তা হলো রিটার্ন মাইনাস খরচ মাইনাস কর। প্রথম সংখ্যাটা নিয়ে সবাই কথা বলেন, আর পরের দুইটা নিয়ে প্রায় কেউ না, যদিও পরের দুইটাই সবচেয়ে নিশ্চিত।</p>
+
+<p><a class="term" href="/money/basics-2/cost-of-churn.html">বারবার কেনাবেচার দাম</a> লেখাটা খরচের চক্রবৃদ্ধি প্রভাবটা দেখিয়েছে। এই লেখাটা তালিকাটা সম্পূর্ণ করে: বাংলাদেশে একজন ব্যক্তি বিনিয়োগকারীর জন্য কোথায় কোথায় টাকা কাটা হয়, আর কোনটা কমানো যায় আর কোনটা যায় না।</p>
+
+<div class="at-a-glance">
+<p class="at-a-glance-label">এক নজরে</p>
+<ul>
+<li>খরচ তিন ধরনের: লেনদেনের, ধরে রাখার আর কর।</li>
+<li>লভ্যাংশে উৎসে কর কাটা হয়, আর হার নির্ভর করে টিআইএন আছে কি না তার উপর।</li>
+<li>মূলধনি মুনাফার কর কাঠামো সময়ে সময়ে বদলেছে, তাই বর্তমান নিয়ম দেখে নিন।</li>
+<li>ব্রেক ইভেন দাম কেনার দামের চেয়ে বেশি, আর সেটা হিসাব করা যায়।</li>
+<li>যা কমানো যায় তা হলো লেনদেনের সংখ্যা, আর সেটাই সবচেয়ে বড় লিভার।</li>
+</ul>
+</div>
+
+<h2>খরচের তিনটা স্তর</h2>
+
+${mount("cost-stack")}
+
+<p>স্তরগুলোর ক্রম গুরুত্বপূর্ণ। লেনদেনের খরচ আপনি নিয়ন্ত্রণ করেন, কারণ আপনি ঠিক করেন কতবার কিনবেন। ধরে রাখার খরচ আংশিক নিয়ন্ত্রণে, কারণ আপনি ঠিক করেন কোন তহবিল বা কোন ব্রোকার। কর আপনার নিয়ন্ত্রণে নয়, কেবল কখন দেবেন সেটা কিছুটা।</p>
+
+<h2>ব্রেক ইভেন: আসলে কত দামে বেচলে সমান হয়</h2>
+
+${mount("cost-break")}
+
+<p>এই হিসাবটা প্রায় কেউ করেন না, আর এটাই সবচেয়ে দরকারি হিসাবগুলোর একটা। আপনি ৫০ টাকায় কিনলেন। ৫০ টাকায় বেচলে আপনার লোকসান হবে, কারণ দুই দিকের কমিশন আর কর দিতে হয়েছে। সমান হতে হলে দামটা একটু বেশি হতে হবে, আর যন্ত্রটা সেই সংখ্যাটা বলে দেয়।</p>
+
+<p>কেন এটা কাজের: এটা আপনাকে দেখায় কম লেনদেন হওয়া শেয়ারে ঢোকা কতটা ব্যয়বহুল, আর ছোট লাভে বেরিয়ে আসার কোনো মানে হয় না কেন।</p>
+
+<h2>লভ্যাংশের উপর কর</h2>
+
+<p><a class="term" href="/money/terms/dividend.html">লভ্যাংশ</a> আপনার ব্যাংকে ঢোকার আগেই কর কেটে নেওয়া হয়, উৎসে। হারটা নির্ভর করে আপনার টিআইএন আছে কি না তার উপর, আর সাধারণত টিআইএন থাকলে হার কম।</p>
+
+<p>এখানে একটা ব্যবহারিক পরামর্শ: টিআইএন করিয়ে নিন। এটা বিনামূল্যে বা প্রায় বিনামূল্যে, অনলাইনে হয়, আর এটা লভ্যাংশে কাটা করের হার কমায়। যারা করেননি তারা প্রতিটা লভ্যাংশে বেশি কর দেন, বছরের পর বছর।</p>
+
+${mount("cost-tax")}
+
+<div class="note">
+<p>কর হার আর ছাড়ের নিয়ম প্রতি অর্থবছরে বদলাতে পারে। এই লেখাটা কাঠামোটা শেখায়, নির্দিষ্ট হারটা নয়। বর্তমান হার জাতীয় রাজস্ব বোর্ডের প্রকাশনায় বা একজন কর পেশাদারের কাছে যাচাই করে নিন, বিশেষ করে যদি অঙ্ক বড় হয়।</p>
+</div>
+
+<h2>মূলধনি মুনাফা</h2>
+
+<p>শেয়ার কিনে বেশি দামে বেচলে যে লাভ, সেটা মূলধনি মুনাফা। বাংলাদেশে ব্যক্তি বিনিয়োগকারীর তালিকাভুক্ত শেয়ারের মূলধনি মুনাফার কর কাঠামো সময়ে সময়ে বদলেছে, আর নির্দিষ্ট সীমা আর হারের শর্ত থেকেছে।</p>
+
+<p>কাঠামোগত কথাটা যা কখনো বদলায় না: যেখানে মূলধনি মুনাফায় কর আছে, সেখানে বেশি নাড়াচাড়া মানে সেই কর আগে দেওয়া, আর আগে দেওয়া টাকা আর চক্রবৃদ্ধিতে অংশ নেয় না। এটা <a class="term" href="/money/basics-2/why-hold.html">ধরে রাখার</a> পক্ষে আরেকটা যুক্তি, আর এটা সম্পূর্ণ পরিমাপযোগ্য।</p>
+
+<h2>যেগুলো কমানো যায়</h2>
+
+${mount("cost-bins")}
+
+<p>তালিকাটা দেখলে একটা জিনিস স্পষ্ট হয়: আপনার হাতে যা আছে তা হলো <strong>কতবার</strong>, আর <strong>কার মাধ্যমে</strong>। এই দুইটাই আপনি ঠিক করেন, আর এই দুইটা মিলেই খরচের সিংহভাগ ঠিক হয়ে যায়।</p>
+
+<div class="ex">
+<p><strong>দুইটা বছর, একই পোর্টফোলিও।</strong> প্রথম বছর: ২৪টা লেনদেন, প্রতিটাতে দুই দিকের কমিশন আর কর, মোট খরচ পোর্টফোলিওর প্রায় ২%। দ্বিতীয় বছর: ৪টা লেনদেন, মোট খরচ প্রায় ০.৩৫%। রিটার্ন দুই বছরেই একই ছিল ধরে নিলে, দ্বিতীয় বছরে আপনার হাতে ১.৬৫% বেশি থেকেছে, কোনো ভালো সিদ্ধান্ত ছাড়াই।</p>
+</div>
+
+<div class="checklist">
+<ul>
+<li>আপনার টিআইএন আছে কি না দেখুন, না থাকলে করিয়ে নিন।</li>
+<li>গত এক বছরে কতগুলো লেনদেন করেছেন গুনুন।</li>
+<li>একটা লেনদেনের ব্রেক ইভেন দাম হিসাব করুন।</li>
+<li>এই বছরের লক্ষ্য ঠিক করুন: কতগুলো লেনদেনের বেশি নয়।</li>
+</ul>
+</div>
+
+${mount("cost-quiz")}
+`,
+  en: `
+<p>What reaches you is return minus costs minus tax. Everybody talks about the first number and almost nobody about the other two, even though the other two are the certain ones.</p>
+
+<p>The lesson on <a class="term" href="/money/basics-2/cost-of-churn.html">the cost of churn</a> showed the compounding effect of costs. This one completes the list: where money is taken from an individual investor in Bangladesh, and which parts can be reduced and which cannot.</p>
+
+<div class="at-a-glance">
+<p class="at-a-glance-label">At a glance</p>
+<ul>
+<li>Costs come in three layers: transaction, holding and tax.</li>
+<li>Dividends are taxed at source, and the rate depends on whether you have a TIN.</li>
+<li>Capital gains treatment has changed from time to time, so check the current rule.</li>
+<li>Your break-even price is above your purchase price, and it can be calculated.</li>
+<li>What you can reduce is the number of transactions, and that is the biggest lever.</li>
+</ul>
+</div>
+
+<h2>Three layers of cost</h2>
+
+${mount("cost-stack")}
+
+<p>The order of the layers matters. Transaction costs are yours to control, because you decide how often you trade. Holding costs are partly yours, because you decide which fund and which broker. Tax is not yours to control, only partly a question of when you pay it.</p>
+
+<h2>Break-even: the price at which you are actually level</h2>
+
+${mount("cost-break")}
+
+<p>Almost nobody does this calculation, and it is among the most useful. You bought at 50. Selling at 50 leaves you with a loss, because commission was paid on both sides along with tax. To be level the price has to be a little higher, and the tool gives you that number.</p>
+
+<p>Why it is useful: it shows how expensive entering a thinly traded share really is, and why exiting on a small gain makes no sense.</p>
+
+<h2>Tax on dividends</h2>
+
+<p>A <a class="term" href="/money/terms/dividend.html">dividend</a> is taxed at source before it reaches your bank. The rate depends on whether you have a TIN, and the rate is generally lower with one.</p>
+
+<p>Which gives a practical piece of advice: get a TIN. It is free or nearly free, it is done online, and it lowers the tax withheld on your dividends. Anyone without one pays more on every dividend, year after year.</p>
+
+${mount("cost-tax")}
+
+<div class="note">
+<p>Tax rates and exemption rules can change with each fiscal year. This lesson teaches the structure rather than the particular rate. Verify the current rates in National Board of Revenue publications or with a tax professional, especially where the amounts are large.</p>
+</div>
+
+<h2>Capital gains</h2>
+
+<p>The profit from buying a share and selling it higher is a capital gain. In Bangladesh the treatment of capital gains on listed shares for individuals has changed from time to time, with thresholds and rate conditions attached.</p>
+
+<p>The structural point never changes: where capital gains are taxed, more trading means paying that tax sooner, and money paid sooner no longer compounds. That is another argument for <a class="term" href="/money/basics-2/why-hold.html">holding</a>, and it is entirely measurable.</p>
+
+<h2>What can be reduced</h2>
+
+${mount("cost-bins")}
+
+<p>Reading the list makes one thing plain: what is in your hands is <strong>how often</strong>, and <strong>through whom</strong>. Both are yours to decide, and between them they set the great majority of your costs.</p>
+
+<div class="ex">
+<p><strong>Two years, the same portfolio.</strong> Year one: 24 trades, commission and tax on both sides of each, total costs around 2% of the portfolio. Year two: 4 trades, total costs around 0.35%. Assume the same return both years and you kept 1.65% more in the second, without a single better decision.</p>
+</div>
+
+<div class="checklist">
+<ul>
+<li>Check whether you have a TIN, and get one if not.</li>
+<li>Count how many trades you made in the past year.</li>
+<li>Work out the break-even price on one of them.</li>
+<li>Set a target for this year: no more than a certain number of trades.</li>
+</ul>
+</div>
+
+${mount("cost-quiz")}
+`,
+  blocks: {
+    "cost-stack": {
+      kind: "figure",
+      shape: "stack",
+      title: { bn: "খরচের তিনটা স্তর", en: "Three layers of cost" },
+      note: { bn: "প্রতিটা স্তরের পাশে আপনার নিয়ন্ত্রণ কতটা।", en: "Beside each layer, how much of it is in your control." },
+      parts: [
+        {
+          text: { bn: "লেনদেনের খরচ", en: "Transaction costs" },
+          note: { bn: "দুই দিকের কমিশন, লেনদেন কর, আর স্প্রেড। পুরোপুরি আপনার নিয়ন্ত্রণে, কারণ আপনি কতবার করবেন সেটা ঠিক করেন।", en: "Commission on both sides, transaction tax and the spread. Entirely in your control, because you decide how often." },
+          value: 55,
+          tone: "bad",
+        },
+        {
+          text: { bn: "ধরে রাখার খরচ", en: "Holding costs" },
+          note: { bn: "তহবিলের বার্ষিক ফি, বিও অ্যাকাউন্টের রক্ষণাবেক্ষণ ফি। আংশিক নিয়ন্ত্রণে: কোন তহবিল, কোন ব্রোকার।", en: "Annual fund fees and BO account maintenance. Partly in your control: which fund, which broker." },
+          value: 20,
+          tone: "warn",
+        },
+        {
+          text: { bn: "কর", en: "Tax" },
+          note: { bn: "লভ্যাংশে উৎসে কর, আর মূলধনি মুনাফায় প্রযোজ্য কর। নিয়ন্ত্রণে নেই, কেবল কখন দেবেন সেটা কিছুটা।", en: "Withholding on dividends and any tax on capital gains. Not in your control, except partly when you pay it." },
+          value: 25,
+          tone: "plain",
+        },
+      ],
+      caption: {
+        bn: "অনুপাতটা ব্যাখ্যামূলক, প্রকৃত নয়। যা প্রকৃত তা হলো ক্রম: সবচেয়ে বড় স্তরটাই সবচেয়ে বেশি আপনার নিয়ন্ত্রণে।",
+        en: "The proportions are illustrative rather than actual. What is real is the order: the largest layer is the one most in your control.",
+      },
+    },
+    "cost-break": {
+      kind: "lab",
+      model: "break-even",
+      title: { bn: "সমান হতে কত দাম লাগবে", en: "The price at which you break even" },
+      note: { bn: "কেনার দাম আর কমিশন বসান। যন্ত্রটা বলে দেবে বেচার দামটা কত হতে হবে।", en: "Set the purchase price and the commission. The tool gives you the selling price you need." },
+      preset: { buy: 50, commission: 0.4, tax: 0.05 },
+    },
+    "cost-tax": {
+      kind: "lab",
+      model: "tax",
+      title: { bn: "লভ্যাংশ আর মুনাফায় কর", en: "Tax on dividends and gains" },
+      note: { bn: "হারগুলো বদলায়, তাই বর্তমান হার বসিয়ে নিজের হিসাবটা দেখুন।", en: "The rates change, so put in the current ones and look at your own arithmetic." },
+      preset: { dividend: 20000, dividendTax: 10, gain: 100000, gainTax: 0 },
+    },
+    "cost-bins": {
+      kind: "bins",
+      title: { bn: "কোনটা কমানো যায়", en: "Which of these can be reduced" },
+      note: { bn: "প্রতিটা খরচকে ঠিক বাক্সে ফেলুন।", en: "Drop each cost into the right box." },
+      bins: [
+        { id: "yours", label: { bn: "আপনার হাতে", en: "In your hands" }, tone: "good" },
+        { id: "fixed", label: { bn: "আপনার হাতে নেই", en: "Not in your hands" }, tone: "plain" },
+      ],
+      items: [
+        {
+          text: { bn: "বছরে কতগুলো লেনদেন করবেন", en: "How many trades you make in a year" },
+          bin: "yours",
+          why: { bn: "সবচেয়ে বড় লিভার, আর সম্পূর্ণ আপনার সিদ্ধান্ত। চব্বিশ থেকে চারে নামালে খরচ প্রায় ছয় ভাগের এক ভাগ।", en: "The biggest lever, and entirely your decision. Going from twenty-four to four cuts costs to about a sixth." },
+        },
+        {
+          text: { bn: "কোন ব্রোকারের কমিশনের হার", en: "Which broker's commission rate" },
+          bin: "yours",
+          why: { bn: "বাছাই আপনার, আর বদলানোও যায়। তবে কমিশন সাধারণত স্প্রেডের চেয়ে ছোট, তাই এটা দ্বিতীয় লিভার।", en: "The choice is yours and it can be changed. Commission is usually smaller than the spread, so it is the second lever." },
+        },
+        {
+          text: { bn: "লভ্যাংশে উৎসে কাটা করের হার", en: "The rate withheld on a dividend" },
+          bin: "fixed",
+          why: { bn: "হারটা নিয়ন্ত্রকের, আর টিআইএন থাকলে হারটা কম, তাই এটুকু আপনার হাতে আছে।", en: "The rate is set by the authorities, and having a TIN lowers it, so that much is yours." },
+        },
+        {
+          text: { bn: "কম লেনদেনের শেয়ারে বড় স্প্রেড", en: "A wide spread in a thin share" },
+          bin: "yours",
+          why: { bn: "স্প্রেডের আকার আপনার হাতে নেই, কিন্তু কোন শেয়ার কিনবেন সেটা আছে। কম তারল্যের শেয়ার এড়ানোই এখানে নিয়ন্ত্রণ।", en: "The width is not yours, and which share you buy is. Avoiding thin shares is the control here." },
+        },
+        {
+          text: { bn: "বিও অ্যাকাউন্টের বার্ষিক ফি", en: "The annual BO account fee" },
+          bin: "fixed",
+          why: { bn: "একটা নির্দিষ্ট অঙ্ক, আর একাধিক বিও অ্যাকাউন্ট না রাখলে এটা কমানোর কিছু নেই।", en: "A fixed amount, and beyond not keeping several BO accounts there is nothing to reduce." },
+        },
+        {
+          text: { bn: "একটা তহবিলের বার্ষিক ব্যবস্থাপনা ফি", en: "A fund's annual management fee" },
+          bin: "yours",
+          why: { bn: "কোন তহবিল বাছবেন সেটা আপনার, আর মোট ব্যয় অনুপাত তহবিলে তহবিলে অনেক আলাদা।", en: "Which fund you choose is yours, and total expense ratios vary widely between funds." },
+        },
+      ],
+    },
+    "cost-quiz": {
+      kind: "quiz",
+      title: { bn: "দুইটা প্রশ্ন", en: "Two questions" },
+      questions: [
+        {
+          ask: {
+            bn: "আপনি ৫০ টাকায় কিনে ৫০.৫০ টাকায় বেচলেন। দুই দিকের কমিশন ০.৪% করে। ফলাফল কী?",
+            en: "You buy at 50 and sell at 50.50, with 0.4% commission on each side. What is the result?",
+          },
+          options: [
+            {
+              text: { bn: "সামান্য লোকসান, কারণ কমিশন লাভের চেয়ে বেশি", en: "A small loss, because the commission exceeds the gain" },
+              right: true,
+              why: {
+                bn: "ঠিক। ০.৫০ টাকা লাভ মানে ১% এর সামান্য কম, আর দুই দিকের কমিশন মিলিয়ে ০.৮% এর বেশি, তার সঙ্গে লেনদেন কর। ছোট লাভে বেরিয়ে আসা প্রায়ই খরচেই খেয়ে ফেলে, আর এই হিসাবটা কেনার আগে করা উচিত।",
+                en: "Right. A 0.50 gain is a little under 1%, while commission across both sides is over 0.8%, plus transaction tax. Exiting on a small gain is usually eaten by costs, and this is the calculation to do before buying.",
+              },
+            },
+            {
+              text: { bn: "০.৫০ টাকা লাভ", en: "A gain of 0.50 taka" },
+              why: {
+                bn: "এটা কমিশনের আগের হিসাব। কনট্রাক্ট নোটে যা থাকে তা হলো কমিশনের পরের অঙ্ক, আর সেখানে ছবিটা উল্টো। উপরের ব্রেক ইভেন যন্ত্রটাতে সংখ্যাগুলো বসিয়ে দেখুন।",
+                en: "That is the figure before commission. What is on the contract note is the figure after it, and there the picture reverses. Put the numbers into the break-even tool above.",
+              },
+            },
+            {
+              text: { bn: "ঠিক সমান, কারণ কমিশন দুই দিকে সমান", en: "Exactly level, because commission is the same on both sides" },
+              why: {
+                bn: "দুই দিকে সমান হার মানে দুইবার দিতে হয়েছে, তাই মোট খরচ দ্বিগুণ। সমান হতে হলে বেচার দামটা কেনার দামের চেয়ে যথেষ্ট বেশি হতে হবে, আর সেটাই ব্রেক ইভেন দাম।",
+                en: "Equal rates on both sides means paying twice, so the total cost doubles. To be level the selling price has to be meaningfully above the buying price, which is the break-even price.",
+              },
+            },
+          ],
+        },
+        {
+          ask: {
+            bn: "খরচ কমানোর সবচেয়ে বড় লিভার কোনটা?",
+            en: "What is the biggest lever for reducing costs?",
+          },
+          options: [
+            {
+              text: { bn: "সবচেয়ে কম কমিশনের ব্রোকার খোঁজা", en: "Finding the broker with the lowest commission" },
+              why: {
+                bn: "সাহায্য করে, আর ছোট লিভার। ০.৪৫% থেকে ০.৩% এ নামা মানে প্রতি লেনদেনে ০.১৫% সাশ্রয়। বছরে চব্বিশ থেকে চারটা লেনদেনে নামা মানে অনেক বেশি সাশ্রয়, আর সেটা করতে ব্রোকার বদলাতেও হয় না।",
+                en: "It helps, and it is the small lever. Going from 0.45% to 0.3% saves 0.15% per trade. Going from twenty-four trades to four saves far more, and requires no change of broker.",
+              },
+            },
+            {
+              text: { bn: "বছরে লেনদেনের সংখ্যা কমানো", en: "Making fewer trades a year" },
+              right: true,
+              why: {
+                bn: "ঠিক। খরচ প্রতি লেনদেনে বসে, তাই সংখ্যাটাই গুণক। আর একটা বাড়তি সুবিধা আছে: কম লেনদেন মানে কম তাড়াহুড়োর সিদ্ধান্ত, তাই খরচ কমার সঙ্গে সিদ্ধান্তের মানও সাধারণত ভালো হয়। একটা পরিবর্তন, দুইটা উপকার।",
+                en: "Right. Costs attach per trade, so the count is the multiplier. And there is a second benefit: fewer trades means fewer hurried decisions, so cutting costs usually improves the decisions too. One change, two benefits.",
+              },
+            },
+            {
+              text: { bn: "কর এড়ানোর উপায় খোঁজা", en: "Looking for ways to avoid tax" },
+              why: {
+                bn: "কর আইন মেনে পরিকল্পনা করা বৈধ আর যুক্তিসঙ্গত, যেমন টিআইএন করানো। কিন্তু কর সাধারণত লাভের উপর বসে, তাই কর দেওয়া মানে লাভ হয়েছে। লেনদেনের খরচ লাভ হোক বা না হোক দিতে হয়, আর সেটাই বেশি জরুরি সমস্যা।",
+                en: "Planning within the law is legitimate and sensible, such as getting a TIN. But tax generally applies to gains, so paying it means you made one. Transaction costs are paid whether or not you gain, which makes them the more urgent problem.",
+              },
+            },
+          ],
+        },
+      ],
+    },
+  },
+},
 };
