@@ -193,7 +193,7 @@ const snapshot = readSnapshot();
    school. `start`, the starter guide, is here since Stage 11.8:
    it is eight pages now rather than eight accordions, and the
    money school's hub is rendered from its rows. */
-const SEEDED = ["start", "basics-1", "basics-2", "stufe-1", "dhap-1", "term-1"];
+const SEEDED = ["start", "basics-1", "basics-2", "basics-3", "stufe-1", "dhap-1", "term-1"];
 
 d1(`CREATE TABLE IF NOT EXISTS school_stages (
       school TEXT, slug TEXT, position INTEGER, title TEXT, status TEXT, meta TEXT,
@@ -201,9 +201,17 @@ d1(`CREATE TABLE IF NOT EXISTS school_stages (
 d1(`CREATE TABLE IF NOT EXISTS school_sections (
       school TEXT, stage TEXT, ident TEXT, position INTEGER, title TEXT, meta TEXT,
       PRIMARY KEY (school, stage, ident))`);
+/* `body_en` and `blocks` are columns rather than fields inside
+   `meta` for the reason MONEY.md gives: `stagesOf()` selects
+   `meta` for every lesson of a school to draw a ladder, and a
+   megabyte of prose would ride along to render a list of titles.
+   They are seeded here because without them this test renders
+   every money lesson as its Bangla half with empty gaps where
+   the blocks go, and passes. */
 d1(`CREATE TABLE IF NOT EXISTS school_lessons (
       school TEXT, stage TEXT, slug TEXT, section TEXT, position INTEGER,
       title TEXT, minutes INTEGER, status TEXT, meta TEXT, body TEXT,
+      body_en TEXT DEFAULT '', blocks TEXT DEFAULT '{}',
       PRIMARY KEY (school, stage, slug))`);
 
 const q = (v: unknown) => (v === null || v === undefined
@@ -231,7 +239,7 @@ const statements = [
   ...snapshot.lessons.filter((x) => SEEDED.includes(String(x.stage))).map((r) =>
     insert("school_lessons",
       ["school", "stage", "slug", "section", "position", "title", "minutes",
-       "status", "meta", "body"], r)),
+       "status", "meta", "body", "body_en", "blocks"], r)),
 ];
 
 const seedFile = join(state, "schools.sql");
@@ -932,9 +940,20 @@ for (const [path, title, nav] of HAND_WRITTEN) {
 
   /* One lesson per school, and each is the shape that school is
      the only one to have. */
+  /* The money school is not in this loop and was until the
+     rewrite. `archive/schools-pages/learn/` holds it as it was
+     BEFORE: six-minute lessons, one language, `ধাপ` where the
+     school now says `পর্যায়`, and twenty-one lessons in a stage
+     that has twenty-five. Comparing the route against those
+     asks "has the content changed", and the answer is yes,
+     deliberately, in every one of those places.
+
+     That is the case this file already anticipated: a comparison
+     whose other side has gone. What replaces it is not nothing.
+     It is the block below, which asks what a money lesson has to
+     do NOW, and asks it of the shape the other three schools do
+     not have: two bodies and the blocks between them. */
   for (const [path, file, note] of [
-    ["/money/basics-2/supply-demand.html", "learn/basics-2/supply-demand.html",
-      "a lesson of the money school"],
     ["/deutsch/stufe-1/anfang.html", "deutsch/stufe-1/anfang.html",
       "a Teil, with German under the title"],
     ["/quran/dhap-1/tin-prokar.html", "quran/dhap-1/tin-prokar.html",
@@ -1028,9 +1047,13 @@ for (const [path, title, nav] of HAND_WRITTEN) {
      word: a route that counted differently from the builder would
      be a page telling a reader there are fourteen lessons where
      the ladder shows thirteen. */
+  /* The money school's stage is out of this loop for the reason
+     given above its lesson: `learn/basics-2/index.html` is the
+     ladder before the rewrite, twenty-one rungs against
+     twenty-five. What holds its stage page now is
+     `check-money.ts` on the ladder and the block below on the
+     page. */
   for (const [path, file, note] of [
-    ["/money/basics-2", "learn/basics-2/index.html",
-      "a stage of the money school"],
     ["/deutsch/stufe-1", "deutsch/stufe-1/index.html",
       "a Stufe, with a practice book above the cards"],
     ["/quran/dhap-1", "quran/dhap-1/index.html",
@@ -1194,6 +1217,97 @@ for (const [path, title, nav] of HAND_WRITTEN) {
        alone, because they did so before `basics-1` existed. */
     says("and files progress under the bare slug, as it always has",
       "share", attr(page.html, /data-lesson-id="([^"]*)"/));
+  }
+
+  /* ---- the money school as it is now: two bodies and blocks ----
+
+     What replaced the archived-page comparison. Everything here
+     is a way the page can render perfectly and be wrong, which is
+     what the rest of this file is about.
+
+     `case-study` is the one asked, because it is the richest: it
+     carries seven blocks across five kinds, and the two bodies
+     mount them in the same order or `check-money.ts` would not
+     have let it through. */
+  {
+    /* By relative path, like `schools-snapshot.ts` above and not
+       like the route: node refuses to strip types under
+       `node_modules`, and `@reiad/shared` resolves to the copy
+       npm made there. */
+    const { splitBody, parseBlocks } = await import("../shared/lesson.ts");
+    const row = snapshot.lessons.find(
+      (l) => l.school === "money" && l.stage === "basics-3" && l.slug === "case-study");
+    const page = await hub("/money/basics-3/case-study.html");
+    ok("a lesson of the rebuilt money school answers",
+      page.status === 200, `status ${page.status}`);
+
+    if (row && page.status === 200) {
+      const html = page.html;
+      const bn = splitBody(String(row.body));
+      const en = splitBody(String(row.body_en));
+      const blocks = parseBlocks(row.blocks);
+
+      /* Both halves reach the page. The stylesheet chooses which
+         one is seen, keyed on an attribute the boot script sets
+         before the first paint, so a language that is missing
+         from the HTML is a language no switch can reach. */
+      ok("both bodies are in the HTML, each in its own element",
+        html.includes('class="ls-bn" lang="bn"') && html.includes('class="ls-en" lang="en"'),
+        "one of the two language wrappers is missing");
+
+      /* And in pieces, because the body is cut at its mounts.
+         `includes(body)` was the old assertion and it cannot hold
+         once a block sits in the middle of the prose; every chunk
+         still has to be there, and a dropped one is a paragraph a
+         reader never sees. */
+      for (const [n, part] of bn.parts.entries()) {
+        const chunk = part.trim();
+        if (chunk.length < 40) continue;
+        ok(`the Bangla prose reaches the page, chunk ${n + 1} of ${bn.parts.length}`,
+          html.includes(chunk), "a chunk of the stored body is not in the page");
+      }
+      for (const [n, part] of en.parts.entries()) {
+        const chunk = part.trim();
+        if (chunk.length < 40) continue;
+        ok(`the English prose reaches the page, chunk ${n + 1} of ${en.parts.length}`,
+          html.includes(chunk), "a chunk of the stored English body is not in the page");
+      }
+
+      /* One block per mount, mounted where the marker was, and
+         the marker itself gone. A `data-mount` left in the output
+         is a block that did not render into a gap that still
+         looks deliberate. */
+      says("as many blocks as the body mounts",
+        String(bn.ids.length),
+        String((html.match(/class="ls-block"/g) ?? []).length));
+      ok("and every one of them by name",
+        bn.ids.every((id) => html.includes(`id="b-${id}"`)),
+        `mounts: ${bn.ids.join(", ")}`);
+      ok("and no mount marker survives into the page",
+        !/data-mount="/.test(html),
+        "a mount marker reached the reader, so a block did not render");
+      ok("and every block declares its kind",
+        Object.values(blocks).every((b) =>
+          html.includes(`data-kind="${String((b as { kind: string }).kind)}"`)),
+        "a block rendered without the kind its stylesheet keys on");
+
+      /* The two things the route decides rather than the body:
+         how much the lesson matters, and whether there is a
+         second language to switch to. */
+      ok("the lesson says how much it matters",
+        html.includes("lesson-stars"), "no stars on a lesson whose row has them");
+      ok("and offers the language switch, because it has both",
+        html.includes('class="ls-lang"'), "no switch on a lesson with two bodies");
+    }
+
+    /* The other half of that last one. A switch that does nothing
+       is worse than no switch: it says the English is missing
+       rather than not written, and three schools have no English
+       half at all. */
+    const german = await hub("/deutsch/stufe-1/anfang.html");
+    ok("and a lesson with one body is offered no switch",
+      german.status === 200 && !german.html.includes('class="ls-lang"'),
+      "a school with no English half drew a language switch");
   }
 
   /* ---- the three hand-written pages ----
