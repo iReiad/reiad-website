@@ -22,6 +22,9 @@
   @property --gy       { syntax: "<percentage>"; initial-value: 50%; inherits: false; }
   @property --glow-a   { syntax: "<number>";  initial-value: 0;   inherits: false; }
 
+  @property --crumb-fade-s { syntax: "<length>"; initial-value: 0px; inherits: false; }
+  @property --crumb-fade-e { syntax: "<length>"; initial-value: 0px; inherits: false; }
+
   @property --surface-shadow { syntax: "*"; inherits: false; }
   @property --surface-image  { syntax: "*"; inherits: false; }
   @property --surface-size   { syntax: "*"; inherits: false; }
@@ -707,19 +710,6 @@
       translate: -50% -50%;
       width: 100%; height: 100%;
       min-width: var(--tap); min-height: var(--tap);
-    }
-  }
-
-  .account-btn[data-signed-in="true"] {
-    width: 30px; height: 30px; padding: 0;
-    justify-content: center; border-radius: 50%;
-    background: var(--accent-soft); border-color: var(--accent);
-    color: var(--accent); font-size: var(--t-3);
-    position: relative; overflow: hidden;
-
-    & > img {
-      position: absolute; inset: 0;
-      width: 100%; height: 100%; object-fit: cover;
     }
   }
 
@@ -3795,14 +3785,14 @@
     font-family: var(--font-mono); font-size: var(--t-2);
     letter-spacing: 0.05em;
 
-    & ol {
+    & > ol {
       display: flex; flex-wrap: wrap; align-items: center;
       gap: var(--s-2) 2px; padding: 0; margin: 0; list-style: none;
     }
-    & li { display: flex; align-items: center; color: var(--ink-soft); min-width: 0; }
-    & a { color: var(--ink-soft); text-decoration: none; }
-    & a:hover { color: var(--accent); }
-    & [aria-current="page"] {
+    & > ol > li { display: flex; align-items: center; color: var(--ink-soft); min-width: 0; }
+    & > ol > li > a { color: var(--ink-soft); text-decoration: none; }
+    & > ol > li > a:hover { color: var(--accent); }
+    & > ol > [aria-current="page"] {
       color: var(--ink);
 
       max-width: 46ch; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;
@@ -4026,7 +4016,8 @@
   @media (width <= 620px) {
     .rung > summary { flex-wrap: wrap; gap: var(--s-5) 12px; }
     .rung-state { width: 100%; justify-content: flex-start; }
-    .crumbs [aria-current="page"] { max-width: 22ch; }
+
+    .crumbs > ol > [aria-current="page"] { max-width: 22ch; }
   }
 
   @media (prefers-reduced-motion: reduce) {
@@ -6264,6 +6255,20 @@
   :is(.top-btn, .drawer-close):hover { color: var(--accent); border-color: var(--accent); }
   .top-btn .kbd-hint { font-size: var(--t-0); opacity: 0.8; }
 
+  .account-btn { font-size: var(--t-3); }
+  .account-btn[data-signed-in="true"] {
+    width: 36px; padding: 0;
+    justify-content: center; border-radius: 50%;
+    background: var(--accent-soft); border-color: var(--accent);
+    color: var(--accent);
+    position: relative; overflow: hidden;
+
+    & > img {
+      position: absolute; inset: 0;
+      width: 100%; height: 100%; object-fit: cover;
+    }
+  }
+
   .drawer-btn, .drawer-close, .drawer-back, .topbar-mark { display: none; }
 
   :is(.drawer-btn, .tree-btn, .top-tools, .top-btn) { flex: 0 0 auto; }
@@ -6986,25 +6991,25 @@
     flex: 1 1 auto;
     overflow: hidden;
 
-    & ol { flex-wrap: nowrap; }
-    & li { min-width: 0; }
+    & > ol { flex-wrap: nowrap; }
+    & > ol > li { min-width: 0; }
 
-    & li > a, & li > span {
+    & > ol > li > :is(a, span) {
       overflow: hidden; text-overflow: ellipsis; white-space: nowrap;
       min-width: 2.5ch;
     }
 
-    & [aria-current="page"] {
+    & > ol > [aria-current="page"] {
       flex: 0 1 auto; max-width: none; color: var(--ink);
       font-size: var(--t-3); font-weight: 500;
     }
-    & li:not([aria-current="page"]) {
+    & > ol > li:not([aria-current="page"]) {
       font-size: var(--t-2);
 
       flex: 0 2 auto;
     }
 
-    & .crumb-sep { flex: 0 0 auto; }
+    & > ol > li > .crumb-sep { flex: 0 0 auto; }
   }
 
   .crumb-sep {
@@ -7067,6 +7072,8 @@
   .crumb-menu ul { list-style: none; margin: 0; padding: 0; display: grid; gap: 1px; }
   .crumb-menu li { display: block; }
 
+  .crumb-menu-head { display: none; }
+
   .crumb-menu a {
     display: flex; align-items: center; gap: 10px;
     padding: 8px 10px;
@@ -7110,13 +7117,51 @@
     }
   }
 
+  @media (max-width: 640px) {
+    .crumb-menu {
+      inset: auto 0 0 0;
+      inline-size: auto;
+      max-block-size: 82dvh;
+      border-radius: var(--radius) var(--radius) 0 0;
+      border-bottom: 0;
+      padding: 6px 6px calc(6px + env(safe-area-inset-bottom, 0px));
+      translate: 0 0;
+
+      @starting-style { opacity: 1; translate: 0 100%; }
+      &:not(:popover-open) { opacity: 1; translate: 0 100%; }
+
+      &::backdrop { background: color-mix(in oklab, var(--ink) 42%, transparent); }
+
+      & a { padding: 11px 12px; }
+    }
+
+    .crumb-menu-head {
+      display: block;
+      margin: 2px 12px 8px;
+      padding-bottom: 6px;
+      border-bottom: 1px solid var(--accent-line);
+      font-size: var(--t-1); letter-spacing: 0.1em; text-transform: uppercase;
+      color: var(--accent);
+    }
+
+    @supports (anchor-name: --a) {
+      .crumb-menu {
+        inset: auto 0 0 0;
+        margin-block-start: 0;
+        position-try-fallbacks: none;
+      }
+    }
+
+    html:has(.crumb-menu:popover-open) body { overflow: hidden; }
+  }
+
   @media (prefers-reduced-motion: reduce) {
     .crumb-step, .crumb-menu-go, .crumb-menu { transition: none; }
     .crumb-step:has(+ [popover]:popover-open) { rotate: none; }
   }
 
   @media (max-width: 900px) {
-    .crumbs-bar li:first-child::before {
+    .crumbs-bar > ol > li:first-child::before {
       content: "›"; margin-inline: 6px; opacity: 0.45; flex: 0 0 auto;
     }
   }
@@ -7128,12 +7173,47 @@
   .topbar[data-trail="none"] .topbar-mark { display: flex; }
   .topbar[data-trail="none"] .topbar-mark span { display: inline; }
 
-  @media (max-width: 760px) {
-    .crumbs-bar li:not([aria-current="page"]) > a { max-inline-size: 8ch; }
-    .crumbs-bar .crumb-sep { inline-size: 1.1em; margin-inline: 0; }
+  @media (max-width: 900px) {
+    .crumbs-bar {
+
+      flex: 0 1 auto;
+
+      overflow-x: auto;
+      scrollbar-width: none;
+
+      overscroll-behavior-inline: contain;
+
+      direction: rtl;
+
+      & > ol {
+        direction: ltr;
+
+        inline-size: max-content; min-inline-size: 100%;
+      }
+
+      & > ol > li:not([aria-current="page"]),
+      & > ol > [aria-current="page"] { flex: 0 0 auto; }
+
+      & > ol > li > :is(a, span) { overflow: visible; min-width: auto; }
+    }
+    .crumbs-bar::-webkit-scrollbar { width: 0; height: 0; }
+
+    @supports (animation-timeline: scroll()) {
+      .crumbs-bar {
+        animation: crumb-edge linear both;
+        animation-timeline: scroll(self inline);
+        -webkit-mask-image: linear-gradient(to right,
+          transparent 0, #000 var(--crumb-fade-s),
+          #000 calc(100% - var(--crumb-fade-e)), transparent 100%);
+        mask-image: linear-gradient(to right,
+          transparent 0, #000 var(--crumb-fade-s),
+          #000 calc(100% - var(--crumb-fade-e)), transparent 100%);
+      }
+    }
   }
-  @media (max-width: 520px) {
-    .crumbs-bar li:not([aria-current="page"]) > a { max-inline-size: 4.5ch; }
+  @keyframes crumb-edge {
+    from { --crumb-fade-s: 22px; --crumb-fade-e: 0px; }
+    to { --crumb-fade-s: 0px; --crumb-fade-e: 22px; }
   }
 
   .slimbar-mark {

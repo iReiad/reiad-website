@@ -404,8 +404,15 @@ export async function initSignIn(): Promise<void> {
   const bar = document.querySelector(".top-tools");
   if (!bar) return;
 
+  /* `.top-btn`, which is what the two controls it stands beside
+     are. It was `.icon-btn`: a 34.8px box with a 12px radius
+     between two 36px pills, so the row at the right end of the
+     bar was three buttons at two heights and two shapes. Nothing
+     about this button is a different KIND of thing from the
+     search and the theme toggle, so nothing about it should be a
+     different size. */
   const button = el("button", {
-    className: "icon-btn account-btn", type: "button",
+    className: "top-btn account-btn", type: "button",
     "aria-haspopup": "menu", "aria-expanded": "false",
   });
   button.addEventListener("click", () => open(button));
