@@ -10371,32 +10371,33 @@ German for day, and .tag is what the site has always called
   .gt-arrow { display: inline-flex; transition: translate var(--fast) var(--ease); }
   .gate-tile:hover .gt-arrow { translate: 4px 0; }
 
-  /* The featured card's one flourish: a drawn scene down its
-     right half, in the accent, under the text. It was an
-     oversized icon at watermark opacity; a picture in the mock's
-     sense, made of the card's own palette so a theme change
-     repaints it and nothing off-site is fetched. */
+  /* The featured card is a POSTER: it wears one of the drawings
+     `scripts/build-card-art.ts` makes as its whole ground, so it
+     carries `gate-photo` below for the scrim and the light text
+     and this rule is only its size.
+
+     Taller than it was, and the height is a fact about the
+     picture rather than a taste. A drawing is 1200 by 540 and
+     `cover` scales it by the card's WIDTH, so every pixel of
+     height this card loses is cropped off the top and bottom of
+     the subject: at 200px on a 1100px card two thirds of the
+     drawing was outside the card. */
   .gate-feat {
-    min-height: clamp(200px, 24vw, 280px);
     padding: clamp(18px, 2.4vw, 28px) clamp(18px, 2.4vw, 28px) clamp(18px, 2.4vw, 28px) 24px;
     gap: 10px;
   }
-  .gate-feat .gt-title { font-size: clamp(1.3rem, 2.4vw, 1.8rem); max-width: 22ch; }
   .gate-feat .gt-dek { font-size: var(--t-5); max-width: 46ch; }
-  /* Absolute, AFTER the `> *` rule above, which would otherwise
-     pin it back into the flow at z-index 1. The mask fades the
-     drawing out under the text instead of a scrim fading the
-     text's ground: where the words are, the picture simply is
-     not. */
-  .gt-scene {
-    position: absolute; inset: 0 0 0 auto; z-index: 0;
-    width: min(58%, 400px);
-    display: flex; align-items: flex-end; justify-content: flex-end;
-    color: var(--accent);
-    mask-image: linear-gradient(100deg, transparent 10%, #000 48%);
-    pointer-events: none;
+
+  /* BOTH CLASSES ON PURPOSE. `.gate-photo` is later in this layer,
+     so at equal specificity it wins, and this card is the one
+     place the two rules meet: written as `.gate-feat` alone the
+     poster would take the pulse tile's height and the pulse
+     tile's title size, which are the numbers for a widget on a
+     board rather than for the front page's one big card. */
+  .gate-feat.gate-photo { min-height: clamp(250px, 30vw, 360px); }
+  .gate-feat.gate-photo .gt-title {
+    font-size: clamp(1.35rem, 2.5vw, 1.9rem); max-width: 21ch;
   }
-  .gt-scene svg { width: 100%; height: 92%; }
 
   /* The slim form: one line tall, a handle not a card. */
   .gate-slim {
@@ -10457,6 +10458,23 @@ German for day, and .tag is what the site has always called
     background-position: center;
     min-height: clamp(230px, 25vw, 320px);
   }
+  /* ONE OF OURS, rather than a photograph somebody took.
+
+     A drawing out of `scripts/build-card-art.ts` puts its subject
+     right of centre, because that is where a card has no words.
+     That is free on a wide card, which `cover` scales by its
+     width and crops top and bottom only. On a PHONE the card is
+     narrower in ratio than the drawing, so `cover` scales by
+     height instead and crops the SIDES: at 340 by 250 that is
+     about 190 pixels off each end, which takes the arrow head
+     off the chart and the lit coin off the stack.
+
+     So a card wearing one of ours holds the frame towards that
+     subject. A card wearing a photograph does not, and must not:
+     a photographer composed it centred and the crop should stay
+     even. */
+  .gate-art { background-position: 68% center; }
+
   .gate-photo .gt-title {
     color: oklch(97% 0.005 260);
     font-size: clamp(1.15rem, 2vw, 1.55rem); max-width: 26ch;
@@ -10477,6 +10495,42 @@ German for day, and .tag is what the site has always called
   }
   .gate-photo .gp-dots i { background: oklch(95% 0 0 / 0.35); }
   .gate-photo .gp-dots i[data-on] { background: oklch(98% 0 0); }
+
+  /* ---- ON A PHONE THE SCRIM TURNS, and it has to ----
+
+     The scrim above runs ACROSS the card, dark on the left where
+     the words are and clear on the right where the picture is.
+     That is the right shape for a card twice as wide as it is
+     tall and the wrong one for a card that is taller than it is
+     wide: at 350 by 300 there is no right-hand side left, so the
+     dark end covered the whole thing and both of these cards
+     showed a sliver of light at one edge and no picture at all.
+
+     So on a narrow screen it becomes the poster it always wanted
+     to be: the words go to the BOTTOM and the dark goes with
+     them, which leaves the top half of the card showing the
+     picture at its full height.
+
+     AND IT IS A DIFFERENT PICTURE. `--gate-photo-sm` is the same
+     subject drawn for a frame that is taller than it is wide, and
+     the fallback chain is what makes the rule general: a card
+     wearing one of our drawings has one, a card wearing a piece's
+     own photograph does not and keeps its photograph, which is
+     right, because a photograph has no second crop to offer. */
+  @media (max-width: 640px) {
+    .gate-photo {
+      min-height: 300px;
+      align-content: end;
+      --surface-image:
+        linear-gradient(to top,
+          oklch(12% 0.02 260 / 0.95) 0%,
+          oklch(14% 0.02 260 / 0.86) 38%,
+          oklch(16% 0.02 260 / 0.34) 66%,
+          oklch(18% 0.02 260 / 0.08) 88%),
+        var(--gate-photo-sm, var(--gate-photo));
+    }
+    .gate-feat.gate-photo { min-height: 340px; }
+  }
 
   /* The action on the two loud cards, written as the button the
      mock draws. The CARD is still the link, so this is a drawing

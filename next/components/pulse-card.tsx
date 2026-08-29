@@ -63,6 +63,45 @@ const coverOf = (piece: Piece | null | undefined): string | null => {
   return /^\/(media|og)\/[A-Za-z0-9._/-]+$/.test(path) ? path : null;
 };
 
+/** The desk's own picture, for a piece that has no cover of its
+    own, drawn by `scripts/build-card-art.ts`.
+
+    A piece without a cover used to leave a tinted card and, in
+    the row beside it, an icon in a grey box: two full photographs
+    and one empty square reads as a picture that failed to load
+    rather than as a quieter card. Now the DESK has a picture, so
+    the shelf is always full and a cover is what makes a piece its
+    own rather than what makes it visible at all.
+
+    Written out in full, both sizes, because
+    `build-card-art.ts --check` reads this file for the literal
+    and fails on a drawing that is not on disk. */
+const DESK_ART: Record<string, { wide: string; tall: string; thumb: string }> = {
+  insights: {
+    wide: "/art/insights.webp",
+    tall: "/art/insights-tall.webp",
+    thumb: "/art/insights-thumb.webp",
+  },
+  cooking: {
+    wide: "/art/cooking.webp",
+    tall: "/art/cooking-tall.webp",
+    thumb: "/art/cooking-thumb.webp",
+  },
+  travel: {
+    wide: "/art/travel.webp",
+    tall: "/art/travel-tall.webp",
+    thumb: "/art/travel-thumb.webp",
+  },
+};
+
+/** What a card shows: the piece's own cover first, the desk's
+    drawing second, and null only where the section is one this
+    site has no desk for. */
+const groundOf = (
+  piece: Piece | null | undefined, size: "wide" | "tall" | "thumb",
+): string | null =>
+  coverOf(piece) ?? (piece ? DESK_ART[piece.section]?.[size] ?? null : null);
+
 /** The rotating tile, and beside it, at the board's `tall` size,
     the next few pieces as small cards of their own.
 
@@ -133,7 +172,12 @@ function Tile({ piece, pieces, at, href, paused }: {
   piece: Piece | null; pieces: Piece[]; at: number; href: string;
   paused: { current: boolean };
 }) {
-  const cover = coverOf(piece);
+  /* Which of the two it is decides how the frame is held: see
+     `.gate-art` in the stylesheet. A photographer centred their
+     picture and the crop should stay even; ours puts its subject
+     off to one side on purpose. */
+  const own = coverOf(piece);
+  const cover = own ?? groundOf(piece, "wide");
   /* The colour of whichever piece is showing, not a fixed one.
      This tile cycles between the three reading sections, so a
      cooking piece makes it rose and a travel piece plum, out
@@ -149,12 +193,21 @@ function Tile({ piece, pieces, at, href, paused }: {
      stylesheet composes into `--surface-image` under the scrim,
      rather than as a background written here: an inline
      background-image would replace the material's whole stack. */
+  const small = own ? null : groundOf(piece, "tall");
   const style: Record<string, string> | undefined = cover
-    ? { ...accentStyle(piece?.section), "--gate-photo": `url("${cover}")` }
+    ? {
+      ...accentStyle(piece?.section),
+      "--gate-photo": `url("${cover}")`,
+      /* Only where the ground is one of ours: a piece's own
+         photograph has no second crop, and the stylesheet's
+         fallback keeps it. */
+      ...(small ? { "--gate-photo-sm": `url("${small}")` } : {}),
+    }
     : accentStyle(piece?.section);
 
   return (
-    <a className={`gate-tile min-h-[150px]${cover ? " gate-photo" : ""}`}
+    <a className={`gate-tile min-h-[150px]${cover ? " gate-photo" : ""}${
+        cover && !own ? " gate-art" : ""}`}
       data-glow="card" href={href}
       style={style}
       onMouseEnter={() => { paused.current = true; }}
@@ -211,7 +264,7 @@ function PulseRows({ pieces, skip }: { pieces: Piece[]; skip: number }) {
   return (
     <ul className="gp-rows">
       {rest.map((p) => {
-        const cover = coverOf(p);
+        const cover = groundOf(p, "thumb");
         return (
           <li key={p.slug}>
             <a className="gp-row" data-glow="card"
@@ -222,11 +275,10 @@ function PulseRows({ pieces, skip }: { pieces: Piece[]; skip: number }) {
                 <span className="gt-chip mono">{SECTION_WORDS[p.section] ?? p.section}</span>
                 <span className="gp-row-title line-clamp-2">{p.title}</span>
               </span>
-              {/* The piece's own picture, or the desk's pen where a
-                  piece has none: a blank grey box beside two full
-                  ones reads as a loading failure rather than as a
-                  quieter card. `alt` is empty because the title is
-                  the accessible name and the picture repeats it. */}
+              {/* The piece's own cover, or its desk's drawing.
+                  `alt` is empty because the title beside it is
+                  already the link's accessible name, and the
+                  picture says the same thing again. */}
               <span className="gp-thumb" aria-hidden="true">
                 {cover
                   ? <img src={cover} alt="" loading="lazy" decoding="async" />

@@ -31,6 +31,17 @@
    login could not have reached anyone either. Bump this whenever a
    precached file changes.
 
+   v216: /fallback.css. The front page's big cards wear real
+        pictures now. `scripts/build-card-art.ts` draws nine of
+        them into /art/, and the featured card is a poster: its
+        SVG scene and the `.gt-scene` rules are gone, it carries
+        the drawing as its ground through `--gate-photo`, and it
+        is taller, because a picture cropped by `cover` loses
+        whatever height the card does not have. A cached
+        stylesheet has neither the poster's height nor the rules
+        that put light text on it, so the words land dark on a
+        dark drawing.
+
    v215: /fallback.css. The front page's two loud cards. The
         featured card carries a drawn scene per audience and its
         action as a solid pill; the pulse tile wears a piece's own
@@ -1918,7 +1929,7 @@
    imports (crumbs, audience, learn progress) and the hub is a
    different page. Without a bump, a returning reader would be
    served the v3 app.js forever and none of it would appear. */
-const VERSION = "v215";
+const VERSION = "v216";
 const SHELL = `shell-${VERSION}`;
 const RUNTIME = `runtime-${VERSION}`;
 
