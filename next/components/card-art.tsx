@@ -695,28 +695,191 @@ const SUBJECTS: Record<ArtSubject, ReactNode> = {
 
 export const ART_SUBJECTS = Object.keys(SUBJECTS) as ArtSubject[];
 
-/** The picture on a card.
+/* ============================================================
+   WHAT IS BEHIND THE SUBJECT
+
+   Six motifs, not twelve. A drawing needs something behind it or
+   it is a sticker on a gradient, but that something is about the
+   KIND of thing the subject is rather than about the subject
+   itself: money and bubbles both belong in a field of orbits, a
+   ridge and a plate both sit against strata, and three of the
+   four paper subjects share one wall of ruled edges.
+
+   Twelve would have been twelve more drawings to keep in step for
+   a layer rendered at 62% opacity behind a 1.1px blur, which is
+   the definition of detail nobody can resolve. They carry no
+   gradients, deliberately: an id in here would collide with the
+   subject's own the moment both are on one page.
+   ============================================================ */
+type Motif = "grid" | "orbits" | "strata" | "rules" | "vault" | "plume";
+
+const MOTIFS: Record<Motif, ReactNode> = {
+  /* A back wall of rules, converging on the same vanishing point
+     the floor does. For anything measured. */
+  grid: (
+    <>
+    <path d="M96 40 L142 300 M186 30 L206 300 M276 26 L276 300 M366 30 L346 300 M456 40 L410 300"
+    stroke="var(--art-deep)" strokeOpacity="0.5" strokeWidth="1.4"/>
+    <path d="M40 96 H512 M28 158 H524 M20 218 H532"
+    stroke="var(--art-deep)" strokeOpacity="0.34" strokeWidth="1.2"/>
+    <path d="M8 300 H544" stroke="var(--art-mid)" strokeOpacity="0.4" strokeWidth="1.6"/>
+    <circle cx="276" cy="300" r="3" fill="var(--art-mid)" fillOpacity="0.5"/>
+    </>
+  ),
+  /* Rings around a centre, with a few bodies on them. For
+     anything that accumulates or circulates. */
+  orbits: (
+    <>
+    <ellipse cx="272" cy="216" rx="212" ry="86"
+    stroke="var(--art-deep)" strokeOpacity="0.5" strokeWidth="1.4" fill="none"/>
+    <ellipse cx="272" cy="216" rx="150" ry="60"
+    stroke="var(--art-deep)" strokeOpacity="0.42" strokeWidth="1.3" fill="none"/>
+    <ellipse cx="272" cy="216" rx="90" ry="36"
+    stroke="var(--art-deep)" strokeOpacity="0.32" strokeWidth="1.2" fill="none"/>
+    <circle cx="60" cy="216" r="5" fill="var(--art-mid)" fillOpacity="0.6"/>
+    <circle cx="422" cy="176" r="4" fill="var(--art-mid)" fillOpacity="0.45"/>
+    <circle cx="188" cy="256" r="3.4" fill="var(--art-lit)" fillOpacity="0.4"/>
+    </>
+  ),
+  /* Distant ground, in bands. For anything with a landscape or a
+     cross-section behind it. */
+  strata: (
+    <>
+    <path d="M-20 214 L94 148 L176 194 L268 122 L352 178 L438 132 L540 190 L540 300 L-20 300 Z"
+    fill="var(--art-deep)" fillOpacity="0.4"/>
+    <path d="M-20 250 L82 206 L192 244 L286 196 L390 240 L482 204 L540 234 L540 300 L-20 300 Z"
+    fill="var(--art-mid)" fillOpacity="0.24"/>
+    <path d="M-20 214 L94 148 L176 194 L268 122 L352 178 L438 132 L540 190"
+    stroke="var(--art-mid)" strokeOpacity="0.55" strokeWidth="1.5" fill="none"/>
+    </>
+  ),
+  /* A wall of sheet edges, seen almost on. For anything made of
+     pages. */
+  rules: (
+    <>
+    <path d="M34 84 H486 M34 116 H486 M34 148 H430 M34 180 H486 M34 212 H392 M34 244 H486"
+    stroke="var(--art-deep)" strokeOpacity="0.42" strokeWidth="1.3"/>
+    <path d="M68 52 V300 M482 52 V300"
+    stroke="var(--art-deep)" strokeOpacity="0.5" strokeWidth="1.4"/>
+    <rect x="68" y="52" width="414" height="248" rx="10"
+    stroke="var(--art-mid)" strokeOpacity="0.35" strokeWidth="1.5" fill="none"/>
+    </>
+  ),
+  /* Nested arches, receding. For the one subject that is
+     architecture. */
+  vault: (
+    <>
+    <path d="M92 300 V196 A164 164 0 0 1 420 196 V300"
+    stroke="var(--art-deep)" strokeOpacity="0.5" strokeWidth="1.5" fill="none"/>
+    <path d="M136 300 V204 A120 120 0 0 1 376 204 V300"
+    stroke="var(--art-deep)" strokeOpacity="0.4" strokeWidth="1.4" fill="none"/>
+    <path d="M182 300 V212 A74 74 0 0 1 330 212 V300"
+    stroke="var(--art-deep)" strokeOpacity="0.3" strokeWidth="1.3" fill="none"/>
+    <path d="M18 300 H502" stroke="var(--art-mid)" strokeOpacity="0.4" strokeWidth="1.6"/>
+    </>
+  ),
+  /* Something rising. For the one subject that is hot. */
+  plume: (
+    <>
+    <path d="M198 274 C 176 220, 224 190, 200 132 C 184 96, 210 74, 206 44"
+    stroke="var(--art-deep)" strokeOpacity="0.5" strokeWidth="2.4"
+    fill="none" strokeLinecap="round"/>
+    <path d="M266 282 C 244 214, 296 178, 268 116 C 250 76, 280 54, 274 22"
+    stroke="var(--art-deep)" strokeOpacity="0.4" strokeWidth="2.6"
+    fill="none" strokeLinecap="round"/>
+    <path d="M334 276 C 316 224, 358 196, 338 148 C 324 114, 346 94, 342 66"
+    stroke="var(--art-deep)" strokeOpacity="0.3" strokeWidth="2.2"
+    fill="none" strokeLinecap="round"/>
+    <path d="M40 300 H480" stroke="var(--art-mid)" strokeOpacity="0.34" strokeWidth="1.5"/>
+    </>
+  ),
+};
+
+/** Which wall each subject stands against. Grouped by what the
+    subject IS rather than by which page it appears on, which is
+    the same rule the subjects themselves follow. */
+const MOTIF_OF: Record<ArtSubject, Motif> = {
+  chart: "grid", gauge: "grid", calendar: "grid",
+  coins: "orbits", bubbles: "orbits",
+  ridge: "strata", plate: "strata",
+  sheets: "rules", book: "rules", cards: "rules",
+  arch: "vault", pan: "plume",
+};
+
+/** How big the frame is, which decides one number and no others.
+
+    `band` is the 16:9 strip across the top of a card and is the
+    ordinary case. `tile` is the little square on a compact row.
+    `panel` is the featured card, where the picture is beside the
+    words rather than above them.
+
+    The layers, the depths and the drawing are identical in all
+    three. What changes is `--art-throw`, because a subject that
+    slides 26px inside an 84px thumbnail slides off its own
+    floor. */
+export type ArtSize = "band" | "tile" | "panel";
+
+/** THE ROOM, with anything at all standing in it.
+
+    Ten layers, and the order is the order they are in the room.
+    They are all inside `.art-space` rather than being children of
+    the frame, because the frame CLIPS and a clip flattens: the
+    room has to turn inside something that is not turning, or
+    there is nothing for it to turn against.
+
+    `children` is the subject, rendered TWICE: once mirrored about
+    the line every subject stands on, faded and blurred, which is
+    the whole of what puts it on a floor rather than in the air.
+    Rendered rather than cloned, because a clone of a node with a
+    key is a second node with the same key and React says so.
+
+    It takes a drawing rather than owning one so that a card with
+    a picture of its OWN can stand in the same room: the seven
+    case studies each carry a sparkline describing that model,
+    which is a better picture than any of the twelve, and it
+    belongs in a room like everything else.
 
     `aria-hidden`, always: the card's own title says what it is,
     and a drawing of a book beside the word "Insights" read out
     twice is a screen reader saying everything twice. */
-export function CardArt({ subject, className }: {
-  subject: ArtSubject; className?: string;
+export function Scene({ motif, size = "band", className, children }: {
+  motif: Motif; size?: ArtSize; className?: string; children: ReactNode;
 }) {
   return (
-    <span className={["artwork", className].filter(Boolean).join(" ")} aria-hidden="true">
-      <span className="art-ground" />
-      <span className="art-wash" data-depth="1" />
-      <span className="art-floor" data-depth="2" />
-      <span className="art-stage" data-depth="4">
-        {/* The drawing twice: the second is the first mirrored
-            about the line every subject stands on, faded and
-            blurred, which is the whole of what puts it on a
-            floor rather than in the air. */}
-        <svg className="art-echo" viewBox="0 0 520 400" fill="none">{SUBJECTS[subject]}</svg>
-        <svg className="art-real" viewBox="0 0 520 400" fill="none">{SUBJECTS[subject]}</svg>
+    <span className={["artwork", className].filter(Boolean).join(" ")}
+          data-size={size === "band" ? undefined : size} aria-hidden="true">
+      <span className="art-space">
+        <span className="art-sky" />
+        <span className="art-weave" />
+        <span className="art-halo" />
+        <span className="art-rays" />
+        <span className="art-far">
+          <svg className="art-svg" viewBox="0 0 520 400" fill="none">
+            {MOTIFS[motif]}
+          </svg>
+        </span>
+        <span className="art-floor" />
+        <span className="art-stage">
+          <span className="art-copy art-echo">{children}</span>
+          <span className="art-copy art-real">{children}</span>
+        </span>
+        <span className="art-near" />
+        <span className="art-spec" />
+        <span className="art-veil" />
       </span>
-      <span className="art-veil" data-depth="5" />
     </span>
+  );
+}
+
+/** The room with one of the twelve standing in it, which is what
+    almost every card wants. */
+export function CardArt({ subject, className, size = "band" }: {
+  subject: ArtSubject; className?: string; size?: ArtSize;
+}) {
+  return (
+    <Scene motif={MOTIF_OF[subject]} size={size}
+           className={[`art-of-${subject}`, className].filter(Boolean).join(" ")}>
+      <svg className="art-svg" viewBox="0 0 520 400" fill="none">{SUBJECTS[subject]}</svg>
+    </Scene>
   );
 }

@@ -43,6 +43,8 @@
    a reader has read.
    ============================================================ */
 
+import { cue } from "../../lib/sound";
+import { askForPlace, forgetPlace, hasPlace } from "../weather";
 import { Fragment, useCallback, useEffect, useState } from "react";
 import type { Prefs, PrefOption } from "/prefs.js";
 import { runtimeModule } from "./runtime";
@@ -66,6 +68,61 @@ interface Group {
   heading?: string;
   why?: string;
   rows: Row[];
+  /** The one group with a control that is not a row of chips: a
+      permission has to be asked from a button somebody pressed,
+      so it cannot be a preference like the others. */
+  place?: boolean;
+}
+
+/** Where you are, asked once.
+
+    Its own component because it holds the one piece of state on
+    this panel that is not a preference: whether this browser has
+    a place at all. The button is the permission prompt, and the
+    browser will only show one from a real press. */
+function PlaceRow() {
+  const [has, setHas] = useState(false);
+  const [asking, setAsking] = useState(false);
+  const [refused, setRefused] = useState(false);
+
+  useEffect(() => { setHas(hasPlace()); }, []);
+
+  return (
+    <div className="pref-row">
+      <span className="pref-label">Your place</span>
+      <div className="pref-chips" role="group" aria-label="Your place">
+        {has ? (
+          <button className="pref-chip" type="button" onClick={() => {
+            forgetPlace(); setHas(false); setRefused(false); cue("press");
+          }}>
+            <strong>Forget it</strong>
+            <small>the coordinates go, and the page stops</small>
+          </button>
+        ) : (
+          <button className="pref-chip" type="button" disabled={asking}
+                  onClick={async () => {
+                    setAsking(true);
+                    const got = await askForPlace();
+                    setAsking(false);
+                    setHas(got); setRefused(!got);
+                    cue(got ? "saved" : "refused");
+                    /* A reload rather than a state update, because
+                       the layer reads its place once on mount and
+                       the honest way to say "start now" is to
+                       start now. */
+                    if (got) location.reload();
+                  }}>
+            <strong>{asking ? "Asking..." : "Use my location"}</strong>
+            <small>
+              {refused
+                ? "your browser said no, which is fine"
+                : "rounded to about a kilometre, kept on this device"}
+            </small>
+          </button>
+        )}
+      </div>
+    </div>
+  );
 }
 
 export function Preferences() {
@@ -100,6 +157,32 @@ export function Preferences() {
             { key: "veil", label: "Transparency", options: m.VEILS },
           ],
         },
+        {
+          id: "sound",
+          heading: "Whether the site makes a sound",
+          why: "A quiet note when a lesson is finished, a stage is "
+            + "finished, or a setting is saved, and a much quieter one "
+            + "under a button. Nothing plays on a page load, nothing "
+            + "plays before you have pressed something, and there is no "
+            + "audio file: every note is a few oscillators, worked out "
+            + "as the page needs it.",
+          rows: [
+            { key: "sound", label: "Sound", options: m.SOUNDS },
+          ],
+        },
+        {
+          id: "weather",
+          heading: "The sky where you are",
+          why: "Rain on the page when it is raining, stars at night, "
+            + "fog in fog. It needs your location once: what is kept is "
+            + "two numbers rounded to about a kilometre, on this device "
+            + "only, and they are never sent to your account. Weather "
+            + "data by Open-Meteo.",
+          rows: [
+            { key: "weather", label: "Weather", options: m.WEATHERS },
+          ],
+          place: true,
+        },
       ]);
       setNow(m.readPrefs());
     });
@@ -108,7 +191,11 @@ export function Preferences() {
 
   const pick = useCallback(async (key: keyof Prefs, id: string) => {
     const m = await prefsModule();
-    m.savePrefs({ [key]: id } as Partial<Prefs>);
+    const saved = m.savePrefs({ [key]: id } as Partial<Prefs>);
+    /* AFTER the save, so turning sound ON says so out loud and
+       turning it off is the last thing you hear it do, which is
+       the switch confirming itself in its own terms. */
+    cue(saved.sound === "off" ? "press" : "saved");
     /* Read back rather than assuming: `savePrefs` applies the
        change to the document and may normalise what it was
        given, and a component that trusted its own optimistic
@@ -141,6 +228,8 @@ export function Preferences() {
               ) : null}
             </div>
           ) : null}
+
+          {group.place ? <PlaceRow /> : null}
 
           {group.rows.map((row) => (
             <div className="pref-row" key={String(row.key)}>

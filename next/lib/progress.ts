@@ -47,6 +47,8 @@
    falls back to the stored one.
    ============================================================ */
 
+import { cue, type Cue } from "./sound.ts";
+
 /** Where each school keeps its set.
 
     These are storage keys, not identifiers, and the difference is
@@ -152,14 +154,26 @@ export function readSet(school: string): Set<string> {
   return new Set(raw.filter((id): id is string => typeof id === "string"));
 }
 
-/** Add or remove one, and say which it ended up as. */
-export function toggleRead(school: string, id: string): boolean {
+/** Add or remove one, and say which it ended up as.
+
+    `sound` is which cue a tick makes, and it is an argument
+    because only the CALLER knows what just happened: ticking the
+    last lesson of a stage finished a stage, and that is a
+    different sentence from finishing a lesson. Null for anywhere
+    that ticks without the reader pressing anything. */
+export function toggleRead(
+  school: string, id: string, sound: Cue | null = "lesson",
+): boolean {
   const key = READ_KEY[school] ?? `${school}-read`;
   const set = readSet(school);
   const now = !set.has(id);
   if (now) set.add(id); else set.delete(id);
   writeJSON(key, [...set]);
   announce();
+  /* Only on the way ON. Un-ticking something is a correction, and
+     a correction that sounds like an achievement is a site
+     congratulating somebody for changing their mind. */
+  if (now && sound) cue(sound);
   return now;
 }
 
@@ -233,6 +247,7 @@ export function toggleCheck(school: string, id: string): boolean {
     document.dispatchEvent(
       new CustomEvent(`${school === "money" ? "learn" : school}:progress`));
   } catch { /* SSR */ }
+  if (now) cue("tick");
   return now;
 }
 

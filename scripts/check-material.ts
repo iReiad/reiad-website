@@ -205,6 +205,14 @@ let bad = 0;
    than the rule. */
 
 const NOT_GLASS = new Map<string, string>([
+  /* A LAYER OF A SCENE IS NOT A SURFACE. `.art-veil` is the
+     corners of a picture going down, and the 1px rim on it is the
+     inside of that picture's own frame rather than a bevel on a
+     piece of glass. Everything in `@layer deck` between
+     `.art-sky` and `.art-spec` is one of ten layers in a room; a
+     material on any of them would be a second piece of glass
+     inside the first. */
+  ["art-veil", "a layer of a scene: the inside of a picture's frame, not a surface"],
   /* THE ONE SURFACE ON THIS SITE THAT IS MEANT TO BE PAPER.
      It is the sheet somebody hands across a desk in a ten minute
      appointment, and a clinician reading a translucent panel with
@@ -317,6 +325,17 @@ const setsSurfaceShadow = new Set<string>();
 
 for (const [layer, sel, body] of all) {
   if (layer === "glow") continue;
+  /* AND NOT THE RELIEF, WHICH NAMES FIGURES RATHER THAN
+     SURFACES. `@layer relief` says how far an icon, a disc or a
+     plate stands off the glass it is drawn on, so every class in
+     it is by definition a thing ON a surface rather than one. It
+     reads `:hover` on the way to saying so, which made this
+     report a rail icon and a lesson's drawing as pressable
+     surfaces with no kind, and the honest answer to that is not
+     three more exemptions: it is that a relief is the other half
+     of this system rather than an unplaced part of it.
+     `check-relief.ts` is what holds that half. */
+  if (layer === "relief") continue;
   const acts = /:hover|:focus-visible|aria-pressed|cursor:\s*pointer/.test(body)
     || /:hover|aria-pressed/.test(sel);
   /* A gradient inside `&::before` belongs to a pseudo-element,

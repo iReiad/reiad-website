@@ -32,7 +32,7 @@
 
 import { useState, type ReactNode } from "react";
 import { ChipButton } from "./ui/chip";
-import { SampleCard } from "./cards";
+import { PieceCard } from "./cards";
 import type { Piece } from "../lib/pieces";
 
 /** Every topic on the page, commonest first and alphabetical
@@ -77,7 +77,7 @@ export function TopicFilter(
 
       <div className="cards grid-2">
         {pieces.map((piece) => (
-          <SampleCard key={piece.slug} piece={piece}
+          <PieceCard key={piece.slug} piece={piece}
                       hidden={chosen !== "" && !piece.topics.includes(chosen)} />
         ))}
         {children}

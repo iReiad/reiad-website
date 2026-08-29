@@ -113,6 +113,12 @@ const STAGES: Array<[stage: string, entries: Entry[]]> = [
        with the reason. The first material reached 1 of 203
        surface-like classes and nothing failed. */
     "scripts/check-material.ts",
+    /* The same design system one order of magnitude down: every
+       icon, disc and plate that stands off a surface, and the
+       promise that all of them stop for a reader who asked for
+       no motion. Two lists that have to agree, so they are
+       compared rather than trusted. */
+    "scripts/check-relief.ts",
     "scripts/check-icons.ts",
     /* The extension rule, which was a paragraph in CLAUDE.md
        until 19 August 2026 and was broken anyway: the

@@ -16,17 +16,50 @@ export interface Cover {
     own: boolean;
     lead: boolean;
 }
+/** What the card is about, beside the photograph.
+
+    All of it optional, because two callers built one from a
+    `Cover` alone for a year and a card with no words on it is
+    still a better card than a section's standing one. */
+export interface CardWords {
+    title?: string;
+    /** The tag, in the mono face above the title. */
+    kicker?: string;
+    /** Which desk it is on: `insights`, `cooking`, `travel`. The
+        card takes that section's own colour, so a kitchen piece
+        shares as rose and a travel piece as plum.
+  
+        Resolved out of the RAIL rather than out of a table here,
+        and that is the point. `shared/nav.ts` is the one place a
+        section's colour is written down, the rail renders every
+        section with that colour inline on the link, and this page
+        has a rail on it: reading it is reading the one table
+        through the markup it already produced. A copy of six
+        colours in this file would be the failure CLAUDE.md opens
+        with, and putting `nav.ts` on the wire as a served module to
+        carry a hue would cost a module, a precache entry and a
+        service worker bump.
+  
+        Falls back to the site's own green, which is what a piece on
+        a desk the rail does not list should share as anyway. */
+    section?: string;
+    /** The token directly, for anything that already has it and
+        for a caller with no rail to read. */
+    accent?: string;
+}
 /**
  * Draw the card: a 1200x630 JPEG.
  *
  * `src` has to be a path this site serves. The bytes are read back
  * through fetch, so a `data:` URL works too and somebody else's
- * URL will not.
+ * URL will not. An empty `src` is allowed and means a card with
+ * no photograph on it, which is a card this site can now draw for
+ * every piece rather than only for the illustrated ones.
  */
 export declare function shareCardBlob({ src, focus }: {
     src: string;
     focus?: Focus;
-}): Promise<Blob>;
+}, words?: CardWords): Promise<Blob>;
 /**
  * The photo a card should be made from, out of an article body.
  *

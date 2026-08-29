@@ -31,6 +31,10 @@
    login could not have reached anyone either. Bump this whenever a
    precached file changes.
 
+   v219  the card scenes gained six layers, the relief gave every
+         icon and control the same depth, and the site gained a
+         sound module, a weather layer and a share card drawn in
+         its own material. /fallback.css and /prefs.js both moved.
    v218: /fallback.css. The pictures stopped being files. Twenty-five
         committed rasters could not answer a theme, and answering
         it would have meant fifty; they are inline components now
@@ -1959,7 +1963,7 @@
    imports (crumbs, audience, learn progress) and the hub is a
    different page. Without a bump, a returning reader would be
    served the v3 app.js forever and none of it would appear. */
-const VERSION = "v218";
+const VERSION = "v219";
 const SHELL = `shell-${VERSION}`;
 const RUNTIME = `runtime-${VERSION}`;
 

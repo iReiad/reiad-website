@@ -130,8 +130,29 @@ async function drawCard(article: Piece, onDone: () => void): Promise<void> {
   let body = full.data?.article?.body ?? "";
   let pick = card.coverFromHTML(body);
 
+  /* NO PHOTO IS NO LONGER A REASON NOT TO DRAW ONE. The card is
+     the site's own material with the piece's title on it, and a
+     photograph is what it stands on where there is one. It was a
+     crop of a photograph and nothing else, which is why an
+     unillustrated piece used to fall back to the section's
+     standing card. */
   if (!pick.own) {
-    await toast("No photo in that piece, so the section's card is the right one.");
+    await toast("No photo in that piece, so the card is drawn without one…");
+    try {
+      const stored = await api.uploadMedia(
+        await card.shareCardBlob({ src: "", focus: "centre" }, {
+          title: article.title, kicker: article.tag, section: article.section,
+        }),
+        card.cardSlug(article.slug));
+      if (!stored?.url) throw new Error("upload-failed");
+      await adminCall(`articles/${encodeURIComponent(article.slug)}`, {
+        method: "PATCH", body: { cover: stored.url },
+      });
+      await toast("Card drawn.");
+      onDone();
+    } catch {
+      await toast("That card would not draw.");
+    }
     return;
   }
 
@@ -160,7 +181,10 @@ async function drawCard(article: Piece, onDone: () => void): Promise<void> {
   await toast("Drawing the card…");
   try {
     const stored = await api.uploadMedia(
-      await card.shareCardBlob(pick), card.cardSlug(article.slug));
+      await card.shareCardBlob(pick, {
+        title: article.title, kicker: article.tag, section: article.section,
+      }),
+      card.cardSlug(article.slug));
     if (!stored?.url) throw new Error("upload-failed");
 
     /* The body goes back only when it actually changed. A PATCH

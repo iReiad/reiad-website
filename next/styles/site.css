@@ -17,7 +17,7 @@
    hide content on an older engine.
    ============================================================ */
 
-@layer tokens, base, layout, components, menu, tools, tw, article, studio, work, money, workbook, deutsch, quran, english, reads, check, about, shell, deck, board, courses, routine, diet, admin, lesson, glow, utilities;
+@layer tokens, base, layout, components, menu, tools, tw, article, studio, work, money, workbook, deutsch, quran, english, reads, check, about, shell, deck, board, courses, routine, diet, admin, lesson, glow, relief, weather, utilities;
 
 /* ============================================================
    TOKENS
@@ -380,6 +380,13 @@
        rule, because those are the only three ways an accent is
        ever scoped on this site: the root, an element given one
        inline, and a section. */
+    /* WHAT A THING LIFTED OFF A SURFACE CASTS ON TO IT. Softer at
+       night, where the ground is already dark and a hard shadow
+       reads as dirt, and firmer on paper, where a cast shadow is
+       the only thing saying a mark is above the page rather than
+       printed on it. `@layer relief` is the only reader. */
+    --relief-cast: light-dark(oklch(22% 0.02 var(--h-green) / 0.3),
+                              oklch(0% 0 0 / 0.42));
     --accent-soft:   color-mix(in oklab, var(--accent) 11%, var(--paper));
     --accent-line:   color-mix(in oklab, var(--accent) 28%, transparent);
     --accent-ring:   color-mix(in oklab, var(--accent) 30%, transparent);
@@ -3179,9 +3186,6 @@ it collapsed to the width of the word "Bangladesh". */
   }
   @keyframes sweep { to { background-position: -200% 0; } }
 
-  /* ---------- portfolio bits ---------- */
-  .sample-card .tag { color: var(--accent); }
-  .sample-card h3 { font-size: var(--t-7); }
   /* ---------- topic chips ----------
      A piece can be about several things, and three surfaces now say
      so: the card on a section index, the card preview in the Studio,
@@ -7143,32 +7147,12 @@ German for day, and .tag is what the site has always called
 
   .read-hero .lede { max-width: 62ch; }
 
-  .read-card {
-    gap: var(--s-3);
-
-    & .tag { margin-top: 2px; }
-    & h3 { font-size: var(--t-8); }
-    & p { margin-top: 4px; }
-  }
-  a.read-card {
-    text-decoration: none; color: inherit;
-    transition: border-color var(--fast) var(--ease),
-                box-shadow var(--fast) var(--ease);
-
-    &:hover {
-      border-color: var(--accent); --surface-shadow: var(--shadow-lift);
-      & .more { color: var(--accent); }
-    }
-  }
-  .read-art { color: var(--accent); }
-  .read-art .art { width: 30px; height: 30px; }
-  .read-meta {
-    display: flex; flex-wrap: wrap; gap: var(--s-3) 14px; align-items: baseline;
-    margin-top: auto; padding-top: 10px;
-    color: var(--ink-soft); font-size: var(--t-2);
-
-    & .more { margin-inline-start: auto; }
-  }
+  /* `.read-card`, `.read-art` and `.read-meta` were here and went
+     with the markup they styled. A piece on a Bangla desk was a
+     card of its own with a 30px icon and a three-column footer;
+     it is the `<GoCard>` the rest of the site draws a piece with
+     now, wearing a scene rather than an icon, so a reading hub has
+     no card rules left to have. */
 
   /* A piece is printed to be propped against something greasy, or
      carried into a visa office, so the furniture that only makes
@@ -10419,9 +10403,9 @@ German for day, and .tag is what the site has always called
      The height is a fact about the picture rather than a taste:
      under about 230px the drawing has no room to be one. */
   .gate-feat {
-    min-height: clamp(230px, 26vw, 330px);
+    min-height: clamp(230px, 26vw, 340px);
     padding: clamp(18px, 2.4vw, 28px) clamp(18px, 2.4vw, 28px) clamp(18px, 2.4vw, 28px) 24px;
-    padding-right: clamp(18px, 40%, 560px);
+    padding-right: clamp(18px, 48%, 960px);
     gap: 10px;
   }
   .gate-feat .gt-dek { font-size: var(--t-5); max-width: 46ch; }
@@ -10437,15 +10421,24 @@ German for day, and .tag is what the site has always called
      Under 760px the card stops being wide and the picture goes
      back to being a band, which is the shape it is everywhere
      else. One card, two arrangements, and the second one is the
-     site's ordinary one. */
-  .gate-feat-art {
+     site's ordinary one.
+
+     TWO CLASSES DEEP, AND THAT IS THE WHOLE OF WHY IT WORKS.
+     `.artwork` sets `position: relative` and a 16:9 ratio, it is
+     declared later in this layer, and one class beats one class
+     by whichever came last. So this rule lost both of them, the
+     drawing landed in the flow at its own aspect ratio, and the
+     front page's biggest card carried a 540px stamp in its top
+     left corner with two thirds of itself empty. It renders
+     perfectly wrong, which is why nothing failed. */
+  .gate-feat .gate-feat-art {
     position: absolute; inset: 0 0 0 auto; z-index: 0;
-    width: min(52%, 540px); aspect-ratio: auto;
-    mask-image: linear-gradient(100deg, transparent 4%, #000 36%);
+    width: clamp(260px, 48%, 960px); aspect-ratio: auto;
+    mask-image: linear-gradient(100deg, transparent 1%, #000 26%);
   }
   @media (max-width: 760px) {
     .gate-feat { padding-top: 0; padding-right: clamp(18px, 2.4vw, 28px); }
-    .gate-feat-art {
+    .gate-feat .gate-feat-art {
       position: relative; inset: auto; width: auto; aspect-ratio: 16 / 9;
       margin: 0 -18px 8px -24px;
       mask-image: none;
@@ -10512,7 +10505,7 @@ German for day, and .tag is what the site has always called
 
 
   /* ============================================================
-     THE ART A CARD WEARS
+     THE SCENE A CARD WEARS
 
      `.artwork` and not `.art`, which this site has had since the
      schools were written: it is the icon beside a step's name, at
@@ -10521,28 +10514,61 @@ German for day, and .tag is what the site has always called
      exactly what it did for one build.
 
      `next/components/card-art.tsx` is the twelve drawings; this
-     is the light they are drawn in, and every value in it is a
-     MIX of the card's own accent with two tokens that already
-     answer the theme. `--panel` is the ground, near-black at
-     night and near-white by day; `--ink` is the light falling on
-     it, and it flips with the ground. So `--art-hot` is a bright
-     accent over black and a deep inked accent on paper, from one
-     declaration, and a drawing needs no second copy.
+     is the room they stand in. Nine layers, back to front, and
+     every one of them is a different KIND of thing rather than
+     the same wash at a different opacity:
 
-     That is the whole reason the pictures stopped being files:
-     twenty-five committed rasters could not answer a theme, and
-     answering it would have meant fifty.
+       sky     the ground and the horizon
+       weave   the tooth of the material
+       halo    the bloom the subject throws behind it
+       rays    shafts of light coming in from the top left
+       far     the motif: what is behind this particular subject
+       floor   the plane it all stands on
+       stage   the subject, and its reflection
+       near    what is between you and it, out of focus
+       spec    the highlight crossing the glass
+       veil    the corners going down
+
+     ---- one drawing, both themes, and they are not the same
+          drawing ----
+
+     Every colour is a MIX of the card's own `--accent` with two
+     tokens that already answer the theme, so a school that
+     changes colour in `shared/nav.ts` changes colour here with
+     nothing regenerated.
+
+     But a palette is not enough on its own, and believing it was
+     is what made the first light mode look bleached. AT NIGHT A
+     THING IS LIT AND ON PAPER A THING IS PRINTED, and those are
+     two different pictures. Light adds: a glowing edge over black
+     is brighter than the black. Ink subtracts: nothing on paper
+     is brighter than the paper, so a bloom over white is invisible
+     and the only way to say "this is in front" is a cast shadow.
+
+     `--art-bloom` and `--art-cast` are that swap, and each is
+     transparent in the theme it does not belong to, so one filter
+     list says both. `--art-haze` is the other half: a receding
+     tone fades into the dark at night and into a warm grey on
+     paper, because fading towards white on white is fading into
+     nothing.
      ============================================================ */
   .artwork {
     --art-back: var(--panel);
     --art-fore: var(--ink);
 
+    /* WHAT A RECEDING TONE FADES INTO. At night that is the
+       ground itself. On paper it is a warm grey a good way short
+       of the page, because a shape that fades to white on white
+       has not receded, it has gone. Mixing every muted tone
+       towards this instead of towards the ground is most of the
+       difference between the two themes. */
+    --art-haze: light-dark(oklch(84% 0.014 var(--h-paper)), var(--panel));
+
     /* THE LADDER, AND WHICH END EACH RUNG MIXES TOWARDS. A tone
        that has to be SEEN mixes toward `--art-fore`, so it gets
        brighter over a dark ground and darker over a pale one, and
        either way it gains contrast. A tone that has to RECEDE
-       mixes toward `--art-back`, so it approaches whatever the
-       ground is.
+       mixes toward `--art-haze`.
 
        `--art-lit` mixed toward the ground for one build, which is
        the mistake this note exists for: it is the stroke colour of
@@ -10550,10 +10576,24 @@ German for day, and .tag is what the site has always called
        and the whole set looked bleached. */
     --art-hot:   color-mix(in oklab, var(--accent) 74%, var(--art-fore));
     --art-lit:   color-mix(in oklab, var(--accent) 88%, var(--art-fore));
-    --art-mid:   color-mix(in oklab, var(--accent) 72%, var(--art-back));
-    --art-deep:  color-mix(in oklab, var(--accent) 40%, var(--art-back));
-    --art-shade: color-mix(in oklab, var(--accent) 20%, var(--art-back));
-    --art-sink:  color-mix(in oklab, var(--accent) 9%,  var(--art-back));
+    --art-mid:   color-mix(in oklab, var(--accent) 72%, var(--art-haze));
+    --art-deep:  color-mix(in oklab, var(--accent) 44%, var(--art-haze));
+    /* THE GROUND, AND IT IS NOT THE SAME RECIPE IN BOTH THEMES.
+       Nine per cent of an accent over near-black is a visible
+       tint. Nine per cent of the same accent over near-white is
+       white, so the first light mode had a picture standing on
+       nothing: no plate, no separation from the card, and every
+       muted tone in the drawing dissolving into the page.
+
+       On paper the scene is a TINTED PLATE, printed on stock a
+       shade darker than the card it sits on, and it takes three
+       times the pigment to be one. */
+    --art-shade: light-dark(
+      color-mix(in oklab, var(--accent) 30%, oklch(95.5% 0.008 var(--h-paper))),
+      color-mix(in oklab, var(--accent) 20%, var(--art-back)));
+    --art-sink: light-dark(
+      color-mix(in oklab, var(--accent) 19%, oklch(97% 0.006 var(--h-paper))),
+      color-mix(in oklab, var(--accent) 9%, var(--art-back)));
 
     /* THE SECOND LIGHT IS THE PAGE'S OWN FOREGROUND, not a second
        hue. The rasters used a complementary colour, which is a
@@ -10563,30 +10603,150 @@ German for day, and .tag is what the site has always called
        the page is already lit by. */
     --art-fore-hot:  color-mix(in oklab, var(--art-fore) 88%, var(--accent));
     --art-fore-lit:  color-mix(in oklab, var(--art-fore) 68%, var(--accent));
-    --art-fore-mid:  color-mix(in oklab, var(--art-fore) 44%, var(--art-back));
-    --art-fore-deep: color-mix(in oklab, var(--art-fore) 22%, var(--art-back));
+    --art-fore-mid:  color-mix(in oklab, var(--art-fore) 44%, var(--art-haze));
+    --art-fore-deep: color-mix(in oklab, var(--art-fore) 22%, var(--art-haze));
+
+    /* THE TWO IDIOMS, each transparent in the theme it is not
+       for, so one filter list on `.art-real` says both. A blur
+       radius cannot be swapped by `light-dark()`; a colour can,
+       and a shadow in a transparent colour costs a composite and
+       draws nothing. */
+    --art-bloom: light-dark(transparent,
+      color-mix(in oklab, var(--art-lit) 46%, transparent));
+    --art-bloom-wide: light-dark(transparent,
+      color-mix(in oklab, var(--art-mid) 34%, transparent));
+    --art-cast: light-dark(
+      color-mix(in oklab, var(--art-fore) 24%, transparent), transparent);
+    --art-cast-near: light-dark(
+      color-mix(in oklab, var(--art-fore) 14%, transparent), transparent);
+
+    /* The specular is white in both themes, because that is what
+       a specular IS: the colour of the light rather than of the
+       thing. It has to be much stronger on paper to be seen at
+       all against a pale ground. */
+    --art-shine: light-dark(oklch(100% 0 0 / 0.5), oklch(100% 0 0 / 0.17));
+
+    /* WHAT THE CORNERS GO DOWN TOWARDS. At night that is the
+       ground, which is nearly black, so the vignette is a
+       darkening. On paper the ground is nearly white and a
+       vignette towards it is nothing at all, so it goes towards
+       the accent instead: a printed plate is darker at its edges
+       because the ink is, not because the light fell off. */
+    --art-corner: light-dark(
+      color-mix(in oklab, var(--accent) 42%, var(--art-haze)), var(--art-back));
+
+    /* The reflection is fainter on paper for the same reason as
+       everything else here: a mirror image at a quarter opacity
+       over white is a smudge. */
+    --art-mirror: light-dark(oklch(0% 0 0 / 0.42), oklch(0% 0 0 / 0.75));
+
+    /* HOW FAR THE NEAREST LAYER TRAVELS, in pixels, at full
+       lean. A tile 84px wide and a panel 540px wide cannot throw
+       the same distance: on the tile it would slide the subject
+       off its own floor. Every size below sets this and nothing
+       else, which is why there is one set of layers rather than
+       three. */
+    --art-throw: 2.6px;
+    --art-turn: 1;
 
     position: relative; display: block; overflow: hidden;
     aspect-ratio: 16 / 9;
     background: var(--art-sink);
     isolation: isolate;
 
-    & > * { position: absolute; inset: 0; }
+    /* The room has a depth, so leaning it keystones rather than
+       skewing. 900px against a card about 400px wide is a long
+       lens: enough to feel, not enough to fish-eye. */
+    perspective: 900px;
   }
 
-  /* the ground, the light in it, and the floor it stands on */
-  .art-ground {
-    background:
-      radial-gradient(120% 96% at 62% 34%,
-        var(--art-shade) 0%, var(--art-sink) 58%,
-        color-mix(in oklab, var(--accent) 4%, var(--art-back)) 100%);
+  /* The whole room turns as one, and every layer inside it
+     slides by its own depth. Two mechanisms on purpose: the turn
+     is what makes the frame a window, and the slide is what puts
+     the things behind that window at different distances. */
+  .art-space {
+    position: absolute; inset: 0;
+    transform:
+      rotateY(calc(var(--gpx, 0) * var(--art-a) * var(--art-turn) * 5deg))
+      rotateX(calc(var(--gpy, 0) * var(--art-a) * var(--art-turn) * -3.4deg));
   }
-  .art-wash {
-    background:
-      radial-gradient(44% 58% at 56% 26%,
-        color-mix(in oklab, var(--art-mid) 55%, transparent) 0%, transparent 72%);
+
+  /* EVERY LAYER IS BIGGER THAN THE FRAME BY ITS OWN BLEED, and
+     the bleed is not decoration: a layer that travels 26px and is
+     exactly the size of the frame shows the ground down one edge
+     the moment it moves. Deeper layers travel further, so they
+     bleed more. */
+  .art-space > * {
+    position: absolute;
+    inset: calc(var(--art-bleed, 0px) * -1);
+    pointer-events: none;
   }
+
+  /* 1 · THE GROUND, and the light in the air above it. */
+  .art-sky {
+    --art-bleed: 14px; --art-depth: 0.4;
+    background:
+      radial-gradient(58% 46% at 30% 8%,
+        color-mix(in oklab, var(--art-mid) 26%, transparent) 0%, transparent 74%),
+      linear-gradient(to bottom,
+        var(--art-shade) 0%,
+        var(--art-sink) 46%,
+        color-mix(in oklab, var(--art-sink) 74%, var(--art-back)) 100%);
+  }
+
+  /* 2 · THE TOOTH OF THE MATERIAL. A stipple rather than a
+     gradient, because the one thing a flat vector scene has none
+     of is grain, and grain is what stops a large area of one
+     colour reading as a slab of plastic. */
+  .art-weave {
+    --art-bleed: 18px; --art-depth: 0.9;
+    background-image:
+      radial-gradient(circle at 1px 1px,
+        color-mix(in oklab, var(--art-fore) 10%, transparent) 0.9px,
+        transparent 1.5px);
+    background-size: 4px 4px;
+    opacity: 0.55;
+  }
+
+  /* 3 · THE BLOOM THE SUBJECT THROWS BEHIND IT. Blurred rather
+     than a soft-stopped gradient: a gradient has a shape and a
+     blur has none, and the light behind a thing has no shape. */
+  .art-halo {
+    --art-bleed: 24px; --art-depth: 1.7;
+    background:
+      radial-gradient(44% 54% at 54% 46%,
+        color-mix(in oklab, var(--art-mid) 58%, transparent) 0%, transparent 72%);
+    filter: blur(7px);
+  }
+
+  /* 4 · SHAFTS OF LIGHT, from the top left, which is where every
+     highlight on this site comes from. Masked into a cone so they
+     stop being wallpaper: a repeating gradient across the whole
+     box is stripes, and the same gradient fading out at the far
+     corner is a window. */
+  .art-rays {
+    --art-bleed: 30px; --art-depth: 2.1;
+    background-image:
+      repeating-linear-gradient(104deg,
+        transparent 0 30px,
+        color-mix(in oklab, var(--art-fore) 7%, transparent) 30px 39px,
+        transparent 39px 88px);
+    mask-image: radial-gradient(62% 82% at 26% -8%, #000 6%, transparent 74%);
+    opacity: 0.9;
+  }
+
+  /* 5 · WHAT IS BEHIND THIS PARTICULAR SUBJECT, hazed and out of
+     focus. The focal plane is the stage, so everything nearer and
+     everything further is soft, which is the only honest way to
+     say "this is further away" in a picture with no atmosphere. */
+  .art-far {
+    --art-bleed: 22px; --art-depth: 3;
+    opacity: 0.62; filter: blur(1.1px);
+  }
+
+  /* 6 · THE PLANE IT ALL STANDS ON. */
   .art-floor {
+    --art-bleed: 0px; --art-depth: 2.4;
     top: auto; height: 46%;
     background:
       repeating-linear-gradient(to right,
@@ -10598,57 +10758,112 @@ German for day, and .tag is what the site has always called
     opacity: 0.5;
   }
 
-  /* the drawing, its bloom, and its reflection */
-  .art-stage { inset: 9% 8% 8%; }
-  .art-stage svg { position: absolute; inset: 0; width: 100%; height: 100%; overflow: visible; }
+  /* 7 · THE SUBJECT, and its reflection. */
+  .art-stage {
+    --art-bleed: 0px; --art-depth: 6;
+    inset: 9% 8% 8%;
+  }
+  .art-svg { position: absolute; inset: 0; width: 100%; height: 100%; overflow: visible; }
+  /* The subject, whatever it is. A wrapper rather than the svg
+     itself, because a scene can hold a drawing it does not own:
+     the case studies stand their own sparkline in one. */
+  .art-copy { position: absolute; inset: 0; }
+  .art-copy > svg { position: absolute; inset: 0; width: 100%; height: 100%; overflow: visible; }
+
+  /* Lit at night, printed by day, and the same three shadows say
+     both: two of them are transparent in either theme. */
   .art-real {
     filter:
-      drop-shadow(0 0 8px color-mix(in oklab, var(--art-lit) 50%, transparent))
-      drop-shadow(0 0 26px color-mix(in oklab, var(--art-mid) 40%, transparent));
+      drop-shadow(0 0 8px var(--art-bloom))
+      drop-shadow(0 0 26px var(--art-bloom-wide))
+      drop-shadow(0 12px 16px var(--art-cast))
+      drop-shadow(0 2px 3px var(--art-cast-near));
   }
+
   /* MIRRORED ABOUT 75% OF THE STAGE, which is the line every
      subject stands on. The mask is written in the copy's own
      coordinates and is flipped with it, so it fades UPWARD here
      in order to fade downward on the page. */
   .art-echo {
     transform-origin: 50% 75%; transform: scaleY(-1);
-    mask-image: linear-gradient(to bottom, transparent 44%, oklch(0% 0 0 / 0.75) 76%);
-    filter: blur(3px); opacity: 0.24;
+    mask-image: linear-gradient(to bottom, transparent 44%, var(--art-mirror) 76%);
+    filter: blur(3px); opacity: 0.26;
   }
 
-  /* a shaft of light, and the corners going down */
+  /* 8 · WHAT IS BETWEEN YOU AND IT. Four motes, far too blurred
+     to be read as anything, travelling further than everything
+     else. This is the layer that does the most for the least: a
+     scene with nothing in front of the subject is a picture of a
+     thing, and a scene with something out of focus in front of it
+     is a place. */
+  .art-near {
+    --art-bleed: 44px; --art-depth: 10;
+    background-image:
+      radial-gradient(circle at 9% 82%,
+        color-mix(in oklab, var(--art-lit) 34%, transparent) 0 9px, transparent 10px),
+      radial-gradient(circle at 91% 17%,
+        color-mix(in oklab, var(--art-mid) 44%, transparent) 0 6px, transparent 7px),
+      radial-gradient(circle at 74% 92%,
+        color-mix(in oklab, var(--art-fore-lit) 22%, transparent) 0 5px, transparent 6px),
+      radial-gradient(circle at 22% 12%,
+        color-mix(in oklab, var(--art-lit) 26%, transparent) 0 4px, transparent 5px);
+    filter: blur(6px);
+    opacity: 0.6;
+  }
+
+  /* 9 · THE HIGHLIGHT CROSSING THE GLASS. It is where the light
+     is rather than where the scene is, so it reads `--gx`
+     directly and does not parallax with everything else: a
+     specular that moved with the layer under it would be a
+     painted stripe.
+
+     It STRETCHES with `--gvx`, which is the leaning velocity out
+     of `glow.tsx`. A highlight that smears when the light sweeps
+     fast and tightens when it slows is the one cue that says the
+     surface is polished rather than matte, and it costs an angle
+     in a gradient. */
+  .art-spec {
+    --art-bleed: 0px; --art-depth: 0;
+    --art-spec-at: calc(24% + var(--gx, 50%) * 0.52);
+    background-image:
+      linear-gradient(calc(102deg + var(--gvx, 0) * 30deg),
+        transparent calc(var(--art-spec-at) - 26%),
+        var(--art-shine) var(--art-spec-at),
+        transparent calc(var(--art-spec-at) + 26%));
+    opacity: calc(var(--art-a) * 0.9);
+  }
+
+  /* 10 · THE CORNERS GOING DOWN, which is what keeps the eye in
+     the middle of a small picture. */
   .art-veil {
+    --art-bleed: 0px; --art-depth: 1.2;
     background:
-      linear-gradient(100deg, transparent 32%,
-        color-mix(in oklab, var(--art-fore) 8%, transparent) 46%, transparent 58%),
-      radial-gradient(86% 76% at 50% 44%, transparent 50%,
-        color-mix(in oklab, var(--art-back) 72%, transparent) 100%);
+      radial-gradient(88% 78% at 50% 44%, transparent 48%,
+        color-mix(in oklab, var(--art-corner) 76%, transparent) 100%);
+    box-shadow: inset 0 0 0 1px color-mix(in oklab, var(--art-fore) 7%, transparent);
   }
 
   /* ---- and it opens under the pointer ----
 
-     Every layer carries a depth and translates against `--gpx`
-     and `--gpy`, which `next/components/glow.tsx` already writes
-     as the pointer's position over the surface, normalised to
-     -1..1. The subject moves furthest and the ground barely at
-     all, which is parallax: the card stops being a picture of a
-     thing and becomes a box with the thing inside it.
+     `glow.tsx` publishes the pointer as `--gpx` and `--gpy`,
+     normalised to -1..1 and SPRUNG: the light is instant and the
+     glass has weight, so what arrives here has already settled
+     rather than snapping. Each layer multiplies it by its own
+     depth, so the subject moves fifteen times what the sky does,
+     and the card stops being a picture of a thing and becomes a
+     box with the thing inside it.
 
-     Times `--glow-a`, which is the material's own "the pointer is
-     here" number: 0 at rest, registered, and already animating on
-     the 190-in, 820-out curve. So the depth arrives with the light
-     and eases back out behind it, with no second listener, no
-     second piece of state, and nothing at all for a reader who
-     has asked for no motion. */
-  /* ON THE CARD'S OWN HOVER, not on `--glow-a`. The material's
-     number does not inherit, so a layer inside the drawing reads
-     0 for ever; this one does, and it carries the same asymmetry
-     because a transition takes its duration from the state it is
-     going TO: 190ms arriving, 820ms leaving. */
+     ON THE CARD'S OWN HOVER, not on `--glow-a`. The material's
+     number is registered `inherits: false`, so a layer inside the
+     drawing reads 0 for ever; this one inherits, and it carries
+     the same asymmetry because a transition takes its duration
+     from the state it is going TO: 190ms arriving, 820ms leaving.
+     A filament does not switch off. */
   .artwork { --art-a: 0; transition: --art-a 820ms var(--ease); }
-  :is(.card, .gate-tile):hover .artwork,
-  :is(.card, .gate-tile):focus-visible .artwork,
-  :is(.card, .gate-tile):focus-within .artwork {
+  :is(.card, .gate-tile, .news-card, .cell, .lesson-card, .work-card):hover .artwork,
+  :is(.card, .gate-tile, .news-card, .cell, .lesson-card, .work-card):focus-visible .artwork,
+  :is(.card, .gate-tile, .news-card, .cell, .lesson-card, .work-card):focus-within .artwork,
+  .artwork:hover {
     --art-a: 1;
     transition-duration: 190ms;
   }
@@ -10657,28 +10872,26 @@ German for day, and .tag is what the site has always called
      is what lets a layer read the pointer at all. Only the
      strength is animated: transitioning `translate` itself would
      start a fresh 820ms ease on every pointer move and the picture
-     would lag the hand holding it. */
-  .artwork > [data-depth] {
+     would lag the hand holding it, which is the one thing the
+     spring in `glow.tsx` is there to avoid. */
+  .art-space > * {
     translate:
-      calc(var(--gpx, 0) * var(--art-depth) * var(--art-a) * -2px)
-      calc(var(--gpy, 0) * var(--art-depth) * var(--art-a) * -2px);
+      calc(var(--gpx, 0) * var(--art-depth, 0) * var(--art-a) * var(--art-throw) * -1)
+      calc(var(--gpy, 0) * var(--art-depth, 0) * var(--art-a) * var(--art-throw) * -0.7);
   }
-  .artwork > [data-depth="1"] { --art-depth: 1; }
-  .artwork > [data-depth="2"] { --art-depth: 2.4; }
-  .artwork > [data-depth="4"] { --art-depth: 5.5; }
-  .artwork > [data-depth="5"] { --art-depth: 1.6; }
 
-  /* The subject LEANS as well as slides, which is what tells the
-     eye the box has a floor rather than a sliding backdrop. */
-  .art-stage {
-    transform: rotateY(calc(var(--gpx, 0) * var(--art-a) * 3deg))
-               rotateX(calc(var(--gpy, 0) * var(--art-a) * -2deg));
-  }
+  /* THREE SIZES, and each one changes the throw and nothing else.
+     The layers, the depths and the drawing are identical; what a
+     84px thumbnail cannot have is a subject sliding 26px, which
+     would take it off its own floor. */
+  .artwork[data-size="tile"]  { --art-throw: 1.1px; --art-turn: 0.7; }
+  .artwork[data-size="panel"] { --art-throw: 3.6px; --art-turn: 1.1; }
 
   @media (prefers-reduced-motion: reduce) {
     .artwork { transition: none; }
-    .artwork > [data-depth] { translate: none; }
-    .art-stage { transform: none; }
+    .art-space { transform: none; }
+    .art-space > * { translate: none; }
+    .art-spec { opacity: 0.5; }
   }
 
   /* The slim form: one line tall, a handle not a card. */
@@ -13659,7 +13872,7 @@ German for day, and .tag is what the site has always called
       .rail-item, .tree-link, .tab, .course-mod, .pillar,
       .audience-slider, .skip, .dt-tab,
       .cell, .card, .gate-tile, .news-card, .work-card, .lesson-card,
-      .rung, .res-live, .tally-item, .read-card, .ladder-row, .target,
+      .rung, .res-live, .tally-item, .ladder-row, .target,
       .saved-row, .kept-row, .rt-template, .resume, .acct-tile,
       .gate-card, .rt-build-task, .rt-panel, .dt-w,
       .topbar, .rail, .slimbar, .acc-menu, .tree-panel, .crumb-menu,
@@ -13802,7 +14015,7 @@ German for day, and .tag is what the site has always called
      light is well under the surface, so it is a wash rather than
      a spot and its edge is soft. */
   :is(.cell, .card, .gate-tile, .news-card, .work-card, .lesson-card,
-      .rung, .res-live, .tally-item, .read-card, .ladder-row, .target,
+      .rung, .res-live, .tally-item, .ladder-row, .target,
       .saved-row, .kept-row, .rt-template, .resume, .acct-tile,
       .gate-card, .rt-build-task, .rt-panel, .dt-w) {
     --depth: 5; --polish: 0.5; --clarity: 0.5; --standing: 1;
@@ -14044,7 +14257,7 @@ German for day, and .tag is what the site has always called
       .rail-item, .tree-link, .tab, .course-mod, .pillar,
       .audience-slider, .skip, .dt-hit, .dt-tab,
       .cell, .card, .gate-tile, .news-card, .work-card, .lesson-card,
-      .rung, .res-live, .tally-item, .read-card, .ladder-row, .target,
+      .rung, .res-live, .tally-item, .ladder-row, .target,
       .saved-row, .kept-row, .rt-template, .resume, .acct-tile,
       .gate-card, .rt-build-task, .rt-panel, .dt-w,
       .topbar, .rail, .slimbar, .acc-menu, .tree-panel, .crumb-menu,
@@ -16128,4 +16341,419 @@ German for day, and .tag is what the site has always called
   }
 
   .dt-term dd { margin: 0; color: var(--ink-soft); }
+}
+
+/* ============================================================
+   @layer relief: the same depth, one order of magnitude down.
+
+   `@layer glow` says what a surface is MADE OF and `@layer deck`
+   stands a scene inside a card. This is the third thing, and it
+   is the one that makes the treatment the site's rather than the
+   front page's: everything drawn ON a surface sits ABOVE it, so
+   it lifts when the light comes, leans the way the glass leans,
+   and throws a shadow that moves the other way.
+
+   A card's scene throws 26 pixels. A search button's icon throws
+   two. Same light, same pointer, same curve, and the difference
+   is one number, because the difference between a card and a
+   button is size and nothing else.
+
+   ---- why this is a layer of its own and not part of the
+        material ----
+
+   `check-css.ts` lets a layer name classes other layers define
+   only if it CANNOT take anything away from them, and the
+   material earns that by setting nothing but the light. This one
+   sets geometry, so it earns it a different way and the check
+   knows about both:
+
+     a relief layer may move a thing and may never lay it out.
+
+   `translate`, `rotate` and `scale` COMPOSE with whatever
+   `transform` the owning layer set, which is the entire reason
+   those three exist as separate properties. `transform` REPLACES
+   it, so `transform` is the one thing this layer may never say:
+   one line of it here would take the 68-degree floor off every
+   scene on the site and every rule would still look right.
+
+   ---- `--lift` is not `--glow-a`, and it has to be ----
+
+   The material's own strength is registered `inherits: false`, so
+   an icon inside a button reads zero from it for ever. This is a
+   plain custom property set on the ancestor, which inherits, and
+   the figure multiplies the pointer by it.
+
+   Nothing here transitions on the ANCESTOR. A `transition` in a
+   later layer replaces the list underneath it rather than merging
+   with it, so one on `:where(a, button)` would take the hover
+   colour off every link on the site. The figure owns its own
+   transition instead, and it carries the site's asymmetry the
+   same way everything else does: 190ms arriving, 820ms leaving.
+   ============================================================ */
+@layer relief {
+
+  /* WHAT COUNTS AS PRESSED. `:where()` so it adds no specificity
+     at all: this may not win an argument with anything, it may
+     only contribute a number that nothing else sets. */
+  :where(a, button, summary, label, .card, .cell, .gate-tile, .news-card,
+         .lesson-card, .work-card, .rung, .ladder-row, .tab, [data-glow]):hover,
+  :where(a, button, summary, label, .card, .cell, .gate-tile, .news-card,
+         .lesson-card, .work-card, .rung, .ladder-row, .tab, [data-glow]):focus-visible,
+  :where(a, button, summary, label, .card, .cell, .gate-tile, .news-card,
+         .lesson-card, .work-card, .rung, .ladder-row, .tab, [data-glow]):focus-within {
+    --lift: 1;
+  }
+
+  /* WHAT LIFTS. A curated list, like the material's, and for the
+     same reason: most of this site is still classes rather than
+     components, and a selector broad enough to catch them all
+     would catch the scene's own ten layers as well and parallax
+     them twice.
+
+     `check-relief.ts` fails on a name in here that the stylesheet
+     does not define, so the list cannot rot quietly. */
+  .gt-disc, .card-art, .work-art, .lesson-card-art, .rail-ico,
+  .relief-lift,
+  :is(.top-btn, .btn, .icon-btn, .chip, .pill, .card-go, .gt-go) > svg {
+    /* The figure moves WITH the light, which is the opposite of
+       the shadow below. Two thirds on the vertical, because a
+       page is looked at from slightly above and the horizontal
+       is the axis a head actually moves along. */
+    translate:
+      calc(var(--gpx, 0) * var(--lift, 0) * var(--relief-throw, 2px))
+      calc(var(--gpy, 0) * var(--lift, 0) * var(--relief-throw, 2px) * 0.66);
+    /* And comes towards you, which is the whole of what separates
+       a thing that lifted from a thing that slid. */
+    scale: calc(1 + var(--lift, 0) * var(--relief-rise, 0.035));
+    transition:
+      translate 820ms var(--ease),
+      scale 820ms var(--ease),
+      filter 820ms var(--ease);
+  }
+
+  :where(:hover, :focus-visible, :focus-within) :is(
+    .gt-disc, .card-art, .work-art, .lesson-card-art, .rail-ico, .relief-lift,
+    .top-btn > svg, .btn > svg, .icon-btn > svg, .chip > svg,
+    .pill > svg, .card-go > svg, .gt-go > svg) {
+    transition-duration: 190ms;
+  }
+
+  /* THE SHADOW GOES THE OTHER WAY, and that is the whole trick.
+     A thing lit from the top left and lifted off its ground casts
+     to the bottom right, so the offset is the pointer NEGATED. A
+     shadow that moved with the figure would read as the figure
+     being painted on rather than standing on. */
+  .gt-disc, .card-art, .work-art, .lesson-card-art, .relief-lift {
+    filter: drop-shadow(
+      calc(var(--gpx, 0) * var(--lift, 0) * -2.4px)
+      calc(1px + var(--gpy, 0) * var(--lift, 0) * -1.6px)
+      calc(1.5px + var(--lift, 0) * 5px)
+      var(--relief-cast, oklch(0% 0 0 / 0.28)));
+  }
+
+  /* The big ones throw further, because they are further off the
+     ground: a case study's chart is a plate resting on the card
+     and a chip's mark is engraved into it. */
+  .work-art { --relief-throw: 4px; --relief-rise: 0.012; }
+  .lesson-card-art, .gt-disc, .card-art { --relief-throw: 2.6px; }
+  :is(.chip, .pill) > svg { --relief-throw: 1.1px; --relief-rise: 0.05; }
+
+  /* The rail is a column of twenty and never leans: twenty marks
+     sliding at once is a list shivering rather than a page with
+     depth. It rises and nothing else. */
+  .rail-ico { --relief-throw: 0px; --relief-rise: 0.07; }
+
+  /* A reader who asked for no motion gets the light and none of
+     the movement, which is the same bargain every other layer
+     here strikes. */
+  @media (prefers-reduced-motion: reduce) {
+    .gt-disc, .card-art, .work-art, .lesson-card-art, .rail-ico, .relief-lift,
+    :is(.top-btn, .btn, .icon-btn, .chip, .pill, .card-go, .gt-go) > svg {
+      translate: none; scale: none; transition: none;
+    }
+  }
+}
+
+/* ============================================================
+   @layer weather: a little of the reader's own sky.
+
+   `next/components/weather.tsx` puts one attribute on `<html>`
+   and this is everything else. Seven skies, and every one of them
+   is gradients and a keyframe: nothing here is a canvas, nothing
+   runs a loop, and a page with no weather on it costs one
+   `display: none`.
+
+   ---- it is on the OUTSIDE of the glass ----
+
+   The whole site is lit from behind a window. Rain belongs on the
+   near side of that window, so this sits above the page, above
+   the rail and above the bar, at 300, with `pointer-events:
+   none`. Under the top layer, which is where a dialog and the
+   account popover go, because weather over a decision is weather
+   in the way.
+
+   ---- and both themes are the same weather ----
+
+   Every colour is a mix of `--ink`, which flips: rain is a dark
+   streak on paper and a bright one at night, from one
+   declaration, which is the same argument the card scenes make.
+
+   ---- nothing flashes ----
+
+   `storm` is the one that would ordinarily be a lightning flash
+   and deliberately is not: a bright frame on a dark page is a
+   seizure risk and there is no version of it that is worth the
+   risk. It is heavier rain and a slow eight-second bloom, which
+   reads as weather rather than as a strobe.
+   ============================================================ */
+@layer weather {
+  .weather {
+    position: fixed; inset: 0; z-index: 300;
+    pointer-events: none; display: none;
+    /* The layer paints and does nothing else: no layout, no size
+       and no style can escape it, which is what lets a full
+       screen animation run without the rest of the page joining
+       in on every frame. */
+    contain: strict;
+  }
+  html[data-weather] .weather { display: block; }
+  .weather > * {
+    position: absolute; inset: -8%;
+    display: block; opacity: 0;
+    transition: opacity 1200ms var(--ease);
+  }
+
+  /* ---- rain, and the drizzle that is the same thing quieter ----
+
+     A repeating gradient tilted off vertical, moved by
+     `background-position` rather than by `translate`, so the
+     streaks cycle seamlessly instead of a sheet sliding past. Two
+     of them at different speeds and sizes is the whole of the
+     depth: the near one is faster, brighter and steeper. */
+  html:is([data-weather="rain"], [data-weather="storm"], [data-weather="drizzle"])
+  :is(.wx-far, .wx-near) {
+    background-image:
+      repeating-linear-gradient(99deg,
+        transparent 0 6px,
+        color-mix(in oklab, var(--ink) 62%, transparent) 6px 7px,
+        transparent 7px 19px);
+    background-size: 190px 190px;
+  }
+  /* CUT INTO DROPS, and the two layers are cut on different
+     periods so they never line up. An unmasked repeating gradient
+     is a set of parallel lines running edge to edge, which is
+     hatching rather than rain: what makes it read as falling
+     water is that each streak has a start and an end, and that
+     the ones behind are not the same length as the ones in
+     front. The mask runs ACROSS the streaks, at ninety degrees to
+     them, which is what cuts them rather than fading them. */
+  html:is([data-weather="rain"], [data-weather="storm"], [data-weather="drizzle"])
+  .wx-far {
+    mask-image: repeating-linear-gradient(189deg,
+      #000 0 22px, transparent 27px 58px);
+  }
+  html:is([data-weather="rain"], [data-weather="storm"], [data-weather="drizzle"])
+  .wx-near {
+    mask-image: repeating-linear-gradient(189deg,
+      #000 0 34px, transparent 41px 93px);
+  }
+  html:is([data-weather="rain"], [data-weather="storm"]) .wx-far {
+    opacity: 0.34; animation: wx-fall 1.05s linear infinite;
+  }
+  html:is([data-weather="rain"], [data-weather="storm"]) .wx-near {
+    opacity: 0.42; animation: wx-fall 0.62s linear infinite;
+    background-size: 260px 260px;
+  }
+  html[data-weather="drizzle"] .wx-far {
+    opacity: 0.17; animation: wx-fall 1.9s linear infinite;
+  }
+  html[data-weather="drizzle"] .wx-near {
+    opacity: 0.24; animation: wx-fall 1.3s linear infinite;
+    background-size: 240px 240px;
+  }
+  html[data-weather="storm"] .wx-near { animation-duration: 0.44s; }
+
+  /* The offset is the gradient's own angle: 99 degrees is nine
+     off vertical, so moving one tile down and a sixth of a tile
+     left is rain falling rather than a pattern scrolling. */
+  @keyframes wx-fall {
+    to { background-position: -32px 190px; }
+  }
+
+  /* ---- snow, which sways ----
+
+     Two tilings of one dot at different scales. The sway is a
+     second animation on `translate` rather than a second
+     keyframe on the fall, because they have different periods and
+     a snowflake that swayed exactly once per fall would be a
+     wallpaper. */
+  /* THREE TILINGS AT COPRIME SIZES, which is the whole of what
+     makes this snow rather than a dot grid.
+
+     One tiled dot is wallpaper: the eye finds the lattice in
+     about a second and what it is looking at is a pattern. Three
+     tilings whose periods share no factor only line up again
+     after their least common multiple, which at 71, 97 and 113
+     pixels is about three quarters of a million: further than any
+     screen, so there is no lattice to find. The offsets stop the
+     three sitting on top of each other at the origin. */
+  html[data-weather="snow"] :is(.wx-far, .wx-near) {
+    background-image:
+      radial-gradient(circle at 50% 50%,
+        color-mix(in oklab, var(--ink) 78%, transparent) 0 1.6px, transparent 2.6px),
+      radial-gradient(circle at 50% 50%,
+        color-mix(in oklab, var(--ink) 62%, transparent) 0 1.2px, transparent 2px),
+      radial-gradient(circle at 50% 50%,
+        color-mix(in oklab, var(--ink) 88%, transparent) 0 2.1px, transparent 3.2px);
+    background-position: 0 0, 37px 19px, 61px 43px;
+  }
+  html[data-weather="snow"] .wx-far {
+    opacity: 0.38;
+    background-size: 71px 71px, 97px 97px, 113px 113px;
+    animation: wx-drift 13s linear infinite, wx-sway 7s ease-in-out infinite;
+  }
+  html[data-weather="snow"] .wx-near {
+    opacity: 0.5;
+    background-size: 131px 131px, 167px 167px, 193px 193px;
+    animation: wx-drift 8s linear infinite, wx-sway 5s ease-in-out infinite reverse;
+  }
+  /* Every layer of the tiling moves by the SAME distance, so
+     they stay coprime while falling: three different distances
+     would be three different snows. */
+  @keyframes wx-drift {
+    to { background-position: 24px 355px, 61px 374px, 85px 398px; }
+  }
+  @keyframes wx-sway {
+    0%, 100% { translate: -14px 0; }
+    50% { translate: 14px 0; }
+  }
+
+  /* ---- fog, which is two slow clouds and no edges ---- */
+  html[data-weather="fog"] .wx-far {
+    opacity: 0.5;
+    background-image:
+      radial-gradient(62% 44% at 22% 62%,
+        color-mix(in oklab, var(--ink) 12%, transparent) 0%, transparent 72%),
+      radial-gradient(54% 38% at 78% 34%,
+        color-mix(in oklab, var(--ink) 9%, transparent) 0%, transparent 70%);
+    filter: blur(22px);
+    animation: wx-roll 44s ease-in-out infinite;
+  }
+  html[data-weather="fog"] .wx-near {
+    opacity: 0.34;
+    background-image:
+      radial-gradient(70% 40% at 60% 82%,
+        color-mix(in oklab, var(--ink) 11%, transparent) 0%, transparent 74%);
+    filter: blur(30px);
+    animation: wx-roll 62s ease-in-out infinite reverse;
+  }
+  @keyframes wx-roll {
+    0%, 100% { translate: -5% 0; }
+    50% { translate: 5% 1%; }
+  }
+
+  /* ---- overcast: the light going out of the room ---- */
+  html[data-weather="cloud"] .wx-far {
+    opacity: 0.62;
+    background-image:
+      radial-gradient(90% 60% at 26% -14%,
+        color-mix(in oklab, var(--ink) 15%, transparent) 0%, transparent 78%),
+      radial-gradient(70% 46% at 82% -8%,
+        color-mix(in oklab, var(--ink) 11%, transparent) 0%, transparent 76%);
+    filter: blur(26px);
+    animation: wx-roll 58s ease-in-out infinite;
+  }
+
+  /* ---- a clear day: one shaft, breathing ---- */
+  html[data-weather="clear"] .wx-light {
+    opacity: 0.5;
+    background-image:
+      linear-gradient(196deg, transparent 34%,
+        oklch(100% 0 0 / 0.1) 46%, transparent 60%),
+      radial-gradient(46% 34% at 88% 4%,
+        color-mix(in oklab, var(--gold) 26%, transparent) 0%, transparent 72%);
+    animation: wx-breathe 17s ease-in-out infinite;
+  }
+  @keyframes wx-breathe {
+    0%, 100% { opacity: 0.34; }
+    50% { opacity: 0.62; }
+  }
+
+  /* ---- a clear night: stars, and only where they can be seen ----
+
+     Under a light theme this draws nothing, on purpose. Stars on
+     white paper are dirt: there is no colour that reads as a star
+     against a page, so the honest answer is that a reader on a
+     light theme at night gets a still, dark-blue wash and no
+     dots. */
+  /* The same three-tiling trick as the snow, and it matters more
+     here: a constellation is the one thing an eye is best in the
+     world at spotting a lattice in. */
+  html[data-weather="night"] .wx-far {
+    opacity: 0.7;
+    background-image:
+      radial-gradient(circle at 50% 50%,
+        color-mix(in oklab, var(--ink) 74%, transparent) 0 1.2px, transparent 2px),
+      radial-gradient(circle at 50% 50%,
+        color-mix(in oklab, var(--ink) 52%, transparent) 0 0.9px, transparent 1.6px),
+      radial-gradient(circle at 50% 50%,
+        color-mix(in oklab, var(--ink) 92%, transparent) 0 1.7px, transparent 2.8px);
+    background-size: 89px 89px, 127px 127px, 199px 199px;
+    background-position: 0 0, 41px 23px, 97px 61px;
+    animation: wx-twinkle 9s ease-in-out infinite;
+  }
+  html[data-weather="night"] .wx-near {
+    opacity: 0.42;
+    background-image:
+      radial-gradient(circle at 50% 50%,
+        color-mix(in oklab, var(--ink) 58%, transparent) 0 1px, transparent 1.8px),
+      radial-gradient(circle at 50% 50%,
+        color-mix(in oklab, var(--ink) 40%, transparent) 0 0.8px, transparent 1.4px);
+    background-size: 149px 149px, 211px 211px;
+    background-position: 29px 71px, 113px 17px;
+    animation: wx-twinkle 13s ease-in-out infinite reverse;
+  }
+  html[data-weather="night"] .wx-light {
+    opacity: 0.5;
+    background-image:
+      radial-gradient(70% 50% at 50% -14%,
+        /* THE SKY IS NOT THE PAGE'S ACCENT. Every other colour on
+           this site reads `var(--accent)` so that a German page is
+           blue and a kitchen page is rose, and `check-accents.ts`
+           is right to fail a rule naming one of the seven. A night
+           sky is the one thing on the page that is not about which
+           section you are in: it is blue over the money school and
+           blue over the kitchen. So it is built from the hue
+           directly, which is what `--h-blue` is for. */
+        oklch(58% 0.07 var(--h-blue) / 0.16) 0%, transparent 76%);
+  }
+  html:not([data-theme="dark"]) [data-weather="night"] :is(.wx-far, .wx-near) {
+    animation: none;
+  }
+  @keyframes wx-twinkle {
+    0%, 100% { opacity: 0.22; }
+    50% { opacity: 0.6; }
+  }
+
+  /* ---- the storm's bloom, which is not a flash ---- */
+  html[data-weather="storm"] .wx-light {
+    opacity: 1;
+    background-image:
+      radial-gradient(64% 44% at 70% -6%,
+        color-mix(in oklab, var(--ink) 14%, transparent) 0%, transparent 74%);
+    animation: wx-bloom 8s ease-in-out infinite;
+  }
+  @keyframes wx-bloom {
+    0%, 72%, 100% { opacity: 0.06; }
+    80% { opacity: 0.4; }
+    88% { opacity: 0.12; }
+  }
+
+  /* A reader who asked for less motion keeps the sky and loses
+     the movement: the same bargain as everywhere else here, and
+     the right one, because what the layer is FOR is knowing it is
+     raining rather than watching rain. */
+  @media (prefers-reduced-motion: reduce) {
+    .weather > * { animation: none !important; transition: none; }
+  }
 }

@@ -94,12 +94,18 @@ function useBookmark(school: string, known: string[]): Bookmark | null {
     on arrival, which is why a reader who opened a page, saw it
     was the wrong one and left had it counted. */
 export function LessonTick({
-  school, id, title, stage, url, words,
+  school, id, title, stage, url, words, of,
 }: {
   school: string;
   id: string;
   title: string;
   stage: string;
+  /** Every lesson id on this lesson's ladder, so the tick can
+      tell finishing a lesson from finishing the whole stage and
+      say the larger thing when it is the larger thing. Optional:
+      a school that does not pass it gets the lesson cue, which is
+      the true smaller sentence rather than a wrong one. */
+  of?: string[];
   /** Only the front door reads this, and only as a hint: see
       `Bookmark` in lib/progress.ts. */
   url: string;
@@ -111,8 +117,16 @@ export function LessonTick({
     setLast(school, { id, title, stage, url });
   }, [school, id, title, stage, url]);
 
-  const done = useRead(school).has(id);
-  const onClick = useCallback(() => { toggleRead(school, id); }, [school, id]);
+  const read = useRead(school);
+  const done = read.has(id);
+  const onClick = useCallback(() => {
+    /* Worked out BEFORE the toggle, because after it the answer
+       is already true and every tick would sound like the end of
+       a stage. Ticking OFF never celebrates either way. */
+    const finishes = !done && !!of?.length
+      && of.every((other) => other === id || read.has(other));
+    toggleRead(school, id, finishes ? "stage" : "lesson");
+  }, [school, id, of, read, done]);
 
   return (
     /* The air around it is this caller's, not the button's. The

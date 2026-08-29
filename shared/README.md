@@ -7,7 +7,7 @@ There are three renderers of this site now: the Worker in
 Next.js route in `next/`. Anything all of them must say the same
 way lives here, and nowhere else.
 
-Today that is nineteen files and a directory of four, and
+Today that is twenty files and a directory of four, and
 `check-types.ts` fails if one of them is not described below.
 That check exists because this line said six while nine were
 here: `nav.ts` and `routine.ts` arrived in two changes that had
@@ -26,6 +26,15 @@ this repository got written.
   in its own vocabulary. They are what `content.ts` counts and
   what `import-schools.ts` writes into D1, and they have outputs
   too: see below.
+
+- **`art.ts`** which of the twelve drawings a thing wears, and in
+  what colour. `nav.ts` names one for the twenty things the rail
+  lists; this DERIVES one for the two hundred that are rows, out
+  of the tag, the topics and the section a row already carries, so
+  a piece published next year arrives with a picture and nobody
+  has to remember anything. It also owns the vocabulary: `nav.ts`
+  and `next/components/card-art.tsx` both take `ArtSubject` from
+  here rather than writing the twelve out again.
 
 - **`look.ts`** the per-section table. What mount a piece is
   served at, the class on its body, the card it falls back to, how

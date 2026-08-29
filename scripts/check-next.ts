@@ -9,15 +9,7 @@
    and a copy nobody checks is the failure this repository has
    written up more times than any other.
 
-   1. THE DRAWINGS on a Bangla reading card. `aab/money/icons.js`
-      is a browser module served out of `aab/`, and Turbopack
-      refuses to resolve above `next/`, which is the wall
-      `shared/` exists to get round. Promoting the whole icon set
-      to a shared package to render three of them would be the
-      larger mistake, so `next/components/cards.tsx` holds the
-      three as strings, exactly as `icon()` writes them.
-
-   2. THE SCHOOLS' DRAWINGS, all 103 of them, in
+   1. THE SCHOOLS' DRAWINGS, all 103 of them, in
       `next/lib/school-icons.ts`. Same wall, four times the size,
       so it is generated rather than kept by hand:
       `scripts/build-school-icons.ts` writes it and this
@@ -27,7 +19,7 @@
       school pages stop being files, they move properly and both
       this and the generator go.
 
-   3. THE PRACTICE BOOKS' LENGTH. `next/lib/workbooks/*.ts` holds
+   2. THE PRACTICE BOOKS' LENGTH. `next/lib/workbooks/*.ts` holds
       the days a book is made of and the school's ladder DECLARES
       how many there are, in `workbook.days`, because the hub draws
       a progress bar from that number and must not pull five
@@ -65,7 +57,6 @@
 import { readFileSync } from "node:fs";
 import { dirname, join } from "node:path";
 import { fileURLToPath } from "node:url";
-import { icon } from "../aab/money/icons.js";
 import { SCHOOL_ICONS } from "../next/lib/school-icons.ts";
 import { NAV, LADDER_SCHOOLS } from "../shared/nav.ts";
 import { SCHOOL_LADDERS } from "../next/lib/school-ladders.ts";
@@ -84,27 +75,14 @@ const fail = (line: string, ...detail: string[]): void => {
 };
 
 /* ------------------------------------------------------------
-   1. The three drawings a reading section uses
-   ------------------------------------------------------------ */
+   1. The schools' 103 drawings, generated
 
-const cards = read("next/components/cards.tsx");
-
-/** The inside of the <svg>, which is the part `cards.tsx` holds
-    as a string and hands to React as HTML. The wrapper around it
-    is JSX in that file and the same attributes either way. */
-const inner = (name: string): string => icon(name).replace(/^<svg[^>]*>|<\/svg>$/g, "");
-
-for (const name of ["cart", "book", "compass"]) {
-  if (!cards.includes(inner(name))) {
-    fail(`the "${name}" drawing in next/components/cards.tsx is not the one`
-      + " aab/money/icons.js draws.",
-      "Copy it across verbatim:",
-      `  ${name}: \`${inner(name)}\`,`);
-  }
-}
-
-/* ------------------------------------------------------------
-   2. The schools' 103 drawings, generated
+   A section above this one held `next/components/cards.tsx` to
+   the three drawings `aab/money/icons.js` writes, because a
+   Bangla reading card carried a 30px icon copied across the wall
+   by hand. That card is a `<GoCard>` now and wears a scene rather
+   than an icon, so there is no copy left to check: the three
+   strings went with the markup that used them.
    ------------------------------------------------------------ */
 
 const { generate } = await import("./build-school-icons.ts");
@@ -196,10 +174,10 @@ if (read("aab/fallback.css") !== fallback()) {
 }
 
 /* ------------------------------------------------------------
-   3. And that the cards can actually find those drawings
+   2. And that the cards can actually find those drawings
 
-   The two checks above prove `next/` holds the same drawings
-   `aab/` does. Neither proves anything looks them up correctly,
+   The check above proves `next/` holds the same drawings `aab/`
+   does. It does not prove anything looks them up correctly,
    and for one commit nothing did.
 
    `SCHOOL_ICONS` is keyed by school id. The money school's id was

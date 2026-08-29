@@ -34,7 +34,7 @@
 
 import type { Metadata } from "next";
 import { notFound } from "next/navigation";
-import { stageUrl } from "@reiad/shared/schools";
+import { laddered, stageUrl } from "@reiad/shared/schools";
 import { getLesson } from "../../../../lib/school";
 import { siteOrigin } from "../../../../lib/article";
 import { schoolIcon } from "../../../../lib/school-icons";
@@ -201,6 +201,12 @@ export default async function LessonPage({ params }: { params: Params }) {
             <LessonTick
               school={school} id={it.id} title={String(it.bn)} stage={stage.slug}
               url={it.url}
+              /* The whole ladder this lesson is a rung of, so the
+                 tick that finishes a stage says so rather than
+                 saying the same thing the eighty before it said. */
+              of={laddered(school, stage)
+                .filter((l) => (l.status ?? "live") === "live")
+                .map((l) => String(l.id))}
               words={{ done: "পড়া হয়েছে", notDone: "পড়া হয়েছে চিহ্ন দিন" }}
             />
           ) : null}
@@ -214,13 +220,13 @@ export default async function LessonPage({ params }: { params: Params }) {
         {(prev || tail) ? (
           <nav className="prev-next" aria-label={look.words.navLabel}>
             {prev ? (
-              <a href={prev.url}>
+              <a data-cue="prev" href={prev.url}>
                 <span className="mono">{look.words.prev}</span>
                 <strong className="bn-h">{prev.bn}</strong>
               </a>
             ) : null}
             {tail ? (
-              <a href={tail.url}>
+              <a data-cue="next" href={tail.url}>
                 <span className="mono">{tail.kicker}</span>
                 <strong className="bn-h">{tail.label}</strong>
               </a>

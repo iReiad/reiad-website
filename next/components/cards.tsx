@@ -1,28 +1,32 @@
 /* ============================================================
-   cards.tsx: a piece, as a card on its section's index.
+   cards.tsx: a piece of writing, as a card.
 
-   Two shapes, because the site has two. Insights draws
-   `.sample-card`, which is a tag, a headline, a standfirst and a
-   line of metadata. The two Bangla sections draw `.read-card`,
-   which adds the little drawing and puts its metadata in three
-   columns. Both are rules that already exist in `styles.css`, and
-   the class names here are the ones `aab/app.js` and
-   `archive/reads.js` put on the nodes they build, because a port
-   that also restyles the page cannot be judged.
+   ONE CARD, not two. Insights drew `.cell sample-card` and the two
+   Bangla desks drew `.cell read-card`, which were two different
+   objects for the same thing: the same row, on two pages, in two
+   shapes, and neither of them the `<GoCard>` the front page drew
+   that piece with. A reader who met an article on the board and
+   again on its hub met two different sites.
 
-   ---- what changes, and it is the point of the exercise ----
+   Both are `<GoCard>` now, which is the card this site draws
+   everything with. The two shapes had one real difference between
+   them and it is kept: the Bangla desks count in Bangla digits and
+   say "পড়ুন", and that is a property of the PIECE's language
+   rather than of the page it is listed on, so it is read off the
+   row instead of being passed in by the hub.
 
-   These were built in the browser, from a list fetched after the
-   page had already painted. A reader with no JavaScript, and every
-   crawler that does not run any, saw an empty box with a
-   hand-written fallback list inside it that somebody had to
-   remember to update. Rendered here, the cards are in the HTML the
-   server sends, and the fallback list has nothing left to be a
-   fallback for.
+   ---- the picture ----
+
+   Its own cover where the Studio drew one, and a drawing derived
+   from the row where it did not. Nothing is chosen by hand and
+   nothing has to be: `shared/art.ts` reads the tag, the topics and
+   the section, so a piece published next year arrives with a
+   picture and a colour of its own.
    ============================================================ */
 
 import type { Piece } from "../lib/pieces";
-import { Chip } from "./ui/chip";
+import { artOf } from "../lib/art";
+import { GoCard } from "./deck";
 
 /** Bangla digits, for the two sections that count in them. The
     same substitution `reads.js` does, and the reason it is a
@@ -41,55 +45,58 @@ const dateLabel = (piece: Piece) =>
       }).format(new Date(`${piece.date}T00:00:00Z`))
     : "";
 
-/* The drawings, verbatim out of `aab/money/icons.js`, for the
-   three names a reading section uses.
+/* The same shape `safeCover` on the server enforces before a
+   cover is stored, checked again because the value becomes a
+   request. A card should never be the thing that makes an odd
+   one. */
+const coverOf = (piece: Piece): string | undefined =>
+  /^\/(media|og)\/[A-Za-z0-9._/-]+$/.test(piece.cover ?? "")
+    ? (piece.cover as string) : undefined;
 
-   Copied rather than imported, and that is not laziness: it is a
-   browser module served from `aab/`, and Turbopack refuses to
-   resolve above `next/`, which is the same wall `shared/` exists
-   to get round. Promoting an icon set to a shared package for
-   three paths would be the larger mistake.
-
-   Each string is the inside of the `<svg>` exactly as `icon()`
-   writes it, so that `scripts/check-next.ts` can hold the two
-   copies together: it renders each name out of icons.js and fails
-   if the result is not in this file, character for character.
-   That is why they are strings set as HTML rather than JSX. */
-const ICON_INNER: Record<string, string> = {
-  cart: `<path d="M3 4h2.2l2.3 10.4a1.5 1.5 0 0 0 1.5 1.2h7.7a1.5 1.5 0 0 0 1.5-1.2L20 7H6"/><circle cx="10" cy="19.5" r="1.3"/><circle cx="17" cy="19.5" r="1.3"/>`,
-  book: `<path d="M4 4.5A1.5 1.5 0 0 1 5.5 3H19v15H5.5A1.5 1.5 0 0 0 4 19.5Z"/><path d="M4 19.5A1.5 1.5 0 0 1 5.5 21H19v-3"/><path d="M8 7.5h7"/><path d="M8 11h5"/>`,
-  compass: `<circle cx="12" cy="12" r="8.5"/><path d="M14.8 9.2l-1.9 4.6-4.7 1.9 1.9-4.6 4.7-1.9Z"/>`,
-};
-
-function Art({ name }: { name: string }) {
-  return (
-    <svg className="art" viewBox="0 0 24 24" fill="none" stroke="currentColor"
-         strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round"
-         aria-hidden="true"
-         dangerouslySetInnerHTML={{ __html: ICON_INNER[name] ?? "" }} />
-  );
-}
-
-/** The English card, as `initArticleCards()` in app.js builds it.
+/** One piece, as the card this site draws a piece with.
 
     `hidden` is the topic filter's, and it is a prop rather than an
     attribute a script reads off the card: the chosen topic is one
     piece of state in `topic-filter.tsx` and this is one of the two
-    things drawn from it. The card carried a `data-topics` list for
-    `archive/modules/hub.js` to match against, and nothing needs it
-    now that the component filtering these has the rows. */
-export function SampleCard({ piece, hidden }: { piece: Piece; hidden?: boolean }) {
-  const meta = [dateLabel(piece), piece.minutes ? `${piece.minutes} min read` : ""]
-    .filter(Boolean).join(" · ");
+    things drawn from it. */
+export function PieceCard({ piece, icon, hidden }: {
+  piece: Piece; icon?: string; hidden?: boolean;
+}) {
+  const bangla = piece.lang === "bn";
+  const cover = coverOf(piece);
+  const art = artOf({
+    id: piece.slug, section: piece.section,
+    tags: [piece.tag, ...piece.topics], title: piece.title,
+  });
 
   return (
-    <a className="cell sample-card" href={piece.url} hidden={hidden}
-       style={{ textDecoration: "none", color: "inherit" }}>
-      <Chip>{piece.tag}</Chip>
-      <h3>{piece.title}</h3>
-      <p>{piece.dek}</p>
-      <span className="more">{meta ? `${meta}  →` : "Read →"}</span>
-    </a>
+    <GoCard
+      href={piece.url} hidden={hidden}
+      /* The piece's own photograph first, a drawing of what it is
+         about second. Never both: two pictures on one card is two
+         answers to the same question. */
+      cover={cover}
+      art={cover ? undefined : art.subject}
+      accent={art.accent}
+      icon={icon}
+      chip={piece.tag}
+      title={piece.title}
+      lang={bangla ? "bn" : undefined}
+      dek={piece.dek}
+      go={bangla ? "পড়ুন" : "Read"}
+    >
+      {piece.topics.length ? (
+        <span className="topic-tags">
+          {piece.topics.map((topic) => (
+            <span className="topic-tag mono" key={topic}>{topic}</span>
+          ))}
+        </span>
+      ) : null}
+      <span className="card-meta mono">
+        <span>{dateLabel(piece)}</span>
+        <span>{bangla ? `${bn(piece.minutes)} মিনিট পড়া` : `${piece.minutes} min read`}</span>
+      </span>
+    </GoCard>
   );
 }
 
@@ -99,27 +106,3 @@ export function SampleCard({ piece, hidden }: { piece: Piece; hidden?: boolean }
    `deck.tsx` has the one, `.cell sample-card placeholder` is not
    a card the deck draws, and a reader who reached for the wrong
    import got a card that looked nothing like its neighbours. */
-
-/** The Bangla card, as `pieceCard()` in reads.js builds it. */
-export function ReadCard({ piece, icon }: { piece: Piece; icon: string }) {
-  return (
-    <a className="cell read-card" href={piece.url} data-piece={piece.slug}>
-      <span className="read-art"><Art name={icon} /></span>
-      <Chip>{piece.tag}</Chip>
-      <h3 className="bn-h">{piece.title}</h3>
-      <p>{piece.dek}</p>
-      {piece.topics.length ? (
-        <span className="topic-tags">
-          {piece.topics.map((topic) => (
-            <span className="topic-tag mono" key={topic}>{topic}</span>
-          ))}
-        </span>
-      ) : null}
-      <span className="read-meta mono">
-        <span>{dateLabel(piece)}</span>
-        <span>{bn(piece.minutes)} মিনিট পড়া</span>
-        <span className="more">পড়ুন →</span>
-      </span>
-    </a>
-  );
-}

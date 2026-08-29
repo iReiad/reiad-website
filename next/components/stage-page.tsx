@@ -87,8 +87,8 @@ export async function StagePage({ section, slug }: { section: string; slug: stri
      accordion sections of a hand-written hub rather than pages.
      They are pages, the hub is rendered from the rows, and no
      stage on this site is inline any more. */
-  const rung = (to: typeof prev, label: string) => (to ? (
-    <a href={stageUrl(school, to)}>
+  const rung = (to: typeof prev, label: string, way: "prev" | "next") => (to ? (
+    <a data-cue={way} href={stageUrl(school, to)}>
       <span className="mono">{label}</span>
       <strong className="bn-h">{`${to.kicker} · ${to.bn}`}</strong>
     </a>
@@ -254,8 +254,8 @@ export async function StagePage({ section, slug }: { section: string; slug: stri
           })}
 
           <nav className="prev-next" aria-label={shape.ladder.label}>
-            {rung(prev, shape.ladder.prev)}
-            {rung(next, shape.ladder.next)}
+            {rung(prev, shape.ladder.prev, "prev")}
+            {rung(next, shape.ladder.next, "next")}
           </nav>
 
           {/* The money school's stages each point at the full

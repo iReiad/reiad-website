@@ -68,15 +68,25 @@ export async function publish({
   /* ---- then the share card ---- */
   const pick = coverFor(m);
   let card = "";
-  if (pick.own && storableCover(pick.src)) {
-    say("Drawing the share card…");
-    try {
-      const stored = await uploadMedia(await shareCardBlob(pick), cardSlug(slug));
-      card = storableCover(stored?.url ?? "");
-    } catch (err) {
-      console.warn("share card failed", err);
-      notice = "Couldn't draw the share card, so the section's own is used.";
-    }
+  /* EVERY PIECE GETS ONE NOW, illustrated or not. The card is
+     drawn in the site's own material rather than being a crop of
+     a photograph, so a piece with no photo has a card with the
+     rail, the ground, the light and its own title on it, which is
+     a better thing to paste into a chat than the section's
+     standing card. A photo, where there is one, is what that card
+     stands on. */
+  const withPhoto = pick.own && storableCover(pick.src);
+  say("Drawing the share card…");
+  try {
+    const stored = await uploadMedia(
+      await shareCardBlob(
+        withPhoto ? pick : { src: "", focus: pick.focus },
+        { title: m.title, kicker: m.tag, section: m.section }),
+      cardSlug(slug));
+    card = storableCover(stored?.url ?? "");
+  } catch (err) {
+    console.warn("share card failed", err);
+    notice = "Couldn't draw the share card, so the section's own is used.";
   }
 
   /* ---- then the article ---- */

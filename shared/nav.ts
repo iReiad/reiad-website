@@ -24,6 +24,8 @@
    preference, never a gate.
    ============================================================ */
 
+import type { ArtSubject } from "./art.ts";
+
 /** The drawings, by name. `components/icons.tsx` holds the paths. */
 export type IconName =
   | "home" | "skills" | "coins" | "book" | "scroll" | "signpost" | "cart"
@@ -51,8 +53,10 @@ export interface NavItem {
 
       An item with none gets a card with no picture, which is
       what every card was before there were any. */
-  art?: "chart" | "coins" | "sheets" | "book" | "pan" | "ridge"
-    | "cards" | "arch" | "bubbles" | "gauge" | "calendar" | "plate";
+  /** Which of the twelve drawings this thing wears. The union is
+      `shared/art.ts`, which is also where a row that is not in
+      this table gets one derived. */
+  art?: ArtSubject;
   /** A school with a ladder: stages, lessons, and a tick per
       lesson. `/account` draws a bar for each of these and
       the settings form offers them as things to follow, so the

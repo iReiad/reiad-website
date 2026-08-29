@@ -144,6 +144,49 @@ export const VEILS = [
   { id: "dense", label: "Dense", note: "quieter behind the words", alpha: "0.9" },
 ] as const satisfies readonly PrefOption[];
 
+/* ============================================================
+   Sound
+
+   The site says a handful of things out loud: a lesson finished,
+   a stage finished, a setting saved, a page turned. They are
+   SYNTHESISED rather than played, in `next/lib/sound.ts`, so
+   there is no audio file in this repository and nothing to fetch;
+   a cue is a few oscillators and an envelope.
+
+   ON by default, and that is a real decision rather than a
+   default nobody thought about. Every cue is tied to something
+   the reader just did, none of them can fire on a page load, and
+   a browser will not let any of them make a noise before the
+   first gesture anyway. What it must not be is loud or
+   surprising, which is why the whole bus sits under a low master
+   gain and a press is a tenth of what finishing a stage is.
+   ============================================================ */
+export const SOUNDS = [
+  { id: "on", label: "On", note: "a quiet note when something finishes" },
+  { id: "off", label: "Off", note: "the site is silent" },
+] as const satisfies readonly PrefOption[];
+
+/* ============================================================
+   Weather
+
+   A little of the reader's own sky on the glass: rain when it is
+   raining where they are, stars at night, fog in fog. It costs
+   one permission, asked once from a button and never from a page
+   loading, and what is kept is two coordinates rounded to about a
+   kilometre, on this device only.
+
+   ON is the default and it draws NOTHING until that button has
+   been pressed, which is the only arrangement that is honest:
+   defaulting to off would mean a reader who granted the
+   permission then had to find a second switch, and defaulting to
+   on cannot leak anything, because with no coordinates there is
+   nothing to ask about.
+   ============================================================ */
+export const WEATHERS = [
+  { id: "on", label: "On", note: "the sky where you are, on the page" },
+  { id: "off", label: "Off", note: "nothing, whatever the weather" },
+] as const satisfies readonly PrefOption[];
+
 /* The four settings, as the types they can actually hold. Derived
    from the tables above rather than written out again: a fifth
    scale added to SCALES is a fifth `Scale` without anybody
@@ -157,6 +200,8 @@ export type Lang = (typeof LANGS)[number]["id"];
 export type Glass = (typeof GLASSES)[number]["id"];
 export type Blur = (typeof BLURS)[number]["id"];
 export type Veil = (typeof VEILS)[number]["id"];
+export type Sound = (typeof SOUNDS)[number]["id"];
+export type Weather = (typeof WEATHERS)[number]["id"];
 
 export interface Prefs {
   text: Scale;
@@ -166,11 +211,14 @@ export interface Prefs {
   glass: Glass;
   blur: Blur;
   veil: Veil;
+  sound: Sound;
+  weather: Weather;
 }
 
 const DEFAULTS = {
   text: "normal", measure: "normal", lang: "bn",
-  glass: "frost", blur: "normal", veil: "normal",
+  glass: "frost", blur: "normal", veil: "normal", sound: "on",
+  weather: "on",
 } as const;
 
 const known = <T extends string>(
@@ -203,6 +251,8 @@ export function readPrefs(): Prefs {
     glass: known(GLASSES, stored.glass, DEFAULTS.glass),
     blur: known(BLURS, stored.blur, DEFAULTS.blur),
     veil: known(VEILS, stored.veil, DEFAULTS.veil),
+    sound: known(SOUNDS, stored.sound, DEFAULTS.sound),
+    weather: known(WEATHERS, stored.weather, DEFAULTS.weather),
     /* Not stored here, and read from where it has always lived so
        that this file and `/app.js` cannot disagree about it. */
     theme: readTheme(),
@@ -249,7 +299,8 @@ export function savePrefs(patch: Partial<Prefs>): Prefs {
   try {
     localStorage.setItem(PREFS_KEY, JSON.stringify({
       text: next.text, measure: next.measure, lang: next.lang,
-      glass: next.glass, blur: next.blur, veil: next.veil, ts: Date.now(),
+      glass: next.glass, blur: next.blur, veil: next.veil,
+      sound: next.sound, weather: next.weather, ts: Date.now(),
     }));
   } catch { /* private mode */ }
 
@@ -289,6 +340,13 @@ export function applyPrefs(prefs: Prefs = readPrefs()): void {
   root.style.setProperty("--glass-amount", blur.amount);
   root.style.setProperty("--glass-veil", veil.alpha);
   root.setAttribute("data-glass", prefs.glass);
+  /* An ATTRIBUTE rather than a value the sound module reads out
+     of storage itself. `next/lib/sound.ts` has to answer "is this
+     allowed" inside a click handler, and parsing JSON out of
+     localStorage on every press to find out is a read a page does
+     not need to make. One attribute, set here and by the boot
+     script, and the answer is a string comparison. */
+  root.setAttribute("data-sound", prefs.sound);
 
   if (prefs.theme === "light" || prefs.theme === "dark") {
     root.setAttribute("data-theme", prefs.theme);
