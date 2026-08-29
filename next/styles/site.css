@@ -10371,21 +10371,32 @@ German for day, and .tag is what the site has always called
   .gt-arrow { display: inline-flex; transition: translate var(--fast) var(--ease); }
   .gate-tile:hover .gt-arrow { translate: 4px 0; }
 
-  /* The featured card's one flourish: an oversized drawing in
-     the corner, under the wash, in the accent, at an opacity
-     that reads as a watermark rather than as a picture. */
+  /* The featured card's one flourish: a drawn scene down its
+     right half, in the accent, under the text. It was an
+     oversized icon at watermark opacity; a picture in the mock's
+     sense, made of the card's own palette so a theme change
+     repaints it and nothing off-site is fetched. */
   .gate-feat {
     min-height: clamp(200px, 24vw, 280px);
     padding: clamp(18px, 2.4vw, 28px) clamp(18px, 2.4vw, 28px) clamp(18px, 2.4vw, 28px) 24px;
     gap: 10px;
   }
   .gate-feat .gt-title { font-size: clamp(1.3rem, 2.4vw, 1.8rem); max-width: 22ch; }
-  .gate-feat .gt-dek { font-size: var(--t-5); max-width: 58ch; }
-  .gt-bg {
-    position: absolute; right: -22px; bottom: -30px; z-index: 0;
-    color: var(--accent); opacity: 0.08;
-    transform: rotate(-8deg);
+  .gate-feat .gt-dek { font-size: var(--t-5); max-width: 46ch; }
+  /* Absolute, AFTER the `> *` rule above, which would otherwise
+     pin it back into the flow at z-index 1. The mask fades the
+     drawing out under the text instead of a scrim fading the
+     text's ground: where the words are, the picture simply is
+     not. */
+  .gt-scene {
+    position: absolute; inset: 0 0 0 auto; z-index: 0;
+    width: min(58%, 400px);
+    display: flex; align-items: flex-end; justify-content: flex-end;
+    color: var(--accent);
+    mask-image: linear-gradient(100deg, transparent 10%, #000 48%);
+    pointer-events: none;
   }
+  .gt-scene svg { width: 100%; height: 92%; }
 
   /* The slim form: one line tall, a handle not a card. */
   .gate-slim {
@@ -10421,6 +10432,65 @@ German for day, and .tag is what the site has always called
     transition: background var(--fast) var(--ease), scale var(--fast) var(--ease);
   }
   .gp-dots i[data-on] { background: var(--accent); scale: 1.25; }
+
+  /* ---- a piece with a picture wears it ----
+
+     The cover arrives as `--gate-photo`, a url() the component
+     writes inline, and it is composed HERE into the material's
+     own token rather than written as a background: an inline
+     background-image would replace the five-layer stack in
+     `@layer glow` and take the bevel, the grain and the glow
+     with it. The scrim is the FIRST layer because a
+     background-image list paints front to back, and it is a
+     fixed dark in both themes: the card commits to light text
+     over a photograph, because a photograph does not follow the
+     theme and a scrim that tried to would be illegible in one
+     of them. */
+  .gate-photo {
+    --surface-image:
+      linear-gradient(78deg,
+        oklch(19% 0.02 260 / 0.92),
+        oklch(21% 0.02 260 / 0.6) 46%,
+        oklch(24% 0.02 260 / 0.16)),
+      var(--gate-photo);
+    --surface-size: auto, cover;
+    background-position: center;
+    min-height: clamp(230px, 25vw, 320px);
+  }
+  .gate-photo .gt-title {
+    color: oklch(97% 0.005 260);
+    font-size: clamp(1.15rem, 2vw, 1.55rem); max-width: 26ch;
+  }
+  .gate-photo .gt-dek { color: oklch(89% 0.01 260 / 0.88); }
+  /* The chip and the dots sit on the photograph rather than on
+     the panel, so each carries its own sliver of ground: the
+     accent alone was tuned against paper and disappears into a
+     bright sky. */
+  .gate-photo .gt-chip {
+    color: color-mix(in oklab, var(--accent) 52%, white);
+    background: oklch(16% 0.015 260 / 0.55);
+  }
+  .gate-photo .gt-disc {
+    color: color-mix(in oklab, var(--accent) 52%, white);
+    background: oklch(16% 0.015 260 / 0.45);
+    border-color: oklch(90% 0 0 / 0.18);
+  }
+  .gate-photo .gp-dots i { background: oklch(95% 0 0 / 0.35); }
+  .gate-photo .gp-dots i[data-on] { background: oklch(98% 0 0); }
+
+  /* The action on the two loud cards, written as the button the
+     mock draws. The CARD is still the link, so this is a drawing
+     of a button rather than a control inside a control, exactly
+     as the arrow beside it is a drawing of going. On the accent
+     ground the label takes `--accent-ink`, which is the pair the
+     real buttons already use. */
+  .gate-feat .gt-go, .gate-photo .gt-go {
+    justify-self: start;
+    padding: 9px 16px;
+    border-radius: var(--radius-pill);
+    background: var(--accent-strong);
+    color: var(--accent-ink);
+  }
 
   @media (prefers-reduced-motion: reduce) {
     .gate-tile, .gt-arrow, .gp-dots i { transition: none; }
@@ -11187,22 +11257,63 @@ German for day, and .tag is what the site has always called
   .board-down svg { transform: rotate(90deg); }
 
   /* The tall pulse widget's list: the pieces the tile is not
-     showing. Quiet rows rather than more tiles, because the tile
-     above is the loud one and four of it is a wall. */
+     showing, each a small card with the piece's own cover at its
+     shoulder, and one quiet line to the hub at the end. Cards
+     rather than bare rows because they sit BESIDE the tile now
+     instead of under it, and three naked lines beside one
+     photograph read as its caption rather than as three more
+     doors. */
   .gp-rows {
-    display: grid; gap: 4px; margin: 0; padding: 0; list-style: none;
+    display: grid; gap: 10px; margin: 0; padding: 0; list-style: none;
+    align-content: stretch;
 
-    & a {
-      display: flex; align-items: center; gap: 8px;
-      min-height: 44px; padding: 6px 14px;
-      border-radius: var(--radius-sm);
-      color: var(--ink); text-decoration: none;
-      font-size: var(--t-2);
-
-      & > span { flex: 1; min-width: 0; }
-      & svg { color: var(--ink-soft); flex: none; }
-    }
+    & li { display: grid; min-width: 0; }
   }
+  .gp-row {
+    display: flex; align-items: center; justify-content: space-between;
+    gap: 12px; min-height: 76px; padding: 10px 12px 10px 16px;
+    border: 1px solid var(--hairline); border-radius: var(--radius);
+    background-color: var(--panel);
+    /* The wash as the token, for the reason `.gate-tile` gives:
+       `@layer glow` is later and sets background-image, which
+       would take a shorthand's gradient away. */
+    --surface-image: linear-gradient(150deg, var(--accent-soft), var(--panel) 55%);
+    background-image: var(--surface-image);
+    color: var(--ink); text-decoration: none;
+    min-width: 0;
+    transition: box-shadow var(--fast) var(--ease),
+                border-color var(--fast) var(--ease);
+
+    &:hover, &:focus-visible {
+      --surface-shadow: var(--shadow-lift);
+      border-color: color-mix(in oklab, var(--accent) 45%, var(--hairline));
+    }
+    &:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
+  }
+  .gp-row-title {
+    font-family: var(--font-serif); font-size: var(--t-5); line-height: 1.3;
+  }
+  .gp-row[lang="bn"] .gp-row-title { font-family: var(--font-bn-serif); }
+  /* The thumbnail is the piece's own cover, and where a piece
+     has none the desk's pen stands in on the same tinted ground:
+     an empty grey box beside two full ones reads as a loading
+     failure rather than as a quieter card. */
+  .gp-thumb {
+    flex: none; display: grid; place-items: center;
+    width: 84px; height: 58px;
+    border-radius: var(--radius-sm); overflow: hidden;
+    color: var(--accent);
+    background: color-mix(in oklab, var(--accent) 10%, transparent);
+
+    & img { width: 100%; height: 100%; object-fit: cover; display: block; }
+  }
+  .gp-all {
+    display: flex; align-items: center; justify-content: flex-end; gap: 6px;
+    padding: 2px 6px 0;
+    color: var(--accent); text-decoration: none;
+    font-size: var(--t-2); letter-spacing: 0.08em; text-transform: uppercase;
+  }
+  .gp-all:hover, .gp-all:focus-visible { text-decoration: underline; }
 
   .board-picker {
     margin-top: var(--step);
@@ -13353,7 +13464,7 @@ German for day, and .tag is what the site has always called
       .cell, .card, .gate-tile, .news-card, .work-card, .lesson-card,
       .rung, .res-live, .tally-item, .read-card, .ladder-row, .target,
       .saved-row, .kept-row, .rt-template, .resume, .acct-tile,
-      .gate-card, .rt-build-task, .rt-panel, .dt-w,
+      .gate-card, .gp-row, .rt-build-task, .rt-panel, .dt-w,
       .topbar, .rail, .slimbar, .acc-menu, .tree-panel, .crumb-menu,
       .tabs-nav, .tool, .studio-pane, .band, .rt-sheet, .keep-panel,
       .reader-panel, .signin, .pane-bar, .model-drivers,
@@ -13496,7 +13607,7 @@ German for day, and .tag is what the site has always called
   :is(.cell, .card, .gate-tile, .news-card, .work-card, .lesson-card,
       .rung, .res-live, .tally-item, .read-card, .ladder-row, .target,
       .saved-row, .kept-row, .rt-template, .resume, .acct-tile,
-      .gate-card, .rt-build-task, .rt-panel, .dt-w) {
+      .gate-card, .gp-row, .rt-build-task, .rt-panel, .dt-w) {
     --depth: 5; --polish: 0.5; --clarity: 0.5; --standing: 1;
   }
 
@@ -13738,7 +13849,7 @@ German for day, and .tag is what the site has always called
       .cell, .card, .gate-tile, .news-card, .work-card, .lesson-card,
       .rung, .res-live, .tally-item, .read-card, .ladder-row, .target,
       .saved-row, .kept-row, .rt-template, .resume, .acct-tile,
-      .gate-card, .rt-build-task, .rt-panel, .dt-w,
+      .gate-card, .gp-row, .rt-build-task, .rt-panel, .dt-w,
       .topbar, .rail, .slimbar, .acc-menu, .tree-panel, .crumb-menu,
       .tabs-nav, .tool, .studio-pane, .band, .rt-sheet, .keep-panel,
       .reader-panel, .signin, .pane-bar, .model-drivers,

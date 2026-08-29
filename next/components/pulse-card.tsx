@@ -9,6 +9,17 @@
    seconds it moves to the next one, with the dots underneath
    saying where in the list it is.
 
+   ---- the picture is the piece's own ----
+
+   A piece that has a cover carries it here as the tile's whole
+   ground, behind a scrim that keeps the title legible. The cover
+   is the share card the Studio already draws from the piece's
+   lead photo, so nothing is borrowed and nothing needs crediting:
+   the row in D1 is the source, exactly as it is for the title.
+   `coverOf` accepts only the two path shapes `safeCover` on the
+   server writes, because a background URL is a fetch and this
+   card should never be the thing that makes an odd one.
+
    ---- what it does when it cannot ----
 
    The list comes from /api/articles after hydration. Until it
@@ -34,6 +45,7 @@ import { Icon } from "./icons";
 type Piece = {
   slug: string; title: string; dek: string;
   section: string; lang: string; minutes: number;
+  cover?: string | null;
 };
 
 const SECTION_WORDS: Record<string, string> = {
@@ -42,8 +54,17 @@ const SECTION_WORDS: Record<string, string> = {
 
 const SWAP_MS = 7000;
 
-/** The rotating tile, and under it, at the board's `tall` size,
-    the next few pieces as rows.
+/* The same shape the server enforces before a cover is stored.
+   Checked again here because the value goes into a url() in an
+   inline style, where a stray quote or scheme would be a request
+   this site never meant to make. */
+const coverOf = (piece: Piece | null | undefined): string | null => {
+  const path = piece?.cover ?? "";
+  return /^\/(media|og)\/[A-Za-z0-9._/-]+$/.test(path) ? path : null;
+};
+
+/** The rotating tile, and beside it, at the board's `tall` size,
+    the next few pieces as small cards of their own.
 
     `limit` is how many pieces the widget SHOWS at once: 1 is the
     tile alone, rotating through six; more is the tile plus the
@@ -84,7 +105,19 @@ export function PulseCard({ limit = 1 }: { limit?: number } = {}) {
 
   if (limit > 1) {
     return (
-      <div className="grid gap-2">
+      /* The tall widget is the tile BESIDE the list on a laptop,
+         which is what earns the size its name: the piece showing
+         gets the picture and the room, and the next few sit in a
+         column at its shoulder. On a phone the column moves back
+         underneath.
+
+         The second column exists only once there are pieces to
+         fill it. The server renders none, and wherever the fetch
+         never answers there are never any, so the fallback tile
+         keeps the whole row rather than sitting beside a dead
+         column. */
+      <div className={`grid gap-2.5${
+        pieces.length > 1 ? " lg:grid-cols-[minmax(0,5fr)_minmax(0,3fr)]" : ""}`}>
         <Tile piece={piece} pieces={pieces} at={at} href={href} paused={paused} />
         <PulseRows pieces={pieces.slice(0, limit)} skip={at} />
       </div>
@@ -100,19 +133,30 @@ function Tile({ piece, pieces, at, href, paused }: {
   piece: Piece | null; pieces: Piece[]; at: number; href: string;
   paused: { current: boolean };
 }) {
-  return (
-    <a className="gate-tile min-h-[150px] col-span-2 lg:col-span-6" data-glow="card" href={href}
-      /* The colour of whichever piece is showing, not a fixed one.
-         This tile cycles between the three reading sections, so a
-         cooking piece makes it rose and a travel piece plum, out
-         of the one table in shared/nav.ts. It named a colour once and
-         so a kitchen piece arrived wearing Insights' colour.
+  const cover = coverOf(piece);
+  /* The colour of whichever piece is showing, not a fixed one.
+     This tile cycles between the three reading sections, so a
+     cooking piece makes it rose and a travel piece plum, out
+     of the one table in shared/nav.ts. It named a colour once and
+     so a kitchen piece arrived wearing Insights' colour.
 
-         `accentStyle` returns undefined for a section the rail
-         does not list, which leaves the attribute off and lets the
-         page's own accent through, rather than writing a colour
-         that was already going to apply. */
-      style={accentStyle(piece?.section)}
+     `accentStyle` returns undefined for a section the rail
+     does not list, which leaves the attribute off and lets the
+     page's own accent through, rather than writing a colour
+     that was already going to apply.
+
+     The cover travels the same way, as a custom property the
+     stylesheet composes into `--surface-image` under the scrim,
+     rather than as a background written here: an inline
+     background-image would replace the material's whole stack. */
+  const style: Record<string, string> | undefined = cover
+    ? { ...accentStyle(piece?.section), "--gate-photo": `url("${cover}")` }
+    : accentStyle(piece?.section);
+
+  return (
+    <a className={`gate-tile min-h-[150px]${cover ? " gate-photo" : ""}`}
+      data-glow="card" href={href}
+      style={style}
       onMouseEnter={() => { paused.current = true; }}
       onMouseLeave={() => { paused.current = false; }}
       onFocus={() => { paused.current = true; }}
@@ -157,22 +201,46 @@ function Tile({ piece, pieces, at, href, paused }: {
 }
 
 /* The rest of the tall widget: the pieces the tile is NOT
-   showing, as quiet rows. Split from the tile so the wide board
-   renders no list markup at all rather than a hidden one. */
+   showing, each a small card of its own with the piece's cover
+   as a thumbnail, and under them one quiet line to the whole
+   hub. Split from the tile so the wide board renders no list
+   markup at all rather than a hidden one. */
 function PulseRows({ pieces, skip }: { pieces: Piece[]; skip: number }) {
   const rest = pieces.filter((_, i) => i !== skip);
   if (!rest.length) return null;
   return (
     <ul className="gp-rows">
-      {rest.map((p) => (
-        <li key={p.slug}>
-          <a href={`/${p.section}/${p.slug}.html`}
-            lang={p.lang === "bn" ? "bn" : undefined}>
-            <span className="truncate">{p.title}</span>
-            <Icon name="chevron" size={13} />
-          </a>
-        </li>
-      ))}
+      {rest.map((p) => {
+        const cover = coverOf(p);
+        return (
+          <li key={p.slug}>
+            <a className="gp-row" data-glow="card"
+              href={`/${p.section}/${p.slug}.html`}
+              lang={p.lang === "bn" ? "bn" : undefined}
+              style={accentStyle(p.section)}>
+              <span className="min-w-0 grid gap-1 content-center justify-items-start">
+                <span className="gt-chip mono">{SECTION_WORDS[p.section] ?? p.section}</span>
+                <span className="gp-row-title line-clamp-2">{p.title}</span>
+              </span>
+              {/* The piece's own picture, or the desk's pen where a
+                  piece has none: a blank grey box beside two full
+                  ones reads as a loading failure rather than as a
+                  quieter card. `alt` is empty because the title is
+                  the accessible name and the picture repeats it. */}
+              <span className="gp-thumb" aria-hidden="true">
+                {cover
+                  ? <img src={cover} alt="" loading="lazy" decoding="async" />
+                  : <Icon name="pen" size={18} />}
+              </span>
+            </a>
+          </li>
+        );
+      })}
+      <li>
+        <a className="gp-all mono" href="/insights" lang="bn">
+          সবগুলো দেখুন <Icon name="arrow" size={13} />
+        </a>
+      </li>
     </ul>
   );
 }
