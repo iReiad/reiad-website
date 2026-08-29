@@ -1216,6 +1216,9 @@ node scripts/check-types.ts  # scripts/ that node strips the types out of
 node scripts/check-pointers.ts # a comment sending a reader to a file that
                             # does not exist
 node scripts/build-school-icons.ts --check   # a school drawing next/ copied
+node scripts/build-card-art.ts --check   # the front page's card pictures, older
+                            # than the file that draws them, or a card asking
+                            # for a drawing that is not on disk
 node scripts/build-stamp.ts --check  # aab/studio/** built from an app/src/
                             # that is not the one committed beside it
 node scripts/check-next.ts # a copy inside next/ that has drifted from the
@@ -1599,6 +1602,11 @@ node scripts/build-modules.ts       # aab/share-card.js and aab/api.js from aab/
                                     # aab/*/curriculum.js from shared/
 node scripts/build-fallback.ts     # aab/fallback.css from next/styles/site.css
 node scripts/build-school-icons.ts  # next/lib/school-icons.ts from aab/*/icons.js
+node scripts/build-card-art.ts      # aab/art/*.webp, the pictures the front
+                                    # page's big cards wear. Needs a browser,
+                                    # so it is a thing a clone runs and CI only
+                                    # checks. `--sheet <dir>` writes a contact
+                                    # sheet somewhere to look at them
 node scripts/build-meta.ts              # feed.xml, sitemap.xml, robots.txt
 
 cd app && npm run build             # aab/studio/** from app/src/studio/**
