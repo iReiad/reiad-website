@@ -794,6 +794,179 @@ console.log("\nthe trail, and what its arrows open");
   await page.close();
 }
 
+/* ============================================================
+   The same trail on a phone, which is where all of it was broken
+
+   Three separate things shipped, and not one of them is visible
+   to a check that reads HTML. Two are not visible to a check that
+   reads CSS either: every selector involved is valid and matches
+   something.
+
+   1. THE PANEL OPENED OFF THE SCREEN. It is 21rem and it is
+      anchored to an arrow a third of the way across a 412px bar,
+      so its right edge landed 98px past the edge of the window.
+      `position-try-fallbacks: flip-inline` is the fallback for
+      exactly that and it makes it worse here: the flip hangs the
+      panel off the arrow's other side, which is off the LEFT
+      edge, so nothing fits and the browser keeps the position it
+      started with. It is a sheet against the bottom edge now.
+
+   2. THE TRAIL'S OWN RULES REACHED INSIDE THE PANEL, because a
+      crumb's menu is markup inside the crumb. Three of them did:
+      `max-inline-size: 4.5ch` capped every row at 34px, and
+      `max-width: 22ch` and `46ch` capped the row of the level you
+      are on, which is the row the panel exists to show you. The
+      kicker wrapped down the side of a 34px box, the label
+      clipped to four characters and the count and the chevron
+      were pushed off the row entirely.
+
+   3. THE TRAIL SQUASHED RATHER THAN SCROLLING. Four levels into
+      a school on a 360px screen that was `› দ… › টা… › প…`.
+
+   The panel and the sheet are asked about on the page's own
+   trail. The scrolling needs a trail deeper than any prerendered
+   page has, so the row here is built by CLONING the one the page
+   rendered: the markup shape stays the component's, and the one
+   thing changed per clone is what `<Crumbs>` itself changes, an
+   `<a href>` for a crumb that is not the last one.
+   ============================================================ */
+console.log("\nthe trail on a phone");
+for (const width of [360, 412]) {
+  const page = await browser.newPage({ viewport: { width, height: 780 } });
+  await page.route("https://fonts.googleapis.com/**", (r: Route) => r.abort());
+  await page.goto(`http://localhost:${PORT}/skills`, { waitUntil: "load" });
+  await page.waitForTimeout(900);
+
+  const arrow = page.locator(".crumbs-bar .crumb-step").first();
+  await arrow.click();
+  await page.waitForTimeout(400);
+
+  const panel = await page.evaluate(() => {
+    const m = document.querySelector<HTMLElement>(".crumb-menu:popover-open");
+    if (!m) return null;
+    const b = m.getBoundingClientRect();
+    const rows = [...m.querySelectorAll<HTMLElement>("a")];
+    const here = m.querySelector<HTMLElement>('a[aria-current="page"]');
+    const head = m.querySelector<HTMLElement>(".crumb-menu-head");
+    return {
+      box: { x: b.x, y: b.y, right: b.right, bottom: b.bottom, w: b.width },
+      vw: innerWidth, vh: innerHeight,
+      rows: rows.length,
+      narrowest: Math.min(...rows.map((r) => r.getBoundingClientRect().width)),
+      hereMaxWidth: here ? getComputedStyle(here).maxWidth : null,
+      /* The label is `text-overflow: ellipsis`, so a row too
+         narrow for its own words does not look broken, it looks
+         like a different lesson. */
+      clipped: rows.filter((r) => {
+        const l = r.querySelector<HTMLElement>(".crumb-menu-label");
+        return !!l && l.scrollWidth > l.clientWidth + 1;
+      }).length,
+      named: !!head && getComputedStyle(head).display !== "none"
+        && (head.textContent ?? "").length > 3,
+    };
+  });
+
+  ok(`${width}px: the arrow opens a panel`, panel !== null);
+  if (!panel) { await page.close(); continue; }
+
+  ok(`${width}px: the panel is inside the window`,
+    panel.box.x >= 0 && panel.box.right <= panel.vw + 1
+    && panel.box.y >= 0 && panel.box.bottom <= panel.vh + 1,
+    JSON.stringify(panel.box) + ` in ${panel.vw}x${panel.vh}`);
+
+  /* The leak, measured rather than read: a row that has been
+     capped is a small fraction of the panel it is in. */
+  ok(`${width}px: every row is as wide as the panel`,
+    panel.narrowest > panel.box.w - 40, `narrowest ${panel.narrowest} of ${panel.box.w}`);
+  ok(`${width}px: nothing caps the row you are on`,
+    panel.hereMaxWidth === "none", `max-width ${panel.hereMaxWidth}`);
+  ok(`${width}px: and no row is clipped to an ellipsis`,
+    panel.clipped === 0, `${panel.clipped} of ${panel.rows}`);
+  ok(`${width}px: the sheet says what it is`, panel.named);
+
+  await page.keyboard.press("Escape");
+  await page.waitForTimeout(250);
+
+  /* ---- and the row itself, deep enough to overflow ---- */
+  await page.evaluate(() => {
+    const ol = document.querySelector<HTMLElement>(".crumbs-bar > ol");
+    const first = ol?.firstElementChild as HTMLElement | undefined;
+    if (!ol || !first) return;
+    const names = ["টাকা ও শেয়ার", "পর্যায় ৫"];
+    names.forEach((name, i) => {
+      const li = first.cloneNode(true) as HTMLElement;
+      /* Two ids, one document: `popovertarget` would otherwise
+         open the first panel from every arrow. */
+      const menu = li.querySelector<HTMLElement>(".crumb-menu");
+      const button = li.querySelector<HTMLElement>(".crumb-step");
+      if (menu && button) {
+        menu.id = `cloned-${i}`;
+        button.setAttribute("popovertarget", `cloned-${i}`);
+      }
+      const label = li.querySelector<HTMLElement>(":scope > span, :scope > a");
+      if (label) label.textContent = name;
+      ol.appendChild(li);
+    });
+    /* The last one is the page: exactly one crumb is, and it was
+       the one this row started with. */
+    for (const li of [...ol.children]) li.removeAttribute("aria-current");
+    ol.lastElementChild?.setAttribute("aria-current", "page");
+    /* And every crumb before it is a link, which is what
+       `<Crumbs>` renders for one. */
+    for (const li of [...ol.children].slice(0, -1)) {
+      const span = li.querySelector(":scope > span");
+      if (!span) continue;
+      const a = document.createElement("a");
+      a.href = "/skills";
+      a.textContent = span.textContent;
+      span.replaceWith(a);
+    }
+  });
+  await page.waitForTimeout(300);
+
+  const row = await page.evaluate(async () => {
+    const sc = document.querySelector<HTMLElement>(".crumbs-bar");
+    const ol = document.querySelector<HTMLElement>(".crumbs-bar > ol");
+    if (!sc || !ol) return null;
+    const kids = [...ol.children] as HTMLElement[];
+    const seen = (e: HTMLElement) => {
+      const b = e.getBoundingClientRect(), o = sc.getBoundingClientRect();
+      return Math.min(b.right, o.right) - Math.max(b.left, o.left) >= b.width - 1;
+    };
+    const rest = { last: seen(kids[kids.length - 1]), first: seen(kids[0]) };
+    /* The far end of the range, whichever sign it has: the row is
+       an `rtl` scroller so that it opens at the end, which puts
+       its scroll positions below zero rather than above. */
+    sc.scrollLeft = -99999;
+    await new Promise((r) => requestAnimationFrame(() => requestAnimationFrame(() => r(null))));
+    const away = { first: seen(kids[0]), scrolled: sc.scrollLeft };
+    return {
+      overflows: sc.scrollWidth > sc.clientWidth + 1,
+      rest, away,
+      /* A crumb cut short by a cap rather than by the edge of the
+         row: that is what the row did instead of scrolling. */
+      capped: kids.filter((li) => {
+        const t = li.querySelector<HTMLElement>(":scope > a, :scope > span");
+        return !!t && t.scrollWidth > t.clientWidth + 1;
+      }).length,
+    };
+  });
+
+  ok(`${width}px: a deep trail overflows the bar rather than shrinking`,
+    row?.overflows === true, JSON.stringify(row));
+  ok(`${width}px: no crumb is cut short`, row?.capped === 0, `${row?.capped} capped`);
+  ok(`${width}px: it rests showing the page you are on`, row?.rest.last === true);
+  ok(`${width}px: with the levels above it scrolled off`, row?.rest.first === false);
+  /* The one that shipped as a silent failure: `justify-content:
+     flex-end` put the row's start outside its own scroll range,
+     so it looked right and no gesture could reach the first two
+     levels of the trail. */
+  ok(`${width}px: and the start of it can be scrolled back to`,
+    row?.away.first === true, `scrollLeft ${row?.away.scrolled}`);
+
+  await page.close();
+}
+
 await browser.close();
 server.close();
 

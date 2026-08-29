@@ -102,15 +102,27 @@ function Step({ crumb, id }: { crumb: Crumb; id: string }) {
     return <span className="crumb-sep" aria-hidden="true">›</span>;
   }
 
+  const label = crumb.menuLabel ?? "What else is here";
+
   return (
     <>
       <button className="crumb-sep crumb-step" type="button"
               popoverTarget={id}
-              aria-label={crumb.menuLabel ?? "What else is here"}>
+              aria-label={label}>
         <span aria-hidden="true">›</span>
       </button>
       <div className="crumb-menu" id={id} popover="auto"
            style={crumb.accent ? ({ "--accent": crumb.accent } as React.CSSProperties) : undefined}>
+        {/* The same words the button carries, written out, and
+            the stylesheet shows them at one width only. On a
+            laptop the panel grows out of the arrow and the arrow
+            is what says where it came from; below 640px it is a
+            sheet against the bottom edge of the screen, which
+            has no such tie to anything, so it says what it is.
+            `aria-hidden`, because the button it belongs to
+            already announces this exact string and a screen
+            reader should hear it once. */}
+        <p className="crumb-menu-head mono" aria-hidden="true">{label}</p>
         <ul>
           {menu.map((to) => (
             <li key={to.href}>

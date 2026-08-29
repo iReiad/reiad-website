@@ -31,6 +31,18 @@
    login could not have reached anyone either. Bump this whenever a
    precached file changes.
 
+   v213: /fallback.css and /signin.js. The breadcrumb trail on a
+        phone. Its own rules reached inside the menus it opens,
+        because a crumb's menu is markup inside the crumb, so
+        every row of every panel was capped at 34px and the panel
+        opened a hundred pixels off the side of the screen; it is
+        a sheet against the bottom edge now, and the trail scrolls
+        rather than being ground down to one character a level. A
+        cached stylesheet is the old squeeze on a page that is
+        drawing the new markup. /signin.js carries the account
+        button, which is `.top-btn` now rather than a shape of its
+        own between two of them.
+
    v212: /fallback.css. A lesson block's verdict was a <p> holding
         a TBlock, which is two divs, and a block element closes an
         open paragraph in the parser: the DOM was not the tree, so
@@ -1885,7 +1897,7 @@
    imports (crumbs, audience, learn progress) and the hub is a
    different page. Without a bump, a returning reader would be
    served the v3 app.js forever and none of it would appear. */
-const VERSION = "v212";
+const VERSION = "v213";
 const SHELL = `shell-${VERSION}`;
 const RUNTIME = `runtime-${VERSION}`;
 
