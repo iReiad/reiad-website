@@ -31,6 +31,14 @@
    login could not have reached anyone either. Bump this whenever a
    precached file changes.
 
+   v215: /fallback.css. The front page's two loud cards. The
+        featured card carries a drawn scene per audience and its
+        action as a solid pill; the pulse tile wears a piece's own
+        cover behind a scrim, and the tall widget's rows are small
+        cards with thumbnails beside the tile rather than bare
+        lines under it. A cached stylesheet lays the new markup
+        out as the old rows and drops the photo ground.
+
    v214: /fallback.css. The trail's arrows, and the front page's
         board. Every separator in the trail is the icon set's
         chevron in a fixed 24px cell now, where it was a `›` sized
@@ -1910,7 +1918,7 @@
    imports (crumbs, audience, learn progress) and the hub is a
    different page. Without a bump, a returning reader would be
    served the v3 app.js forever and none of it would appear. */
-const VERSION = "v214";
+const VERSION = "v215";
 const SHELL = `shell-${VERSION}`;
 const RUNTIME = `runtime-${VERSION}`;
 
