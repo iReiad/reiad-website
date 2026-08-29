@@ -191,8 +191,13 @@ export const HOME_DEFAULT: readonly string[] = [
   "progress:wide",
   "pulse:tall",
   "market:tall",
-  "schools:wide",
-  "tools:wide",
+  /* Full width, both of them, as of the day their tiles started
+     carrying pictures. At half a board a deck of them is one
+     column, which is six schools stacked two thousand pixels
+     tall; across the whole board it is four to a row and the
+     board reads as a shelf. */
+  "schools:tall",
+  "tools:tall",
 ];
 
 /** One thing on the board: which kind, and how wide. */

@@ -75,7 +75,7 @@ export const metadata: Metadata = pageMeta({
 
 export default function HomePage() {
   return (
-    <main id="main">
+    <main id="main" className="home-aura">
       <div className="mx-auto w-full max-w-[1240px]
         px-[clamp(16px,3vw,44px)] pt-[clamp(18px,3.4vw,44px)] pb-[clamp(28px,4vw,56px)]
         grid gap-[clamp(20px,3.2vw,40px)]">

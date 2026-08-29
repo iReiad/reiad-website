@@ -31,6 +31,19 @@
    login could not have reached anyone either. Bump this whenever a
    precached file changes.
 
+   v217: /fallback.css. Every card on the board carries a picture
+        now, and one that already did stopped breaking under the
+        pointer. The material writes one background-position per
+        layer and assumed a surface paints one: a card wearing a
+        scrim over a photograph paints two, so the grain's own page
+        offset landed on the PHOTOGRAPH and it jumped and tiled on
+        hover. `--surface-pos` is the way through. The schools and
+        the tools are full-width decks of banded tiles, the deck's
+        column minimum is back to 232 so a half board still holds
+        two, and the front door stands in a wash of its own accent.
+        A cached stylesheet has none of that: no band, no wash, and
+        the hover bug back.
+
    v216: /fallback.css. The front page's big cards wear real
         pictures now. `scripts/build-card-art.ts` draws nine of
         them into /art/, and the featured card is a poster: its
@@ -1929,7 +1942,7 @@
    imports (crumbs, audience, learn progress) and the hub is a
    different page. Without a bump, a returning reader would be
    served the v3 app.js forever and none of it would appear. */
-const VERSION = "v216";
+const VERSION = "v217";
 const SHELL = `shell-${VERSION}`;
 const RUNTIME = `runtime-${VERSION}`;
 

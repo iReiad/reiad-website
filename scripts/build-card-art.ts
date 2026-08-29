@@ -86,8 +86,9 @@ const SHEET = process.argv.includes("--sheet");
    the middle band and towards the right, where a card's words are
    not. `thumb` is the same subject centred, because an 84 by 58
    box crops to nothing else. */
-type Subject = "chart" | "coins" | "sheets" | "book" | "pan" | "ridge";
-type Size = "wide" | "tall" | "thumb";
+type Subject = "chart" | "coins" | "sheets" | "book" | "pan" | "ridge"
+  | "cards" | "arch" | "bubbles" | "gauge" | "calendar" | "plate";
+type Size = "wide" | "tall" | "tile" | "thumb";
 
 type Scene = {
   id: string;
@@ -102,18 +103,41 @@ type Scene = {
 };
 
 const SCENES: Scene[] = [
-  { id: "live", hue: 75, lift: 345, subject: "chart", sizes: ["wide", "tall"],
+  { id: "live", hue: 75, lift: 345, subject: "chart", sizes: ["wide", "tall", "tile"],
     of: "one account's line, rising, over the candles it is drawn from" },
-  { id: "money", hue: 162, lift: 75, subject: "coins", sizes: ["wide", "tall"],
+  { id: "money", hue: 162, lift: 75, subject: "coins", sizes: ["wide", "tall", "tile"],
     of: "three stacks of coins as a ladder, the top one lit" },
   { id: "work", hue: 345, lift: 300, subject: "sheets", sizes: ["wide", "tall"],
     of: "spreadsheets in perspective, the front one holding a model" },
   { id: "insights", hue: 162, lift: 205, subject: "book", sizes: ["wide", "tall", "thumb"],
     of: "a book open, its pages made of light" },
-  { id: "cooking", hue: 30, lift: 75, subject: "pan", sizes: ["wide", "tall", "thumb"],
+  { id: "cooking", hue: 30, lift: 75, subject: "pan", sizes: ["wide", "tall", "tile", "thumb"],
     of: "a pan seen from across the room, steam off it" },
-  { id: "travel", hue: 345, lift: 255, subject: "ridge", sizes: ["wide", "tall", "thumb"],
+  { id: "travel", hue: 345, lift: 255, subject: "ridge",
+    sizes: ["wide", "tall", "tile", "thumb"],
     of: "ridges going back, a path through them, a moon" },
+
+  /* ---- and one for every other tile on the board ----
+
+     `tile` only: these are worn as the band across the top of a
+     school or a tool on the front page, and nothing puts one
+     behind a headline. The hue is the tile's OWN accent out of
+     `shared/nav.ts`, so a picture never argues with the rail down
+     the side of the card holding it. The four tools all take the
+     group's gold, which is what the site already does to them, so
+     the LIFT is what tells them apart. */
+  { id: "deutsch", hue: 255, lift: 300, subject: "cards", sizes: ["tile"],
+    of: "flashcards fanned out, the front one being read" },
+  { id: "quran", hue: 205, lift: 162, subject: "arch", sizes: ["tile"],
+    of: "an arch with a lamp hanging in it and a star above" },
+  { id: "english", hue: 300, lift: 255, subject: "bubbles", sizes: ["tile"],
+    of: "two people talking, as two bubbles" },
+  { id: "stock", hue: 75, lift: 162, subject: "gauge", sizes: ["tile"],
+    of: "a dial with a needle, which is what a verdict looks like" },
+  { id: "routine", hue: 75, lift: 255, subject: "calendar", sizes: ["tile"],
+    of: "a month, some of it done" },
+  { id: "diet", hue: 75, lift: 162, subject: "plate", sizes: ["tile"],
+    of: "a plate divided, and a leaf on it" },
 ];
 
 /* 1200 by 540 rather than anything squarer, because of the crop.
@@ -134,7 +158,53 @@ const DIMS: Record<Size, { w: number; h: number }> = {
      none of the subject. Composed for the shape it is shown in,
      the subject fills the upper half and the words sit under it. */
   tall: { w: 900, h: 1000 },
+  /* The band across the top of a board tile, at sixteen by nine
+     because that is what the band is. Small on purpose: ten of
+     these are on the front page at once, so each one is a picture
+     a phone can afford. */
+  tile: { w: 640, h: 360 },
   thumb: { w: 480, h: 330 },
+};
+
+/** Where everything goes, per frame.
+
+    One row per size rather than a ternary per property. Four
+    sizes and six properties is twenty-four decisions, and as
+    ternaries they were unreadable and impossible to add a fifth
+    size to without touching six lines.
+
+    `stage` is where the subject stands and it is decided by where
+    the card's WORDS are: right of centre on a wide frame, whose
+    words run down the left; the upper half on a tall one, whose
+    words sit underneath; dead centre on a tile and a thumb, which
+    carry no words at all. `floor` is where the ground meets the
+    sky, a little ABOVE the line the subject stands on, so the
+    subject reads as being in front of the horizon rather than
+    balanced on it. */
+const FRAME: Record<Size, {
+  stage: string; floor: number; ground: string; halo: string; spot: string;
+  auroraA: string; auroraB: string; seed: number;
+}> = {
+  wide: {
+    stage: "left:44%;top:15%;width:52%;height:70%", floor: 44,
+    ground: "70% 42%", halo: "74% 30%", spot: "80% 12%",
+    auroraA: "40%", auroraB: "60%", seed: 13,
+  },
+  tall: {
+    stage: "left:7%;top:7%;width:86%;height:54%", floor: 58,
+    ground: "52% 30%", halo: "54% 22%", spot: "68% 8%",
+    auroraA: "4%", auroraB: "26%", seed: 41,
+  },
+  tile: {
+    stage: "left:9%;top:8%;width:82%;height:84%", floor: 42,
+    ground: "52% 38%", halo: "54% 28%", spot: "70% 8%",
+    auroraA: "8%", auroraB: "34%", seed: 57,
+  },
+  thumb: {
+    stage: "left:7%;top:9%;width:86%;height:82%", floor: 44,
+    ground: "50% 40%", halo: "52% 30%", spot: "64% 10%",
+    auroraA: "12%", auroraB: "40%", seed: 71,
+  },
 };
 
 export const ART_FILES: string[] =
@@ -485,6 +555,201 @@ const SUBJECTS: Record<Subject, (t: Tones, l: Tones) => string> = {
     <circle cx="288" cy="214" r="6" fill="${l.hot}"/>
     <circle cx="452" cy="58" r="2.6" fill="${l.hot}" fill-opacity=".7"/>
     <circle cx="318" cy="52" r="2" fill="${t.hot}" fill-opacity=".55"/>`,
+
+  /* German: flashcards fanned out, the front one being read. A
+     card is the unit that school is actually made of, and three
+     of them at three angles is a stack somebody is working
+     through rather than a stack sitting in a drawer. */
+  cards: (t, l) => `
+    <defs>
+      <linearGradient id="cardBack" x1="0" y1="0" x2="0.4" y2="1">
+        <stop offset="0" stop-color="${t.mid}" stop-opacity=".24"/>
+        <stop offset="1" stop-color="${t.shade}" stop-opacity=".7"/>
+      </linearGradient>
+      <linearGradient id="cardFront" x1="0" y1="0" x2="0.3" y2="1">
+        <stop offset="0" stop-color="${l.lit}" stop-opacity=".38"/>
+        <stop offset="1" stop-color="${t.shade}" stop-opacity=".82"/>
+      </linearGradient>
+    </defs>
+    <g transform="rotate(-13 176 220)">
+      <rect x="116" y="112" width="132" height="188" rx="16" fill="url(#cardBack)"
+            stroke="${t.lit}" stroke-opacity="0.4" stroke-width="1.6"/>
+    </g>
+    <g transform="rotate(11 348 220)">
+      <rect x="284" y="112" width="132" height="188" rx="16" fill="url(#cardBack)"
+            stroke="${t.lit}" stroke-opacity="0.45" stroke-width="1.6"/>
+    </g>
+    <g transform="translate(0 -6)">
+      <rect x="192" y="104" width="140" height="196" rx="18" fill="url(#cardFront)"
+            stroke="${l.lit}" stroke-opacity="0.85" stroke-width="2.2"/>
+      <path d="M216 148 H308" stroke="${l.hot}" stroke-opacity="0.85" stroke-width="9"
+            stroke-linecap="round"/>
+      <path d="M216 186 H296 M216 214 H308 M216 242 H276" stroke="${t.hot}"
+            stroke-opacity="0.32" stroke-width="6" stroke-linecap="round"/>
+      <circle cx="262" cy="276" r="7" fill="${l.hot}" fill-opacity=".8"/>
+    </g>
+    <circle cx="418" cy="92" r="3" fill="${l.hot}" fill-opacity=".7"/>
+    <circle cx="126" cy="76" r="2.4" fill="${t.hot}" fill-opacity=".55"/>`,
+
+  /* Qur'anic Arabic: an arch with a lamp in it and a star above.
+     Architecture and geometry, which is what that tradition
+     actually looks like, and nothing figurative anywhere. */
+  arch: (t, l) => `
+    <defs>
+      <linearGradient id="archFill" x1="0" y1="0" x2="0" y2="1">
+        <stop offset="0" stop-color="${l.lit}" stop-opacity=".22"/>
+        <stop offset="1" stop-color="${t.shade}" stop-opacity=".9"/>
+      </linearGradient>
+      <radialGradient id="lampGlow" cx="0.5" cy="0.5">
+        <stop offset="0" stop-color="${l.hot}" stop-opacity=".75"/>
+        <stop offset="1" stop-color="${l.hot}" stop-opacity="0"/>
+      </radialGradient>
+    </defs>
+    <ellipse cx="260" cy="214" rx="120" ry="118" fill="url(#lampGlow)" opacity=".55"/>
+    <path d="M176 300 V214 C 176 158, 214 122, 260 106 C 306 122, 344 158, 344 214 V300 Z"
+          fill="url(#archFill)" stroke="${t.lit}" stroke-opacity="0.8" stroke-width="2.4"/>
+    <path d="M206 300 V218 C 206 176, 232 150, 260 138 C 288 150, 314 176, 314 218 V300"
+          fill="none" stroke="${l.lit}" stroke-opacity="0.5" stroke-width="1.6"/>
+    <path d="M260 168 V206" stroke="${l.hot}" stroke-opacity="0.7" stroke-width="2"/>
+    <path d="M248 206 h24 l-6 26 h-12 z" fill="${l.hot}" fill-opacity=".7"
+          stroke="${l.hot}" stroke-opacity="0.95" stroke-width="1.8"
+          stroke-linejoin="round"/>
+    <circle cx="260" cy="244" r="7" fill="${l.hot}"/>
+    <path d="M260 30 L272 62 L304 74 L272 86 L260 118 L248 86 L216 74 L248 62 Z"
+          fill="${l.hot}" fill-opacity=".8"/>
+    <path d="M138 300 H382" stroke="${t.lit}" stroke-opacity="0.45" stroke-width="2"/>
+    <circle cx="392" cy="118" r="2.6" fill="${t.hot}" fill-opacity=".6"/>
+    <circle cx="132" cy="150" r="2.2" fill="${l.hot}" fill-opacity=".5"/>`,
+
+  /* English: two people talking. The near bubble is lit and mid
+     sentence, the far one has answered, which is the whole of
+     what that school is for. */
+  bubbles: (t, l) => `
+    <defs>
+      <linearGradient id="bubFar" x1="0" y1="0" x2="0.3" y2="1">
+        <stop offset="0" stop-color="${t.mid}" stop-opacity=".3"/>
+        <stop offset="1" stop-color="${t.shade}" stop-opacity=".72"/>
+      </linearGradient>
+      <linearGradient id="bubNear" x1="0" y1="0" x2="0.3" y2="1">
+        <stop offset="0" stop-color="${l.lit}" stop-opacity=".42"/>
+        <stop offset="1" stop-color="${t.shade}" stop-opacity=".8"/>
+      </linearGradient>
+    </defs>
+    <g>
+      <path d="M262 92 h164 a26 26 0 0 1 26 26 v72 a26 26 0 0 1 -26 26 h-118
+               l-30 26 v-26 h-16 a26 26 0 0 1 -26 -26 v-72 a26 26 0 0 1 26 -26 z"
+            fill="url(#bubFar)" stroke="${t.lit}" stroke-opacity="0.55" stroke-width="2"/>
+      <path d="M296 132 H418 M296 162 H392" stroke="${t.hot}" stroke-opacity="0.34"
+            stroke-width="6" stroke-linecap="round"/>
+    </g>
+    <g>
+      <path d="M94 160 h164 a28 28 0 0 1 28 28 v78 a28 28 0 0 1 -28 28 h-104
+               l-34 28 v-28 h-26 a28 28 0 0 1 -28 -28 v-78 a28 28 0 0 1 28 -28 z"
+            fill="url(#bubNear)" stroke="${l.lit}" stroke-opacity="0.85" stroke-width="2.4"/>
+      <circle cx="140" cy="228" r="9" fill="${l.hot}" fill-opacity=".9"/>
+      <circle cx="176" cy="228" r="9" fill="${l.hot}" fill-opacity=".65"/>
+      <circle cx="212" cy="228" r="9" fill="${l.hot}" fill-opacity=".4"/>
+    </g>`,
+
+  /* The stock check: a dial with a needle. Forty-four ratios come
+     out as one reading, and a dial is the only drawing that says
+     "a number, on a scale, with a verdict at the end of it". */
+  gauge: (t, l) => {
+    const ticks = Array.from({ length: 11 }, (_, i) => {
+      const a = Math.PI * (1 - i / 10);
+      const [x1, y1] = [260 + Math.cos(a) * 132, 268 - Math.sin(a) * 132];
+      const [x2, y2] = [260 + Math.cos(a) * (i % 5 === 0 ? 108 : 118),
+        268 - Math.sin(a) * (i % 5 === 0 ? 108 : 118)];
+      return `<line x1="${x1.toFixed(1)}" y1="${y1.toFixed(1)}"
+                    x2="${x2.toFixed(1)}" y2="${y2.toFixed(1)}"
+                    stroke="${t.lit}" stroke-opacity="${i % 5 === 0 ? 0.75 : 0.35}"
+                    stroke-width="${i % 5 === 0 ? 3.4 : 2}" stroke-linecap="round"/>`;
+    }).join("");
+    return `
+      <defs>
+        <linearGradient id="dial" x1="0" y1="0" x2="0" y2="1">
+          <stop offset="0" stop-color="${t.lit}" stop-opacity=".22"/>
+          <stop offset="1" stop-color="${t.shade}" stop-opacity=".8"/>
+        </linearGradient>
+      </defs>
+      <path d="M112 268 a148 148 0 0 1 296 0 z" fill="url(#dial)"
+            stroke="${t.lit}" stroke-opacity="0.5" stroke-width="2"/>
+      ${ticks}
+      <path d="M148 268 a112 112 0 0 1 82 -108" fill="none" stroke="${l.hot}"
+            stroke-opacity="0.9" stroke-width="7" stroke-linecap="round"/>
+      <path d="M260 268 L336 174" stroke="${l.hot}" stroke-width="7"
+            stroke-linecap="round"/>
+      <circle cx="260" cy="268" r="17" fill="${t.shade}" stroke="${l.hot}"
+              stroke-width="3.4"/>
+      <circle cx="260" cy="268" r="5" fill="${l.hot}"/>
+      <path d="M150 300 H370" stroke="${t.lit}" stroke-opacity="0.4" stroke-width="2"/>`;
+  },
+
+  /* The routine: a month with some of it done. Squares rather
+     than a list, because what that tool is for is seeing a run of
+     days at once. */
+  calendar: (t, l) => {
+    const done = new Set([0, 1, 2, 5, 6, 7, 8, 11, 12, 13, 16, 17]);
+    const lit = 17;
+    const cells = Array.from({ length: 20 }, (_, i) => {
+      const x = 150 + (i % 5) * 46;
+      const y = 176 + Math.floor(i / 5) * 40;
+      const on = done.has(i);
+      const isLit = i === lit;
+      return `<rect x="${x}" y="${y}" width="34" height="28" rx="7"
+                fill="${isLit ? l.hot : on ? t.lit : t.shade}"
+                fill-opacity="${isLit ? 0.92 : on ? 0.42 : 0.55}"
+                stroke="${isLit ? l.hot : t.lit}"
+                stroke-opacity="${isLit ? 1 : on ? 0.5 : 0.22}" stroke-width="1.4"/>`;
+    }).join("");
+    return `
+      <defs>
+        <linearGradient id="cal" x1="0" y1="0" x2="0.3" y2="1">
+          <stop offset="0" stop-color="${t.lit}" stop-opacity=".26"/>
+          <stop offset="1" stop-color="${t.shade}" stop-opacity=".78"/>
+        </linearGradient>
+      </defs>
+      <rect x="126" y="104" width="268" height="196" rx="20" fill="url(#cal)"
+            stroke="${t.lit}" stroke-opacity="0.65" stroke-width="2.2"/>
+      <path d="M126 156 H394" stroke="${t.lit}" stroke-opacity="0.4" stroke-width="1.8"/>
+      <path d="M158 92 V126 M228 92 V126 M292 92 V126 M362 92 V126"
+            stroke="${t.lit}" stroke-opacity="0.7" stroke-width="7"
+            stroke-linecap="round"/>
+      <path d="M152 132 H236" stroke="${l.hot}" stroke-opacity="0.75" stroke-width="7"
+            stroke-linecap="round"/>
+      ${cells}
+      <path d="M296 256 l7 8 13 -16" fill="none" stroke="${t.sink}" stroke-width="3.4"
+            stroke-linecap="round" stroke-linejoin="round"/>`;
+  },
+
+  /* The diet tool: a plate, divided. Every estimate that tool
+     makes comes back as a range over a portion, and a plate with
+     parts on it is that sentence as a picture. */
+  plate: (t, l) => `
+    <defs>
+      <linearGradient id="plate" x1="0" y1="0" x2="0" y2="1">
+        <stop offset="0" stop-color="${t.lit}" stop-opacity=".3"/>
+        <stop offset="1" stop-color="${t.shade}" stop-opacity=".88"/>
+      </linearGradient>
+    </defs>
+    <ellipse cx="260" cy="238" rx="152" ry="64" fill="url(#plate)"
+             stroke="${t.lit}" stroke-opacity="0.75" stroke-width="2.4"/>
+    <ellipse cx="260" cy="234" rx="118" ry="48" fill="none"
+             stroke="${t.lit}" stroke-opacity="0.35" stroke-width="1.6"/>
+    <path d="M260 234 m-118 0 a118 48 0 0 1 118 -48 l0 48 z"
+          fill="${l.hot}" fill-opacity=".5"/>
+    <path d="M260 234 m0 -48 a118 48 0 0 1 84 34 l-84 14 z"
+          fill="${t.hot}" fill-opacity=".38"/>
+    <path d="M260 234 l84 -14 a118 48 0 0 1 -84 62 z"
+          fill="${l.mid}" fill-opacity=".3"/>
+    <path d="M260 234 L142 234 M260 234 L260 186 M260 234 L344 220"
+          stroke="${t.sink}" stroke-opacity="0.55" stroke-width="2.4"/>
+    <path d="M330 150 c 34 -10 58 6 58 6 s -12 30 -44 34 c -22 3 -32 -8 -32 -8
+             s 4 -26 18 -32 z" fill="${l.lit}" fill-opacity=".45"
+          stroke="${l.hot}" stroke-opacity="0.8" stroke-width="2"/>
+    <path d="M300 202 c 24 -18 52 -28 78 -30" fill="none" stroke="${l.hot}"
+          stroke-opacity="0.7" stroke-width="2"/>
+    <path d="M116 300 H404" stroke="${t.lit}" stroke-opacity="0.35" stroke-width="2"/>`,
 };
 
 /* ============================================================
@@ -507,6 +772,7 @@ function scene(s: Scene, size: Size): string {
   /* Everything that is not a thumbnail is drawn at a size where
      a wide blur reads as atmosphere rather than as a smear. */
   const big = size !== "thumb";
+  const F = FRAME[size];
   const t = tones(s.hue);
   const l = tones(s.lift);
   /* The second wash is ANALOGOUS, a little way round the wheel
@@ -516,7 +782,7 @@ function scene(s: Scene, size: Size): string {
      lift hue survives where it belongs: on the small bright
      things inside the subject. */
   const near = tones((s.hue + 34) % 360);
-  const random = rng(s.hue * 977 + (wide ? 13 : tall ? 41 : 71));
+  const random = rng(s.hue * 977 + F.seed);
 
   const art = SUBJECTS[s.subject](t, l);
 
@@ -529,23 +795,8 @@ function scene(s: Scene, size: Size): string {
       + `filter:blur(${(0.4 + random() * 3).toFixed(1)}px)"></i>`;
   }).join("");
 
-  /* Three frames, three placements, and all three are decided by
-     where the card's WORDS are rather than by taste.
-
-     Wide: right of centre, because the words run down the left.
-     Tall: the upper half, because on a phone the words sit under
-     the picture rather than beside it. Thumb: dead centre, since
-     an 84 by 58 box crops to nothing else. */
-  const stage = wide
-    ? "left:44%;top:15%;width:52%;height:70%"
-    : tall
-      ? "left:7%;top:7%;width:86%;height:54%"
-      : "left:7%;top:9%;width:86%;height:82%";
-
-  /* Where the ground meets the sky. It sits a little ABOVE the
-     line the subject stands on, so the subject reads as being in
-     front of the horizon rather than balanced on it. */
-  const floorH = wide ? 44 : tall ? 58 : 44;
+  const stage = F.stage;
+  const floorH = F.floor;
 
   return `<!doctype html>
 <html><head><meta charset="utf-8"><style>
@@ -557,7 +808,7 @@ function scene(s: Scene, size: Size): string {
   /* the ground, and it is nearly black everywhere the subject is
      not: the pop is contrast rather than saturation */
   .ground{background:
-    radial-gradient(120% 96% at ${wide ? "70% 42%" : tall ? "52% 30%" : "50% 40%"},
+    radial-gradient(120% 96% at ${F.ground},
       ${t.shade} 0%, oklch(12% 0.026 ${s.hue}) 44%,
       oklch(7.5% 0.015 ${s.hue}) 100%)}
 
@@ -566,19 +817,18 @@ function scene(s: Scene, size: Size): string {
      the subject an edge to be read against. Centred on it, the
      light and the thing were the same brightness and the gold
      frame in particular went to soup. */
-  .halo{background:radial-gradient(40% 56% at ${
-    wide ? "74% 30%" : tall ? "54% 22%" : "52% 30%"},
+  .halo{background:radial-gradient(40% 56% at ${F.halo},
     ${t.mid} 0%, transparent 72%);opacity:.28;mix-blend-mode:screen;
     filter:blur(${big ? 34 : 20}px)}
 
   /* two soft washes, analogous, plus one cold one for the depth */
   .aurora i{position:absolute;border-radius:50%;mix-blend-mode:screen}
-  .aurora .a{left:${wide ? "40%" : tall ? "4%" : "12%"};
+  .aurora .a{left:${F.auroraA};
     top:${tall ? "-14%" : "-30%"};width:${tall ? "92%" : "74%"};
     height:${tall ? "72%" : "110%"};
     background:radial-gradient(closest-side,${t.deep} 0%,transparent 70%);
     opacity:.62;filter:blur(${big ? 70 : 44}px)}
-  .aurora .b{left:${wide ? "60%" : tall ? "26%" : "40%"};
+  .aurora .b{left:${F.auroraB};
     top:${tall ? "14%" : "22%"};width:${tall ? "78%" : "58%"};
     height:${tall ? "60%" : "96%"};
     background:radial-gradient(closest-side,${near.deep} 0%,transparent 70%);
@@ -615,8 +865,7 @@ function scene(s: Scene, size: Size): string {
   /* a shaft across the frame and the light in the corner */
   .streak{background:linear-gradient(100deg,transparent 30%,
     oklch(97% 0.03 ${s.hue} / .13) 45%,transparent 57%);mix-blend-mode:screen}
-  .spot{background:radial-gradient(40% 54% at ${
-    wide ? "80% 12%" : tall ? "68% 8%" : "64% 10%"},
+  .spot{background:radial-gradient(40% 54% at ${F.spot},
     ${near.hot} 0%,transparent 70%);opacity:.24;mix-blend-mode:screen}
 
   .bokeh i{position:absolute;border-radius:50%;background:${l.hot};

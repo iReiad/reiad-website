@@ -29,6 +29,8 @@
   @property --surface-image  { syntax: "*"; inherits: false; }
   @property --surface-size   { syntax: "*"; inherits: false; }
 
+  @property --surface-pos    { syntax: "*"; inherits: false; }
+
   @property --glow-w   { syntax: "<length>"; initial-value: 0px; inherits: false; }
 
   @property --glow-h   { syntax: "<length>"; initial-value: 0px; inherits: false; }
@@ -6923,6 +6925,39 @@
     font-size: clamp(1.35rem, 2.5vw, 1.9rem); max-width: 21ch;
   }
 
+  .home-aura { position: relative; isolation: isolate; }
+  .home-aura::before {
+    content: ""; position: absolute; inset: -8% -14% auto; height: 680px;
+    z-index: -1; pointer-events: none;
+    background:
+      radial-gradient(58% 100% at 18% 0%,
+        color-mix(in oklab, var(--accent) 14%, transparent), transparent 72%),
+      radial-gradient(54% 92% at 84% 6%,
+        color-mix(in oklab, var(--accent) 7%, transparent), transparent 76%);
+  }
+
+  .gate-banded { padding-top: 0; }
+  .gate-banded::before { z-index: 2; }
+  .gt-band {
+    display: block; overflow: hidden;
+    aspect-ratio: 16 / 9;
+    margin: 0 -18px 4px -21px;
+
+    & img {
+      display: block; width: 100%; height: 100%;
+      object-fit: cover;
+
+      transition: scale var(--slow) var(--ease);
+    }
+  }
+  .gate-banded:hover .gt-band img,
+  .gate-banded:focus-visible .gt-band img { scale: 1.04; }
+
+  @media (prefers-reduced-motion: reduce) {
+    .gt-band img { transition: none; }
+    .gate-banded:hover .gt-band img { scale: 1; }
+  }
+
   .gate-slim {
     grid-template-columns: auto minmax(0, 1fr) auto;
     align-items: center; gap: 12px;
@@ -6962,11 +6997,12 @@
         oklch(24% 0.02 260 / 0.16)),
       var(--gate-photo);
     --surface-size: auto, cover;
-    background-position: center;
+
+    --surface-pos: 0 0, center;
     min-height: clamp(230px, 25vw, 320px);
   }
 
-  .gate-art { background-position: 68% center; }
+  .gate-art { --surface-pos: 0 0, 68% center; }
 
   .gate-photo .gt-title {
     color: oklch(97% 0.005 260);
@@ -9283,7 +9319,8 @@
 
     box-shadow: var(--edge), var(--surface-shadow, 0 0 transparent);
 
-    background-position: 0 0, 0 0, var(--tx, 0) var(--ty, 0), 0 0;
+    background-position: 0 0, var(--surface-pos, 0 0),
+                         var(--tx, 0) var(--ty, 0), 0 0;
 
     transition: --glow-a var(--glow-fade) var(--ease),
                 rotate var(--enter) var(--ease),
