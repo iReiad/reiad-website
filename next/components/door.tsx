@@ -22,7 +22,7 @@
    ============================================================ */
 
 import { useSyncExternalStore } from "react";
-import { latest, subscribe } from "../lib/progress";
+import { latest, subscribe, type Bookmark } from "../lib/progress";
 import { Icon } from "./icons";
 
 const WORDS: Record<string, { school: string; go: string }> = {
@@ -32,18 +32,29 @@ const WORDS: Record<string, { school: string; go: string }> = {
   english: { school: "মন থেকে ইংরেজি", go: "পড়া চালিয়ে যান" },
 };
 
-export function ContinueCard() {
-  /* The snapshot is the four stored strings joined, not the
-     object built from them: React compares snapshots by identity
-     and a fresh object every read would loop. */
-  /* The STORAGE keys, not the school ids: the money school's
-     bookmark has been filed under `learn-last` since before the
-     school moved, and the rule in CLAUDE.md is that those
-     strings never change. This list said `money-last` for a
-     while, which is a key nothing has ever written, so the
-     gate below judged the money school's reader to have no
-     bookmark and the card never showed for exactly the readers
-     the biggest school has. */
+/** The bookmark this card would draw, or null.
+
+    Exported because the card is not the only thing that needs the
+    answer. The front page's board has to know BEFORE it lays out
+    whether this widget has anything to say: it is a half-width
+    cell on a laptop, and a reader who has not started a lesson
+    yet was given that cell empty, which is six blank columns at
+    the top of the board on a first visit. One hook, so the board
+    and the card cannot disagree about whether there is a
+    bookmark.
+
+    The snapshot is the four stored strings joined, not the object
+    built from them: React compares snapshots by identity and a
+    fresh object every read would loop.
+
+    The STORAGE keys, not the school ids: the money school's
+    bookmark has been filed under `learn-last` since before the
+    school moved, and the rule in CLAUDE.md is that those strings
+    never change. This list said `money-last` for a while, which
+    is a key nothing has ever written, so the gate below judged
+    the money school's reader to have no bookmark and the card
+    never showed for exactly the readers the biggest school has. */
+export function useBookmark(): (Bookmark & { school: string }) | null {
   const raw = useSyncExternalStore(
     subscribe,
     () => {
@@ -58,7 +69,12 @@ export function ContinueCard() {
 
   if (!raw.replace(/\|/g, "")) return null;
   const mark = latest();
-  if (!mark?.url) return null;
+  return mark?.url ? mark : null;
+}
+
+export function ContinueCard() {
+  const mark = useBookmark();
+  if (!mark) return null;
 
   const words = WORDS[mark.school] ?? { school: mark.school, go: "চালিয়ে যান" };
 

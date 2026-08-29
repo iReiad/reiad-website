@@ -52,9 +52,17 @@ export function SchoolMeters() {
   );
   const any = [...counts.values()].some((n) => n > 0);
 
+  /* NO WRAPPER AND NO HEADING. It was `<section class="pane
+     meters">` with an `<h2>` in it, and the stylesheet has
+     neither class: only `.pane-bar`, `.meters-list` and
+     `.meters-none` exist. So the one widget that draws no card of
+     its own was also the one with no sheet under it, and it sat
+     flat on a page made entirely of glass while the comment at
+     the top of `home/board.tsx` named `.pane` as a surface that
+     exists. The board draws the head now, out of the catalogue,
+     like every other widget's, and this draws the list. */
   return (
-    <section className="pane meters">
-      <h2 className="bn-h" lang="bn">কতটা হলো</h2>
+    <>
       {any ? null : (
         <p className="meters-none" lang="bn">
           একটা পাঠ পড়া হলে টিক দিন, এখানে জমতে থাকবে।
@@ -76,6 +84,6 @@ export function SchoolMeters() {
           );
         })}
       </ul>
-    </section>
+    </>
   );
 }

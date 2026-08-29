@@ -49,6 +49,12 @@ interface TiltModule {
   tiltIn: (root: Element) => void;
 }
 
+/** How many grey squares stand in for the feed while it loads.
+
+    Capped by `limit` where the caller set one, because a
+    skeleton is a promise about the size of what is coming: the
+    board's `wide` market widget drew eight and then settled to
+    three, so the page under it jumped every time. */
 const SKELETONS = 8;
 /** One quiet second chance. A first load during a flaky moment
     should not condemn the section for the whole visit. */
@@ -119,7 +125,7 @@ export function MarketPulse({ limit }: { limit?: number } = {}) {
       <div id="pulse" aria-live="polite">
         {state.kind === "loading" ? (
           <div className="news-grid" aria-hidden="true">
-            {Array.from({ length: SKELETONS }, (_, i) => (
+            {Array.from({ length: Math.min(SKELETONS, limit ?? SKELETONS) }, (_, i) => (
               <div key={i} className="news-card skeleton" />
             ))}
           </div>
