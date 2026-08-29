@@ -42,6 +42,17 @@ export interface NavItem {
   icon: IconName;
   /** Which `Current` value marks this item as where you are. */
   key?: string;
+  /** The drawing this thing wears on a card, by what the drawing
+      is a picture OF. `next/components/card-art.tsx` holds the
+      twelve, and naming one HERE rather than in a component is
+      what makes a school the same card on the board, on
+      `/skills` and in the tools hub: one table, read by every
+      surface, and sent to the app like every other field.
+
+      An item with none gets a card with no picture, which is
+      what every card was before there were any. */
+  art?: "chart" | "coins" | "sheets" | "book" | "pan" | "ridge"
+    | "cards" | "arch" | "bubbles" | "gauge" | "calendar" | "plate";
   /** A school with a ladder: stages, lessons, and a tick per
       lesson. `/account` draws a bar for each of these and
       the settings form offers them as things to follow, so the
@@ -121,34 +132,34 @@ export const NAV: NavGroup[] = [
       { label: "All skills", sub: "দক্ষতা", href: "/skills", icon: "skills", key: "skills", hub: true },
       {
         label: "Money", sub: "টাকা ও শেয়ার", href: "/money",
-        icon: "coins", key: "money", kind: "কোর্স", ladder: true, accent: "var(--green)",
+        icon: "coins", key: "money", art: "coins", kind: "কোর্স", ladder: true, accent: "var(--green)",
         blurb: "বিও অ্যাকাউন্ট খোলা থেকে নিজে একটা কোম্পানি যাচাই করা পর্যন্ত, "
           + "ধাপে ধাপে সাজানো। সবচেয়ে বড় স্কুল, আর শুরুটা একদম শূন্য থেকে।",
       },
       {
         label: "German", sub: "জার্মান", href: "/deutsch",
-        icon: "book", key: "deutsch", kind: "কোর্স", ladder: true, accent: "var(--blue)",
+        icon: "book", key: "deutsch", art: "cards", kind: "কোর্স", ladder: true, accent: "var(--blue)",
         blurb: "চারটা স্তরে জার্মান, বাংলা দিয়ে বোঝানো, আর রোজ এক পাতার অনুশীলন খাতা।",
       },
       {
         label: "Qur'anic Arabic", sub: "কুরআনের আরবি", href: "/quran",
-        icon: "scroll", key: "quran", kind: "কোর্স", ladder: true, accent: "var(--teal)",
+        icon: "scroll", key: "quran", art: "arch", kind: "কোর্স", ladder: true, accent: "var(--teal)",
         blurb: "তিন ধাপে ষাট দিন: শব্দ চেনা, বাক্য বোঝা, তারপর গোটা সূরা খুলে পড়া।",
       },
       {
         label: "English", sub: "মন থেকে ইংরেজি", href: "/english",
-        icon: "signpost", key: "english", kind: "কোর্স", ladder: true, accent: "var(--violet)",
+        icon: "signpost", key: "english", art: "bubbles", kind: "কোর্স", ladder: true, accent: "var(--violet)",
         blurb: "দুই টার্মে ইংরেজি: শব্দের ক্রম থেকে দুই মিনিট টানা বলা পর্যন্ত, সাথে ৩০ দিনের খাতা।",
       },
       {
         label: "Cooking", sub: "রান্না", href: "/cooking",
-        icon: "cart", key: "cooking", kind: "লেখা", accent: "var(--rose)",
+        icon: "cart", key: "cooking", art: "pan", kind: "লেখা", accent: "var(--rose)",
         blurb: "মাপ, তাপ আর সময়: রেসিপি মুখস্থ না করে রান্নাটা বোঝা। কোর্স নয়, "
           + "একেকটা উপকরণ নিয়ে পুরো একটা লেখা।",
       },
       {
         label: "Travel", sub: "ভ্রমণ", href: "/travel",
-        icon: "compass", key: "travel", kind: "লেখা", accent: "var(--plum)",
+        icon: "compass", key: "travel", art: "ridge", kind: "লেখা", accent: "var(--plum)",
         blurb: "ভিসা, কাগজপত্র আর প্রথমবার দেশের বাইরে যাওয়ার পুরো ধাপ।",
       },
       {
@@ -173,20 +184,20 @@ export const NAV: NavGroup[] = [
         label: "Calculators", sub: "ক্যালকুলেটর", href: "/tools",
         icon: "calculator", key: "tools", hub: true,
       },
-      { label: "Stock check", sub: "শেয়ার যাচাই", href: "/tools/stock", icon: "gauge", key: "stock" },
-      { label: "Live portfolio", sub: "লাইভ পোর্টফোলিও", href: "/tools/live", icon: "wallet", key: "live" },
+      { label: "Stock check", sub: "শেয়ার যাচাই", href: "/tools/stock", icon: "gauge", key: "stock", art: "gauge" },
+      { label: "Live portfolio", sub: "লাইভ পোর্টফোলিও", href: "/tools/live", icon: "wallet", key: "live", art: "chart" },
       /* A day of somebody's own. Listed like everything else,
          because it explains itself signed out rather than
          answering 403 the way the course section does: an entry
          in the chrome to a page a reader cannot open is the
          promise `unlisted` exists to avoid, and this page keeps
          its promise to anybody. */
-      { label: "Routine", sub: "রুটিন", href: "/tools/routine", icon: "calendar", key: "routine" },
+      { label: "Routine", sub: "রুটিন", href: "/tools/routine", icon: "calendar", key: "routine", art: "calendar" },
       /* Listed for the same reason the routine is: it explains
          itself signed out and the body half needs no account at
          all, so the entry keeps its promise to anybody who
          presses it. */
-      { label: "Diet", sub: "খাদ্য ও ওজন", href: "/tools/diet", icon: "leaf", key: "diet" },
+      { label: "Diet", sub: "খাদ্য ও ওজন", href: "/tools/diet", icon: "leaf", key: "diet", art: "plate" },
     ],
   },
   {
@@ -194,7 +205,7 @@ export const NAV: NavGroup[] = [
     label: "পড়া · Reading",
     accent: "var(--green)",
     items: [
-      { label: "Insights", href: "/insights", icon: "pen", key: "insights", hub: true },
+      { label: "Insights", href: "/insights", icon: "pen", key: "insights", art: "book", hub: true },
     ],
   },
   {
@@ -202,7 +213,7 @@ export const NAV: NavGroup[] = [
     label: "Work",
     accent: "var(--plum)",
     items: [
-      { label: "Portfolio", href: "/portfolio", icon: "briefcase", key: "portfolio", hub: true },
+      { label: "Portfolio", href: "/portfolio", icon: "briefcase", key: "portfolio", art: "sheets", hub: true },
       { label: "About", href: "/about", icon: "person", key: "about" },
       { label: "Contact", href: "/contact", icon: "mail", key: "contact" },
     ],

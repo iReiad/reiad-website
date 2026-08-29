@@ -119,6 +119,10 @@ export default function SkillsPage() {
                      table gives them, on the page whose whole job
                      is to show the six side by side. */
                   accent={skill.accent}
+                  /* The same drawing this school wears on the
+                     board and in the tools hub, out of the same
+                     table its colour comes from. */
+                  art={skill.art}
                   icon={skill.icon} chip={skill.kind} lang="bn"
                   title={skill.sub ?? skill.label} dek={skill.blurb}
                   go={skill.kind === "কোর্স" ? "কোর্সটা খুলুন" : "লেখাগুলো দেখুন"}

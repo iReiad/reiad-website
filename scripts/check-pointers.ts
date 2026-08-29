@@ -66,6 +66,15 @@ interface Gone {
 }
 
 const GONE: Gone[] = [
+  /* The service worker's changelog is HISTORY: v217 is a version
+     that shipped, and what it shipped was nine drawings rendered
+     into `/art/` by a generator. The generator is gone, because
+     the drawings are inline components now and a raster cannot
+     answer a theme, but the entry has to keep saying what that
+     version actually did or the log stops being a log. */
+  { file: "aab/sw.js", name: "scripts/build-card-art.ts",
+    why: "a shipped version's changelog: it named the generator that drew "
+      + "the rasters, and next/components/card-art.tsx replaced both" },
   /* Named in the past tense, in the paragraph explaining why a
      test whose subject is a module should not be named after a
      page: it was `aab/studio.test.ts`, it spent its life failing

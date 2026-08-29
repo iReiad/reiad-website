@@ -20,9 +20,25 @@
    ============================================================ */
 
 import type { CSSProperties, ReactNode } from "react";
+import { CardArt, type ArtSubject } from "./card-art";
 import { Icon } from "./icons";
 
 type Common = {
+  /** The picture across the top, by what it is a picture OF.
+      `shared/nav.ts` names one per school, tool and desk, so the
+      same thing wears the same drawing wherever it is drawn: the
+      board, `/skills`, the tools hub. Omitted, and the card is
+      what every card here was before there were pictures. */
+  art?: ArtSubject;
+  /** A PHOTOGRAPH across the top, where the thing has one of its
+      own: a piece's cover, drawn by the Studio from its lead
+      photo. It wins over `art`, because a photograph is of that
+      piece and a drawing is only of its desk.
+
+      It cannot answer the theme and does not pretend to. That is
+      the one honest difference between the two: a drawing is made
+      of the page's tokens, a photograph is a photograph. */
+  cover?: string;
   /** The drawing in the tile. Omitted, and there is no tile. */
   icon?: string;
   /** A colour token, `var(--green)` by default. */
@@ -45,9 +61,14 @@ type Common = {
 const style = (accent?: string) =>
   (accent ? { "--accent": accent } as CSSProperties : undefined);
 
-function Inside({ icon, chip, title, dek, children }: Common) {
+function Inside({ art, cover, icon, chip, title, dek, children }: Common) {
   return (
     <>
+      {cover ? (
+        <span className="card-band card-photo" aria-hidden="true">
+          <img src={cover} alt="" loading="lazy" decoding="async" />
+        </span>
+      ) : art ? <CardArt subject={art} className="card-band" /> : null}
       {(icon || chip) ? (
         <div className="card-top">
           {icon ? <span className="card-art"><Icon name={icon} size={20} /></span> : null}
@@ -75,7 +96,8 @@ export function GoCard({
   done?: boolean;
 }) {
   return (
-    <a className={["card", rest.className].filter(Boolean).join(" ")}
+    <a className={["card", (rest.art || rest.cover) ? "card-banded" : null, rest.className]
+         .filter(Boolean).join(" ")}
        data-kind="go" data-done={done ? "" : undefined}
        /* The light is what a card that answers you has and a card
           that does not has none of. `<InfoCard>` and `<SoonCard>`
@@ -103,7 +125,8 @@ export function GoCard({
     lost its chip. */
 export function InfoCard({ fill, ...props }: Common & { fill?: boolean }) {
   return (
-    <div className={["card", props.className].filter(Boolean).join(" ")}
+    <div className={["card", (props.art || props.cover) ? "card-banded" : null, props.className]
+           .filter(Boolean).join(" ")}
          data-kind="info" data-fill={fill ? "" : undefined}
          lang={props.lang} style={style(props.accent)}>
       <Inside {...props} />

@@ -19,21 +19,23 @@
 
    ---- each variant wears a picture, and it is OURS ----
 
-   `scripts/build-card-art.ts` draws them: the account's line over
-   the candles it is drawn from, the school's coins as a ladder,
-   the case studies as sheets holding a model. They are worn the
-   way a piece wears its cover, through `--gate-photo` and the
-   `gate-photo` rules in `@layer components`, so the card is a
-   poster in both themes and the words on it are light either way.
+   `next/components/card-art.tsx` draws them: the account's line
+   over the candles it is drawn from, the school's coins as a
+   ladder, the case studies as sheets holding a model. It is the
+   same drawing each of those things wears on its own card
+   everywhere else, out of `shared/nav.ts`.
 
-   It was an inline SVG scene for one release, which is a diagram
-   rather than a picture: line art on a flat ground with no depth
-   in it and nothing for the eye to land on. A drawing rather than
-   a photograph for three reasons that are all one reason: this
-   site's `img-src` is `'self'`, so nothing off-site would load at
-   all; a stock photograph is somebody else's licence to keep
-   track of for ever; and a picture built out of the site's own
-   accents follows the palette, which a photograph cannot.
+   THIS IS THE ONE CARD WHOSE PICTURE IS BESIDE ITS WORDS rather
+   than above them, and the reason is its shape: it is four times
+   as wide as it is tall, and a band across the top of that is a
+   stripe. Under 760px it is a band like every other card's.
+
+   A drawing rather than a photograph, for three reasons that are
+   one reason: this site's `img-src` is `'self'`, so nothing
+   off-site would load at all; a stock photograph is somebody
+   else's licence to keep for ever; and a drawing made of the
+   page's own tokens answers the theme, which a photograph
+   cannot.
 
    The server renders the `open` variant, which is also what a
    reader with no JavaScript keeps. The swap happens in an
@@ -43,18 +45,20 @@
    ============================================================ */
 
 import { useEffect, useState } from "react";
+import { CardArt, type ArtSubject } from "./card-art";
 import { Icon } from "./icons";
 
 type Pick = "open" | "learn" | "work";
 
-/* `art` is written out in full rather than built out of the id.
-   `scripts/build-card-art.ts --check` reads these files for the
-   literal and fails on one naming a drawing that is not on disk:
-   a card whose picture 404s renders perfectly and is merely flat,
-   which is the kind of breakage nothing else here would catch. */
+/* `art` names one of the twelve drawings rather than a file, so
+   this card answers the theme with the rest of the page, and the
+   type is the union in `next/components/card-art.tsx`: a name
+   that is not one of the twelve does not compile, where a path to
+   a picture that was not there used to render a card with a hole
+   in it. */
 const CARDS: Record<Pick, {
   href: string; accent: string; icon: string; chip: string;
-  title: string; dek: string; go: string; art: string; artSm: string; lang?: string;
+  title: string; dek: string; go: string; art: ArtSubject; lang?: string;
 }> = {
   open: {
     href: "/tools/live", accent: "var(--gold)", icon: "wallet",
@@ -64,7 +68,7 @@ const CARDS: Record<Pick, {
       + "you read: every holding's weight and every return. Connect your "
       + "own key and the same dashboard reads your account instead.",
     go: "Explore the live portfolio",
-    art: "/art/live.webp", artSm: "/art/live-tall.webp",
+    art: "chart",
   },
   learn: {
     href: "/money", accent: "var(--green)", icon: "coins",
@@ -73,7 +77,7 @@ const CARDS: Record<Pick, {
     dek: "হাতেখড়ি থেকে গবেষণা পর্যন্ত, ধাপে ধাপে। বিও অ্যাকাউন্ট খোলা থেকে "
       + "নিজে একটা কোম্পানি যাচাই করা পর্যন্ত, পুরোটাই ফ্রি।",
     go: "শুরু করুন",
-    art: "/art/money.webp", artSm: "/art/money-tall.webp",
+    art: "coins",
   },
   work: {
     href: "/portfolio", accent: "var(--plum)", icon: "briefcase",
@@ -83,7 +87,7 @@ const CARDS: Record<Pick, {
       + "optimiser, each one a working spreadsheet you can open in the "
       + "browser and pull apart. The numbers are pinned by tests.",
     go: "See the work",
-    art: "/art/work.webp", artSm: "/art/work-tall.webp",
+    art: "sheets",
   },
 };
 
@@ -109,19 +113,10 @@ export function FeaturedCard() {
 
   const c = CARDS[pick];
 
-  /* Two properties and no background. The drawing is composed
-     into `--surface-image` by the stylesheet, under the scrim and
-     over the material's own weave: written here as a background
-     it would REPLACE that whole stack and take the bevel, the
-     grain and the glow with it. */
-  const style: Record<string, string> = {
-    "--accent": c.accent,
-    "--gate-photo": `url("${c.art}")`,
-    /* The phone's own crop. The stylesheet reaches for it under
-       640px and falls back to the wide one, so this is the whole
-       of what makes the card work on a phone. */
-    "--gate-photo-sm": `url("${c.artSm}")`,
-  };
+  /* One property. The drawing is a child now rather than a
+     background, which is what lets it read the theme and lean
+     under the pointer. */
+  const style: Record<string, string> = { "--accent": c.accent };
 
   return (
     /* No column span any more. It carried `lg:col-span-8` while
@@ -130,8 +125,9 @@ export function FeaturedCard() {
        hand and is gone, so this is the only card in its section
        and takes the row. A span left behind would be a number
        about a grid that no longer exists. */
-    <a className="gate-tile gate-feat gate-photo gate-art" data-glow="card"
+    <a className="gate-tile gate-feat" data-glow="card"
        href={c.href} lang={c.lang} style={style}>
+      <CardArt subject={c.art} className="gate-feat-art" />
       <span className="flex items-center gap-2.5 min-w-0">
         <span className="gt-disc"><Icon name={c.icon} size={19} /></span>
         <span className="gt-chip mono">{c.chip}</span>

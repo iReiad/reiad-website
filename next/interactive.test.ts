@@ -484,8 +484,14 @@ for (const [who, audience, track, expected] of READERS) {
      changes nothing about what this catches: the deck's own money
      handle, the meters and the schools band were three mentions
      with the featured card nowhere in them. */
+  /* `.card` AND `.gate-tile`, because the board's tiles became the
+     site's own card: a school was a `<GoCard>` on `/skills` and a
+     `.gate-tile` here, which is one thing in two shapes. Counting
+     only the old class made this read 1 on a page with a dozen
+     cards on it. The featured card is the last `.gate-tile` and it
+     is excluded below, as it always was. */
   const front = await page.evaluate(() => ({
-    tiles: [...document.querySelectorAll(".gate-tile")]
+    tiles: [...document.querySelectorAll(".card[href], .gate-tile[href]")]
       .map((t) => t.getAttribute("href")).filter(Boolean),
     links: [...document.querySelectorAll<HTMLAnchorElement>("main a[href^='/']")]
       .filter((a) => !a.classList.contains("gate-feat"))
@@ -494,7 +500,7 @@ for (const [who, audience, track, expected] of READERS) {
     /* The deck is the featured card's section and holds nothing
        else: everything a catalogue can hold belongs to the board,
        which is the half the Android app draws too. */
-    inDeck: document.querySelectorAll(".gate-deck .gate-tile").length,
+    inDeck: document.querySelectorAll(".gate-deck .gate-tile, .gate-deck .card").length,
   }));
 
   ok(`the front page still has cards for ${who}`, front.tiles.length >= 8,

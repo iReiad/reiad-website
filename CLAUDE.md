@@ -670,6 +670,59 @@ them being two components rather than one with a prop.
 not written, which is a `div` for the same reason a chip that goes
 nowhere is not a link.
 
+## A card wears a drawing, and the drawing is made of tokens
+
+`next/components/card-art.tsx` holds twelve of them, one per
+SUBJECT: coins, a chart, sheets, a book, a pan, ridges, flashcards,
+an arch, bubbles, a gauge, a calendar, a plate. `shared/nav.ts`
+names which subject each school, tool and desk wears, so the board,
+`/skills` and the tools hub draw the same picture for the same
+thing out of one table, and the Android app is sent it like every
+other field.
+
+**They were twenty-five committed WebP files and are markup now.**
+A raster cannot answer a theme: light and dark would have meant
+fifty, kept in step by hand. Every colour in a drawing is a MIX of
+the card's own `--accent` with `--panel` and `--ink`, which are the
+two tokens that already flip, so one drawing is dark glass at night
+and inked glass on paper. That also took a build step, a browser, a
+stamp file and 300 KB of binaries out of the repository.
+
+**Which end a tone mixes towards is the whole trick.** A tone that
+has to be SEEN mixes towards `--ink`, so it brightens over a dark
+ground and darkens over a pale one. A tone that has to RECEDE mixes
+towards `--panel`. `--art-lit` mixed the wrong way for one build
+and every drawing came out as pale as the paper.
+
+**It is `.artwork`, not `.art`.** `.art` has been the icon beside a
+step's name since the schools were written, at 1.6em square, in
+`@layer money`. Taking the name made every drawing on the front
+page 27 pixels wide.
+
+**And it opens under the pointer.** Each layer carries a depth and
+translates against `--gpx`/`--gpy`, which `glow.tsx` already
+publishes. The strength is `--art-a`, registered so it animates and
+`inherits: true` so a layer inside the card can read it: `--glow-a`
+is `inherits: false`, so the material's own number reads 0 inside a
+drawing for ever. Only the strength animates, never `translate`
+itself, or the picture lags the hand.
+
+## One thing is one card
+
+A school was a `<GoCard>` on `/skills` and a `.gate-tile` on the
+front page: the same school, two shapes, depending on which page a
+reader was standing on. The board, the writing widget and the tools
+hub all draw `<GoCard>` now.
+
+The rule is the one at the top of this file wearing another hat: a
+list of things that exist elsewhere is built from the shared table,
+and so is the CARD that draws one. A new kind of card is a second
+answer to a question `deck.tsx` has already answered.
+
+`art` puts a drawing across the top of one; `cover` puts a
+photograph there instead, for a piece that has its own. Never both:
+two pictures on one card is two answers to the same question.
+
 ## What a reader has read
 
 `next/lib/progress.ts`, and the storage keys in it are the ones
@@ -1216,9 +1269,6 @@ node scripts/check-types.ts  # scripts/ that node strips the types out of
 node scripts/check-pointers.ts # a comment sending a reader to a file that
                             # does not exist
 node scripts/build-school-icons.ts --check   # a school drawing next/ copied
-node scripts/build-card-art.ts --check   # the front page's card pictures, older
-                            # than the file that draws them, or a card asking
-                            # for a drawing that is not on disk
 node scripts/build-stamp.ts --check  # aab/studio/** built from an app/src/
                             # that is not the one committed beside it
 node scripts/check-next.ts # a copy inside next/ that has drifted from the
@@ -1602,11 +1652,6 @@ node scripts/build-modules.ts       # aab/share-card.js and aab/api.js from aab/
                                     # aab/*/curriculum.js from shared/
 node scripts/build-fallback.ts     # aab/fallback.css from next/styles/site.css
 node scripts/build-school-icons.ts  # next/lib/school-icons.ts from aab/*/icons.js
-node scripts/build-card-art.ts      # aab/art/*.webp, the pictures the front
-                                    # page's big cards wear. Needs a browser,
-                                    # so it is a thing a clone runs and CI only
-                                    # checks. `--sheet <dir>` writes a contact
-                                    # sheet somewhere to look at them
 node scripts/build-meta.ts              # feed.xml, sitemap.xml, robots.txt
 
 cd app && npm run build             # aab/studio/** from app/src/studio/**

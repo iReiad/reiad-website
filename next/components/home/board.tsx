@@ -37,6 +37,7 @@ import {
   WIDGETS, layoutOf, storedOf, type Placed, type WidgetKind, type WidgetSize,
 } from "@reiad/shared/widgets";
 import { board as read, save, reset, stored, subscribe } from "../../lib/board";
+import { GoCard } from "../deck";
 import { ContinueCard, useBookmark } from "../door";
 import { PulseCard } from "../pulse-card";
 import { MarketPulse } from "../market-pulse";
@@ -119,50 +120,13 @@ function Widget({ id, size }: { id: string; size: WidgetSize }) {
     both came out at ONE column: the six schools stacked 1305px
     tall beside four tools at 737px. `board-deck` is the same deck
     with a minimum that fits two in half a board. */
-/** The picture a tile wears, by the key `shared/nav.ts` gives it.
-
-    Written out in full rather than built from the key, because
-    `scripts/build-card-art.ts --check` reads this file for the
-    literal and fails on one naming a drawing that is not on disk:
-    a tile whose band 404s renders as a card with a hole in it and
-    nothing else here would catch that.
-
-    A key that is not in this table gets no band and is a card of
-    words, which is what every tile was before this. So a school
-    added to the menu appears on the board the moment it is added,
-    and gains a picture when somebody draws one. */
-const TILE_ART: Record<string, string> = {
-  money: "/art/money-tile.webp",
-  deutsch: "/art/deutsch-tile.webp",
-  quran: "/art/quran-tile.webp",
-  english: "/art/english-tile.webp",
-  cooking: "/art/cooking-tile.webp",
-  travel: "/art/travel-tile.webp",
-  stock: "/art/stock-tile.webp",
-  live: "/art/live-tile.webp",
-  routine: "/art/routine-tile.webp",
-  diet: "/art/diet-tile.webp",
-};
-
-/** The band across the top of a tile.
-
-    An `<img>` rather than a background, and that is the whole
-    reason this is a component: ten of these are on the front page
-    at once, and an image element is the only kind a browser will
-    decline to fetch while it is off screen. As a background they
-    were 150 KB nobody had scrolled to yet.
-
-    `alt` is empty because the tile's title says the same thing
-    one line below it, and the whole tile is one link. */
-function Band({ art }: { art: string | undefined }) {
-  if (!art) return null;
-  return (
-    <span className="gt-band" aria-hidden="true">
-      <img src={art} alt="" loading="lazy" decoding="async" />
-    </span>
-  );
-}
-
+/* ONE CARD, AND IT IS THE SITE'S. These tiles were `.gate-tile`,
+   which is a second card form for exactly the things `/skills`
+   already draws as `<GoCard>`: the same school, two shapes, two
+   sets of rules, depending on which page a reader was standing
+   on. They are the same card now, wearing the drawing
+   `shared/nav.ts` names for them, so a school looks like itself
+   wherever it appears. */
 function NavBand({ group }: { group: string }) {
   const found = NAV.find((g) => g.id === group);
   if (!found) return null;
@@ -172,24 +136,18 @@ function NavBand({ group }: { group: string }) {
   return (
     <div className="deck board-deck">
       {rows.map((item) => (
-        <a
-          key={item.href} href={item.href}
-          className={`gate-tile${item.key && TILE_ART[item.key] ? " gate-banded" : ""}`}
+        <GoCard
+          key={item.href}
+          href={item.href}
+          art={item.art}
+          icon={item.icon}
+          accent={item.accent ?? found.accent}
+          chip={item.kind ? <span lang="bn">{item.kind}</span> : undefined}
+          title={item.sub ?? item.label}
           lang={item.sub ? "bn" : undefined}
-          style={{ ["--accent" as string]: item.accent ?? found.accent }}
-        >
-          <Band art={item.key ? TILE_ART[item.key] : undefined} />
-          <span className="flex items-center gap-2.5 min-w-0">
-            <span className="gt-disc"><Icon name={item.icon} size={18} /></span>
-            {item.kind ? <span className="gt-chip mono">{item.kind}</span> : null}
-          </span>
-          <span className="gt-title">{item.sub ?? item.label}</span>
-          {item.blurb ? <span className="gt-dek max-sm:line-clamp-3">{item.blurb}</span> : null}
-          <span className="gt-go mono">
-            {item.kind === "কোর্স" ? "কোর্সটা খুলুন" : "খুলুন"}
-            <Icon name="chevron" size={14} />
-          </span>
-        </a>
+          dek={item.blurb}
+          go={item.kind === "কোর্স" ? "কোর্সটা খুলুন" : "খুলুন"}
+        />
       ))}
     </div>
   );
@@ -199,24 +157,20 @@ function StockTile() {
   const item = NAV.flatMap((g) => g.items).find((i) => i.key === "stock");
   if (!item) return null;
   return (
-    <a href={item.href} className="gate-tile gate-banded"
-       style={{ ["--accent" as string]: "var(--gold)" }}>
-      <Band art={TILE_ART.stock} />
-      <span className="flex items-center gap-2.5 min-w-0">
-        <span className="gt-disc"><Icon name={item.icon} size={18} /></span>
-        <span className="gt-chip mono">Tool</span>
-      </span>
-      <span className="gt-title" lang="bn">{item.sub ?? item.label}</span>
-      <span className="flex gap-[5px] my-0.5" aria-hidden="true">
+    <GoCard
+      href={item.href} art={item.art} icon={item.icon} accent="var(--gold)"
+      chip="Tool" title={item.sub ?? item.label} lang="bn"
+      dek="একটা টিকার লিখুন: ৪৪টা অনুপাত আর একটা রায়, হিসাবটা দেখিয়ে।"
+      go="যাচাই করুন"
+    >
+      {/* The one thing this card says that the others do not: it
+          answers for every school at once. */}
+      <span className="flex gap-[5px]" aria-hidden="true">
         {SCHOOL_ACCENTS.slice(0, 4).map((c) => (
           <i key={c} className="size-[9px] rounded-full" style={{ background: c }} />
         ))}
       </span>
-      <span className="gt-dek" lang="bn">
-        একটা টিকার লিখুন: ৪৪টা অনুপাত আর একটা রায়, হিসাবটা দেখিয়ে।
-      </span>
-      <span className="gt-go mono">যাচাই করুন<Icon name="chevron" size={14} /></span>
-    </a>
+    </GoCard>
   );
 }
 

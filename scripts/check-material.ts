@@ -245,7 +245,6 @@ const NOT_GLASS = new Map<string, string>([
   ["acc-ico",             "a mark: the account menu's 20px icon disc"],
   ["rail-ico",            "a mark: the rail's per-school icon disc"],
   ["acc-avatar",          "a mark: a round profile picture, and a bevel on a photo is a frame"],
-  ["gp-thumb",            "a mark: a piece's cover at thumbnail size, and a bevel on a photo is a frame"],
   ["id-mark",             "a mark: the About page's initial, drawn at text size"],
   ["flag-mark",           "a mark: a stock check flag, red or amber, read at a glance"],
   ["palette-search-mark", "a mark: the highlight on a matched substring in the palette"],
