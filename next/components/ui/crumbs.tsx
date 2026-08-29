@@ -61,6 +61,12 @@
 import type { ReactNode } from "react";
 import { Icon } from "../icons";
 
+/** The separator's art, in px. One number for every arrow in a
+    trail, whichever crumb it precedes and whichever of the two
+    forms it takes: the marks either side of a word have to be the
+    same mark. `.crumb-sep` sizes the box it sits in. */
+const CHEVRON = 13;
+
 /** One destination inside a crumb's menu. */
 export interface CrumbLink {
   href: string;
@@ -95,11 +101,28 @@ export interface Crumb {
     `aria-hidden` because a chevron is not a word. A button when
     there is, and then it is a real `<button>` with a real label,
     because a control that only a mouse can find is not a
-    control. */
+    control.
+
+    THE MARK IS THE ICON SET'S CHEVRON, NOT A `›`. A glyph is
+    positioned by the font it is resolved out of and sized by the
+    crumb it sits beside, and this row has neither held still: the
+    trail's font stack starts at Noto Sans Bengali, which has no
+    `›` and hands it to a fallback, and the crumb you are ON is a
+    step larger than the ones behind it, so `1.35em` was two box
+    sizes. Measured on a phone the three marks in `/money`'s trail
+    sat at -0.5px, +2.5px and +3.1px against the middle of the
+    bar: a 3.6px spread on marks 5px tall, which is the row in the
+    screenshot that started this. An `<svg>` centred in a grid
+    cell is centred, and the chevron's own path is drawn about
+    y=12 of a 24 box, so its ink is centred too. */
 function Step({ crumb, id }: { crumb: Crumb; id: string }) {
   const menu = crumb.menu ?? [];
   if (menu.length === 0) {
-    return <span className="crumb-sep" aria-hidden="true">›</span>;
+    return (
+      <span className="crumb-sep" aria-hidden="true">
+        <Icon name="chevron" size={CHEVRON} />
+      </span>
+    );
   }
 
   const label = crumb.menuLabel ?? "What else is here";
@@ -109,7 +132,7 @@ function Step({ crumb, id }: { crumb: Crumb; id: string }) {
       <button className="crumb-sep crumb-step" type="button"
               popoverTarget={id}
               aria-label={label}>
-        <span aria-hidden="true">›</span>
+        <Icon name="chevron" size={CHEVRON} />
       </button>
       <div className="crumb-menu" id={id} popover="auto"
            style={crumb.accent ? ({ "--accent": crumb.accent } as React.CSSProperties) : undefined}>

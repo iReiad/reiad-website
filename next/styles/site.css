@@ -10512,10 +10512,12 @@ German for day, and .tag is what the site has always called
      reached for to rename the last crumb; that is gone, and the
      course section renders its whole trail through the same
      component as everything else. Neither `404.html` nor `offline.html` has
-     a trail at all, which is what this used to say. The
-     separator before the FIRST crumb is what joins it to the
-     mark: without it the mark and the section read as two
-     unrelated things sitting next to each other.
+     a trail at all, which is what this used to say. The trail is
+     drawn from its SECOND crumb, and the arrow the component puts
+     in front of that crumb is what joins the row to the mark:
+     without it the mark and the section read as two unrelated
+     things sitting next to each other. There is one arrow doing
+     that and there used to be two; see the block further down.
      ============================================================ */
   /* EVERY SELECTOR IN HERE IS A CHILD CHAIN FROM THE `<ol>`, AND
      THAT IS THE WHOLE OF WHY THE MENU BELOW WORKS.
@@ -10544,7 +10546,15 @@ German for day, and .tag is what the site has always called
     flex: 1 1 auto;
     overflow: hidden;
 
-    & > ol { flex-wrap: nowrap; }
+    /* 44px, and it is the arrow's tap target rather than the
+       row's look: the crumbs stay centred in it, so nothing moves.
+       This box CLIPS, on both axes and at every width, which is
+       what the row scrolling sideways under 900px is built on. So
+       an arrow whose target reaches past the row is an arrow
+       whose target is quietly cut back to the row: it measured
+       26px tall against the 44 it asks for until the row was told
+       to be that tall. */
+    & > ol { flex-wrap: nowrap; min-block-size: 44px; }
     & > ol > li { min-width: 0; }
     /* Every crumb shrinks, and the one you are on shrinks LAST.
        The row used to hide earlier crumbs outright below 760px,
@@ -10562,6 +10572,17 @@ German for day, and .tag is what the site has always called
     & > ol > [aria-current="page"] {
       flex: 0 1 auto; max-width: none; color: var(--ink);
       font-size: var(--t-3); font-weight: 500;
+      /* AND IT DOES NOT CLIP. The base `.crumbs` rule caps this
+         crumb at 46ch and hides what runs past it, which is the
+         right answer for a row in the body of a page. In the bar
+         the shortening is the CHILD's, three rules up, so the
+         `<li>`'s own clip does nothing a reader can see and one
+         thing they cannot: it cut the arrow's tap target back to
+         the 24px mark, on the last crumb only, because a
+         positioned descendant is clipped by an ancestor that
+         hides its overflow. Measured, the arrow next to the page
+         you are on had a 24px target and the one before it 44px. */
+      overflow: visible;
     }
     & > ol > li:not([aria-current="page"]) {
       font-size: var(--t-2);
@@ -10582,28 +10603,71 @@ German for day, and .tag is what the site has always called
      out which by hovering, so the button announces itself by
      lighting up rather than by being shaped differently.
 
-     `line-height: 1` and the explicit box, because a glyph in a
-     button otherwise sits a pixel below the words either side of
-     it and the row reads as slightly broken. */
+     THE BOX IS A FIXED NUMBER OF PIXELS AND THE MARK INSIDE IT IS
+     AN SVG. Both halves of that matter and both were wrong.
+
+     It was `1.35em`, and `em` here is the CRUMB's size, which the
+     row deliberately varies: the page you are on is `--t-3` and
+     the levels behind it are `--t-2`, so the trail drew its
+     arrows at two sizes. And the mark was a `›`, resolved out of
+     whatever font in the stack has one. On a Bangla page that
+     stack opens with Noto Sans Bengali, which does not, so the
+     glyph came from a fallback whose metrics nothing here had
+     seen. `line-height: 1` was meant to hold it steady and could
+     not: `font: inherit` on `.crumb-step` below is a SHORTHAND,
+     so it reset line-height back to the inherited 1.9 for the
+     button form and left it at 1 for the span form. Two forms,
+     two line boxes, one row.
+
+     Measured on a 412px screen, `/money`'s three marks sat at
+     -0.5px, +2.5px and +3.1px from the middle of the bar, on
+     marks five pixels tall. The chevron is drawn about y=12 of a
+     24 box, so an `<svg>` centred in this cell has its INK
+     centred, which is the thing a reader sees. Nothing about it
+     asks the font stack a question. */
   .crumb-sep {
     flex: 0 0 auto;
     display: grid; place-items: center;
-    inline-size: 1.35em; block-size: 1.35em;
-    margin-inline: 1px;
-    line-height: 1;
-    color: var(--ink-soft); opacity: 0.5;
+    inline-size: 24px; block-size: 24px;
+    color: var(--ink-soft); opacity: 0.45;
+
+    /* A grid item, so it is centred rather than sat on a
+       baseline, and no line box is involved in where it lands. */
+    & > svg { display: block; }
   }
 
   .crumb-step {
     /* A real button, so it is reachable by keyboard and reads as
        a control. Everything a button brings by default and does
-       not want here goes off in one place. */
+       not want here goes off in one place. `font` is NOT one of
+       them: it is a shorthand, and resetting line-height through
+       it is what put the two forms of this arrow on two
+       different lines. Nothing here reads the font any more. */
     appearance: none; border: 0; padding: 0; background: none;
-    font: inherit; color: inherit;
+    color: inherit;
+    position: relative;
     opacity: 0.55;
     cursor: pointer;
     border-radius: var(--radius-pill);
-    transition: opacity var(--fast), background var(--fast), color var(--fast);
+    transition: opacity var(--fast), background var(--fast), color var(--fast),
+                rotate var(--fast) var(--ease);
+  }
+  /* THE TARGET IS TALLER THAN THE MARK, and it has to be: this is
+     the fastest way sideways on the site and on a phone it was a
+     24px button in a bar a thumb reaches for. The mark stays
+     small, because a trail is punctuation; the target grows into
+     the empty height of the bar above and below the words.
+
+     It grows by 1px sideways and no more. The row's column gap is
+     2px, so 1px each side is exactly the space between two items
+     and belongs to neither: any wider and this covers the first
+     pixels of the crumb next to it, which is also a link somebody
+     is aiming at. A pseudo-element rather than padding, so the
+     row's spacing does not move. */
+  .crumb-step::after {
+    content: ""; position: absolute;
+    inset-block: 50%; inset-inline: -1px;
+    block-size: 44px; translate: 0 -50%;
   }
   .crumb-step:hover, .crumb-step:focus-visible {
     opacity: 1; color: var(--accent);
@@ -10792,16 +10856,22 @@ German for day, and .tag is what the site has always called
     .crumb-step:has(+ [popover]:popover-open) { rotate: none; }
   }
 
-  /* The separator that joins the trail to the mark, and ONLY
-     where there is a mark to join it to: `.topbar-mark` is the
-     rail's wordmark borrowed for the widths where the rail is a
-     drawer, so above that breakpoint an arrow before the first
-     crumb points at nothing. */
-  @media (max-width: 900px) {
-    .crumbs-bar > ol > li:first-child::before {
-      content: "›"; margin-inline: 6px; opacity: 0.45; flex: 0 0 auto;
-    }
-  }
+  /* THE ARROW THAT JOINED THE TRAIL TO THE MARK IS GONE, BECAUSE
+     THE TRAIL ALREADY DREW IT.
+
+     It was `li:first-child::before`, a `›` under 900px, for the
+     widths where `.topbar-mark` stands in for the Home crumb: the
+     mark and the section otherwise read as two unrelated things
+     side by side. That reasoning is still right and the rule was
+     still a second arrow, in a row that only ever needed one.
+
+     Both callers pass `skip={1}`, and `<Step>` draws an arrow in
+     front of every crumb whose index is above zero. The first
+     crumb the bar DRAWS is index 1, so it has always carried its
+     own. What a phone got was the pair in the report that started
+     this: two chevrons jammed together after the mark, at two
+     sizes, on two different lines. One arrow, and the pseudo
+     element that made the second is not replaced by anything. */
 
   /* Room for the trail: the mark's own name is the thing to give
      up first, because the trail says where you are and the mark
@@ -10992,11 +11062,54 @@ German for day, and .tag is what the site has always called
    ============================================================ */
 @layer board {
 
+  /* The board's own head: the label, and the arrange button on
+     the same line. `.section-label` carries its own rule and its
+     own 26px, and both belong to the ROW here rather than to the
+     label, or the hairline stops halfway across under the words
+     and the button hangs off the end of it. */
+  .board-bar, .board-head {
+    display: flex; align-items: flex-end; gap: var(--s-5);
+    border-bottom: 1px solid var(--hairline);
+
+    & > .section-label {
+      flex: 1 1 auto; min-width: 0;
+      border-bottom: 0; margin-bottom: 0; padding-bottom: 0;
+    }
+  }
+  .board-bar { padding-bottom: 10px; margin-bottom: var(--step); }
+  .board-head { padding-bottom: 8px; margin-bottom: var(--gap); }
+  /* A widget's own name is quieter than the board's: the board
+     is a section of the page and a widget is a thing inside it. */
+  .board-item-label { color: var(--ink-soft); font-size: var(--t-1); }
+
   .board {
     display: grid;
     grid-template-columns: repeat(2, minmax(0, 1fr));
     gap: var(--step);
     align-items: start;
+  }
+
+  /* A grid item's `min-width` is `auto`, which is its CONTENT's
+     width, so one long headline in a widget widens its column
+     instead of wrapping and the board stops being the grid it is
+     declared to be. The three size classes below say which
+     columns; this says the item may be narrower than what is in
+     it, which is what makes those columns hold. */
+  .board-item { min-width: 0; }
+
+  /* A WIDGET THAT DREW NOTHING TAKES NO ROOM, whichever one it
+     turns out to be. `board.tsx` keeps the continue card out of
+     the layout entirely when there is no bookmark, because a
+     hidden cell is still a cell and that one is six columns wide;
+     this is the backstop for the rest, which can each return null
+     for their own reasons.
+
+     `.board-body` is the wrapper every widget renders into, so
+     `:has(> *)` asks "did it draw anything" and nothing about
+     what. Never while ARRANGING, because a widget nobody can see
+     is a widget nobody can take off the board. */
+  .board:not([data-arranging]) .board-item:not(:has(.board-body > *)) {
+    display: none;
   }
 
   /* The three sizes a phone home screen has. `wide` is the row,
@@ -11020,23 +11133,58 @@ German for day, and .tag is what the site has always called
     .board-small { grid-column: span 1; }
   }
 
-  /* The arranging strip, ABOVE its widget rather than over it: an
-     overlay on glass is a second surface on a surface. No ground
-     and no edge, so this is a row of controls rather than a
-     surface holding them. */
+  /* A LAPTOP IS NOT A TALL PHONE, and until this the board was
+     drawn as though it were. `wide` and `tall` were the same
+     declaration, five of the six default widgets are one of
+     those, and the two-column grid above therefore never engaged
+     on any real board: the front page was six full-width bands
+     stacked, so a four-row list of school counts was stretched
+     across 1200px with its numbers pinned to the far edge.
+
+     Twelve columns from 1080px up, which is where two widgets
+     fit side by side without either being squeezed. `tall` keeps
+     the row, because what makes a widget tall is a LIST or a grid
+     inside it and those are the two things that use the width. */
+  @media (min-width: 1080px) {
+    .board { grid-template-columns: repeat(12, minmax(0, 1fr)); }
+    .board-small { grid-column: span 3; }
+    .board-wide { grid-column: span 6; }
+    .board-tall { grid-column: 1 / -1; }
+  }
+
+  /* A BAND'S DECK IS DENSER THAN THE SITE'S, because half a board
+     is not half a page. `.deck` fits a 280px minimum and
+     `.deck-2` a 400px one, both written for a full-width section;
+     a `wide` widget measured 501px on a 1440px screen, so both
+     came out at one column and the six schools stacked 1305px
+     tall beside four tools at 737px. 232px fits two of them in
+     that 501px and four across a `tall` widget, and it is still
+     the same card. */
+  .board-deck { grid-template-columns: repeat(auto-fill, minmax(min(100%, 232px), 1fr)); }
+
+  /* The arranging controls, in the widget's head beside its name
+     rather than in a strip of their own above it. No ground and
+     no edge, so this is a row of controls rather than a surface
+     holding them. */
   .board-strip {
     display: flex; align-items: center; gap: 6px;
-    margin-bottom: 8px; min-height: 44px;
+    margin-inline-start: auto; flex: 0 0 auto;
 
-    & > span { flex: 1; min-width: 0; color: var(--ink-soft); font-size: var(--t-1); }
     & button { display: inline-grid; place-items: center; }
   }
 
-  /* Down, and the resize mark, out of the one chevron the icon
-     set has: a second drawing of the same arrow is a second
-     drawing to keep in step. */
-  .board-strip button:nth-of-type(2) svg { transform: rotate(90deg); }
-  .board-strip button:nth-of-type(1) svg { transform: rotate(-90deg); }
+  /* Up and down, out of the one chevron the icon set has: a
+     second drawing of the same arrow is a second drawing to keep
+     in step.
+
+     BY CLASS, NEVER BY POSITION. This was `button:nth-of-type(1)`
+     and `(2)`, and both of those controls are conditional: the
+     first widget on the board has no up button and the last has
+     no down, so at the top of the board the down arrow was turned
+     upwards and at the bottom the resize mark was turned on its
+     side. A board of one widget got both. */
+  .board-up svg { transform: rotate(-90deg); }
+  .board-down svg { transform: rotate(90deg); }
 
   /* The tall pulse widget's list: the pieces the tile is not
      showing. Quiet rows rather than more tiles, because the tile

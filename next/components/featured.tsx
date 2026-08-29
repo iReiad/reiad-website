@@ -84,7 +84,13 @@ export function FeaturedCard() {
   const c = CARDS[pick];
 
   return (
-    <a className="gate-tile gate-feat col-span-2 lg:col-span-8" data-glow="card" href={c.href} lang={c.lang}
+    /* No column span any more. It carried `lg:col-span-8` while
+       the front page was a twelve-column deck with ten other
+       tiles in it; that deck was the board said a second time by
+       hand and is gone, so this is the only card in its section
+       and takes the row. A span left behind would be a number
+       about a grid that no longer exists. */
+    <a className="gate-tile gate-feat" data-glow="card" href={c.href} lang={c.lang}
        style={{ ["--accent" as string]: c.accent }}>
       <span className="gt-bg" aria-hidden="true"><Icon name={c.icon} size={150} /></span>
       <span className="flex items-center gap-2.5 min-w-0">

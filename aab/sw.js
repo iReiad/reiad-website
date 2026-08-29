@@ -31,6 +31,19 @@
    login could not have reached anyone either. Bump this whenever a
    precached file changes.
 
+   v214: /fallback.css. The trail's arrows, and the front page's
+        board. Every separator in the trail is the icon set's
+        chevron in a fixed 24px cell now, where it was a `›` sized
+        at 1.35em of whichever crumb it sat beside and resolved
+        out of whichever font in the stack had the glyph: measured
+        on a phone the three marks sat at -0.5, +2.5 and +3.1px
+        from the middle of the bar, and the arrow joining the
+        trail to the mark was a second arrow the trail had already
+        drawn. The board gained a head per widget, a bar of its
+        own, and twelve columns on a laptop. A cached stylesheet
+        sizes the old glyph and lays the old board out under
+        markup that is neither.
+
    v213: /fallback.css and /signin.js. The breadcrumb trail on a
         phone. Its own rules reached inside the menus it opens,
         because a crumb's menu is markup inside the crumb, so
@@ -1897,7 +1910,7 @@
    imports (crumbs, audience, learn progress) and the hub is a
    different page. Without a bump, a returning reader would be
    served the v3 app.js forever and none of it would appear. */
-const VERSION = "v213";
+const VERSION = "v214";
 const SHELL = `shell-${VERSION}`;
 const RUNTIME = `runtime-${VERSION}`;
 

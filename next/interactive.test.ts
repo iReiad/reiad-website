@@ -462,29 +462,122 @@ for (const [who, audience, track, expected] of READERS) {
     shown.length > 0 && new Set(shown).size === 1 && shown[0] === expected,
     `expected ${expected} only, got [${shown}]`);
 
-  /* Under the hero there is a deck now, and the deck is the
-     thing to hold: the one-screen door lasted a day, because a
-     front page that cannot grow is a front page that turns
-     things away. What must not regress is the deck's own
-     contract: the tiles are there, every one of them is a real
-     link somewhere, and the featured card answered THIS reader.
-     The audience switch is the only personalisation the card
-     reads, so learn features the money school, work features the
-     case studies, and a reader who has said nothing gets the
-     live portfolio. */
-  const deck = await page.evaluate(() => ({
+  /* Under the hero there is one card and then the board, and the
+     contract to hold is that the page says a thing ONCE.
+
+     It did not. There was a hand-written deck of eleven tiles
+     above a board that draws the schools and the tools out of
+     `shared/nav.ts`, and the two between them made 26 internal
+     links to 17 places: seven destinations in both, and `/money`,
+     `/deutsch`, `/quran` and `/tools/live` three times each in
+     two card languages within two screens. Nothing could see it,
+     because every tile was a correct link to a real page.
+
+     Two links to one place are still allowed and are meant: the
+     progress meters name a school as a READING of how far you
+     are, and the schools band names it as a place to go. Three
+     was the menu written twice.
+
+     The featured card is left out of the count, because promoting
+     one thing out of a list IS a second mention of something that
+     is also in the list, and that is what featuring means. It
+     changes nothing about what this catches: the deck's own money
+     handle, the meters and the schools band were three mentions
+     with the featured card nowhere in them. */
+  const front = await page.evaluate(() => ({
     tiles: [...document.querySelectorAll(".gate-tile")]
       .map((t) => t.getAttribute("href")).filter(Boolean),
+    links: [...document.querySelectorAll<HTMLAnchorElement>("main a[href^='/']")]
+      .filter((a) => !a.classList.contains("gate-feat"))
+      .map((a) => a.getAttribute("href")!),
     featured: document.querySelector(".gate-feat")?.getAttribute("href") ?? null,
+    /* The deck is the featured card's section and holds nothing
+       else: everything a catalogue can hold belongs to the board,
+       which is the half the Android app draws too. */
+    inDeck: document.querySelectorAll(".gate-deck .gate-tile").length,
   }));
-  ok(`the deck stands under the hero for ${who}`, deck.tiles.length >= 8,
-    `${deck.tiles.length} tiles`);
+
+  ok(`the front page still has cards for ${who}`, front.tiles.length >= 8,
+    `${front.tiles.length} tiles`);
+
+  const times = new Map<string, number>();
+  for (const href of front.links) times.set(href, (times.get(href) ?? 0) + 1);
+  const thrice = [...times].filter(([, n]) => n > 2);
+  ok(`and says no destination three times over for ${who}`, thrice.length === 0,
+    thrice.map(([h, n]) => `${h} x${n}`).join(", "));
+
+  ok(`the deck holds the chosen card and nothing else for ${who}`,
+    front.inDeck === 1, `${front.inDeck} tiles in the deck`);
+
+  /* The featured card answered THIS reader. The audience switch is
+     the only personalisation it reads, so learn features the money
+     school, work features the case studies, and a reader who has
+     said nothing gets the live portfolio. */
   const featured: Record<string, string> = { open: "/tools/live",
     learn: "/money", work: "/portfolio" };
   const wantFeatured = featured[expected];
-  ok(`and the featured card answers ${who}`, deck.featured === wantFeatured,
-    `featured ${deck.featured}, expected ${wantFeatured}`);
+  ok(`and the featured card answers ${who}`, front.featured === wantFeatured,
+    `featured ${front.featured}, expected ${wantFeatured}`);
 
+  await page.close();
+}
+
+/* ============================================================
+   The board, and what a widget is called
+
+   Three of the six widgets drew their own heading, in three
+   different shapes, and three drew none: the market grid was
+   eight of somebody else's headlines under nothing at all, and
+   the only thing that ever said a widget's name was the strip
+   that appears while arranging. The catalogue in
+   `shared/widgets.ts` holds a name in both languages, the picker
+   offers it under that name, and it is DATA, so the app says the
+   same words. The board says it once, from there.
+
+   And the arrange button was a lone control at the right of an
+   empty band with nothing saying what it arranged.
+   ============================================================ */
+{
+  const { page, errors } = await open("/");
+
+  const board = await page.evaluate(() => {
+    const b = document.querySelector(".board");
+    const items = [...document.querySelectorAll<HTMLElement>(".board-item")];
+    return {
+      exists: !!b,
+      items: items.length,
+      /* A widget that draws nothing is not placed and not left as
+         an empty cell: the continue card has nothing to say until
+         there is a bookmark, and this page has none. */
+      empty: items.filter((i) => !i.querySelector(".board-body")?.children.length).length,
+      /* Named, or self-titled. One widget is: the continue card
+         leads with a chip saying where you were. */
+      named: items.filter((i) => (i.querySelector(".board-item-label")
+        ?.textContent ?? "").trim().length > 3).length,
+      /* Its own head, with the label and the button on one line. */
+      bar: (() => {
+        const bar = document.querySelector<HTMLElement>(".board-bar");
+        if (!bar) return null;
+        const label = bar.querySelector<HTMLElement>(".section-label");
+        const button = bar.querySelector<HTMLElement>("button");
+        if (!label || !button) return null;
+        const l = label.getBoundingClientRect(), t = button.getBoundingClientRect();
+        return { label: (label.textContent ?? "").trim().length,
+                 sameLine: Math.abs((l.top + l.height / 2) - (t.top + t.height / 2)) < 30 };
+      })(),
+    };
+  });
+
+  ok("the front page has a board", board.exists);
+  ok("with every widget on it drawing something", board.empty === 0,
+    `${board.empty} of ${board.items} empty`);
+  ok("and every widget on it named", board.named === board.items,
+    `${board.named} of ${board.items} named`);
+  ok("the board has a head of its own", board.bar !== null);
+  ok("which says what it is", (board.bar?.label ?? 0) > 3);
+  ok("with the arrange button on the same line", board.bar?.sameLine === true);
+
+  ok("no page errors", errors.length === 0, errors[0]);
   await page.close();
 }
 
@@ -963,6 +1056,165 @@ for (const width of [360, 412]) {
      levels of the trail. */
   ok(`${width}px: and the start of it can be scrolled back to`,
     row?.away.first === true, `scrollLeft ${row?.away.scrolled}`);
+
+  await page.close();
+}
+
+/* ============================================================
+   The arrows themselves: one mark, one size, one line
+
+   The fourth thing that was wrong with this row on a phone, and
+   the only one a reader reports rather than measures. Every
+   selector was valid, every crumb was in the right place, and
+   the arrows between them were three different marks:
+
+   1. THE MARK WAS A `›`, so where it sat came from whichever
+      font in the stack had the glyph. The trail's stack opens
+      with Noto Sans Bengali, which has no `›`.
+   2. IT WAS SIZED AT `1.35em` OF THE CRUMB BESIDE IT, and the row
+      deliberately sets the crumb you are ON one step larger than
+      the ones behind it. Two crumb sizes, two arrow sizes.
+   3. `line-height: 1` WAS MEANT TO HOLD IT AND COULD NOT.
+      `.crumb-step` sets `font: inherit`, which is a shorthand, so
+      the button form got the inherited 1.9 back and the span form
+      kept 1. Two forms of one mark, on two lines.
+   4. AND THERE WERE TWO OF THEM AFTER THE MARK. A `::before` on
+      the first `<li>` drew one to join the trail to the wordmark,
+      and the trail is drawn from its second crumb, which already
+      carries one.
+
+   Measured off the painted page rather than read off the CSS: the
+   three marks sat at -0.5px, +2.5px and +3.1px from the middle of
+   the bar, on marks five pixels tall.
+   ============================================================ */
+console.log("\nthe arrows in the trail");
+for (const width of [412, 1280]) {
+  const page = await browser.newPage({ viewport: { width, height: 780 } });
+  await page.goto(`http://localhost:${PORT}/skills`, { waitUntil: "load" });
+  await page.waitForTimeout(900);
+
+  /* THE TAP TARGET IS ASKED OF THE PAGE'S OWN TRAIL, before the
+     clone below deepens it. Hit-testing is a question about what
+     a thumb lands on, and a synthetic row that overflows the bar
+     answers it for arrows scrolled off the side. The arrow the
+     page renders is the one a reader presses. */
+  const targets = await page.evaluate(() =>
+    [...document.querySelectorAll<HTMLElement>(".crumbs-bar .crumb-step")].map((s) => {
+      const r = s.getBoundingClientRect();
+      const cx = r.left + r.width / 2, cy = r.top + r.height / 2;
+      let n = 0;
+      for (; n < 40; n++) {
+        const up = document.elementFromPoint(cx, cy - n);
+        const down = document.elementFromPoint(cx, cy + n);
+        if (!(up === s || s.contains(up)) || !(down === s || s.contains(down))) break;
+      }
+      return n * 2 - 1;
+    }));
+
+  ok(`${width}px: a thumb can hit an arrow`,
+    targets.length > 0 && targets.every((t) => t >= 40),
+    `${targets.join(", ") || "none"}px tall`);
+
+  /* TWO ARROWS AT LEAST, OR HALF OF THIS ASKS NOTHING. `/skills`
+     is one level deep, so the row it renders has a single
+     separator and "they are all the same size" is true of any
+     one thing. The row deliberately sets the crumb you are ON a
+     step larger than the ones behind it, and THAT is what made
+     two arrows two sizes, so the trail has to reach past the
+     page you are on before it can be measured. Cloned from the
+     row the page rendered, exactly as the block above does, so
+     the markup shape stays the component's. */
+  await page.evaluate(() => {
+    const ol = document.querySelector<HTMLElement>(".crumbs-bar > ol");
+    const first = ol?.firstElementChild as HTMLElement | undefined;
+    if (!ol || !first) return;
+    for (const [i, name] of ["টাকা ও শেয়ার", "পর্যায় ৫"].entries()) {
+      const li = first.cloneNode(true) as HTMLElement;
+      const menu = li.querySelector<HTMLElement>(".crumb-menu");
+      const button = li.querySelector<HTMLElement>(".crumb-step");
+      if (menu && button) {
+        menu.id = `arrow-clone-${i}`;
+        button.setAttribute("popovertarget", `arrow-clone-${i}`);
+      }
+      const label = li.querySelector<HTMLElement>(":scope > span, :scope > a");
+      if (label) label.textContent = name;
+      ol.appendChild(li);
+    }
+    for (const li of [...ol.children]) li.removeAttribute("aria-current");
+    ol.lastElementChild?.setAttribute("aria-current", "page");
+  });
+  await page.waitForTimeout(300);
+
+  const marks = await page.evaluate(() => {
+    const bar = document.querySelector<HTMLElement>(".topbar");
+    const seps = [...document.querySelectorAll<HTMLElement>(".crumbs-bar .crumb-sep")];
+    if (!bar || !seps.length) return null;
+    const mid = bar.getBoundingClientRect().top + bar.getBoundingClientRect().height / 2;
+    return {
+      /* The joiner that was drawn twice. `::before` on the first
+         crumb is the one that went; `content` is `none` when no
+         rule sets it. */
+      joiner: getComputedStyle(
+        document.querySelector(".crumbs-bar > ol > li")!, "::before").content,
+      boxes: seps.map((s) => {
+        const r = s.getBoundingClientRect();
+        const art = s.querySelector("svg")?.getBoundingClientRect();
+        return {
+          w: Math.round(r.width), h: Math.round(r.height),
+          off: +(r.top + r.height / 2 - mid).toFixed(2),
+          /* THE MARK IS A DRAWING, NOT A GLYPH, and that is the
+             whole of the alignment fix rather than a detail of it.
+             Every box in this row was already centred to a
+             hundredth of a pixel while the row read crooked,
+             because what a reader sees is the INK and a `›` puts
+             its ink wherever the font that answered for it puts
+             it. An `<svg>` fills the box it is given and the
+             chevron is drawn about the middle of its own viewBox,
+             so its ink is centred by construction and no font is
+             asked anything. */
+          svg: s.querySelector("svg") ? 1 : 0,
+          text: (s.textContent ?? "").trim().length,
+          /* And nothing offsets the drawing inside its cell: a
+             padding or a margin added here would move the mark
+             off the line the words are on, which is the failure
+             this block exists for, arriving a different way. */
+          artOff: art
+            ? +Math.hypot(
+              (art.left + art.width / 2) - (r.left + r.width / 2),
+              (art.top + art.height / 2) - (r.top + r.height / 2),
+            ).toFixed(2)
+            : null,
+        };
+      }),
+    };
+  });
+
+  ok(`${width}px: the trail has arrows`, (marks?.boxes.length ?? 0) >= 1);
+  if (!marks) { await page.close(); continue; }
+
+  ok(`${width}px: one arrow joins the mark to the trail, not two`,
+    marks.joiner === "none" || marks.joiner === "normal", `::before ${marks.joiner}`);
+
+  ok(`${width}px: every arrow is drawn, not typed`,
+    marks.boxes.every((b) => b.svg === 1 && b.text === 0),
+    JSON.stringify(marks.boxes));
+
+  const widths = new Set(marks.boxes.map((b) => `${b.w}x${b.h}`));
+  ok(`${width}px: and every arrow is the same size`, widths.size === 1,
+    [...widths].join(", "));
+
+  ok(`${width}px: and its drawing is centred in its own box`,
+    marks.boxes.every((b) => b.artOff !== null && b.artOff <= 0.5),
+    marks.boxes.map((b) => b.artOff).join(", "));
+
+  /* The boxes were always level, which is exactly why this was
+     hard to see: the row read crooked while every rectangle in it
+     was centred to a hundredth of a pixel. Asserted anyway,
+     because the two checks above only guarantee the ink sits in
+     the middle of ITS box. */
+  const offs = marks.boxes.map((b) => b.off);
+  ok(`${width}px: and every box is on the middle of the bar`,
+    offs.every((o) => Math.abs(o) <= 1.5), offs.join(", "));
 
   await page.close();
 }

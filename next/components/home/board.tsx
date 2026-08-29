@@ -37,7 +37,7 @@ import {
   WIDGETS, layoutOf, storedOf, type Placed, type WidgetKind, type WidgetSize,
 } from "@reiad/shared/widgets";
 import { board as read, save, reset, stored, subscribe } from "../../lib/board";
-import { ContinueCard } from "../door";
+import { ContinueCard, useBookmark } from "../door";
 import { PulseCard } from "../pulse-card";
 import { MarketPulse } from "../market-pulse";
 import { SchoolMeters } from "./meters";
@@ -66,6 +66,18 @@ const SIZE_CLASS: Record<WidgetSize, string> = {
   tall: "board-tall",
 };
 
+/** Widgets that say their own name loudly enough, so the board
+    does not say it again above them.
+
+    One so far, and the test is whether the widget's FIRST LINE is
+    already its name: the featured-style pulse tile leads with the
+    piece's title, the meters lead with a list, and the market
+    grid leads with somebody else's headline, so all three need
+    telling apart. The continue card leads with a chip that says
+    where you were, in the school's own words, which is the same
+    sentence its head would carry. */
+const SELF_TITLED = new Set(["continue"]);
+
 /* ---------- the widgets this page can draw ---------- */
 
 function Widget({ id, size }: { id: string; size: WidgetSize }) {
@@ -91,7 +103,22 @@ function Widget({ id, size }: { id: string; size: WidgetSize }) {
     at the top of `CLAUDE.md`: a school added there appears on the
     front page, in the rail and in the footer at once. `hub` is
     skipped for the reason `/skills` skips it, and `soon` and
-    `unlisted` for theirs. */
+    `unlisted` for theirs.
+
+    It draws no heading of its own. It used to draw the nav
+    group's (`শেখা · LEARNING`), which is a THIRD name for one
+    thing: the catalogue calls this widget `যা যা শেখানো হয়`, the
+    picker offers it under that name, and the arranging strip said
+    it a fourth time. The board's head carries it once now, from
+    the catalogue, which is the half of this that the Android app
+    reads too.
+
+    `.deck board-deck`, and it was `.deck deck-2`. A band is half
+    the board on a laptop now rather than the whole of it, and at
+    501px measured `deck-2`'s 400px minimum, and `.deck`'s 280px,
+    both came out at ONE column: the six schools stacked 1305px
+    tall beside four tools at 737px. `board-deck` is the same deck
+    with a minimum that fits two in half a board. */
 function NavBand({ group }: { group: string }) {
   const found = NAV.find((g) => g.id === group);
   if (!found) return null;
@@ -99,31 +126,26 @@ function NavBand({ group }: { group: string }) {
   if (!rows.length) return null;
 
   return (
-    <section>
-      <div className="hub-section-head">
-        <SectionLabel>{found.label}</SectionLabel>
-      </div>
-      <div className="deck deck-2">
-        {rows.map((item) => (
-          <a
-            key={item.href} href={item.href} className="gate-tile"
-            lang={item.sub ? "bn" : undefined}
-            style={{ ["--accent" as string]: item.accent ?? found.accent }}
-          >
-            <span className="flex items-center gap-2.5 min-w-0">
-              <span className="gt-disc"><Icon name={item.icon} size={18} /></span>
-              {item.kind ? <span className="gt-chip mono">{item.kind}</span> : null}
-            </span>
-            <span className="gt-title">{item.sub ?? item.label}</span>
-            {item.blurb ? <span className="gt-dek max-sm:line-clamp-3">{item.blurb}</span> : null}
-            <span className="gt-go mono">
-              {item.kind === "কোর্স" ? "কোর্সটা খুলুন" : "খুলুন"}
-              <Icon name="chevron" size={14} />
-            </span>
-          </a>
-        ))}
-      </div>
-    </section>
+    <div className="deck board-deck">
+      {rows.map((item) => (
+        <a
+          key={item.href} href={item.href} className="gate-tile"
+          lang={item.sub ? "bn" : undefined}
+          style={{ ["--accent" as string]: item.accent ?? found.accent }}
+        >
+          <span className="flex items-center gap-2.5 min-w-0">
+            <span className="gt-disc"><Icon name={item.icon} size={18} /></span>
+            {item.kind ? <span className="gt-chip mono">{item.kind}</span> : null}
+          </span>
+          <span className="gt-title">{item.sub ?? item.label}</span>
+          {item.blurb ? <span className="gt-dek max-sm:line-clamp-3">{item.blurb}</span> : null}
+          <span className="gt-go mono">
+            {item.kind === "কোর্স" ? "কোর্সটা খুলুন" : "খুলুন"}
+            <Icon name="chevron" size={14} />
+          </span>
+        </a>
+      ))}
+    </div>
   );
 }
 
@@ -161,8 +183,24 @@ export function Board() {
     () => JSON.stringify(stored()),
     () => "null",
   );
-  const placed = layoutOf(JSON.parse(snapshot) as string[] | null, DRAWABLE);
+  /* A WIDGET WITH NOTHING TO SAY IS NOT PLACED, and hiding it
+     afterwards is not the same thing: on a laptop the board is
+     twelve columns and the continue card is six of them, so a
+     reader who has not started a lesson got the board's first
+     row half empty and the widget beside it orphaned. A cell
+     that is hidden is still a cell.
+
+     One widget can be empty today and it is this one, so the
+     test is written out rather than made into a table of one.
+     `useBookmark` is the card's own hook, so the two cannot
+     disagree about whether there is a bookmark to continue from.
+
+     Never while ARRANGING: a widget nobody can see is a widget
+     nobody can take off the board. */
+  const bookmark = useBookmark();
   const [arranging, setArranging] = useState(false);
+  const placed = layoutOf(JSON.parse(snapshot) as string[] | null, DRAWABLE)
+    .filter((p) => arranging || p.id !== "continue" || bookmark);
 
   const put = useCallback((next: Placed[]) => { save(next); }, []);
 
@@ -171,8 +209,19 @@ export function Board() {
   );
 
   return (
-    <>
-      <div className="flex justify-end mb-[var(--gap)]">
+    <section aria-labelledby="board-label">
+      {/* The board's own head, and the button lives IN it. It was
+          a lone control at the right of an empty band with nothing
+          saying what it arranged, which reads as a stray button
+          rather than as the top of a section. Every other section
+          of this site opens with a `SectionLabel` and a rule under
+          it; this one does too, and the button sits on the same
+          line because it belongs to the label rather than to the
+          first widget under it. */}
+      <div className="board-bar">
+        <SectionLabel id="board-label">
+          আপনার বোর্ড · <span lang="en">Your board</span>
+        </SectionLabel>
         <Button
           kind="soft" size="sm" pressed={arranging}
           onClick={() => setArranging((was) => !was)}
@@ -182,29 +231,57 @@ export function Board() {
         </Button>
       </div>
 
-      <div className="board">
+      {/* `data-arranging` is what lets the stylesheet hide a
+          widget that drew nothing without hiding it from the
+          person trying to take it off the board. A widget can
+          render empty for a reason only the browser knows: the
+          continue card has nothing to say until there is a
+          bookmark, and its cell was a six-column hole at the top
+          of the board for every reader who has not started a
+          lesson, which is everybody arriving for the first time. */}
+      <div className="board" data-arranging={arranging ? "yes" : undefined}>
         {placed.map((p, at) => {
           const kind = KINDS.get(p.id);
+          /* THE NAME COMES FROM THE CATALOGUE, ONCE. Three of the
+             widgets drew their own heading, in three different
+             shapes, and three drew none: the market grid was eight
+             of somebody else's headlines under nothing at all. The
+             catalogue already holds a name in both languages, the
+             picker already offers it under that name, and it is
+             data, so the app says the same words. */
+          const titled = kind && !SELF_TITLED.has(p.id);
           return (
-            <div key={p.id} className={SIZE_CLASS[p.size]}>
-              {arranging && kind ? (
-                <Strip
-                  kind={kind} placed={p}
-                  first={at === 0} last={at === placed.length - 1}
-                  onUp={() => put(moved(placed, at, at - 1))}
-                  onDown={() => put(moved(placed, at, at + 1))}
-                  onResize={() => {
-                    const other = otherSize(kind, p.size);
-                    if (!other) return;
-                    put(placed.map((q, i) => (i === at ? { ...q, size: other } : q)));
-                  }}
-                  onRemove={() => put(placed.filter((_, i) => i !== at))}
-                />
+            <section key={p.id} className={`board-item ${SIZE_CLASS[p.size]}`}
+                     aria-label={kind ? kind.en : undefined}>
+              {titled || (arranging && kind) ? (
+                <div className="board-head">
+                  {titled ? (
+                    <SectionLabel className="board-item-label">
+                      <span lang="bn">{kind.bn}</span>
+                      {" · "}<span lang="en">{kind.en}</span>
+                    </SectionLabel>
+                  ) : null}
+                  {arranging && kind ? (
+                    <Strip
+                      kind={kind} placed={p}
+                      first={at === 0} last={at === placed.length - 1}
+                      onUp={() => put(moved(placed, at, at - 1))}
+                      onDown={() => put(moved(placed, at, at + 1))}
+                      onResize={() => {
+                        const other = otherSize(kind, p.size);
+                        if (!other) return;
+                        put(placed.map((q, i) => (i === at ? { ...q, size: other } : q)));
+                      }}
+                      onRemove={() => put(placed.filter((_, i) => i !== at))}
+                    />
+                  ) : null}
+                </div>
               ) : null}
-              <div className={arranging ? "opacity-70" : undefined}>
+              <div className={["board-body", arranging ? "opacity-70" : null]
+                .filter(Boolean).join(" ")}>
                 <Widget id={p.id} size={p.size} />
               </div>
-            </div>
+            </section>
           );
         })}
       </div>
@@ -240,16 +317,16 @@ export function Board() {
           </Button>
         </section>
       ) : null}
-    </>
+    </section>
   );
 }
 
 /** One widget's arranging controls.
 
-    A strip ABOVE it rather than an overlay on it: an overlay on
-    glass is a second surface on a surface, and every kind having
-    the same rest state is what the material section of
-    `CLAUDE.md` warns about.
+    In the head BESIDE its name rather than in a strip above it:
+    an overlay on glass is a second surface on a surface, and a
+    strip of its own was a second row saying the widget's name,
+    which the head already says once, out of the catalogue.
 
     A control that cannot do anything is absent rather than
     disabled, because a disabled control is a control a reader
@@ -261,14 +338,24 @@ function Strip({ kind, placed, first, last, onUp, onDown, onResize, onRemove }: 
   const other = otherSize(kind, placed.size);
   return (
     <div className="board-strip">
-      <span className="mono" lang="bn">{kind.bn}</span>
+      {/* THE DIRECTION IS ON THE BUTTON, NOT ON ITS POSITION. The
+          one chevron in the icon set points right, so up and down
+          are that drawing turned, and the stylesheet turned it by
+          `button:nth-of-type(1)` and `(2)`. Both of those controls
+          are CONDITIONAL: the first widget on the board has no up
+          and the last has no down, so at the top of the board the
+          down arrow was the first button and pointed UP, and at
+          the bottom the resize mark was the second and was turned
+          on its side. A board of one widget got both. */}
       {first ? null : (
-        <Button kind="quiet" size="sm" onClick={onUp} aria-label={`${kind.bn}: উপরে নিন`}>
+        <Button kind="quiet" size="sm" className="board-up"
+                onClick={onUp} aria-label={`${kind.bn}: উপরে নিন`}>
           <Icon name="chevron" size={15} />
         </Button>
       )}
       {last ? null : (
-        <Button kind="quiet" size="sm" onClick={onDown} aria-label={`${kind.bn}: নিচে নামান`}>
+        <Button kind="quiet" size="sm" className="board-down"
+                onClick={onDown} aria-label={`${kind.bn}: নিচে নামান`}>
           <Icon name="chevron" size={15} />
         </Button>
       )}
