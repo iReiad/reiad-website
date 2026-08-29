@@ -31,6 +31,23 @@
    login could not have reached anyone either. Bump this whenever a
    precached file changes.
 
+   v218: /fallback.css. The pictures stopped being files. Twenty-five
+        committed rasters could not answer a theme, and answering
+        it would have meant fifty; they are inline components now
+        (`next/components/card-art.tsx`), every colour a mix of the
+        card's own accent with `--panel` and `--ink`, so one
+        drawing is dark glass at night and inked glass by day. They
+        also lean and slide under the pointer, off `--gpx`/`--gpy`
+        and `--glow-a`, which the material already publishes.
+
+        And one card form. A school was a `<GoCard>` on /skills and
+        a `.gate-tile` on the board: the same thing, two shapes,
+        depending on which page a reader stood on. The board, the
+        writing widget and the tools hub all draw the site's own
+        card now, so `.gate-photo`, `.gate-banded`, `.gt-band` and
+        the pulse widget's own rows are gone from the stylesheet.
+        A cached copy of it styles none of the new markup.
+
    v217: /fallback.css. Every card on the board carries a picture
         now, and one that already did stopped breaking under the
         pointer. The material writes one background-position per
@@ -1942,7 +1959,7 @@
    imports (crumbs, audience, learn progress) and the hub is a
    different page. Without a bump, a returning reader would be
    served the v3 app.js forever and none of it would appear. */
-const VERSION = "v217";
+const VERSION = "v218";
 const SHELL = `shell-${VERSION}`;
 const RUNTIME = `runtime-${VERSION}`;
 

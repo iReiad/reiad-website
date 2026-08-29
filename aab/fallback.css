@@ -22,6 +22,8 @@
   @property --gy       { syntax: "<percentage>"; initial-value: 50%; inherits: false; }
   @property --glow-a   { syntax: "<number>";  initial-value: 0;   inherits: false; }
 
+  @property --art-a    { syntax: "<number>";  initial-value: 0;   inherits: true;  }
+
   @property --crumb-fade-s { syntax: "<length>"; initial-value: 0px; inherits: false; }
   @property --crumb-fade-e { syntax: "<length>"; initial-value: 0px; inherits: false; }
 
@@ -5060,22 +5062,6 @@
   #weights { margin-bottom: 20px; }
   #weights .scenarios { flex-wrap: wrap; margin-bottom: 16px; }
 
-  .advanced-card {
-    background: var(--panel);
-    border: 1px solid var(--hairline);
-    border-radius: var(--radius);
-    --surface-shadow: var(--shadow);
-    padding: 24px 26px; margin-block: 30px 24px;
-    gap: var(--s-5);
-
-    & h2 { font-size: 1.4rem; margin: 0; }
-    & > .mono { color: var(--accent); font-size: var(--t-1);
-                letter-spacing: 0.08em; text-transform: uppercase; }
-    & p { color: var(--ink-soft); max-width: 74ch; margin: 0; font-size: var(--t-5); }
-    & .more { margin-top: 4px; }
-  }
-  .advanced-langs { color: var(--accent) !important; font-family: var(--font-bn); }
-
   @media (prefers-reduced-motion: reduce) {
     .score-bar i, .yield-track i, .dupont-track i, .drag-track i, .dial-fill {
       transition: none;
@@ -6512,6 +6498,22 @@
   }
   .card > * { position: relative; z-index: 1; }
 
+  .card-banded { padding-top: 0; }
+
+  .card-band {
+    flex: none; border-bottom: 1px solid var(--hairline);
+
+    max-height: clamp(170px, 22vw, 300px);
+  }
+  .card-banded[data-kind="go"]::before { z-index: 2; }
+  .card-band { margin: 0 -20px 2px; }
+  .card-banded[data-kind="go"] .card-band { margin-left: -22px; }
+  .card-photo {
+    display: block; overflow: hidden; aspect-ratio: 16 / 9;
+
+    & img { display: block; width: 100%; height: 100%; object-fit: cover; }
+  }
+
   .card[data-kind="go"] {
     padding-left: 22px;
 
@@ -6852,7 +6854,9 @@
 
     background-color: var(--panel);
     --surface-image: linear-gradient(150deg, var(--accent-soft), var(--panel) 55%);
+
     --surface-size: auto;
+    --surface-pos: 0 0;
 
     background-image: var(--surface-image);
     text-decoration: none; color: var(--ink);
@@ -6915,14 +6919,28 @@
   .gate-tile:hover .gt-arrow { translate: 4px 0; }
 
   .gate-feat {
+    min-height: clamp(230px, 26vw, 330px);
     padding: clamp(18px, 2.4vw, 28px) clamp(18px, 2.4vw, 28px) clamp(18px, 2.4vw, 28px) 24px;
+    padding-right: clamp(18px, 40%, 560px);
     gap: 10px;
   }
   .gate-feat .gt-dek { font-size: var(--t-5); max-width: 46ch; }
+  .gate-feat .gt-title { font-size: clamp(1.35rem, 2.5vw, 1.9rem); max-width: 21ch; }
 
-  .gate-feat.gate-photo { min-height: clamp(250px, 30vw, 360px); }
-  .gate-feat.gate-photo .gt-title {
-    font-size: clamp(1.35rem, 2.5vw, 1.9rem); max-width: 21ch;
+  .gate-feat-art {
+    position: absolute; inset: 0 0 0 auto; z-index: 0;
+    width: min(52%, 540px); aspect-ratio: auto;
+    -webkit-mask-image: linear-gradient(100deg, transparent 4%, #000 36%);
+    mask-image: linear-gradient(100deg, transparent 4%, #000 36%);
+  }
+  @media (max-width: 760px) {
+    .gate-feat { padding-top: 0; padding-right: clamp(18px, 2.4vw, 28px); }
+    .gate-feat-art {
+      position: relative; inset: auto; width: auto; aspect-ratio: 16 / 9;
+      margin: 0 -18px 8px -24px;
+      -webkit-mask-image: none;
+      mask-image: none;
+    }
   }
 
   .home-aura { position: relative; isolation: isolate; }
@@ -6936,26 +6954,121 @@
         color-mix(in oklab, var(--accent) 7%, transparent), transparent 76%);
   }
 
-  .gate-banded { padding-top: 0; }
-  .gate-banded::before { z-index: 2; }
-  .gt-band {
-    display: block; overflow: hidden;
-    aspect-ratio: 16 / 9;
-    margin: 0 -18px 4px -21px;
+  .gp-showing { display: grid; }
+  .gp-piece { display: grid; animation: gate-swap var(--slow) var(--ease); }
+  .pulse-rest { grid-template-columns: minmax(0, 1fr); align-content: start; }
 
-    & img {
-      display: block; width: 100%; height: 100%;
-      object-fit: cover;
+  .card-compact {
+    display: grid; grid-template-columns: minmax(0, 1fr) auto;
+    align-items: center; gap: 4px 12px;
+    padding: 10px 12px 10px 16px;
 
-      transition: scale var(--slow) var(--ease);
+    & .card-band {
+      grid-row: 1 / span 3; grid-column: 2;
+      margin: 0; width: 84px; border-radius: var(--radius-sm); overflow: hidden;
     }
+    & .card-title { font-size: var(--t-5); }
+    & .card-go { display: none; }
   }
-  .gate-banded:hover .gt-band img,
-  .gate-banded:focus-visible .gt-band img { scale: 1.04; }
+
+  .artwork {
+    --art-back: var(--panel);
+    --art-fore: var(--ink);
+
+    --art-hot:   color-mix(in oklab, var(--accent) 74%, var(--art-fore));
+    --art-lit:   color-mix(in oklab, var(--accent) 88%, var(--art-fore));
+    --art-mid:   color-mix(in oklab, var(--accent) 72%, var(--art-back));
+    --art-deep:  color-mix(in oklab, var(--accent) 40%, var(--art-back));
+    --art-shade: color-mix(in oklab, var(--accent) 20%, var(--art-back));
+    --art-sink:  color-mix(in oklab, var(--accent) 9%,  var(--art-back));
+
+    --art-fore-hot:  color-mix(in oklab, var(--art-fore) 88%, var(--accent));
+    --art-fore-lit:  color-mix(in oklab, var(--art-fore) 68%, var(--accent));
+    --art-fore-mid:  color-mix(in oklab, var(--art-fore) 44%, var(--art-back));
+    --art-fore-deep: color-mix(in oklab, var(--art-fore) 22%, var(--art-back));
+
+    position: relative; display: block; overflow: hidden;
+    aspect-ratio: 16 / 9;
+    background: var(--art-sink);
+    isolation: isolate;
+
+    & > * { position: absolute; inset: 0; }
+  }
+
+  .art-ground {
+    background:
+      radial-gradient(120% 96% at 62% 34%,
+        var(--art-shade) 0%, var(--art-sink) 58%,
+        color-mix(in oklab, var(--accent) 4%, var(--art-back)) 100%);
+  }
+  .art-wash {
+    background:
+      radial-gradient(44% 58% at 56% 26%,
+        color-mix(in oklab, var(--art-mid) 55%, transparent) 0%, transparent 72%);
+  }
+  .art-floor {
+    top: auto; height: 46%;
+    background:
+      repeating-linear-gradient(to right,
+        color-mix(in oklab, var(--art-lit) 20%, transparent) 0 1.5px,
+        transparent 1.5px 68px);
+    transform: perspective(360px) rotateX(68deg);
+    transform-origin: 50% 0%;
+    -webkit-mask-image: linear-gradient(to bottom, #000, transparent 74%);
+    mask-image: linear-gradient(to bottom, #000, transparent 74%);
+    opacity: 0.5;
+  }
+
+  .art-stage { inset: 9% 8% 8%; }
+  .art-stage svg { position: absolute; inset: 0; width: 100%; height: 100%; overflow: visible; }
+  .art-real {
+    filter:
+      drop-shadow(0 0 8px color-mix(in oklab, var(--art-lit) 50%, transparent))
+      drop-shadow(0 0 26px color-mix(in oklab, var(--art-mid) 40%, transparent));
+  }
+
+  .art-echo {
+    transform-origin: 50% 75%; transform: scaleY(-1);
+    -webkit-mask-image: linear-gradient(to bottom, transparent 44%, oklch(0% 0 0 / 0.75) 76%);
+    mask-image: linear-gradient(to bottom, transparent 44%, oklch(0% 0 0 / 0.75) 76%);
+    filter: blur(3px); opacity: 0.24;
+  }
+
+  .art-veil {
+    background:
+      linear-gradient(100deg, transparent 32%,
+        color-mix(in oklab, var(--art-fore) 8%, transparent) 46%, transparent 58%),
+      radial-gradient(86% 76% at 50% 44%, transparent 50%,
+        color-mix(in oklab, var(--art-back) 72%, transparent) 100%);
+  }
+
+  .artwork { --art-a: 0; transition: --art-a 820ms var(--ease); }
+  :is(.card, .gate-tile):hover .artwork,
+  :is(.card, .gate-tile):focus-visible .artwork,
+  :is(.card, .gate-tile):focus-within .artwork {
+    --art-a: 1;
+    transition-duration: 190ms;
+  }
+
+  .artwork > [data-depth] {
+    translate:
+      calc(var(--gpx, 0) * var(--art-depth) * var(--art-a) * -2px)
+      calc(var(--gpy, 0) * var(--art-depth) * var(--art-a) * -2px);
+  }
+  .artwork > [data-depth="1"] { --art-depth: 1; }
+  .artwork > [data-depth="2"] { --art-depth: 2.4; }
+  .artwork > [data-depth="4"] { --art-depth: 5.5; }
+  .artwork > [data-depth="5"] { --art-depth: 1.6; }
+
+  .art-stage {
+    transform: rotateY(calc(var(--gpx, 0) * var(--art-a) * 3deg))
+               rotateX(calc(var(--gpy, 0) * var(--art-a) * -2deg));
+  }
 
   @media (prefers-reduced-motion: reduce) {
-    .gt-band img { transition: none; }
-    .gate-banded:hover .gt-band img { scale: 1; }
+    .artwork { transition: none; }
+    .artwork > [data-depth] { translate: none; }
+    .art-stage { transform: none; }
   }
 
   .gate-slim {
@@ -6989,55 +7102,7 @@
   }
   .gp-dots i[data-on] { background: var(--accent); scale: 1.25; }
 
-  .gate-photo {
-    --surface-image:
-      linear-gradient(78deg,
-        oklch(19% 0.02 260 / 0.92),
-        oklch(21% 0.02 260 / 0.6) 46%,
-        oklch(24% 0.02 260 / 0.16)),
-      var(--gate-photo);
-    --surface-size: auto, cover;
-
-    --surface-pos: 0 0, center;
-    min-height: clamp(230px, 25vw, 320px);
-  }
-
-  .gate-art { --surface-pos: 0 0, 68% center; }
-
-  .gate-photo .gt-title {
-    color: oklch(97% 0.005 260);
-    font-size: clamp(1.15rem, 2vw, 1.55rem); max-width: 26ch;
-  }
-  .gate-photo .gt-dek { color: oklch(89% 0.01 260 / 0.88); }
-
-  .gate-photo .gt-chip {
-    color: color-mix(in oklab, var(--accent) 52%, white);
-    background: oklch(16% 0.015 260 / 0.55);
-  }
-  .gate-photo .gt-disc {
-    color: color-mix(in oklab, var(--accent) 52%, white);
-    background: oklch(16% 0.015 260 / 0.45);
-    border-color: oklch(90% 0 0 / 0.18);
-  }
-  .gate-photo .gp-dots i { background: oklch(95% 0 0 / 0.35); }
-  .gate-photo .gp-dots i[data-on] { background: oklch(98% 0 0); }
-
-  @media (max-width: 640px) {
-    .gate-photo {
-      min-height: 300px;
-      align-content: end;
-      --surface-image:
-        linear-gradient(to top,
-          oklch(12% 0.02 260 / 0.95) 0%,
-          oklch(14% 0.02 260 / 0.86) 38%,
-          oklch(16% 0.02 260 / 0.34) 66%,
-          oklch(18% 0.02 260 / 0.08) 88%),
-        var(--gate-photo-sm, var(--gate-photo));
-    }
-    .gate-feat.gate-photo { min-height: 340px; }
-  }
-
-  .gate-feat .gt-go, .gate-photo .gt-go {
+  .gate-feat .gt-go {
     justify-self: start;
     padding: 9px 16px;
     border-radius: var(--radius-pill);
@@ -7395,45 +7460,6 @@
   .board-up svg { transform: rotate(-90deg); }
   .board-down svg { transform: rotate(90deg); }
 
-  .gp-rows {
-    display: grid; gap: 10px; margin: 0; padding: 0; list-style: none;
-    align-content: stretch;
-
-    & li { display: grid; min-width: 0; }
-  }
-  .gp-row {
-    display: flex; align-items: center; justify-content: space-between;
-    gap: 12px; min-height: 76px; padding: 10px 12px 10px 16px;
-    border: 1px solid var(--hairline); border-radius: var(--radius);
-    background-color: var(--panel);
-
-    --surface-image: linear-gradient(150deg, var(--accent-soft), var(--panel) 55%);
-    background-image: var(--surface-image);
-    color: var(--ink); text-decoration: none;
-    min-width: 0;
-    transition: box-shadow var(--fast) var(--ease),
-                border-color var(--fast) var(--ease);
-
-    &:hover, &:focus-visible {
-      --surface-shadow: var(--shadow-lift);
-      border-color: color-mix(in oklab, var(--accent) 45%, var(--hairline));
-    }
-    &:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
-  }
-  .gp-row-title {
-    font-family: var(--font-serif); font-size: var(--t-5); line-height: 1.3;
-  }
-  .gp-row[lang="bn"] .gp-row-title { font-family: var(--font-bn-serif); }
-
-  .gp-thumb {
-    flex: none; display: grid; place-items: center;
-    width: 84px; height: 58px;
-    border-radius: var(--radius-sm); overflow: hidden;
-    color: var(--accent);
-    background: color-mix(in oklab, var(--accent) 10%, transparent);
-
-    & img { width: 100%; height: 100%; object-fit: cover; display: block; }
-  }
   .gp-all {
     display: flex; align-items: center; justify-content: flex-end; gap: 6px;
     padding: 2px 6px 0;
@@ -9107,7 +9133,7 @@
       .cell, .card, .gate-tile, .news-card, .work-card, .lesson-card,
       .rung, .res-live, .tally-item, .read-card, .ladder-row, .target,
       .saved-row, .kept-row, .rt-template, .resume, .acct-tile,
-      .gate-card, .gp-row, .rt-build-task, .rt-panel, .dt-w,
+      .gate-card, .rt-build-task, .rt-panel, .dt-w,
       .topbar, .rail, .slimbar, .acc-menu, .tree-panel, .crumb-menu,
       .tabs-nav, .tool, .studio-pane, .band, .rt-sheet, .keep-panel,
       .reader-panel, .signin, .pane-bar, .model-drivers,
@@ -9146,7 +9172,7 @@
   :is(.cell, .card, .gate-tile, .news-card, .work-card, .lesson-card,
       .rung, .res-live, .tally-item, .read-card, .ladder-row, .target,
       .saved-row, .kept-row, .rt-template, .resume, .acct-tile,
-      .gate-card, .gp-row, .rt-build-task, .rt-panel, .dt-w) {
+      .gate-card, .rt-build-task, .rt-panel, .dt-w) {
     --depth: 5; --polish: 0.5; --clarity: 0.5; --standing: 1;
   }
 
@@ -9167,7 +9193,7 @@
       .pledge, .hub-pledge, .id-card, .res, .cv-item, .note,
       .keep-note, .gate-hint, .balance-check, .work-facts, .cred,
       .stat, .chart-box, .verdict, .shariah-verdict, .verdict-cap,
-      .advanced-card, .at-a-glance, .side-note,
+      .at-a-glance, .side-note,
       .callout, .ex, .quiz-q, .method-step, .rt-confirm, .card-art,
       .ayah, .tothyo, .mukhe, .bolo, .mone, .shape, .merke, .formula,
       .ref-details, .course-video, .rt-hours-line, .work-art, .share-card,
@@ -9238,7 +9264,7 @@
       .cell, .card, .gate-tile, .news-card, .work-card, .lesson-card,
       .rung, .res-live, .tally-item, .read-card, .ladder-row, .target,
       .saved-row, .kept-row, .rt-template, .resume, .acct-tile,
-      .gate-card, .gp-row, .rt-build-task, .rt-panel, .dt-w,
+      .gate-card, .rt-build-task, .rt-panel, .dt-w,
       .topbar, .rail, .slimbar, .acc-menu, .tree-panel, .crumb-menu,
       .tabs-nav, .tool, .studio-pane, .band, .rt-sheet, .keep-panel,
       .reader-panel, .signin, .pane-bar, .model-drivers,
@@ -9250,7 +9276,7 @@
       .pledge, .hub-pledge, .id-card, .res, .cv-item, .note,
       .keep-note, .gate-hint, .balance-check, .work-facts, .cred,
       .stat, .chart-box, .verdict, .shariah-verdict, .verdict-cap,
-      .advanced-card, .at-a-glance, .side-note,
+      .at-a-glance, .side-note,
       .callout, .ex, .quiz-q, .method-step, .rt-confirm, .card-art,
       .ayah, .tothyo, .mukhe, .bolo, .mone, .shape, .merke, .formula,
       .ref-details, .course-video, .rt-hours-line, .work-art, .share-card,

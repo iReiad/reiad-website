@@ -25,6 +25,7 @@
    ============================================================ */
 
 import type { Metadata } from "next";
+import { GoCard } from "../../../../components/deck";
 import { TabBar, Tab } from "../../../../components/ui/tabs";
 import { pageMeta } from "../../../../lib/pageMeta";
 import { Legend, Key } from "../../../../components/ui/legend";
@@ -70,46 +71,51 @@ export default function ToolsPage() {
              that navigates away is not a tab. It is also a different kind
              of thing: the five below answer one question each, this one
              runs a whole analysis. */}
-            <a className="work-card advanced-card" href="/tools/stock">
-              <span className="mono">Advanced · উন্নত টুল
-              </span>
-              <h2>Stock check: buy, hold or sell?
-              </h2>
-              {/* The spaces around the two counting slots are written
-                  as explicit entities. JSX collapses whitespace that
-                  sits between an element and a line break, so the
-                  sentence shipped as "app.44 ratios across6 pillars"
-                  the moment the page became a component. */}
-              <p>Type a company&apos;s figures off its annual report and the price off
+            {/* THE SITE'S OWN CARD, wearing the drawing the stock
+                check wears on the board: it was `.work-card
+                .advanced-card`, a shape used here and nowhere
+                else for a thing the front page already draws as a
+                `<GoCard>`. */}
+            <GoCard
+              href="/tools/stock" art="gauge" icon="gauge" accent="var(--gold)"
+              chip={<>Advanced · <span lang="bn">উন্নত টুল</span></>}
+              title="Stock check: buy, hold or sell?"
+              go="Open the stock check"
+              dek={<>
+                {/* The spaces around the two counting slots are written
+                    as explicit entities. JSX collapses whitespace that
+                    sits between an element and a line break, so the
+                    sentence shipped as "app.44 ratios across6 pillars"
+                    the moment the page became a component. */}
+                Type a company&apos;s figures off its annual report and the price off
                 your broker&apos;s app.{" "}
                 <span data-count="ratios">44</span>{" "}ratios across{" "}
                 <span data-count="pillars">6</span>{" "}pillars,
                 weighted by the kind of investor you are, with every step of the
                 arithmetic shown, and a separate set for banks, where
                 debt-to-equity and EBITDA mean nothing.
-              </p>
-              <p className="mono advanced-langs" lang="bn">সম্পূর্ণ বাংলায় পড়া যায়: এক ক্লিকে ভাষা বদলান।
-              </p>
-              <span className="more mono">Open the stock check →
+              </>}
+            >
+              <span className="card-meta mono" lang="bn">
+                সম্পূর্ণ বাংলায় পড়া যায়: এক ক্লিকে ভাষা বদলান।
               </span>
-            </a>
+            </GoCard>
             {/* Its sibling, for the same reason and in the same place:
              a live feed is not a calculator tab either. */}
-            <a className="work-card advanced-card" href="/tools/live">
-              <span className="mono">Live · লাইভ
-              </span>
-              <h2>Live portfolio: a real account, as it stands
-              </h2>
-              <p>The site&apos;s own Trading 212 portfolio in percentages, straight
+            <GoCard
+              href="/tools/live" art="chart" icon="wallet" accent="var(--gold)"
+              chip={<>Live · <span lang="bn">লাইভ</span></>}
+              title="Live portfolio: a real account, as it stands"
+              go="Open the live portfolio"
+              dek={<>The site&apos;s own Trading 212 portfolio in percentages, straight
                 from the broker: what is held, what each holding weighs, and
                 what it has returned. Sign in and connect your own key, and
-                the same dashboard reads your account in full instead.
-              </p>
-              <p className="mono advanced-langs" lang="bn">সাইটের নিজের পোর্টফোলিও, ব্রোকার থেকে সরাসরি।
-              </p>
-              <span className="more mono">Open the live portfolio →
+                the same dashboard reads your account in full instead.</>}
+            >
+              <span className="card-meta mono" lang="bn">
+                সাইটের নিজের পোর্টফোলিও, ব্রোকার থেকে সরাসরি।
               </span>
-            </a>
+            </GoCard>
             {/* The tool picker. These are real links to real anchors, so
              with JavaScript off they still jump to a calculator and all
              five remain on the page. tools.js upgrades them into a tab

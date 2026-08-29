@@ -75,6 +75,13 @@
   @property --gx       { syntax: "<percentage>"; initial-value: 50%; inherits: false; }
   @property --gy       { syntax: "<percentage>"; initial-value: 50%; inherits: false; }
   @property --glow-a   { syntax: "<number>";  initial-value: 0;   inherits: false; }
+  /* The art's own "the pointer is here", and it exists because
+     `--glow-a` above is `inherits: false`: the material sets it on
+     the surface, and a drawing INSIDE that surface therefore reads
+     0 for ever. This one inherits, so every layer of a scene can
+     use it, and it is registered so it animates rather than
+     switching. */
+  @property --art-a    { syntax: "<number>";  initial-value: 0;   inherits: true;  }
 
   /* How much of the breadcrumb trail is hidden off each end of it
      on a phone, where the row scrolls. A scroll timeline drives
@@ -7671,26 +7678,10 @@ German for day, and .tag is what the site has always called
   #weights .scenarios { flex-wrap: wrap; margin-bottom: 16px; }
 
 
-  /* ---------- the advanced tool's card on the tools hub ----------
-     It carries its own box. The first version leaned on a `panel`
-     class that does not exist anywhere in this stylesheet, so the
-     card rendered as loose text with no border at all, invisible
-     as a card, which is the one thing it had to be. */
-  .advanced-card {
-    background: var(--panel);
-    border: 1px solid var(--hairline);
-    border-radius: var(--radius);
-    --surface-shadow: var(--shadow);
-    padding: 24px 26px; margin-block: 30px 24px;
-    gap: var(--s-5);
-
-    & h2 { font-size: 1.4rem; margin: 0; }
-    & > .mono { color: var(--accent); font-size: var(--t-1);
-                letter-spacing: 0.08em; text-transform: uppercase; }
-    & p { color: var(--ink-soft); max-width: 74ch; margin: 0; font-size: var(--t-5); }
-    & .more { margin-top: 4px; }
-  }
-  .advanced-langs { color: var(--accent) !important; font-family: var(--font-bn); }
+  /* The two advanced tools on this hub were `.advanced-card`: a
+     box this stylesheet built once, here, for two things the front
+     page already draws as `<GoCard>`s. They are that card now, so
+     the rules went with the markup they styled. */
 
   @media (prefers-reduced-motion: reduce) {
     .score-bar i, .yield-track i, .dupont-track i, .drag-track i, .dial-fill {
@@ -9852,6 +9843,44 @@ German for day, and .tag is what the site has always called
   }
   .card > * { position: relative; z-index: 1; }
 
+
+  /* ---- a card that carries a picture ----
+
+     The band bleeds to three edges by negative margin rather than
+     by absolute positioning, so it is a row of the card's own
+     column and everything under it simply starts lower: absolute
+     would have wanted a padding-top on the card, which is the
+     same number written twice. `.card` already clips to its
+     radius, so the band needs no corners of its own.
+
+     The accent rail is raised over it, because the rail is the
+     card's identity and runs its whole height: a band drawn over
+     the top of it would cut it in half. */
+  .card-banded { padding-top: 0; }
+  /* `flex: none`, and it is not decoration: `.card` is a COLUMN
+     flex container, so an item whose height comes from an
+     aspect-ratio is an item the flex algorithm is free to shrink,
+     and it shrank the picture to a thirty pixel strip. */
+  /* A hairline under it, because on paper a pale drawing and a
+     pale card are the same colour and the picture stops having an
+     edge. */
+  .card-band {
+    flex: none; border-bottom: 1px solid var(--hairline);
+    /* Sixteen by nine until the card is very wide, and then
+       capped: the writing widget takes the whole board, and a
+       960px card at sixteen by nine is a 540px picture over three
+       lines of text. */
+    max-height: clamp(170px, 22vw, 300px);
+  }
+  .card-banded[data-kind="go"]::before { z-index: 2; }
+  .card-band { margin: 0 -20px 2px; }
+  .card-banded[data-kind="go"] .card-band { margin-left: -22px; }
+  .card-photo {
+    display: block; overflow: hidden; aspect-ratio: 16 / 9;
+
+    & img { display: block; width: 100%; height: 100%; object-fit: cover; }
+  }
+
   /* ---------- a card that does something ---------- */
 
   .card[data-kind="go"] {
@@ -10312,7 +10341,14 @@ German for day, and .tag is what the site has always called
        background-color, which nothing here touches. */
     background-color: var(--panel);
     --surface-image: linear-gradient(150deg, var(--accent-soft), var(--panel) 55%);
+    /* One layer in, one size and one position out. The three
+       lists the material writes have to agree on how many layers
+       a surface paints, which is the ninth question
+       `scripts/check-material.ts` asks: a card wearing a scrim
+       over a photograph paints two, and the day one does again
+       these are where it says so. */
     --surface-size: auto;
+    --surface-pos: 0 0;
     /* Said here as well, so the tile is right with or without
        `data-glow`: `@layer glow` sets background-image from the
        same token and this is what it composes with. */
@@ -10376,32 +10412,44 @@ German for day, and .tag is what the site has always called
   .gt-arrow { display: inline-flex; transition: translate var(--fast) var(--ease); }
   .gate-tile:hover .gt-arrow { translate: 4px 0; }
 
-  /* The featured card is a POSTER: it wears one of the drawings
-     `scripts/build-card-art.ts` makes as its whole ground, so it
-     carries `gate-photo` below for the scrim and the light text
-     and this rule is only its size.
+  /* The front page's one big card. It carries its drawing as a
+     child rather than as a ground, so this rule is its size and
+     the room it leaves for the picture beside the words.
 
-     Taller than it was, and the height is a fact about the
-     picture rather than a taste. A drawing is 1200 by 540 and
-     `cover` scales it by the card's WIDTH, so every pixel of
-     height this card loses is cropped off the top and bottom of
-     the subject: at 200px on a 1100px card two thirds of the
-     drawing was outside the card. */
+     The height is a fact about the picture rather than a taste:
+     under about 230px the drawing has no room to be one. */
   .gate-feat {
+    min-height: clamp(230px, 26vw, 330px);
     padding: clamp(18px, 2.4vw, 28px) clamp(18px, 2.4vw, 28px) clamp(18px, 2.4vw, 28px) 24px;
+    padding-right: clamp(18px, 40%, 560px);
     gap: 10px;
   }
   .gate-feat .gt-dek { font-size: var(--t-5); max-width: 46ch; }
+  .gate-feat .gt-title { font-size: clamp(1.35rem, 2.5vw, 1.9rem); max-width: 21ch; }
 
-  /* BOTH CLASSES ON PURPOSE. `.gate-photo` is later in this layer,
-     so at equal specificity it wins, and this card is the one
-     place the two rules meet: written as `.gate-feat` alone the
-     poster would take the pulse tile's height and the pulse
-     tile's title size, which are the numbers for a widget on a
-     board rather than for the front page's one big card. */
-  .gate-feat.gate-photo { min-height: clamp(250px, 30vw, 360px); }
-  .gate-feat.gate-photo .gt-title {
-    font-size: clamp(1.35rem, 2.5vw, 1.9rem); max-width: 21ch;
+  /* THE ONE CARD WHOSE PICTURE IS BESIDE ITS WORDS. Every other
+     card on this site wears its drawing as a band across the top,
+     because that is the shape a card in a deck is. This one is
+     four times as wide as it is tall on a laptop, and a band
+     across the top of that is a stripe, so the drawing takes the
+     right-hand third and is masked into the ground.
+
+     Under 760px the card stops being wide and the picture goes
+     back to being a band, which is the shape it is everywhere
+     else. One card, two arrangements, and the second one is the
+     site's ordinary one. */
+  .gate-feat-art {
+    position: absolute; inset: 0 0 0 auto; z-index: 0;
+    width: min(52%, 540px); aspect-ratio: auto;
+    mask-image: linear-gradient(100deg, transparent 4%, #000 36%);
+  }
+  @media (max-width: 760px) {
+    .gate-feat { padding-top: 0; padding-right: clamp(18px, 2.4vw, 28px); }
+    .gate-feat-art {
+      position: relative; inset: auto; width: auto; aspect-ratio: 16 / 9;
+      margin: 0 -18px 8px -24px;
+      mask-image: none;
+    }
   }
 
   /* ---- the light the front page is standing in ----
@@ -10436,45 +10484,201 @@ German for day, and .tag is what the site has always called
         color-mix(in oklab, var(--accent) 7%, transparent), transparent 76%);
   }
 
-  /* ---- a tile that carries a picture across the top ----
 
-     Ten of the board's tiles are a school or a tool, and until
-     this every one of them was an icon, a title and a line of
-     prose: a menu with the pictures left out. The band is the
-     card's own drawing out of `scripts/build-card-art.ts`,
-     sixteen by nine, bleeding to three edges.
 
-     THE BLEED IS NEGATIVE MARGIN, not absolute positioning, so
-     the band is a row of the tile's grid and everything under it
-     simply starts lower. Absolute would have needed a padding-top
-     on the tile to make room, which is the same number written
-     twice. `.gate-tile` already clips to its own radius, so the
-     band's corners need no radius of their own.
+  /* ---- the writing widget, which is cards like everything else ----
 
-     The accent rail is raised over it. The rail is the card's
-     identity and it runs the full height; a band drawn over its
-     top three pixels would cut it in half. */
-  .gate-banded { padding-top: 0; }
-  .gate-banded::before { z-index: 2; }
-  .gt-band {
-    display: block; overflow: hidden;
-    aspect-ratio: 16 / 9;
-    margin: 0 -18px 4px -21px;
+     `.gp-showing` exists only to hold the pointer-pause handlers
+     and to key the swap; the card inside it is the site's own. */
+  .gp-showing { display: grid; }
+  .gp-piece { display: grid; animation: gate-swap var(--slow) var(--ease); }
+  .pulse-rest { grid-template-columns: minmax(0, 1fr); align-content: start; }
 
-    & img {
-      display: block; width: 100%; height: 100%;
-      object-fit: cover;
-      /* A band is a picture of the thing, not the thing: it sits
-         under the card's own light rather than beside it. */
-      transition: scale var(--slow) var(--ease);
+  /* A card in a column beside a bigger one: the same card with
+     its picture down to a square and the words up beside it. Not
+     a different card, which is what the row it replaced was. */
+  .card-compact {
+    display: grid; grid-template-columns: minmax(0, 1fr) auto;
+    align-items: center; gap: 4px 12px;
+    padding: 10px 12px 10px 16px;
+
+    & .card-band {
+      grid-row: 1 / span 3; grid-column: 2;
+      margin: 0; width: 84px; border-radius: var(--radius-sm); overflow: hidden;
     }
+    & .card-title { font-size: var(--t-5); }
+    & .card-go { display: none; }
   }
-  .gate-banded:hover .gt-band img,
-  .gate-banded:focus-visible .gt-band img { scale: 1.04; }
+
+
+  /* ============================================================
+     THE ART A CARD WEARS
+
+     `.artwork` and not `.art`, which this site has had since the
+     schools were written: it is the icon beside a step's name, at
+     1.6em square, in `@layer money`. Taking the name would have
+     made every drawing on the front page 27 pixels wide, which is
+     exactly what it did for one build.
+
+     `next/components/card-art.tsx` is the twelve drawings; this
+     is the light they are drawn in, and every value in it is a
+     MIX of the card's own accent with two tokens that already
+     answer the theme. `--panel` is the ground, near-black at
+     night and near-white by day; `--ink` is the light falling on
+     it, and it flips with the ground. So `--art-hot` is a bright
+     accent over black and a deep inked accent on paper, from one
+     declaration, and a drawing needs no second copy.
+
+     That is the whole reason the pictures stopped being files:
+     twenty-five committed rasters could not answer a theme, and
+     answering it would have meant fifty.
+     ============================================================ */
+  .artwork {
+    --art-back: var(--panel);
+    --art-fore: var(--ink);
+
+    /* THE LADDER, AND WHICH END EACH RUNG MIXES TOWARDS. A tone
+       that has to be SEEN mixes toward `--art-fore`, so it gets
+       brighter over a dark ground and darker over a pale one, and
+       either way it gains contrast. A tone that has to RECEDE
+       mixes toward `--art-back`, so it approaches whatever the
+       ground is.
+
+       `--art-lit` mixed toward the ground for one build, which is
+       the mistake this note exists for: it is the stroke colour of
+       every drawing, and on paper it came out as pale as the paper
+       and the whole set looked bleached. */
+    --art-hot:   color-mix(in oklab, var(--accent) 74%, var(--art-fore));
+    --art-lit:   color-mix(in oklab, var(--accent) 88%, var(--art-fore));
+    --art-mid:   color-mix(in oklab, var(--accent) 72%, var(--art-back));
+    --art-deep:  color-mix(in oklab, var(--accent) 40%, var(--art-back));
+    --art-shade: color-mix(in oklab, var(--accent) 20%, var(--art-back));
+    --art-sink:  color-mix(in oklab, var(--accent) 9%,  var(--art-back));
+
+    /* THE SECOND LIGHT IS THE PAGE'S OWN FOREGROUND, not a second
+       hue. The rasters used a complementary colour, which is a
+       decision that cannot survive a theme: what reads as a
+       highlight on black is a stain on white. Mixing towards
+       `--ink` instead means the second light is always the one
+       the page is already lit by. */
+    --art-fore-hot:  color-mix(in oklab, var(--art-fore) 88%, var(--accent));
+    --art-fore-lit:  color-mix(in oklab, var(--art-fore) 68%, var(--accent));
+    --art-fore-mid:  color-mix(in oklab, var(--art-fore) 44%, var(--art-back));
+    --art-fore-deep: color-mix(in oklab, var(--art-fore) 22%, var(--art-back));
+
+    position: relative; display: block; overflow: hidden;
+    aspect-ratio: 16 / 9;
+    background: var(--art-sink);
+    isolation: isolate;
+
+    & > * { position: absolute; inset: 0; }
+  }
+
+  /* the ground, the light in it, and the floor it stands on */
+  .art-ground {
+    background:
+      radial-gradient(120% 96% at 62% 34%,
+        var(--art-shade) 0%, var(--art-sink) 58%,
+        color-mix(in oklab, var(--accent) 4%, var(--art-back)) 100%);
+  }
+  .art-wash {
+    background:
+      radial-gradient(44% 58% at 56% 26%,
+        color-mix(in oklab, var(--art-mid) 55%, transparent) 0%, transparent 72%);
+  }
+  .art-floor {
+    top: auto; height: 46%;
+    background:
+      repeating-linear-gradient(to right,
+        color-mix(in oklab, var(--art-lit) 20%, transparent) 0 1.5px,
+        transparent 1.5px 68px);
+    transform: perspective(360px) rotateX(68deg);
+    transform-origin: 50% 0%;
+    mask-image: linear-gradient(to bottom, #000, transparent 74%);
+    opacity: 0.5;
+  }
+
+  /* the drawing, its bloom, and its reflection */
+  .art-stage { inset: 9% 8% 8%; }
+  .art-stage svg { position: absolute; inset: 0; width: 100%; height: 100%; overflow: visible; }
+  .art-real {
+    filter:
+      drop-shadow(0 0 8px color-mix(in oklab, var(--art-lit) 50%, transparent))
+      drop-shadow(0 0 26px color-mix(in oklab, var(--art-mid) 40%, transparent));
+  }
+  /* MIRRORED ABOUT 75% OF THE STAGE, which is the line every
+     subject stands on. The mask is written in the copy's own
+     coordinates and is flipped with it, so it fades UPWARD here
+     in order to fade downward on the page. */
+  .art-echo {
+    transform-origin: 50% 75%; transform: scaleY(-1);
+    mask-image: linear-gradient(to bottom, transparent 44%, oklch(0% 0 0 / 0.75) 76%);
+    filter: blur(3px); opacity: 0.24;
+  }
+
+  /* a shaft of light, and the corners going down */
+  .art-veil {
+    background:
+      linear-gradient(100deg, transparent 32%,
+        color-mix(in oklab, var(--art-fore) 8%, transparent) 46%, transparent 58%),
+      radial-gradient(86% 76% at 50% 44%, transparent 50%,
+        color-mix(in oklab, var(--art-back) 72%, transparent) 100%);
+  }
+
+  /* ---- and it opens under the pointer ----
+
+     Every layer carries a depth and translates against `--gpx`
+     and `--gpy`, which `next/components/glow.tsx` already writes
+     as the pointer's position over the surface, normalised to
+     -1..1. The subject moves furthest and the ground barely at
+     all, which is parallax: the card stops being a picture of a
+     thing and becomes a box with the thing inside it.
+
+     Times `--glow-a`, which is the material's own "the pointer is
+     here" number: 0 at rest, registered, and already animating on
+     the 190-in, 820-out curve. So the depth arrives with the light
+     and eases back out behind it, with no second listener, no
+     second piece of state, and nothing at all for a reader who
+     has asked for no motion. */
+  /* ON THE CARD'S OWN HOVER, not on `--glow-a`. The material's
+     number does not inherit, so a layer inside the drawing reads
+     0 for ever; this one does, and it carries the same asymmetry
+     because a transition takes its duration from the state it is
+     going TO: 190ms arriving, 820ms leaving. */
+  .artwork { --art-a: 0; transition: --art-a 820ms var(--ease); }
+  :is(.card, .gate-tile):hover .artwork,
+  :is(.card, .gate-tile):focus-visible .artwork,
+  :is(.card, .gate-tile):focus-within .artwork {
+    --art-a: 1;
+    transition-duration: 190ms;
+  }
+
+  /* `--gpx` and `--gpy` are NOT registered, so they inherit, which
+     is what lets a layer read the pointer at all. Only the
+     strength is animated: transitioning `translate` itself would
+     start a fresh 820ms ease on every pointer move and the picture
+     would lag the hand holding it. */
+  .artwork > [data-depth] {
+    translate:
+      calc(var(--gpx, 0) * var(--art-depth) * var(--art-a) * -2px)
+      calc(var(--gpy, 0) * var(--art-depth) * var(--art-a) * -2px);
+  }
+  .artwork > [data-depth="1"] { --art-depth: 1; }
+  .artwork > [data-depth="2"] { --art-depth: 2.4; }
+  .artwork > [data-depth="4"] { --art-depth: 5.5; }
+  .artwork > [data-depth="5"] { --art-depth: 1.6; }
+
+  /* The subject LEANS as well as slides, which is what tells the
+     eye the box has a floor rather than a sliding backdrop. */
+  .art-stage {
+    transform: rotateY(calc(var(--gpx, 0) * var(--art-a) * 3deg))
+               rotateX(calc(var(--gpy, 0) * var(--art-a) * -2deg));
+  }
 
   @media (prefers-reduced-motion: reduce) {
-    .gt-band img { transition: none; }
-    .gate-banded:hover .gt-band img { scale: 1; }
+    .artwork { transition: none; }
+    .artwork > [data-depth] { translate: none; }
+    .art-stage { transform: none; }
   }
 
   /* The slim form: one line tall, a handle not a card. */
@@ -10512,108 +10716,6 @@ German for day, and .tag is what the site has always called
   }
   .gp-dots i[data-on] { background: var(--accent); scale: 1.25; }
 
-  /* ---- a piece with a picture wears it ----
-
-     The cover arrives as `--gate-photo`, a url() the component
-     writes inline, and it is composed HERE into the material's
-     own token rather than written as a background: an inline
-     background-image would replace the five-layer stack in
-     `@layer glow` and take the bevel, the grain and the glow
-     with it. The scrim is the FIRST layer because a
-     background-image list paints front to back, and it is a
-     fixed dark in both themes: the card commits to light text
-     over a photograph, because a photograph does not follow the
-     theme and a scrim that tried to would be illegible in one
-     of them. */
-  .gate-photo {
-    --surface-image:
-      linear-gradient(78deg,
-        oklch(19% 0.02 260 / 0.92),
-        oklch(21% 0.02 260 / 0.6) 46%,
-        oklch(24% 0.02 260 / 0.16)),
-      var(--gate-photo);
-    --surface-size: auto, cover;
-    /* THE TOKEN, NEVER THE SHORTHAND. This was
-       `background-position: center`, which `@layer glow` is later
-       than and replaces outright, so it never positioned
-       anything: every picture on the site was pinned to its top
-       left corner and cropped from the bottom. */
-    --surface-pos: 0 0, center;
-    min-height: clamp(230px, 25vw, 320px);
-  }
-  /* ONE OF OURS, rather than a photograph somebody took.
-
-     A drawing out of `scripts/build-card-art.ts` puts its subject
-     right of centre, because that is where a card has no words.
-     That is free on a wide card, which `cover` scales by its
-     width and crops top and bottom only. On a PHONE the card is
-     narrower in ratio than the drawing, so `cover` scales by
-     height instead and crops the SIDES: at 340 by 250 that is
-     about 190 pixels off each end, which takes the arrow head
-     off the chart and the lit coin off the stack.
-
-     So a card wearing one of ours holds the frame towards that
-     subject. A card wearing a photograph does not, and must not:
-     a photographer composed it centred and the crop should stay
-     even. */
-  .gate-art { --surface-pos: 0 0, 68% center; }
-
-  .gate-photo .gt-title {
-    color: oklch(97% 0.005 260);
-    font-size: clamp(1.15rem, 2vw, 1.55rem); max-width: 26ch;
-  }
-  .gate-photo .gt-dek { color: oklch(89% 0.01 260 / 0.88); }
-  /* The chip and the dots sit on the photograph rather than on
-     the panel, so each carries its own sliver of ground: the
-     accent alone was tuned against paper and disappears into a
-     bright sky. */
-  .gate-photo .gt-chip {
-    color: color-mix(in oklab, var(--accent) 52%, white);
-    background: oklch(16% 0.015 260 / 0.55);
-  }
-  .gate-photo .gt-disc {
-    color: color-mix(in oklab, var(--accent) 52%, white);
-    background: oklch(16% 0.015 260 / 0.45);
-    border-color: oklch(90% 0 0 / 0.18);
-  }
-  .gate-photo .gp-dots i { background: oklch(95% 0 0 / 0.35); }
-  .gate-photo .gp-dots i[data-on] { background: oklch(98% 0 0); }
-
-  /* ---- ON A PHONE THE SCRIM TURNS, and it has to ----
-
-     The scrim above runs ACROSS the card, dark on the left where
-     the words are and clear on the right where the picture is.
-     That is the right shape for a card twice as wide as it is
-     tall and the wrong one for a card that is taller than it is
-     wide: at 350 by 300 there is no right-hand side left, so the
-     dark end covered the whole thing and both of these cards
-     showed a sliver of light at one edge and no picture at all.
-
-     So on a narrow screen it becomes the poster it always wanted
-     to be: the words go to the BOTTOM and the dark goes with
-     them, which leaves the top half of the card showing the
-     picture at its full height.
-
-     AND IT IS A DIFFERENT PICTURE. `--gate-photo-sm` is the same
-     subject drawn for a frame that is taller than it is wide, and
-     the fallback chain is what makes the rule general: a card
-     wearing one of our drawings has one, a card wearing a piece's
-     own photograph does not and keeps its photograph, which is
-     right, because a photograph has no second crop to offer. */
-  @media (max-width: 640px) {
-    .gate-photo {
-      min-height: 300px;
-      align-content: end;
-      --surface-image:
-        linear-gradient(to top,
-          oklch(12% 0.02 260 / 0.95) 0%,
-          oklch(14% 0.02 260 / 0.86) 38%,
-          oklch(16% 0.02 260 / 0.34) 66%,
-          oklch(18% 0.02 260 / 0.08) 88%),
-        var(--gate-photo-sm, var(--gate-photo));
-    }
-    .gate-feat.gate-photo { min-height: 340px; }
-  }
 
   /* The action on the two loud cards, written as the button the
      mock draws. The CARD is still the link, so this is a drawing
@@ -10621,7 +10723,7 @@ German for day, and .tag is what the site has always called
      as the arrow beside it is a drawing of going. On the accent
      ground the label takes `--accent-ink`, which is the pair the
      real buttons already use. */
-  .gate-feat .gt-go, .gate-photo .gt-go {
+  .gate-feat .gt-go {
     justify-self: start;
     padding: 9px 16px;
     border-radius: var(--radius-pill);
@@ -11400,57 +11502,8 @@ German for day, and .tag is what the site has always called
   .board-up svg { transform: rotate(-90deg); }
   .board-down svg { transform: rotate(90deg); }
 
-  /* The tall pulse widget's list: the pieces the tile is not
-     showing, each a small card with the piece's own cover at its
-     shoulder, and one quiet line to the hub at the end. Cards
-     rather than bare rows because they sit BESIDE the tile now
-     instead of under it, and three naked lines beside one
-     photograph read as its caption rather than as three more
-     doors. */
-  .gp-rows {
-    display: grid; gap: 10px; margin: 0; padding: 0; list-style: none;
-    align-content: stretch;
-
-    & li { display: grid; min-width: 0; }
-  }
-  .gp-row {
-    display: flex; align-items: center; justify-content: space-between;
-    gap: 12px; min-height: 76px; padding: 10px 12px 10px 16px;
-    border: 1px solid var(--hairline); border-radius: var(--radius);
-    background-color: var(--panel);
-    /* The wash as the token, for the reason `.gate-tile` gives:
-       `@layer glow` is later and sets background-image, which
-       would take a shorthand's gradient away. */
-    --surface-image: linear-gradient(150deg, var(--accent-soft), var(--panel) 55%);
-    background-image: var(--surface-image);
-    color: var(--ink); text-decoration: none;
-    min-width: 0;
-    transition: box-shadow var(--fast) var(--ease),
-                border-color var(--fast) var(--ease);
-
-    &:hover, &:focus-visible {
-      --surface-shadow: var(--shadow-lift);
-      border-color: color-mix(in oklab, var(--accent) 45%, var(--hairline));
-    }
-    &:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
-  }
-  .gp-row-title {
-    font-family: var(--font-serif); font-size: var(--t-5); line-height: 1.3;
-  }
-  .gp-row[lang="bn"] .gp-row-title { font-family: var(--font-bn-serif); }
-  /* The thumbnail is the piece's own cover, and where a piece
-     has none the desk's pen stands in on the same tinted ground:
-     an empty grey box beside two full ones reads as a loading
-     failure rather than as a quieter card. */
-  .gp-thumb {
-    flex: none; display: grid; place-items: center;
-    width: 84px; height: 58px;
-    border-radius: var(--radius-sm); overflow: hidden;
-    color: var(--accent);
-    background: color-mix(in oklab, var(--accent) 10%, transparent);
-
-    & img { width: 100%; height: 100%; object-fit: cover; display: block; }
-  }
+  /* The one quiet line under the writing widget's column: every
+     piece it did not have room for is one press away. */
   .gp-all {
     display: flex; align-items: center; justify-content: flex-end; gap: 6px;
     padding: 2px 6px 0;
@@ -13608,7 +13661,7 @@ German for day, and .tag is what the site has always called
       .cell, .card, .gate-tile, .news-card, .work-card, .lesson-card,
       .rung, .res-live, .tally-item, .read-card, .ladder-row, .target,
       .saved-row, .kept-row, .rt-template, .resume, .acct-tile,
-      .gate-card, .gp-row, .rt-build-task, .rt-panel, .dt-w,
+      .gate-card, .rt-build-task, .rt-panel, .dt-w,
       .topbar, .rail, .slimbar, .acc-menu, .tree-panel, .crumb-menu,
       .tabs-nav, .tool, .studio-pane, .band, .rt-sheet, .keep-panel,
       .reader-panel, .signin, .pane-bar, .model-drivers,
@@ -13751,7 +13804,7 @@ German for day, and .tag is what the site has always called
   :is(.cell, .card, .gate-tile, .news-card, .work-card, .lesson-card,
       .rung, .res-live, .tally-item, .read-card, .ladder-row, .target,
       .saved-row, .kept-row, .rt-template, .resume, .acct-tile,
-      .gate-card, .gp-row, .rt-build-task, .rt-panel, .dt-w) {
+      .gate-card, .rt-build-task, .rt-panel, .dt-w) {
     --depth: 5; --polish: 0.5; --clarity: 0.5; --standing: 1;
   }
 
@@ -13801,7 +13854,7 @@ German for day, and .tag is what the site has always called
       .pledge, .hub-pledge, .id-card, .res, .cv-item, .note,
       .keep-note, .gate-hint, .balance-check, .work-facts, .cred,
       .stat, .chart-box, .verdict, .shariah-verdict, .verdict-cap,
-      .advanced-card, .at-a-glance, .side-note,
+      .at-a-glance, .side-note,
       .callout, .ex, .quiz-q, .method-step, .rt-confirm, .card-art,
       .ayah, .tothyo, .mukhe, .bolo, .mone, .shape, .merke, .formula,
       .ref-details, .course-video, .rt-hours-line, .work-art, .share-card,
@@ -13993,7 +14046,7 @@ German for day, and .tag is what the site has always called
       .cell, .card, .gate-tile, .news-card, .work-card, .lesson-card,
       .rung, .res-live, .tally-item, .read-card, .ladder-row, .target,
       .saved-row, .kept-row, .rt-template, .resume, .acct-tile,
-      .gate-card, .gp-row, .rt-build-task, .rt-panel, .dt-w,
+      .gate-card, .rt-build-task, .rt-panel, .dt-w,
       .topbar, .rail, .slimbar, .acc-menu, .tree-panel, .crumb-menu,
       .tabs-nav, .tool, .studio-pane, .band, .rt-sheet, .keep-panel,
       .reader-panel, .signin, .pane-bar, .model-drivers,
@@ -14005,7 +14058,7 @@ German for day, and .tag is what the site has always called
       .pledge, .hub-pledge, .id-card, .res, .cv-item, .note,
       .keep-note, .gate-hint, .balance-check, .work-facts, .cred,
       .stat, .chart-box, .verdict, .shariah-verdict, .verdict-cap,
-      .advanced-card, .at-a-glance, .side-note,
+      .at-a-glance, .side-note,
       .callout, .ex, .quiz-q, .method-step, .rt-confirm, .card-art,
       .ayah, .tothyo, .mukhe, .bolo, .mone, .shape, .merke, .formula,
       .ref-details, .course-video, .rt-hours-line, .work-art, .share-card,
