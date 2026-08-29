@@ -1,10 +1,12 @@
 {
-  "source": "5485bf792d02473d",
+  "source": "55616cd291af6198",
   "files": [
     "live.webp",
     "live-tall.webp",
+    "live-tile.webp",
     "money.webp",
     "money-tall.webp",
+    "money-tile.webp",
     "work.webp",
     "work-tall.webp",
     "insights.webp",
@@ -12,9 +14,17 @@
     "insights-thumb.webp",
     "cooking.webp",
     "cooking-tall.webp",
+    "cooking-tile.webp",
     "cooking-thumb.webp",
     "travel.webp",
     "travel-tall.webp",
-    "travel-thumb.webp"
+    "travel-tile.webp",
+    "travel-thumb.webp",
+    "deutsch-tile.webp",
+    "quran-tile.webp",
+    "english-tile.webp",
+    "stock-tile.webp",
+    "routine-tile.webp",
+    "diet-tile.webp"
   ]
 }

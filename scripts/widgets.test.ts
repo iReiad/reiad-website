@@ -150,9 +150,15 @@ is("the order is the reader's",
    catalogue: that is the whole reason it is an argument. A build
    with two renderers draws two things however long the
    catalogue is. */
+/* Derived from the default rather than restating it. Written out,
+   this said `["pulse:tall", "schools:wide"]` and failed the day
+   the schools' tiles started carrying pictures and went full
+   width: a second copy of the data, in the file that checks the
+   data. What is being asserted is that a build with two renderers
+   draws two things, at whatever size the default gives them. */
 is("a build that draws two widgets draws two",
   storedOf(layoutOf([...HOME_DEFAULT], ["pulse", "schools"])),
-  ["pulse:tall", "schools:wide"]);
+  HOME_DEFAULT.filter((e) => e.startsWith("pulse:") || e.startsWith("schools:")));
 
 is("a round trip is the identity",
   storedOf(layoutOf(["market:tall", "stock:small"], all)),

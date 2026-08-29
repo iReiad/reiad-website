@@ -420,6 +420,92 @@ for (const [cls, layer] of [...castsShadow].sort()) {
   console.error("            --surface-shadow: <the shadow>;");
 }
 
+/* ---------- 2c. do a surface's three lists agree on how many? ----
+
+   THE BUG THIS EXISTS FOR, and it was visible only under a
+   pointer.
+
+   The material paints four things: the specular, the surface's
+   own `--surface-image`, the grain and the glow. Beside that it
+   writes a background-size list and a background-position list,
+   and both are positional: slot two is the surface's.
+
+   A surface whose `--surface-image` is ONE layer keeps that true.
+   A surface painting TWO (a scrim over a photograph, which is
+   every card wearing a picture) pushes every later slot along by
+   one, so the grain's own offset landed on the photograph and the
+   last layer wrapped round to the first value. Nothing showed at
+   rest, because the grain's offset is unset until the pointer
+   arrives; on hover `glow.tsx` writes the element's page offset
+   into it and the picture jumped by that offset and tiled, in
+   the middle of the card, under the cursor.
+
+   So the rule is one sentence: a class that paints N layers into
+   `--surface-image` declares N entries in `--surface-size` and N
+   in `--surface-pos`. Commas at the top level are the count;
+   commas inside `var(...)`, `oklch(...)` or a gradient are not.
+   ============================================================ */
+
+/** Top-level commas plus one: how many layers a list is. */
+function layers(value: string): number {
+  let depth = 0;
+  let n = 1;
+  for (const ch of value) {
+    if (ch === "(") depth += 1;
+    else if (ch === ")") depth -= 1;
+    else if (ch === "," && !depth) n += 1;
+  }
+  return n;
+}
+
+{
+  /** Every class that sets one of the three, with what it set. */
+  const lists = new Map<string, { image?: string; size?: string; pos?: string; layer: string }>();
+  for (const [layer, sel, body] of all) {
+    if (layer === "glow") continue;
+    for (const part of sel.split(",")) {
+      const m = part.trim().match(/^\.([a-z][a-z0-9-]*)$/);
+      if (!m) continue;
+      const at = lists.get(m[1]) ?? { layer };
+      for (const [prop, key] of [
+        ["--surface-image", "image"], ["--surface-size", "size"], ["--surface-pos", "pos"],
+      ] as const) {
+        /* The LAST declaration wins, which is what the cascade
+           does too: a media query further down the file is how a
+           surface says "and this one on a phone". */
+        const found = [...body.matchAll(
+          new RegExp(`${prop}\\s*:\\s*([^;}]+)`, "g"))].pop();
+        if (!found) continue;
+        at[key] = found[1].trim();
+        /* The layer reported is the one that PAINTS, not whichever
+           rule happened to name the class first: an error naming
+           the wrong layer sends the next reader to the wrong
+           file. */
+        if (key === "image") at.layer = layer;
+      }
+      lists.set(m[1], at);
+    }
+  }
+
+  for (const [cls, at] of [...lists].sort()) {
+    if (!at.image) continue;
+    const n = layers(at.image);
+    if (n < 2) continue;
+    for (const [what, value] of [["--surface-size", at.size], ["--surface-pos", at.pos]] as const) {
+      const have = value === undefined ? 0 : layers(value);
+      if (have === n) continue;
+      bad += 1;
+      console.error(`\n  x .${cls} (@layer ${at.layer}) paints ${n} surface layer(s)`
+        + ` and declares ${have === 0 ? "no" : have} ${what} entr(y/ies).`);
+      console.error("        The material writes one slot per layer for the size and the");
+      console.error("        position, so a surface painting more than one pushes the grain");
+      console.error("        and the glow along and the lists come apart. What that looks");
+      console.error("        like is a picture that jumps and tiles when the pointer");
+      console.error(`        arrives. Declare ${n} entr(y/ies) in ${what}.`);
+    }
+  }
+}
+
 /* ---------- 3. the ladder is a ladder ----------
 
    The five kinds are a physical progression, not five rows
