@@ -2217,6 +2217,36 @@ const isHTML = (request) =>
   request.mode === "navigate" ||
   (request.headers.get("accept") ?? "").includes("text/html");
 
+/* ---------- the one file whose name does not change ----------
+
+   Everything else on this site is covered by one of two
+   mechanisms and both key off the URL. A Next chunk carries a
+   content hash, so a new build is a new address and the cache
+   cannot answer for it. A served module is in PRECACHE, so
+   `scripts/check-sw.ts` fails the moment its bytes change without
+   VERSION moving, and the bump empties the shell.
+
+   `/studio/app.js` is neither, on purpose: `app/vite.config.ts`
+   builds it to ONE FILE AT A STABLE PATH so that this file and
+   the route that loads it keep naming something real, and it is
+   232 KB, so precaching it would put a quarter of a megabyte on
+   the first visit of every reader who will never open the Studio.
+
+   Which leaves it on the branch at the bottom of this file, where
+   the cache answers first and the network refreshes for next
+   time. For a file that changes name that is exactly right. For
+   one that does not, it means the Studio is ALWAYS ONE LOAD
+   BEHIND: publish a change, open the page, get the previous
+   build; reload, get the new one. Every check passed, the deploy
+   was correct, and the page was a build old.
+
+   So it is network first, like HTML, with the cache as the
+   fallback rather than the answer. The person on this page is the
+   person who just changed it and is online; a request per load is
+   the right price for an editor never being a version behind, and
+   the fallback still opens it on a train. */
+const STABLE_BUNDLE = /^\/studio\//;
+
 self.addEventListener("fetch", (event) => {
   const { request } = event;
   if (request.method !== "GET") return;
@@ -2255,7 +2285,7 @@ self.addEventListener("fetch", (event) => {
      up. */
   if (url.pathname === "/admin") return;
 
-  if (isHTML(request)) {
+  if (isHTML(request) || STABLE_BUNDLE.test(url.pathname)) {
     event.respondWith(
       fetch(request)
         .then((response) => {
@@ -2281,8 +2311,17 @@ self.addEventListener("fetch", (event) => {
         })
         .catch(async () =>
           (await caches.match(request)) ??
-          (await caches.match("/offline.html")) ??
-          new Response("Offline", { status: 503, headers: { "Content-Type": "text/plain" } })
+          /* `offline.html` only for something that was asking for
+             a page. Handing it back for `/studio/app.js` is a
+             script tag whose body is a document, which is a parse
+             error in the console instead of an editor that says
+             it is offline. */
+          (isHTML(request) ? await caches.match("/offline.html") : undefined) ??
+          new Response(
+            isHTML(request) ? "Offline" : "/* offline */",
+            { status: 503, headers: {
+              "Content-Type": isHTML(request)
+                ? "text/plain" : "text/javascript" } })
         )
     );
     return;
