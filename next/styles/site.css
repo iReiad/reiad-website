@@ -82,6 +82,12 @@
      use it, and it is registered so it animates rather than
      switching. */
   @property --art-a    { syntax: "<number>";  initial-value: 0;   inherits: true;  }
+  /* How far INTO a piece the reader has got, 0 at the top and 1
+     once they are reading. Inherited, because the thing that
+     sets it is the page and the things that answer it are the
+     rail and the bar. `@layer shell` is where it is driven and
+     read; see "the reading hush". */
+  @property --hush     { syntax: "<number>";  initial-value: 0;   inherits: true;  }
 
   /* How much of the breadcrumb trail is hidden off each end of it
      on a phone, where the row scrolls. A scroll timeline drives
@@ -893,19 +899,74 @@
     /* --- metrics --- */
     --wrap-pad: 22px;
 
-    /* How wide a line of prose runs, and how big it is.
-       `--measure` has been 66ch since the first version of this
-       site and still is: what changed in August 2026 is that a
-       signed-in reader can move it, so the literal became a
-       default for `--read-measure` rather than the value itself.
-       Both are set on <html> by the boot script in
-       `next/components/shell.tsx` before the first paint, and by
-       `aab/prefs.js` when the reader changes one. Neither is set
-       for a reader who has never expressed a preference, which is
-       why the defaults are here and not there. */
-    --read-measure: 66ch;
+    /* HOW WIDE A LINE OF PROSE RUNS, AND IT IS NOT A CHARACTER
+       COUNT, because this site is written in two scripts and no
+       character count can be true in both.
+
+       It was `66ch` from the first version until 30 August 2026,
+       and the settings panel said "about 66 characters" beside
+       it. `ch` is the advance width of the "0" glyph, so that
+       promise held only for a font whose average letter is as
+       wide as its nought. Measured against this site's own prose,
+       in a browser: 66ch is 671px, and 671px of Noto Sans Bengali
+       at 16px holds a MEDIAN OF 116 Bengali characters and 18
+       words. The English half of the same site got 78 characters
+       and 13 words out of the identical token. One number, two
+       answers, and the panel stating a third.
+
+       So the unit is a length and the metric is WORDS, which is
+       the thing Bringhurst's 45-to-75 was a proxy for and the
+       only one that means the same in both scripts: a line the
+       eye can sweep is nine to twelve words wherever it is set.
+       Both bases are measured rather than chosen, and
+       `next/reading.test.ts` re-measures them against real rows
+       and fails if a font update or a token edit moves either.
+
+       Bengali letters are NARROW AND TALL where Latin is wide and
+       short: 0.36em against 0.5em across, 0.64em of ink against
+       an x-height of 0.475em. That is the whole reason the two
+       bases differ, and it is also why Bangla is not set larger
+       here: at one size its letters already carry more ink than
+       Latin lowercase, so a bump would make it shout.
+
+       `--read-wide` is the reader's own step and is a MULTIPLIER
+       rather than a width, so one knob moves both scripts and
+       the boot script needs no idea which one it is on. It is set
+       on <html> before the first paint by the boot script in
+       `next/components/shell.tsx`, and by `aab/prefs.js` when the
+       reader changes it. Neither is set for a reader who has
+       never expressed a preference, which is why the default is
+       here and not there. */
+    --measure-base: 34rem;
+    --read-wide: 1;
     --read-scale: 1;
-    --measure: var(--read-measure);
+    --measure: calc(var(--measure-base) * var(--read-wide));
+
+    /* HOW FAR A THING THAT IS NOT PROSE MAY GO. A table of six
+       columns and a photograph are not lines to be swept, so the
+       measure is the wrong bound for them, and the page is the
+       right one.
+
+       `--rail-w` is subtracted and that is a FIX, not a
+       refinement: `figure.full` was `width: 100vw` with a
+       `50% - 50vw` margin, and 100vw is the WINDOW. On a desktop
+       with the rail open that is 268px more than the page it is
+       on, so a full-bleed photograph ran a hundred and thirty
+       pixels underneath the navigation and lost its left edge.
+       It rendered perfectly and nothing failed, because nothing
+       on this site measures a photograph.
+
+       `--rail-w` is declared in `@layer shell`, which is later
+       than this one. That is fine and worth knowing why: layer
+       order decides which DECLARATION of a custom property wins,
+       and only one place declares this one. Both are on <html>,
+       so it resolves here. */
+    --read-out: min(100vw - var(--rail-w, 0px) - var(--wrap-pad) * 2, 1080px);
+    /* And the same measurement with no cap on it, for the one
+       thing that means EDGE TO EDGE. A wide figure and a table
+       stop at 1080 because past that they stop being one object
+       a reader takes in; a full-bleed photograph is the page. */
+    --read-edge: calc(100vw - var(--rail-w, 0px));
     /* --- the corners ---
 
        Four rungs and a pill, and every corner on the site is one
@@ -995,6 +1056,24 @@
        (auto, min-content…), powers the accordions below. */
     interpolate-size: allow-keywords;
   }
+
+  /* THE SAME LINE, IN THE OTHER SCRIPT.
+
+     Measured, not chosen: 26rem of Noto Sans Bengali at 16px
+     holds a median of eleven words, which is what 34rem of the
+     Latin faces holds. The two differ because the scripts do: a
+     Bengali letter is about 0.36em wide against Latin's 0.5em, so
+     the same column takes half as many words again.
+
+     On <html> and not on `body`, because `--measure` is declared
+     on `:root` and a custom property is substituted AT THE
+     ELEMENT THAT DECLARES IT. Setting the base on a descendant
+     would leave `--measure` computing 34rem on <html> and handing
+     that same computed value down: the rule would read correctly,
+     apply to nothing, and every check would pass. Both selectors
+     are the same element, so specificity settles it, and both are
+     in this layer so nothing later has to know. */
+  html[lang="bn"] { --measure-base: 26rem; }
 
   /* ============================================================
      Dark, and the accent's scope
@@ -4160,10 +4239,41 @@ it collapsed to the width of the word "Bangladesh". */
 
     & h1 { font-size: clamp(1.9rem, 4.8vw, 2.7rem); max-width: 24ch; }
     & .meta { margin-block: 14px 30px; color: var(--ink-soft); }
-    & h2 { font-size: 1.35em; margin-block: 34px 12px; }
-    & h3 { font-size: 1.12em; margin-block: 26px 10px; }
-    & p, & li { max-width: var(--measure); margin-bottom: 15px; }
-    & ul, & ol { padding-left: 22px; margin-bottom: 15px; }
+
+    /* A HEADING HAS TO BE FINDABLE AT SPEED. These were 1.35em
+       and 1.12em, which on a 16px body is 21.6 and 17.9: in a
+       thirteen-thousand-pixel piece that is a paragraph in bold,
+       and a reader looking for the part about DSES scrolls past
+       it twice. The step between the two matters as much as their
+       size, because what a reader is really reading is the
+       RANKING: one of these opens a part, the other opens a
+       point inside it.
+
+       The space above is what actually separates a section, and
+       it is asymmetric on purpose: a heading belongs to what
+       comes after it, so there is three times as much air above
+       as below. It was 34/12, which is close, and the gap has
+       grown with the size rather than being retyped. */
+    & h2 { font-size: 1.55em; margin-block: 2.2em 0.55em; line-height: 1.3; }
+    & h3 { font-size: 1.18em; margin-block: 1.9em 0.5em; line-height: 1.4; }
+    /* A heading is a short line and a ragged one reads as an
+       accident. `balance` is capped at a handful of lines by the
+       spec, which is exactly what a heading is. */
+    & :is(h1, h2, h3) { text-wrap: balance; }
+    /* An anchored heading must not arrive underneath the bar that
+       is fixed over the top of the page. `--top-space` is the
+       shell's own answer to how far down a page begins. */
+    & :is(h1, h2, h3)[id] { scroll-margin-top: calc(var(--top-space, 76px) + 12px); }
+
+    /* THE GAP BETWEEN TWO PARAGRAPHS WAS HALF A LINE. 15px under
+       a Bangla line-height of 1.9 is 0.49lh, which is less space
+       than there is between two lines of the same paragraph: the
+       page reads as one block and a reader loses their place on
+       every return sweep. Said in `lh` rather than pixels so it
+       stays right in both scripts and at every one of the three
+       type sizes, which a pixel cannot. */
+    & p, & li { max-width: var(--measure); margin-bottom: 0.78lh; }
+    & ul, & ol { padding-left: 22px; margin-bottom: 0.78lh; }
     & blockquote {
       margin: 26px 0; padding-left: 18px;
       border-left: 3px solid var(--accent);
@@ -4181,6 +4291,86 @@ it collapsed to the width of the word "Bangladesh". */
     & th, & td { text-align: left; padding: 9px 12px; border-bottom: 1px solid var(--hairline); }
     & th { color: var(--accent); font-family: var(--font-mono); font-size: 0.72em;
            letter-spacing: 0.06em; text-transform: uppercase; font-weight: 500; }
+  }
+  /* ============================================================
+     THE READING COLUMN IS THE PAGE
+
+     `.wrap` is 1080px and `--measure` capped the paragraphs
+     INSIDE it, so every line of every piece and every lesson sat
+     hard against the left edge of four hundred empty pixels. The
+     heading, the byline and the prose were a column somebody had
+     forgotten to centre. Capping the wrap itself puts the white
+     space where a page puts it, which is on both sides of the
+     words rather than all of it on one.
+
+     `:has()` rather than a class on the two routes, for the
+     reason `bare()` in worker.js is a rule and not a habit: a
+     third page that renders a reading column gets this without
+     anybody coming here. `.article` IS its own wrap and
+     `.term-article` sits inside one with the prev/next pair, so
+     both spellings are needed and both mean the same thing.
+
+     `--wrap-pad` is added back because a wrap spends it on
+     padding, so the content box comes out at exactly the measure.
+     Anything that is not prose still leaves the column: a wide
+     figure, a full-bleed one and a table each restate their own
+     width, and each is centred on the column rather than on the
+     window. */
+  .article,
+  main .wrap:has(> .term-article),
+  /* The thread under a piece is the same reader reading the same
+     page, and it was `.wrap-narrow`: 760px, which is nineteen
+     Bangla words a line. A comment is short text and short text
+     is where a too-wide measure hurts most, because there are not
+     enough lines to learn the sweep. */
+  main:has(> .article) > .comments {
+    max-width: calc(var(--measure) + var(--wrap-pad) * 2);
+    margin-inline: auto;
+  }
+
+  /* AND `100vw` IS NINE PIXELS WIDER THAN THE PAGE IT IS ON.
+
+     `--read-out` is measured from the viewport, and `100vw`
+     INCLUDES the classic scrollbar while the page it describes
+     does not. So a full-bleed figure overhung the right edge by a
+     scrollbar's width and the whole document scrolled sideways by
+     it: measured at 9px on every width where the 1080px cap was
+     not already doing the bounding. It is not 143px any more, and
+     nine pixels of horizontal scroll is still horizontal scroll.
+
+     There is no arithmetic that fixes it. The layout viewport's
+     width is not expressible in CSS from inside the page, a
+     custom property cannot carry `calc(100vw - 100%)` because a
+     percentage is substituted at the element that USES it, and
+     `container-type` would buy `100cqw` at the price of making
+     `main` a containing block for every fixed descendant on 250
+     lesson pages.
+
+     `clip` rather than `hidden`: hidden makes a scroll container,
+     which would give the page a second scrollport and break
+     `position: sticky` inside it. Clip does neither. It is on
+     `main` rather than on `.shell-col` because the top bar is
+     fixed INSIDE that column, and a fixed child of a clipping
+     ancestor is clipped in every engine that matters.
+
+     What it costs is up to half a scrollbar off each side of a
+     full-bleed photograph on a desktop with classic scrollbars,
+     which is four pixels. */
+  main:has(:is(.article, .term-article)) { overflow-x: clip; }
+
+  /* A TABLE IS NOT PROSE and must not be held to the measure. Six
+     columns of figures in a 416px column is a scroller a reader
+     has to drag to read one row, and the measure exists to make
+     a LINE easy to sweep rather than to make everything narrow.
+
+     The same arithmetic `figure.wide` uses, and for the same
+     reason: `50%` is half the column, so subtracting half the
+     wider width centres the wider thing on the column's own
+     centre line whatever the column is doing. */
+  .article .table-scroll,
+  .term-article .table-scroll {
+    width: min(100% + 22rem, var(--read-out));
+    margin-inline: calc(50% - min(50% + 11rem, var(--read-out) / 2));
   }
   /* tables get their own scroller on narrow screens */
   .table-scroll { overflow-x: auto; }
@@ -4628,8 +4818,8 @@ it collapsed to the width of the word "Bangladesh". */
      have to restate max-width: the figure is held to the measure
      now, and a width without it is a width the max-width caps. */
   figure.wide {
-    width: min(100vw - 44px, 1080px); max-width: none;
-    margin-inline: calc(50% - min(50vw - 22px, 540px));
+    width: var(--read-out); max-width: none;
+    margin-inline: calc(50% - var(--read-out) / 2);
   }
   figure.duo {
     display: grid; gap: var(--s-6);
@@ -4653,8 +4843,17 @@ it collapsed to the width of the word "Bangladesh". */
      value the Studio uses when it draws the 1200x630 share card,
      so what a reader sees and what WhatsApp shows agree. */
   figure.full {
-    width: 100vw; max-width: none;
-    margin-inline: calc(50% - 50vw); margin-block: 34px;
+    /* The page, not the window: `100vw` on its own put a hundred
+       and thirty pixels of every full-bleed photograph under the
+       rail, and 143px of horizontal scroll on the page it was on.
+       `--read-edge` is the same measurement with the navigation
+       taken off. It is still a scrollbar too wide, because
+       `100vw` includes one and the page does not, and that
+       overhang is clipped rather than scrolled: see `overflow-x:
+       clip` above. */
+    width: var(--read-edge); max-width: none;
+    margin-inline: calc(50% - var(--read-edge) / 2);
+    margin-block: 34px;
 
     & img { border-radius: 0; border-inline: 0; }
     & figcaption { margin-inline: auto; max-width: var(--measure); padding-inline: 22px; }
@@ -4718,12 +4917,46 @@ it collapsed to the width of the word "Bangladesh". */
     & strong { font-family: var(--font-serif); font-weight: 500; font-size: var(--t-6); }
   }
 
+  /* THE SEPARATOR BELONGS TO THE THING IN FRONT OF IT.
+
+     It was a `<span class="dot">` between the items, and a
+     flex-wrap has no idea the two go together: on a phone the
+     byline broke as "Rony Reiad · 9 August, 2026 ·" and then
+     "11 min read" on the next line, with a full stop hanging off
+     the end of the first. Drawn as `::after` on every item but
+     the last, it wraps as one piece by construction and there is
+     no markup to keep in step. */
   .byline {
-    display: flex; align-items: center; gap: var(--s-5); flex-wrap: wrap;
+    display: flex; align-items: baseline; gap: var(--s-5); flex-wrap: wrap;
     color: var(--ink-soft); font-size: var(--t-4);
     margin-block: 16px 30px;
   }
-  .byline .dot { width: 3px; height: 3px; border-radius: 50%; background: currentColor; }
+  .byline > :not(:last-child)::after {
+    content: "·"; margin-inline-start: var(--s-5); opacity: 0.6;
+  }
+
+  /* ---------- what a reader can DO with a piece ----------
+
+     `<Keep>` drew its own band and `<ReadAloud>` drew another,
+     both between the byline and the first sentence, so a
+     signed-in reader met two rows of controls and a speed slider
+     before a word of the piece. Measured on an article: fourteen
+     focusable things sat above the first paragraph.
+
+     One row now, and it sits with the byline rather than under
+     it, because saving a piece and hearing it are facts about the
+     piece in the same way its length is. The children keep their
+     own classes and their own tests; this only stops them each
+     claiming a band of the page. */
+  .piece-tools {
+    display: flex; flex-wrap: wrap; align-items: center;
+    gap: var(--s-4) var(--s-5);
+    margin-block: -14px 30px;
+
+    /* Both were blocks with their own vertical margins, which is
+       what made them two bands. */
+    & > .keep-bar, & > .read-aloud-toolbar { margin: 0; }
+  }
 }
 
 /* ============================================================
@@ -9354,7 +9587,13 @@ German for day, and .tag is what the site has always called
        which is what makes navigating read as one page
        rearranging. Same reason the old header carried one. */
     view-transition-name: site-rail;
-    transition: width var(--slow) var(--ease);
+    /* Opacity is in the list because of the reading hush at the
+       bottom of this layer, and it is listed HERE rather than
+       there: a `transition` in a later rule REPLACES the list
+       underneath rather than merging with it, so a second
+       declaration would have taken the width animation off the
+       rail and the fold would have snapped. */
+    transition: width var(--slow) var(--ease), opacity var(--slow) var(--ease);
     overflow: hidden;
   }
 
@@ -9734,7 +9973,9 @@ German for day, and .tag is what the site has always called
     border-radius: var(--radius-pill);
     border: 1px solid var(--glass-edge);
     --surface-shadow: var(--glass-lift);
-    transition: left var(--slow) var(--ease);
+    /* `opacity` for the reading hush, in this list for the reason
+       the rail's says. */
+    transition: left var(--slow) var(--ease), opacity var(--slow) var(--ease);
     view-transition-name: site-topbar;
   }
 
@@ -10101,6 +10342,20 @@ German for day, and .tag is what the site has always called
   /* ---------- the same menu on a phone ---------- */
 
   @media (max-width: 900px) {
+    /* THE RAIL TAKES NO WIDTH HERE, and the token has to say so.
+
+       It is a drawer laid over the page below 900px rather than a
+       column beside it, and `--rail-w` went on reading 268px
+       anyway: `.shell-col` overrode its own margin and `.topbar`
+       overrode its own left, so the wrong value was true and
+       invisible. Anything that later asked the same question got
+       the desktop answer on a phone, which is what `--read-out`
+       does: a table would have been offered 78 pixels.
+
+       `.rail` re-declares it on ITSELF just below, as the drawer's
+       own width, so this is the page's answer and that is the
+       drawer's. */
+    :root { --rail-w: 0px; }
     .shell-col { margin-left: 0; }
 
     /* THE COLUMN MOVES TO THE BUTTON.
@@ -10250,6 +10505,103 @@ German for day, and .tag is what the site has always called
   @media (max-width: 400px) {
     .topbar-mark span { display: none; }
   }
+
+  /* ============================================================
+     THE READING HUSH
+
+     A page of this site is fourteen destinations down the left, a
+     bar across the top and a switch at the bottom, and that is
+     right on a hub, where choosing is what a reader came to do.
+     On a piece it is a control room built around one column of
+     prose: measured on an article, fourteen focusable controls
+     sit between the top of the page and the first sentence.
+
+     So the furniture goes quiet once the reader is past the
+     heading, and comes back the moment they reach for it. Nothing
+     moves, nothing is removed, nothing leaves the tab order and
+     no layout changes: it is one number and it drives opacity.
+
+     ---- it is the SCROLL POSITION, not a timer ----
+
+     A "you have stopped scrolling" tail would flash the rail on
+     and off with every wheel notch. Where the reader IS in the
+     piece is the honest signal: bright at the top where they are
+     orienting, quiet in the body where they are reading, and
+     bright again the moment they scroll back up to leave. That is
+     `animation-timeline: scroll()`, so there is no listener, no
+     rAF and no state, and it costs nothing when the page is
+     still. `check-relief.ts` knows this one by name for the same
+     reason it knows the progress bar: the animation IS the scroll
+     position rather than a decoration playing over it.
+
+     ---- why two numbers and not one ----
+
+     An animation BEATS a plain declaration in the cascade, so
+     `:hover { opacity: 1 }` over an animated opacity does
+     nothing. `--hush` is animated and `--awake` is not, they
+     multiply, and neither ever contests the other. The same
+     arrangement `--tex-strength` uses one layer up.
+
+     ---- and when it does not happen at all ----
+
+     A reader who has asked for more contrast, or for less
+     transparency, has asked for exactly the opposite of this.
+     Both are honoured by leaving `--hush` at nought, which is the
+     state the page is in before any of this runs. */
+  @supports (animation-timeline: scroll()) {
+    @media not ((prefers-contrast: more) or (prefers-reduced-transparency: reduce)) {
+      /* `:has()` rather than a class on the two reading routes,
+         so a third page that renders a column of prose is quiet
+         without anybody coming here. */
+      body:has(:is(.article, .term-article)) {
+        animation: reading-hush linear both;
+        animation-timeline: scroll(root block);
+        /* Not from nought: the first screen is the heading, the
+           byline and the opening, and a rail that starts fading
+           on the first wheel notch reads as a fault. */
+        animation-range: 120px 460px;
+      }
+      @keyframes reading-hush { to { --hush: 1; } }
+    }
+  }
+
+  /* ---- what goes quiet, and by how much ----
+
+     THE NOISE IN THE RAIL IS THE COLOUR, NOT THE WORDS. Twelve
+     destinations, each with a filled lozenge in its section's own
+     hue, is a row of traffic lights down the edge of a page of
+     prose; the labels beside them are already quiet grey. So the
+     marks come down hard and the panel barely moves, which is a
+     stronger hush than dimming the whole thing and a BETTER
+     contrast ratio at the same time.
+
+     0.2 on the panel is not a taste. Measured on the rendered
+     pixels of one nav label, in both themes: an even fade reaches
+     4.82:1 in light at 0.35 and 3.82:1 at 0.42, and 4.5:1 is the
+     line for normal text. At 0.2 the label sits at 7.9:1 light
+     and 8.3:1 dark, which leaves room for a theme to move without
+     anybody noticing that it has stopped passing.
+     `next/reading.test.ts` re-measures both. */
+  :is(.rail, .topbar) {
+    --awake: 1;
+    opacity: calc(1 - var(--hush) * var(--awake) * 0.2);
+  }
+  /* Nested opacity multiplies, so a mark ends up at 0.36 of
+     itself while the words beside it are at 0.8. That is the
+     whole idea in one line. */
+  :is(.rail-ico, .rail-mark-art, .rail-label, .topbar-mark) {
+    opacity: calc(1 - var(--hush) * var(--awake) * 0.55);
+    transition: opacity var(--slow) var(--ease);
+  }
+  /* Reaching for it is enough, and so is a tab key. `:focus-within`
+     is what makes the keyboard path work: nothing here can be
+     reached by hovering a pointer that is not there, and a rail
+     that stayed dim under a focus ring would be a rail somebody
+     tabbing through the site cannot read. */
+  :is(.rail, .topbar):is(:hover, :focus-within) { --awake: 0; }
+  /* And the drawer is never hushed: on a phone it is only on
+     screen because the reader just opened it. */
+  html[data-drawer="open"] .rail { --awake: 0; }
 
   @media (prefers-reduced-motion: reduce) {
     .rail, .shell-col, .audience-slider, .rail-toggle svg { transition: none; }

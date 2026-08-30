@@ -1513,6 +1513,135 @@ and what they type is theirs and the browser's, which is the same rule
 the ladder and the ticks follow. The book is a route now and
 `workbook-body.tsx` loads the engine through `SiteScripts`.
 
+## A piece is a page, not a console
+
+**The measure is a LENGTH and the setting counts WORDS.** It was
+`66ch` from the first version of this site and the settings panel
+said "about 66 characters" beside it. `ch` is the advance width of
+the "0" glyph, which is a fact about a font rather than about a
+script, and this site is written in two. Measured in a browser
+against the site's own rows, `66ch` is 671px, and 671px holds a
+median of 116 Bengali characters and 18 words where the English
+half of the same site got 78 characters and 13. One token, two
+answers, and the panel stating a third.
+
+So `--measure-base` is a length, `html[lang="bn"]` carries its own,
+and the reader's three steps are a MULTIPLIER (`--read-wide`) so
+one control moves both scripts and the boot script needs no idea
+which page it is on.
+
+| | Latin | Bangla |
+| --- | --- | --- |
+| `--measure-base` | 34rem | 26rem |
+| words a line, measured | 11 | 11 |
+
+The note beside each step says words, because words is the thing
+Bringhurst's 45-to-75 was always a proxy for and the only number
+that means the same in both scripts. Bengali letters are narrow
+and tall where Latin is wide and short, 0.36em against 0.5em
+across and 0.64em of ink against an x-height of 0.475em, which is
+the whole reason the two bases differ and also why Bangla is NOT
+set larger: at one size it already carries more ink than Latin
+lowercase.
+
+**`next/reading.test.ts` measures all six combinations against real
+rows**, in a real browser, off the line boxes themselves. Nothing
+else could see any of this: every check passed, the page rendered
+perfectly, and the only symptom was that reading a Bangla piece on
+a laptop was tiring in a way nobody could point at.
+
+**The column is centred, and it is the WRAP that is capped.** The
+measure used to cap the paragraphs inside a 1080px box, so every
+line sat hard against the left of four hundred empty pixels.
+`:has()` rather than a class on the two routes, so a third page
+that renders a column of prose is a page without anybody coming
+here.
+
+**A table and a photograph are not prose and leave the column.**
+`--read-out` for a wide figure and a table, capped at 1080; the
+uncapped `--read-edge` for a full-bleed photograph, which means
+edge to edge.
+
+**`100vw` is the WINDOW and the page is not.** `figure.full` was
+`width: 100vw` with a `50% - 50vw` margin, so on a desktop it ran
+131px under the rail and put 143px of horizontal scroll on every
+article that had one. It rendered perfectly and nothing failed,
+because nothing on this site measured a photograph. Both tokens
+subtract `--rail-w`, and `:root { --rail-w: 0px }` inside the phone
+media query is part of that fix: the rail is a drawer below 900px
+and the token went on reading 268px, which nothing had noticed
+because `.shell-col` and `.topbar` each overrode their own use of
+it.
+
+`100vw` still includes a scrollbar that the page does not, so
+`main:has(:is(.article, .term-article))` carries `overflow-x: clip`
+and the few pixels of overhang are clipped rather than scrolled.
+`clip` and never `hidden`: hidden makes a scroll container, which
+gives the page a second scrollport and breaks `position: sticky`
+inside it.
+
+### The reading hush
+
+A hub is a place to choose and its fourteen destinations are the
+point. A piece is one column of prose with a control room built
+round it: measured, fourteen focusable things sat between the top
+of an article and its first sentence.
+
+So the furniture goes quiet once the reader is past the heading and
+comes back the moment they reach for it. Nothing moves, nothing is
+removed, nothing leaves the tab order, and no layout changes.
+
+**It is the scroll POSITION, not a timer.** A "they have stopped
+scrolling" tail flashes the rail on and off with every wheel notch.
+Where the reader is in the piece is the honest signal, so it is
+`animation-timeline: scroll()`: no listener, no rAF, no state, and
+nothing at all while the page is still. `check-relief.ts` knows it
+by name in `TIED_TO_SCROLL`, like the progress bar.
+
+**Two numbers, because an animation beats a plain declaration.**
+`:hover { opacity: 1 }` over an animated opacity does nothing.
+`--hush` is animated and `--awake` is not, they multiply, and
+neither ever contests the other.
+
+**The noise is the COLOUR, not the words.** Twelve destinations
+each with a filled lozenge in its section's hue is a row of traffic
+lights down the edge of a page of prose. The marks come down by
+0.55 and the panel by 0.2, which is a stronger hush and a better
+contrast ratio at once: measured on the rendered pixels of a nav
+label, an even fade reaches 4.82:1 in light at 0.35 and 3.82:1 at
+0.42, and 4.5:1 is the line. At 0.2 the label sits at 7.9:1.
+`reading.test.ts` re-measures both themes.
+
+**`:focus-within` is not optional.** Nothing in a rail can be
+reached by hovering a pointer that is not there, and a rail that
+stayed dim under a focus ring is unreadable to anybody tabbing
+through the site. `prefers-contrast: more` and
+`prefers-reduced-transparency: reduce` switch the whole thing off,
+because a reader who asked for either has asked for the opposite of
+this.
+
+### And the small things that were wrong
+
+- **The separator belongs to the thing in front of it.** A byline
+  of `<span>` items with `<span class="dot">` between them wraps as
+  "Rony Reiad · 9 August, 2026 ·" with a dot hanging off the end.
+  It is an `::after` on every child but the last now, so it wraps
+  as one piece by construction and there is no markup to keep in
+  step.
+- **One row of tools, not two bands.** `<Keep>` drew its own block
+  and `<ReadAloud>` drew another, both between the byline and the
+  first sentence. `.piece-tools` holds them on the byline's own
+  line.
+- **The speed slider only exists while it is speaking.** Nobody
+  knows a voice is too fast until they have heard it, and it was a
+  slider on the way into every piece.
+- **A paragraph gap of 15px under a Bangla line-height of 1.9 is
+  0.49lh**, which is LESS space than there is between two lines of
+  the same paragraph. It is `0.78lh`, said in `lh` so it stays
+  right in both scripts and at all three type sizes.
+- **A heading has to be findable at speed.** 1.35em on a 16px body
+  is a paragraph in bold.
+
 ## The blocks an article is made of
 
 A piece can hold a box of quick answers, a note in the margin, numbered
@@ -1920,8 +2049,16 @@ node next/insights-hub.test.ts     # the Insights hub's own two: a topic chip th
                                    # browser, skips without)
 node next/read-aloud.test.ts       # the speech control on a piece: what it reads,
                                    # what it steps over, what it marks, and whether
-                                   # Stop stops (51 checks, needs Playwright and a
+                                   # Stop stops (53 checks, needs Playwright and a
                                    # browser, skips without)
+node next/reading.test.ts          # every number this site states about its own
+                                   # typography, measured against its own prose in
+                                   # both scripts: a measure that promises 66
+                                   # characters and delivers 116, a column pinned
+                                   # to one edge, a full-bleed figure under the
+                                   # rail, and a hush a keyboard cannot wake or a
+                                   # reader cannot read through (52 checks, needs
+                                   # Playwright and a browser, skips without)
 node next/market-pulse.test.ts     # the Insights hub's board of headlines: two
                                    # endpoints raced, the device as the last resort,
                                    # a square per story and a window that grows out

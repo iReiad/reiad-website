@@ -201,13 +201,25 @@ export function ReadAloud(): ReactElement | null {
 
   return (
     <div ref={rootRef}
-         className="read-aloud-toolbar my-3 flex flex-wrap items-center gap-2 select-none">
+         className="read-aloud-toolbar flex flex-wrap items-center gap-2 select-none">
       <Button kind="ghost" size="sm" onClick={press}>{speaking ? STOP : IDLE}</Button>
-      <label className="flex items-center gap-1.5 text-t1 text-ink-soft">
-        Speed
-        <input type="range" min="0.7" max="1.4" step="0.1" title="Speech rate"
-               value={rate} onChange={(e) => setRate(Number(e.currentTarget.value))} />
-      </label>
+      {/* SPEED ONLY WHILE IT IS SPEAKING. It was always there, on
+          the row between the byline and the first sentence, which
+          is a slider a reader has to look past to start reading
+          and cannot have an opinion about yet: nobody knows a
+          voice is too fast until they have heard it.
+
+          It keeps its value across a stop and a start, because
+          `rate` is state on this component and only the markup
+          goes. Somebody who slows the voice down once does not
+          have to do it again on the next paragraph. */}
+      {speaking ? (
+        <label className="flex items-center gap-1.5 text-t1 text-ink-soft">
+          Speed
+          <input type="range" min="0.7" max="1.4" step="0.1" title="Speech rate"
+                 value={rate} onChange={(e) => setRate(Number(e.currentTarget.value))} />
+        </label>
+      ) : null}
     </div>
   );
 }

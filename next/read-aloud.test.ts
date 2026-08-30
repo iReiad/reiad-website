@@ -322,6 +322,17 @@ console.log("the speech control on a piece");
     await p.$eval(".read-aloud-toolbar button",
       (n: Element) => `${n.tagName}:${n.getAttribute("type")}`) === "BUTTON:button");
 
+  /* THE SPEED IS NOT THERE UNTIL IT IS SPEAKING, and that is the
+     point of asserting its absence first. It used to sit on the
+     row between the byline and the first sentence of every piece,
+     which is a control a reader has to look past to start reading
+     and cannot yet have an opinion about: nobody knows a voice is
+     too fast until they have heard it. */
+  ok("the speed is not offered before there is a voice to slow down",
+    (await p.$('.read-aloud-toolbar input[type="range"]')) === null);
+
+  await p.click(".read-aloud-toolbar button");
+  await p.waitForSelector('.read-aloud-toolbar input[type="range"]');
   const slider = await p.$eval('.read-aloud-toolbar input[type="range"]', (n: Element) => ({
     min: n.getAttribute("min"), max: n.getAttribute("max"),
     step: n.getAttribute("step"), value: (n as HTMLInputElement).value,
@@ -383,6 +394,13 @@ console.log("the speech control on a piece");
 
 {
   const { page: p } = await openPage(fixture);
+  /* THE READER'S ROUTE TO THE SLIDER, which is the only one there
+     is now: press, hear that it is too fast, slow it down, and go
+     again. The setting survives the stop because `rate` is state
+     on the component and only its markup goes away. */
+  await p.click(".read-aloud-toolbar button");
+  await heard(p, 1);
+  await p.waitForSelector('.read-aloud-toolbar input[type="range"]');
   /* The slider is a controlled input, so it has to be moved the
      way a reader moves it rather than by assigning `value`. */
   await p.$eval('.read-aloud-toolbar input[type="range"]', (n: Element) => {
@@ -391,10 +409,14 @@ console.log("the speech control on a piece");
       ?.set?.call(input, "1.4");
     input.dispatchEvent(new Event("input", { bubbles: true }));
   });
-  await p.click(".read-aloud-toolbar button");
-  await heard(p, 1);
-  ok("moving the slider moves the speed", (await spoken(p))[0].rate === 1.4,
-    String((await spoken(p))[0].rate));
+  await p.click(".read-aloud-toolbar button");       // stop
+  const from = await pressAndCount(p);               // and go again
+  await heard(p, from + 1);
+  ok("moving the slider moves the speed", (await spoken(p))[from].rate === 1.4,
+    String((await spoken(p))[from].rate));
+  ok("and the setting outlives the stop that hid the slider",
+    (await p.$eval('.read-aloud-toolbar input[type="range"]',
+      (n: Element) => (n as HTMLInputElement).value)) === "1.4");
   await p.close();
 }
 

@@ -222,6 +222,10 @@ const TIED_TO_SCROLL: Record<string, string> = {
   "crumbs-bar":
     "a fade at the end of a row that overflows, saying there is more of it. "
     + "Stopping it leaves a trail that looks complete and is not.",
+  "reading-hush":
+    "the rail and the bar going quiet once the reader is past the heading of "
+    + "a piece. It is a function of WHERE THEY ARE, so stopping it does not "
+    + "calm anything: it leaves the control room on over every article.",
 };
 
 /** Comments out, because this file's own prose names the property
@@ -247,6 +251,17 @@ const GUARD = "@media (prefers-reduced-motion: no-preference)";
    rule that had had its guard deleted. A stack cannot be fooled
    that way, because a block that closed is popped. */
 const unguarded: string[] = [];
+/** Which exemptions were actually used. An exemption naming a
+    rule that has been deleted is the same failure `NOT_GLASS` and
+    `KEPT` are keyed against: it reads as cover for something and
+    covers nothing. */
+const reached = new Set<string>();
+/* Counted here rather than by subtracting one length from another
+   at the end: that arithmetic assumed one declaration per
+   exemption, and the third exemption made it wrong by one while
+   still printing a plausible sentence. */
+let guarded = 0;
+let tied = 0;
 {
   const stack: boolean[] = [];
   let head = "";
@@ -270,12 +285,26 @@ const unguarded: string[] = [];
     head += ch;
 
     if (ch === "(" && TIMELINE.test(bare.slice(Math.max(0, i - 40), i + 1))) {
-      if (stack.some(Boolean)) continue;
-      /* The selector this declaration is under, for the
-         exemption, which is the head of the block it is in. */
+      if (stack.some(Boolean)) { guarded += 1; continue; }
+      /* The selector this declaration is under AND the rule's own
+         body, because an exemption has to be able to name the
+         ANIMATION rather than a class. The reading hush is on
+         `body:has(:is(.article, .term-article))`: exempting
+         `.article` there would quietly exempt every future
+         scroll-driven rule on the hundred-odd things an article
+         is made of, which is not what anybody would mean by it.
+         Depth-counted rather than "to the next brace", because a
+         rule that nests would otherwise be read half way. */
       const open = bare.lastIndexOf("{", i);
       const sel = bare.slice(bare.lastIndexOf("}", open) + 1, open);
-      if (Object.keys(TIED_TO_SCROLL).some((cls) => sel.includes(`.${cls}`))) continue;
+      let depth = 0, end = open;
+      for (; end < bare.length; end += 1) {
+        if (bare[end] === "{") depth += 1;
+        else if (bare[end] === "}" && (depth -= 1) === 0) break;
+      }
+      const named = `${sel} ${bare.slice(open, end)}`;
+      const hit = Object.keys(TIED_TO_SCROLL).find((k) => named.includes(k));
+      if (hit) { reached.add(hit); tied += 1; continue; }
       unguarded.push(`site.css:${line}`);
     }
   }
@@ -293,12 +322,19 @@ if (unguarded.length) {
 /* And a stale exemption, for the reason `GONE` in
    `check-pointers.ts` is keyed by two things: a class that has
    left takes its excuse with it. */
-const gone = Object.keys(TIED_TO_SCROLL)
-  .filter((cls) => !new RegExp(`\\.${cls}\\b`).test(CSS));
+/* WAS THE EXEMPTION USED, rather than does its name appear
+   anywhere. It tested `.<key>` against the whole stylesheet,
+   which answers a weaker question: a class that still exists but
+   no longer carries a scroll-driven animation would keep its
+   excuse for ever, and so would one that gained a guard and no
+   longer needs it. `reached` is the set the walk above actually
+   let through. */
+const gone = Object.keys(TIED_TO_SCROLL).filter((key) => !reached.has(key));
 if (gone.length) {
-  fail(`${gone.length} exemption(s) in TIED_TO_SCROLL name nothing:`,
+  fail(`${gone.length} exemption(s) in TIED_TO_SCROLL excuse nothing:`,
     gone.join(", "),
-    "Take them out with the rule they were written for.");
+    "No scroll-driven rule needed them. Take them out with the rule they",
+    "were written for, or with the guard that made them unnecessary.");
 }
 
 if (LIST) {
@@ -311,7 +347,5 @@ if (failures) {
 }
 console.log(`${named.length} classes lift, every one of them defined elsewhere,`
   + " and all of them stop for a reader who asked for no motion, as do the "
-  + `${[...bare.matchAll(/[;{]\s*animation-timeline:/g)].length
-      - Object.keys(TIED_TO_SCROLL).length}`
-  + ` scroll-driven animation(s), with ${Object.keys(TIED_TO_SCROLL).length}`
+  + `${guarded} scroll-driven animation(s), with ${tied}`
   + " tied to the scroll itself.");
