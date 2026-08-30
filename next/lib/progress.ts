@@ -78,6 +78,30 @@ const LAST_KEY: Record<string, string> = {
   quran: "quran-last",
 };
 
+/** Which key a school's ticks are under, and which its bookmark
+    is under. Exported because `components/progress.tsx` needs the
+    same answer and kept its own copy of the mapping, which is the
+    one place a copy could not be got right: it read
+    `${school}-read`, so on the money school it asked for
+    `money-read` and there has never been such a key.
+
+    Nothing failed. The ticks were written correctly under
+    `learn-read` the whole time and every component that DREW one
+    read an empty string: the tick button never lit up, every
+    meter on every money page read nought per cent, no lesson card
+    carried a tick, and "where you left off" always offered lesson
+    one. A reader ticked a lesson, watched nothing happen, and
+    reloaded to the same nothing.
+
+    One vocabulary, one place: `check-rows.ts` enforces exactly
+    this rule for the database and this file is the same rule for
+    the browser. */
+export const readKeyOf = (school: string): string =>
+  READ_KEY[school] ?? `${school}-read`;
+
+export const lastKeyOf = (school: string): string =>
+  LAST_KEY[school] ?? `${school}-last`;
+
 export interface Bookmark {
   /** What the ticks are filed under, and the only field anything
       decides anything by. */
@@ -312,4 +336,149 @@ export function latest(): (Bookmark & { school: string }) | null {
     if (mark?.url && (!best || mark.ts > best.ts)) best = { ...mark, school };
   }
   return best;
+}
+
+/* ============================================================
+   WHERE IN A PIECE, AND WHICH TOOLS
+
+   A tick says a lesson is finished. A bookmark says which lesson
+   was open last. Neither says the thing a reader actually wants
+   on a two thousand word piece read over three evenings, which is
+   WHERE THEY WERE.
+
+   ---- what is stored, and what deliberately is not ----
+
+   Not a scroll offset. That number is a fact about a window: it
+   moves when the reader changes the type size, when they change
+   the measure, when a photograph loads at a different height, and
+   when somebody edits the piece. Restoring one is how a reader
+   ends up three paragraphs from where they were and trusts the
+   feature less than the scrollbar.
+
+   An INDEX into the blocks, plus a signature of the block's first
+   few words, plus how many blocks there were. The signature is
+   what survives an edit: if the piece has been rewritten the
+   block at that index is a different block, so the position is
+   thrown away rather than used, and a nearby match is taken where
+   there is one. A wrong answer here is worse than none.
+
+   ---- and it is a MAP, which is why sync grew a rule ----
+
+   One entry per page, each with its own `ts`. `merge` in
+   `aab/src/sync.ts` reconciles those entry by entry; a `mark`
+   would take the newer whole map and a phone that read one
+   article would throw away every position a laptop had.
+   ============================================================ */
+
+const WHERE_KEY = "where-read";
+const TOOLS_KEY = "tools-used";
+
+/** How many pages' positions to keep. A heavy reader gets through
+    a few hundred pieces; every entry is about eighty bytes and
+    goes up to the account with the rest, so the oldest are
+    dropped rather than kept for ever. Nobody returns to a piece
+    they abandoned two hundred pieces ago and expects the site to
+    have remembered. */
+const KEEP_PLACES = 200;
+
+export interface Place {
+  /** Which block, counting the ones `blocksOf()` selects. */
+  i: number;
+  /** How many there were, so a piece that has changed length can
+      be spotted without reading it. */
+  of: number;
+  /** The first few words of that block, normalised. The index
+      alone is a promise the prose has not been edited. */
+  sig: string;
+  ts: number;
+}
+
+const places = (): Record<string, Place> => {
+  const raw = readJSON<Record<string, unknown>>(WHERE_KEY, {});
+  const out: Record<string, Place> = {};
+  for (const [url, v] of Object.entries(raw)) {
+    if (url === "ts" || v === null || typeof v !== "object") continue;
+    const p = v as Partial<Place>;
+    if (typeof p.i === "number" && typeof p.ts === "number") {
+      out[url] = { i: p.i, of: Number(p.of) || 0, sig: String(p.sig ?? ""), ts: p.ts };
+    }
+  }
+  return out;
+};
+
+/** Where the reader had got to in one page, or null. */
+export const whereRead = (url: string): Place | null => places()[url] ?? null;
+
+/** Every position, for the account page. */
+export const everywhereRead = (): Record<string, Place> => places();
+
+/** Record how far into a page the reader has got.
+
+    A plain write: the last thing said about a page is what that
+    page's position is. FORWARDS-ONLY IS THE CALLER'S JOB and
+    belongs there, because only the caller knows what a visit is:
+    a reader who scrolls back up to check a figure has not un-read
+    the page, and a reader who opens it again tomorrow to reread
+    it has. `components/where.tsx` keeps the furthest block of the
+    visit and only calls this when it moves.
+
+    It was a guard here for one draft, and the guard was wrong in
+    a way worth writing down: it compared the SIGNATURE as well as
+    the index, and the signature is of the block at that index, so
+    it changes on every step. Two different blocks are never
+    "the same place gone backwards", so the guard never fired, and
+    the first thing it let through was a reader arriving at the
+    top of a piece and having their half-way position replaced by
+    the first paragraph. */
+export function markWhere(url: string, place: Omit<Place, "ts">): void {
+  const all = places();
+  all[url] = { ...place, ts: Date.now() };
+
+  const urls = Object.keys(all);
+  if (urls.length > KEEP_PLACES) {
+    urls.sort((a, b) => all[b].ts - all[a].ts);
+    for (const old of urls.slice(KEEP_PLACES)) delete all[old];
+  }
+  /* The map's own stamp, which `merge` skips as an entry and
+     `mark` would have used. It is here so that a map written by
+     this file is the same shape as every other synced value. */
+  writeJSON(WHERE_KEY, { ...all, ts: Date.now() });
+  announce();
+}
+
+/** Forget one page, which is what finishing it means. */
+export function forgetWhere(url: string): void {
+  const all = places();
+  if (!(url in all)) return;
+  delete all[url];
+  writeJSON(WHERE_KEY, { ...all, ts: Date.now() });
+  announce();
+}
+
+/* ---------- which tools this reader actually uses ----------
+
+   A timestamp per tool, and NOT A COUNT. A count cannot be
+   reconciled between two devices without a per-device log: a
+   phone that says five and a laptop that says five are either ten
+   openings or the same five seen twice, and nothing in the value
+   can tell them apart. So the site knows when you last opened the
+   diet tool and does not pretend to know how often, which is the
+   honest half and the useful half. */
+
+export const toolsUsed = (): Record<string, number> => {
+  const raw = readJSON<Record<string, unknown>>(TOOLS_KEY, {});
+  const out: Record<string, number> = {};
+  for (const [id, v] of Object.entries(raw)) {
+    if (id === "ts") continue;
+    const ts = Number((v as { ts?: unknown } | null)?.ts);
+    if (Number.isFinite(ts)) out[id] = ts;
+  }
+  return out;
+};
+
+export function markToolUsed(id: string): void {
+  const raw = readJSON<Record<string, unknown>>(TOOLS_KEY, {});
+  const now = Date.now();
+  writeJSON(TOOLS_KEY, { ...raw, [id]: { ts: now }, ts: now });
+  announce();
 }

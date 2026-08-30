@@ -1225,6 +1225,141 @@ target at "0 of 60" beside a bar of the same school reading
 "9 of 60". A component that reads one of these keys ONCE, on mount,
 has the same bug whether or not it also redraws.
 
+### The money school's ticks were written and never drawn
+
+`components/progress.tsx` kept its own copy of "which key does
+this school use", and it was the one place a copy could not be
+got right. It read `${school}-read`, so on the money school it
+asked for `money-read`, and there has never been such a key: the
+school moved from `/learn/` to `/money/` and its key deliberately
+did not move with it.
+
+The ticks were written correctly under `learn-read` the whole
+time and every component that DREW one read an empty string. The
+tick button never lit up. Every meter on every money page read
+nought per cent. No lesson card carried a tick. "Where you left
+off" always offered lesson one. A reader ticked a lesson, watched
+nothing happen, reloaded, and got the same nothing.
+
+Nothing could see it. `next/progress.test.ts` covers the store
+and the store was right; the money school is the one of the four
+whose tick is React rather than a served module, which is exactly
+why `aab/schools/progress.test.ts` reached the other three and not
+this one, and **nothing had ever pressed the button**.
+`next/tracking.test.ts` does now.
+
+`readKeyOf` and `lastKeyOf` are exported from `next/lib/progress.ts`
+and there is one copy of the mapping. That is `check-rows.ts`'s
+rule about a handler keeping its own copy of a vocabulary, one
+floor down, and it cost the same thing it always costs.
+
+### One table says what a browser is holding
+
+`shared/storage.ts`, and `scripts/check-storage.ts` is what stops
+it rotting. Forty keys had accumulated across fourteen files and
+the only way to find out what this site keeps was to grep for
+`localStorage`, which is archaeology rather than a description.
+
+Every row says what the thing is in a sentence a reader could
+read, which of seven kinds it is, and whether it leaves the
+machine. The kinds are about the READER and not about us: whether
+a thing is something they DID, something they MADE, something
+they CHOSE, a fact about this machine, a credential, a cache, or
+something left over. Those answers are what decide whether it
+should sync, whether erasing an account should take it, and
+whether it is worth keeping at all.
+
+The check asks four questions, and the third is the expensive
+one: **a row that says it syncs and is not in `KEYS` in
+`aab/src/sync.ts` is a promise the account page makes and the
+account does not keep.** The reader finds out on their second
+device, and nothing anywhere says so.
+
+**The first thing it found was two of them**, and they were the
+worst two it could have found: `deutsch-schrift` and
+`english-write`, which hold the sentences a learner types into
+the practice books. The one thing anybody AUTHORS in the four
+schools was the one thing the account did not carry. A learner
+wrote eight German sentences on a laptop, opened the book on a
+phone and found every box empty; "take a copy of everything" left
+them out and "erase everything" left them behind.
+
+```sh
+node scripts/check-storage.ts --list   # what is held, and what travels
+```
+
+### A map needs its own rule, and `mark` is not it
+
+`where-read`, `tools-used` and the two practice books are maps of
+entries rather than one value. A `mark` takes the newer WHOLE
+object, so a phone that read one article would throw away every
+position a laptop had recorded. Nothing would look broken: a
+reader would simply find themselves back at the top of pieces
+they were half way through, on whichever device they used second.
+
+`merge` reconciles entry by entry, which is what a `mark` is one
+level down. An entry that carries its own `ts` answers for
+itself; **an entry that is a plain value falls back to the map's
+own stamp**, and that is what lets the practice books be carried
+without rewriting a value that has somebody's sentences in it.
+What the fallback costs is the one case where the same day was
+written on two devices, where the tiebreak is which device wrote
+last about anything. Every other case is exact.
+
+### Where in a piece, and it is not a scroll offset
+
+`next/lib/progress.ts` and `next/components/where.tsx`. A tick
+says a lesson is finished and a bookmark says which lesson was
+open last; neither says the thing a reader wants on a two
+thousand word piece read over three evenings.
+
+**Not an offset.** That number is a fact about a window: it moves
+with the type size, the measure, a photograph's height and any
+edit to the prose. What is stored is the INDEX of a block, the
+first forty characters of it, and how many blocks there were. The
+signature is what survives an edit: a rewritten piece gives up
+rather than sending somebody to the wrong paragraph, and a single
+inserted paragraph is looked for either side of the index.
+
+**It never jumps on its own.** A page that scrolls itself has
+decided what the reader came for. One quiet control, in the
+`.piece-tools` row that already exists, and only when there is
+somewhere to go.
+
+Three ways of getting it wrong all render a button, which is why
+`next/tracking.test.ts` is written as what a reader would notice:
+
+- a way back to somewhere already on screen, which is a control
+  that answers a question nobody asked,
+- a way back to the end of a piece they finished. **"The last
+  block is above the line" is not the test for finishing**: at
+  maximum scroll the last paragraph sits near the bottom of the
+  window and can never rise to a line a third of the way down, so
+  a reader who read to the end kept a position at about ninety
+  per cent. The bottom of the document is the test,
+- a way back to the wrong paragraph.
+
+**Forwards-only belongs to the component, not to the store.** Only
+something that knows what a visit is can tell scrolling back up
+to check a figure from opening the page again tomorrow to reread
+it. A guard in the store compared the signature as well as the
+index, and the signature is of the block AT that index, so it
+changed on every step and never fired.
+
+### Which tools, and never how many times
+
+`tools-used` is a timestamp per calculator, recorded by the shell
+wherever the page's rail key is in `TOOL_KEYS`, which is derived
+from `shared/nav.ts`. So a sixth tool is recorded by being added
+to that table.
+
+**A timestamp and not a count.** A count cannot be reconciled
+between two devices without a per-device log: a phone that says
+five and a laptop that says five are either ten openings or the
+same five seen twice, and nothing in the value can tell them
+apart. The site knows when you last opened the diet tool and does
+not pretend to know how often.
+
 ### Progress belongs to the account, and the browser is a mirror
 
 `aab/sync.js`, rewritten 17 August 2026, and the whole of it is
@@ -1380,7 +1515,7 @@ at.
   Leaving should be as easy as arriving.
 - **Erase everything**, which means the account and the mirror.
 
-`next/account.test.ts` is the guard: 117 checks in a real browser
+`next/account.test.ts` is the guard: 128 checks in a real browser
 against a routed Supabase.
 
 ### One section on screen
@@ -1971,6 +2106,11 @@ node scripts/check-courses.ts # a Drive id that is not one, the private course
 node scripts/check-api.ts  # the browser asking for an endpoint the Worker
                             # stopped routing, which breaks nothing and
                             # quietly switches a feature off
+node scripts/check-storage.ts # a key kept in a browser that nothing
+                            # describes, a row that says it syncs where the
+                            # account has never heard of it, and anything a
+                            # reader did, made or chose that quietly does not
+                            # travel between their devices
 node scripts/check-app-surface.ts # a table this site holds that the Android
                             # app never hears about, which breaks nothing
                             # either and leaves a feature missing where
@@ -2011,16 +2151,18 @@ node aab/studio-publish.test.ts   # a photo that never reaches R2, under the
                                    # (39 checks, needs Playwright and a browser,
                                    # skips without)
 node next/account.test.ts        # the account's five features, the popover
-                                  # menu, the Save under a byline and the picture
-                                  # a Google sign-in brings, under the real CSP
-                                  # (117 checks, needs the Next build and a
-                                  # browser, skips without)
+                                  # menu, the Save under a byline, the panel
+                                  # that says what this browser is holding, and
+                                  # the picture a Google sign-in brings, under
+                                  # the real CSP (128 checks, needs the Next
+                                  # build and a browser, skips without)
 node aab/sync.test.ts             # a browser's own progress getting into an
                                    # account, resetting, signing out, two
-                                   # signed-in devices, and a refresh that
-                                   # signs somebody out by accident
-                                   # (36 checks, needs Playwright and a
-                                   # browser; it starts its own server)
+                                   # signed-in devices, a map reconciled entry
+                                   # by entry, and a refresh that signs somebody
+                                   # out by accident (50 checks, needs
+                                   # Playwright and a browser; it starts its
+                                   # own server)
 node aab/sw.test.ts               # a bundle at a stable path served a build
                                    # behind, with the real worker installed and
                                    # the files changing underneath it
@@ -2038,7 +2180,18 @@ node next/routine-day.test.ts      # a day that renders and does not mark, an
                                    # (53 checks, needs the Next build and a
                                    # browser, skips without)
 node next/progress.test.ts         # a page that costs a reader their ticks just
-                                   # by being read (23 checks, no browser)
+                                   # by being read, where in a piece they had
+                                   # got to, and which tools they use
+                                   # (41 checks, no browser)
+node next/tracking.test.ts         # what this site records about a reader: a
+                                   # way back to somewhere they can already see,
+                                   # to the end of a piece they finished, or to
+                                   # the wrong paragraph because the prose was
+                                   # edited under the index, all three of which
+                                   # render a button; and the money school's own
+                                   # tick, which nothing had ever pressed
+                                   # (28 checks, needs Playwright and a browser,
+                                   # skips without)
 node next/comments.test.ts        # a comment body that stopped being text, a reply
                                    # two levels deep, or a thread that draws itself
                                    # signed in on the server (28 checks, no browser)

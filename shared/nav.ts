@@ -324,6 +324,19 @@ export function accentStyle(
     strings, which is the failure this whole table exists to stop,
     one level down from the menu itself. A seventh school is one
     edit above and appears here by itself. */
+/** The rail keys that name a CALCULATOR, derived from the group
+    that holds them rather than written out.
+
+    `next/components/used.tsx` records when one was last opened,
+    and deriving it here is what makes a sixth tool recorded by
+    being added to the table above. A list beside this one would
+    be right on the day it was typed, which is the failure at the
+    top of CLAUDE.md. */
+export const TOOL_KEYS: string[] = (NAV.find((g) => g.id === "make")?.items ?? [])
+  .filter((item) => !item.soon)
+  .map((item) => item.key)
+  .filter((key): key is string => Boolean(key));
+
 export const SCHOOL_ACCENTS: string[] =
   NAV.find((g) => g.id === "learn")?.items
     .filter((i) => i.accent && !i.unlisted && !i.soon)

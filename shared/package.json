@@ -25,6 +25,7 @@
     "./insights": "./insights.ts",
     "./activity": "./activity.ts",
     "./csv": "./csv.ts",
-    "./bundle": "./bundle.ts"
+    "./bundle": "./bundle.ts",
+    "./storage": "./storage.ts"
   }
 }

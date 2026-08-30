@@ -94,6 +94,7 @@ import { Targets } from "../../../components/account/targets";
 import { RoutineAccount } from "../../../components/routine/account";
 import { Tiles, Week, Year } from "../../../components/account/year";
 import { Kept } from "../../../components/account/kept";
+import { HeldHere } from "../../../components/account/held";
 import { Settings } from "../../../components/account/settings";
 import { SCHOOL_LADDERS } from "../../../lib/school-ladders";
 
@@ -318,6 +319,15 @@ const PANELS: Panel[] = [
         <Section id="data" title="Your data"
                  blurb="Only what is listed here, and only because it is useful to you. There is no analytics profile behind any of it.">
           <div className="cards grid-2"><Kept /></div>
+
+          {/* AND THE WHOLE OF IT, drawn from `shared/storage.ts`
+              rather than written out, so a key added anywhere on
+              the site appears here without anybody coming to this
+              route. The cards above count what a reader has done
+              per school; this answers the question that had no
+              answer anywhere, which is what all of it IS and
+              which parts leave this machine. */}
+          <HeldHere />
 
           <div className="grid gap-[var(--gap)]
                           grid-cols-[repeat(auto-fit,minmax(min(100%,250px),1fr))]">

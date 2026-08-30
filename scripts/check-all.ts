@@ -125,6 +125,14 @@ const STAGES: Array<[stage: string, entries: Entry[]]> = [
        will not survive the next page load, and nothing else
        would ever say so. */
     "scripts/check-glass.ts",
+    /* Everything this site keeps in a browser, against what the
+       code actually writes and what the account actually carries.
+       A key that says it syncs and is not in `sync.ts` is a
+       promise the account page makes and the account does not
+       keep, and the reader finds out on their second device. The
+       first thing it found was two of them: the sentences a
+       learner types into a practice book. */
+    "scripts/check-storage.ts",
     /* The twelve drawings and the six walls, which are rendered
        in two places that resolve their tokens in two completely
        different ways: the site cascades them and a share card

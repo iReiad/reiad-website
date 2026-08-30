@@ -2777,6 +2777,9 @@
 
     & > .keep-bar, & > .read-aloud-toolbar { margin: 0; }
   }
+
+  .where { display: contents; }
+  .where-btn { color: var(--accent); border-color: var(--accent); }
 }
 
 @layer studio {
@@ -9715,7 +9718,7 @@
       .pledge, .hub-pledge, .id-card, .res, .cv-item, .note,
       .keep-note, .gate-hint, .balance-check, .work-facts, .cred,
       .stat, .chart-box, .verdict, .shariah-verdict, .verdict-cap,
-      .at-a-glance, .side-note,
+      .at-a-glance, .side-note, .held-group,
       .callout, .ex, .quiz-q, .method-step, .rt-confirm, .card-art,
       .ayah, .tothyo, .mukhe, .bolo, .mone, .shape, .merke, .formula,
       .ref-details, .course-video, .rt-hours-line, .work-art, .share-card,
@@ -9798,7 +9801,7 @@
       .pledge, .hub-pledge, .id-card, .res, .cv-item, .note,
       .keep-note, .gate-hint, .balance-check, .work-facts, .cred,
       .stat, .chart-box, .verdict, .shariah-verdict, .verdict-cap,
-      .at-a-glance, .side-note,
+      .at-a-glance, .side-note, .held-group,
       .callout, .ex, .quiz-q, .method-step, .rt-confirm, .card-art,
       .ayah, .tothyo, .mukhe, .bolo, .mone, .shape, .merke, .formula,
       .ref-details, .course-video, .rt-hours-line, .work-art, .share-card,
@@ -9894,6 +9897,32 @@
 }
 
 @layer admin {
+
+  .held { display: grid; gap: var(--gap); margin-top: var(--gap); }
+
+  .held-group {
+    display: grid; align-content: start; gap: var(--s-4);
+    padding: clamp(14px, 3vw, 20px);
+    border: 1px solid var(--hairline); border-radius: var(--radius);
+    background: var(--panel);
+    --surface-shadow: var(--shadow-card);
+  }
+  .held-group h3 { margin: 0 0 var(--s-5); font-family: var(--font-read); }
+  .held-list { margin: 0; display: grid; gap: var(--s-5); }
+  .held-row { display: grid; gap: 2px; }
+  .held-row dt { margin: 0; }
+  .held-row dd {
+    margin: 0; color: var(--ink-soft); font-size: var(--t-3);
+    max-width: var(--measure);
+  }
+  .held-mark {
+    margin-inline-start: var(--s-5);
+    font-family: var(--font-mono); font-size: var(--t-1);
+    letter-spacing: 0.06em; text-transform: uppercase;
+    color: var(--accent); white-space: nowrap;
+  }
+  .held-note { color: var(--ink-soft); font-size: var(--t-4); max-width: var(--measure); }
+
   .ad-page-wrap { padding-block: var(--step) var(--step); }
   .ad-page { display: grid; gap: var(--gap); }
   .ad-gates {

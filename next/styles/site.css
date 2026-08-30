@@ -4957,6 +4957,20 @@ it collapsed to the width of the word "Bangladesh". */
        what made them two bands. */
     & > .keep-bar, & > .read-aloud-toolbar { margin: 0; }
   }
+
+  /* The way back to where a reader was. It is a `keep-btn` and
+     not a second kind of button: the only thing it adds is the
+     accent, because it is the one control in that row that is not
+     always there and a reader should see that it has appeared.
+
+     No ground of its own, deliberately. A class whose own rule
+     gives it a background AND an edge is a surface, and
+     `check-material.ts` rightly fails one that is on none of the
+     six kinds: it would read as the single flat rectangle on a
+     page of glass. The material `.keep-btn` already carries is
+     the material this wears. */
+  .where { display: contents; }
+  .where-btn { color: var(--accent); border-color: var(--accent); }
 }
 
 /* ============================================================
@@ -15154,7 +15168,7 @@ German for day, and .tag is what the site has always called
       .pledge, .hub-pledge, .id-card, .res, .cv-item, .note,
       .keep-note, .gate-hint, .balance-check, .work-facts, .cred,
       .stat, .chart-box, .verdict, .shariah-verdict, .verdict-cap,
-      .at-a-glance, .side-note,
+      .at-a-glance, .side-note, .held-group,
       .callout, .ex, .quiz-q, .method-step, .rt-confirm, .card-art,
       .ayah, .tothyo, .mukhe, .bolo, .mone, .shape, .merke, .formula,
       .ref-details, .course-video, .rt-hours-line, .work-art, .share-card,
@@ -15358,7 +15372,7 @@ German for day, and .tag is what the site has always called
       .pledge, .hub-pledge, .id-card, .res, .cv-item, .note,
       .keep-note, .gate-hint, .balance-check, .work-facts, .cred,
       .stat, .chart-box, .verdict, .shariah-verdict, .verdict-cap,
-      .at-a-glance, .side-note,
+      .at-a-glance, .side-note, .held-group,
       .callout, .ex, .quiz-q, .method-step, .rt-confirm, .card-art,
       .ayah, .tothyo, .mukhe, .bolo, .mone, .shape, .merke, .formula,
       .ref-details, .course-video, .rt-hours-line, .work-art, .share-card,
@@ -15884,6 +15898,45 @@ German for day, and .tag is what the site has always called
    looking for a fault that is a setting.
    ============================================================ */
 @layer admin {
+  /* ---------- what this browser is holding ----------
+
+     Rendered by `components/account/held.tsx` out of
+     `shared/storage.ts`. Utilities rather than these rules would
+     be the Tailwind answer, and the reason it is not is the one
+     in CLAUDE.md: a `<dl>` of rows with a mark that floats to the
+     end of a line is CSS with no utility, and arbitrary values
+     here would be longer than the rule. */
+  .held { display: grid; gap: var(--gap); margin-top: var(--gap); }
+  /* A PLATE, and it is listed as one in `@layer glow`. It is
+     read and never pressed, which is the system's own test, and a
+     panel with a ground and an edge that is on no kind reads as
+     the one flat rectangle on a page of glass. `--surface-shadow`
+     rather than `box-shadow`, because the material owns that
+     property and a later layer setting it takes the edge away. */
+  .held-group {
+    display: grid; align-content: start; gap: var(--s-4);
+    padding: clamp(14px, 3vw, 20px);
+    border: 1px solid var(--hairline); border-radius: var(--radius);
+    background: var(--panel);
+    --surface-shadow: var(--shadow-card);
+  }
+  .held-group h3 { margin: 0 0 var(--s-5); font-family: var(--font-read); }
+  .held-list { margin: 0; display: grid; gap: var(--s-5); }
+  .held-row { display: grid; gap: 2px; }
+  .held-row dt { margin: 0; }
+  .held-row dd {
+    margin: 0; color: var(--ink-soft); font-size: var(--t-3);
+    max-width: var(--measure);
+  }
+  .held-mark {
+    margin-inline-start: var(--s-5);
+    font-family: var(--font-mono); font-size: var(--t-1);
+    letter-spacing: 0.06em; text-transform: uppercase;
+    color: var(--accent); white-space: nowrap;
+  }
+  .held-note { color: var(--ink-soft); font-size: var(--t-4); max-width: var(--measure); }
+
+
   .ad-page-wrap { padding-block: var(--step) var(--step); }
   .ad-page { display: grid; gap: var(--gap); }
   .ad-gates {

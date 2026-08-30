@@ -489,6 +489,124 @@ console.log("\na tick made on another device");
 }
 
 /* ============================================================
+   7b. a MAP is reconciled entry by entry, not taken whole
+
+   `where-read`, `tools-used` and the two practice books are maps
+   rather than one value, and a `mark` would take the newer whole
+   object: a phone that read one article would throw away every
+   position a laptop had, and the sentences somebody typed into
+   the German book on one machine would be gone the first time
+   they opened it on another. Nothing would look broken. They
+   would simply find themselves back at the top of pieces they
+   were half way through, and an empty box where they had
+   written.
+
+   Both halves are checked here: the union, and the tiebreak when
+   the SAME entry was written on both. The practice book is the
+   one where the entry carries no stamp of its own, so the map's
+   own `ts` dates it: see `stamp()` in `aab/src/sync.ts`.
+   ============================================================ */
+console.log("\na piece read on one device and a page written on another");
+{
+  const f = await make({
+    accountRows: [
+      { key: "where-read",
+        value: { "/insights/a.html": { i: 12, of: 40, sig: "one", ts: 5000 } , ts: 5000 },
+        updated_at: old },
+      { key: "deutsch-schrift",
+        value: { "stufe-1/tag-1": "vom Handy", ts: 5000 }, updated_at: old },
+    ],
+    device: { "reiad-session": session("u-map") },
+    user: REAL_USER("u-map"),
+  });
+  await open(f);
+
+  /* NOW THE PHONE READS A THIRD PIECE while this device reads a
+     second, and neither has seen the other's. That is the shape
+     that separates the two rules, and the first draft of this
+     test did not have it: after the first exchange both sides
+     already knew about `a`, so a `mark` taking the device's whole
+     map kept everything and passed. A test that passes under the
+     rule it was written to rule out is not a test.
+
+     The account's stamp is deliberately OLDER, so a `mark` would
+     take this device's map whole and drop `c` and `tag-3`. */
+  f.state.rows.set("where-read", {
+    key: "where-read",
+    value: {
+      "/insights/a.html": { i: 12, of: 40, sig: "one", ts: 5000 },
+      "/insights/c.html": { i: 7, of: 25, sig: "three", ts: 6000 },
+      ts: 6000,
+    },
+    updated_at: new Date().toISOString(),
+  });
+  f.state.rows.set("deutsch-schrift", {
+    key: "deutsch-schrift",
+    value: { "stufe-1/tag-1": "vom Handy", "stufe-1/tag-3": "auch vom Handy", ts: 6000 },
+    updated_at: new Date().toISOString(),
+  });
+
+  /* And this device ADDS to what it has rather than replacing it,
+     which is what `markWhere` and the practice book both do. The
+     rule reads an entry that was in `base` and is gone from the
+     device as a removal, correctly, so a replacement here would
+     be asking it to un-remove something. */
+  await f.p.evaluate(() => {
+    const add = (key: string, id: string, value: unknown): void => {
+      const had = JSON.parse(localStorage.getItem(key) || "{}");
+      localStorage.setItem(key, JSON.stringify({ ...had, [id]: value, ts: 9000 }));
+    };
+    add("where-read", "/insights/b.html", { i: 3, of: 20, sig: "two", ts: 9000 });
+    add("deutsch-schrift", "stufe-1/tag-2", "vom Laptop");
+    dispatchEvent(new CustomEvent("deutsch:progress"));
+  });
+  await settled(f.p, 4000);
+
+  const where = (await local(f.p, "where-read")) as Record<string, { i: number }>;
+  check("the position the phone had just recorded arrives", where["/insights/c.html"]?.i, 7);
+  check("the one both already knew about is still right", where["/insights/a.html"]?.i, 12);
+  check("and this device's own survives the exchange", where["/insights/b.html"]?.i, 3);
+
+  const wrote = (await local(f.p, "deutsch-schrift")) as Record<string, string>;
+  check("the day typed on the phone arrives", wrote["stufe-1/tag-3"], "auch vom Handy");
+  check("what was typed here is still here", wrote["stufe-1/tag-2"], "vom Laptop");
+
+  const up = f.state.rows.get("deutsch-schrift")?.value as Record<string, string>;
+  check("and the account holds this device's day", up?.["stufe-1/tag-2"], "vom Laptop");
+  check("without losing the phone's", up?.["stufe-1/tag-3"], "auch vom Handy");
+  noErrors(f);
+  await f.ctx.close();
+}
+
+/* ---- and the same entry, written on both ---- */
+console.log("\nthe same page, written on two devices");
+{
+  const f = await make({
+    accountRows: [
+      { key: "where-read",
+        value: { "/insights/a.html": { i: 30, of: 40, sig: "one", ts: 9000 }, ts: 9000 },
+        updated_at: old },
+    ],
+    device: {
+      "reiad-session": session("u-clash"),
+      /* Older, so the account's is the one that should stand. */
+      "where-read": JSON.stringify({
+        "/insights/a.html": { i: 4, of: 40, sig: "one", ts: 2000 }, ts: 2000,
+      }),
+    },
+    user: REAL_USER("u-clash"),
+  });
+  await open(f);
+  await settled(f.p, 4000);
+
+  const where = (await local(f.p, "where-read")) as Record<string, { i: number }>;
+  check("the newer of the two wins, by the entry's own stamp",
+    where["/insights/a.html"]?.i, 30);
+  noErrors(f);
+  await f.ctx.close();
+}
+
+/* ============================================================
    8b. a reload does not eat what the reader just did
 
    The Android app shipped this bug and a person met it as

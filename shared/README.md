@@ -7,7 +7,7 @@ There are three renderers of this site now: the Worker in
 Next.js route in `next/`. Anything all of them must say the same
 way lives here, and nowhere else.
 
-Today that is twenty-two files and a directory of four, and
+Today that is twenty-three files and a directory of four, and
 `check-types.ts` fails if one of them is not described below.
 That check exists because this line said six while nine were
 here: `nav.ts` and `routine.ts` arrived in two changes that had
@@ -348,3 +348,18 @@ and the digits are similar enough to survive a glance at a diff.
 
 The Worker never has this problem. It imports by relative path, so
 it reads the file that is actually here.
+
+- **`storage.ts`** everything this site keeps in a browser, in one
+  table: the key, what it is in a sentence a reader could read,
+  which of seven kinds it belongs to, and whether it leaves the
+  machine. Thirty-eight keys had accumulated across fourteen files
+  and the only way to find out what was held was to grep for
+  `localStorage`, which is archaeology rather than a description.
+  `check-storage.ts` reads the code and this table and fails when
+  they disagree in either direction, including on a row whose
+  `syncs` does not match `KEYS` in `aab/src/sync.ts`. That last
+  one matters most: a key that says it syncs and is not in that
+  table is a promise the account page makes and the account does
+  not keep. Three runtimes read it, which is why it is here: the
+  check under node, the account page's own panel, and the
+  comparison against `sync.ts`.

@@ -40,6 +40,7 @@ import { siteOrigin } from "../../../../lib/article";
 import { schoolIcon } from "../../../../lib/school-icons";
 import { SiteScripts } from "../../../../components/scripts";
 import { Keep } from "../../../../components/keep";
+import { Where } from "../../../../components/where";
 import { LessonTick } from "../../../../components/progress";
 import { Eyebrow } from "../../../../components/ui/label";
 import { LessonBody } from "../../../../components/lesson/body";
@@ -170,13 +171,19 @@ export default async function LessonPage({ params }: { params: Params }) {
           {bodyEn.trim() ? <ReadLangSwitch /> : null}
 
           {/* The same row a piece carries under its byline, and
-              the same two questions, so a reader who learned them
-              on an article does not have to find them again here.
-              Nothing is rendered signed out, and nothing at all
-              on a lesson that has not been written: there is
-              nothing to keep. */}
+              the same questions, so a reader who learned them on
+              an article does not have to find them again here.
+              `<Keep>` renders nothing signed out, and nothing at
+              all on a lesson that has not been written: there is
+              nothing to keep. `<Where>` records either way, which
+              is why it is not inside that condition, and draws
+              its one control only when there is somewhere to go
+              back to. */}
           {soon ? null : (
-            <Keep url={it.url} title={String(it.bn)} kind="lesson" />
+            <div className="piece-tools">
+              <Keep url={it.url} title={String(it.bn)} kind="lesson" />
+              <Where url={it.url} />
+            </div>
           )}
 
           {soon ? (
