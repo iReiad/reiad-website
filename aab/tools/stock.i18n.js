@@ -561,6 +561,27 @@ export const STRINGS = {
     "sec.market": { en: "Where the price sits", bn: "দাম কোথায় দাঁড়িয়ে" },
     /* ---------------- input groups ---------------- */
     "g.company": { en: "Company & market", bn: "কোম্পানি ও বাজার" },
+    /* ---------------- how much of it to show ---------------- */
+    "depth.label": { en: "How much do you want to fill in?", bn: "কতটা ভরতে চান?" },
+    "depth.quick": { en: "The main numbers", bn: "প্রধান সংখ্যাগুলো" },
+    "depth.all": { en: "Everything", bn: "সবকিছু" },
+    "depth.quickNote": {
+        en: "Eleven figures off the front of an annual report, and the rest are your"
+            + " sector's typical values. Every ratio below is still computed; the ones"
+            + " you have not typed are computed against an assumption rather than"
+            + " against your company. Switch to Everything when you have the statements"
+            + " in front of you.",
+        bn: "বার্ষিক প্রতিবেদনের শুরুর দিকের এগারোটা সংখ্যা, বাকিগুলো আপনার খাতের সাধারণ"
+            + " মান। নিচের সব রেশিও তবুও হিসাব হচ্ছে; যেগুলো আপনি টাইপ করেননি সেগুলো আপনার"
+            + " কোম্পানির নয়, একটা অনুমানের বিপরীতে হিসাব হচ্ছে। বিবরণী হাতে থাকলে"
+            + " সবকিছুতে যান।",
+    },
+    "depth.allNote": {
+        en: "Every field the model reads. Anything you leave alone keeps the value"
+            + " the example loaded, which is your sector's typical figure.",
+        bn: "মডেল যত ঘর পড়ে, সবগুলো। যেটা হাত না দেবেন, উদাহরণ যে মান এনেছিল সেটাই"
+            + " থাকবে, অর্থাৎ আপনার খাতের সাধারণ সংখ্যা।",
+    },
     "g.income": { en: "Income statement", bn: "আয় বিবরণী" },
     "g.balance": { en: "Balance sheet", bn: "ব্যালান্স শিট" },
     "g.cash": { en: "Cash flow", bn: "ক্যাশ ফ্লো" },
@@ -586,6 +607,16 @@ export const STRINGS = {
         bn: "একই কোম্পানি একজনের জন্য কেনার মতো, আরেকজনের জন্য নয়। এই ওজনগুলোই সিদ্ধান্ত ঠিক করে: নাড়ান আর দেখুন কেমন বদলায়।",
     },
     /* ---------------- input labels ---------------- */
+    "i.name": { en: "Company", bn: "কোম্পানি" },
+    "f.name": {
+        en: "Only a label. Nothing here is scored on it, and it is what a saved check is called.",
+        bn: "শুধু নাম। এর উপর কোনো নম্বর নির্ভর করে না, আর সংরক্ষিত যাচাইটা এই নামেই থাকে।",
+    },
+    "i.ticker": { en: "Ticker", bn: "টিকার" },
+    "f.ticker": {
+        en: "Also only a label, and it is what links this check to a holding in your live portfolio.",
+        bn: "এটাও শুধু নাম, আর এটাই এই যাচাইকে আপনার লাইভ পোর্টফোলিওর শেয়ারের সঙ্গে জুড়ে দেয়।",
+    },
     "i.price": { en: "Share price (BDT)", bn: "শেয়ারের দাম (টাকা)" },
     "i.shares": { en: "Shares outstanding (lakh)", bn: "মোট শেয়ার (লাখ)" },
     "i.sector": { en: "Sector", bn: "খাত" },

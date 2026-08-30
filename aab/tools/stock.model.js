@@ -156,6 +156,21 @@ export const INDICES = {
    ============================================================ */
 
 export const DEFAULTS = {
+  /* --- WHICH COMPANY THIS IS ---
+
+     Two strings and no arithmetic reads either of them, which is
+     the point: everything else here is a number the model uses,
+     and these are what let an analysis be ABOUT something. A
+     saved scenario carries them in its query like every other
+     field, so `/tools/live` can find the check somebody did on a
+     holding by its ticker, and the save box can offer the
+     company's own name instead of an empty box.
+
+     `analyse()` never sees them. They are here because `DEFAULTS`
+     is the list the URL encoder walks, and a field outside it is
+     a field a shared link drops. */
+  name: "", ticker: "",
+
   /* --- market --- */
   price: 210, shares: 1200, high52: 246, low52: 168,
   ma50: 205, ma200: 198, turnover: 85, freeFloat: 38,

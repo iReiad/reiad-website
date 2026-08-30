@@ -31,6 +31,13 @@
    login could not have reached anyone either. Bump this whenever a
    precached file changes.
 
+   v226: /tools/stock.js, /tools/stock.i18n.js, /tools/live.js,
+        /prefs.js and /fallback.css. The stock check opens with
+        eleven fields instead of eighty-five and says what it is
+        assuming for the rest; it knows which company it is about;
+        and a holding in the live portfolio is a link into it,
+        carrying back the verdict of a check already saved.
+
    v225: /sync.js, /schools/workbook.js and /fallback.css. What a
         learner types into a practice book is carried to the
         account now: two keys held eight German and eight English
@@ -2025,7 +2032,7 @@
    imports (crumbs, audience, learn progress) and the hub is a
    different page. Without a bump, a returning reader would be
    served the v3 app.js forever and none of it would appear. */
-const VERSION = "v225";
+const VERSION = "v226";
 const SHELL = `shell-${VERSION}`;
 const RUNTIME = `runtime-${VERSION}`;
 

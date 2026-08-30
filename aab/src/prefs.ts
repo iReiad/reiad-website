@@ -253,6 +253,25 @@ export const SOUNDS = [
    on cannot leak anything, because with no coordinates there is
    nothing to ask about.
    ============================================================ */
+/* HOW MUCH OF A CALCULATOR A READER WANTS TO FILL IN.
+
+   The stock check reads eighty-five inputs across eight groups,
+   which is right for somebody with the statements open and is a
+   wall for somebody holding one share and one question. `quick`
+   shows eleven of them and leaves the rest at the sector's
+   typical figures, which is what the examples already load: the
+   same model against an assumed background rather than a
+   different model, and the page says so where it matters.
+
+   Here rather than in the calculator's own storage because it is
+   a choice about how the site behaves, which is what this file
+   is, and because that makes it travel with the account like
+   every other one. */
+export const DEPTHS = [
+  { id: "quick", label: "The main numbers", note: "eleven figures, the rest assumed" },
+  { id: "all", label: "Everything", note: "every field the model reads" },
+] as const satisfies readonly PrefOption[];
+
 export const WEATHERS = [
   { id: "on", label: "On", note: "the sky where you are, on the page" },
   { id: "off", label: "Off", note: "nothing, whatever the weather" },
@@ -274,6 +293,7 @@ export type Texture = (typeof TEXTURES)[number]["id"];
 export type Veil = (typeof VEILS)[number]["id"];
 export type Sound = (typeof SOUNDS)[number]["id"];
 export type Weather = (typeof WEATHERS)[number]["id"];
+export type Depth = (typeof DEPTHS)[number]["id"];
 
 export interface Prefs {
   text: Scale;
@@ -286,6 +306,7 @@ export interface Prefs {
   veil: Veil;
   sound: Sound;
   weather: Weather;
+  depth: Depth;
 }
 
 const DEFAULTS = {
@@ -293,6 +314,11 @@ const DEFAULTS = {
   glass: "frost", blur: "normal", texture: "normal", veil: "normal",
   sound: "on",
   weather: "on",
+  /* Quick by default, and that is the change: the stock check
+     opened with eighty-five fields for everybody, including
+     somebody who came to check one share. A reader who wants all
+     of them presses once and the account remembers. */
+  depth: "quick",
 } as const;
 
 const known = <T extends string>(
@@ -328,6 +354,7 @@ export function readPrefs(): Prefs {
     veil: known(VEILS, stored.veil, DEFAULTS.veil),
     sound: known(SOUNDS, stored.sound, DEFAULTS.sound),
     weather: known(WEATHERS, stored.weather, DEFAULTS.weather),
+    depth: known(DEPTHS, stored.depth, DEFAULTS.depth),
     /* Not stored here, and read from where it has always lived so
        that this file and `/app.js` cannot disagree about it. */
     theme: readTheme(),
@@ -362,6 +389,14 @@ export function savePrefs(patch: Partial<Prefs>): Prefs {
      of that file and cannot drift from it: there is one key. */
   if (patch.lang !== undefined) {
     try { localStorage.setItem("tool-lang", next.lang); } catch { /* private mode */ }
+  }
+
+  /* The same arrangement one field along: `stock.js` reads
+     `tool-depth` before its first render, which is a string
+     comparison rather than a JSON parse, and this is the only
+     place that writes it. */
+  if (patch.depth !== undefined) {
+    try { localStorage.setItem("tool-depth", next.depth); } catch { /* private mode */ }
   }
 
   if (patch.theme !== undefined) {

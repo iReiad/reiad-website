@@ -2305,10 +2305,13 @@ node next/article.test.ts          # the article page, on the real Worker with a
                                    # nothing else can reach (27 checks, needs the
                                    # OpenNext build and a browser, skips without)
 node next/interactive.test.ts     # a calculator that renders and computes
-                                   # nothing, because hydration undid it, and a
+                                   # nothing, because hydration undid it, a
                                    # contact form that looks sent and reached
-                                   # nobody (80 checks, needs `npx next build`
-                                   # and a browser, skips without)
+                                   # nobody, and the stock check's two ways in:
+                                   # eleven fields or eighty-five, and a holding
+                                   # arriving from the live portfolio
+                                   # (217 checks, needs `npx next build` and a
+                                   # browser, skips without)
 ```
 
 It really does run in a container, as of 16 August 2026, and the
@@ -3122,6 +3125,69 @@ else, the two menus skip it, and `/skills` gives it a
 card of its own under a heading that says it is not published. A
 link in the footer to a page that answers 403 is a promise the
 site cannot keep.
+
+## A calculator has two readers, and one of them was not served
+
+The stock check reads **eighty-five inputs across eight groups**,
+which is right for somebody with the statements open and a wall
+for somebody holding one share and one question.
+
+`reader-prefs.depth` is the switch, `quick` by default, and the
+model does not change: the same eighty-five values are read
+either way, and what changes is how many of them a reader is
+asked to type. `quick: true` on thirteen entries in `FIELDS` is
+the whole of it, and they are not the thirteen easiest to type,
+they are the ones the six pillars are most sensitive to.
+
+**The page says which half of the answer is theirs.** Everything
+left out keeps the sector's typical figure, which is what the
+example presets already load, so a quick check is a real check
+against an assumed background rather than a different model.
+`depth.quickNote` says exactly that, because a score computed
+partly from somebody else's numbers has to say so.
+
+It lives in `reader-prefs` rather than in the calculator's own
+storage because it is a choice about how the site behaves, which
+is what that file is for, and because that makes it travel with
+the account. `tool-depth` is the calculator's own spelling of it,
+written by `prefs.ts` alone, so `stock.js` needs a string
+comparison rather than a JSON parse before its first render:
+exactly the arrangement `tool-lang` already has.
+
+### An analysis is about a company, and the URL is what says so
+
+`name` and `ticker` are two strings in `DEFAULTS` that nothing in
+`analyse()` reads. They are in that object because **`DEFAULTS`
+is the list the URL encoder walks**, and a field outside it is a
+field a shared link drops.
+
+What they buy is everything downstream: the verdict says which
+company it is about, the save box offers that name instead of an
+empty one, and `/tools/live` can find the check somebody did on a
+holding by its ticker.
+
+### A holding is a question, and the check is where it is answered
+
+Every row of the live portfolio used to be a dead end. It is a
+link now, carrying the name, the ticker and the price.
+
+**Not the quantity.** `shares` in the stock check is the
+company's shares OUTSTANDING and a reader's holding is not that,
+and a field filled in with the wrong meaning is worse than an
+empty one.
+
+**And the check comes back.** `checksDone()` reads the reader's
+saved scenarios and pulls the ticker out of each one's stored
+query, so a holding that has been checked carries that verdict
+beside it and the link reopens the check rather than starting a
+new one. Out of the query rather than out of a column, because
+that query IS the analysis: one encoder, and a scenario saved
+before this existed has no ticker in it and matches nothing,
+which is the right answer rather than a migration.
+
+**The benchmarks are Dhaka's**, and a holding may be listed
+anywhere. Every one of them is an input the reader can change,
+which is why the link is still worth making.
 
 ## The live portfolio, and who is an admin
 

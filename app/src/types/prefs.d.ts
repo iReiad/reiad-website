@@ -174,6 +174,15 @@ export declare const SOUNDS: readonly [{
     readonly label: "Off";
     readonly note: "the site is silent";
 }];
+export declare const DEPTHS: readonly [{
+    readonly id: "quick";
+    readonly label: "The main numbers";
+    readonly note: "eleven figures, the rest assumed";
+}, {
+    readonly id: "all";
+    readonly label: "Everything";
+    readonly note: "every field the model reads";
+}];
 export declare const WEATHERS: readonly [{
     readonly id: "on";
     readonly label: "On";
@@ -193,6 +202,7 @@ export type Texture = (typeof TEXTURES)[number]["id"];
 export type Veil = (typeof VEILS)[number]["id"];
 export type Sound = (typeof SOUNDS)[number]["id"];
 export type Weather = (typeof WEATHERS)[number]["id"];
+export type Depth = (typeof DEPTHS)[number]["id"];
 export interface Prefs {
     text: Scale;
     measure: Measure;
@@ -204,6 +214,7 @@ export interface Prefs {
     veil: Veil;
     sound: Sound;
     weather: Weather;
+    depth: Depth;
 }
 /** What this device holds, with anything unrecognised replaced.
 

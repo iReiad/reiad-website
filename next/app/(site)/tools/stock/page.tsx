@@ -74,6 +74,11 @@ export default function StockPage() {
             <div className="verdict-text">
               <span className="mono" data-i18n="verdict.title">The verdict
               </span>
+              {/* Which company this is about, filled by `stock.js`
+                  from the two label fields and hidden until one of
+                  them is typed. A verdict over no name is a
+                  screenshot a reader cannot place later. */}
+              <span className="verdict-who" id="verdict-who" hidden />
               <strong className="verdict-value" id="verdict-band">–
               </strong>
               <span className="verdict-cap mono" id="verdict-cap" hidden />
@@ -91,6 +96,33 @@ export default function StockPage() {
           {/* ============ inputs + everything else ============ */}
           <div className="model-body">
             <aside className="model-drivers" id="driver-panel">
+              {/* ============ how much to fill in ============
+
+                  Eighty-five inputs across eight groups is right
+                  for somebody with the statements open and a wall
+                  for somebody holding one share and one question.
+                  The model reads the same values either way: what
+                  changes is how many of them a reader is asked to
+                  type, and the note says which of the answer is
+                  theirs and which is their sector's.
+
+                  It is a reader preference (`reader-prefs.depth`),
+                  so the account carries it and the choice is made
+                  once. */}
+              <div className="depth-picker">
+                <span className="mono" data-i18n="depth.label">How much do you want to fill in?
+                </span>
+                <div className="segmented" id="depth-switch" role="group">
+                  <button type="button" data-depth="quick" aria-pressed="true"
+                          data-i18n="depth.quick">The main numbers
+                  </button>
+                  <button type="button" data-depth="all" aria-pressed="false"
+                          data-i18n="depth.all">Everything
+                  </button>
+                </div>
+                <p className="drivers-note" id="depth-note" />
+              </div>
+
               <div className="drivers-head">
                 <h2 data-i18n="g.weights">What kind of investor are you?
                 </h2>

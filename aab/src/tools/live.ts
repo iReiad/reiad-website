@@ -45,6 +45,7 @@
 
 import { token, current } from "/account.js";
 import { dividendMonths, dividendTotal, holdingsOf, totalsOf } from "/portfolio.js";
+import { listScenarios } from "/saved.js";
 
 /* ---------- what the Worker answers with ---------- */
 
@@ -231,8 +232,14 @@ const setTabKey = (value: TabKey | null): void => {
 
 function weightRow(h: PublicHolding, largest: number): HTMLElement {
   const width = largest > 0 ? Math.max(2, ((h.weightPct ?? 0) / largest) * 100) : 0;
+  /* A row the site has chosen to NAME can be opened in the check;
+     one it has chosen to number cannot, because there is nothing
+     to hand the check about "Holding 3". Which of the two this is
+     is the site's own switch, in the admin panel below. */
+  const named = Boolean(h.name || h.ticker);
   return el("div", { className: "live-row" },
-    el("span", { className: "live-name" },
+    el(named ? "a" : "span",
+      named ? { className: "live-name live-check", href: checkUrl(h) } : { className: "live-name" },
       h.name || "–",
       h.ticker ? el("span", { className: "mono live-ticker" }, h.ticker) : null),
     el("span", { className: "live-bar" },
@@ -267,6 +274,9 @@ async function drawPublic(): Promise<void> {
 
   if (Array.isArray(p.holdings) && p.holdings.length) {
     const largest = p.holdings[0]?.weightPct ?? 0;
+    /* The public list is named or numbered by the site's own
+       switches, so only a NAMED row can carry a link: there is
+       nothing to hand the check about "Holding 3". */
     host.replaceChildren(
       el("div", { className: "live-row live-head mono" },
         el("span", {}, "Holding"), el("span", {}, ""),
@@ -292,8 +302,83 @@ function statTile(k: string, v: string, n: string, cls = ""): HTMLElement {
     n ? el("span", { className: "n" }, n) : null);
 }
 
+/* ============================================================
+   A HOLDING IS A QUESTION, AND THE STOCK CHECK IS WHERE IT IS
+   ANSWERED
+
+   A list of what somebody owns and how it is doing is a list of
+   things to decide about, and until now every one of them was a
+   dead end: the reader read the row, and then went and typed the
+   company's name into another page by hand.
+
+   The link carries what this page actually knows, which is the
+   name, the ticker and the price. It does not carry the quantity:
+   `shares` in the stock check is the company's shares OUTSTANDING
+   and this reader's holding is not that, and a field filled in
+   with the wrong meaning is worse than an empty one.
+
+   THE BENCHMARKS ARE DHAKA'S. The check's sector medians, market
+   P/E, FDR and sanchayapatra rates are the ones a DSE investor
+   compares against, and a holding here may be listed anywhere.
+   Every one of those is an input the reader can change, which is
+   why the link is still worth making, and the check says so on
+   its own page rather than this one repeating it.
+   ============================================================ */
+
+const checkUrl = (h: { name?: string; ticker?: string; price?: number }): string => {
+  const p = new URLSearchParams();
+  if (h.name) p.set("name", h.name.slice(0, 60));
+  if (h.ticker) p.set("ticker", h.ticker.slice(0, 60));
+  if (Number.isFinite(h.price)) p.set("price", String(Math.round((h.price as number) * 100) / 100));
+  const q = p.toString();
+  return q ? `/tools/stock?${q}` : "/tools/stock";
+};
+
+/** The checks this reader has already saved, by ticker.
+
+    Read out of the saved scenario's own query string rather than
+    out of a column, because that query IS the analysis: one
+    encoder, and a scenario saved before this existed simply has
+    no ticker in it and matches nothing, which is the right
+    answer rather than a migration. */
+type Done = Map<string, { name: string; summary: string; query: string }>;
+
+async function checksDone(): Promise<Done> {
+  const out: Done = new Map();
+  try {
+    for (const row of await listScenarios("stock")) {
+      const query = String((row.inputs as { query?: unknown })?.query ?? "");
+      const ticker = new URLSearchParams(query).get("ticker")?.trim().toUpperCase();
+      /* `.desc` order, so the first one seen is the newest and
+         the rest are older checks of the same company. */
+      if (ticker && !out.has(ticker)) {
+        out.set(ticker, { name: row.name, summary: row.summary ?? "", query });
+      }
+    }
+  } catch { /* signed out, or the network: the rows are still a list */ }
+  return out;
+}
+
+/** The cell that names a holding: the company, its ticker, a link
+    into the check, and the verdict of the last check if there is
+    one. */
+function nameCell(h: { name?: string; ticker: string }, done: Done): HTMLElement {
+  const cell = el("td", {});
+  const was = done.get(String(h.ticker).toUpperCase());
+
+  cell.append(
+    el("a", { className: "live-check", href: was ? `/tools/stock?${was.query}` : checkUrl(h as never) },
+      el("span", { className: "live-name" }, h.name || "–"),
+      el("span", { className: "mono live-ticker" }, h.ticker)));
+
+  if (was) {
+    cell.append(el("span", { className: "live-verdict mono" }, was.summary || "checked"));
+  }
+  return cell;
+}
+
 function holdingsTable(positions: Position[], currency: string | undefined,
-  invested: number): HTMLElement {
+  invested: number, done: Done = new Map()): HTMLElement {
   /* Sorted, weighted and gained by `shared/portfolio.ts`, which
      is the same derivation the Android app runs. What is left
      here is the table. */
@@ -305,9 +390,7 @@ function holdingsTable(positions: Position[], currency: string | undefined,
         ...["Holding", "Qty", "Avg paid", "Now", "Value", "P/L", "Weight"]
           .map((h) => el("th", {}, h)))),
       el("tbody", {}, rows.map((h) => el("tr", {},
-        el("td", {},
-          el("span", { className: "live-name" }, h.name || "–"),
-          el("span", { className: "mono live-ticker" }, h.ticker)),
+        nameCell(h, done),
         el("td", { className: "mono" }, QTY(h.quantity)),
         el("td", { className: "mono" }, MONEY(h.averagePaid, h.currency)),
         el("td", { className: "mono" }, MONEY(h.price, h.currency)),
@@ -385,8 +468,12 @@ function activityLists(history: History, currency: string | undefined): HTMLElem
 
 /** The whole dashboard for one account's data, reused by the
     admin's view of the site account. */
-function accountDashboard(account: Account, { title, note }: {
+function accountDashboard(account: Account, { title, note, done }: {
   title?: string; note?: string;
+  /** The checks this reader has already saved, by ticker. Empty
+      for a stranger and for anybody signed out, which is the
+      whole of what "no check has been done" looks like. */
+  done?: Done;
 } = {}): HTMLElement {
   const t = totalsOf(account.summary);
   const currency = t.currency;
@@ -410,7 +497,7 @@ function accountDashboard(account: Account, { title, note }: {
   if (positions.length) {
     root.append(el("div", { className: "live-block" },
       el("h3", {}, `Holdings (${positions.length})`),
-      holdingsTable(positions, currency, t.invested)));
+      holdingsTable(positions, currency, t.invested, done)));
   } else {
     root.append(el("p", { className: "muted" }, "No open positions."));
   }
@@ -443,10 +530,15 @@ async function drawOwn(): Promise<void> {
   }
 
   const currency = live.account.summary?.currency;
+  /* Asked for alongside the drawing rather than before it: a
+     reader with no account gets an empty map and the same table
+     without the verdicts, and the request is one round trip
+     against a table this reader already owns. */
   const dash = accountDashboard(live.account, {
     title: ownKeyMode === "saved"
       ? "Your account, from the saved key"
       : "Your account, key held by this tab",
+    done: await checksDone(),
   });
 
   const bar = el("div", { className: "live-actions" },

@@ -225,7 +225,7 @@ type Remembers = [audience: string | null, track: string | null];
 /** What a reader had already chosen before this page loaded.
     Separate from `remembers` because these are the calculators'
     own keys rather than the shell's. */
-interface Prefs { toolLang?: string }
+interface Prefs { toolLang?: string; toolDepth?: string }
 
 const open = async (
   path: string,
@@ -252,6 +252,13 @@ const open = async (
     await page.addInitScript((v: string) => {
       localStorage.setItem("tool-lang", v);
     }, prefs.toolLang);
+  }
+  /* The same reason one field along: `stock.js` reads `tool-depth`
+     at module scope to decide how much of its form to draw. */
+  if (prefs?.toolDepth) {
+    await page.addInitScript((v: string) => {
+      localStorage.setItem("tool-depth", v);
+    }, prefs.toolDepth);
   }
   await page.goto(`http://localhost:${PORT}${path}`, { waitUntil: "load" });
   await page.waitForTimeout(1500);
@@ -403,6 +410,105 @@ for (const [url, , selector, what, placeholder] of CASES) {
     }
   }
 
+  await page.close();
+}
+
+/* ============================================================
+   THE STOCK CHECK ASKS FOR ELEVEN NUMBERS, NOT EIGHTY-FIVE
+
+   The page reads the same eighty-five values either way: what
+   changes is how many of them a reader is asked to type, and the
+   note under the switch says which half of the answer is theirs
+   and which is their sector's. Every way of getting this wrong
+   renders a form that looks fine, so what is checked is the
+   COUNT, what survives the switch, and whether the reader's own
+   figures are still there afterwards.
+   ============================================================ */
+{
+  const { page, errors } = await open("/tools/stock");
+
+  const count = (): Promise<{ fields: number; groups: number }> =>
+    page.evaluate(() => ({
+      fields: document.querySelectorAll("#drivers .driver").length,
+      groups: document.querySelectorAll("#drivers details[data-group]").length,
+    }));
+
+  const quick = await count();
+  ok("it opens with the main numbers and nothing else",
+    quick.fields === 13 && quick.groups === 5, JSON.stringify(quick));
+  ok("and says what it is assuming for the rest",
+    ((await page.textContent("#depth-note")) ?? "").includes("typical values"),
+    (await page.textContent("#depth-note")) ?? "nothing");
+
+  /* A figure typed in the short form, so the switch can be shown
+     not to lose it. Reading it back off the URL is the honest
+     check: that string IS the state of the page. */
+  await page.fill("#in-price", "321");
+  await page.waitForTimeout(200);
+
+  await page.click('#depth-switch button[data-depth="all"]');
+  await page.waitForTimeout(400);
+  const all = await count();
+  /* Against the short form rather than against a number typed
+     here: the count moves whenever a field is added to the model,
+     and a test that pins it is a test somebody edits to make it
+     pass. What is being claimed is that Everything is several
+     times the short form, which is the whole point of there being
+     two. */
+  ok("Everything opens the whole form",
+    all.fields > quick.fields * 4, JSON.stringify({ quick, all }));
+  ok("and every group of it", all.groups >= 7, JSON.stringify(all));
+  ok("what was typed in the short form is still there",
+    await page.inputValue("#in-price") === "321");
+
+  await page.click('#depth-switch button[data-depth="quick"]');
+  await page.waitForTimeout(400);
+  ok("and going back does not lose it either",
+    await page.inputValue("#in-price") === "321");
+  ok("the short form is short again", (await count()).fields === 13);
+  ok("nothing threw", errors.length === 0, errors[0] ?? "");
+  await page.close();
+}
+
+/* ---- and a reader who wants all of it keeps it ---- */
+{
+  const { page } = await open("/tools/stock", undefined, { toolDepth: "all" });
+  ok("a reader who chose Everything gets Everything on the next visit",
+    await page.evaluate(() =>
+      document.querySelectorAll("#drivers .driver").length) > 40);
+  await page.close();
+}
+
+/* ============================================================
+   AND IT KNOWS WHICH COMPANY IT IS ABOUT
+
+   Two label fields nothing scores, which is exactly why they had
+   to be added to `DEFAULTS`: that object is the list the URL
+   encoder walks, so a field outside it is a field a shared link
+   drops. The link a holding in the live portfolio makes is this
+   URL, so what is checked here is the arrival.
+   ============================================================ */
+{
+  const { page, errors } = await open("/tools/stock?name=Square+Pharma&ticker=SQURPHARMA&price=321");
+
+  ok("the company arrives from the link",
+    await page.inputValue("#in-name") === "Square Pharma");
+  ok("so does its ticker", await page.inputValue("#in-ticker") === "SQURPHARMA");
+  ok("and the price the holding was at",
+    await page.inputValue("#in-price") === "321");
+  ok("the verdict says which company it is about",
+    ((await page.textContent("#verdict-who")) ?? "").includes("Square Pharma"),
+    (await page.textContent("#verdict-who")) ?? "nothing");
+  ok("and it is not hidden any more",
+    await page.$eval("#verdict-who", (n: Element) => !(n as HTMLElement).hidden));
+
+  /* The round trip, which is what makes a saved check findable
+     from a holding: `/tools/live` reads the ticker back out of
+     the query a scenario stored. */
+  const url = await page.evaluate(() => location.search);
+  ok("and the ticker survives into the address the save stores",
+    new URLSearchParams(url).get("ticker") === "SQURPHARMA", url);
+  ok("nothing threw", errors.length === 0, errors[0] ?? "");
   await page.close();
 }
 
