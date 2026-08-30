@@ -409,6 +409,29 @@ that is the whole of the answer; `next/threads.test.ts` has a
 PostgREST-shaped fake that applies the patch it is sent, because
 a fixture that merged would pass the broken page.
 
+### A controlled field is the reader's, not the row's
+
+The note saves on a debounce, so a write is in flight while
+somebody is still typing. Its value has to come from somewhere,
+and taking it from the row on every change of the row means every
+response puts the server's answer back into the box: type a
+sentence, the debounce fires halfway through it, the answer lands
+two hundred milliseconds later carrying the HALF sentence, and
+the second half disappears from under the caret.
+
+**It heals, and that is what makes it dangerous.** The next write
+carries the full sentence and the response after that puts it
+back, so a check that reads the box a second later reads it after
+the heal: the first draft of that check passed against the bug it
+was written for. What a reader gets in the window is a reverted
+box with the caret at the end of it, and the next keystroke goes
+into that, so the middle sentence is gone for good.
+
+The effect keys on the thread's ID alone. `next/threads.test.ts`
+types in two bursts with the debounce firing between them,
+against a fixture whose PATCH takes 250ms, and watches the box
+across the whole window rather than sampling it at the end.
+
 ### Connected: nothing is typed
 
 Three lists, and every one is picked out of something this site

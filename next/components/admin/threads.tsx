@@ -197,7 +197,26 @@ export function ResearchDesk() {
   const open = useMemo(
     () => rows?.find((r) => r.id === openId) ?? null, [rows, openId]);
 
-  useEffect(() => { setNote(open?.body?.note ?? ""); }, [open?.id, open?.body?.note]);
+  /* ON THE THREAD'S ID AND NOT ON ITS NOTE, WHICH IS THE WHOLE
+     DIFFERENCE BETWEEN A BOX YOU CAN TYPE IN AND ONE YOU CANNOT.
+
+     The note is a controlled field, so its value has to come from
+     somewhere. Taking it from the row on every change of the row
+     means every write puts the server's answer back into the box:
+     type a sentence, the debounce fires halfway through it, the
+     response lands two hundred milliseconds later carrying the
+     HALF sentence, and the second half disappears from under the
+     caret. It heals itself on the next write, which is worse than
+     failing, because what a reader sees is their own typing
+     flickering away and coming back.
+
+     A thread's id changing is the only moment the row is the
+     source. After that the box is the reader's, and `write` is
+     what carries it the other way. */
+  useEffect(() => {
+    setNote(rows?.find((r) => r.id === openId)?.body?.note ?? "");
+    /* eslint-disable-next-line react-hooks/exhaustive-deps */
+  }, [openId]);
 
   /** Write a patch, and keep the row in the list in step without
       refetching: a desk that reloads the list on every keystroke

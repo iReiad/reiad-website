@@ -1507,6 +1507,17 @@ PostgREST-shaped fake that applies what it is sent: a fixture
 that merged would pass the broken page, which is
 `next/account.test.ts`'s own lesson.
 
+**A controlled field is the reader's, not the row's.** The note
+saves on a debounce, so a write is in flight while somebody is
+still typing, and deriving its value from the row on every change
+of the row means every response puts the server's answer back
+into the box: the half sentence that was in flight replaces the
+whole one under the caret. It HEALS on the next write, which is
+what makes it dangerous, and it is why the check for it watches
+the box across the window rather than reading it at the end. The
+first draft of that check read it at the end and passed against
+the bug it was written for.
+
 **Nothing under Connected is typed.** A check is picked from the
 stock checks already saved and links to `/tools/stock` with that
 check's own query in it, so a thread and `/tools/live` open the
@@ -2372,7 +2383,9 @@ node next/threads.test.ts          # the research desk: five controls writing on
                                    # jsonb column, and whether the fifth is the
                                    # only one left afterwards. Plus the keyboard,
                                    # including that `/` still belongs to the
-                                   # site's palette (57 checks, needs the Next
+                                   # site's palette, and whether typing through
+                                   # a save loses the half you typed after the
+                                   # request went out (60 checks, needs the Next
                                    # build and a browser, skips without)
 node next/progress.test.ts         # a page that costs a reader their ticks just
                                    # by being read, where in a piece they had

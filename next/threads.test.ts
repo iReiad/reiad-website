@@ -41,6 +41,11 @@ const BUILD = join(HERE, ".next");
 const AAB = join(HERE, "..", "aab");
 const PORT = 8917;
 
+/** `SETTLE` in `components/admin/threads.tsx`: how long a burst of
+    typing waits before it is written. Named rather than a literal
+    because two checks below time themselves against it. */
+const SETTLE = 700;
+
 let passed = 0;
 const failures: string[] = [];
 const ok = (name: string, condition: unknown, detail: string | null = ""): void => {
@@ -241,6 +246,14 @@ async function open({ signedIn = true }: { signedIn?: boolean } = {}): Promise<{
       return json([row]);
     }
     if (method === "PATCH") {
+      /* A ROUND TRIP HAS A WIDTH, and a fake that answers in zero
+         milliseconds cannot see what happens inside it. The one
+         thing that goes wrong on a page where a controlled field
+         saves on a debounce happens between the request and the
+         response: the reader carries on typing, and the answer
+         arrives carrying the text as it was when the write went
+         out. 250ms is a plausible one to Supabase. */
+      await new Promise((go) => setTimeout(go, 250));
       const at = rows.findIndex((t) => t.id === idOf());
       if (at < 0) return json([]);
       /* WHAT POSTGREST ACTUALLY DOES: every named column is
@@ -357,6 +370,56 @@ ok("AND THE SOURCES SURVIVE IT",
 ok("and so do the steps",
   ((after?.body as { next?: unknown[] })?.next ?? []).length === 2);
 
+/* ---- AND THE BOX IS STILL THE READER'S WHILE IT SAVES ----
+
+   The note is a controlled field, so its value comes from
+   somewhere, and taking it from the row on every change of the
+   row means every write puts the server's answer back in the
+   box. Typing through a save then loses whatever was typed after
+   the request went out: it comes back on the next write, which is
+   worse than failing, because what a reader sees is their own
+   sentence flickering away and returning.
+
+   Typed in two bursts with the debounce firing between them,
+   against a fixture whose PATCH takes 250ms, which is the shape
+   of the failure rather than a re-creation of one afternoon. */
+const WHOLE = "The first half. And the second.";
+await page.locator("#rd-note").fill("");
+await page.locator("#rd-note").click();
+await page.keyboard.type("The first half. ");
+/* The debounce fires here, so the write for the FIRST half is in
+   flight while the second half is typed. */
+await page.waitForTimeout(SETTLE + 60);
+await page.keyboard.type("And the second.");
+
+/* WATCHED RATHER THAN SAMPLED AT THE END, which is the whole
+   point of this check and the reason the first draft of it
+   passed against the bug it was written for. The box heals: the
+   next write carries the full sentence and the response after
+   that puts it back. Reading the value once, a second and a half
+   later, is reading it after the heal. What a reader actually
+   experiences is the window in between, and losing the text for
+   400ms is not better than losing it, because the next keystroke
+   goes into the reverted box and the middle sentence is gone for
+   good. So this watches the box across the whole window and asks
+   whether it was ever short. */
+let shortest = WHOLE.length;
+let sawShort = "";
+for (let i = 0; i < 30; i += 1) {
+  const seen = await page.locator("#rd-note").inputValue();
+  if (seen.length < shortest) { shortest = seen.length; sawShort = seen; }
+  await page.waitForTimeout(50);
+}
+ok("the box never loses what was typed while a save is in flight",
+  shortest === WHOLE.length,
+  `it went back to "${sawShort}"`);
+ok("and it holds the whole sentence afterwards",
+  await page.locator("#rd-note").inputValue() === WHOLE,
+  await page.locator("#rd-note").inputValue());
+ok("and so does the account",
+  String((rows.find((r) => r.id === "th-1")?.body as { note?: string })?.note ?? "") === WHOLE,
+  String((rows.find((r) => r.id === "th-1")?.body as { note?: string })?.note ?? ""));
+
 /* ---- a patch names only what changed ---- */
 const noteWrite = sent.filter((s) => s.method === "PATCH").at(-1);
 ok("a note write sends the body and nothing else",
@@ -470,7 +533,7 @@ ok("all three kinds are stored under one body",
 ok("and the note, the sources and the steps are all still there",
   (() => {
     const b = rows.find((r) => r.id === "th-1")?.body as Record<string, unknown[]>;
-    return String(b.note ?? "").includes("Q3") && (b.sources ?? []).length === 1
+    return String(b.note ?? "").includes("And the second.") && (b.sources ?? []).length === 1
       && (b.next ?? []).length === 3;
   })(),
   "four controls write one column and the last one must not be the only one left");
