@@ -42,6 +42,10 @@ import { readSession } from "../../_lib/auth.ts";
 import { readerFrom } from "../../_lib/reader.ts";
 import { isAdmin } from "../../_lib/admins.ts";
 import type { D1Database } from "../../_lib/db.ts";
+import {
+  ART_MOTIFS, ART_SUBJECTS_SVG, ART_VIEWBOX, MOTIF_OF,
+} from "../../../shared/art-svg.ts";
+import { subjectOf } from "../../../shared/art-of.ts";
 
 export interface AdminEnv {
   /* `D1Database` out of `_lib/db.ts`, which is where the rest of
@@ -82,31 +86,82 @@ async function reach(run: () => Promise<unknown>): Promise<{ ok: boolean; ms: nu
   }
 }
 
+/** Is this caller an admin?
+
+    Either credential opens it, because either one means the
+    caller is already trusted with more than what is behind it.
+    The passphrase is a cookie the Worker can read on its own; the
+    account half goes through `isAdmin()`, which is the ONE place
+    that answers that question.
+
+    A function rather than eight lines inside the health handler,
+    because there are two routes here now and a second copy of a
+    gate is how one of them ends up ungated. */
+async function allowed(context: AdminContext): Promise<boolean> {
+  const { request, env } = context;
+  if (await readSession(context)) return true;
+  const reader = await readerFrom(request, env);
+  return reader ? await isAdmin(env, request, reader.id) : false;
+}
+
 export async function onRequest(context: AdminContext): Promise<Response> {
   const { request, env, params } = context;
   const route = (params.route ?? []).join("/");
+
+  /* ---------- the drawings, for whoever is drawing a card ----------
+
+     `shared/art-svg.ts` holds the twelve subjects and the six
+     walls as the inside of an `<svg>`, and it is 34 KB. The eight
+     shared files that ARE compiled into `aab/` are there because
+     every reader needs them; nobody needs these except whoever is
+     publishing, which is one admin. So they are fetched rather
+     than served, behind the same gate as everything else here.
+
+     Both callers use this one path rather than one of them
+     importing the table: the Studio is a Vite bundle that cannot
+     reach `shared/` except through a served address, and two ways
+     in is two things to keep in step. */
+  if (route === "art") {
+    return methods(request, {
+      GET: async () => {
+        if (!await allowed(context)) return fail("forbidden", 403);
+
+        /* AND WHICH ONE THIS PIECE WEARS, when the caller says
+           what the piece is. `subjectFor` is `shared/art.ts` and
+           is the one place that decides; the Studio is a Vite
+           bundle that cannot import it, and a second copy of the
+           rule in the browser is the failure CLAUDE.md opens
+           with. So it is answered here, in the same request that
+           carries the drawings, rather than in a route of its
+           own: one round trip either way. */
+        const url = new URL(request.url);
+        const id = url.searchParams.get("id");
+        const pick = id || url.searchParams.get("title")
+          ? subjectOf({
+            id,
+            section: url.searchParams.get("section"),
+            title: url.searchParams.get("title"),
+            tags: (url.searchParams.get("tags") ?? "").split(",").filter(Boolean),
+          })
+          : null;
+
+        return ok({
+          subjects: ART_SUBJECTS_SVG, motifs: ART_MOTIFS, motifOf: MOTIF_OF,
+          box: ART_VIEWBOX, pick,
+        });
+      },
+    });
+  }
 
   if (route !== "health") return fail("not-found", 404);
 
   return methods(request, {
     GET: async () => {
-      /* Either credential opens the detail, because either one
-         means the caller is already trusted with more than this.
-         The passphrase is a cookie the Worker can read on its
-         own; the account half goes through `isAdmin()`, which is
-         the ONE place that answers that question. */
-      const session = await readSession(context);
-      let allowed = Boolean(session);
-      if (!allowed) {
-        const reader = await readerFrom(request, env);
-        allowed = reader ? await isAdmin(env, request, reader.id) : false;
-      }
-
       /* The one fact a stranger gets, and the whole of what the
          ungated version was FOR: this Worker answered, so a panel
          that is not working is not the Worker. Nothing here is a
          store, a secret or a count. */
-      if (!allowed) return ok({ worker: true, detail: false });
+      if (!await allowed(context)) return ok({ worker: true, detail: false });
 
       const d1 = env.DB
         ? await reach(() => env.DB!.prepare("select 1").first())

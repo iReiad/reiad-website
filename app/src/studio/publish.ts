@@ -19,7 +19,7 @@
    ============================================================ */
 
 import { hostPhotosIn } from "/photo.js";
-import { shareCardBlob, cardSlug } from "/share-card.js";
+import { shareCardBlob, cardSlug, drawingForPiece } from "/share-card.js";
 import { uploadMedia } from "../site.ts";
 import { api } from "../api.ts";
 import { coverFor, storableCover, urlFor, type Meta, type Tied } from "./piece.ts";
@@ -78,10 +78,23 @@ export async function publish({
   const withPhoto = pick.own && storableCover(pick.src);
   say("Drawing the share card…");
   try {
+    /* WHICH OF THE TWELVE THIS PIECE WEARS, and its wall.
+
+       Asked for rather than worked out here: `shared/art.ts` is
+       the one place that decides and this bundle cannot import
+       it, so `/api/admin/art` answers with the choice and the
+       drawings in one request. A piece whose drawings do not
+       arrive gets the room with nothing standing in it, which is
+       still the site's own card. */
+    const drawing = await drawingForPiece({
+      id: slug, section: m.section, title: m.title,
+      tags: [m.tag, ...(m.topics ?? [])],
+    });
     const stored = await uploadMedia(
       await shareCardBlob(
         withPhoto ? pick : { src: "", focus: pick.focus },
-        { title: m.title, kicker: m.tag, section: m.section }),
+        { title: m.title, kicker: m.tag, section: m.section },
+        drawing),
       cardSlug(slug));
     card = storableCover(stored?.url ?? "");
   } catch (err) {

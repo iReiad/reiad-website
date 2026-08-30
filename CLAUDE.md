@@ -1489,11 +1489,45 @@ at.
 **It is drawn as this site rather than as a photograph.** A cropped
 photo with nothing on it is somebody's photograph; a card arriving
 in a chat should look like the place it came from before anybody
-reads the title. So it carries the site's own material: the accent
-rail down the left edge that every `<GoCard>` has, the accent-lit
-ground the scenes stand on, a shaft of light, the hairline rim, the
-kicker in the mono face and the title in the serif. The piece's own
-photo, where there is one, is what all of that stands on.
+reads the title.
+
+**So it is THE ROOM**, the same ten layers `card-art.tsx` puts
+behind every card here, in the same order and for the same
+reasons: the sky, the weave, the halo the subject throws, rays
+from the top left, the wall behind it, the floor, the subject and
+its reflection, motes in front, the specular, the corners going
+down. Then the card's own furniture on top: the scrim that seats
+the words, the accent rail every `<GoCard>` carries, the hairline
+rim, the kicker in the mono face and the title in the serif. It
+was a two-stop gradient, one ring and a floor, which read as a
+template rather than as this place.
+
+**The twelve drawings are `shared/art-svg.ts` and are strings.**
+They were 747 lines of JSX inside `card-art.tsx` and the share
+card could not reach them, so a card pasted into a chat carried a
+room with nothing standing in it. Same reason
+`next/lib/school-icons.ts` holds strings: markup that something
+other than React has to read.
+
+**They are NOT compiled into `aab/`.** 34 KB, and nobody needs
+them but whoever is publishing. `GET /api/admin/art` hands them
+over behind `isAdmin()`, with the SUBJECT this piece wears in the
+same answer when the caller says what the piece is, because
+`shared/art.ts` is the one place that decides and a Vite bundle
+cannot import it.
+
+**A drawing is rasterised through an `<img>`, never
+`createImageBitmap` on the blob.** That is the obvious way and
+Chrome answers `InvalidStateError: The source image could not be
+decoded`: an SVG is a document rather than a bitmap format. The
+nine `--art-*` tokens are SUBSTITUTED into the string before it is
+parsed rather than declared in a `<style>` inside it, so nothing
+has to resolve a custom property inside a blob, and
+`check-art.ts` fails on a tenth token: unresolved, it is left as
+literal text and an SVG rasteriser paints it BLACK.
+
+The piece's own photo, where there is one, is what all of that
+stands on.
 
 **Which means every piece can have one now.** It used to be the
 section's standing card for anything unillustrated.
@@ -1684,6 +1718,10 @@ node scripts/check-diet.ts # a diet page that prints a target with no
                             # a BMI band read without the reader's ancestry,
                             # a portion row with no source or no state, and
                             # a generated sentence that judges the reader
+node scripts/check-art.ts   # a drawing naming a colour token the share card
+                            # cannot substitute, which the site does not paint
+                            # at all and a card paints black, or a subject
+                            # standing against a wall nobody drew
 node scripts/check-icons.ts # an icon name that resolves to nothing, so the page
                             # draws a correctly sized empty svg
 node scripts/check-jsx-space.ts # a sentence running into the link inside it,

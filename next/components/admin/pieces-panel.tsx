@@ -30,6 +30,7 @@ import { useCallback, useEffect, useMemo, useState } from "react";
 import { SECTIONS, findSection, pieceUrl } from "@reiad/shared/content";
 import type { ArticleStatus, Section as SectionId } from "@reiad/shared/rows";
 import { accentStyle } from "@reiad/shared/nav";
+import { artOf } from "../../lib/art";
 import { adminCall, isLocked } from "../../lib/admin-api";
 import { runtimeModule } from "../account/runtime";
 import { Surface } from "../ui/surface";
@@ -130,6 +131,19 @@ async function drawCard(article: Piece, onDone: () => void): Promise<void> {
   let body = full.data?.article?.body ?? "";
   let pick = card.coverFromHTML(body);
 
+  /* WHICH OF THE TWELVE THIS PIECE WEARS, and the wall behind it.
+
+     `artOf` is the same call every hub on this site makes for the
+     same row, so a piece's card and the card it wears on the
+     board are the same picture. The drawings themselves are
+     fetched once per page by `drawingFor`, because a desk drawing
+     forty of these in a row should ask for 34 KB of SVG once. */
+  const chosen = artOf({
+    id: article.slug, section: article.section, title: article.title,
+    tags: [article.tag],
+  });
+  const drawing = await card.drawingFor(chosen.subject);
+
   /* NO PHOTO IS NO LONGER A REASON NOT TO DRAW ONE. The card is
      the site's own material with the piece's title on it, and a
      photograph is what it stands on where there is one. It was a
@@ -142,7 +156,7 @@ async function drawCard(article: Piece, onDone: () => void): Promise<void> {
       const stored = await api.uploadMedia(
         await card.shareCardBlob({ src: "", focus: "centre" }, {
           title: article.title, kicker: article.tag, section: article.section,
-        }),
+        }, drawing),
         card.cardSlug(article.slug));
       if (!stored?.url) throw new Error("upload-failed");
       await adminCall(`articles/${encodeURIComponent(article.slug)}`, {
@@ -183,7 +197,7 @@ async function drawCard(article: Piece, onDone: () => void): Promise<void> {
     const stored = await api.uploadMedia(
       await card.shareCardBlob(pick, {
         title: article.title, kicker: article.tag, section: article.section,
-      }),
+      }, drawing),
       card.cardSlug(article.slug));
     if (!stored?.url) throw new Error("upload-failed");
 

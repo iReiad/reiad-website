@@ -13,6 +13,8 @@
     "./content": "./content.ts",
     "./nav": "./nav.ts",
     "./art": "./art.ts",
+    "./art-svg": "./art-svg.ts",
+    "./art-of": "./art-of.ts",
     "./routine": "./routine.ts",
     "./profile": "./profile.ts",
     "./diet-words": "./diet-words.ts",

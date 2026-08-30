@@ -123,16 +123,36 @@ const PIECES = [
     published_at: null, updated_at: "2026-08-19", embedded: 1 },
 ];
 
+/* ---------- dates, and why none of them is a literal ----------
+
+   `isNew` in `queues.tsx` is "arrived within the week", relative
+   to NOW, and deliberately so: a stored flag would be a field
+   that goes stale sitting still.
+
+   The fixtures below carried literal dates, which made the two
+   assertions about that flag pass for a week and fail for ever
+   after. They did: "a recent comment is marked new" and "and so
+   is a recent enquiry" were red on main, twelve days after the
+   dates in them were typed, and the panel was correct throughout.
+
+   A test of a relative rule has to state its dates relatively
+   too, or it is asserting what the calendar said on the day it
+   was written. `AGO(2)` is two days ago and is inside the week
+   whenever this runs; `AGO(90)` is outside it whenever this
+   runs. */
+const AGO = (days: number): string =>
+  new Date(Date.now() - days * 86_400_000).toISOString().slice(0, 10);
+
 /* Two, and the second is a REPLY. A fixture of one top-level
    comment cannot prove that a reply says it is one, and the
    assertion would pass on a panel that had lost the word. */
 const COMMENTS = [
   { id: 1, slug: "a-live-piece", section: "insights", parent_id: null,
     author_id: "u1", author_name: "Ayesha", body: "Useful, thank you.",
-    status: "pending", created_at: "2026-08-18", approved_at: null },
+    status: "pending", created_at: AGO(2), approved_at: null },
   { id: 2, slug: "a-live-piece", section: "insights", parent_id: 1,
     author_id: "u2", author_name: "Karim", body: "Agreed.",
-    status: "pending", created_at: "2026-08-18", approved_at: null },
+    status: "pending", created_at: AGO(2), approved_at: null },
 ];
 
 /* The second asker left no name and no address, which is the
@@ -142,10 +162,10 @@ const COMMENTS = [
 const QUESTIONS = [
   { id: 7, slug: "a-live-piece", name: "Rahim", email: "r@example.com",
     body: "কত টাকা লাগবে?", answer: null, status: "pending",
-    created_at: "2026-08-17", answered_at: null },
+    created_at: AGO(3), answered_at: null },
   { id: 8, slug: null, name: "", email: null,
     body: "Is the stock check free?", answer: null, status: "pending",
-    created_at: "2026-08-15", answered_at: null },
+    created_at: AGO(5), answered_at: null },
 ];
 
 /* One new and one closed, so the two directions of the status
@@ -153,10 +173,10 @@ const QUESTIONS = [
    reopened. */
 const ENQUIRIES = [
   { id: 3, name: "A client", email: "client@example.com", kind: "project",
-    message: "Can you model this?", status: "new", notes: "", created_at: "2026-08-16" },
+    message: "Can you model this?", status: "new", notes: "", created_at: AGO(4) },
   { id: 4, name: "Somebody else", email: "old@example.com", kind: "general",
     message: "Answered a while ago.", status: "closed", notes: "dealt with",
-    created_at: "2026-06-01" },
+    created_at: AGO(90) },
 ];
 
 const SUBSCRIBERS = {
