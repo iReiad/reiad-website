@@ -59,7 +59,30 @@ function Plot({ chart }: { chart: Drawn }) {
   const bottom = Math.min(stacked ? 0 : Math.min(...flat, 0), chart.mark ? chart.mark.at : 0, 0);
   const span = top - bottom || 1;
 
+  /* TWO SCALES, because a line and a bar measure x differently
+     and one of them was doing both.
+
+     A LINE is drawn through points, so the first sits on the left
+     edge and the last on the right: `x` below.
+
+     A BAR occupies a BAND, so its centre is the middle of its
+     share of the width and its edges are inside it: `band`.
+
+     `x` was used for both, so every bar was centred on a point.
+     The first band's left edge landed at minus a third of a band
+     and the last band's right edge landed a third of a band PAST
+     the drawing, which with `overflow: visible` on the plot is a
+     bar painted outside its own chart. Measured against the
+     committed lesson snapshot, 22 charts did it, by up to 107
+     pixels on a laptop: the graph ran off to the right, over
+     whatever was beside it.
+
+     The left half of it was hidden by a `Math.max(0, left)`,
+     which pinned the first bar's left edge to the axis and left
+     its width alone, so that bar was the right size in the wrong
+     place. Both clamps are gone with the cause. */
   const x = (i: number): number => points === 1 ? WIDTH / 2 : (i / (points - 1)) * WIDTH;
+  const band = (i: number): number => ((i + 0.5) / points) * WIDTH;
   const y = (v: number): number => HEIGHT - ((v - bottom) / span) * HEIGHT;
 
   if (chart.shape === "donut") {
@@ -105,15 +128,18 @@ function Plot({ chart }: { chart: Drawn }) {
       }) : null}
 
       {chart.shape === "bar" ? series.map((s, si) => {
-        const width = (WIDTH / points) * (0.7 / series.length);
+        /* The group fills 70% of its band, whatever the series
+           count, so two series are two half-width bars side by
+           side rather than two full-width bars overlapping. */
+        const group = (WIDTH / points) * 0.7;
+        const width = group / series.length;
         return s.values.map((v, i) => {
-          const left = x(i) - (WIDTH / points) * 0.35 + si * width
-            + (points === 1 ? 0 : 0);
-          const zero = y(Math.max(0, Math.min(0, v)) === 0 ? 0 : 0);
+          const left = band(i) - group / 2 + si * width;
+          const zero = y(0);
           const height = Math.abs(y(v) - zero);
           return (
             <rect key={`${si}-${i}`} className="ls-plot-bar" data-tone={s.tone ?? "plain"} data-i={si}
-                  x={Math.max(0, left).toFixed(2)} width={width.toFixed(2)}
+                  x={left.toFixed(2)} width={width.toFixed(2)}
                   y={Math.min(y(v), zero).toFixed(2)} height={Math.max(0.4, height).toFixed(2)} />
           );
         });
@@ -131,7 +157,7 @@ function Plot({ chart }: { chart: Drawn }) {
               const y1 = y(base);
               return (
                 <rect key={si} className="ls-plot-bar" data-tone={s.tone ?? "plain"} data-i={si}
-                      x={Math.max(0, x(i) - width / 2).toFixed(2)} width={width.toFixed(2)}
+                      x={(band(i) - width / 2).toFixed(2)} width={width.toFixed(2)}
                       y={y1.toFixed(2)} height={Math.max(0.3, y0 - y1).toFixed(2)} />
               );
             })}

@@ -43,6 +43,7 @@
    ten minutes, which is a test nobody runs.
    ============================================================ */
 
+import { readFileSync } from "node:fs";
 import { load, open, skip, type Extra } from "./hydrate-fixture.ts";
 /* By relative path rather than the way a route spells it, like
    `parity.test.ts`: node refuses to strip types under
@@ -164,15 +165,75 @@ const { render } = await load<{ render: (b: unknown) => string }>(`
     a string in a lesson can never close the script tag. */
 const json = (block: Block): string => JSON.stringify(block).replace(/</g, "\\u003c");
 
-const files: Record<string, Extra> = {};
+/* THE REAL STYLESHEET, because half of what a block does is
+   geometry and none of that is visible against no CSS at all.
+
+   `aab/fallback.css` rather than `next/styles/site.css`: the
+   second is three files behind an `@import` and a Tailwind
+   compiler, and the first is the same design system with its
+   comments taken out, written by `scripts/build-fallback.ts` and
+   held to the source by `check-next.ts`. It is what the two pages
+   that are files already link. */
+const CSS = readFileSync(new URL("../aab/fallback.css", import.meta.url), "utf8");
+
+const files: Record<string, Extra> = {
+  "/fallback.css": { type: "text/css; charset=utf-8", body: CSS },
+};
 CASES.forEach((c, i) => {
   files[`/c${i}`] = {
     type: "text/html; charset=utf-8",
-    body: `<!DOCTYPE html><html lang="en"><head><meta charset="utf-8">`
-      + `<title>${c.name}</title></head><body>`
+    body: `<!DOCTYPE html><html lang="en" data-read-lang="bn"><head>`
+      + `<meta charset="utf-8"><title>${c.name}</title>`
+      + `<link rel="stylesheet" href="/fallback.css">`
+      /* The column a lesson block actually sits in: no margin on
+         the body, and a root that is exactly as wide as the
+         viewport. Anything wider than that is the block pushing
+         the page sideways, which is what the width pass below
+         asks about. */
+      + `<style>body{margin:0}#root{width:100%}</style></head><body>`
       + `<div id="root">${render(c.block)}</div>`
       + `<script type="application/json" id="block">${json(c.block)}</script>`
       + `<script type="module" src="/hydrate.js"></script></body></html>`,
+  };
+});
+
+/* ---------- and the same question of the real lessons ----------
+
+   The samples above are one block of each kind, small enough to
+   validate and no larger, and every one of them fitted while 22
+   real charts did not. A three-point bar chart's last band
+   overhangs by a third of a third; an eight-point one by a third
+   of an eighth of the width, on a column three times as wide.
+
+   So the committed snapshot is asked as well. It is the schools'
+   backup and the only copy of the lesson prose a check with no
+   network can read, which is what makes this affordable: 81
+   written lessons and 317 blocks, laid out rather than parsed. */
+const REAL = (() => {
+  const snap = JSON.parse(readFileSync(
+    new URL("../content/schools.backup.json", import.meta.url), "utf8")) as {
+      lessons: { school: string; stage: string; slug: string; blocks?: string }[] };
+  const out: { at: string; blocks: Block[] }[] = [];
+  for (const L of snap.lessons) {
+    if (!L.blocks) continue;
+    let parsed: unknown;
+    try { parsed = JSON.parse(L.blocks); } catch { continue; }
+    const list = (Array.isArray(parsed) ? parsed : Object.values(parsed as object))
+      .filter((b): b is Block => !!b && typeof b === "object" && "kind" in b);
+    if (list.length) out.push({ at: `${L.school}/${L.stage}/${L.slug}`, blocks: list });
+  }
+  return out;
+})();
+
+REAL.forEach((L, i) => {
+  files[`/r${i}`] = {
+    type: "text/html; charset=utf-8",
+    body: `<!DOCTYPE html><html lang="bn" data-read-lang="bn"><head>`
+      + `<meta charset="utf-8"><title>${L.at}</title>`
+      + `<link rel="stylesheet" href="/fallback.css">`
+      + `<style>body{margin:0}#root{width:100%}</style></head><body>`
+      + `<div id="root">${L.blocks.map((b) => render(b)).join("")}</div>`
+      + `</body></html>`,
   };
 });
 
@@ -216,6 +277,83 @@ for (const [i, c] of CASES.entries()) {
   ok(`${c.name} renders`, seen.blocks === 1 && seen.filled > 0,
     `${seen.blocks} blocks, ${seen.filled} characters`);
   ok(`${c.name} hydrates with no mismatch`, bad.length === 0, bad[0]?.slice(0, 600));
+}
+
+/* ---------- and nothing is drawn outside its own column ----------
+
+   A lesson block is content in a reading column, and the house
+   rule for anything wider than that column is that it scrolls
+   inside its own box. A block that instead paints past the column
+   runs over whatever is beside it and, where nothing above it
+   clips, gives the page a horizontal scrollbar and slides the
+   whole column sideways under the reader's thumb.
+
+   THE MEASURE IS PAINT, NOT SCROLL, and that is the part worth
+   copying. The first draft of this compared the root's
+   `scrollWidth` against its `clientWidth`, which is what a
+   horizontal scrollbar is made of, and it passed against a bar
+   chart drawing 107 pixels outside itself: an SVG's visible
+   overflow is ink, and ink does not widen a scroll container. So
+   this asks every element for its own box and reports the one
+   furthest past the edge, which catches both, and names it.
+
+   Two widths, because the two ways to get this wrong are
+   opposite. A 360px phone catches a hard minimum: a table of
+   eight columns, a grid of fixed tracks. A 1280px laptop catches
+   anything proportional, which no narrow test would ever see,
+   because at 360px a 7% overhang is 25 pixels and at 1280px it is
+   90. The bar chart bug was found by the wide one. */
+const WIDTHS = [
+  { name: "a phone", width: 360, height: 780 },
+  { name: "a laptop", width: 1280, height: 900 },
+];
+
+/** The element furthest past the right edge of the viewport, and
+    by how far, or null. One pixel of slack for sub-pixel
+    rounding and a stroke's outer half, and no more: two is a gap
+    somebody can see. */
+interface Outside { worst: string; by: number; scroll: number }
+
+/** Runs in the page. A function rather than a string of one: a
+    string handed to `evaluate` is an EXPRESSION, so `"() => {}"`
+    evaluates to a function and is never called, and every check
+    compares `undefined` against null and fails with nothing to
+    say. It cost 262 empty failures to find that out. */
+const outside = (): Outside | null => {
+  const d = document.documentElement;
+  let worst = "", by = 0;
+  for (const el of Array.from(d.querySelectorAll("#root *"))) {
+    const r = el.getBoundingClientRect();
+    const past = Math.round(r.right - d.clientWidth);
+    if (past > by) {
+      by = past;
+      const cls = typeof el.className === "string" ? el.className.trim() : "";
+      worst = el.tagName.toLowerCase() + (cls ? "." + cls.split(/\s+/).join(".") : "");
+    }
+  }
+  return by > 1 ? { worst, by, scroll: d.scrollWidth - d.clientWidth } : null;
+};
+
+for (const at of WIDTHS) {
+  await page.setViewportSize({ width: at.width, height: at.height });
+  for (const [i, c] of CASES.entries()) {
+    await page.goto(`${fixture.origin}/c${i}`, { waitUntil: "load" });
+    await page.waitForTimeout(50);
+    const over = await page.evaluate(outside);
+    ok(`${c.name} stays inside ${at.name}`, over === null,
+      over ? `${over.worst} reaches ${over.by}px past the edge`
+        + (over.scroll > 1 ? `, and the page scrolls ${over.scroll}px` : "") : "");
+  }
+}
+
+for (const at of WIDTHS) {
+  await page.setViewportSize({ width: at.width, height: at.height });
+  for (const [i, L] of REAL.entries()) {
+    await page.goto(`${fixture.origin}/r${i}`, { waitUntil: "load" });
+    const over = await page.evaluate(outside);
+    ok(`${L.at} stays inside ${at.name}`, over === null,
+      over ? `${over.worst} reaches ${over.by}px past the edge` : "");
+  }
 }
 
 console.log(`${passed} checks passed`);
