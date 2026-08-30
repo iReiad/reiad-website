@@ -93,4 +93,71 @@ export declare function keepPage({ url, title, kind, saved, note }: Pick<Library
     which are the two lists the account page draws. */
 export declare function listLibrary(only?: "saved" | "notes"): Promise<LibraryRow[]>;
 export declare function removeLibraryRow(id: string): Promise<boolean>;
+export type ThreadState = "open" | "parked" | "answered";
+/** Something read, with what it actually said. A URL on its own
+    is a bookmark; the line beside it is the research. */
+export interface Source {
+    url: string;
+    said: string;
+}
+/** What is left to do on this thread. Not a target and not a
+    routine task: those are about a person's week, and this is
+    about one question. */
+export interface Step {
+    text: string;
+    done?: boolean;
+}
+/** What on this site this question touches.
+
+    Three lists rather than three foreign keys, because none of
+    the three is a row in this database: a ticker is a string the
+    stock check understands, a tool is a key in `shared/nav.ts`
+    and a page is a URL this site answers. A foreign key that
+    cannot be declared is a join nobody can make, and what these
+    are for is building an address.
+
+    A PAGE CARRIES ITS TITLE, which is denormalising on purpose.
+    A thread is a record of what was being read at the time, and a
+    piece can be unpublished, retitled or dropped from the
+    library it was picked out of. A bare URL a year later is a
+    line somebody has to go and resolve; the title is what makes
+    the record readable without one. */
+export interface Threads {
+    tickers?: string[];
+    tools?: string[];
+    pages?: {
+        url: string;
+        title: string;
+    }[];
+}
+export interface ThreadBody {
+    note?: string;
+    sources?: Source[];
+    next?: Step[];
+    links?: Threads;
+}
+export interface Thread extends Row {
+    question: string;
+    state: ThreadState;
+    tags: string[];
+    body: ThreadBody;
+}
+/** Every thread, newest touched first.
+
+    `state` narrows it, and the absence of a state means all of
+    them: a desk that could not show a parked thread would be a
+    desk that loses them. */
+export declare function listThreads(state?: ThreadState): Promise<Thread[]>;
+/** Start one. Only the question, because everything else is what
+    the thread becomes. */
+export declare function addThread(question: string): Promise<Thread | null>;
+/** Change one, and only the fields named.
+
+    PATCH rather than PUT, and only what changed, for the reason
+    `keepPage` gives above: a desk saves the note on one keystroke
+    burst and the tags on another, and a whole-row write from
+    either would put back whatever the other had just changed on
+    a second device. */
+export declare function saveThread(id: string, patch: Partial<Pick<Thread, "question" | "state" | "tags" | "body">>): Promise<Thread | null>;
+export declare function removeThread(id: string): Promise<boolean>;
 export {};

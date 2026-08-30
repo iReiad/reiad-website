@@ -275,6 +275,7 @@ stage after it.
 | 5 | Published, Subscribers, History | the rest of the desk, and `/desk` retires. **Done.** |
 | 6 | Media, Schools, Backups | the three the desk never had. **Done.** |
 | 7 | People | last, because it is the only one needing both |
+| 8 | the research desk | not a panel, and see below |
 
 
 ### What stage 3 shipped, and what it deliberately did not
@@ -372,3 +373,102 @@ not served, and the deploy carries one commit for the whole site
 rather than a date per file. The panel says so in a sentence and
 draws no row, which is what stage 3 did with the routine
 template's missing verbs.
+
+
+## 7. The research desk, which is not a panel
+
+`/admin/research`, `next/components/admin/threads.tsx`, and
+`public.threads` in Supabase under the row-level security every
+other reader-owned table has.
+
+**A route rather than a nineteenth panel, and the reason is what
+the thing IS.** Every panel above is a list, a queue, a count or
+a button: something looked at for ten seconds. This is a surface
+somebody sits at for an hour, and an hour's work inside a column
+of nineteen panels is work you scroll to. It gets the width, the
+two panes and the keyboard to itself, and `/admin` links to it.
+
+**No prose on the page, on purpose.** §0 of this file bans a
+number with no source; this section bans a sentence with no
+reader. One person uses this, they know what it is, and every
+line of guidance is a line they read past a thousand times. The
+only words on it that are not the reader's own are three labels
+and one hint line.
+
+### One jsonb column, five controls, and the failure that follows
+
+A thread is a `question`, a `state`, `tags`, and one `body`. The
+note, the sources, what is left and the three link lists all live
+in that one column, so a fortnight of reading is one write.
+
+**PostgREST REPLACES a jsonb column rather than merging into
+it.** So a control that patches `{ body: { note } }` deletes the
+sources, silently, on a page that renders perfectly. `patchBody`
+builds a whole body out of the row the last write returned and
+that is the whole of the answer; `next/threads.test.ts` has a
+PostgREST-shaped fake that applies the patch it is sent, because
+a fixture that merged would pass the broken page.
+
+### A controlled field is the reader's, not the row's
+
+The note saves on a debounce, so a write is in flight while
+somebody is still typing. Its value has to come from somewhere,
+and taking it from the row on every change of the row means every
+response puts the server's answer back into the box: type a
+sentence, the debounce fires halfway through it, the answer lands
+two hundred milliseconds later carrying the HALF sentence, and
+the second half disappears from under the caret.
+
+**It heals, and that is what makes it dangerous.** The next write
+carries the full sentence and the response after that puts it
+back, so a check that reads the box a second later reads it after
+the heal: the first draft of that check passed against the bug it
+was written for. What a reader gets in the window is a reverted
+box with the caret at the end of it, and the next keystroke goes
+into that, so the middle sentence is gone for good.
+
+The effect keys on the thread's ID alone. `next/threads.test.ts`
+types in two bursts with the debounce firing between them,
+against a fixture whose PATCH takes 250ms, and watches the box
+across the whole window rather than sampling it at the end.
+
+### Connected: nothing is typed
+
+Three lists, and every one is picked out of something this site
+already holds, because a reference somebody typed is a reference
+that can be wrong and a desk of dead links is worse than a desk
+of none:
+
+| | |
+| --- | --- |
+| a check | picked from the stock checks already saved, and it links to `/tools/stock` **with that check's own query in it**, so a thread and `/tools/live` open the same analysis rather than two empty forms |
+| a tool | picked from `shared/nav.ts`, the one table every menu comes from |
+| a page | picked from the reader's own library, which is where a piece or a lesson goes when it is saved under a byline. It keeps the title, deliberately: a bare URL a year later is a line somebody has to go and resolve |
+
+### The keyboard is `f`, not `/`
+
+`f` find, `n` new, `j`/`k` down and up, `1`/`2`/`3` the three
+states, Escape out. None fires while a field has the focus or
+while a dialog is open.
+
+**`/` is the site's and was taken for one build.** `aab/src/app.ts`
+binds `/` and Ctrl+K to the command palette, `?` to the shortcut
+list, `t` to the theme and `g` to a go-to, on `window`, on every
+page. The desk's `/` did not fail: both listeners ran, the search
+box took the focus and a modal took it away again. A shortcut
+that collides does the other thing, which is why the test asserts
+that `/` still opens the palette here.
+
+### And leaving carries it
+
+`threads` went into "take a copy of everything" and "erase
+everything" in the commit that created it, which is DIET.md §30's
+rule. Doing that turned up four more that nothing carried:
+`routines`, `routine_entries`, `routine_templates` and
+`broker_tokens`. Both buttons worked and both reported success.
+
+`scripts/check-account.ts` holds it now, reading the migrations
+for what a reader owns rather than being told, and reading the
+two halves of `aab/src/account-page.ts` separately, because
+`"broker_tokens"` appears in both and grepping the whole file
+said nothing when it left one of them.

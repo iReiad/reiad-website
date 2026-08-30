@@ -9762,15 +9762,16 @@
       .tracker, .tag-waehler, .buch-tag, .dt-lang-btn, .dt-drop,
       .ls-opt, .ls-item, .ls-token, .ls-token-in, .ls-pair, .ls-line,
       .ls-step, .ls-lang-btn, .ls-move, .ls-reset, .ls-bin-head,
+      .rd-chip, .rd-step, .rd-link,
       .ls-block, .ls-lang, .ls-bin,
       .btn, .icon-btn, .top-btn, .drawer-close, .link-btn, .acc-item,
       .ladder-go, .tree-btn, .audience-opt, .crumb-step, .rail-toggle,
       .slash-item, .quiz-reset, .rt-jar, .big-link,
       .rail-item, .tree-link, .tab, .course-mod, .pillar,
-      .audience-slider, .skip, .dt-tab,
+      .audience-slider, .skip, .dt-tab, .rd-what, .rd-pick,
       .cell, .card, .gate-tile, .news-card, .work-card, .lesson-card,
       .rung, .res-live, .tally-item, .ladder-row, .target,
-      .saved-row, .kept-row, .rt-template, .resume, .acct-tile,
+      .saved-row, .kept-row, .rt-template, .resume, .acct-tile, .rd-row,
       .gate-card, .rt-build-task, .rt-panel, .dt-w,
       .topbar, .rail, .slimbar, .acc-menu, .tree-panel, .crumb-menu,
       .tabs-nav, .tool, .studio-pane, .band, .rt-sheet, .keep-panel,
@@ -9794,7 +9795,7 @@
       .rt-mark, .rt-heat-day, .term, .horizon-picker, .driver,
       .tracker, .tag-waehler, .buch-tag, .dt-lang-btn,
       .ls-opt, .ls-item, .ls-token, .ls-token-in, .ls-pair, .ls-line,
-      .ls-step, .ls-lang-btn) {
+      .ls-step, .ls-lang-btn, .rd-chip, .rd-step, .rd-link) {
     --depth: 1; --polish: 0.94; --clarity: 0.78; --standing: 0.3;
   }
 
@@ -9803,13 +9804,13 @@
       .slash-item, .quiz-reset, .rt-jar, .big-link,
       .rail-item, .tree-link, .tab, .course-mod, .pillar,
       .audience-slider, .skip, .dt-hit, .dt-tab,
-      .ls-move, .ls-reset, .ls-bin-head) {
+      .ls-move, .ls-reset, .ls-bin-head, .rd-what, .rd-pick) {
     --depth: 2.2; --polish: 0.8; --clarity: 0.7; --standing: 0.9;
   }
 
   :is(.cell, .card, .gate-tile, .news-card, .work-card, .lesson-card,
       .rung, .res-live, .tally-item, .ladder-row, .target,
-      .saved-row, .kept-row, .rt-template, .resume, .acct-tile,
+      .saved-row, .kept-row, .rt-template, .resume, .acct-tile, .rd-row,
       .gate-card, .rt-build-task, .rt-panel, .dt-w) {
     --depth: 5; --polish: 0.5; --clarity: 0.5; --standing: 1;
   }
@@ -9893,15 +9894,16 @@
       .tracker, .tag-waehler, .buch-tag, .dt-lang-btn, .dt-drop,
       .ls-opt, .ls-item, .ls-token, .ls-token-in, .ls-pair, .ls-line,
       .ls-step, .ls-lang-btn, .ls-move, .ls-reset, .ls-bin-head,
+      .rd-chip, .rd-step, .rd-link,
       .ls-block, .ls-lang, .ls-bin,
       .btn, .icon-btn, .top-btn, .drawer-close, .link-btn, .acc-item,
       .ladder-go, .tree-btn, .audience-opt, .crumb-step, .rail-toggle,
       .slash-item, .quiz-reset, .rt-jar, .big-link,
       .rail-item, .tree-link, .tab, .course-mod, .pillar,
-      .audience-slider, .skip, .dt-hit, .dt-tab,
+      .audience-slider, .skip, .dt-hit, .dt-tab, .rd-what, .rd-pick,
       .cell, .card, .gate-tile, .news-card, .work-card, .lesson-card,
       .rung, .res-live, .tally-item, .ladder-row, .target,
-      .saved-row, .kept-row, .rt-template, .resume, .acct-tile,
+      .saved-row, .kept-row, .rt-template, .resume, .acct-tile, .rd-row,
       .gate-card, .rt-build-task, .rt-panel, .dt-w,
       .topbar, .rail, .slimbar, .acc-menu, .tree-panel, .crumb-menu,
       .tabs-nav, .tool, .studio-pane, .band, .rt-sheet, .keep-panel,
@@ -10071,6 +10073,142 @@
   .ad-dot[data-state="down"] { background: var(--danger); }
   .ad-row[data-state="up"] .ad-dot { background: var(--accent); }
   .ad-row[data-state="down"] .ad-dot { background: var(--danger); }
+
+  .rd-wrap { max-inline-size: min(100%, 76rem); }
+
+  .rd {
+    display: grid; gap: var(--gap); margin-top: var(--gap);
+    align-items: start;
+  }
+  @media (min-width: 60rem) {
+    .rd { grid-template-columns: minmax(0, 20rem) minmax(0, 1fr); }
+    .rd-list, .rd-open {
+      position: sticky; top: calc(var(--top-space, 76px) + var(--s-5));
+      max-block-size: calc(100dvh - var(--top-space, 76px) - var(--gap) * 2);
+      overflow-y: auto;
+    }
+  }
+
+  .rd-list, .rd-open {
+    display: grid; align-content: start; gap: var(--s-5);
+    padding: var(--s-6); border-radius: var(--radius-card);
+    min-inline-size: 0;
+  }
+
+  .rd-list-head {
+    display: grid; gap: var(--s-4);
+    grid-template-columns: minmax(0, 1fr) auto; align-items: end;
+  }
+
+  .rd-chips { display: flex; flex-wrap: wrap; align-items: center; gap: var(--s-5); }
+  .rd-spacer { flex: 1 1 auto; }
+
+  .rd-chip {
+    padding: 3px var(--s-5); border-radius: var(--radius-pill);
+    border: 1px solid var(--hairline); background: var(--paper-sunk);
+    color: var(--ink-soft); font-family: var(--font-mono);
+    font-size: var(--t-1); letter-spacing: 0.06em; text-transform: uppercase;
+    cursor: pointer;
+  }
+  .rd-chip[data-on] { color: var(--accent); border-color: var(--accent-soft); }
+
+  .rd-n {
+    font-family: var(--font-mono); font-size: var(--t-1);
+    color: var(--accent); margin-inline-start: 2px;
+  }
+
+  .rd-rows { list-style: none; margin: 0; padding: 0; display: grid; gap: var(--s-5); }
+
+  .rd-row {
+    inline-size: 100%; display: grid; gap: 2px; text-align: start;
+    padding: var(--s-5); border-radius: var(--radius);
+    border: 1px solid var(--hairline); background: var(--panel);
+    cursor: pointer;
+    --surface-shadow: var(--shadow-card);
+  }
+  .rd-row[data-on] { border-color: var(--accent-soft); }
+  .rd-q {
+    font-family: var(--font-read); color: var(--ink);
+    overflow-wrap: anywhere;
+  }
+  .rd-meta {
+    font-size: var(--t-1); color: var(--ink-soft);
+    letter-spacing: 0.04em; text-transform: uppercase;
+  }
+
+  .rd-question input { font-family: var(--font-read); font-size: var(--t-5); }
+
+  .rd-note {
+    font-family: var(--font-read);
+    min-block-size: 7lh;
+  }
+
+  .rd-said {
+    font-size: var(--t-1); color: var(--ink-soft);
+    letter-spacing: 0.06em; text-transform: uppercase;
+  }
+
+  .rd-part { display: grid; gap: var(--s-5); padding-block: 0; }
+  .rd-h {
+    margin: 0; font-size: var(--t-1); letter-spacing: 0.08em;
+    text-transform: uppercase; color: var(--ink-soft);
+  }
+  .rd-add {
+    display: grid; gap: var(--s-4); align-items: end;
+    grid-template-columns: minmax(0, 1fr) auto;
+  }
+  .rd-add:has(.rd-what) { grid-template-columns: auto minmax(0, 1fr) auto; }
+
+  .rd-what, .rd-pick {
+    padding: 5px var(--s-5); border-radius: var(--radius);
+    border: 1px solid var(--hairline); background: var(--paper-sunk);
+    color: var(--ink); font-family: var(--font-mono); font-size: var(--t-2);
+    min-inline-size: 0; cursor: pointer;
+  }
+
+  .rd-srcs, .rd-steps, .rd-links {
+    list-style: none; margin: 0; padding: 0; display: grid; gap: var(--s-5);
+  }
+  .rd-srcs > li {
+    display: grid; gap: var(--s-5); align-items: center;
+    grid-template-columns: minmax(6rem, 10rem) minmax(0, 1fr) auto;
+  }
+
+  .rd-src-url {
+    font-size: var(--t-2); overflow-wrap: anywhere;
+    color: var(--ink-soft);
+  }
+
+  .rd-steps > li, .rd-links > li {
+    display: grid; gap: var(--s-5); align-items: center;
+    grid-template-columns: minmax(0, 1fr) auto;
+  }
+
+  .rd-step {
+    display: flex; gap: var(--s-5); align-items: baseline;
+    padding: 3px var(--s-5); border-radius: var(--radius);
+    border: 1px solid transparent; background: var(--paper-sunk);
+    cursor: pointer;
+  }
+
+  .rd-step input { accent-color: var(--accent); inline-size: 15px; block-size: 15px; }
+  .rd-step [data-done] { color: var(--ink-soft); text-decoration: line-through; }
+
+  .rd-link {
+    display: flex; flex-wrap: wrap; gap: var(--s-5); align-items: baseline;
+    padding: 4px var(--s-5); border-radius: var(--radius);
+    border: 1px solid var(--hairline); background: var(--paper-sunk);
+    color: var(--ink); text-decoration: none;
+  }
+
+  .rd-verdict { font-size: var(--t-1); color: var(--ink-soft); }
+
+  .rd-err { margin: 0; color: var(--danger); font-size: var(--t-2); }
+
+  @media (max-width: 40rem) {
+    .rd-srcs > li { grid-template-columns: minmax(0, 1fr) auto; }
+    .rd-src-url { grid-column: 1 / -1; }
+  }
 }
 
 @layer diet {

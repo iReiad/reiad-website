@@ -135,6 +135,23 @@ time and reads `location.pathname` to decide which of them it is
 on, and `check-courses.ts` fails if the two disagree. Move both or
 neither.
 
+**A layout wraps everything under it, so a section whose own page
+needs one puts that page in a route group.** `/portfolio/(hub)/`
+and `/tools/(hub)/` are what that looks like, and until 30 August
+2026 the reason was not written down anywhere: `/admin/layout.tsx`
+plus `/admin/research/layout.tsx` is TWO shells on one page. Two
+rails, two top bars, two footers, two boot scripts writing the
+same three attributes on `<html>`, and `margin-left:
+var(--rail-w)` on two nested `.shell-col`s, which took 268px off
+the width of the one route that most needed the room.
+
+**It renders perfectly.** The rail and the bar are `position:
+fixed`, so the two copies sit exactly on top of each other and a
+screenshot shows one of each. It was found by measuring the
+element rather than by looking at it, which is why
+`check-routes.ts` asks now: it counted layouts already and failed
+only on zero.
+
 ## Convert what you touch
 
 Three migrations are part-done and `MIGRATION.md` tracks them. The rule is
@@ -1466,6 +1483,57 @@ no account still gets all of it. Nothing here has that history
 and nothing here works signed out, so a second copy would be a
 second record to keep in step for nobody's benefit.
 
+### A research desk, and it is a route rather than a panel
+
+`/admin/research`, `next/components/admin/threads.tsx`, and
+`public.threads` in Supabase under the same row-level security
+everything above has. `ADMIN.md` section 7 is the whole of it;
+three things are worth knowing from here.
+
+**It is a route because of what it IS.** Every one of the
+nineteen panels on `/admin` is a list, a queue or a count:
+something looked at for ten seconds. This is a surface somebody
+sits at for an hour, and an hour's work inside a column of
+nineteen panels is work you scroll to.
+
+**ONE JSONB COLUMN, FIVE CONTROLS.** The note, the sources, what
+is left and the three link lists all live in `body`, so a
+fortnight of reading is one write. PostgREST REPLACES a jsonb
+column rather than merging into it, so a control patching
+`{ body: { note } }` deletes the sources, silently, on a page
+that renders perfectly. `patchBody` sends a whole body built from
+the row the last write returned, and `next/threads.test.ts` has a
+PostgREST-shaped fake that applies what it is sent: a fixture
+that merged would pass the broken page, which is
+`next/account.test.ts`'s own lesson.
+
+**A controlled field is the reader's, not the row's.** The note
+saves on a debounce, so a write is in flight while somebody is
+still typing, and deriving its value from the row on every change
+of the row means every response puts the server's answer back
+into the box: the half sentence that was in flight replaces the
+whole one under the caret. It HEALS on the next write, which is
+what makes it dangerous, and it is why the check for it watches
+the box across the window rather than reading it at the end. The
+first draft of that check read it at the end and passed against
+the bug it was written for.
+
+**Nothing under Connected is typed.** A check is picked from the
+stock checks already saved and links to `/tools/stock` with that
+check's own query in it, so a thread and `/tools/live` open the
+same analysis. A tool is picked from `shared/nav.ts`. A page is
+picked from the reader's library. A reference somebody typed is a
+reference that can be wrong.
+
+**The keyboard is `f`, and `/` was taken.** `aab/src/app.ts`
+binds `/` and Ctrl+K to the command palette, `?` to the shortcut
+list, `t` to the theme and `g` to a go-to, on `window`, on every
+page of this site. The desk bound `/` for one build and it did
+not fail: both listeners ran, the search box took the focus, and
+a modal took it away again. **A shortcut that collides does the
+other thing**, which is the whole reason a new one is checked
+against that list rather than against what looks free.
+
 ### What else an account is for
 
 Five things, and each one had to pass the same test the three
@@ -1510,13 +1578,57 @@ at.
   accounts. One choice, one key.
 - **A year of days**, drawn from `days-active` on the account
   page. No flame, nothing red, nothing counting down.
-- **Take a copy of everything.** One JSON file with the progress,
-  the library, the targets, the scenarios and the profile in it.
-  Leaving should be as easy as arriving.
+- **Take a copy of everything.** One JSON file with everything
+  the account holds in it. Leaving should be as easy as arriving.
 - **Erase everything**, which means the account and the mirror.
 
 `next/account.test.ts` is the guard: 128 checks in a real browser
 against a routed Supabase.
+
+#### Those two buttons are lists, and a list goes stale
+
+**Every table a reader owns goes into BOTH halves in the commit
+that creates it.** `DIET.md` section 30 said that in prose, and
+the prose was there and it was broken anyway. On 30 August 2026
+four of the reader's own tables were in neither button:
+
+| | |
+| --- | --- |
+| `routines` | the shape of somebody's week |
+| `routine_entries` | a year of what they actually did with it |
+| `routine_templates` | the ones they made, as against the ones the site ships |
+| `broker_tokens` | their broker key |
+
+Nothing looked wrong. Both buttons worked, the copy downloaded,
+the erase reported success, and what came back was five sixths of
+an account. **An export that is silently short and a complete one
+look identical**, which is why this is a check now:
+
+```sh
+node scripts/check-account.ts --list   # what leaving carries, and what it does not
+```
+
+It reads the migrations for what a reader owns rather than being
+told, taking `user_id` OR `owner_id` referencing `auth.users`,
+because the same fact spelled differently is how the templates
+table slipped out. It reads the two halves of
+`aab/src/account-page.ts` **separately**: `"broker_tokens"` is
+named in both, so grepping the whole file said nothing on the
+commit that took it out of one. And where a carrier is a list, it
+reads what is IN the list, because `PAGE.includes("MINE_TABLES")`
+is true whatever that list holds.
+
+**A table not erased says so, in one sentence, keyed by the
+table.** There is one: `profiles`. The display name is what puts
+an author beside a comment that is already published, and erasing
+it would leave those comments attributed to nobody rather than
+removing them. A comment lives in D1 behind the moderation queue
+and is not this button's to delete.
+
+**And the confirm has to keep naming what goes.** A reader
+pressing OK agreed to that sentence rather than to a list in a
+source file, so the check fails if the erase clears something the
+sentence does not mention.
 
 ### One section on screen
 
@@ -2110,8 +2222,11 @@ node scripts/check-routes.ts # redirect loops, dead links in routes as well
                             # as in files, a live article whose slug cannot be a
                             # URL, a check or a test published as a page, a
                             # redirect pointing at a practice book no stage
-                            # declares, and a page that was a directory losing
-                            # its directory address
+                            # declares, a page that was a directory losing its
+                            # directory address, and a page inside TWO shell
+                            # layouts, which draws the rail, the bar, the footer
+                            # and the boot script twice and takes --rail-w off
+                            # the width twice
 node scripts/check-css.ts   # a school's layer styling the whole site, a block
                             # class that means two things at once, and a rule
                             # that styles nothing on the site at all
@@ -2176,6 +2291,10 @@ node scripts/check-money.ts # a money school lesson whose two languages mount
 node scripts/check-rows.ts # a description of the database that has stopped
                             # being true, or a handler keeping its own copy
                             # of a vocabulary
+node scripts/check-account.ts # a table this account holds that leaving does
+                            # not carry: absent from "take a copy of
+                            # everything", or left behind by "erase
+                            # everything", both of which report success
 node scripts/check-rls.ts  # a Supabase table created with no row-level
                             # security on it, which has no symptom at all, or
                             # a second table readable by anyone
@@ -2260,6 +2379,14 @@ node next/routine-day.test.ts      # a day that renders and does not mark, an
                                    # list being deleted rather than archived
                                    # (53 checks, needs the Next build and a
                                    # browser, skips without)
+node next/threads.test.ts          # the research desk: five controls writing one
+                                   # jsonb column, and whether the fifth is the
+                                   # only one left afterwards. Plus the keyboard,
+                                   # including that `/` still belongs to the
+                                   # site's palette, and whether typing through
+                                   # a save loses the half you typed after the
+                                   # request went out (60 checks, needs the Next
+                                   # build and a browser, skips without)
 node next/progress.test.ts         # a page that costs a reader their ticks just
                                    # by being read, where in a piece they had
                                    # got to, and which tools they use

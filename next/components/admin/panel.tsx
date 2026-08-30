@@ -276,6 +276,24 @@ export function AdminPanel() {
         <Gate which="account" held={account} />
       </div>
 
+      {/* The desk is a ROUTE rather than a panel, and the link is
+          here because this is where somebody arrives. Everything
+          else on this page is a list or a queue; that is an hour
+          at a working surface, and a working surface inside a
+          column of nineteen panels is one you scroll to. */}
+      {account ? (
+        <Surface material="pane" className="ad-panel">
+          <h3>Research</h3>
+          <p className="ad-quiet">
+            A question, what has been read about it, what is left, and what on
+            this site it touches. Threads are rows under your own account.
+          </p>
+          <ButtonLink kind="ghost" size="sm" href="/admin/research">
+            Open the desk
+          </ButtonLink>
+        </Surface>
+      ) : null}
+
       {/* ADMIN.md §6 stage 7. The only panel needing both at once,
           and it decides that for itself rather than being hidden
           behind the two flags above: mounted unconditionally, it

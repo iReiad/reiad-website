@@ -165,6 +165,7 @@ const session = (sub: string) => JSON.stringify({
 
 /** Who this test signs in as. */
 const ME = "u-1";
+const NOW = new Date().toISOString();
 
 /** SOMEBODY ELSE'S PROFILE, and the reason it is here.
     `profiles` is the one table whose select policy is
@@ -253,6 +254,10 @@ interface Account {
   scenarios: ListRow[];
   profile: Record<string, unknown>;
   sent: Sent[];
+  /** The five tables this page reads whole and nothing else on it
+      draws. Keyed by table so a copy that stopped carrying one is
+      an empty list where a row was. */
+  others: Map<string, Record<string, unknown>[]>;
   /** Every REST GET, whole URL. `sent` records the writes; a read
       has no body, so the only thing worth keeping about one is
       what it asked for, which is exactly where the bug was. */
@@ -303,6 +308,24 @@ async function open(
       setup_at: new Date().toISOString(),
     },
     sent: [],
+    /* One row each, so a copy that stopped carrying one is a
+       copy with an empty list where a row was. */
+    others: new Map<string, Record<string, unknown>[]>([
+      ["threads", [{ id: "th-1", question: "Are the banks over-provisioned?",
+        state: "open", tags: ["banks"], body: { note: "Three of six." },
+        created_at: NOW, updated_at: NOW }]],
+      ["routines", [{ id: "rt-1", name: "A week", bands: [], tasks: [], is_active: true,
+        created_at: NOW, updated_at: NOW }]],
+      ["routine_entries", [{ id: "re-1", routine_id: "rt-1", entry_date: "2026-08-01",
+        marks: {}, mood: null, note: null, chose: null, updated_at: NOW }]],
+      ["routine_templates", [{ id: "tp-1", name: "Mine", description: "",
+        is_public: false, data: {}, created_at: NOW }]],
+      /* WITH its ciphertext, because the assertion below is that
+         the copy leaves it behind. */
+      ["broker_tokens", [{ user_id: ME, broker: "trading212",
+        cipher: "AAAAAAAAAAAAAAAAAAAAAAAA", label: "Main", env: "live",
+        created_at: NOW, updated_at: NOW }]],
+    ]),
   };
 
   await context.route(`${SUPA}/rest/v1/**`, async (route: Route) => {
@@ -363,6 +386,35 @@ async function open(
       }
       if (req.method() === "PATCH") return route.fulfill({ status: 204, body: "" });
       return json(state[table]);
+    }
+
+    /* ---- the five the page reads whole ----
+
+       `threads`, the three routine tables and `broker_tokens`
+       have no module on this page: it asks for all of each,
+       once, which is what an export is. They fell through to
+       `[]` here until 30 August 2026, so the copy could have
+       stopped carrying any of them and this file would have said
+       nothing.
+
+       `select=` IS HONOURED, and that is the point of the
+       branch rather than a detail. PostgREST returns the columns
+       asked for and no others; a fake that answered whole rows
+       would be kinder than the database, which is this file's
+       own lesson from the day its `profiles` fixture was. The
+       one thing the copy narrows is the broker key, and a
+       forgiving fake is what would let the ciphertext back into
+       a downloaded file unnoticed. */
+    if (state.others.has(table)) {
+      if (req.method() === "DELETE") {
+        state.others.set(table, []);
+        return route.fulfill({ status: 204, body: "" });
+      }
+      const want = (url.searchParams.get("select") ?? "*").split(",");
+      const rowsOut = (state.others.get(table) ?? []).map((row) =>
+        want.includes("*") ? row
+          : Object.fromEntries(Object.entries(row).filter(([k]) => want.includes(k))));
+      return json(rowsOut);
     }
     return json([]);
   });
@@ -999,7 +1051,7 @@ console.log("\nsetting the account up, then changing it");
 
 console.log("\nerasing everything");
 {
-  const { page, context, errors } = await open("/account", {
+  const { page, context, state, errors } = await open("/account", {
     rows: {
       targets: [{ id: "t1", kind: "habit", subject: "week", label: "Read on 4 days a week",
         target: 4, reached: 0, unit: "days", done_at: null,
@@ -1033,6 +1085,23 @@ console.log("\nerasing everything");
   is("nothing is listed as kept",
     await page.locator("#data .cell").count(), 0);
   is("and the targets are gone", await page.locator(".target").count(), 0);
+
+  /* ---- the five nothing on this page draws ----
+
+     There is no element to count for these, which is exactly why
+     they were left behind: the only evidence an erase reached
+     them is the request. All five reported success without ever
+     being asked for until 30 August 2026. */
+  for (const table of [
+    "threads", "routines", "routine_entries", "routine_templates", "broker_tokens",
+  ]) {
+    ok(`${table} was erased too`,
+      state.sent.some((x) => x.table === table && x.method === "DELETE"),
+      state.sent.filter((x) => x.method === "DELETE").map((x) => x.table).join(", "));
+  }
+  ok("and the account really is empty of them",
+    [...state.others.values()].every((list) => list.length === 0));
+
   is("no page errors", errors.length ? errors[0] : "none", "none");
   await context.close();
 }
@@ -1091,6 +1160,38 @@ console.log("\ntaking a copy of everything");
   ok("the reading list", Array.isArray(took.library) && took.library.length === 1);
   ok("the profile", isObject(took.profile) && took.profile.display_name === "Rony Reiad");
   ok("and says what it is", typeof took.what === "string" && took.what.length > 10);
+
+  /* ---- and the five that nothing on this page draws ----
+
+     Every one of these was in neither this file nor the button
+     until 30 August 2026: the copy downloaded, reported success,
+     and carried five sixths of an account.
+     `scripts/check-account.ts` reads the migrations and fails on
+     a table nothing carries; this is the other half of that,
+     which is whether the file it actually writes holds one. */
+  for (const [table, what] of [
+    ["threads", "the research threads"],
+    ["routines", "the shape of the week"],
+    ["routine_entries", "every day marked on it"],
+    ["routine_templates", "the templates this reader made"],
+  ] as const) {
+    const held = took[table];
+    ok(`it holds ${what}`, Array.isArray(held) && held.length === 1,
+      JSON.stringify(held));
+  }
+
+  /* THE BROKER KEY, AND WHAT IT LEAVES BEHIND. The row is useful:
+     which broker, what it was called, live or demo. `cipher` is
+     AES-GCM under a Worker secret, so it is bytes nobody holding
+     the file can open, and a credential in a downloaded file is
+     one more place it exists. */
+  const keys = Array.isArray(took.broker_tokens) ? took.broker_tokens : [];
+  ok("it holds the broker key's row", keys.length === 1);
+  ok("with what a person would want off it",
+    isObject(keys[0]) && keys[0].label === "Main" && keys[0].env === "live");
+  ok("AND NOT THE SEALED KEY ITSELF",
+    isObject(keys[0]) && !("cipher" in keys[0]),
+    JSON.stringify(keys[0]));
   is("no page errors", errors.length ? errors[0] : "none", "none");
   await context.close();
 }

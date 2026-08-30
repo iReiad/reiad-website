@@ -587,12 +587,41 @@ for (const url of [...targets].sort()) {
    see a stylesheet that was never linked; what it can see is the
    file that would have linked it.
    ============================================================ */
+/* ---- AND A PAGE INSIDE TWO OF THEM IS THE SAME BUG UP ----
+
+   Layouts NEST. A `layout.tsx` at `/admin/` wraps everything
+   under it, so a second one at `/admin/research/` renders the
+   whole shell twice: two rails, two top bars, two footers, two
+   boot scripts writing the same three attributes on `<html>`,
+   and `margin-left: var(--rail-w)` applied to two nested
+   `.shell-col`s.
+
+   IT RENDERS PERFECTLY. The rail and the bar are `position:
+   fixed`, so the two copies sit exactly on top of each other and
+   a screenshot shows one of each. What the page loses is width:
+   268px of it, off the left, on the one route that most needed
+   the room. It was found by measuring the element rather than by
+   looking at it.
+
+   `/portfolio/(hub)/` and `/tools/(hub)/` are what a section
+   whose own page needs a shell does instead: the group holds the
+   page and its layout, and a child route brings its own. */
 {
   const app = join(NEXT, "app");
-  const walkApp = (dir: string, layouts: number): void => {
+  /** A layout that mounts the site shell, as against one that
+      only groups. `siteLayout()` is what nearly every one is. */
+  const mountsShell = (dir: string): boolean => {
+    try {
+      return /\bsiteLayout\s*\(/.test(readFileSync(join(dir, "layout.tsx"), "utf8"));
+    } catch { return false; }
+  };
+  const walkApp = (dir: string, layouts: number, shells: string[]): void => {
     let entries: string[] = [];
     try { entries = readdirSync(dir); } catch { return; }
-    const here = layouts + (entries.includes("layout.tsx") ? 1 : 0);
+    const has = entries.includes("layout.tsx");
+    const here = layouts + (has ? 1 : 0);
+    const stack = has && mountsShell(dir) ? [...shells, relative(ROOT, dir)] : shells;
+
     if (entries.includes("page.tsx") && here === 0) {
       failures++;
       const where = relative(ROOT, dir);
@@ -602,13 +631,26 @@ for (const url of [...targets].sort()) {
       console.error("        chrome. Add a layout.tsx here or in a directory above it:");
       console.error('            export default siteLayout({ current: "..." });');
     }
+    if (entries.includes("page.tsx") && stack.length > 1) {
+      failures++;
+      console.error(`LAYOUT   ${relative(ROOT, dir)}/page.tsx is inside `
+        + `${stack.length} shells.`);
+      console.error(`        ${stack.join("\n        ")}`);
+      console.error("        Layouts nest, so this page renders the rail, the bar, the footer");
+      console.error("        and the boot script once each per shell, and --rail-w is taken off");
+      console.error("        the width once per shell. Both fixed layers sit exactly on top of");
+      console.error("        each other, so it LOOKS right. Put the outer page and its layout");
+      console.error("        in a route group of their own, the way (hub) does under /portfolio");
+      console.error("        and /tools.");
+    }
+
     for (const name of entries) {
       if (name.startsWith(".") || name === "node_modules") continue;
       const full = join(dir, name);
-      if (statSync(full).isDirectory()) walkApp(full, here);
+      if (statSync(full).isDirectory()) walkApp(full, here, stack);
     }
   };
-  walkApp(app, 0);
+  walkApp(app, 0, []);
 }
 
 console.log(

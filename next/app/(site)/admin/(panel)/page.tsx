@@ -21,8 +21,8 @@
    ============================================================ */
 
 import type { Metadata } from "next";
-import { pageMeta } from "../../../lib/pageMeta";
-import { AdminPanel } from "../../../components/admin/panel";
+import { pageMeta } from "../../../../lib/pageMeta";
+import { AdminPanel } from "../../../../components/admin/panel";
 
 export const metadata: Metadata = {
   ...pageMeta({

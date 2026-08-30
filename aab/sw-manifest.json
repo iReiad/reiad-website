@@ -1,8 +1,8 @@
 {
-  "version": "v227",
+  "version": "v228",
   "hashes": {
     "/offline.html": "bd9144e7162be323",
-    "/fallback.css": "1c4042627fe040c7",
+    "/fallback.css": "929b8ae56be84956",
     "/app.js": "d0b5bf300691d393",
     "/content.js": "024dccae1b55cc61",
     "/api.js": "a7bab41d860a4806",
@@ -10,10 +10,10 @@
     "/signin.js": "39ed9349d0b5494d",
     "/account.js": "1ff54b3b7e40165d",
     "/sync.js": "1b5ef09bc6339524",
-    "/account-page.js": "ddcf81f5fb6b2964",
+    "/account-page.js": "29b81ce097e6a9a1",
     "/streak.js": "49344fc7d99e4925",
     "/photo.js": "658dcc6546e422ee",
-    "/saved.js": "a19be7d350dc2498",
+    "/saved.js": "429c8df20e23ece0",
     "/prefs.js": "d9aeb24d6385075a",
     "/checkpoints.js": "8903c0d041e563b3",
     "/audience.js": "1722399ba587b201",

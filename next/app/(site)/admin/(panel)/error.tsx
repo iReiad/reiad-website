@@ -39,8 +39,8 @@
    ============================================================ */
 
 import { useEffect } from "react";
-import { Surface } from "../../../components/ui/surface";
-import { Button } from "../../../components/ui/button";
+import { Surface } from "../../../../components/ui/surface";
+import { Button } from "../../../../components/ui/button";
 
 export default function AdminError(
   { error, reset }: { error: Error & { digest?: string }; reset: () => void },
