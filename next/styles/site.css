@@ -1556,6 +1556,17 @@
     scroll-padding-top: calc(var(--top-space) + 0.9rem);
     text-size-adjust: 100%;
 
+    /* The bar is `position: fixed`, and a fixed element rides the
+       rubber band: overscrolling the root scroller on a phone drags
+       the bar out of its `--top-gap` and under the browser's own
+       chrome, then springs it back. `none` rather than `contain`,
+       because contain stops the scroll chaining and keeps the
+       bounce, which is the half that moves the bar. It also turns
+       off pull to refresh, which is the price: this site has no
+       gesture of its own on that axis and a reader who wants a
+       reload has the browser's button. */
+    overscroll-behavior-y: none;
+
     /* Here as well as on body, because this is the element the
        viewport scrollbar actually belongs to: body's overflow
        propagates up to it, so locking scrolling on body takes the
