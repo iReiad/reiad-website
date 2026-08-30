@@ -15127,15 +15127,16 @@ German for day, and .tag is what the site has always called
       .tracker, .tag-waehler, .buch-tag, .dt-lang-btn, .dt-drop,
       .ls-opt, .ls-item, .ls-token, .ls-token-in, .ls-pair, .ls-line,
       .ls-step, .ls-lang-btn, .ls-move, .ls-reset, .ls-bin-head,
+      .rd-chip, .rd-step, .rd-link,
       .ls-block, .ls-lang, .ls-bin,
       .btn, .icon-btn, .top-btn, .drawer-close, .link-btn, .acc-item,
       .ladder-go, .tree-btn, .audience-opt, .crumb-step, .rail-toggle,
       .slash-item, .quiz-reset, .rt-jar, .big-link,
       .rail-item, .tree-link, .tab, .course-mod, .pillar,
-      .audience-slider, .skip, .dt-tab,
+      .audience-slider, .skip, .dt-tab, .rd-what, .rd-pick,
       .cell, .card, .gate-tile, .news-card, .work-card, .lesson-card,
       .rung, .res-live, .tally-item, .ladder-row, .target,
-      .saved-row, .kept-row, .rt-template, .resume, .acct-tile,
+      .saved-row, .kept-row, .rt-template, .resume, .acct-tile, .rd-row,
       .gate-card, .rt-build-task, .rt-panel, .dt-w,
       .topbar, .rail, .slimbar, .acc-menu, .tree-panel, .crumb-menu,
       .tabs-nav, .tool, .studio-pane, .band, .rt-sheet, .keep-panel,
@@ -15257,7 +15258,7 @@ German for day, and .tag is what the site has always called
       .rt-mark, .rt-heat-day, .term, .horizon-picker, .driver,
       .tracker, .tag-waehler, .buch-tag, .dt-lang-btn,
       .ls-opt, .ls-item, .ls-token, .ls-token-in, .ls-pair, .ls-line,
-      .ls-step, .ls-lang-btn) {
+      .ls-step, .ls-lang-btn, .rd-chip, .rd-step, .rd-link) {
     --depth: 1; --polish: 0.94; --clarity: 0.78; --standing: 0.3;
   }
 
@@ -15269,7 +15270,7 @@ German for day, and .tag is what the site has always called
       .slash-item, .quiz-reset, .rt-jar, .big-link,
       .rail-item, .tree-link, .tab, .course-mod, .pillar,
       .audience-slider, .skip, .dt-hit, .dt-tab,
-      .ls-move, .ls-reset, .ls-bin-head) {
+      .ls-move, .ls-reset, .ls-bin-head, .rd-what, .rd-pick) {
     --depth: 2.2; --polish: 0.8; --clarity: 0.7; --standing: 0.9;
   }
 
@@ -15278,7 +15279,7 @@ German for day, and .tag is what the site has always called
      a spot and its edge is soft. */
   :is(.cell, .card, .gate-tile, .news-card, .work-card, .lesson-card,
       .rung, .res-live, .tally-item, .ladder-row, .target,
-      .saved-row, .kept-row, .rt-template, .resume, .acct-tile,
+      .saved-row, .kept-row, .rt-template, .resume, .acct-tile, .rd-row,
       .gate-card, .rt-build-task, .rt-panel, .dt-w) {
     --depth: 5; --polish: 0.5; --clarity: 0.5; --standing: 1;
   }
@@ -15512,15 +15513,16 @@ German for day, and .tag is what the site has always called
       .tracker, .tag-waehler, .buch-tag, .dt-lang-btn, .dt-drop,
       .ls-opt, .ls-item, .ls-token, .ls-token-in, .ls-pair, .ls-line,
       .ls-step, .ls-lang-btn, .ls-move, .ls-reset, .ls-bin-head,
+      .rd-chip, .rd-step, .rd-link,
       .ls-block, .ls-lang, .ls-bin,
       .btn, .icon-btn, .top-btn, .drawer-close, .link-btn, .acc-item,
       .ladder-go, .tree-btn, .audience-opt, .crumb-step, .rail-toggle,
       .slash-item, .quiz-reset, .rt-jar, .big-link,
       .rail-item, .tree-link, .tab, .course-mod, .pillar,
-      .audience-slider, .skip, .dt-hit, .dt-tab,
+      .audience-slider, .skip, .dt-hit, .dt-tab, .rd-what, .rd-pick,
       .cell, .card, .gate-tile, .news-card, .work-card, .lesson-card,
       .rung, .res-live, .tally-item, .ladder-row, .target,
-      .saved-row, .kept-row, .rt-template, .resume, .acct-tile,
+      .saved-row, .kept-row, .rt-template, .resume, .acct-tile, .rd-row,
       .gate-card, .rt-build-task, .rt-panel, .dt-w,
       .topbar, .rail, .slimbar, .acc-menu, .tree-panel, .crumb-menu,
       .tabs-nav, .tool, .studio-pane, .band, .rt-sheet, .keep-panel,
@@ -16137,6 +16139,212 @@ German for day, and .tag is what the site has always called
   .ad-dot[data-state="down"] { background: var(--danger); }
   .ad-row[data-state="up"] .ad-dot { background: var(--accent); }
   .ad-row[data-state="down"] .ad-dot { background: var(--danger); }
+
+  /* ============================================================
+     The research desk, /admin/research
+
+     `components/admin/threads.tsx`. Two panes side by side: the
+     list of questions, and the one that is open. It is the only
+     page on this site that is a WORKING SURFACE rather than
+     something to read, and the two things that follow from that
+     are here rather than in the component:
+
+       the page gets the width. `--measure` is the reading column
+       and everything else on this site is built around it; a
+       desk with two panes inside 34rem is one pane and a gutter.
+
+       the open pane SCROLLS ON ITS OWN above 60rem, so the list
+       stays where it is while a long thread is read. Below that
+       the two stack and the page scrolls, because a pane with
+       its own scrollbar inside a scrolling page on a phone is
+       two scrollbars fighting.
+     ============================================================ */
+  .rd-wrap { max-inline-size: min(100%, 76rem); }
+
+  .rd {
+    display: grid; gap: var(--gap); margin-top: var(--gap);
+    align-items: start;
+  }
+  @media (min-width: 60rem) {
+    .rd { grid-template-columns: minmax(0, 20rem) minmax(0, 1fr); }
+    .rd-list, .rd-open {
+      position: sticky; top: calc(var(--top-space, 76px) + var(--s-5));
+      max-block-size: calc(100dvh - var(--top-space, 76px) - var(--gap) * 2);
+      overflow-y: auto;
+    }
+  }
+
+  .rd-list, .rd-open {
+    display: grid; align-content: start; gap: var(--s-5);
+    padding: var(--s-6); border-radius: var(--radius-card);
+    min-inline-size: 0;
+  }
+
+  .rd-list-head {
+    display: grid; gap: var(--s-4);
+    grid-template-columns: minmax(0, 1fr) auto; align-items: end;
+  }
+
+  .rd-chips { display: flex; flex-wrap: wrap; align-items: center; gap: var(--s-5); }
+  .rd-spacer { flex: 1 1 auto; }
+
+  /* A CHIP, and it is listed as one in `@layer glow`. It latches:
+     which state, which tag, which of the three a thread is in.
+     That is the system's own test for the kind, and it is the
+     same answer `.pref-chip` and `.topic-chip` got. */
+  .rd-chip {
+    padding: 3px var(--s-5); border-radius: var(--radius-pill);
+    border: 1px solid var(--hairline); background: var(--paper-sunk);
+    color: var(--ink-soft); font-family: var(--font-mono);
+    font-size: var(--t-1); letter-spacing: 0.06em; text-transform: uppercase;
+    cursor: pointer;
+  }
+  .rd-chip[data-on] { color: var(--accent); border-color: var(--accent-soft); }
+
+  /* A count beside a word. No ground and no edge on purpose: a
+     badge with both is a surface, and a surface has to be on a
+     kind. This is ink. */
+  .rd-n {
+    font-family: var(--font-mono); font-size: var(--t-1);
+    color: var(--accent); margin-inline-start: 2px;
+  }
+
+  .rd-rows { list-style: none; margin: 0; padding: 0; display: grid; gap: var(--s-5); }
+
+  /* A CARD, listed as one in `@layer glow`, for the reason
+     `.saved-row` and `.kept-row` are: a row in a list that takes
+     you into the thing it names. */
+  .rd-row {
+    inline-size: 100%; display: grid; gap: 2px; text-align: start;
+    padding: var(--s-5); border-radius: var(--radius);
+    border: 1px solid var(--hairline); background: var(--panel);
+    cursor: pointer;
+    --surface-shadow: var(--shadow-card);
+  }
+  .rd-row[data-on] { border-color: var(--accent-soft); }
+  .rd-q {
+    font-family: var(--font-read); color: var(--ink);
+    overflow-wrap: anywhere;
+  }
+  .rd-meta {
+    font-size: var(--t-1); color: var(--ink-soft);
+    letter-spacing: 0.04em; text-transform: uppercase;
+  }
+
+  .rd-question input { font-family: var(--font-read); font-size: var(--t-5); }
+
+  /* `rows` IS ADVISORY HERE. `@layer base` sets
+     `field-sizing: content` on every textarea, which is right
+     everywhere else on this site and means the box grows as
+     somebody types. It also means the box STARTS at its
+     `min-height`, so `rows={12}` bought four lines and the note
+     on a working surface opened the size of a comment box. The
+     minimum is the size a note should open at; growing is what
+     the token already does.
+
+     SEVEN LINES AND NOT TWELVE, WHICH IS WHAT IT WAS FOR ONE
+     BUILD. Twelve pushed Sources, Next and Connected off a
+     980px screen, so three quarters of the thread was behind a
+     scroll on the surface somebody is meant to work in. The note
+     grows as it is typed into; the other three do not appear
+     when you scroll past them for the first time. */
+  .rd-note {
+    font-family: var(--font-read);
+    min-block-size: 7lh;
+  }
+
+  /* One word, and it is ink rather than a badge for `.rd-n`'s
+     reason. `aria-live` is on the element; nothing animates,
+     because a thing that fades in and out beside a caret is a
+     thing that pulls the eye off the sentence. */
+  .rd-said {
+    font-size: var(--t-1); color: var(--ink-soft);
+    letter-spacing: 0.06em; text-transform: uppercase;
+  }
+
+  /* `padding-block: 0` because `main section` in `@layer layout`
+     gives every section `--step` of top padding, which is the
+     rhythm between sections of a LONG PAGE and is 68px of empty
+     pane above the word "Sources" here. `.dt-deck-wrap` says the
+     same thing three thousand lines down. */
+  .rd-part { display: grid; gap: var(--s-5); padding-block: 0; }
+  .rd-h {
+    margin: 0; font-size: var(--t-1); letter-spacing: 0.08em;
+    text-transform: uppercase; color: var(--ink-soft);
+  }
+  .rd-add {
+    display: grid; gap: var(--s-4); align-items: end;
+    grid-template-columns: minmax(0, 1fr) auto;
+  }
+  .rd-add:has(.rd-what) { grid-template-columns: auto minmax(0, 1fr) auto; }
+
+  /* A CONTROL, both of them, and listed as such in `@layer glow`.
+     A select acts: it does the thing rather than latching. */
+  .rd-what, .rd-pick {
+    padding: 5px var(--s-5); border-radius: var(--radius);
+    border: 1px solid var(--hairline); background: var(--paper-sunk);
+    color: var(--ink); font-family: var(--font-mono); font-size: var(--t-2);
+    min-inline-size: 0; cursor: pointer;
+  }
+
+  .rd-srcs, .rd-steps, .rd-links {
+    list-style: none; margin: 0; padding: 0; display: grid; gap: var(--s-5);
+  }
+  .rd-srcs > li {
+    display: grid; gap: var(--s-5); align-items: center;
+    grid-template-columns: minmax(6rem, 10rem) minmax(0, 1fr) auto;
+  }
+  /* A link, and nothing but a link: the site's own `a:hover`
+     answers it, which is why this carries no hover of its own and
+     is not on the material. A hostname in the mono face with a
+     rule under it is prose, not a button. */
+  .rd-src-url {
+    font-size: var(--t-2); overflow-wrap: anywhere;
+    color: var(--ink-soft);
+  }
+
+  .rd-steps > li, .rd-links > li {
+    display: grid; gap: var(--s-5); align-items: center;
+    grid-template-columns: minmax(0, 1fr) auto;
+  }
+  /* A CHIP: a checkpoint you latch, which is what `.checkpoint`
+     already is on this site. */
+  .rd-step {
+    display: flex; gap: var(--s-5); align-items: baseline;
+    padding: 3px var(--s-5); border-radius: var(--radius);
+    border: 1px solid transparent; background: var(--paper-sunk);
+    cursor: pointer;
+  }
+  /* `accent-color`, because a browser's own tick is blue and blue
+     is not a colour on this site. The checklist in an article and
+     the diet tool's boxes both say the same thing where they set
+     it; there is no global rule to inherit. */
+  .rd-step input { accent-color: var(--accent); inline-size: 15px; block-size: 15px; }
+  .rd-step [data-done] { color: var(--ink-soft); text-decoration: line-through; }
+
+  /* A CHIP, for `.acc-item`'s reason: a link in a list, at the
+     size a link in a list actually is. A card's 240px light on a
+     28px row is a light bigger than the thing carrying it. */
+  .rd-link {
+    display: flex; flex-wrap: wrap; gap: var(--s-5); align-items: baseline;
+    padding: 4px var(--s-5); border-radius: var(--radius);
+    border: 1px solid var(--hairline); background: var(--paper-sunk);
+    color: var(--ink); text-decoration: none;
+  }
+  /* Read, never pressed, and inside the link rather than beside
+     it: no ground and no edge, for `.rd-n`'s reason. */
+  .rd-verdict { font-size: var(--t-1); color: var(--ink-soft); }
+
+  .rd-err { margin: 0; color: var(--danger); font-size: var(--t-2); }
+
+  /* On a phone a source is two lines, not three columns. The
+     host, the line about what it said and the remove button were
+     96px, 150px and 40px inside a 340px pane, so "Provision cover
+     61%" read as "Provision cov". */
+  @media (max-width: 40rem) {
+    .rd-srcs > li { grid-template-columns: minmax(0, 1fr) auto; }
+    .rd-src-url { grid-column: 1 / -1; }
+  }
 }
 
 /* ============================================================

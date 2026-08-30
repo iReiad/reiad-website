@@ -190,9 +190,12 @@ export const NEXT_ROUTES = [
   /^\/tools\/(stock|live|routine|diet)$/i,
   /^\/tools\/routine\/(settings|print|day|year)$/i,
   /^\/tools\/diet\/(you|glossary|goal|trend|year|journal|nutrition|expect|foods|health|summary|habits|keto|recipes|import)$/i,
-  /* The admin panel. ADMIN.md is the plan; it is `unlisted` in
-     shared/nav.ts for the reason the course section is. */
-  /^\/admin$/i,
+  /* The admin panel, and the research desk under it. ADMIN.md is
+     the plan; it is `unlisted` in shared/nav.ts for the reason
+     the course section is. `bare()` takes the trailing slash off
+     before this list is consulted, so /admin/research/ reaches
+     the same route. */
+  /^\/admin(\/research)?$/i,
   /* The Studio's shell. Its bundle is NOT here: that is a file in
      aab/studio/, and the asset router answers it as it always
      has. `/desk` was the other one and is a 301 to /admin in

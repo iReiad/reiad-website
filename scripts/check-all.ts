@@ -133,6 +133,12 @@ const STAGES: Array<[stage: string, entries: Entry[]]> = [
        first thing it found was two of them: the sentences a
        learner types into a practice book. */
     "scripts/check-storage.ts",
+    /* And the other half of the same question, one floor up: what
+       the ACCOUNT holds, and whether leaving takes it. Four of a
+       reader's own tables were in neither the copy nor the erase
+       on the day it was written, and both buttons reported
+       success. */
+    "scripts/check-account.ts",
     /* The twelve drawings and the six walls, which are rendered
        in two places that resolve their tokens in two completely
        different ways: the site cascades them and a share card

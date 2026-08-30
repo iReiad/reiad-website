@@ -41,8 +41,16 @@ const ok = (what: string, cond: unknown, detail = ""): void => {
    ============================================================ */
 console.log("\nthe route");
 {
-  const page = "next/app/(site)/admin/page.tsx";
-  const layout = "next/app/(site)/admin/layout.tsx";
+  /* IN `(panel)/`, and that is the fix rather than the shape it
+     was always in. A layout at `/admin/` wraps everything under
+     it, and `/admin/research/` brings its own, so the desk got
+     two shells: two rails, two bars, two boot scripts, and
+     `--rail-w` off the width twice. A route group holds this
+     page and its layout instead, exactly as `(hub)` does under
+     /portfolio and /tools. `check-routes.ts` fails on the other
+     arrangement now. */
+  const page = "next/app/(site)/admin/(panel)/page.tsx";
+  const layout = "next/app/(site)/admin/(panel)/layout.tsx";
 
   ok("there is a page", existsSync(join(ROOT, page)));
   /* The one that shipped broken: /tools/routine had no layout for
@@ -51,6 +59,12 @@ console.log("\nthe route");
      again for the page it matters most on. */
   ok("and a layout, which is where the stylesheet comes from",
     existsSync(join(ROOT, layout)));
+  ok("and no second layout above it, which would draw the shell twice",
+    !existsSync(join(ROOT, "next/app/(site)/admin/layout.tsx")));
+
+  /* The desk, which is what the group exists for. */
+  ok("the research desk is a route under it",
+    existsSync(join(ROOT, "next/app/(site)/admin/research/page.tsx")));
 
   const src = read(page);
   ok("it is noindex", /robots:\s*\{[^}]*index:\s*false/.test(src),
@@ -223,7 +237,7 @@ console.log("\nnothing locked looks empty");
      this was written after, and it would not have caught it. A
      boundary that implies more cover than it has is worse than
      none. */
-  const boundary = read("next/app/(site)/admin/error.tsx");
+  const boundary = read("next/app/(site)/admin/(panel)/error.tsx");
   ok("a throw in the panel tree says the page did not finish",
     /did not finish/.test(boundary));
   ok("and it names what an extension looks like, which is the case it cannot catch",
@@ -234,7 +248,7 @@ console.log("\nnothing locked looks empty");
      side deliberately: everything else that could report it is
      client code, and a browser running an older bundle reports
      the older bundle's answer or nothing. */
-  const route = read("next/app/(site)/admin/page.tsx");
+  const route = read("next/app/(site)/admin/(panel)/page.tsx");
   ok("and /admin names its build in the server-rendered HTML",
     /SITE_BUILD/.test(route) && /build \$\{|`build /.test(route));
 

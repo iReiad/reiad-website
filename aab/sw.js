@@ -31,6 +31,13 @@
    login could not have reached anyone either. Bump this whenever a
    precached file changes.
 
+   v228: /saved.js, /account-page.js and /fallback.css. The
+        research desk at /admin/research: threads, sources, what
+        is left, and what on this site a question touches. And
+        four of the reader's own tables that "take a copy of
+        everything" was not carrying and "erase everything" was
+        not clearing, both of which reported success.
+
    v227: /fallback.css. The twelfth kind of lesson block: a sheet
         a reader types into, where the eleven before it all had
         the reader choosing. A profit and loss account, a loan's
@@ -2039,7 +2046,7 @@
    imports (crumbs, audience, learn progress) and the hub is a
    different page. Without a bump, a returning reader would be
    served the v3 app.js forever and none of it would appear. */
-const VERSION = "v227";
+const VERSION = "v228";
 const SHELL = `shell-${VERSION}`;
 const RUNTIME = `runtime-${VERSION}`;
 

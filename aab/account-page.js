@@ -103,18 +103,66 @@ const DIET_TABLES = [
     "diet_profile", "diet_days", "diet_entries",
     "diet_foods", "diet_phases", "diet_labs",
 ];
-/** One request against one diet table, as the reader. Null when
+/* ============================================================
+   The other four tables leaving has to carry
+
+   Every one of these is the reader's own rows under the same row
+   level security, and none of them had a module on this page
+   that read them whole: the routine's dashboard draws a day at a
+   time, the desk draws a thread at a time, and the broker key is
+   only ever unsealed inside a Worker. So all four were absent
+   from "take a copy of everything" AND from "erase everything",
+   which is the failure the diet block above already names: a
+   table added and its two halves of leaving added later are the
+   same omission twice.
+
+   `scripts/check-account.ts` is what holds it now, and it reads
+   the migrations rather than this list: a reader-owned table
+   nothing here names fails, and a name here that no table
+   answers fails too. */
+const MINE_TABLES = [
+    /* The research desk. `next/components/admin/threads.tsx`. */
+    "threads",
+    /* The routine: the shape of somebody's week, and a year of what
+       they actually did with it. The second is the bigger loss of
+       the two and was the one nothing carried. */
+    "routines", "routine_entries",
+    /* A template somebody MADE. The site ships several in the same
+       table with no owner at all, and the filter below is what
+       keeps those out of a copy and, far more importantly, out of
+       an erase. */
+    "routine_templates",
+];
+/** Which column says whose row it is, where it is not `user_id`.
+    One entry, and it is the reason this is a table rather than a
+    literal: a filter on the wrong column is a DELETE that either
+    matches nothing or matches everything, and the second is what
+    would take the site's own routine templates away. */
+const OWNER = {
+    routine_templates: "owner_id",
+};
+/** What a copy takes from a table, where taking all of it would
+    be wrong. The broker key is the only one: `cipher` is AES-GCM
+    under a Worker secret, so it is bytes nobody holding the file
+    can open, and a credential in a downloaded file is worth
+    nothing to its owner and is one more place it exists. The
+    rest of the row is the useful half: which broker, what it was
+    called, and whether it was the live account or the demo. */
+const COLUMNS = {
+    broker_tokens: "broker,label,env,created_at,updated_at",
+};
+/** One request against one of the reader's own tables. Null when
     nobody is signed in and on any failure, so a copy is never
     silently short: the caller turns a null into a thrown error
     rather than into an empty list. */
-async function dietTable(table, method) {
+async function readerTable(table, method) {
     const access = await token();
     const who = current();
     if (!access || !who)
         return null;
-    const select = method === "GET" ? "&select=*" : "";
+    const select = method === "GET" ? `&select=${COLUMNS[table] ?? "*"}` : "";
     const res = await fetch(`${SUPABASE_URL}/rest/v1/${table}`
-        + `?user_id=eq.${encodeURIComponent(who.id)}${select}`, {
+        + `?${OWNER[table] ?? "user_id"}=eq.${encodeURIComponent(who.id)}${select}`, {
         method,
         headers: {
             apikey: SUPABASE_KEY,
@@ -158,13 +206,25 @@ async function exportEverything() {
            list and a list that could not be read look identical in
            JSON, and the second one is somebody leaving without their
            log. */
-        const dietRows = await Promise.all(DIET_TABLES.map((table) => dietTable(table, "GET")));
+        const dietRows = await Promise.all(DIET_TABLES.map((table) => readerTable(table, "GET")));
         const diet = {};
         DIET_TABLES.forEach((table, i) => {
             const got = dietRows[i];
             if (got === null)
                 throw new Error(`Could not read ${table}. Nothing was downloaded.`);
             diet[table] = got;
+        });
+        /* The four above, on the same terms: a table that answered
+           with a failure throws rather than landing in the file as
+           an empty list. */
+        const otherTables = [...MINE_TABLES, "broker_tokens"];
+        const otherRows = await Promise.all(otherTables.map((table) => readerTable(table, "GET")));
+        const mine = {};
+        otherTables.forEach((table, i) => {
+            const got = otherRows[i];
+            if (got === null)
+                throw new Error(`Could not read ${table}. Nothing was downloaded.`);
+            mine[table] = got;
         });
         /* Every synced key, whatever it is, rather than the eleven a
            reader is shown a count of. `components/account/mirror.ts`
@@ -190,6 +250,11 @@ async function exportEverything() {
             targets,
             scenarios,
             diet,
+            /* Spread rather than nested under a name of its own, so
+               `threads` sits beside `targets` and `scenarios` the way a
+               reader opening the file would expect. `broker_tokens`
+               comes without its ciphertext: `COLUMNS` says why. */
+            ...mine,
         };
         /* A blob and an object URL, revoked immediately after the
            click: a data: URL of the same thing would be governed by
@@ -254,7 +319,9 @@ $("#account-forget")?.addEventListener("click", async () => {
        holding a weight, a medicine or a cycle. */
     if (!confirm("Erase everything this account has saved?\n\n"
         + "Your position, your checkpoints, your reading list, your notes, your "
-        + "targets and your saved scenarios.\n\n"
+        + "targets, your saved scenarios, your research threads, your routines "
+        + "and every day you have marked on them, the templates you made, and "
+        + "your broker key.\n\n"
         + "And everything in the diet tool: your daily log, everything you have "
         + "eaten, your own foods and recipes, your phases, your clinic results, "
         + "and your diet profile, which is where your medicines and cycle "
@@ -282,7 +349,19 @@ $("#account-forget")?.addEventListener("click", async () => {
        medicines are erased when they are not is the worst answer
        this page can give. */
     for (const table of DIET_TABLES) {
-        if (await dietTable(table, "DELETE") === null) {
+        if (await readerTable(table, "DELETE") === null) {
+            console.warn("account: could not erase", table);
+            gone = false;
+        }
+    }
+    /* The other four, on the same terms and for the same reason.
+       `routine_entries` before `routines` is not required, since
+       the foreign key cascades, but a delete that leaves entries
+       behind for a moment is a delete somebody could interrupt. */
+    for (const table of [
+        "routine_entries", "routines", "routine_templates", "threads", "broker_tokens",
+    ]) {
+        if (await readerTable(table, "DELETE") === null) {
             console.warn("account: could not erase", table);
             gone = false;
         }

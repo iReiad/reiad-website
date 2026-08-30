@@ -86,6 +86,14 @@ const GONE: Gone[] = [
      saying it: `share-card.ts` sent a reader to it for a year. */
   { file: "MIGRATION.md", name: "scripts/check-modules.mjs",
     why: "the record of a pointer that never resolved" },
+  /* A path asserted ABSENT. `/admin`'s page and layout are in
+     `(panel)/` so that `/admin/research` does not inherit a
+     second shell, and the way to say that is to check that
+     nothing is at the old path. A name that must not resolve is
+     the one shape this check cannot tell from a stale pointer. */
+  { file: "scripts/admin.test.ts", name: "next/app/(site)/admin/layout.tsx",
+    why: "asserted absent: a layout there would wrap /admin/research too, "
+      + "so the panel's own is in (panel)/ and this is the check for it" },
   { file: "aab/sw.js", name: "scripts/check-modules.mjs",
     why: "the same, said where the reader it misled would be" },
 
