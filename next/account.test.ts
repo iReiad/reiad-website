@@ -660,10 +660,13 @@ console.log("\nreading preferences");
 
   await page.getByRole("tab", { name: "Preferences" }).click();
   await page.waitForTimeout(200);
-  is("seven rows of them", await page.locator(".pref-row").count(), 7);
-  is("every one of them is labelled",
+  /* The list rather than the count, so a row that arrives says
+     which one it is instead of moving a number. */
+  is("every row is labelled, and these are the rows",
     await page.locator("#account-prefs .pref-label").allTextContents(),
-    ["Type size", "Line width", "Theme", "Calculators open in", "Finish", "Blur", "Transparency"]);
+    ["Type size", "Line width", "Theme", "Calculators open in",
+     "Finish", "Texture", "Blur", "Transparency", "Sound",
+     "Your place", "Weather"]);
   is("normal is the one chosen",
     await page.locator('.pref-chips .pref-chip[data-on] strong').first().textContent(),
     "Normal");
@@ -709,10 +712,22 @@ console.log("\nreading preferences");
      from, so a chip that writes storage and not those three is a
      chip that changes nothing until the next load.
 
-     Scoped to the panel: "Clear" and "Plain" are ordinary words
-     and the other seven sections of this page are in the document
-     too. */
+     SCOPED TO THE ROW, not to the panel.
+
+     It was scoped to the panel, which was enough while there were
+     three finishes and every option in it had a different first
+     word. There are twelve now and "Deep flute" is one of them,
+     so `{ name: /Deep/ }` matched a finish and a blur and the
+     test died on a strict-mode violation rather than on anything
+     being wrong. Naming the row is what makes that impossible
+     again: every one of these rows is a `role="group"` with its
+     own label, because a group of chips that changes one setting
+     is one control. */
   const prefs = page.locator("#account-prefs");
+  /** One row of the appearance panel, by the label it announces
+      itself with. */
+  const row = (label: string) =>
+    prefs.locator(`[role=group][aria-label="${label}"]`);
   const onHtml = (name: string) => page.evaluate(
     (n: string) => document.documentElement.getAttribute(n), name);
   const propNow = (name: string) => page.evaluate(
@@ -722,30 +737,68 @@ console.log("\nreading preferences");
     await page.locator("#prefs-glass").textContent(), "What the glass is made of");
   is("frost is what a reader starts on", await onHtml("data-glass"), "frost");
 
-  await prefs.getByRole("button", { name: /Paper/ }).click();
+  await row("Finish").getByRole("button", { name: /Paper/ }).click();
   await page.waitForTimeout(300);
   is("pressing Paper changes the material", await onHtml("data-glass"), "paper");
   is("and the material is remembered", await stored("glass"), "paper");
 
-  await prefs.getByRole("button", { name: /Deep/ }).click();
+  /* One of the nine cast patterns, because three finishes was the
+     whole of what this ever pressed and the nine are the reason
+     the row is a shelf rather than a line of chips. */
+  await row("Finish").getByRole("button", { name: /Deep flute/ }).click();
+  await page.waitForTimeout(300);
+  is("a cast pattern is chosen the same way", await onHtml("data-glass"), "deep-flute");
+  is("and it is remembered", await stored("glass"), "deep-flute");
+
+  await row("Blur").getByRole("button", { name: /Deep/ }).click();
   await page.waitForTimeout(300);
   is("pressing Deep moves every blur at once", await propNow("--glass-amount"), "1.7");
   is("and the blur is remembered", await stored("blur"), "deep");
 
-  await prefs.getByRole("button", { name: /Clear/ }).click();
+  /* The fourth knob. It rode on `--depth` for one draft and
+     resolved to the same number on every surface, so what is
+     asserted here is the property the stylesheet actually reads
+     rather than the storage key, which was right either way. */
+  await row("Texture").getByRole("button", { name: /Strong/ }).click();
+  await page.waitForTimeout(300);
+  is("pressing Strong deepens the pattern", await propNow("--tex-strength"), "1.6");
+  is("and the strength is remembered", await stored("texture"), "strong");
+
+  await row("Transparency").getByRole("button", { name: /Clear/ }).click();
   await page.waitForTimeout(300);
   is("pressing Clear thins the tint", await propNow("--glass-veil"), "0.54");
   is("and the tint is remembered", await stored("veil"), "clear");
 
+  /* AND EVERY OPTION DRAWS ITSELF. A row of chips reading "Frost",
+     "Paper", "Thin reed" is a reader imagining eleven materials
+     from their names; the swatch is the whole point of the panel
+     and it is made of the same tokens the site is, so a swatch
+     that renders empty is a preview that lies. */
+  is("every finish carries a picture of itself",
+    await row("Finish").locator(".pref-chip > .pref-swatch").count(), 12);
+  is("and the picture is the material rather than a colour",
+    await row("Finish").locator('.pref-swatch-face[data-finish="aquatex"]').count(), 1);
+  const grained = await page.evaluate(() => {
+    const el = document.querySelector('.pref-swatch-face[data-finish="callisto"]');
+    return el ? getComputedStyle(el).backgroundImage.slice(0, 40) : "missing";
+  });
+  /* `ok` rather than `is`, so the message can say what the value
+     was AND why it matters: `@layer glow` sets
+     `--glass-grain: none` on every descendant of a surface, and
+     a chip is a surface, so a swatch inside one paints nothing
+     unless that rule makes an exception for it. */
+  ok("and it really paints a grain, inside a chip that is a surface",
+    grained.startsWith("repeating-radial-gradient"),
+    `got ${grained}`);
+
   /* Plain is a finish with its own solid grounds rather than the
      other two switched off, so it is chosen the same way and the
      panel says which one is on. */
-  await prefs.getByRole("button", { name: /Plain/ }).click();
+  await row("Finish").getByRole("button", { name: /Plain/ }).click();
   await page.waitForTimeout(300);
   is("Plain is chosen like any other finish", await onHtml("data-glass"), "plain");
   is("and the Finish row says so",
-    await prefs.locator('[role=group][aria-label="Finish"] .pref-chip[data-on] strong')
-      .textContent(),
+    await row("Finish").locator(".pref-chip[data-on] strong").textContent(),
     "Plain");
 
   is("no page errors", errors.length ? errors[0] : "none", "none");

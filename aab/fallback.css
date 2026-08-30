@@ -62,6 +62,11 @@
 
     --paper-base:      oklch(98.4% 0.008 var(--h-paper));
     --paper-sunk-base: oklch(96.4% 0.011 var(--h-paper));
+
+    --ground-light:      oklch(98.4% 0.008 var(--h-paper));
+    --ground-light-sunk: oklch(96.4% 0.011 var(--h-paper));
+    --ground-dark:       oklch(16.5% 0.012 var(--h-green));
+    --ground-dark-sunk:  oklch(14%   0.012 var(--h-green));
     --panel-base:      oklch(100%  0.003 var(--h-paper));
     --hairline-base:   oklch(88.5% 0.012 var(--h-paper));
     --pane-top:        oklch(100% 0 0 / 0.55);
@@ -71,9 +76,6 @@
     --glass-solid-base: oklch(99% 0.004 var(--h-paper));
     --accent-ink:      oklch(99% 0.004 var(--h-paper));
     --accent-mate:     oklch(20% 0.02 var(--h-green));
-    --tex-base:        oklch(45% 0.04 var(--h-green));
-    --tex-a: 0.035;
-    --tex-b: 0.028;
 
     --relief-cast: light-dark(oklch(22% 0.02 var(--h-green) / 0.3),
                               oklch(0% 0 0 / 0.42));
@@ -92,21 +94,8 @@
     --glass-solid:  color-mix(in oklab, var(--accent) 4%, var(--glass-solid-base));
     --glass-soft:   color-mix(in oklab, var(--accent) 10%, var(--glass-base));
     --glass-quiet:  color-mix(in oklab, var(--accent) 4%,  var(--glass-base));
-    --tex-ink:      color-mix(in oklab, var(--accent) 60%, var(--tex-base));
 
-    --weave:
-      repeating-linear-gradient(45deg,
-        color-mix(in oklab, var(--tex-ink) calc(var(--tex-a) * 100%), transparent) 0 1px,
-        transparent 1px 5px),
-      repeating-linear-gradient(-45deg,
-        color-mix(in oklab, var(--tex-ink) calc(var(--tex-b) * 100%), transparent) 0 1px,
-        transparent 1px 5px);
     --sheen: linear-gradient(180deg, var(--pane-top) 0%, transparent 22%);
-
-    --grain:
-      radial-gradient(circle at 1px 1px,
-        color-mix(in oklab, var(--tex-ink) calc(var(--tex-a) * 55%), transparent) 0.5px,
-        transparent 0.5px);
 
     --series-1:     var(--accent);
     --series-2:     var(--ink-soft);
@@ -142,6 +131,41 @@
     --glass-bright: 1;
     --glass-grain:  none;
 
+    --tex-lit-a: 0.5;
+    --tex-dim-a: 0.075;
+
+    --tex-strength: 1;
+  }
+
+  :root, [data-finish] {
+    --tex-k: 1;
+    --tex-hi: oklch(100% 0 0 /
+      calc(var(--tex-lit-a) * var(--tex-k) * var(--tex-strength)));
+    --tex-lo: oklch(0% 0 0 /
+      calc(var(--tex-dim-a) * var(--tex-k) * var(--tex-strength)));
+
+    --weave:
+      radial-gradient(circle at 31% 27%, var(--tex-hi) 0 0.5px, transparent 0.9px),
+      radial-gradient(circle at 74% 58%, var(--tex-lo) 0 0.5px, transparent 0.9px),
+      radial-gradient(circle at 17% 81%, var(--tex-lo) 0 0.4px, transparent 0.8px),
+      radial-gradient(circle at 58% 12%, var(--tex-hi) 0 0.4px, transparent 0.8px),
+      radial-gradient(circle at 88% 91%, var(--tex-lo) 0 0.5px, transparent 0.9px),
+      repeating-linear-gradient(91deg,
+        color-mix(in oklab, var(--tex-hi) 40%, transparent) 0 0.4px,
+        transparent 0.4px 4px),
+      radial-gradient(70% 58% at 24% 26%,
+        color-mix(in oklab, var(--tex-hi) 55%, transparent) 0 30%, transparent 78%),
+      radial-gradient(62% 70% at 77% 63%,
+        color-mix(in oklab, var(--tex-lo) 45%, transparent) 0 28%, transparent 76%),
+      radial-gradient(56% 46% at 58% 12%,
+        color-mix(in oklab, var(--tex-lo) 40%, transparent) 0 26%, transparent 74%);
+    --weave-size: 7px 11px, 11px 13px, 13px 17px, 17px 19px, 19px 23px, auto,
+                  197px 173px, 233px 211px, 149px 181px;
+
+    --grain:
+      radial-gradient(circle at 50% 50%, var(--tex-hi) 0 0.5px, transparent 0.6px);
+    --grain-size: 3px 3px;
+
     --glass-thin:  saturate(var(--glass-sat)) brightness(var(--glass-bright))
                    blur(calc(var(--glass-r) * 0.4 * var(--glass-amount)));
     --glass-blur:  saturate(var(--glass-sat)) brightness(var(--glass-bright))
@@ -172,6 +196,10 @@
                                0 10px 30px oklch(0% 0 0 / 0.38));
     --shadow-lift:  light-dark(0 18px 44px oklch(30% 0.05 var(--h-green) / 0.14),
                                0 18px 44px oklch(0% 0 0 / 0.5));
+
+  }
+
+  :root {
 
     --font-sans: "IBM Plex Sans", ui-sans-serif, system-ui, Arial, sans-serif;
     --font-serif: "Spectral", ui-serif, Georgia, serif;
@@ -248,21 +276,8 @@
     --glass-solid:  color-mix(in oklab, var(--accent) 4%, var(--glass-solid-base));
     --glass-soft:   color-mix(in oklab, var(--accent) 10%, var(--glass-base));
     --glass-quiet:  color-mix(in oklab, var(--accent) 4%,  var(--glass-base));
-    --tex-ink:      color-mix(in oklab, var(--accent) 60%, var(--tex-base));
 
-    --weave:
-      repeating-linear-gradient(45deg,
-        color-mix(in oklab, var(--tex-ink) calc(var(--tex-a) * 100%), transparent) 0 1px,
-        transparent 1px 5px),
-      repeating-linear-gradient(-45deg,
-        color-mix(in oklab, var(--tex-ink) calc(var(--tex-b) * 100%), transparent) 0 1px,
-        transparent 1px 5px);
     --sheen: linear-gradient(180deg, var(--pane-top) 0%, transparent 22%);
-
-    --grain:
-      radial-gradient(circle at 1px 1px,
-        color-mix(in oklab, var(--tex-ink) calc(var(--tex-a) * 55%), transparent) 0.5px,
-        transparent 0.5px);
 
     --series-1:     var(--accent);
     --series-2:     var(--ink-soft);
@@ -283,9 +298,6 @@
     --glass-solid-base: oklch(23% 0.014 var(--h-green));
     --accent-ink:      oklch(14% 0.012 var(--h-green));
     --accent-mate:     oklch(96% 0.01 var(--h-paper));
-    --tex-base:        oklch(85% 0.04 var(--h-green));
-    --tex-a: 0.05;
-    --tex-b: 0.042;
 
     --paper:        color-mix(in oklab, var(--accent) 7%,  var(--paper-base));
     --paper-sunk:   color-mix(in oklab, var(--accent) 8%,  var(--paper-sunk-base));
@@ -314,9 +326,6 @@
     --glass-solid-base: oklch(23% 0.014 var(--h-green));
     --accent-ink:      oklch(14% 0.012 var(--h-green));
     --accent-mate:     oklch(96% 0.01 var(--h-paper));
-    --tex-base:        oklch(85% 0.04 var(--h-green));
-    --tex-a: 0.05;
-    --tex-b: 0.042;
 
     --paper:        color-mix(in oklab, var(--accent) 7%,  var(--paper-base));
     --paper-sunk:   color-mix(in oklab, var(--accent) 8%,  var(--paper-sunk-base));
@@ -333,33 +342,148 @@
   :root[data-theme="light"] { color-scheme: light; }
   :root[data-theme="dark"]  { color-scheme: dark; }
 
-  :root[data-glass="frost"] {
+  @media (prefers-color-scheme: dark) {
+    :root:not([data-theme="light"]) { --tex-lit-a: 0.075; --tex-dim-a: 0.34; }
+  }
+  :root[data-theme="dark"] { --tex-lit-a: 0.075; --tex-dim-a: 0.34; }
+
+  :root[data-glass="frost"], [data-finish="frost"] {
     --glass-sat:    1.7;
     --glass-bright: 1.05;
-    --glass-grain:
-      radial-gradient(circle at 50% 50%,
-        color-mix(in oklab, var(--tex-ink) calc(var(--tex-a) * 55%), transparent) 0 0.5px,
-        transparent 0.6px);
-    --glass-grain-size: 3px 3px;
+    --glass-grain:      var(--grain);
+    --glass-grain-size: var(--grain-size);
   }
   @media (prefers-color-scheme: dark) {
     :root[data-glass="frost"]:not([data-theme="light"]) { --glass-bright: 0.86; }
   }
   :root[data-theme="dark"][data-glass="frost"] { --glass-bright: 0.86; }
 
-  :root[data-glass="paper"] {
+  :root[data-glass="paper"], [data-finish="paper"] {
     --glass-r:      9px;
     --glass-sat:    1.15;
     --glass-bright: 1.02;
-    --glass-grain:  var(--weave);
-    --glass-grain-size: auto;
+    --glass-grain:      var(--weave);
+    --glass-grain-size: var(--weave-size);
   }
   @media (prefers-color-scheme: dark) {
     :root[data-glass="paper"]:not([data-theme="light"]) { --glass-bright: 0.94; }
   }
   :root[data-theme="dark"][data-glass="paper"] { --glass-bright: 0.94; }
 
-  :root[data-glass="plain"] {
+  :root[data-glass="thin-reed"], [data-finish="thin-reed"] {
+    --glass-r:   10px;
+    --glass-sat: 1.3;
+    --glass-grain: repeating-linear-gradient(90deg,
+      var(--tex-lo) 0, var(--tex-hi) 1.4px, transparent 2.6px,
+      transparent 3.4px, var(--tex-lo) 5px);
+    --glass-grain-size: auto;
+  }
+
+  :root[data-glass="linear-ridge"], [data-finish="linear-ridge"] {
+    --glass-r:   10px;
+    --glass-sat: 1.3;
+    --tex-k: 1.25;
+    --glass-grain: repeating-linear-gradient(90deg,
+      var(--tex-lo) 0, var(--tex-hi) 3px, transparent 6px,
+      transparent 8px, var(--tex-lo) 12px);
+    --glass-grain-size: auto;
+  }
+
+  :root[data-glass="crossed-reed"], [data-finish="crossed-reed"] {
+    --glass-r:   10px;
+    --glass-sat: 1.3;
+    --tex-k: 0.75;
+    --glass-grain:
+      repeating-linear-gradient(90deg, var(--tex-lo) 0, var(--tex-hi) 2.4px,
+        transparent 4.4px, transparent 5.6px, var(--tex-lo) 8px),
+      repeating-linear-gradient(0deg, var(--tex-lo) 0, var(--tex-hi) 2.4px,
+        transparent 4.4px, transparent 5.6px, var(--tex-lo) 8px);
+    --glass-grain-size: auto, auto;
+  }
+
+  :root[data-glass="deep-flute"], [data-finish="deep-flute"] {
+    --glass-r:   8px;
+    --glass-sat: 1.25;
+    --tex-k: 1.5;
+    --glass-grain: repeating-linear-gradient(90deg,
+      var(--tex-hi) 0 1px, var(--tex-lo) 6px, transparent 12px,
+      var(--tex-hi) 19px, var(--tex-hi) 21px, var(--tex-lo) 22px);
+    --glass-grain-size: auto;
+  }
+
+  :root[data-glass="aquatex"], [data-finish="aquatex"] {
+    --glass-r:   11px;
+    --glass-sat: 1.4;
+    --glass-grain:
+      radial-gradient(38% 34% at 36% 32%, var(--tex-hi) 0 22%, transparent 62%),
+      radial-gradient(30% 40% at 78% 71%, var(--tex-lo) 0 24%, transparent 64%),
+      radial-gradient(44% 36% at 66% 24%, var(--tex-lo) 0 26%, transparent 66%),
+      radial-gradient(28% 32% at 20% 78%, var(--tex-hi) 0 20%, transparent 58%),
+      radial-gradient(36% 44% at 52% 58%, var(--tex-hi) 0 22%, transparent 60%);
+
+    --glass-grain-size: 23px 19px, 29px 31px, 37px 29px, 26px 41px, 43px 23px;
+  }
+
+  :root[data-glass="arctic-ice"], [data-finish="arctic-ice"] {
+    --glass-r:   12px;
+    --glass-sat: 1.5;
+    --tex-k: 0.85;
+    --glass-grain:
+      conic-gradient(from 12deg at 34% 38%,
+        var(--tex-hi) 0 8deg, transparent 8deg 62deg,
+        var(--tex-lo) 62deg 71deg, transparent 71deg 148deg,
+        var(--tex-hi) 148deg 154deg, transparent 154deg 233deg,
+        var(--tex-lo) 233deg 241deg, transparent 241deg 300deg,
+        var(--tex-hi) 300deg 307deg, transparent 307deg 360deg),
+      conic-gradient(from 143deg at 71% 66%,
+        var(--tex-lo) 0 7deg, transparent 7deg 84deg,
+        var(--tex-hi) 84deg 90deg, transparent 90deg 176deg,
+        var(--tex-lo) 176deg 183deg, transparent 183deg 268deg,
+        var(--tex-hi) 268deg 275deg, transparent 275deg 360deg),
+      radial-gradient(46% 52% at 30% 24%,
+        color-mix(in oklab, var(--tex-hi) 55%, transparent) 0 16%, transparent 64%),
+      radial-gradient(52% 44% at 74% 70%,
+        color-mix(in oklab, var(--tex-lo) 50%, transparent) 0 14%, transparent 60%);
+    --glass-grain-size: 53px 61px, 79px 67px, 137px 119px, 113px 149px;
+  }
+
+  :root[data-glass="callisto"], [data-finish="callisto"] {
+    --glass-r:   11px;
+    --glass-sat: 1.35;
+    --tex-k: 0.95;
+    --glass-grain:
+      repeating-radial-gradient(circle at 34% 26%, var(--tex-hi) 0 0.8px, transparent 0.8px 5px),
+      repeating-radial-gradient(circle at 72% 78%, var(--tex-lo) 0 0.8px, transparent 0.8px 6px),
+      repeating-radial-gradient(circle at 18% 62%, var(--tex-hi) 0 0.8px, transparent 0.8px 7px);
+    --glass-grain-size: 71px 83px, 89px 73px, 97px 101px;
+  }
+
+  :root[data-glass="champagne"], [data-finish="champagne"] {
+    --glass-r:   12px;
+    --glass-sat: 1.45;
+    --tex-k: 1.15;
+    --glass-grain:
+      radial-gradient(circle at 38% 34%, transparent 0 12%, var(--tex-hi) 15% 19%, transparent 24%),
+      radial-gradient(circle at 74% 63%, transparent 0 9%,  var(--tex-lo) 12% 15%, transparent 20%),
+      radial-gradient(circle at 20% 76%, transparent 0 7%,  var(--tex-hi) 10% 13%, transparent 17%),
+      radial-gradient(circle at 61% 18%, transparent 0 6%,  var(--tex-lo) 8% 11%,  transparent 15%);
+    --glass-grain-size: 29px 37px, 41px 31px, 23px 47px, 53px 43px;
+  }
+
+  :root[data-glass="eurodrop"], [data-finish="eurodrop"] {
+    --glass-r:   11px;
+    --glass-sat: 1.4;
+    --tex-k: 1.15;
+    --glass-grain:
+      radial-gradient(30% 40% at 38% 32%, var(--tex-hi) 0 40%, transparent 76%),
+      radial-gradient(30% 40% at 38% 54%, var(--tex-lo) 0 36%, transparent 72%),
+      radial-gradient(26% 36% at 76% 66%, var(--tex-hi) 0 36%, transparent 72%),
+      radial-gradient(26% 36% at 76% 84%, var(--tex-lo) 0 32%, transparent 68%),
+      radial-gradient(22% 32% at 14% 72%, var(--tex-hi) 0 34%, transparent 70%);
+    --glass-grain-size: 29px 23px, 29px 23px, 37px 31px, 37px 31px, 41px 43px;
+  }
+
+  :root[data-glass="plain"], [data-finish="plain"] {
     --glass-fill:  var(--glass-solid);
     --glass-fill-soft:  var(--accent-soft);
     --glass-fill-quiet: var(--panel);
@@ -1270,6 +1394,135 @@
       border-color: var(--accent); background: var(--accent-soft);
 
       & strong { color: var(--accent); }
+    }
+
+    &:has(> .pref-swatch) {
+      grid-template-columns: auto 1fr;
+      align-items: center;
+      gap: 11px;
+
+      & strong { grid-column: 2; }
+      & small  { grid-column: 2; }
+      & .pref-swatch { grid-row: 1 / span 2; }
+
+      --glass-grain: none;
+    }
+  }
+
+  .pref-swatch {
+    position: relative;
+    display: block;
+    inline-size: 62px; block-size: 44px;
+    border-radius: var(--radius-xs);
+    overflow: hidden;
+    border: 1px solid var(--pane-edge);
+
+    isolation: isolate;
+    flex: none;
+  }
+
+  .pref-swatch-lit {
+    position: absolute; inset: 0;
+    background:
+      linear-gradient(118deg,
+        color-mix(in oklab, var(--accent) 78%, var(--paper)) 0 42%,
+        color-mix(in oklab, var(--gold) 62%, var(--paper-sunk)) 42% 100%),
+      var(--paper);
+  }
+
+  .pref-swatch-face {
+    position: absolute; inset: 0;
+    background-color: var(--glass-fill);
+    background-image: var(--glass-grain);
+    background-size: var(--glass-grain-size, auto);
+    -webkit-backdrop-filter: var(--glass-blur);
+    backdrop-filter: var(--glass-blur);
+  }
+
+  .pref-swatch-ink {
+    position: absolute; inset: 0;
+    display: grid; place-items: center;
+    color: var(--ink);
+    font-family: var(--font-serif);
+    line-height: 1;
+    background: var(--paper-sunk);
+  }
+
+  .pref-swatch-lines {
+    position: absolute; inset: 0;
+    display: grid; align-content: center; justify-items: start;
+    gap: 4px; padding: 0 8px;
+    background: var(--paper-sunk);
+
+    --w: 40px;
+
+    & i {
+      display: block; block-size: 2px; border-radius: var(--radius-xs);
+      background: color-mix(in oklab, var(--ink) 34%, transparent);
+      inline-size: var(--w);
+    }
+    & i:last-child { inline-size: calc(var(--w) * 0.6); }
+  }
+
+  .pref-swatch-theme {
+    position: absolute; inset: 0;
+
+    --half-a: var(--paper);
+    --half-b: var(--paper-sunk);
+    background: linear-gradient(105deg,
+      var(--half-a) 0 50%, var(--half-b) 50% 100%);
+
+    & i {
+      position: absolute; inset-block-start: 12px; inset-inline: 9px;
+      block-size: 3px; border-radius: var(--radius-xs);
+      background: color-mix(in oklab, var(--accent) 70%, transparent);
+    }
+    & i + i { inset-block-start: 20px; inset-inline-end: 22px; }
+  }
+
+  .pref-swatch-bars {
+    position: absolute; inset: 0;
+    display: flex; align-items: center; justify-content: center;
+    gap: 3px;
+    background: var(--paper-sunk);
+
+    & i {
+      display: block; inline-size: 3px; border-radius: var(--radius-xs);
+      background: var(--accent);
+      block-size: var(--h, 10px);
+    }
+
+    & i:only-child { inline-size: 22px; }
+  }
+
+  .pref-swatch-sky {
+    position: absolute; inset: 0;
+    background:
+      repeating-linear-gradient(74deg,
+        oklch(100% 0 0 / 0.34) 0 1px, transparent 1px 7px),
+      repeating-linear-gradient(74deg,
+        oklch(100% 0 0 / 0.2) 0 1px, transparent 1px 11px);
+    -webkit-mask-image: repeating-linear-gradient(164deg,
+      #000 0 5px, transparent 5px 9px);
+    mask-image: repeating-linear-gradient(164deg,
+      #000 0 5px, transparent 5px 9px);
+  }
+
+  .pref-shelf {
+    display: grid; gap: 8px;
+    grid-template-columns: repeat(auto-fill, minmax(158px, 1fr));
+
+    & .pref-chip:has(> .pref-swatch) {
+      grid-template-columns: 1fr;
+      align-items: stretch;
+      gap: 8px;
+      padding: 9px;
+
+      & strong, & small { grid-column: 1; }
+      & .pref-swatch {
+        grid-row: auto;
+        inline-size: 100%; block-size: 74px;
+      }
     }
   }
 
@@ -9205,7 +9458,8 @@
       radial-gradient(var(--glow-w) var(--glow-h) ellipse at var(--gx, 50%) var(--gy, 50%),
         color-mix(in oklab, var(--accent) calc(var(--glow-i) * var(--glow-a, 0)), transparent),
         transparent 100%);
-    background-size: var(--surface-size, auto, var(--glass-grain-size, auto));
+
+    background-size: var(--surface-size, auto, var(--glass-grain-size, auto)), auto;
 
     transition: --glow-a var(--glow-fade) var(--ease),
                 rotate var(--enter) var(--ease),
@@ -9390,7 +9644,7 @@
 
     --glow-w: calc(min(var(--depth) * 46px, 220px) * var(--follows, 1));
 
-    & * { --glass-grain: none; }
+    & *:not([data-finish]) { --glass-grain: none; }
     --glow-h: var(--glow-w);
 
     --glow-i: calc(var(--clarity) * 32%);

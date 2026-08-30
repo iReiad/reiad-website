@@ -107,21 +107,52 @@ export const LANGS = [
 /* ============================================================
    Glass
 
-   THREE FINISHES, NOT THREE BLURS. What separates them is what
-   the surface is made of: `frost` is cold and sees a long way
-   through, `paper` is the site's own weave with the blur pulled
-   back so the texture reads, and `plain` is not glass at all.
-   The two sliders below then move whichever of the three is on.
+   ELEVEN FINISHES, NOT ELEVEN BLURS. What separates them is what
+   the surface is MADE of, and the two sliders below then move
+   whichever one is on.
+
+   Nine of them are cast glass and the names are the trade's own.
+   The distinction that runs through them is the one the design
+   system already makes between a plate and a groove: REEDING is a
+   run of convex ridges and FLUTING is a run of concave channels,
+   so a reed is lit on the flank nearest the light and a flute on
+   the wall furthest from it.
+
+   Two are not glass. `paper` is the site's own sheet, rebuilt: it
+   was two hairlines crossing at 45 degrees every five pixels,
+   which is a fabric at an angle no paper-making process produces
+   and a lattice the eye finds in about a second. It is a wove
+   tooth, laid lines and the cloudiness a sheet has from the way
+   the pulp fell.
 
    `plain` is the one to keep working. It is what a browser with
    no `backdrop-filter` gets, what `prefers-reduced-transparency`
    gets, and what anybody who finds moving text under a bar hard
    to read chooses. So it is a real finish with its own solid
    grounds rather than the others with a feature switched off.
+
+   ---- adding one is three places and a check ----
+
+   Here, a `[data-glass="<id>"]` block in `next/styles/site.css`,
+   and the whitelist in the boot script in
+   `next/components/shell.tsx`. `scripts/check-glass.ts` fails if
+   the three stop being the same set, because each way of getting
+   it wrong is silent in its own way: a finish offered and never
+   drawn, a finish drawn and never offered, and a finish the boot
+   script throws away before the first paint.
    ============================================================ */
 export const GLASSES = [
   { id: "frost", label: "Frost", note: "cold, and you see a long way through" },
-  { id: "paper", label: "Paper", note: "the site's own weave, held closer" },
+  { id: "paper", label: "Paper", note: "a wove tooth, laid lines, and the way the pulp fell" },
+  { id: "thin-reed", label: "Thin reed", note: "narrow ridges, the quietest of the nine" },
+  { id: "linear-ridge", label: "Linear ridge", note: "the same ridge, broader and deeper" },
+  { id: "crossed-reed", label: "Crossed reed", note: "reeded both ways, into pillows" },
+  { id: "deep-flute", label: "Deep flute", note: "channels cut in, so the light runs the other way up" },
+  { id: "aquatex", label: "Aquatex", note: "rain standing on the glass" },
+  { id: "arctic-ice", label: "Arctic ice", note: "facets, and no two of them the same" },
+  { id: "callisto", label: "Callisto", note: "a fine ripple with no centre to it" },
+  { id: "champagne", label: "Champagne", note: "bubbles, sparse, rising" },
+  { id: "eurodrop", label: "Eurodrop", note: "drops, lit on top and shaded under" },
   { id: "plain", label: "Plain", note: "no blur at all, solid grounds" },
 ] as const satisfies readonly PrefOption[];
 
@@ -132,6 +163,28 @@ export const BLURS = [
   { id: "soft", label: "Soft", note: "barely there", amount: "0.55" },
   { id: "normal", label: "Normal", note: "what this site has always been", amount: "1" },
   { id: "deep", label: "Deep", note: "properly frosted", amount: "1.7" },
+] as const satisfies readonly PrefOption[];
+
+/* HOW MUCH OF THE FINISH a reader sees, which is a knob rather
+   than a ladder and had to be.
+
+   It rode on `--depth` for one draft, so a pane at 9 would carry
+   more of its pattern than a chip at 1, which is what more
+   material really does to a moulded surface. It computed to the
+   same number on every surface on the site: a custom property's
+   computed value is the specified value with `var()` already
+   substituted, on the element the declaration is on, and the
+   whole chain is declared on `:root`. `next/styles/site.css` says
+   it again where somebody would try it a second time.
+
+   So it is the reader's, which is the better answer anyway: the
+   eleven finishes already span an order between a thin reed and a
+   deep flute, and what somebody actually wants to say is "less of
+   that" or "more". */
+export const TEXTURES = [
+  { id: "faint", label: "Faint", note: "barely a tooth", amount: "0.5" },
+  { id: "normal", label: "Normal", note: "the finish as it is cast", amount: "1" },
+  { id: "strong", label: "Strong", note: "you can feel it", amount: "1.6" },
 ] as const satisfies readonly PrefOption[];
 
 /* The middle one is the 0.72 the stylesheet has always carried,
@@ -199,6 +252,7 @@ export type Theme = (typeof THEMES)[number]["id"];
 export type Lang = (typeof LANGS)[number]["id"];
 export type Glass = (typeof GLASSES)[number]["id"];
 export type Blur = (typeof BLURS)[number]["id"];
+export type Texture = (typeof TEXTURES)[number]["id"];
 export type Veil = (typeof VEILS)[number]["id"];
 export type Sound = (typeof SOUNDS)[number]["id"];
 export type Weather = (typeof WEATHERS)[number]["id"];
@@ -210,6 +264,7 @@ export interface Prefs {
   lang: Lang;
   glass: Glass;
   blur: Blur;
+  texture: Texture;
   veil: Veil;
   sound: Sound;
   weather: Weather;
@@ -217,7 +272,8 @@ export interface Prefs {
 
 const DEFAULTS = {
   text: "normal", measure: "normal", lang: "bn",
-  glass: "frost", blur: "normal", veil: "normal", sound: "on",
+  glass: "frost", blur: "normal", texture: "normal", veil: "normal",
+  sound: "on",
   weather: "on",
 } as const;
 
@@ -250,6 +306,7 @@ export function readPrefs(): Prefs {
     lang: known(LANGS, stored.lang, DEFAULTS.lang),
     glass: known(GLASSES, stored.glass, DEFAULTS.glass),
     blur: known(BLURS, stored.blur, DEFAULTS.blur),
+    texture: known(TEXTURES, stored.texture, DEFAULTS.texture),
     veil: known(VEILS, stored.veil, DEFAULTS.veil),
     sound: known(SOUNDS, stored.sound, DEFAULTS.sound),
     weather: known(WEATHERS, stored.weather, DEFAULTS.weather),
@@ -296,12 +353,25 @@ export function savePrefs(patch: Partial<Prefs>): Prefs {
     } catch { /* private mode: it holds for this page */ }
   }
 
+  /* SPREAD, never a field list.
+
+     This named eight fields by hand, so `texture` arrived, was
+     applied to the page, and was gone on the next load: the
+     panel said Strong, the site was Strong, and `readPrefs` came
+     back with Normal because nothing had ever written it. Every
+     check passed and the only symptom was a setting that would
+     not stick.
+
+     It is the rule `/api/site` already states one floor up: pick
+     fields by hand and it looks identical on the day it is
+     written, then silently drops whatever somebody adds a year
+     later. `theme` is the one exclusion and it is a real one,
+     because it lives under its own key, written above, where
+     `/app.js` has always read it. */
+  const { theme: _theme, ...device } = next;
   try {
-    localStorage.setItem(PREFS_KEY, JSON.stringify({
-      text: next.text, measure: next.measure, lang: next.lang,
-      glass: next.glass, blur: next.blur, veil: next.veil,
-      sound: next.sound, weather: next.weather, ts: Date.now(),
-    }));
+    localStorage.setItem(PREFS_KEY,
+      JSON.stringify({ ...device, ts: Date.now() }));
   } catch { /* private mode */ }
 
   applyPrefs(next);
@@ -334,11 +404,13 @@ export function applyPrefs(prefs: Prefs = readPrefs()): void {
   const measure = MEASURES.find((m) => m.id === prefs.measure) ?? MEASURES[1];
   const blur = BLURS.find((b) => b.id === prefs.blur) ?? BLURS[1];
   const veil = VEILS.find((v) => v.id === prefs.veil) ?? VEILS[1];
+  const texture = TEXTURES.find((t) => t.id === prefs.texture) ?? TEXTURES[1];
 
   root.style.setProperty("--read-scale", scale.size);
   root.style.setProperty("--read-measure", measure.ch);
   root.style.setProperty("--glass-amount", blur.amount);
   root.style.setProperty("--glass-veil", veil.alpha);
+  root.style.setProperty("--tex-strength", texture.amount);
   root.setAttribute("data-glass", prefs.glass);
   /* An ATTRIBUTE rather than a value the sound module reads out
      of storage itself. `next/lib/sound.ts` has to answer "is this

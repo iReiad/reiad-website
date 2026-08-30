@@ -679,6 +679,71 @@ rendered, both kept their colours, and every check passed. Position
 is geometry, so are `isolation`, `z-index` and `display`, and none
 of them is the light.
 
+### Eleven finishes, and a cast pattern is light and shadow
+
+`data-glass` on `<html>`. The material above is what a surface IS;
+this is what it is MADE of, and the reader chooses it on
+`/account` with every one of them drawn beside its name.
+
+Nine are cast glass and the names are the trade's own. The
+distinction running through them is the one the taxonomy already
+makes between a plate and a groove, one order of magnitude down:
+**reeding is a run of convex ridges and fluting is a run of
+concave channels**, so a reed is lit on the flank NEAREST the
+light and a flute on the wall FURTHEST from it. Getting that
+backwards is what makes a pattern read as a printed stripe rather
+than as moulded glass.
+
+**Every one of them is two colours: a white at a low alpha and a
+black at a low alpha.** Nothing names a hue, which is what lets
+one definition serve both themes and all seven accents. It is
+also what the old weave got wrong: two hairlines of `--tex-ink`
+crossing at 45 degrees every five pixels is a colour laid over a
+colour in a lattice the eye finds in about a second, at an angle
+no paper-making process produces, and it had to be written TWICE
+because naming `--accent` freezes it at the declaration site. A
+bump on green glass is green because the ground is.
+
+**How much of it a reader sees is a knob, and it had to be.** It
+rode on `--depth` for one draft, so a pane at 9 would carry more
+of its pattern than a chip at 1. It computed to the same number on
+every surface on the site: **a custom property's computed value is
+the specified value with `var()` ALREADY SUBSTITUTED, on the
+element the declaration is on**, and `--glass-grain` names
+`--tex-hi` names `--tex-k` names `--depth`, all four declared on
+`:root` where depth is 0. There is a way, declaring the chain on
+`*`, and it is three custom properties on every node with a
+nine-layer gradient among them, which is tens of thousands of
+`color-mix` calls on a long page to vary an alpha nobody asked
+about. `--tex-strength` is the reader's instead, which is what was
+actually wanted: the finishes already span an order between a thin
+reed and a deep flute, and what somebody wants to say is "less of
+that".
+
+**The paper is paper now.** Three things at three scales: a wove
+TOOTH, which is amorphous, out of five stipples at pitches sharing
+no factor, which is the snow's trick in `@layer weather`; LAID
+LINES, fine and in one direction, at a tenth of the strength; and
+FORMATION, the cloudiness a sheet has from the way the pulp fell,
+at three hundred times the pitch of the tooth. Square tilings are
+not enough on their own, and that is the thing worth copying: five
+square grids at coprime WIDTHS still put every blob in a row,
+because the vertical rhythm is the same in all five.
+
+**A finish is three files and `check-glass.ts` holds them.**
+`GLASSES` in `aab/src/prefs.ts`, a `[data-glass="<id>"]` block in
+`site.css`, and the whitelist in the boot script. Each way of
+getting it wrong is silent in its own way, and the third is the
+worst: the panel offers it, the stylesheet draws it, and the
+choice survives exactly until the next page load, when the boot
+script writes `frost` over it.
+
+**The trailing `auto` in the material's `background-size` is the
+LIGHT.** A size list shorter than the image list repeats from the
+start, so a nine-layer texture with nine sizes left the glow with
+the first stipple's 7x11 tile and the whole light became a 7px dot
+repeated across the surface.
+
 ## Two kinds of card, and a reader can tell them apart
 
 `.cell` was one card doing five jobs: a link to an article, a
@@ -1228,6 +1293,27 @@ at.
   than filtered.
 - **Reading preferences.** `aab/src/prefs.ts`: the type size, the
   measure, the theme and which language the calculators open in.
+  **Every option draws itself**, out of the same tokens the site
+  is made of, because a row of chips reading "Frost", "Paper",
+  "Thin reed", "Linear ridge" is a reader being asked to imagine
+  eleven materials from their names.
+  `next/components/account/pref-swatch.tsx` is the drawing and it
+  names no finish: `[data-finish]` in `@layer tokens` is what
+  lets a swatch wear a material the document is not wearing, so a
+  finish added tomorrow draws here without that file learning
+  about it. A swatch is a WINDOW rather than a square, because
+  half of what a finish does is to what is behind it and a blur
+  is only visible on an edge.
+  **`@layer glow` sets `--glass-grain: none` on every descendant
+  of a surface**, so a chip is a surface and eleven swatches
+  inside eleven chips were eleven identical rectangles.
+  `:not([data-finish])` is the one exception and it is this
+  panel's.
+  **`savePrefs` SPREADS, and named eight fields by hand until
+  22 August 2026.** `texture` arrived, applied to the page, and
+  was gone on the next load: the panel said Strong, the site was
+  Strong, and `readPrefs` came back with Normal because nothing
+  had ever written it. Same rule as `/api/site` one floor up.
   Applied before the first paint by the boot script in
   `next/components/shell.tsx`, carried between devices by
   `sync.ts` under `reader-prefs`, and the language one writes
@@ -1580,6 +1666,9 @@ node scripts/check-closed.ts # a new file on the old system: a browser module in
                             # aab/src/, a hand-written page, a functions/*.js
 node scripts/check-material.ts # a pressable class on none of the five kinds, or
                             # one whose own gradient the material would erase
+node scripts/check-glass.ts # a finish the panel offers and the stylesheet cannot
+                            # draw, or one the boot script throws away before the
+                            # first paint, so the choice never survives a reload
 node scripts/check-relief.ts # a figure that lifts and never stops for a reader
                             # who asked for no motion, a relief on a class no
                             # layer defines, and a scene layer moved twice

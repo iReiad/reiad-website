@@ -68,7 +68,7 @@ export function Band({
         "p-[clamp(26px,4vw,42px)]",
         solid
           ? "bg-accent-strong text-accent-ink"
-          : "bg-paper-sunk bg-weave text-ink border border-hairline",
+          : "bg-paper-sunk bg-weave [background-size:var(--weave-size)] text-ink border border-hairline",
       ].join(" ")}
     >
       {label ? (

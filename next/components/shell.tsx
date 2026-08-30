@@ -91,13 +91,24 @@ const BOOT = `(function(){var d=document.documentElement;try{`
   /* The glass. Three tables, and they are the ones in
      `aab/src/prefs.ts`: GLASSES, BLURS and VEILS. A surface that
      arrived flat and frosted a frame later would be worse than
-     one that never blurred, so this cannot wait for a module. */
+     one that never blurred, so this cannot wait for a module.
+
+     The finish list is written out here a second time and
+     `scripts/check-glass.ts` is what stops the two drifting. It
+     cannot be imported: this is a string that runs before any
+     module has loaded, which is the whole reason it exists, and a
+     finish missing from THIS copy is thrown away before the first
+     paint while the panel goes on offering it. */
   + `d.setAttribute("data-glass",`
-  + `{frost:1,paper:1,plain:1}[p.glass]?p.glass:"frost");`
+  + `{frost:1,paper:1,"thin-reed":1,"linear-ridge":1,"crossed-reed":1,`
+  + `"deep-flute":1,aquatex:1,"arctic-ice":1,callisto:1,champagne:1,`
+  + `eurodrop:1,plain:1}[p.glass]?p.glass:"frost");`
   + `var b={soft:"0.55",normal:"1",deep:"1.7"}[p.blur];`
   + `if(b)d.style.setProperty("--glass-amount",b);`
   + `var v={clear:"0.54",normal:"0.72",dense:"0.9"}[p.veil];`
   + `if(v)d.style.setProperty("--glass-veil",v);`
+  + `var x={faint:"0.5",normal:"1",strong:"1.6"}[p.texture];`
+  + `if(x)d.style.setProperty("--tex-strength",x);`
   /* WHETHER THE SITE MAKES A SOUND, as an attribute rather than a
      value the sound module digs out of storage on every press.
      Here rather than in that module because the first press can

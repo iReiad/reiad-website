@@ -43,6 +43,11 @@ const MATERIALS: Record<Material, string> = {
 
   sunk: [
     "bg-paper-sunk bg-weave [--surface-image:var(--weave)]",
+    /* The weave is nine layers at nine tilings whose periods
+       share no factor. Without its size list every one of them
+       stretches to the whole surface, which is one soft blob
+       rather than a sheet of paper. */
+    "[--surface-size:var(--weave-size)] [background-size:var(--weave-size)]",
     "border border-hairline rounded-[var(--radius-card)]",
     "shadow-[inset_0_1px_2px_rgb(0_0_0/0.04)]",
   ].join(" "),
