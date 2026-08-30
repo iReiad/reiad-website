@@ -793,6 +793,39 @@ crosses a surface faster than the surface can answer.
 0 from it for ever. Only the strength animates, never `translate`
 itself, or the picture lags the hand.
 
+**The event records and the frame writes, and `tilt.js` did not.**
+`glow.tsx` says why at length in its own header: `pointermove`
+fires as fast as the pointer reports, a 1000Hz mouse reports
+sixteen times per frame, and a screen draws once. `aab/src/tilt.ts`
+predates that file and read the card's box out of the layout and
+wrote a rotation back into it once per EVENT, which is sixteen
+forced layouts and sixteen style writes per frame for one picture.
+The rectangle is read inside the frame rather than cached, because
+a cached box has to be invalidated by scrolling, resizing, a font
+arriving and anything that reflows a grid, and one read per frame
+is cheaper than getting that list wrong.
+
+**And both stand down while the page is scrolling.**
+`data-scrolling` on the root, published by `glow.tsx` and read by
+`tilt.js`, which cannot import across the wall. A reader scrolling
+with the pointer over the cards is making ONE gesture: every lean
+computed then comes from a position that changed because the page
+moved, and it is asked for at the one moment a reader can feel
+every dropped frame. Not a cheaper frame, no frame. Measured over
+a 3150px scroll with the pointer moving, through the two files'
+own logic:
+
+| | before | after |
+| --- | --- | --- |
+| lean writes | 252 | 2 |
+| light passes | 301 | 3 |
+| style recalculations | 1340 | 30 |
+| style recalculation | 260ms | 3ms |
+
+With the page held still the same stroke still writes 265 leans
+and 301 light passes, which is the control that says the effect
+was fixed rather than turned off.
+
 ## Everything drawn ON a surface stands off it
 
 `@layer relief` is the same idea one order of magnitude down. A

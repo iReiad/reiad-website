@@ -31,6 +31,15 @@
    login could not have reached anyone either. Bump this whenever a
    precached file changes.
 
+   v221: /tilt.js. The lean was written straight out of the
+        pointermove handler, after reading the card's box out of
+        the layout, so a 1000Hz mouse forced sixteen layouts and
+        sixteen style writes per frame for one picture the screen
+        draws once. The event records and the frame writes now,
+        and both the lean and the light stand down entirely while
+        the page is scrolling, which is `data-scrolling` on the
+        root, published by the shell's own pointer component.
+
    v220: /fallback.css. The audience switch measured 173px inside a
         76px folded rail and spilled across the page. It turns on
         its side there now: one column, two rows, a drawing each,
@@ -1978,7 +1987,7 @@
    imports (crumbs, audience, learn progress) and the hub is a
    different page. Without a bump, a returning reader would be
    served the v3 app.js forever and none of it would appear. */
-const VERSION = "v220";
+const VERSION = "v221";
 const SHELL = `shell-${VERSION}`;
 const RUNTIME = `runtime-${VERSION}`;
 

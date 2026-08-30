@@ -102,6 +102,22 @@ function axisFor(nx: number, ny: number): Axis | null {
   return { x: ny / mag, y: nx / mag, deg: mag * MAX_DEG };
 }
 
+/** Is the page moving under the pointer right now?
+
+    `data-scrolling` is published by `next/components/glow.tsx`,
+    which is the shell's own pointer component, and it is read
+    here rather than watched: this file cannot import across the
+    wall into `next/`, and an attribute on the root is the channel
+    the shell already uses for `data-rail`, `data-sound` and
+    `data-audience`.
+
+    A page with no shell (the two files that are not routes) never
+    sets it, and the answer is a plain false, which is exactly
+    what those pages want: neither has a card on it. */
+function pageScrolling(): boolean {
+  return document.documentElement.hasAttribute("data-scrolling");
+}
+
 function attach(scene: HTMLElement): void {
   if (scene.dataset.tiltScene) return;
   scene.dataset.tiltScene = "on";
@@ -113,8 +129,34 @@ function attach(scene: HTMLElement): void {
     if (card) card.style.removeProperty("rotate");
   };
 
-  scene.addEventListener("pointermove", (e) => {
-    if (e.pointerType === "touch") return;
+  /* ---- the event records, the frame writes ----
+
+     This file predates `glow.tsx` and never got that file's
+     rule, which its header states at length: `pointermove` fires
+     as fast as the pointer reports, and a 1000Hz mouse reports
+     sixteen times per frame. Every one of those events used to
+     read this card's box out of the layout and write a rotation
+     back into it, so a single sweep across the front page was
+     sixteen forced layouts and sixteen style writes per frame, on
+     the main thread, for one picture the screen can only draw
+     once.
+
+     Now the event does one thing, which is to remember itself,
+     and the frame does the reading and the writing exactly once
+     however many events arrived. The rectangle is read inside
+     that frame rather than cached, because a cached box has to be
+     invalidated by scrolling, by resizing, by a font arriving and
+     by anything that reflows the grid, and one read per frame is
+     cheaper than getting that list wrong. */
+  let pending: PointerEvent | null = null;
+  let frame = 0;
+
+  const write = () => {
+    frame = 0;
+    const e = pending;
+    pending = null;
+    if (!e) return;
+
     const card = e.target instanceof Element ? e.target.closest<HTMLElement>(CARD) : null;
     if (card !== held) { clear(held); held = card; }
     if (!card || !scene.contains(card)) return;
@@ -128,12 +170,39 @@ function attach(scene: HTMLElement): void {
     if (!a) return;
 
     card.style.rotate = `${a.x.toFixed(3)} ${a.y.toFixed(3)} 0 ${a.deg.toFixed(2)}deg`;
+  };
+
+  scene.addEventListener("pointermove", (e) => {
+    if (e.pointerType === "touch") return;
+
+    /* ---- and it stands down while the page is moving ----
+
+       A reader scrolling with the pointer resting over the cards
+       is making one gesture, not two. Every lean computed during
+       a scroll is computed from a position that changed because
+       the PAGE moved, so it is a lean nobody asked for, and it is
+       asked for at the one moment the browser most needs the main
+       thread: a scroll is the one interaction a reader can feel
+       every dropped frame of.
+
+       So nothing is scheduled at all. Not a cheaper frame, no
+       frame: the lean freezes where it was, and the next real
+       pointer move after the scroll picks it up. */
+    if (pageScrolling()) return;
+
+    pending = e;
+    if (!frame) frame = requestAnimationFrame(write);
   }, { passive: true });
 
   /* Leaving the grid unwinds whatever was leaning. Without this a
      card keeps its lean for as long as the page is open, which
      reads as a rendering fault rather than as a gesture. */
-  scene.addEventListener("pointerleave", () => { clear(held); held = null; });
+  scene.addEventListener("pointerleave", () => {
+    if (frame) { cancelAnimationFrame(frame); frame = 0; }
+    pending = null;
+    clear(held);
+    held = null;
+  });
 }
 
 /* ============================================================
