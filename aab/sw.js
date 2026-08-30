@@ -31,6 +31,11 @@
    login could not have reached anyone either. Bump this whenever a
    precached file changes.
 
+   v220: /fallback.css. The audience switch measured 173px inside a
+        76px folded rail and spilled across the page. It turns on
+        its side there now: one column, two rows, a drawing each,
+        and the lozenge slides down instead of across.
+
    v219: /fallback.css and /prefs.js. The card art is a ROOM now
         rather than a drawing: ten layers at eight depths, with a
         motif behind the subject, motes in front of it and a
@@ -1973,7 +1978,7 @@
    imports (crumbs, audience, learn progress) and the hub is a
    different page. Without a bump, a returning reader would be
    served the v3 app.js forever and none of it would appear. */
-const VERSION = "v219";
+const VERSION = "v220";
 const SHELL = `shell-${VERSION}`;
 const RUNTIME = `runtime-${VERSION}`;
 

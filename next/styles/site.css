@@ -8969,6 +8969,59 @@ German for day, and .tag is what the site has always called
   html[data-rail="closed"] .rail-mark { flex: 0 1 auto; justify-content: center; }
   html[data-rail="closed"] .rail-item[aria-current="page"]::before { left: -8px; }
 
+  /* THE SWITCH TURNS ON ITS SIDE.
+
+     A folded rail is 76px wide and the switch is two halves whose
+     labels are "Learning" over "শিখতে এসেছি" and "Hiring" over
+     "কাজের খোঁজে". Nothing about that fits in 26px a side, so for
+     as long as the rail has folded, the foot has carried a
+     squashed pill with four lines of text spilling out of it, on
+     the one width where the reader had asked for less.
+
+     Hiding it was not the answer: a reader who folds the rail has
+     not given up the question, and a control that exists at one
+     width and not another is a control they will look for. So it
+     becomes what it already is, a groove with two stops, turned
+     ninety degrees: one column, two rows, one drawing each. The
+     lozenge slides DOWN instead of across, which is the same one
+     property saying the same one thing.
+
+     Only geometry changes. The ground, the edge and the light are
+     `@layer glow`'s and are not named here. */
+  /* Inside a min-width query, unlike the five rules above it,
+     and that is the difference worth copying rather than the
+     pattern above. Those five state the fold and then take it
+     back below 900px, in a second block, at matching specificity,
+     in the right order: four chances to get it wrong and one of
+     them silent. The fold IS a desktop idea, so saying so in the
+     query costs nothing and cannot come apart. */
+  @media (min-width: 901px) {
+    html[data-rail="closed"] .audience-switch {
+      grid-template-columns: 1fr;
+      grid-template-rows: 1fr 1fr;
+    }
+    html[data-rail="closed"] .audience-slider {
+      /* Bottom is the one that has to go, not top: `top` and
+         `bottom` together pin the lozenge to the full height of
+         the track, and a `height` after them loses. */
+      bottom: auto;
+      right: 3px;
+      width: auto;
+      height: calc(50% - 3px);
+    }
+    html[data-rail="closed"] .audience-opt { padding: 6px 0; }
+    html[data-rail="closed"] :is(.audience-label, .audience-sub) {
+      display: none;
+    }
+    html[data-rail="closed"] .audience-ico { display: inline-flex; }
+    /* Down rather than across. `translate` is one property with
+       two axes, so the horizontal rule above is overridden whole
+       rather than left half-applied. */
+    html[data-rail="closed"][data-audience="work"] .audience-slider {
+      translate: 0 100%;
+    }
+  }
+
   /* ---------- the top bar ---------- */
 
   /* Three columns rather than a flex row, because the switch in
@@ -9254,6 +9307,12 @@ German for day, and .tag is what the site has always called
   .audience-sub {
     font-family: var(--font-bn); font-size: var(--t-1); opacity: 0.85;
   }
+  /* Drawn only where the words do not fit, which is the folded
+     rail and nowhere else. `display: none` rather than a second
+     component, because a switch whose two halves are icons in one
+     place and words in another is still one switch: the state,
+     the lozenge and the handler are the same three things. */
+  .audience-ico { display: none; }
   /* The chosen half's label, on the lozenge. `data-pick` holds
      the audience id, which is `learn`; this said `money`, so the
      rule never matched and only one of the two halves ever turned
@@ -9415,7 +9474,6 @@ German for day, and .tag is what the site has always called
     html[data-rail="closed"] :is(.rail-item, .rail-toggle, .rail-head) {
       justify-content: flex-start; padding-inline: 12px;
     }
-
     .drawer-btn { display: inline-flex; }
 
     /* ---------- one control, one place ----------
