@@ -1293,6 +1293,27 @@ at.
   than filtered.
 - **Reading preferences.** `aab/src/prefs.ts`: the type size, the
   measure, the theme and which language the calculators open in.
+  **Every option draws itself**, out of the same tokens the site
+  is made of, because a row of chips reading "Frost", "Paper",
+  "Thin reed", "Linear ridge" is a reader being asked to imagine
+  eleven materials from their names.
+  `next/components/account/pref-swatch.tsx` is the drawing and it
+  names no finish: `[data-finish]` in `@layer tokens` is what
+  lets a swatch wear a material the document is not wearing, so a
+  finish added tomorrow draws here without that file learning
+  about it. A swatch is a WINDOW rather than a square, because
+  half of what a finish does is to what is behind it and a blur
+  is only visible on an edge.
+  **`@layer glow` sets `--glass-grain: none` on every descendant
+  of a surface**, so a chip is a surface and eleven swatches
+  inside eleven chips were eleven identical rectangles.
+  `:not([data-finish])` is the one exception and it is this
+  panel's.
+  **`savePrefs` SPREADS, and named eight fields by hand until
+  22 August 2026.** `texture` arrived, applied to the page, and
+  was gone on the next load: the panel said Strong, the site was
+  Strong, and `readPrefs` came back with Normal because nothing
+  had ever written it. Same rule as `/api/site` one floor up.
   Applied before the first paint by the boot script in
   `next/components/shell.tsx`, carried between devices by
   `sync.ts` under `reader-prefs`, and the language one writes

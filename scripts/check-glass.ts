@@ -49,13 +49,18 @@ function offered(): string[] {
 }
 
 /** Every finish the stylesheet has a block for. The selector has
-    to be on `:root` and carry only the one attribute: the
+    to start on `:root` and carry only the one attribute: the
     brightness overrides pair `[data-theme]` with `[data-glass]`
-    and are not a definition of anything. */
+    and are not a definition of anything.
+
+    A comma is allowed after it and is not optional to allow for:
+    every finish block also names `[data-finish="<id>"]`, so that
+    a swatch in the appearance panel can wear a finish the
+    document is not wearing. */
 function drawn(): string[] {
   const css = read("next/styles/site.css");
   const out = new Set<string>();
-  for (const [, id] of css.matchAll(/:root\[data-glass="([a-z-]+)"\]\s*\{/g)) {
+  for (const [, id] of css.matchAll(/:root\[data-glass="([a-z-]+)"\]\s*[,{]/g)) {
     out.add(id);
   }
   return [...out];

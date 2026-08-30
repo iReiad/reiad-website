@@ -45,6 +45,7 @@
 
 import { cue } from "../../lib/sound";
 import { Field } from "../ui/field";
+import { PrefSwatch } from "./pref-swatch";
 import {
   askForPlace, forgetPlace, hasPlace, placeName, placePermission, setPlace,
   type AskResult,
@@ -61,6 +62,10 @@ interface Row {
   key: keyof Prefs;
   label: string;
   options: readonly PrefOption[];
+  /** Eleven options at chip width is four ragged lines. A shelf
+      is a grid at a fixed track, which is what a row of materials
+      to choose between actually is. */
+  shelf?: boolean;
 }
 
 /** A run of rows under one heading. The heading is optional
@@ -293,7 +298,7 @@ export function Preferences() {
             + "whichever one is on, and Plain has no blur and no texture "
             + "for them to move.",
           rows: [
-            { key: "glass", label: "Finish", options: m.GLASSES },
+            { key: "glass", label: "Finish", options: m.GLASSES, shelf: true },
             { key: "texture", label: "Texture", options: m.TEXTURES },
             { key: "blur", label: "Blur", options: m.BLURS },
             { key: "veil", label: "Transparency", options: m.VEILS },
@@ -376,7 +381,8 @@ export function Preferences() {
           {group.rows.map((row) => (
             <div className="pref-row" key={String(row.key)}>
               <span className="pref-label">{row.label}</span>
-              <div className="pref-chips" role="group" aria-label={row.label}>
+              <div className={row.shelf ? "pref-shelf" : "pref-chips"}
+                   role="group" aria-label={row.label}>
                 {row.options.map((option) => {
                   const on = now[row.key] === option.id;
                   return (
@@ -388,6 +394,11 @@ export function Preferences() {
                       data-on={on ? "" : undefined}
                       onClick={() => pick(row.key, option.id)}
                     >
+                      {/* The picture first, because it is what a
+                          reader is choosing between: the words
+                          under it are the name of what they can
+                          already see. */}
+                      <PrefSwatch row={row.key} id={option.id} now={now} />
                       <strong>{option.label}</strong>
                       {option.note ? <small>{option.note}</small> : null}
                     </button>

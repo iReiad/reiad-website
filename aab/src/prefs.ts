@@ -353,12 +353,25 @@ export function savePrefs(patch: Partial<Prefs>): Prefs {
     } catch { /* private mode: it holds for this page */ }
   }
 
+  /* SPREAD, never a field list.
+
+     This named eight fields by hand, so `texture` arrived, was
+     applied to the page, and was gone on the next load: the
+     panel said Strong, the site was Strong, and `readPrefs` came
+     back with Normal because nothing had ever written it. Every
+     check passed and the only symptom was a setting that would
+     not stick.
+
+     It is the rule `/api/site` already states one floor up: pick
+     fields by hand and it looks identical on the day it is
+     written, then silently drops whatever somebody adds a year
+     later. `theme` is the one exclusion and it is a real one,
+     because it lives under its own key, written above, where
+     `/app.js` has always read it. */
+  const { theme: _theme, ...device } = next;
   try {
-    localStorage.setItem(PREFS_KEY, JSON.stringify({
-      text: next.text, measure: next.measure, lang: next.lang,
-      glass: next.glass, blur: next.blur, veil: next.veil,
-      sound: next.sound, weather: next.weather, ts: Date.now(),
-    }));
+    localStorage.setItem(PREFS_KEY,
+      JSON.stringify({ ...device, ts: Date.now() }));
   } catch { /* private mode */ }
 
   applyPrefs(next);

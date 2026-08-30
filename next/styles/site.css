@@ -339,6 +339,24 @@
 
     --paper-base:      oklch(98.4% 0.008 var(--h-paper));
     --paper-sunk-base: oklch(96.4% 0.011 var(--h-paper));
+
+    /* THE TWO GROUNDS BY NAME, which is the one thing on this
+       site that has to name a theme it is not in.
+
+       The appearance panel draws three little pages, one per
+       theme choice, and a reader on a dark page has to be able to
+       see what light looks like. Every other token here answers
+       the CURRENT theme, so there was nowhere to get the other
+       one from and the swatch reached for four hex values.
+
+       Same four numbers as the two theme blocks below, and that
+       is the whole reason they are here rather than typed into a
+       component: a change to either ground reaches the picture of
+       it. */
+    --ground-light:      oklch(98.4% 0.008 var(--h-paper));
+    --ground-light-sunk: oklch(96.4% 0.011 var(--h-paper));
+    --ground-dark:       oklch(16.5% 0.012 var(--h-green));
+    --ground-dark-sunk:  oklch(14%   0.012 var(--h-green));
     --panel-base:      oklch(100%  0.003 var(--h-paper));
     --hairline-base:   oklch(88.5% 0.012 var(--h-paper));
     --pane-top:        oklch(100% 0 0 / 0.55);
@@ -616,8 +634,6 @@
        ============================================================ */
     --tex-lit-a: 0.5;
     --tex-dim-a: 0.075;
-    --tex-lit: oklch(100% 0 0 / var(--tex-lit-a));
-    --tex-dim: oklch(0% 0 0 / var(--tex-dim-a));
 
     /* HOW MUCH OF IT, which is the reader's, and a note about the
        way this cannot work.
@@ -649,9 +665,41 @@
        and is the thing that was actually wanted: a deep flute at
        1.5 and a thin reed at 1 are already an order apart. */
     --tex-strength: 1;
-    --tex-k: var(--tex-strength);
-    --tex-hi: color-mix(in oklab, var(--tex-lit) calc(var(--tex-k) * 100%), transparent);
-    --tex-lo: color-mix(in oklab, var(--tex-dim) calc(var(--tex-k) * 100%), transparent);
+  }
+
+  /* WHAT A FINISH DECIDES, and the selector is the whole of how a
+     preview works.
+
+     A `color-mix` percentage is clamped to 0..100, so a finish
+     asking for 1.5 of the base alpha got 1.0 and every finish
+     above one was the same strength as every other. It rode on a
+     mix for one draft and four of the eleven were indistinguishable
+     in weight while looking different only because their geometry
+     differed. The multiply is on the ALPHA now, where 1.5 means
+     1.5.
+
+     `[data-finish]` is here so that an element can carry a finish
+     the document is not wearing, which is what the appearance
+     panel needs: eleven swatches, each drawn in its own material,
+     beside the page's own. The finish blocks below name both
+     selectors for the same reason, and these two have to be on a
+     rule that matches the swatch as well, because a custom
+     property substitutes on the element it is declared on and
+     `--tex-k` is what a finish changes.
+
+     Everything down to `--shadow-lift` is here for the same
+     reason: a frost swatch has to blur like frost, so the three
+     thicknesses and the fills have to resolve against the
+     swatch's own `--glass-r` and `--glass-sat` rather than the
+     document's. Nothing about layout, type or timing is in here,
+     and nothing that is not the reader's choice of material
+     should be. */
+  :root, [data-finish] {
+    --tex-k: 1;
+    --tex-hi: oklch(100% 0 0 /
+      calc(var(--tex-lit-a) * var(--tex-k) * var(--tex-strength)));
+    --tex-lo: oklch(0% 0 0 /
+      calc(var(--tex-dim-a) * var(--tex-k) * var(--tex-strength)));
 
     /* WEAVE is the paper, and it is now actually paper.
 
@@ -747,6 +795,9 @@
     --shadow-lift:  light-dark(0 18px 44px oklch(30% 0.05 var(--h-green) / 0.14),
                                0 18px 44px oklch(0% 0 0 / 0.5));
 
+  }
+
+  :root {
     /* --- type --- */
     --font-sans: "IBM Plex Sans", ui-sans-serif, system-ui, Arial, sans-serif;
     --font-serif: "Spectral", ui-serif, Georgia, serif;
@@ -1135,7 +1186,7 @@
      decoration: lifting the backdrop under a pale bar and
      dropping it under a dark one is what keeps the text on the
      bar readable when the veil is turned down. */
-  :root[data-glass="frost"] {
+  :root[data-glass="frost"], [data-finish="frost"] {
     --glass-sat:    1.7;
     --glass-bright: 1.05;
     --glass-grain:      var(--grain);
@@ -1150,7 +1201,7 @@
      9px because a texture behind a 14px blur is a texture nobody
      can see, and the saturate comes down with it: paper is warm
      rather than cold. */
-  :root[data-glass="paper"] {
+  :root[data-glass="paper"], [data-finish="paper"] {
     --glass-r:      9px;
     --glass-sat:    1.15;
     --glass-bright: 1.02;
@@ -1173,7 +1224,7 @@
 
   /* Narrow. The quietest of the nine, and the one that reads as a
      material rather than as a pattern at small sizes. */
-  :root[data-glass="thin-reed"] {
+  :root[data-glass="thin-reed"], [data-finish="thin-reed"] {
     --glass-r:   10px;
     --glass-sat: 1.3;
     --glass-grain: repeating-linear-gradient(90deg,
@@ -1185,10 +1236,10 @@
   /* Broader, and a little deeper with it: a wider ridge catches
      more of the light along its length, which is why `--tex-k`
      goes up rather than the alpha. */
-  :root[data-glass="linear-ridge"] {
+  :root[data-glass="linear-ridge"], [data-finish="linear-ridge"] {
     --glass-r:   10px;
     --glass-sat: 1.3;
-    --tex-k: calc(var(--tex-strength) * 1.25);
+    --tex-k: 1.25;
     --glass-grain: repeating-linear-gradient(90deg,
       var(--tex-lo) 0, var(--tex-hi) 3px, transparent 6px,
       transparent 8px, var(--tex-lo) 12px);
@@ -1198,10 +1249,10 @@
   /* Both ways at once, each pulled back, because two full-strength
      reeds crossing add up to mud where they meet rather than to a
      grid of pillows. */
-  :root[data-glass="crossed-reed"] {
+  :root[data-glass="crossed-reed"], [data-finish="crossed-reed"] {
     --glass-r:   10px;
     --glass-sat: 1.3;
-    --tex-k: calc(var(--tex-strength) * 0.75);
+    --tex-k: 0.75;
     --glass-grain:
       repeating-linear-gradient(90deg, var(--tex-lo) 0, var(--tex-hi) 2.4px,
         transparent 4.4px, transparent 5.6px, var(--tex-lo) 8px),
@@ -1216,10 +1267,10 @@
      ridge between two channels catches it, the near wall is in
      shadow and the far wall is lit, which is the groove's
      argument in `@layer glow` at a twentieth of the size. */
-  :root[data-glass="deep-flute"] {
+  :root[data-glass="deep-flute"], [data-finish="deep-flute"] {
     --glass-r:   8px;
     --glass-sat: 1.25;
-    --tex-k: calc(var(--tex-strength) * 1.5);
+    --tex-k: 1.5;
     --glass-grain: repeating-linear-gradient(90deg,
       var(--tex-hi) 0 1px, var(--tex-lo) 6px, transparent 12px,
       var(--tex-hi) 19px, var(--tex-hi) 21px, var(--tex-lo) 22px);
@@ -1238,7 +1289,7 @@
      because the vertical rhythm is the same in all five. */
 
   /* Rain standing on glass. */
-  :root[data-glass="aquatex"] {
+  :root[data-glass="aquatex"], [data-finish="aquatex"] {
     --glass-r:   11px;
     --glass-sat: 1.4;
     --glass-grain:
@@ -1259,10 +1310,10 @@
      from a point, which is the one gradient shape that gives an
      ANGULAR break rather than a smooth one; two of them at
      coprime tilings, plus a bloom each, is a crystal field. */
-  :root[data-glass="arctic-ice"] {
+  :root[data-glass="arctic-ice"], [data-finish="arctic-ice"] {
     --glass-r:   12px;
     --glass-sat: 1.5;
-    --tex-k: calc(var(--tex-strength) * 0.85);
+    --tex-k: 0.85;
     --glass-grain:
       conic-gradient(from 12deg at 34% 38%,
         var(--tex-hi) 0 8deg, transparent 8deg 62deg,
@@ -1285,10 +1336,10 @@
   /* A fine ripple. Three sets of rings at coprime tilings beat
      against each other into a wave nobody can find the centre
      of, which is what a hand-rolled surface looks like. */
-  :root[data-glass="callisto"] {
+  :root[data-glass="callisto"], [data-finish="callisto"] {
     --glass-r:   11px;
     --glass-sat: 1.35;
-    --tex-k: calc(var(--tex-strength) * 0.95);
+    --tex-k: 0.95;
     --glass-grain:
       repeating-radial-gradient(circle at 34% 26%, var(--tex-hi) 0 0.8px, transparent 0.8px 5px),
       repeating-radial-gradient(circle at 72% 78%, var(--tex-lo) 0 0.8px, transparent 0.8px 6px),
@@ -1300,10 +1351,10 @@
      circle at this size is a dot, and a field of dots is the
      stipple `frost` already is. Four sizes, sparse, so it reads
      as effervescence rather than as packaging. */
-  :root[data-glass="champagne"] {
+  :root[data-glass="champagne"], [data-finish="champagne"] {
     --glass-r:   12px;
     --glass-sat: 1.45;
-    --tex-k: calc(var(--tex-strength) * 1.15);
+    --tex-k: 1.15;
     --glass-grain:
       radial-gradient(circle at 38% 34%, transparent 0 12%, var(--tex-hi) 15% 19%, transparent 24%),
       radial-gradient(circle at 74% 63%, transparent 0 9%,  var(--tex-lo) 12% 15%, transparent 20%),
@@ -1316,10 +1367,10 @@
      shaded underneath: two layers per drop at the same tiling,
      offset down. The pair is what makes it a drop rather than a
      spot. */
-  :root[data-glass="eurodrop"] {
+  :root[data-glass="eurodrop"], [data-finish="eurodrop"] {
     --glass-r:   11px;
     --glass-sat: 1.4;
-    --tex-k: calc(var(--tex-strength) * 1.15);
+    --tex-k: 1.15;
     --glass-grain:
       radial-gradient(30% 40% at 38% 32%, var(--tex-hi) 0 40%, transparent 76%),
       radial-gradient(30% 40% at 38% 54%, var(--tex-lo) 0 36%, transparent 72%),
@@ -1333,7 +1384,7 @@
      with a feature switched off, and the same one three other
      things resolve to: a browser with no `backdrop-filter`, a
      reader who has asked for less transparency, and printing. */
-  :root[data-glass="plain"] {
+  :root[data-glass="plain"], [data-finish="plain"] {
     --glass-fill:  var(--glass-solid);
     --glass-fill-soft:  var(--accent-soft);
     --glass-fill-quiet: var(--panel);
@@ -2821,6 +2872,194 @@
       border-color: var(--accent); background: var(--accent-soft);
 
       & strong { color: var(--accent); }
+    }
+
+    /* A chip that carries a drawing is a row: the drawing, then
+       the name and the note beside it. Without a drawing it is
+       what it always was, which is why this is a child selector
+       rather than a second class on every chip. */
+    &:has(> .pref-swatch) {
+      grid-template-columns: auto 1fr;
+      align-items: center;
+      gap: 11px;
+
+      & strong { grid-column: 2; }
+      & small  { grid-column: 2; }
+      & .pref-swatch { grid-row: 1 / span 2; }
+
+      /* AND IT WEARS NO MATERIAL OF ITS OWN.
+
+         Every chip on this site is glass with the reader's
+         current finish on it, which is right until the chip's
+         job is to show you a DIFFERENT finish: a swatch of
+         aquatex on a ground of aquatex is two textures and no
+         way to tell which one the button is about. The picture
+         is the only textured thing on these. */
+      --glass-grain: none;
+    }
+  }
+
+  /* ---------- and every option draws itself ----------
+
+     A row of chips reading "Frost", "Paper", "Thin reed",
+     "Linear ridge" is a reader being asked to imagine eleven
+     materials from their names. Every option here now carries a
+     picture of what pressing it does, made of the same tokens the
+     site is made of, so the picture cannot drift from the thing.
+
+     The finish swatch is the one that needed a stylesheet change
+     to be possible at all: `[data-finish]` on the face is what
+     lets a swatch wear a material the document is not wearing.
+     See `@layer tokens`.
+
+     A swatch is a WINDOW: a lit ground, and the material over it.
+     Both are needed, because half of what a finish does is to
+     what is behind it, and a face over nothing shows a texture
+     and no glass. */
+  .pref-swatch {
+    position: relative;
+    display: block;
+    inline-size: 62px; block-size: 44px;
+    border-radius: var(--radius-xs);
+    overflow: hidden;
+    border: 1px solid var(--pane-edge);
+    /* Its own stacking context, so the lit ground below can be
+       painted under the face without escaping the chip. */
+    isolation: isolate;
+    flex: none;
+  }
+  /* What is behind the glass. Two accents crossing, because a
+     flat ground shows a texture and shows nothing about the blur:
+     an edge is the only thing a blur is visible on. */
+  .pref-swatch-lit {
+    position: absolute; inset: 0;
+    background:
+      linear-gradient(118deg,
+        color-mix(in oklab, var(--accent) 78%, var(--paper)) 0 42%,
+        color-mix(in oklab, var(--gold) 62%, var(--paper-sunk)) 42% 100%),
+      var(--paper);
+  }
+  /* The material. Everything on it is a token, so a finish added
+     tomorrow draws here without this rule knowing its name. */
+  .pref-swatch-face {
+    position: absolute; inset: 0;
+    background-color: var(--glass-fill);
+    background-image: var(--glass-grain);
+    background-size: var(--glass-grain-size, auto);
+    backdrop-filter: var(--glass-blur);
+  }
+
+  /* ---- the ones that are not about the glass ----
+
+     Each draws the thing itself rather than a symbol for it: the
+     letters at the size, the column at the width, the digits in
+     the language, the sky in the weather. */
+  .pref-swatch-ink {
+    position: absolute; inset: 0;
+    display: grid; place-items: center;
+    color: var(--ink);
+    font-family: var(--font-serif);
+    line-height: 1;
+    background: var(--paper-sunk);
+  }
+  /* Lines of a paragraph, at the measure. The widths are the
+     three measures in proportion, so the tiles differ by exactly
+     what the setting differs by. */
+  .pref-swatch-lines {
+    position: absolute; inset: 0;
+    display: grid; align-content: center; justify-items: start;
+    gap: 4px; padding: 0 8px;
+    background: var(--paper-sunk);
+    /* Overridden inline per option. Declared here so the rule is
+       whole on its own: an undefined custom property takes the
+       declaration that names it down with it. */
+    --w: 40px;
+
+    & i {
+      display: block; block-size: 2px; border-radius: var(--radius-xs);
+      background: color-mix(in oklab, var(--ink) 34%, transparent);
+      inline-size: var(--w);
+    }
+    & i:last-child { inline-size: calc(var(--w) * 0.6); }
+  }
+  /* Two halves of a page, for the theme. `system` shows both,
+     split, which is what following the operating system means. */
+  .pref-swatch-theme {
+    position: absolute; inset: 0;
+    /* Overridden inline per option, and declared here for the
+       reason above. */
+    --half-a: var(--paper);
+    --half-b: var(--paper-sunk);
+    background: linear-gradient(105deg,
+      var(--half-a) 0 50%, var(--half-b) 50% 100%);
+
+    & i {
+      position: absolute; inset-block-start: 12px; inset-inline: 9px;
+      block-size: 3px; border-radius: var(--radius-xs);
+      background: color-mix(in oklab, var(--accent) 70%, transparent);
+    }
+    & i + i { inset-block-start: 20px; inset-inline-end: 22px; }
+  }
+  /* A sound is the one thing here that cannot be drawn, so this
+     draws the SHAPE of it: three bars rising for on, one flat
+     for off. Pressing the chip plays the cue, which is the real
+     preview. */
+  .pref-swatch-bars {
+    position: absolute; inset: 0;
+    display: flex; align-items: center; justify-content: center;
+    gap: 3px;
+    background: var(--paper-sunk);
+
+    & i {
+      display: block; inline-size: 3px; border-radius: var(--radius-xs);
+      background: var(--accent);
+      block-size: var(--h, 10px);
+    }
+    /* Off is one flat bar, wide, which reads as a line rather
+       than as a dot somebody forgot to size. */
+    & i:only-child { inline-size: 22px; }
+  }
+
+  /* Rain, at 62px. Two runs of streaks at coprime periods, which
+     is the same argument `@layer weather` makes at full size: one
+     tiled streak is hatching and two that never line up is rain.
+     Drawn here rather than by that layer, which answers
+     `data-weather` on the root and nothing else, because a swatch
+     cannot set that without raining on the whole page. */
+  .pref-swatch-sky {
+    position: absolute; inset: 0;
+    background:
+      repeating-linear-gradient(74deg,
+        oklch(100% 0 0 / 0.34) 0 1px, transparent 1px 7px),
+      repeating-linear-gradient(74deg,
+        oklch(100% 0 0 / 0.2) 0 1px, transparent 1px 11px);
+    mask-image: repeating-linear-gradient(164deg,
+      #000 0 5px, transparent 5px 9px);
+  }
+
+  /* The finish row is a GRID rather than a wrapping row of chips.
+     Eleven of them at chip width is four ragged lines; at a fixed
+     track it is a shelf, which is what it is. */
+  .pref-shelf {
+    display: grid; gap: 8px;
+    grid-template-columns: repeat(auto-fill, minmax(158px, 1fr));
+
+    /* A tile STACKS: the material across the top, its name under
+       it, the note under that. Beside each other, eleven of them
+       leave the swatch 40px of a 158px track and the note four
+       words to a line, which is a shelf of paragraphs rather than
+       a shelf of materials. */
+    & .pref-chip:has(> .pref-swatch) {
+      grid-template-columns: 1fr;
+      align-items: stretch;
+      gap: 8px;
+      padding: 9px;
+
+      & strong, & small { grid-column: 1; }
+      & .pref-swatch {
+        grid-row: auto;
+        inline-size: 100%; block-size: 74px;
+      }
     }
   }
 
@@ -14617,8 +14856,17 @@ German for day, and .tag is what the site has always called
        and a copy of that list is what `check-css.ts` exists to
        stop one file down.
 
-       Measured: `.rail` two weave layers, `.rail-item` two more. */
-    & * { --glass-grain: none; }
+       Measured: `.rail` two weave layers, `.rail-item` two more.
+
+       `:not([data-finish])` is the one exception and it is the
+       appearance panel's. A descendant carrying a finish is a
+       SWATCH of a material the document is not wearing, which is
+       the only case where a texture inside a surface is the
+       point rather than an accident. Without it the eleven
+       finishes on `/account` were eleven identical rectangles:
+       every one of them is inside a chip, a chip is a surface,
+       and this rule reaches every descendant of one. */
+    & *:not([data-finish]) { --glass-grain: none; }
     --glow-h: var(--glow-w);
     /* 32% and not 44%. A material that is on every surface of a
        site has to be quiet or it is noise everywhere, and the
