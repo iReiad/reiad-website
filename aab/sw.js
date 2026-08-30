@@ -31,6 +31,11 @@
    login could not have reached anyone either. Bump this whenever a
    precached file changes.
 
+   v229: /fallback.css. The top bar rode the rubber band: it is
+        `position: fixed`, so overscrolling the root scroller on a
+        phone dragged it out of its gap and under the browser's
+        own chrome. `overscroll-behavior-y: none` on <html>.
+
    v228: /saved.js, /account-page.js and /fallback.css. The
         research desk at /admin/research: threads, sources, what
         is left, and what on this site a question touches. And
@@ -2046,7 +2051,7 @@
    imports (crumbs, audience, learn progress) and the hub is a
    different page. Without a bump, a returning reader would be
    served the v3 app.js forever and none of it would appear. */
-const VERSION = "v228";
+const VERSION = "v229";
 const SHELL = `shell-${VERSION}`;
 const RUNTIME = `runtime-${VERSION}`;
 
