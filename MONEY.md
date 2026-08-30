@@ -137,6 +137,28 @@ itself in both languages from one definition.
 | `spot` | finds what is wrong in an excerpt |
 | `drill` | does something outside the page and ticks it off |
 
+**A LINE has points and a BAR has bands, and one scale was doing
+both.** `x(i)` spreads `i` from the left edge to the right edge,
+which is what a line drawn through points wants and is wrong for a
+bar: centring a bar on a point puts a third of the first band left
+of the axis and a third of the last band past the drawing. With
+`overflow: visible` on the plot, which is there so a stroke at the
+top is not sliced in half, that is a bar painted outside its own
+chart, over whatever is beside it. Measured against the committed
+snapshot: 22 charts, by up to 107 pixels on a laptop. `band(i)` is
+the second scale and bars use it.
+
+The left half of it was hidden by a `Math.max(0, left)` that
+pinned the first bar to the axis and left its width alone, so that
+bar was the right size in the wrong place, which is the shape of
+thing that gets read as a design decision.
+
+`next/lesson.test.ts` asks this of every block kind and of every
+block in the snapshot, at 360px and at 1280px, and it MEASURES
+PAINT rather than scroll: an SVG's visible overflow is ink, and
+ink does not widen a scroll container, so a `scrollWidth`
+comparison passed against all 107 of those pixels.
+
 **`lab` is the only kind that computes**, and its arithmetic is in
 `shared/lesson-labs.ts` under a named model, never in the block's
 JSON. A formula in a database row is code in a place nothing
