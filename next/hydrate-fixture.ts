@@ -86,6 +86,10 @@ export async function bundle(contents: string): Promise<string> {
     format: "esm",
     platform: "browser",
     jsx: "automatic",
+    /* The same alias as `load()` above, and for the same reason:
+       a bundle here should not depend on somebody having run
+       `npm install` in `next/`. */
+    alias: { "@reiad/shared": join(here, "..", "shared") },
     /* React reads this to decide whether to ship its development
        warnings, and the hydration mismatch is one of them. The
        minified numbered errors are what production gives, and
@@ -110,6 +114,12 @@ export async function load<T>(contents: string): Promise<T> {
     mainFields: ["module", "main"],
     conditions: ["import", "default"],
     jsx: "automatic",
+    /* `@reiad/shared` is installed in `next/` and nowhere else,
+       and `npm ci` runs at the root: pointing at the source means
+       a bundle here does not depend on somebody having run
+       `npm install` in `next/` first. `aab/schools/hub.test.ts`
+       says the rest, having been the one that found it. */
+    alias: { "@reiad/shared": join(here, "..", "shared") },
     define: { "process.env.NODE_ENV": '"development"' },
     logLevel: "silent",
   });

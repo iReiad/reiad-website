@@ -109,6 +109,21 @@ const bundled = await build({
   mainFields: ["module", "main"],
   conditions: ["import", "default"],
   jsx: "automatic",
+  /* `@reiad/shared` IS INSTALLED IN `next/` AND NOWHERE ELSE.
+
+     `next/.npmrc` sets `install-links=true` so npm copies the
+     package in rather than symlinking, and CI runs `npm ci` at
+     the root and nowhere else, so `next/node_modules` does not
+     exist on a runner. This bundle resolved it on a laptop that
+     had run `npm install` in `next/` and could not on the
+     machine that matters, which is the shape of failure the root
+     package.json was created to stop one level up.
+
+     An alias rather than a second install: a `file:` dependency
+     is copied by version, so a root copy would go stale the
+     first time `shared/` changed and this test would be checking
+     yesterday's table. Pointing at the source cannot. */
+  alias: { "@reiad/shared": join(ROOT, "shared") },
   logLevel: "silent",
 });
 
