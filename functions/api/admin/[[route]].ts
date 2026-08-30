@@ -37,11 +37,15 @@
 
    ============================================================ */
 
-import { fail, methods, ok } from "../../_lib/http.ts";
+import { fail, methods, notConfigured, ok } from "../../_lib/http.ts";
 import { readSession } from "../../_lib/auth.ts";
 import { readerFrom } from "../../_lib/reader.ts";
 import { isAdmin } from "../../_lib/admins.ts";
 import type { D1Database } from "../../_lib/db.ts";
+import {
+  ART_MOTIFS, ART_SUBJECTS_SVG, ART_VIEWBOX, MOTIF_OF,
+} from "../../../shared/art-svg.ts";
+import { subjectOf } from "../../../shared/art-of.ts";
 
 export interface AdminEnv {
   /* `D1Database` out of `_lib/db.ts`, which is where the rest of
@@ -82,31 +86,157 @@ async function reach(run: () => Promise<unknown>): Promise<{ ok: boolean; ms: nu
   }
 }
 
+/** Is this caller an admin?
+
+    Either credential opens it, because either one means the
+    caller is already trusted with more than what is behind it.
+    The passphrase is a cookie the Worker can read on its own; the
+    account half goes through `isAdmin()`, which is the ONE place
+    that answers that question.
+
+    A function rather than eight lines inside the health handler,
+    because there are two routes here now and a second copy of a
+    gate is how one of them ends up ungated. */
+async function allowed(context: AdminContext): Promise<boolean> {
+  const { request, env } = context;
+  if (await readSession(context)) return true;
+  const reader = await readerFrom(request, env);
+  return reader ? await isAdmin(env, request, reader.id) : false;
+}
+
 export async function onRequest(context: AdminContext): Promise<Response> {
   const { request, env, params } = context;
   const route = (params.route ?? []).join("/");
+
+  /* ---------- the drawings, for whoever is drawing a card ----------
+
+     `shared/art-svg.ts` holds the twelve subjects and the six
+     walls as the inside of an `<svg>`, and it is 34 KB. The eight
+     shared files that ARE compiled into `aab/` are there because
+     every reader needs them; nobody needs these except whoever is
+     publishing, which is one admin. So they are fetched rather
+     than served, behind the same gate as everything else here.
+
+     Both callers use this one path rather than one of them
+     importing the table: the Studio is a Vite bundle that cannot
+     reach `shared/` except through a served address, and two ways
+     in is two things to keep in step. */
+  if (route === "art") {
+    return methods(request, {
+      GET: async () => {
+        if (!await allowed(context)) return fail("forbidden", 403);
+
+        /* AND WHICH ONE THIS PIECE WEARS, when the caller says
+           what the piece is. `subjectFor` is `shared/art.ts` and
+           is the one place that decides; the Studio is a Vite
+           bundle that cannot import it, and a second copy of the
+           rule in the browser is the failure CLAUDE.md opens
+           with. So it is answered here, in the same request that
+           carries the drawings, rather than in a route of its
+           own: one round trip either way. */
+        const url = new URL(request.url);
+        const id = url.searchParams.get("id");
+        const pick = id || url.searchParams.get("title")
+          ? subjectOf({
+            id,
+            section: url.searchParams.get("section"),
+            title: url.searchParams.get("title"),
+            tags: (url.searchParams.get("tags") ?? "").split(",").filter(Boolean),
+          })
+          : null;
+
+        return ok({
+          subjects: ART_SUBJECTS_SVG, motifs: ART_MOTIFS, motifOf: MOTIF_OF,
+          box: ART_VIEWBOX, pick,
+        });
+      },
+    });
+  }
+
+  /* ---------- what has no picture yet ----------
+
+     THE QUEUE, and it is one list rather than two.
+
+     A drawn card is `/media/<slug>-card/<hash>.jpg`, and anything
+     else in a `cover` is a raw photograph, which half the
+     scrapers refuse to read. A lesson's is in its `meta`, and a
+     lesson with none falls back to its STAGE's standing card, so
+     every lesson in a stage shares one picture: three lessons
+     pasted into a chat are the same image three times.
+
+     Both are read here rather than in the browser because both
+     are one SQL query and neither is a thing the desk should be
+     assembling out of four ladder fetches. Nothing is drawn here:
+     a card is a canvas and this is a Worker. The browser draws
+     and PATCHes back, one at a time, which is what makes it a
+     queue rather than a job.
+
+     Answered oldest first, so the run always makes progress on
+     the things that have been waiting longest, and a run that is
+     interrupted has done the most useful half. */
+  if (route === "cards") {
+    return methods(request, {
+      GET: async () => {
+        if (!await allowed(context)) return fail("forbidden", 403);
+        if (!env.DB) return notConfigured();
+
+        const url = new URL(request.url);
+        const limit = Math.min(400, Math.max(1, Number(url.searchParams.get("limit")) || 200));
+
+        /* `LIKE` rather than the regexp `isDrawnCard` uses,
+           because SQLite has no regexp and the two agree on the
+           part that matters: a drawn card is under
+           `/media/<something>-card/`. A cover that passes here
+           and fails the browser's stricter test is drawn again,
+           which costs one card and is the safe direction. */
+        const pieces = await env.DB.prepare(
+          `SELECT slug, title, tag, section, cover, published_at
+             FROM articles
+            WHERE status = 'live'
+              AND (cover IS NULL OR cover = '' OR cover NOT LIKE '/media/%-card/%')
+            ORDER BY published_at ASC
+            LIMIT ?`
+        ).bind(limit).all<{ slug: string; title: string; tag: string;
+          section: string; cover: string | null }>();
+
+        const lessons = await env.DB.prepare(
+          `SELECT school, stage, slug, title, meta
+             FROM school_lessons
+            WHERE status = 'live' AND body <> ''
+              AND (meta IS NULL OR meta NOT LIKE '%"card"%')
+            ORDER BY school ASC, stage ASC, position ASC
+            LIMIT ?`
+        ).bind(limit).all<{ school: string; stage: string; slug: string;
+          title: string; meta: string | null }>();
+
+        return ok({
+          pieces: pieces.results ?? [],
+          lessons: (lessons.results ?? []).map((l) => {
+            let meta: Record<string, unknown> = {};
+            try { meta = JSON.parse(l.meta || "{}"); } catch { meta = {}; }
+            return {
+              school: l.school, stage: l.stage, slug: l.slug, title: l.title,
+              /* The lesson's own words, for the card's kicker and
+                 its subject: `blurb` and the English title are in
+                 `meta` and nothing else here has them. */
+              en: typeof meta.en === "string" ? meta.en : "",
+              icon: typeof meta.icon === "string" ? meta.icon : "",
+            };
+          }),
+        });
+      },
+    });
+  }
 
   if (route !== "health") return fail("not-found", 404);
 
   return methods(request, {
     GET: async () => {
-      /* Either credential opens the detail, because either one
-         means the caller is already trusted with more than this.
-         The passphrase is a cookie the Worker can read on its
-         own; the account half goes through `isAdmin()`, which is
-         the ONE place that answers that question. */
-      const session = await readSession(context);
-      let allowed = Boolean(session);
-      if (!allowed) {
-        const reader = await readerFrom(request, env);
-        allowed = reader ? await isAdmin(env, request, reader.id) : false;
-      }
-
       /* The one fact a stranger gets, and the whole of what the
          ungated version was FOR: this Worker answered, so a panel
          that is not working is not the Worker. Nothing here is a
          store, a secret or a count. */
-      if (!allowed) return ok({ worker: true, detail: false });
+      if (!await allowed(context)) return ok({ worker: true, detail: false });
 
       const d1 = env.DB
         ? await reach(() => env.DB!.prepare("select 1").first())

@@ -125,6 +125,12 @@ const STAGES: Array<[stage: string, entries: Entry[]]> = [
        will not survive the next page load, and nothing else
        would ever say so. */
     "scripts/check-glass.ts",
+    /* The twelve drawings and the six walls, which are rendered
+       in two places that resolve their tokens in two completely
+       different ways: the site cascades them and a share card
+       SUBSTITUTES them out of a list. A thirteenth token is
+       invisible on the site and a black rectangle on a card. */
+    "scripts/check-art.ts",
     "scripts/check-icons.ts",
     /* The extension rule, which was a paragraph in CLAUDE.md
        until 19 August 2026 and was broken anyway: the

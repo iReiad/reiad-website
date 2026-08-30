@@ -76,6 +76,17 @@ export interface SchoolLesson {
   from?: number;
   to?: number;
   written?: boolean;
+  /** The picture a pasted link to this lesson shows, drawn by
+      `aab/src/share-card.ts` and stored in `meta`. Absent on a
+      lesson nothing has drawn one for yet, and the route then
+      falls back to the stage's standing card, which is what every
+      lesson in a stage used to share.
+
+      In `meta` rather than a column because it is DATA: the rule
+      at the top of CLAUDE.md about what reaches the Android app
+      without a release, and the reason `metaOf` spreads rather
+      than picking fields. */
+  card?: string;
   [key: string]: unknown;
 }
 

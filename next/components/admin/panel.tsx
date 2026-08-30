@@ -55,6 +55,7 @@ import { LivePanel } from "./live-panel";
 import { CommentsPanel, EnquiriesPanel, QuestionsPanel } from "./queues";
 import { OverviewPanel } from "./overview-panel";
 import { PiecesPanel } from "./pieces-panel";
+import { CardsPanel } from "./cards-panel";
 import { SubscribersPanel } from "./subscribers-panel";
 import { MediaPanel } from "./media-panel";
 import { SchoolsPanel } from "./schools-panel";
@@ -304,6 +305,11 @@ export function AdminPanel() {
           which of the others needs opening. */}
       <OverviewPanel />
       <PiecesPanel />
+      {/* Beside the pieces, because it is the same job for
+          everything the pieces panel does not cover: a lesson has
+          never had a card of its own and 251 of them share six
+          standing ones. */}
+      <CardsPanel />
       <CommentsPanel />
       <QuestionsPanel />
       <EnquiriesPanel />

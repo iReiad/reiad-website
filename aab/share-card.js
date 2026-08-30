@@ -89,6 +89,14 @@ function accentOf(words) {
     const named = /^var\(\s*(--[a-z-]+)/.exec(inline);
     return named ? named[1] : "--green";
 }
+/** The nine tokens the twelve drawings and six walls between them
+    actually name. Asserted against the strings by
+    `scripts/check-art.ts`, so a drawing that reaches for a tenth
+    fails a check rather than rendering that shape in black. */
+export const ART_TOKENS = [
+    "lit", "hot", "mid", "deep", "shade", "sink",
+    "fore-hot", "fore-lit", "fore-mid",
+];
 /* The dark palette is the card's palette, whatever the person
    publishing has their own site set to: see the note at the top.
    `<html>` is held at dark for the length of one synchronous
@@ -112,6 +120,16 @@ function palette(accentToken = "--green") {
     const accent = resolve(`var(${accentToken}, var(--green))`);
     const panel = resolve("var(--panel-base)");
     const ink = resolve("var(--ink)");
+    /* THE DRAWING'S OWN NINE, read the same way and off the same
+       class the site draws them on. `.artwork` is where
+       `@layer relief` declares them, and `--accent` is set on the
+       probe so the mixes come out in the card's colour rather than
+       in the colour of whatever page the admin happens to be on. */
+    probe.className = "artwork";
+    probe.style.setProperty("--accent", `var(${accentToken}, var(--green))`);
+    const art = {};
+    for (const token of ART_TOKENS)
+        art[token] = resolve(`var(--art-${token})`);
     const out = {
         accent,
         hot: resolve(`color-mix(in oklab, var(${accentToken}, var(--green)) 74%, var(--ink))`),
@@ -119,6 +137,7 @@ function palette(accentToken = "--green") {
         sink: resolve(`color-mix(in oklab, var(${accentToken}, var(--green)) 8%, var(--panel-base))`),
         ink,
         soft: resolve("var(--ink-soft)"),
+        art,
     };
     probe.remove();
     if (had)
@@ -167,72 +186,325 @@ function wrap(ctx, text, width, max) {
     }
     return lines;
 }
+/* ============================================================
+   THE ROOM, at 1200 by 630
+
+   `next/components/card-art.tsx` puts ten layers behind every
+   card on this site and `@layer relief` lights them. A pasted
+   link used to get none of it: a flat two-stop gradient, one
+   ring motif and a floor, which read as a template rather than
+   as this place.
+
+   Same ten layers, same order, same argument for each. What
+   differs is only that a canvas has no cascade, so a gradient
+   that is one line of CSS there is six here.
+
+     sky     the ground and the horizon
+     weave   the tooth of the material
+     halo    the bloom the subject throws behind it
+     rays    shafts of light from the top left
+     far     the MOTIF: what is behind this subject
+     floor   the plane it all stands on
+     stage   the subject, and its reflection
+     near    motes in front of it, out of focus
+     spec    the highlight crossing the glass
+     veil    the corners going down
+
+   And then the card's own furniture on top: the scrim that seats
+   the words, the accent rail every `<GoCard>` carries down its
+   left edge, and the hairline rim.
+   ============================================================ */
+/* ============================================================
+   NO TWO CARDS THE SAME, and it is not a random number
+
+   The room is ten layers and the subject is one of twelve, which
+   is a lot of variety on paper and none at all in a feed: a
+   reader who follows this site sees the same room with a
+   different thing standing in it, at the same angle, under the
+   same four shafts of light, with the same five motes in the same
+   five places.
+
+   So the COMPOSITION is derived, out of the piece's own id. Same
+   hash `shared/art.ts` picks the subject and the colour with, and
+   the same reason: a card has to be the same card every time it
+   is drawn, or republishing a piece moves its picture. A random
+   number would be a card that changed under a link somebody had
+   already shared.
+
+   Eleven numbers come out of it: where the light falls, how high
+   the horizon is, how hard the floor converges, where the halo
+   sits, how the wall behind is offset and scaled, and where the
+   motes are. None of them changes what the card IS, which is why
+   they are safe to move: a card with its horizon 40px higher is
+   the same card from a slightly different chair.
+   ============================================================ */
+/** FNV-1a with the finaliser, which is `shared/art.ts`'s hash and
+    has to be: two files disagreeing about what an id hashes to
+    would be a card whose subject and whose room were chosen for
+    different pieces. Written out rather than imported because
+    `shared/` is not on the wire for a browser module, and it is
+    six lines. */
+function hash(seed) {
+    let h = 0x811c9dc5;
+    for (let i = 0; i < seed.length; i += 1) {
+        h ^= seed.charCodeAt(i);
+        h = Math.imul(h, 0x01000193);
+    }
+    /* The finaliser, and it is not optional. FNV-1a avalanches
+       badly in its LOW bits and every read below is a fraction, so
+       without this a run of consecutive slugs comes out with the
+       same composition. `shared/art.ts` says the same thing where
+       it reads a pool. */
+    h ^= h >>> 16;
+    h = Math.imul(h, 0x7feb352d);
+    h ^= h >>> 15;
+    h = Math.imul(h, 0x846ca68b);
+    h ^= h >>> 16;
+    return h >>> 0;
+}
+/** A stream of fractions off one seed, read from the TOP bits for
+    the reason above. */
+function dice(seed) {
+    let h = hash(seed);
+    return (lo, hi) => {
+        h = hash(String(h));
+        return lo + (h >>> 8) / 0x1000000 * (hi - lo);
+    };
+}
+function composeFor(seed) {
+    const d = dice(seed || "reiad");
+    /* The subject box. The drawings are 520 by 400 with the ground
+       at y = 300, so the whole box scales as one and the reflection
+       knows where the floor is without measuring anything. Right of
+       centre always, because the words are on the left and a card
+       is read from there: what moves is how far right and how big,
+       which is the difference between standing back and stepping
+       forward. */
+    const w = d(548, 648);
+    const h = w * (465 / 604);
+    const x = d(560, 1200 - w + 34);
+    const y = d(6, 46);
+    const horizon = y + (300 / 400) * h;
+    return {
+        horizon,
+        pitch: d(0.14, 0.34),
+        stage: { x, y, w, h },
+        halo: { x: x + w / 2 + d(-70, 70), y: d(190, 300), r: d(470, 640) },
+        rays: [0, 1, 2, 3].map((i) => [d(0.02, 0.22) + i * 0.19, d(52, 156)]),
+        motes: [0, 1, 2, 3, 4].map(() => [d(120, 1160), d(60, 580), d(5, 12), d(0.1, 0.26)]),
+        wall: { dx: d(-150, -80), dy: d(-40, 10), scale: d(1.3, 1.7), alpha: d(0.38, 0.6) },
+    };
+}
+/** A drawing, rasterised.
+
+    The tokens are substituted rather than declared, so nothing
+    has to resolve a custom property inside a blob. Returns null
+    rather than throwing: a card with a room and no subject is a
+    good card, and a card that failed to publish is not. */
+async function drawingOf(body, art, w, h) {
+    try {
+        let svg = body;
+        for (const [token, colour] of Object.entries(art)) {
+            svg = svg.split(`var(--art-${token})`).join(colour);
+        }
+        /* Anything left is a token this file does not know about,
+           which would paint black. Better nothing than a black
+           rectangle where a picture should be. */
+        if (svg.includes("var(--art-"))
+            return null;
+        const doc = `<svg xmlns="http://www.w3.org/2000/svg" width="${w}" height="${h}" `
+            + `viewBox="0 0 520 400" fill="none">${svg}</svg>`;
+        /* THROUGH AN `<img>`, NOT `createImageBitmap` ON THE BLOB.
+    
+           That is the obvious way and it does not work: Chrome
+           answers `InvalidStateError: The source image could not be
+           decoded` for an SVG blob, because an SVG is a document
+           rather than a bitmap format and the bitmap decoder has
+           never handled one. An `HTMLImageElement` renders it,
+           which is why every library that does this uses one.
+    
+           The cost is that this needs a document, and the note at
+           the top of this file about one day running in a worker is
+           now about everything here EXCEPT the drawings. Wrapped in
+           the same try: a card with a room and nothing standing in
+           it is a good card, and a card that failed to publish is
+           not. */
+        const url = URL.createObjectURL(new Blob([doc], { type: "image/svg+xml" }));
+        try {
+            const img = new Image(w, h);
+            img.src = url;
+            await img.decode();
+            return await createImageBitmap(img);
+        }
+        finally {
+            URL.revokeObjectURL(url);
+        }
+    }
+    catch {
+        return null;
+    }
+}
+/** A tiling stipple, which is the weave one order of magnitude
+    below anything else on the card. Built once into a 6px tile
+    and repeated, because a hundred thousand `arc()` calls is a
+    card that takes a second to draw. */
+function weaveOf(ctx, p) {
+    const tile = new OffscreenCanvas(7, 11);
+    const t = tile.getContext("2d");
+    if (!t)
+        return null;
+    t.fillStyle = fade(p.ink, 0.05);
+    t.fillRect(1, 2, 1, 1);
+    t.fillStyle = fade(p.sink, 0.07);
+    t.fillRect(4, 7, 1, 1);
+    return ctx.createPattern(tile, "repeat");
+}
+/** The subject, and the same subject upside down under it.
+
+    The reflection is what puts a thing on a floor rather than in
+    the air, and it is the one layer that has to be built in a
+    second canvas: a vertical flip plus a fade is two operations
+    and the second has to erase the first, which cannot be done
+    on a canvas that already has a room painted on it. */
+function drawStage(ctx, art, c) {
+    const { x, y, w, h } = c.stage;
+    const ground = c.horizon;
+    const mirror = new OffscreenCanvas(w, h);
+    const m = mirror.getContext("2d");
+    if (m) {
+        m.save();
+        m.translate(0, h);
+        m.scale(1, -1);
+        m.drawImage(art, 0, 0, w, h);
+        m.restore();
+        /* Fading downwards, which after the flip is fading AWAY from
+           the thing, so the reflection is strongest where it meets
+           the object and gone a third of the way down. */
+        const fadeOut = m.createLinearGradient(0, 0, 0, h);
+        fadeOut.addColorStop(0, "rgba(0,0,0,1)");
+        fadeOut.addColorStop(0.2, "rgba(0,0,0,0.42)");
+        /* Gone by a third of the way down, not by the bottom. A
+           reflection that reaches the foot of the card is a second
+           copy of the drawing floating under the floor, which is
+           what an arrow at the top of a subject looked like. */
+        fadeOut.addColorStop(0.36, "rgba(0,0,0,0)");
+        fadeOut.addColorStop(1, "rgba(0,0,0,0)");
+        m.globalCompositeOperation = "destination-out";
+        m.fillStyle = fadeOut;
+        m.fillRect(0, 0, w, h);
+        ctx.save();
+        /* CLIPPED TO BELOW THE FLOOR, which is the one thing a
+           reflection must never break: the mirror is the whole box
+           flipped, so its top half is the empty space under the
+           subject and would paint back over the subject's own feet.
+           Mostly transparent, and "mostly" is not a promise. */
+        ctx.beginPath();
+        ctx.rect(0, ground, SHARE_W, SHARE_H - ground);
+        ctx.clip();
+        ctx.globalAlpha = 0.22;
+        ctx.filter = "blur(2px)";
+        /* Placed so the mirror's own ground line lands on the stage's,
+           which is what makes it a reflection rather than a copy
+           sitting somewhere below. */
+        ctx.drawImage(mirror, x, ground - (h - (ground - y)));
+        ctx.restore();
+    }
+    ctx.drawImage(art, x, y, w, h);
+}
 /** The rail, the ground, the light and the rim: everything a
-    `<GoCard>` on the site has, at eight times the size. */
-function drawMaterial(ctx, p, hasPhoto) {
+    `<GoCard>` on this site has, at eight times the size. */
+function drawMaterial(ctx, p, hasPhoto, drawn, c) {
     if (!hasPhoto) {
-        const sky = ctx.createLinearGradient(0, 0, 0, SHARE_H);
+        /* ---- 1. sky ---- */
+        const sky = ctx.createLinearGradient(0, 0, 220, SHARE_H);
         sky.addColorStop(0, p.ground);
-        sky.addColorStop(0.55, p.sink);
+        sky.addColorStop(0.52, p.sink);
         sky.addColorStop(1, p.sink);
         ctx.fillStyle = sky;
         ctx.fillRect(0, 0, SHARE_W, SHARE_H);
-        /* The halo the scenes stand in, off to the right where the
-           words are not. */
-        const halo = ctx.createRadialGradient(880, 250, 10, 880, 250, 620);
-        halo.addColorStop(0, fade(p.accent, 0.42));
-        halo.addColorStop(0.55, fade(p.accent, 0.12));
+        /* ---- 2. weave ---- */
+        const weave = weaveOf(ctx, p);
+        if (weave) {
+            ctx.fillStyle = weave;
+            ctx.fillRect(0, 0, SHARE_W, SHARE_H);
+        }
+        /* ---- 3. halo: the bloom the subject throws behind it ---- */
+        const cx = c.stage.x + c.stage.w / 2;
+        const halo = ctx.createRadialGradient(c.halo.x, c.halo.y, 10, c.halo.x, c.halo.y, c.halo.r);
+        halo.addColorStop(0, fade(p.accent, 0.38));
+        halo.addColorStop(0.5, fade(p.accent, 0.12));
         halo.addColorStop(1, fade(p.accent, 0));
         ctx.fillStyle = halo;
         ctx.fillRect(0, 0, SHARE_W, SHARE_H);
-        /* THE ORBITS, which is one of the six motifs the scenes stand
-           against and the one that suits a card with no subject on
-           it: rings around a centre say "a place" without claiming to
-           be a picture of anything in particular. */
-        ctx.lineWidth = 2;
-        for (const [rx, ry, alpha] of [[430, 172, 0.3], [300, 120, 0.24], [180, 72, 0.17]]) {
-            ctx.strokeStyle = fade(p.hot, alpha);
+        /* ---- 4. rays, from the top left, which is where every
+           highlight on this site comes from ---- */
+        ctx.save();
+        ctx.globalAlpha = 0.5;
+        for (const [at, width] of c.rays) {
+            const rx = SHARE_W * at;
+            const ray = ctx.createLinearGradient(rx, 0, rx + 260, SHARE_H);
+            ray.addColorStop(0, fade(p.ink, 0.055));
+            ray.addColorStop(1, fade(p.ink, 0));
+            ctx.fillStyle = ray;
             ctx.beginPath();
-            ctx.ellipse(880, 340, rx, ry, 0, 0, Math.PI * 2);
-            ctx.stroke();
-        }
-        for (const [cx, cy, r, alpha] of [[450, 340, 7, 0.5], [1160, 262, 5, 0.36], [742, 420, 4, 0.3]]) {
-            ctx.fillStyle = fade(p.hot, alpha);
-            ctx.beginPath();
-            ctx.arc(cx, cy, r, 0, Math.PI * 2);
+            ctx.moveTo(rx, 0);
+            ctx.lineTo(rx + width, 0);
+            ctx.lineTo(rx + width + 300, SHARE_H);
+            ctx.lineTo(rx + 300, SHARE_H);
+            ctx.closePath();
             ctx.fill();
         }
-        /* The horizon, and the floor running away from it, which is
-           what tells the eye there is a room rather than a wall. */
+        ctx.restore();
+        /* ---- 5. far: the wall this kind of subject stands against.
+           Blurred and faded, because it is a wall rather than a
+           second picture. ---- */
+        if (drawn.motif) {
+            ctx.save();
+            ctx.globalAlpha = c.wall.alpha;
+            ctx.filter = "blur(2.5px)";
+            ctx.drawImage(drawn.motif, c.stage.x + c.wall.dx, c.stage.y + c.wall.dy, c.stage.w * c.wall.scale, c.stage.h * c.wall.scale);
+            ctx.restore();
+        }
+        /* ---- 6. floor: every line aimed at ONE vanishing point,
+           because parallel lines are a hatch ---- */
+        const horizon = c.horizon;
         const line = ctx.createLinearGradient(0, 0, SHARE_W, 0);
-        line.addColorStop(0, fade(p.hot, 0.06));
-        line.addColorStop(0.55, fade(p.hot, 0.34));
-        line.addColorStop(1, fade(p.hot, 0.1));
+        line.addColorStop(0, fade(p.hot, 0.05));
+        line.addColorStop(0.6, fade(p.hot, 0.3));
+        line.addColorStop(1, fade(p.hot, 0.08));
         ctx.strokeStyle = line;
         ctx.lineWidth = 2;
         ctx.beginPath();
-        ctx.moveTo(0, 452);
-        ctx.lineTo(SHARE_W, 452);
+        ctx.moveTo(0, horizon);
+        ctx.lineTo(SHARE_W, horizon);
         ctx.stroke();
-        ctx.strokeStyle = fade(p.hot, 0.1);
+        ctx.strokeStyle = fade(p.hot, 0.09);
         ctx.lineWidth = 2;
         for (let x = -600; x < SHARE_W + 800; x += 116) {
             ctx.beginPath();
             ctx.moveTo(x, SHARE_H);
-            /* Every line aimed at one vanishing point on the horizon,
-               which is what makes it a floor. Parallel lines are a
-               hatch. */
-            ctx.lineTo(880 + (x - 880) * 0.24, 452);
+            ctx.lineTo(cx + (x - cx) * c.pitch, horizon);
             ctx.stroke();
         }
-        /* And the floor fades out towards the horizon, because a grid
-           that reaches it at full strength is a net. */
-        const far = ctx.createLinearGradient(0, 452, 0, SHARE_H);
+        const far = ctx.createLinearGradient(0, horizon, 0, SHARE_H);
         far.addColorStop(0, fade(p.sink, 0.95));
         far.addColorStop(0.4, fade(p.sink, 0));
         far.addColorStop(1, fade(p.sink, 0.8));
         ctx.fillStyle = far;
-        ctx.fillRect(0, 452, SHARE_W, SHARE_H - 452);
+        ctx.fillRect(0, horizon, SHARE_W, SHARE_H - horizon);
+        /* ---- 7. stage ---- */
+        if (drawn.subject)
+            drawStage(ctx, drawn.subject, c);
+        /* ---- 8. near: motes in front of it, out of focus ---- */
+        ctx.save();
+        ctx.filter = "blur(3px)";
+        for (const [mx, my, r, a] of c.motes) {
+            ctx.fillStyle = fade(p.hot, a);
+            ctx.beginPath();
+            ctx.arc(mx, my, r, 0, Math.PI * 2);
+            ctx.fill();
+        }
+        ctx.restore();
     }
     /* THE SCRIM, and it is a different shape with a photograph
        under it: over a picture it has to reach most of the way
@@ -240,23 +512,22 @@ function drawMaterial(ctx, p, hasPhoto) {
        doing, and over the site's own ground it only has to seat the
        text. */
     const scrim = ctx.createLinearGradient(0, 0, SHARE_W, 0);
-    scrim.addColorStop(0, fade(p.sink, hasPhoto ? 0.96 : 0.86));
-    scrim.addColorStop(hasPhoto ? 0.56 : 0.44, fade(p.sink, hasPhoto ? 0.72 : 0.2));
+    scrim.addColorStop(0, fade(p.sink, hasPhoto ? 0.96 : 0.88));
+    scrim.addColorStop(hasPhoto ? 0.56 : 0.46, fade(p.sink, hasPhoto ? 0.72 : 0.28));
     scrim.addColorStop(1, fade(p.sink, 0));
     ctx.fillStyle = scrim;
     ctx.fillRect(0, 0, SHARE_W, SHARE_H);
-    /* A shaft of light across it, from the top left, which is where
-       every highlight on this site comes from. */
-    const shaft = ctx.createLinearGradient(220, 0, 700, SHARE_H);
+    /* ---- 9. spec: the highlight crossing the glass ---- */
+    const shaft = ctx.createLinearGradient(180, 0, 760, SHARE_H);
     shaft.addColorStop(0, fade(p.ink, 0));
-    shaft.addColorStop(0.5, fade(p.ink, 0.055));
+    shaft.addColorStop(0.5, fade(p.ink, 0.06));
     shaft.addColorStop(1, fade(p.ink, 0));
     ctx.fillStyle = shaft;
     ctx.fillRect(0, 0, SHARE_W, SHARE_H);
-    /* The corners going down, as on every scene. */
+    /* ---- 10. veil: the corners going down, as on every scene ---- */
     const veil = ctx.createRadialGradient(600, 300, 180, 600, 300, 760);
     veil.addColorStop(0, fade(p.sink, 0));
-    veil.addColorStop(1, fade(p.sink, 0.62));
+    veil.addColorStop(1, fade(p.sink, 0.6));
     ctx.fillStyle = veil;
     ctx.fillRect(0, 0, SHARE_W, SHARE_H);
     /* The accent rail every card on this site carries down its left
@@ -298,7 +569,13 @@ function drawWords(ctx, p, words) {
  * no photograph on it, which is a card this site can now draw for
  * every piece rather than only for the illustrated ones.
  */
-export async function shareCardBlob({ src, focus = "centre" }, words = {}) {
+export async function shareCardBlob({ src, focus = "centre" }, words = {}, 
+/** The drawing this piece wears, as the inside of an `<svg>`,
+    and the wall behind it. Both optional: a card without them
+    is the room with nothing standing in it, which is what a
+    caller that cannot reach `/api/admin/art` gets and is still
+    a card. `drawingFor()` below is what fetches them. */
+drawing = {}) {
     const canvas = new OffscreenCanvas(SHARE_W, SHARE_H);
     /* Non-null rather than a guard, and the guard would be the lie:
        `getContext("2d")` on an OffscreenCanvas this code just made
@@ -306,6 +583,12 @@ export async function shareCardBlob({ src, focus = "centre" }, words = {}) {
        taken on it, which cannot have happened one line after `new`. */
     const ctx = canvas.getContext("2d");
     const p = palette(accentOf(words));
+    /* The composition, off the piece's own id. `seed` rather than
+       the title, for the reason `shared/art.ts` gives beside its
+       own hash: a title moves on a typo fix and the picture must
+       not. Falls back to the title only because two callers have
+       nothing else. */
+    const c = composeFor(words.seed || words.title || "");
     let drew = false;
     if (src) {
         const res = await fetch(src, { credentials: "same-origin" });
@@ -330,7 +613,16 @@ export async function shareCardBlob({ src, focus = "centre" }, words = {}) {
         await document?.fonts?.ready;
     }
     catch { /* no document */ }
-    drawMaterial(ctx, p, drew);
+    /* Rasterised at the size they are drawn at rather than at their
+       own 520x400, so the strokes are the width the drawing asks
+       for instead of being scaled up with everything else. */
+    const drawnArt = drew ? { subject: null, motif: null } : {
+        subject: drawing.subject
+            ? await drawingOf(drawing.subject, p.art, c.stage.w, c.stage.h) : null,
+        motif: drawing.motif
+            ? await drawingOf(drawing.motif, p.art, c.stage.w * c.wall.scale, c.stage.h * c.wall.scale) : null,
+    };
+    drawMaterial(ctx, p, drew, drawnArt, c);
     drawWords(ctx, p, words);
     // JPEG deliberately. This is the one image on the site that is
     // fetched by something other than a browser.
@@ -380,3 +672,68 @@ export const cardShape = (url) => ({
     sized: /^(https:\/\/reiad\.co\.uk)?\/og\/[a-z0-9-]+\.png$/.test(url ?? "")
         || isDrawnCard(String(url ?? "").replace("https://reiad.co.uk", "")),
 });
+let table = null;
+/** The drawings, once per page. Null on any failure, including
+    not being an admin, and every caller treats null as "the room
+    with nothing in it" rather than as an error: a card is worth
+    having either way. */
+export function artTable() {
+    table ??= fetch("/api/admin/art", { headers: { accept: "application/json" } })
+        .then(async (res) => (res.ok ? await res.json() : null))
+        .then((got) => (got?.subjects && got?.motifs ? got : null))
+        .catch(() => null);
+    return table;
+}
+/** The subject and its wall, by name. */
+export async function drawingFor(subject) {
+    const got = await artTable();
+    if (!got)
+        return {};
+    const wall = got.motifOf[subject];
+    return {
+        subject: got.subjects[subject],
+        motif: wall ? got.motifs[wall] : undefined,
+    };
+}
+/** What a PIECE wears, in one request.
+
+    The choice is `shared/art.ts`'s and is made in the Worker,
+    because a browser bundle cannot import that file and a second
+    copy of the rule here would be two hubs drawing different
+    cards for the same row. Everything is optional and every
+    failure is `{}`, which the card reads as "the room with
+    nothing standing in it".
+
+    Not cached, unlike `artTable()`: the answer depends on which
+    piece is being asked about. The drawings inside it are the
+    same 34 KB every time and are the reason a caller drawing
+    forty cards should use `artTable()` and `drawingFor()`
+    instead. */
+export async function drawingForPiece(src) {
+    try {
+        const q = new URLSearchParams();
+        if (src.id)
+            q.set("id", src.id);
+        if (src.section)
+            q.set("section", src.section);
+        if (src.title)
+            q.set("title", src.title);
+        const tags = (src.tags ?? []).filter(Boolean).join(",");
+        if (tags)
+            q.set("tags", tags);
+        const res = await fetch(`/api/admin/art?${q}`, { headers: { accept: "application/json" } });
+        if (!res.ok)
+            return {};
+        const got = await res.json();
+        if (!got?.subjects || !got.pick)
+            return {};
+        const wall = got.motifOf[got.pick];
+        return {
+            subject: got.subjects[got.pick],
+            motif: wall ? got.motifs[wall] : undefined,
+        };
+    }
+    catch {
+        return {};
+    }
+}

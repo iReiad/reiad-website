@@ -7,7 +7,7 @@ There are three renderers of this site now: the Worker in
 Next.js route in `next/`. Anything all of them must say the same
 way lives here, and nowhere else.
 
-Today that is twenty files and a directory of four, and
+Today that is twenty-two files and a directory of four, and
 `check-types.ts` fails if one of them is not described below.
 That check exists because this line said six while nine were
 here: `nav.ts` and `routine.ts` arrived in two changes that had
@@ -35,6 +35,30 @@ this repository got written.
   has to remember anything. It also owns the vocabulary: `nav.ts`
   and `next/components/card-art.tsx` both take `ArtSubject` from
   here rather than writing the twelve out again.
+
+- **`art-svg.ts`** the twelve drawings themselves and the six
+  walls they stand against, as the inside of an `<svg>`. Strings
+  rather than JSX for the reason `next/lib/school-icons.ts` holds
+  strings: markup that something other than React has to be able
+  to read. They were 747 lines inside `card-art.tsx` and
+  `aab/src/share-card.ts` could not reach them, so a card pasted
+  into a chat carried the room with nothing standing in it.
+  **Not compiled into `aab/`**, unlike the eight below: it is
+  34 KB and nobody needs it except whoever is drawing a card,
+  which is one admin at publish time. `GET /api/admin/art` hands
+  it over instead, behind `isAdmin()` like the rest of that
+  route.
+
+- **`art-of.ts`** the same decision with the rail's two tables
+  already handed to it: which subject the rail names for a
+  section, and what colour that section is. `art.ts` deliberately
+  imports nothing, because `nav.ts` takes the vocabulary from it
+  and a value import back would be a cycle, so somebody has to do
+  the passing in. This is that, once, for everybody. It was
+  `next/lib/art.ts` and reachable only by the Next Worker, which
+  was fine until the share card needed the same answer out of the
+  Worker: a card is drawn in a browser, from a Vite bundle that
+  cannot import `shared/` at all.
 
 - **`look.ts`** the per-section table. What mount a piece is
   served at, the class on its body, the card it falls back to, how
