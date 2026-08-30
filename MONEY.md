@@ -97,6 +97,37 @@ d.setAttribute("data-read-lang", l === "en" ? "en" : "bn");
 `null` and `"bn"` both give Bangla. Only an explicit English
 choice gives English.
 
+**And the stylesheet may only choose where there are two.**
+`body_en` is empty on 144 of the 225 written lessons: every one of
+deutsch, english and quran. Hiding the Bangla on those hides the
+LESSON, and the page renders no switch to undo it because there is
+nothing to switch to, so a reader who had once pressed English on
+a calculator opened a German lesson and got a heading, a byline
+and a prev/next pair round nothing at all. On every device their
+account reached, because `tool-lang` travels in `reader-prefs`.
+
+So `lesson/body.tsx` writes what the prose actually carries and
+`@layer lesson` keys on it:
+
+```html
+<div class="ls-body" data-langs="both">   <!-- or "bn" -->
+```
+
+Only the PROSE rules are guarded. The generic pair rule is not,
+and that is deliberate: a `Say` inside a block is written in both
+languages by construction and can always answer either, so it can
+never be the only thing on the page.
+
+Two checks hold it, because the interesting half is a `display`
+value and no amount of reading the HTML can see one.
+`scripts/check-css.ts` fails on a rule that could hide a prose
+half without saying which lessons it may hide it on, and on the
+marker going missing from the component, which is the same bug
+backwards: every rule keyed on an attribute nothing writes matches
+nothing, and a lesson written twice then shows both languages at
+once. `next/reading.test.ts` measures the rendered box in a
+browser.
+
 ### The two bodies must have the same blocks in the same order
 
 A block is mounted from the prose with an empty div:

@@ -953,6 +953,73 @@ for (const token of [...used].sort()) {
   }
 }
 
+/* ============================================================
+   The language switch has to have a language to switch to
+
+   `@layer lesson` puts both bodies of a lesson in the markup and
+   hides one, keyed on `data-read-lang`. That is right for the 81
+   money lessons, which are written twice. It is wrong for the
+   other 144, which are Bangla and nothing else: hiding the Bangla
+   there hides the LESSON, and those pages render no switch to
+   undo it because there is nothing to switch to.
+
+   It shipped, and nothing could see it. The row was right, the
+   route rendered every word of it, `parity.test.ts` compares the
+   server's HTML and found it correct, and the page kept its
+   heading, its byline and its prev/next pair round an empty
+   middle. `reading.test.ts` measures the rendered box and is the
+   better test; it needs a browser and does not run in CI, which
+   is what this is for.
+
+   So: a rule that hides a prose half has to say which lessons it
+   may hide it on, and the component has to mark them.
+   ============================================================ */
+{
+  const layer = layerBody("lesson");
+  if (layer === null) {
+    failures++;
+    console.error("\nno @layer lesson in the stylesheet, and it is where the two "
+      + "languages of a lesson are chosen between.");
+  } else {
+    /* Comments first, or a paragraph naming a class reads as a
+       selector: the prose above this check would match itself. */
+    const rules = [...layer.replace(/\/\*[\s\S]*?\*\//g, " ")
+      .matchAll(/([^{}]+)\{([^{}]*)\}/g)];
+
+    const unguarded = rules
+      .map(([, selector, decls]) => ({ selector: selector.trim().replace(/\s+/g, " "), decls }))
+      .filter(({ selector, decls }) =>
+        /display\s*:\s*none/.test(decls)
+        && /\.ls-(bn|en)\b/.test(selector)
+        && /\.ls-(body|slice)\b/.test(selector)
+        && !selector.includes("[data-langs"));
+
+    if (unguarded.length) {
+      failures++;
+      console.error(`\n${unguarded.length} rule(s) can hide a lesson's only language:`);
+      for (const { selector } of unguarded) console.error(`        ${selector}`);
+      console.error("        144 of the 225 written lessons have no English half, so this\n"
+        + "        hides the whole lesson on every one of them. Add [data-langs=\"both\"],\n"
+        + "        which `next/components/lesson/body.tsx` sets from the prose it was\n"
+        + "        given. `next/reading.test.ts` measures the box this leaves behind.");
+    }
+
+    /* THE MARKER IS HALF OF IT, and it is the half that fails
+       silently: a selector keyed on an attribute nothing writes
+       matches nothing, so the rules above stop firing and the 81
+       money lessons show BOTH languages at once. */
+    const at = join(REPO, "next", "components", "lesson", "body.tsx");
+    const src = existsSync(at) ? readFileSync(at, "utf8") : "";
+    const keyed = rules.some(([, selector]) => selector.includes("[data-langs"));
+    if (keyed && !/className="ls-body"\s+data-langs=/.test(src)) {
+      failures++;
+      console.error("\n@layer lesson keys on [data-langs] and lesson/body.tsx does not "
+        + "write it.\n        Every rule that names it matches nothing, so a lesson "
+        + "written in two\n        languages now shows both at once.");
+    }
+  }
+}
+
 console.log(
   failures
     ? `\n${failures} problem(s) in the stylesheet: fix before deploying.`

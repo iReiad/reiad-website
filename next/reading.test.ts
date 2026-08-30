@@ -91,11 +91,11 @@ const articles = (() => {
 })();
 interface Row { slug: string; lang: string; body: string }
 
+interface Lesson { school?: string; status?: string; body?: string; body_en?: string }
 const lessons = (() => {
   const at = join(ROOT, "content", "schools.backup.json");
-  if (!existsSync(at)) return [] as { body_en?: string }[];
-  const raw = JSON.parse(readFileSync(at, "utf8")) as
-    { lessons?: { body_en?: string }[] };
+  if (!existsSync(at)) return [] as Lesson[];
+  const raw = JSON.parse(readFileSync(at, "utf8")) as { lessons?: Lesson[] };
   return raw.lessons ?? [];
 })();
 
@@ -156,6 +156,36 @@ const page = (lang: string, prose: string): string =>
   + `<p>${prose.slice(0, 3000)}</p><p>${prose.slice(0, 3000)}</p>`
   + `</div></article></main></div></body></html>`;
 
+/* ---------- and a lesson, which is the other reading route ----------
+
+   Two shapes, and the difference between them is the whole of
+   what section 5 asks. A money lesson is written twice and
+   `.ls-body` carries `data-langs="both"`; a lesson of the other
+   three schools is Bangla and nothing else, and carries
+   `data-langs="bn"`. `lesson/body.tsx` is what decides, and the
+   markup below is that component's, asserted against it at the
+   bottom of this file. */
+const LESSON_BN = (lessons.find((l) =>
+  l.school !== "money" && (l.body ?? "").trim() && !(l.body_en ?? "").trim())
+  ?.body ?? "").slice(0, 4000);
+const LESSON_PAIR = lessons.find((l) =>
+  (l.body ?? "").trim() && (l.body_en ?? "").trim());
+
+const lessonPage = (langs: "bn" | "both"): string =>
+  `<!DOCTYPE html><html lang="bn" data-rail="open"><head>`
+  + `<meta charset="utf-8"><title>a lesson</title>`
+  + `<link rel="stylesheet" href="/fallback.css"></head><body>`
+  + `<div class="shell-col"><main id="main"><div class="wrap">`
+  + `<article class="term-article lesson teil" data-school="deutsch">`
+  + `<h1 class="bn-h">একটা পাঠ</h1>`
+  + `<div class="ls-body" data-langs="${langs}"><div class="ls-slice">`
+  + `<div class="ls-bn" id="ls-bn" lang="bn">`
+  + `${langs === "both" ? LESSON_PAIR?.body ?? "" : LESSON_BN}</div>`
+  + (langs === "both"
+      ? `<div class="ls-en" id="ls-en" lang="en">${LESSON_PAIR?.body_en ?? ""}</div>`
+      : "")
+  + `</div></div></article></div></main></div></body></html>`;
+
 /* ---------- serve it ---------- */
 
 const css = (() => {
@@ -168,6 +198,11 @@ const server: Server = createServer((req, res) => {
   const path = new URL(req.url ?? "/", "http://x").pathname;
   if (path === "/fallback.css") {
     res.writeHead(200, { "Content-Type": "text/css" }).end(css);
+    return;
+  }
+  if (path.startsWith("/lesson")) {
+    res.writeHead(200, { "Content-Type": "text/html; charset=utf-8" })
+      .end(lessonPage(path.endsWith("/both") ? "both" : "bn"));
     return;
   }
   const lang = path.startsWith("/en") ? "en" : "bn";
@@ -499,7 +534,79 @@ for (const script of ["bn", "en"] as const) {
 }
 
 /* ============================================================
-   5. THE FIXTURE IS THE ROUTES' OWN MARKUP
+   5. A LESSON'S ONLY LANGUAGE IS ON THE SCREEN
+
+   `@layer lesson` puts both bodies in the markup and hides one,
+   keyed on `data-read-lang`, which the boot script sets from
+   `tool-lang`. 144 of the 225 written lessons have no second
+   body: every one of deutsch, english and quran. Hiding the
+   Bangla on those hides the LESSON, and the page renders no
+   switch to undo it because there is nothing to switch to, so a
+   reader who had once pressed English on a calculator opened a
+   German lesson and got a heading, a byline and a prev/next pair
+   round nothing at all.
+
+   Nothing could see it. The row was right, the route rendered
+   every word of it, `parity.test.ts` compares the server's HTML
+   and found it correct, and a screenshot of the page shows the
+   furniture. What was missing was one `display` value, which is
+   why it is MEASURED here rather than asserted anywhere.
+   ============================================================ */
+{
+  if (!LESSON_BN.trim()) {
+    ok("there is a Bangla-only lesson to measure", false,
+      "content/schools.backup.json has none. Refresh it with "
+      + "`node scripts/export-schools.ts`.");
+  } else {
+    /** Is the element on the screen, or is it `display: none`.
+        Read off the box rather than off the declaration, because
+        what a reader loses is the height. */
+    const seen = async (pg: Page, id: string): Promise<boolean> =>
+      await pg.evaluate((at: string) => {
+        const el = document.getElementById(at);
+        return !!el && el.getBoundingClientRect().height > 0;
+      }, id);
+
+    for (const read of ["bn", "en"] as const) {
+      const p: Page = await browser.newPage({ viewport: { width: 1440, height: 900 } });
+      await p.goto(`http://localhost:${PORT}/lesson/bn`, { waitUntil: "load" });
+      await p.evaluate((r: string) =>
+        document.documentElement.setAttribute("data-read-lang", r), read);
+      await p.waitForTimeout(60);
+
+      ok(`a lesson with only Bangla in it is on the screen with data-read-lang="${read}"`,
+        await seen(p, "ls-bn"),
+        "the whole lesson is display:none. `.ls-body` carries `data-langs`, "
+        + "and @layer lesson may only hide a half that has a counterpart.");
+      await p.close();
+    }
+
+    /* AND THE CHOICE STILL WORKS WHERE THERE IS ONE. A guard
+       written too wide would show both languages at once on the
+       81 money lessons, which is the other way to get this
+       wrong and looks nothing like a bug in a screenshot. */
+    if (!LESSON_PAIR) {
+      ok("there is a two-language lesson to measure", false,
+        "content/schools.backup.json has none.");
+    } else {
+      for (const read of ["bn", "en"] as const) {
+        const p: Page = await browser.newPage({ viewport: { width: 1440, height: 900 } });
+        await p.goto(`http://localhost:${PORT}/lesson/both`, { waitUntil: "load" });
+        await p.evaluate((r: string) =>
+          document.documentElement.setAttribute("data-read-lang", r), read);
+        await p.waitForTimeout(60);
+
+        ok(`a lesson written twice shows ${read} and only ${read}`,
+          await seen(p, `ls-${read}`) && !await seen(p, `ls-${read === "bn" ? "en" : "bn"}`),
+          "both halves are on the screen, or neither is. The reader asked for one.");
+        await p.close();
+      }
+    }
+  }
+}
+
+/* ============================================================
+   6. THE FIXTURE IS THE ROUTES' OWN MARKUP
 
    Everything above is measured on the page written at the top of
    this file. If a route renames the class its column carries,
@@ -520,6 +627,19 @@ for (const script of ["bn", "en"] as const) {
   ok("and the tools are still one row rather than two bands",
     piece.includes('"piece-tools"'),
     "`<Keep>` and `<ReadAloud>` each drew a band of their own");
+
+  /* Section 5 measures a `.ls-body` carrying `data-langs`, and
+     that attribute is the whole of the guard: if the component
+     stops writing it, every rule keyed on it stops matching and
+     nothing here fails. */
+  const body = readFileSync(
+    join(ROOT, "next", "components", "lesson", "body.tsx"), "utf8");
+  ok("a lesson body still says which languages it carries",
+    /className="ls-body"\s+data-langs=/.test(body),
+    "section 5 above measures that attribute, and @layer lesson keys on it");
+  ok("and it still says `both` only when there is an English half",
+    /data-langs=\{english \? "both" : "bn"\}/.test(body),
+    "the value is what decides whether a language may be hidden");
 }
 
 console.log(`\n${passed} checks passed`);
