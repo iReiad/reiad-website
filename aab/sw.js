@@ -31,6 +31,15 @@
    login could not have reached anyone either. Bump this whenever a
    precached file changes.
 
+   v230: /fallback.css. The page was 33px wider than a phone and
+        the browser zoomed the whole thing out to fit, the bar
+        included. `.home-aura::before` bleeds -14% either side
+        and the clip on <html> never held it, because a root
+        that propagates its overflow computes to `visible`.
+        `overflow-x: clip` on body. v229 is reverted with it:
+        it answered a rubber band that was not the problem and
+        cost pull to refresh.
+
    v229: /fallback.css. The top bar rode the rubber band: it is
         `position: fixed`, so overscrolling the root scroller on a
         phone dragged it out of its gap and under the browser's
@@ -2051,7 +2060,7 @@
    imports (crumbs, audience, learn progress) and the hub is a
    different page. Without a bump, a returning reader would be
    served the v3 app.js forever and none of it would appear. */
-const VERSION = "v229";
+const VERSION = "v230";
 const SHELL = `shell-${VERSION}`;
 const RUNTIME = `runtime-${VERSION}`;
 
