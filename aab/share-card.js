@@ -177,22 +177,62 @@ function drawMaterial(ctx, p, hasPhoto) {
         sky.addColorStop(1, p.sink);
         ctx.fillStyle = sky;
         ctx.fillRect(0, 0, SHARE_W, SHARE_H);
-        /* The halo the scenes stand in. */
-        const halo = ctx.createRadialGradient(820, 210, 20, 820, 210, 520);
-        halo.addColorStop(0, fade(p.accent, 0.34));
+        /* The halo the scenes stand in, off to the right where the
+           words are not. */
+        const halo = ctx.createRadialGradient(880, 250, 10, 880, 250, 620);
+        halo.addColorStop(0, fade(p.accent, 0.42));
+        halo.addColorStop(0.55, fade(p.accent, 0.12));
         halo.addColorStop(1, fade(p.accent, 0));
         ctx.fillStyle = halo;
         ctx.fillRect(0, 0, SHARE_W, SHARE_H);
-        /* The floor, which is what tells the eye there is a room. */
-        ctx.strokeStyle = fade(p.hot, 0.16);
+        /* THE ORBITS, which is one of the six motifs the scenes stand
+           against and the one that suits a card with no subject on
+           it: rings around a centre say "a place" without claiming to
+           be a picture of anything in particular. */
         ctx.lineWidth = 2;
-        for (let x = -200; x < SHARE_W + 400; x += 84) {
+        for (const [rx, ry, alpha] of [[430, 172, 0.3], [300, 120, 0.24], [180, 72, 0.17]]) {
+            ctx.strokeStyle = fade(p.hot, alpha);
             ctx.beginPath();
-            ctx.moveTo(x, SHARE_H);
-            ctx.lineTo(x + 190, 452);
+            ctx.ellipse(880, 340, rx, ry, 0, 0, Math.PI * 2);
             ctx.stroke();
         }
-        ctx.fillStyle = ctx.createLinearGradient(0, 452, 0, SHARE_H);
+        for (const [cx, cy, r, alpha] of [[450, 340, 7, 0.5], [1160, 262, 5, 0.36], [742, 420, 4, 0.3]]) {
+            ctx.fillStyle = fade(p.hot, alpha);
+            ctx.beginPath();
+            ctx.arc(cx, cy, r, 0, Math.PI * 2);
+            ctx.fill();
+        }
+        /* The horizon, and the floor running away from it, which is
+           what tells the eye there is a room rather than a wall. */
+        const line = ctx.createLinearGradient(0, 0, SHARE_W, 0);
+        line.addColorStop(0, fade(p.hot, 0.06));
+        line.addColorStop(0.55, fade(p.hot, 0.34));
+        line.addColorStop(1, fade(p.hot, 0.1));
+        ctx.strokeStyle = line;
+        ctx.lineWidth = 2;
+        ctx.beginPath();
+        ctx.moveTo(0, 452);
+        ctx.lineTo(SHARE_W, 452);
+        ctx.stroke();
+        ctx.strokeStyle = fade(p.hot, 0.1);
+        ctx.lineWidth = 2;
+        for (let x = -600; x < SHARE_W + 800; x += 116) {
+            ctx.beginPath();
+            ctx.moveTo(x, SHARE_H);
+            /* Every line aimed at one vanishing point on the horizon,
+               which is what makes it a floor. Parallel lines are a
+               hatch. */
+            ctx.lineTo(880 + (x - 880) * 0.24, 452);
+            ctx.stroke();
+        }
+        /* And the floor fades out towards the horizon, because a grid
+           that reaches it at full strength is a net. */
+        const far = ctx.createLinearGradient(0, 452, 0, SHARE_H);
+        far.addColorStop(0, fade(p.sink, 0.95));
+        far.addColorStop(0.4, fade(p.sink, 0));
+        far.addColorStop(1, fade(p.sink, 0.8));
+        ctx.fillStyle = far;
+        ctx.fillRect(0, 452, SHARE_W, SHARE_H - 452);
     }
     /* THE SCRIM, and it is a different shape with a photograph
        under it: over a picture it has to reach most of the way
