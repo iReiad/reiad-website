@@ -11,12 +11,25 @@
    ---- asked once, and only once ----
 
    Nothing here happens until a reader presses "Use my location"
-   in their account's appearance panel. What is kept is TWO
-   NUMBERS ROUNDED TO TWO DECIMAL PLACES, which is about a
-   kilometre: enough to know whether it is raining, nowhere near
-   enough to find a house. That rounding happens here as well as
-   in the Worker, because a coordinate is the most personal thing
-   this site ever touches and one place doing it is one too few.
+   in their account's appearance panel, or types a town into the
+   box beside it. What is kept is TWO NUMBERS ROUNDED TO TWO
+   DECIMAL PLACES, which is about a kilometre: enough to know
+   whether it is raining, nowhere near enough to find a house.
+   That rounding happens here as well as in the Worker, because a
+   coordinate is the most personal thing this site ever touches
+   and one place doing it is one too few.
+
+   ---- and the header has to allow it ----
+
+   `Permissions-Policy: geolocation=()` was on every response this
+   site sends for as long as this file existed, which is not "ask
+   the reader" but "this page does not have that API". No prompt
+   was ever shown, `getCurrentPosition` failed at once with
+   PERMISSION_DENIED, and a reader who went into their browser's
+   own site settings and granted location was told, on reload,
+   that their browser had said no. Both header lists say
+   `geolocation=(self)` now, and `scripts/check-headers.ts` is
+   what keeps the two in step.
 
    ---- and it stays on this device ----
 
@@ -69,7 +82,7 @@ function wanted(): boolean {
   } catch { return false; }
 }
 
-function place(): { lat: number; lon: number } | null {
+function place(): { lat: number; lon: number; name?: string } | null {
   try {
     const raw = JSON.parse(localStorage.getItem(PLACE) || "null");
     if (!raw || typeof raw.lat !== "number" || typeof raw.lon !== "number") return null;
@@ -77,28 +90,82 @@ function place(): { lat: number; lon: number } | null {
   } catch { return null; }
 }
 
-/** Ask the browser once, keep the answer rounded, and say whether
-    it worked. Exported because the appearance panel is what asks:
+/** What happened when we asked. Four answers rather than a
+    boolean, because "no" was the whole vocabulary for as long as
+    this existed and it made the one real bug unreadable: the page
+    said "your browser said no" whether the reader had refused,
+    whether the device could not fix a position, or whether this
+    site's own Permissions-Policy had switched the API off before
+    the browser could ask anybody anything. */
+export type AskResult = "got" | "refused" | "unavailable" | "no-api";
+
+/** Round to about a kilometre and keep it. The one place in the
+    browser that writes this key, so the rounding cannot be
+    skipped by a caller that forgot. */
+function keep(lat: number, lon: number, name?: string): void {
+  try {
+    localStorage.setItem(PLACE, JSON.stringify({
+      lat: Math.round(lat * 100) / 100,
+      lon: Math.round(lon * 100) / 100,
+      ...(name ? { name } : {}),
+    }));
+    sessionStorage.removeItem(SEEN);
+  } catch { /* private mode: it holds for this page */ }
+}
+
+/** Ask the browser once, keep the answer rounded, and say what
+    happened. Exported because the appearance panel is what asks:
     a permission prompt has to come from a button a reader
     pressed, never from a page loading. */
-export async function askForPlace(): Promise<boolean> {
-  if (typeof navigator === "undefined" || !navigator.geolocation) return false;
+export async function askForPlace(): Promise<AskResult> {
+  if (typeof navigator === "undefined" || !navigator.geolocation) {
+    return "no-api";
+  }
   return new Promise((done) => {
     navigator.geolocation.getCurrentPosition(
       (pos) => {
-        try {
-          localStorage.setItem(PLACE, JSON.stringify({
-            lat: Math.round(pos.coords.latitude * 100) / 100,
-            lon: Math.round(pos.coords.longitude * 100) / 100,
-          }));
-          sessionStorage.removeItem(SEEN);
-        } catch { /* private mode: it holds for this page */ }
-        done(true);
+        keep(pos.coords.latitude, pos.coords.longitude);
+        done("got");
       },
-      () => done(false),
+      (err) => done(
+        /* PERMISSION_DENIED is 1 and is the only one that means a
+           person said no. 2 is the device failing to fix a
+           position and 3 is it taking too long, and telling a
+           reader on a desktop with no radio that they refused
+           something is a page blaming them for its own limits. */
+        err && err.code === 1 ? "refused" : "unavailable"),
       { maximumAge: 30 * 60 * 1000, timeout: 8000, enableHighAccuracy: false },
     );
   });
+}
+
+/** Whether the browser has already been asked, where it will say.
+    `navigator.permissions` is not everywhere and the answer is
+    advisory: a "denied" here is what lets the panel say "your
+    browser is holding this one, and here is where to change it"
+    rather than offering a button that cannot work. */
+export async function placePermission(): Promise<PermissionState | null> {
+  try {
+    if (typeof navigator === "undefined" || !navigator.permissions) return null;
+    const status = await navigator.permissions.query(
+      { name: "geolocation" as PermissionName });
+    return status.state;
+  } catch { return null; }
+}
+
+/** A place the reader typed, chosen off the list the Worker
+    answered with. The same rounding and the same key: a place is
+    a place however it arrived. */
+export function setPlace(lat: number, lon: number, name: string): void {
+  keep(lat, lon, name);
+}
+
+/** What this browser calls where it is, for the panel to print
+    back. Empty for a coordinate the device gave us, because the
+    honest label for that is not a place name. */
+export function placeName(): string {
+  const at = place();
+  return at && typeof at.name === "string" ? at.name : "";
 }
 
 /** Forget it, which has to be one press and has to be complete:

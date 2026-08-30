@@ -44,8 +44,12 @@
    ============================================================ */
 
 import { cue } from "../../lib/sound";
-import { askForPlace, forgetPlace, hasPlace } from "../weather";
-import { Fragment, useCallback, useEffect, useState } from "react";
+import { Field } from "../ui/field";
+import {
+  askForPlace, forgetPlace, hasPlace, placeName, placePermission, setPlace,
+  type AskResult,
+} from "../weather";
+import { Fragment, useCallback, useEffect, useRef, useState } from "react";
 import type { Prefs, PrefOption } from "/prefs.js";
 import { runtimeModule } from "./runtime";
 
@@ -74,52 +78,189 @@ interface Group {
   place?: boolean;
 }
 
-/** Where you are, asked once.
+/** A town, as the Worker answered. Mirrors `Place` in
+    `functions/api/weather.ts`; not imported from there because
+    `functions/` is the Worker's and this is the browser's, and
+    the wire between them is JSON either way. */
+interface Found {
+  id: string;
+  name: string;
+  where: string;
+  lat: number;
+  lon: number;
+}
+
+/** Where you are, asked once, or typed.
 
     Its own component because it holds the one piece of state on
     this panel that is not a preference: whether this browser has
-    a place at all. The button is the permission prompt, and the
-    browser will only show one from a real press. */
+    a place at all, and how it got one.
+
+    TWO WAYS IN, and the second is not a fallback. A browser can
+    refuse, a desktop can have no radio, a work laptop can have
+    the permission turned off three levels up, and a reader can
+    simply prefer to say where they are rather than be found. Any
+    of those used to end at a sentence saying the browser had said
+    no, with nothing to press next. */
 function PlaceRow() {
   const [has, setHas] = useState(false);
+  const [named, setNamed] = useState("");
   const [asking, setAsking] = useState(false);
-  const [refused, setRefused] = useState(false);
+  const [said, setSaid] = useState<AskResult | null>(null);
+  const [blocked, setBlocked] = useState(false);
+  const [query, setQuery] = useState("");
+  const [found, setFound] = useState<Found[] | null>(null);
+  const [looking, setLooking] = useState(false);
+  const box = useRef<HTMLInputElement | null>(null);
 
-  useEffect(() => { setHas(hasPlace()); }, []);
+  useEffect(() => {
+    setHas(hasPlace());
+    setNamed(placeName());
+    /* Advisory, and only used to soften the copy: a browser that
+       has already been told no will not show a prompt however
+       many times the button is pressed, so saying where to change
+       it is more use than offering the button again. */
+    placePermission().then((state) => { setBlocked(state === "denied"); });
+  }, []);
+
+  /* One request per pause in the typing, not one per keystroke.
+     The Worker caches a place name for a day, so a second reader
+     typing "Dhaka" costs nothing, but a request per letter would
+     still be six requests to spell it. */
+  useEffect(() => {
+    const q = query.trim();
+    if (q.length < 2) { setFound(null); setLooking(false); return; }
+    setLooking(true);
+    let alive = true;
+    const timer = setTimeout(async () => {
+      try {
+        const res = await fetch(`/api/weather/place?q=${encodeURIComponent(q)}`,
+          { signal: AbortSignal.timeout(9000) });
+        const data = await res.json() as { ok?: boolean; places?: Found[] };
+        if (!alive) return;
+        setFound(data?.ok ? (data.places ?? []) : []);
+      } catch {
+        if (alive) setFound([]);
+      } finally {
+        if (alive) setLooking(false);
+      }
+    }, 280);
+    return () => { alive = false; clearTimeout(timer); };
+  }, [query]);
+
+  const choose = useCallback((row: Found) => {
+    setPlace(row.lat, row.lon, row.where ? `${row.name}, ${row.where}` : row.name);
+    cue("saved");
+    /* A reload rather than a state update, because the layer
+       reads its place once on mount and the honest way to say
+       "start now" is to start now. */
+    location.reload();
+  }, []);
+
+  if (has) {
+    return (
+      <div className="pref-row">
+        <span className="pref-label">Your place</span>
+        <div className="pref-chips" role="group" aria-label="Your place">
+          <button className="pref-chip" type="button" onClick={() => {
+            forgetPlace();
+            setHas(false); setNamed(""); setSaid(null);
+            cue("press");
+          }}>
+            <strong>Forget it</strong>
+            <small>
+              {named
+                ? `${named}: the coordinates go, and the page stops`
+                : "the coordinates go, and the page stops"}
+            </small>
+          </button>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="pref-row">
       <span className="pref-label">Your place</span>
-      <div className="pref-chips" role="group" aria-label="Your place">
-        {has ? (
-          <button className="pref-chip" type="button" onClick={() => {
-            forgetPlace(); setHas(false); setRefused(false); cue("press");
-          }}>
-            <strong>Forget it</strong>
-            <small>the coordinates go, and the page stops</small>
-          </button>
-        ) : (
+      <div className="grid gap-3">
+        <div className="pref-chips" role="group" aria-label="Your place">
           <button className="pref-chip" type="button" disabled={asking}
                   onClick={async () => {
                     setAsking(true);
                     const got = await askForPlace();
                     setAsking(false);
-                    setHas(got); setRefused(!got);
-                    cue(got ? "saved" : "refused");
-                    /* A reload rather than a state update, because
-                       the layer reads its place once on mount and
-                       the honest way to say "start now" is to
-                       start now. */
-                    if (got) location.reload();
+                    setSaid(got);
+                    setHas(got === "got");
+                    if (got !== "got") {
+                      placePermission().then(
+                        (state) => { setBlocked(state === "denied"); });
+                    }
+                    cue(got === "got" ? "saved" : "refused");
+                    if (got === "got") location.reload();
                   }}>
             <strong>{asking ? "Asking..." : "Use my location"}</strong>
-            <small>
-              {refused
-                ? "your browser said no, which is fine"
-                : "rounded to about a kilometre, kept on this device"}
-            </small>
+            <small>rounded to about a kilometre, kept on this device</small>
           </button>
-        )}
+          <button className="pref-chip" type="button"
+                  onClick={() => { box.current?.focus(); cue("press"); }}>
+            <strong>Or name a town</strong>
+            <small>nothing is asked of your device at all</small>
+          </button>
+        </div>
+
+        {said && said !== "got" ? (
+          <p className="m-0 max-w-[var(--measure)] text-[0.85rem] text-ink-soft">
+            {said === "refused" && blocked
+              ? "Your browser is holding on to a no for this site. It is in the "
+                + "padlock beside the address, under Location. Or name a town "
+                + "below, which asks your device nothing."
+              : said === "refused"
+                ? "Your browser said no, which is fine. Name a town below "
+                  + "instead."
+                : said === "no-api"
+                  ? "This browser has no location API. Name a town below."
+                  : "Your device could not work out where it is, which is "
+                    + "common on a desktop. Name a town below."}
+          </p>
+        ) : null}
+
+        <div className="grid gap-2">
+          <Field
+            id="weather-place-search"
+            label="Search for a town or city"
+            ref={box}
+            type="search"
+            inputMode="search"
+            autoComplete="off"
+            placeholder="Sylhet, Brighton, Dhaka..."
+            value={query}
+            onChange={(e) => setQuery(e.target.value)}
+          />
+
+          {looking ? (
+            <p className="m-0 text-[0.85rem] text-ink-soft">Looking...</p>
+          ) : null}
+
+          {found && found.length > 0 ? (
+            <ul className="m-0 grid list-none gap-1 p-0">
+              {found.map((row) => (
+                <li key={row.id}>
+                  <button className="pref-chip w-full text-left" type="button"
+                          onClick={() => choose(row)}>
+                    <strong>{row.name}</strong>
+                    {row.where ? <small>{row.where}</small> : null}
+                  </button>
+                </li>
+              ))}
+            </ul>
+          ) : null}
+
+          {found && found.length === 0 && !looking && query.trim().length >= 2 ? (
+            <p className="m-0 text-[0.85rem] text-ink-soft">
+              Nothing by that name. Try the nearest bigger town.
+            </p>
+          ) : null}
+        </div>
       </div>
     </div>
   );

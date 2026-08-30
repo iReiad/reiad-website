@@ -31,8 +31,14 @@ export const SECURITY_HEADERS = {
   "X-Frame-Options": "DENY",
   "X-Content-Type-Options": "nosniff",
   "Referrer-Policy": "strict-origin-when-cross-origin",
+  /* geolocation is (self). It was () for as long as the weather
+     layer existed, and an empty allowlist is not "ask the reader":
+     it is the page telling the browser not to have the API, so the
+     prompt never appears, getCurrentPosition fails at once with
+     PERMISSION_DENIED, and turning location on in the browser's own
+     site settings changes nothing at all. */
   "Permissions-Policy":
-    "geolocation=(), camera=(), microphone=(), payment=(), interest-cohort=(), "
+    "geolocation=(self), camera=(), microphone=(), payment=(), interest-cohort=(), "
     + "publickey-credentials-get=(self), publickey-credentials-create=(self)",
   "Strict-Transport-Security": "max-age=31536000; includeSubDomains",
   "Content-Security-Policy":
