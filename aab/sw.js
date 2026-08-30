@@ -31,10 +31,20 @@
    login could not have reached anyone either. Bump this whenever a
    precached file changes.
 
-   v219  the card scenes gained six layers, the relief gave every
-         icon and control the same depth, and the site gained a
-         sound module, a weather layer and a share card drawn in
-         its own material. /fallback.css and /prefs.js both moved.
+   v219: /fallback.css and /prefs.js. The card art is a ROOM now
+        rather than a drawing: ten layers at eight depths, with a
+        motif behind the subject, motes in front of it and a
+        specular that tracks the light. `@layer relief` gives every
+        icon, disc and plate on the site the same depth one order
+        of magnitude down. Light mode swapped idiom rather than
+        palette: a bloom at night, a cast shadow on paper.
+
+        /prefs.js moved because two preferences arrived with it,
+        `sound` and `weather`, and a device holding the old copy
+        would drop both on write: `savePrefs` writes the keys it
+        knows about, so an old module saving a theme would take a
+        reader's sound setting off with it.
+
    v218: /fallback.css. The pictures stopped being files. Twenty-five
         committed rasters could not answer a theme, and answering
         it would have meant fifty; they are inline components now

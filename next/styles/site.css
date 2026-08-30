@@ -16413,15 +16413,28 @@ German for day, and .tag is what the site has always called
      `check-relief.ts` fails on a name in here that the stylesheet
      does not define, so the list cannot rot quietly. */
   .gt-disc, .card-art, .work-art, .lesson-card-art, .rail-ico,
-  .relief-lift,
+  .acc-avatar, .relief-lift,
   :is(.top-btn, .btn, .icon-btn, .chip, .pill, .card-go, .gt-go) > svg {
-    /* The figure moves WITH the light, which is the opposite of
-       the shadow below. Two thirds on the vertical, because a
-       page is looked at from slightly above and the horizontal
-       is the axis a head actually moves along. */
+    /* AGAINST THE POINTER, exactly as every layer of a scene
+       moves, and the sign is the whole of what makes this one
+       system rather than two.
+
+       `--gpx` is a VIEW direction, not a light: the scene reads
+       it as "the eye has moved this way" and slides each layer by
+       minus its own depth, which is what parallax is. A figure
+       standing off a surface is a layer with a small depth and
+       has to obey the same arithmetic. It did not for one build:
+       the relief moved its figures the other way, so a card with
+       a scene AND an icon had the two sliding apart under one
+       pointer, which does not read as a bug but as that card
+       being slightly wrong.
+
+       Two thirds on the vertical, because a page is looked at
+       from slightly above and the horizontal is the axis a head
+       actually moves along. */
     translate:
-      calc(var(--gpx, 0) * var(--lift, 0) * var(--relief-throw, 2px))
-      calc(var(--gpy, 0) * var(--lift, 0) * var(--relief-throw, 2px) * 0.66);
+      calc(var(--gpx, 0) * var(--lift, 0) * var(--relief-throw, 2px) * -1)
+      calc(var(--gpy, 0) * var(--lift, 0) * var(--relief-throw, 2px) * -0.66);
     /* And comes towards you, which is the whole of what separates
        a thing that lifted from a thing that slid. */
     scale: calc(1 + var(--lift, 0) * var(--relief-rise, 0.035));
@@ -16438,15 +16451,20 @@ German for day, and .tag is what the site has always called
     transition-duration: 190ms;
   }
 
-  /* THE SHADOW GOES THE OTHER WAY, and that is the whole trick.
-     A thing lit from the top left and lifted off its ground casts
-     to the bottom right, so the offset is the pointer NEGATED. A
-     shadow that moved with the figure would read as the figure
-     being painted on rather than standing on. */
+  /* THE SHADOW STAYS ON THE SURFACE, and that is the whole trick.
+
+     `drop-shadow` offsets the shadow FROM THE ELEMENT, so a
+     figure that has slid by minus something needs its shadow
+     offset by plus the same thing to stay where it was: the gap
+     between a thing and its shadow opening up is the only cue
+     that says it is above the page rather than printed on it.
+
+     The constant pixel down is the site's own light, which comes
+     from the top left on every surface and does not move. */
   .gt-disc, .card-art, .work-art, .lesson-card-art, .relief-lift {
     filter: drop-shadow(
-      calc(var(--gpx, 0) * var(--lift, 0) * -2.4px)
-      calc(1px + var(--gpy, 0) * var(--lift, 0) * -1.6px)
+      calc(var(--gpx, 0) * var(--lift, 0) * 2.4px)
+      calc(1px + var(--gpy, 0) * var(--lift, 0) * 1.6px)
       calc(1.5px + var(--lift, 0) * 5px)
       var(--relief-cast, oklch(0% 0 0 / 0.28)));
   }
@@ -16456,6 +16474,10 @@ German for day, and .tag is what the site has always called
      and a chip's mark is engraved into it. */
   .work-art { --relief-throw: 4px; --relief-rise: 0.012; }
   .lesson-card-art, .gt-disc, .card-art { --relief-throw: 2.6px; }
+  /* The one the reader recognises as themselves, so it rises
+     furthest and travels least: a face sliding about is uncanny
+     where a coin stack is not. */
+  .acc-avatar { --relief-throw: 0.8px; --relief-rise: 0.08; }
   :is(.chip, .pill) > svg { --relief-throw: 1.1px; --relief-rise: 0.05; }
 
   /* The rail is a column of twenty and never leans: twenty marks
@@ -16467,7 +16489,8 @@ German for day, and .tag is what the site has always called
      the movement, which is the same bargain every other layer
      here strikes. */
   @media (prefers-reduced-motion: reduce) {
-    .gt-disc, .card-art, .work-art, .lesson-card-art, .rail-ico, .relief-lift,
+    .gt-disc, .card-art, .work-art, .lesson-card-art, .rail-ico,
+    .acc-avatar, .relief-lift,
     :is(.top-btn, .btn, .icon-btn, .chip, .pill, .card-go, .gt-go) > svg {
       translate: none; scale: none; transition: none;
     }

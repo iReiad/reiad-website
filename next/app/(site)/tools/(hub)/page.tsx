@@ -76,6 +76,15 @@ export default function ToolsPage() {
                 .advanced-card`, a shape used here and nowhere
                 else for a thing the front page already draws as a
                 `<GoCard>`. */}
+            {/* THE TWO SIDE BY SIDE, and that is about the picture
+                rather than about tidiness. A card wearing a scene
+                across its top is 16:9 of its own width, so one
+                full-width card on a laptop is a 300px banner over
+                four lines of text: the drawing stops being a
+                picture on a card and becomes a header. Two up
+                halves the width and the band comes back to the
+                proportion every other card on the site has. */}
+            <div className="cards grid-2">
             <GoCard
               href="/tools/stock" art="gauge" icon="gauge" accent="var(--gold)"
               chip={<>Advanced · <span lang="bn">উন্নত টুল</span></>}
@@ -116,6 +125,7 @@ export default function ToolsPage() {
                 সাইটের নিজের পোর্টফোলিও, ব্রোকার থেকে সরাসরি।
               </span>
             </GoCard>
+            </div>
             {/* The tool picker. These are real links to real anchors, so
              with JavaScript off they still jump to a calculator and all
              five remain on the page. tools.js upgrades them into a tab

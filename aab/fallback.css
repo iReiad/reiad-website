@@ -10597,12 +10597,12 @@
   }
 
   .gt-disc, .card-art, .work-art, .lesson-card-art, .rail-ico,
-  .relief-lift,
+  .acc-avatar, .relief-lift,
   :is(.top-btn, .btn, .icon-btn, .chip, .pill, .card-go, .gt-go) > svg {
 
     translate:
-      calc(var(--gpx, 0) * var(--lift, 0) * var(--relief-throw, 2px))
-      calc(var(--gpy, 0) * var(--lift, 0) * var(--relief-throw, 2px) * 0.66);
+      calc(var(--gpx, 0) * var(--lift, 0) * var(--relief-throw, 2px) * -1)
+      calc(var(--gpy, 0) * var(--lift, 0) * var(--relief-throw, 2px) * -0.66);
 
     scale: calc(1 + var(--lift, 0) * var(--relief-rise, 0.035));
     transition:
@@ -10620,20 +10620,23 @@
 
   .gt-disc, .card-art, .work-art, .lesson-card-art, .relief-lift {
     filter: drop-shadow(
-      calc(var(--gpx, 0) * var(--lift, 0) * -2.4px)
-      calc(1px + var(--gpy, 0) * var(--lift, 0) * -1.6px)
+      calc(var(--gpx, 0) * var(--lift, 0) * 2.4px)
+      calc(1px + var(--gpy, 0) * var(--lift, 0) * 1.6px)
       calc(1.5px + var(--lift, 0) * 5px)
       var(--relief-cast, oklch(0% 0 0 / 0.28)));
   }
 
   .work-art { --relief-throw: 4px; --relief-rise: 0.012; }
   .lesson-card-art, .gt-disc, .card-art { --relief-throw: 2.6px; }
+
+  .acc-avatar { --relief-throw: 0.8px; --relief-rise: 0.08; }
   :is(.chip, .pill) > svg { --relief-throw: 1.1px; --relief-rise: 0.05; }
 
   .rail-ico { --relief-throw: 0px; --relief-rise: 0.07; }
 
   @media (prefers-reduced-motion: reduce) {
-    .gt-disc, .card-art, .work-art, .lesson-card-art, .rail-ico, .relief-lift,
+    .gt-disc, .card-art, .work-art, .lesson-card-art, .rail-ico,
+    .acc-avatar, .relief-lift,
     :is(.top-btn, .btn, .icon-btn, .chip, .pill, .card-go, .gt-go) > svg {
       translate: none; scale: none; transition: none;
     }

@@ -533,9 +533,16 @@ console.log("the speech control on a piece");
      binding to the Next Worker is gone, and it cannot mount a
      component. A `<script>` tag left there would fetch a 404 on
      exactly the path that is already the degraded one. */
+  /* `.ts`, and it has been since `functions/` was converted. This
+     line still named the `.js` and had been throwing ENOENT on
+     every run since, which takes the whole file with it: nine
+     sections of speech control assertions that nobody had seen
+     the result of. `check-pointers.ts` looks for `check-*`,
+     `build-*` and `*.test.*` names and would not have caught a
+     route file. */
   ok("nor does the Worker's fallback renderer",
     !/<script[^>]*src="\/read-aloud\.js"/
-      .test(readFileSync(join(ROOT, "functions", "insights", "[slug].js"), "utf8")));
+      .test(readFileSync(join(ROOT, "functions", "insights", "[slug].ts"), "utf8")));
   /* The manifest rather than `sw.js` itself: that file's changelog
      NAMES every module a version retired, which is the whole point
      of it, so grepping the source made a correct changelog entry
