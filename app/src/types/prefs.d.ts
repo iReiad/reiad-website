@@ -9,7 +9,9 @@ export interface PrefOption {
     readonly label: string;
     readonly note?: string;
     readonly size?: string;
-    readonly ch?: string;
+    /** The multiplier on `--measure-base`, which is per script. Not
+        a width: see MEASURES. */
+    readonly wide?: string;
     /** The multiplier on every blur radius. */
     readonly amount?: string;
     /** The alpha of the tint over the blur. */
@@ -34,18 +36,18 @@ export declare const SCALES: readonly [{
 export declare const MEASURES: readonly [{
     readonly id: "narrow";
     readonly label: "Narrow";
-    readonly note: "about 56 characters";
-    readonly ch: "56ch";
+    readonly note: "about 9 words a line";
+    readonly wide: "0.85";
 }, {
     readonly id: "normal";
     readonly label: "Normal";
-    readonly note: "about 66 characters";
-    readonly ch: "66ch";
+    readonly note: "about 11 words a line";
+    readonly wide: "1";
 }, {
     readonly id: "wide";
     readonly label: "Wide";
-    readonly note: "about 78 characters";
-    readonly ch: "78ch";
+    readonly note: "about 13 words a line";
+    readonly wide: "1.18";
 }];
 export declare const THEMES: readonly [{
     readonly id: "system";

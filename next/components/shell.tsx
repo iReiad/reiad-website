@@ -86,8 +86,8 @@ const BOOT = `(function(){var d=document.documentElement;try{`
   + `var p=JSON.parse(localStorage.getItem("reader-prefs")||"{}")||{};`
   + `var s={small:"0.94",normal:"1",large:"1.12"}[p.text];`
   + `if(s)d.style.setProperty("--read-scale",s);`
-  + `var m={narrow:"56ch",normal:"66ch",wide:"78ch"}[p.measure];`
-  + `if(m)d.style.setProperty("--read-measure",m);`
+  + `var m={narrow:"0.85",normal:"1",wide:"1.18"}[p.measure];`
+  + `if(m)d.style.setProperty("--read-wide",m);`
   /* The glass. Three tables, and they are the ones in
      `aab/src/prefs.ts`: GLASSES, BLURS and VEILS. A surface that
      arrived flat and frosted a frame later would be worse than

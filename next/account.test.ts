@@ -692,7 +692,7 @@ console.log("\nreading preferences");
   await page.getByRole("button", { name: /Narrow/ }).click();
   await page.waitForTimeout(300);
   is("and the measure with it", await page.evaluate(() =>
-    getComputedStyle(document.documentElement).getPropertyValue("--read-measure").trim()), "56ch");
+    getComputedStyle(document.documentElement).getPropertyValue("--read-wide").trim()), "0.85");
 
   /* The language chip writes the key the calculators have read
      since long before there were accounts. One choice, one key. */

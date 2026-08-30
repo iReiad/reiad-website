@@ -105,30 +105,39 @@ export default async function ReadingPage({ params }: Params) {
         <Eyebrow>{article.tag}</Eyebrow>
         <h1>{article.title}</h1>
         {article.dek ? <p className="lede">{article.dek}</p> : null}
+        {/* No separator elements: `@layer article` draws one as
+            `::after` on every child but the last, so a byline
+            that wraps cannot leave a dot dangling at the end of a
+            line, which is what it did on a phone. */}
         <p className="byline mono">
-          <span>Rony Reiad</span><span className="dot" />
+          <span>Rony Reiad</span>
           <time dateTime={article.published_at}>{dateLabel(article)}</time>
-          <span className="dot" />
           <span>{look.minutes(article.minutes)}</span>
         </p>
 
-        {/* Keeping this piece, and writing a note on it. It
-            renders nothing at all unless somebody is signed in,
-            which is the whole of how this feature announces
-            itself.
+        {/* ONE ROW, WITH THE BYLINE, NOT TWO BANDS UNDER IT.
 
-            The address is the canonical one rather than the one
-            the reader happens to be at: this route answers at
-            both forms of it, and `public.library` is one row per
-            person per PAGE. */}
-        <Keep url={`${look.mount}${article.slug}.html`}
-              title={article.title} kind="piece" />
+            Both of these drew a block of their own, so a
+            signed-in reader met a Save row, then a Listen row and
+            a speed slider, and then the piece. Keeping a piece
+            and hearing it are facts about the piece in the same
+            way its length is, so they belong on the line that
+            already states those.
 
-        {/* Under the byline, which is where `/read-aloud.js`
-            inserted itself. It renders nothing at all unless the
-            browser can speak, so this line adds nothing to the
-            HTML a reader who cannot use it is sent. */}
-        <ReadAloud />
+            Each still renders nothing at all when it is not
+            available: `<Keep>` needs an account and `<ReadAloud>`
+            needs a browser that can speak, so an empty row is an
+            empty flex container and costs a reader nothing.
+
+            `<Keep>`'s address is the canonical one rather than
+            the one the reader happens to be at: this route
+            answers at both forms of it, and `public.library` is
+            one row per person per PAGE. */}
+        <div className="piece-tools">
+          <Keep url={`${look.mount}${article.slug}.html`}
+                title={article.title} kind="piece" />
+          <ReadAloud />
+        </div>
 
         <div dangerouslySetInnerHTML={{ __html: article.body }} />
 

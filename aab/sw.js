@@ -31,6 +31,23 @@
    login could not have reached anyone either. Bump this whenever a
    precached file changes.
 
+   v224: /fallback.css and /prefs.js. The measure stopped being
+        `66ch`, which promised 66 characters and delivered 116 of
+        them in Bangla: it is a length per script now, the
+        reader's three steps are a multiplier on it, and the
+        settings say words rather than characters because no
+        character count is true in two scripts. The reading
+        column is centred, a full-bleed figure no longer runs
+        under the rail, and the rail and the bar go quiet once
+        the reader is past the heading.
+
+   v223: /fallback.css. A photograph in an article stands in a
+        room now: an accent-lit plinth behind and below it, the
+        material's own cut edge on the photo, and the specular and
+        the veil in front. The three layers move at three speeds
+        as the reader scrolls past, which is `animation-timeline:
+        view()` and no JavaScript.
+
    v222: /fallback.css and /prefs.js. Eleven finishes where there
         were three, and a fourth knob beside the blur and the veil
         for how much of one a reader sees. Every option in the
@@ -1999,7 +2016,7 @@
    imports (crumbs, audience, learn progress) and the hub is a
    different page. Without a bump, a returning reader would be
    served the v3 app.js forever and none of it would appear. */
-const VERSION = "v222";
+const VERSION = "v224";
 const SHELL = `shell-${VERSION}`;
 const RUNTIME = `runtime-${VERSION}`;
 

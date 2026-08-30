@@ -63,14 +63,30 @@ export const SCALES = [
     { id: "normal", label: "Normal", note: "what this site has always been", size: "1" },
     { id: "large", label: "Comfortable", note: "easier on the eyes", size: "1.12" },
 ];
-/* The middle one is the `--measure` this site has always used,
-   which is why it is 66 and not a round number: the two either
-   side are steps away from what is already there rather than a
-   scale invented around it. */
+/* A STEP, NOT A WIDTH, and the note counts WORDS.
+
+   Both halves of that are the same correction. This read
+   `56ch / 66ch / 78ch` with notes promising 56, 66 and 78
+   characters, and the promise was never kept: `ch` is the width
+   of the "0" glyph, and measured in a browser against this site's
+   own prose the middle setting delivered 78 characters of English
+   and 116 of Bangla. A character count cannot be true in a site
+   written in two scripts, so the note says words, which is the
+   thing the 45-to-75 rule was always a proxy for and the one
+   number that means the same in both.
+
+   The value is a multiplier on `--measure-base`, which the
+   stylesheet sets per script. That is what lets one control move
+   both: a reader who asks for a wider line gets a wider line in
+   Bangla and in English, and neither this file nor the boot
+   script has to know which page it is on.
+
+   `next/reading.test.ts` measures all six combinations against
+   real rows and fails if any note stops being true. */
 export const MEASURES = [
-    { id: "narrow", label: "Narrow", note: "about 56 characters", ch: "56ch" },
-    { id: "normal", label: "Normal", note: "about 66 characters", ch: "66ch" },
-    { id: "wide", label: "Wide", note: "about 78 characters", ch: "78ch" },
+    { id: "narrow", label: "Narrow", note: "about 9 words a line", wide: "0.85" },
+    { id: "normal", label: "Normal", note: "about 11 words a line", wide: "1" },
+    { id: "wide", label: "Wide", note: "about 13 words a line", wide: "1.18" },
 ];
 export const THEMES = [
     { id: "system", label: "Follow my system" },
@@ -342,7 +358,7 @@ export function applyPrefs(prefs = readPrefs()) {
     const veil = VEILS.find((v) => v.id === prefs.veil) ?? VEILS[1];
     const texture = TEXTURES.find((t) => t.id === prefs.texture) ?? TEXTURES[1];
     root.style.setProperty("--read-scale", scale.size);
-    root.style.setProperty("--read-measure", measure.ch);
+    root.style.setProperty("--read-wide", measure.wide);
     root.style.setProperty("--glass-amount", blur.amount);
     root.style.setProperty("--glass-veil", veil.alpha);
     root.style.setProperty("--tex-strength", texture.amount);
