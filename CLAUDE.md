@@ -175,6 +175,26 @@ by the file AND the name, with the reason. Keyed by both because
 "`build-styles.mjs` is gone" is a true sentence and a NEW comment
 naming it somewhere else is not.
 
+**A file at a stable path is network first, and everything else
+is not.** Two mechanisms keep a script current and both key off
+the URL: a Next chunk carries a content hash, so a new build is an
+address the cache has never seen, and a served module is in
+`PRECACHE`, so `check-sw.ts` fails when its bytes change without
+`VERSION` moving. `/studio/app.js` is neither, on purpose:
+`app/vite.config.ts` builds one file at a stable path so this
+worker and the route that loads it keep naming something real, and
+at 232 KB precaching it would cost every reader who never opens
+the Studio a quarter of a megabyte.
+
+That left it on stale-while-revalidate, where the cache answers
+and the network refreshes for next time, which for a file that
+never changes name means the Studio is ALWAYS ONE BUILD BEHIND:
+publish, open the page, get the previous build; reload, get the
+new one. Every check passed and the deploy was correct.
+`STABLE_BUNDLE` in `sw.js` is the pattern, `check-sw.ts` fails if
+it stops matching anything, and `aab/sw.test.ts` installs the real
+worker and changes a file underneath it.
+
 **Nothing here is `.mjs`, and it is a check now.**
 `scripts/check-mjs.ts` fails on any tracked `.mjs` or `.cjs`
 outside `archive/`.
@@ -1656,6 +1676,11 @@ node aab/sync.test.ts             # a browser's own progress getting into an
                                    # signs somebody out by accident
                                    # (36 checks, needs Playwright and a
                                    # browser; it starts its own server)
+node aab/sw.test.ts               # a bundle at a stable path served a build
+                                   # behind, with the real worker installed and
+                                   # the files changing underneath it
+                                   # (6 checks, needs Playwright and a browser,
+                                   # skips without; it starts its own server)
 node aab/editor.test.ts           # the sanitiser, the markdown rules, the slash
                                    # menu, the figure toolbar and the paste, in a
                                    # shell it mounts itself under the real CSP

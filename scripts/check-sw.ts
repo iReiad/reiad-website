@@ -28,9 +28,9 @@
 
 import { createHash } from "node:crypto";
 import { readFile, writeFile } from "node:fs/promises";
-import { existsSync } from "node:fs";
+import { existsSync, readdirSync, statSync } from "node:fs";
 import { fileURLToPath } from "node:url";
-import { dirname, join } from "node:path";
+import { dirname, join, relative, sep } from "node:path";
 
 /* `AAB` is the served directory and `HERE` used to be it. Every
    file in `aab/` is uploaded and answers at a public URL, so a
@@ -161,6 +161,51 @@ for (const p of paths) {
   for (const [, spec] of specs) {
     if (!precached.has(spec)) unreachable.push({ from: p, spec });
   }
+}
+
+/* ============================================================
+   The pattern for a file whose name never changes
+
+   `STABLE_BUNDLE` in sw.js is network-first because `/studio/app.js`
+   is the one script on this site that is neither content-hashed
+   nor precached, so nothing else could tell a new build from an
+   old one and the Studio was always a load behind.
+
+   A pattern is a promise about a directory, and a directory can
+   move: `aab/desk/` did, when `/admin` took its panels over. A
+   pattern matching nothing costs a reader nothing, which is
+   exactly why it would sit here through the next rename, quietly
+   putting the thing it was written for back on the cache-first
+   branch.
+   ============================================================ */
+const stable = sw.match(/const STABLE_BUNDLE = ([^;]+);/)?.[1];
+if (!stable) {
+  console.error("could not find STABLE_BUNDLE in sw.js");
+  process.exit(1);
+}
+const pattern = new RegExp(
+  stable.trim().replace(/^\//, "").replace(/\/[gimsuy]*$/, ""));
+
+/** Every file under `aab/`, as the address it answers at. */
+const served: string[] = [];
+(function walk(dir: string): void {
+  for (const name of readdirSync(dir)) {
+    if (name.startsWith(".") || name === "src") continue;
+    const full = join(dir, name);
+    if (statSync(full).isDirectory()) { walk(full); continue; }
+    served.push("/" + relative(AAB, full).split(sep).join("/"));
+  }
+})(AAB);
+
+const covered = served.filter((path) => pattern.test(path));
+if (!covered.length) {
+  console.error(`sw.js's STABLE_BUNDLE is ${stable.trim()} and nothing in aab/ `
+    + "matches it.");
+  console.error("\nIt is what keeps a stable-path bundle off the cache-first");
+  console.error("branch, so a pattern matching nothing is that bundle silently");
+  console.error("going back to being one build behind. Point it at what is");
+  console.error("built there now, or take it out with the last thing it named.");
+  process.exit(1);
 }
 
 if (unreachable.length) {
