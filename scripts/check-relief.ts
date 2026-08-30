@@ -195,6 +195,112 @@ if (twice.length) {
     "It reads as that one element being slightly wrong.");
 }
 
+/* ---- 4. and so does everything the SCROLL moves ----
+
+   A scroll-driven animation is the same promise one mechanism
+   along, and it is not in this layer: `reveal-up` fades cards in
+   as they arrive, and a photograph in prose rises off its plinth
+   while the reader goes past it. Both are `animation-timeline:
+   view()`, both are motion, and a reader who has asked their
+   operating system for less of it has asked for less of these.
+
+   Asked of the WHOLE stylesheet rather than of this layer,
+   because that is where they are and where the next one will be.
+   The test is structural: a declaration has to sit inside a
+   `prefers-reduced-motion: no-preference` block.
+
+   TWO ARE TIED TO THE SCROLL ITSELF and are exempt with the
+   reason, keyed by class the way `NOT_GLASS` is: a progress bar
+   that fills as a page moves is a scrollbar, and a fade at the
+   end of an overflowing row is an affordance saying there is
+   more. Neither is motion a reader is asking to be spared; both
+   would simply stop being true. */
+const TIED_TO_SCROLL: Record<string, string> = {
+  "read-progress":
+    "a bar that fills as the page moves is a scrollbar. Stopping it does not "
+    + "calm the page, it leaves a bar that is always empty.",
+  "crumbs-bar":
+    "a fade at the end of a row that overflows, saying there is more of it. "
+    + "Stopping it leaves a trail that looks complete and is not.",
+};
+
+/** Comments out, because this file's own prose names the property
+    it is looking for, and a check that fails on the paragraph
+    describing it is a check nobody keeps. */
+const bare = CSS.replace(/\/\*[\s\S]*?\*\//g, (m) => m.replace(/[^\n]/g, " "));
+
+/* A DECLARATION, not a feature query. `@supports
+   (animation-timeline: view())` names the same property and is
+   the guard that keeps it off engines without it, so matching it
+   would fail every correct use of the thing. A declaration
+   follows `{` or `;`; a feature query follows `(`. */
+const TIMELINE = /[;{]\s*animation-timeline:\s*(?:view|scroll)\(/;
+const GUARD = "@media (prefers-reduced-motion: no-preference)";
+
+/* ONE FORWARD WALK, keeping a stack of what is open.
+
+   The first draft looked BACKWARDS for the nearest guard and
+   counted braces from it, which is wrong in a way worth writing
+   down: a guard that has already closed is still the nearest one
+   behind, and whether its braces happen to balance to something
+   positive depends on how many rules sit between. It passed a
+   rule that had had its guard deleted. A stack cannot be fooled
+   that way, because a block that closed is popped. */
+const unguarded: string[] = [];
+{
+  const stack: boolean[] = [];
+  let head = "";
+  let line = 1;
+  for (let i = 0; i < bare.length; i += 1) {
+    const ch = bare[i];
+    if (ch === "\n") line += 1;
+    if (ch === "{") {
+      stack.push(head.includes(GUARD));
+      head = "";
+      continue;
+    }
+    if (ch === "}") { stack.pop(); head = ""; continue; }
+    if (ch === ";") {
+      /* A declaration ends here: test it before the head is
+         thrown away, and the head is what carries the selector
+         for the exemption below. */
+      head = "";
+      continue;
+    }
+    head += ch;
+
+    if (ch === "(" && TIMELINE.test(bare.slice(Math.max(0, i - 40), i + 1))) {
+      if (stack.some(Boolean)) continue;
+      /* The selector this declaration is under, for the
+         exemption, which is the head of the block it is in. */
+      const open = bare.lastIndexOf("{", i);
+      const sel = bare.slice(bare.lastIndexOf("}", open) + 1, open);
+      if (Object.keys(TIED_TO_SCROLL).some((cls) => sel.includes(`.${cls}`))) continue;
+      unguarded.push(`site.css:${line}`);
+    }
+  }
+}
+
+if (unguarded.length) {
+  fail(`${unguarded.length} scroll-driven animation(s) never stop:`,
+    unguarded.join(", "),
+    `Wrap them in \`${GUARD}\`, or name the class in TIED_TO_SCROLL with`,
+    "the reason it is the scroll itself rather than a decoration of it.",
+    "A reader who asked for no motion still gets these, and a page that",
+    "moves when it was asked not to is worse than one that never offered.");
+}
+
+/* And a stale exemption, for the reason `GONE` in
+   `check-pointers.ts` is keyed by two things: a class that has
+   left takes its excuse with it. */
+const gone = Object.keys(TIED_TO_SCROLL)
+  .filter((cls) => !new RegExp(`\\.${cls}\\b`).test(CSS));
+if (gone.length) {
+  fail(`${gone.length} exemption(s) in TIED_TO_SCROLL name nothing:`,
+    gone.join(", "),
+    "Take them out with the rule they were written for.");
+}
+
 if (LIST) {
   console.log(`${named.length} class(es) lift:\n  ${named.join("\n  ")}`);
 }
@@ -204,4 +310,8 @@ if (failures) {
   process.exit(1);
 }
 console.log(`${named.length} classes lift, every one of them defined elsewhere,`
-  + " and all of them stop for a reader who asked for no motion.");
+  + " and all of them stop for a reader who asked for no motion, as do the "
+  + `${[...bare.matchAll(/[;{]\s*animation-timeline:/g)].length
+      - Object.keys(TIED_TO_SCROLL).length}`
+  + ` scroll-driven animation(s), with ${Object.keys(TIED_TO_SCROLL).length}`
+  + " tied to the scroll itself.");

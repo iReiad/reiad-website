@@ -911,6 +911,60 @@ With the page held still the same stroke still writes 265 leans
 and 301 light passes, which is the control that says the effect
 was fixed rather than turned off.
 
+## A photograph stands in a room too
+
+Every card on this site is ten layers with a subject standing in
+one of them. A photograph in an article was an `<img>` with a
+hairline round it, on the one page where the picture is the
+biggest thing on screen.
+
+**And it had to be done with no markup.** A figure comes out of
+the database as `<figure class="..."><img><figcaption>`, through
+two sanitisers, in three hundred stored bodies. There is nowhere
+to put a layer. So the room is the two pseudo-elements a figure
+already has: `::before` is the ground it stands on, `::after` is
+the glass in front, and the photo is the stage between them.
+Three layers rather than ten, and three is what a photograph
+needs: it is already a picture, and the room's job is to PLACE it
+rather than to be looked at.
+
+**A figure is a GRID and all three are in cell one.** The ground
+and the glass have to cover the photograph and not the caption,
+and a figure holds both; positioning them against the figure puts
+the words on a green plate. A pseudo-element is a grid item, so
+the picture, the ground and the glass share row one and the
+caption is row two. That is the one arrangement needing no
+number: the row is exactly as tall as the picture, whatever shape
+the camera made it. `figure.duo` opts out, because two
+photographs side by side are a comparison rather than a thing on
+a plinth.
+
+**The depth comes from the READER, not the pointer.** `@layer
+relief` leans a thing towards a pointer, and a photograph is the
+one surface where that is wrong twice over: it is read rather
+than pressed, which in this design system means a `plate` and a
+still light, and half the readers of a long piece are on a phone,
+where the biggest picture on the page would be the one thing with
+no depth in it. So the three layers move at three speeds as the
+reader scrolls past, which is `animation-timeline: view()`, runs
+on the compositor and needs no JavaScript.
+
+**`check-relief.ts` asks a fourth question now**: every
+scroll-driven animation has to sit inside a
+`prefers-reduced-motion: no-preference` block, or be named in
+`TIED_TO_SCROLL` with the reason it IS the scroll rather than a
+decoration of it. Two are: a bar that fills as the page moves is
+a scrollbar, and a fade at the end of an overflowing row is an
+affordance saying there is more.
+
+It walks the stylesheet FORWARDS keeping a stack of what is open,
+and the first draft looked backwards for the nearest guard and
+counted braces from it. That is wrong in a way worth writing
+down: a guard that has already closed is still the nearest one
+behind, and whether its braces balance to something positive
+depends on how many rules sit between. It passed a rule whose
+guard had been deleted.
+
 ## Everything drawn ON a surface stands off it
 
 `@layer relief` is the same idea one order of magnitude down. A

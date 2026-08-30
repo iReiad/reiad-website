@@ -2555,17 +2555,109 @@
     margin-block: 30px;
     max-width: var(--measure);
 
+    display: grid;
+    grid-template-columns: minmax(0, 1fr);
+    isolation: isolate;
+    perspective: 1400px;
+
+    &.duo {
+      & img { grid-area: auto; box-shadow: none; }
+      &::before, &::after { content: none; }
+    }
+
     & img {
 
       width: 100%; height: auto; border-radius: var(--radius-sm);
       border: 1px solid var(--hairline);
       background: var(--paper-sunk);
+
+      grid-area: 1 / 1;
+      z-index: 1;
+      display: block;
+
+      box-shadow:
+        inset 0 -5px 7px -6px var(--pane-top),
+        inset 0 -1px 0 oklch(0% 0 0 / 0.16),
+        inset 0 0 0 1px oklch(100% 0 0 / 0.05),
+        var(--shadow-lift);
     }
     & figcaption {
-      margin-top: 10px; color: var(--ink-soft);
+
+      grid-area: 2 / 1;
+      margin-top: 34px; color: var(--ink-soft);
       font-size: var(--t-4); max-width: 60ch;
       font-family: var(--font-sans);
+      z-index: 3;
     }
+
+    &::before {
+      content: "";
+      grid-area: 1 / 1;
+      z-index: 0;
+
+      margin: -14px -16px -26px;
+      border-radius: var(--radius);
+      background:
+        radial-gradient(120% 90% at 26% 8%,
+          color-mix(in oklab, var(--accent) 17%, transparent) 0 34%,
+          transparent 78%),
+        linear-gradient(178deg,
+          color-mix(in oklab, var(--accent) 6%, var(--paper-sunk)) 0 62%,
+          var(--paper-sunk) 100%);
+
+      pointer-events: none;
+    }
+
+    &::after {
+      content: "";
+      grid-area: 1 / 1;
+      z-index: 2;
+      border-radius: var(--radius-sm);
+      background:
+        linear-gradient(104deg,
+          transparent 0 34%,
+          oklch(100% 0 0 / 0.055) 46%,
+          transparent 58% 100%),
+        radial-gradient(120% 110% at 50% 42%,
+          transparent 0 52%,
+          color-mix(in oklab, var(--paper-sunk) 46%, transparent) 100%);
+      pointer-events: none;
+
+    }
+  }
+
+  @supports (animation-timeline: view()) {
+    @media (prefers-reduced-motion: no-preference) {
+
+      figure:not(.duo) > img {
+        animation: photo-rise linear both;
+        animation-timeline: view();
+        animation-range: entry 8% cover 62%;
+      }
+      figure:not(.duo)::before {
+        animation: photo-ground linear both;
+        animation-timeline: view();
+        animation-range: entry 0% cover 74%;
+      }
+      figure:not(.duo)::after {
+        animation: photo-sheen linear both;
+        animation-timeline: view();
+        animation-range: entry 12% cover 88%;
+      }
+    }
+  }
+
+  @keyframes photo-rise {
+    from { translate: 0 26px; rotate: x 2.2deg; }
+    to   { translate: 0 0;    rotate: x 0deg; }
+  }
+  @keyframes photo-ground {
+    from { translate: 0 -18px; }
+    to   { translate: 0 10px; }
+  }
+  @keyframes photo-sheen {
+    from { background-position: -60% 0, 50% 42%; }
+    to   { background-position: 160% 0, 50% 42%; }
   }
 
   figure.wide {

@@ -4391,9 +4391,81 @@ it collapsed to the width of the word "Bangladesh". */
      column of text with pictures sticking out of both sides of it.
      Breaking the measure is now something a photo has to be asked
      to do, with .wide or .full, rather than the default. */
+  /* ============================================================
+     A PHOTOGRAPH STANDS IN A ROOM TOO
+
+     Every card on this site is ten layers with a subject standing
+     in one of them. A photograph in an article was an `<img>`
+     with a hairline round it, on the one page where the picture
+     is the biggest thing on screen.
+
+     ---- and it has to be done with no markup ----
+
+     A figure comes out of the database as
+     `<figure class="..."><img><figcaption>`, through two
+     sanitisers, in three hundred stored bodies. There is nowhere
+     to put a layer. So the room is the two pseudo-elements a
+     figure already has: `::before` is the ground it stands on and
+     `::after` is the glass in front of it, and the photo is the
+     stage between them. That is three layers rather than ten, and
+     three is what a photograph needs: a photograph is already a
+     picture and the room's job here is to PLACE it rather than to
+     be looked at.
+
+     ---- the depth comes from the reader, not the pointer ----
+
+     `@layer relief` leans a thing towards a pointer, and a
+     photograph is the one surface where that would be wrong
+     twice over. It is read rather than pressed, which in this
+     design system means a `plate` and a still light. And half of
+     the readers of a long piece are on a phone, where there is no
+     pointer at all and the biggest picture on the page would be
+     the one thing with no depth in it.
+
+     So it is SCROLL that moves these. The photo rises and settles
+     as it crosses the viewport, the ground behind it moves the
+     other way, and the sheen crosses it once. That is real
+     parallax rather than a hover trick: the reader really is
+     moving past it. It is `animation-timeline: view()`, which
+     runs on the compositor, needs no JavaScript, and is the same
+     mechanism `reveal-up` already uses one screen up.
+     ============================================================ */
   figure {
     margin-block: 30px;
     max-width: var(--measure);
+
+    /* The room, and it is a GRID with one cell for the picture.
+
+       The ground and the glass have to cover the PHOTOGRAPH and
+       not the caption, and a figure holds both. Absolutely
+       positioning them against the figure covers the caption too,
+       which puts the words on a green plate and reads as a
+       component rather than as a photograph.
+
+       A pseudo-element is a grid item, so all three go in row
+       one, stacked, and the caption is row two. That is the one
+       arrangement that needs no number: the row is exactly as
+       tall as the picture, whatever shape the camera made it.
+
+       `isolation` so the layers cannot escape into the article's
+       own stacking order, and a perspective so the lean below is
+       a lean rather than a squash: the same reason `.tilt-scene`
+       puts one on the container rather than on the card. */
+    display: grid;
+    grid-template-columns: minmax(0, 1fr);
+    isolation: isolate;
+    perspective: 1400px;
+
+    /* EXCEPT WHEN THERE ARE TWO OF THEM. `figure.duo` is a row of
+       pictures sharing one caption, and it sets its own columns;
+       without this the rules below put every one of them in cell
+       one, stacked on top of each other. The room is about a
+       photograph standing somewhere, and two photographs side by
+       side are a comparison rather than a thing on a plinth. */
+    &.duo {
+      & img { grid-area: auto; box-shadow: none; }
+      &::before, &::after { content: none; }
+    }
 
     & img {
       /* height: auto matters more than it looks. Every photo the
@@ -4406,12 +4478,150 @@ it collapsed to the width of the word "Bangladesh". */
       width: 100%; height: auto; border-radius: var(--radius-sm);
       border: 1px solid var(--hairline);
       background: var(--paper-sunk);
+
+      grid-area: 1 / 1;
+      z-index: 1;
+      display: block;
+
+      /* THE CUT EDGE, which is the material's own and is written
+         out here because a photograph is not on the material's
+         list of classes and should not be: it is not pressed, it
+         does not latch, and it holds nothing.
+
+         Same three shadows and the same argument: the catch light
+         on the near wall, the seat above it, and a 1px rim all the
+         way round, plus the cast that says it is standing off the
+         page. An inset shadow is bounded by the border radius,
+         which is why the band is a crescent that hugs the bottom
+         arc rather than a chord across it. */
+      box-shadow:
+        inset 0 -5px 7px -6px var(--pane-top),
+        inset 0 -1px 0 oklch(0% 0 0 / 0.16),
+        inset 0 0 0 1px oklch(100% 0 0 / 0.05),
+        var(--shadow-lift);
     }
     & figcaption {
-      margin-top: 10px; color: var(--ink-soft);
+      /* Row two, below the picture and below the ground it
+         stands on, which is why the ground reaches 26px past the
+         photo and the caption starts 34px down. */
+      grid-area: 2 / 1;
+      margin-top: 34px; color: var(--ink-soft);
       font-size: var(--t-4); max-width: 60ch;
       font-family: var(--font-sans);
+      z-index: 3;
     }
+
+    /* ---- the ground, behind and below ----
+
+       A photograph pasted on to a page has nothing under it. This
+       is the accent-lit plate every scene on this site stands on,
+       reaching a little past the photo on three sides and further
+       below it, which is what reads as depth rather than as a
+       border somebody drew. */
+    &::before {
+      content: "";
+      grid-area: 1 / 1;
+      z-index: 0;
+      /* Reaching past the photo on three sides and further below
+         it, which is what reads as depth rather than as a border
+         somebody drew. Negative margins rather than `inset`,
+         because this is a grid item now and not positioned. */
+      margin: -14px -16px -26px;
+      border-radius: var(--radius);
+      background:
+        radial-gradient(120% 90% at 26% 8%,
+          color-mix(in oklab, var(--accent) 17%, transparent) 0 34%,
+          transparent 78%),
+        linear-gradient(178deg,
+          color-mix(in oklab, var(--accent) 6%, var(--paper-sunk)) 0 62%,
+          var(--paper-sunk) 100%);
+      /* Nothing to read here, and a photo with a caption already
+         says everything. It is a surface, not content. */
+      pointer-events: none;
+    }
+
+    /* ---- and the glass in front ----
+
+       Two things in one layer, because a figure has two
+       pseudo-elements and the ground has the other. The specular
+       is the highlight crossing the sheet, and the veil is the
+       corners going down, which every scene on this site has for
+       the same reason: a rectangle with even light at its edges
+       reads as a rectangle of paint. */
+    &::after {
+      content: "";
+      grid-area: 1 / 1;
+      z-index: 2;
+      border-radius: var(--radius-sm);
+      background:
+        linear-gradient(104deg,
+          transparent 0 34%,
+          oklch(100% 0 0 / 0.055) 46%,
+          transparent 58% 100%),
+        radial-gradient(120% 110% at 50% 42%,
+          transparent 0 52%,
+          color-mix(in oklab, var(--paper-sunk) 46%, transparent) 100%);
+      pointer-events: none;
+      /* No blend mode. `screen` was on this for one draft and it
+         made the veil do nothing: screening a dark corner over a
+         photograph is the photograph. Two things in one layer
+         means neither can have a mode of its own, and plain alpha
+         is what both of them wanted anyway. */
+    }
+  }
+
+  /* ---- and the reader moving past is what moves them ----
+
+     Three layers at three speeds, which is the whole of what
+     parallax is. The photo rises and settles, the ground behind
+     it travels further because it is further away, and the sheen
+     crosses once.
+
+     `entry 8% cover 62%` rather than the whole range: a photo
+     that is still moving when it is in the middle of the screen
+     is a photo a reader is waiting for. Everything is over by the
+     time it is the thing being looked at. */
+  @supports (animation-timeline: view()) {
+    @media (prefers-reduced-motion: no-preference) {
+      /* Every figure with a picture in it, wherever the prose is:
+         an article, a lesson body, the Studio's own preview. The
+         room is `@layer article`'s and so is this, and a lesson's
+         prose is the same HTML written in the same editor. It was
+         scoped to `.article` for one draft, which left every
+         photograph in all 251 lessons flat. */
+      figure:not(.duo) > img {
+        animation: photo-rise linear both;
+        animation-timeline: view();
+        animation-range: entry 8% cover 62%;
+      }
+      figure:not(.duo)::before {
+        animation: photo-ground linear both;
+        animation-timeline: view();
+        animation-range: entry 0% cover 74%;
+      }
+      figure:not(.duo)::after {
+        animation: photo-sheen linear both;
+        animation-timeline: view();
+        animation-range: entry 12% cover 88%;
+      }
+    }
+  }
+  /* `translate` and `rotate` rather than `transform`, for the
+     reason `tilt.js` gives: they are independent properties that
+     COMPOSE with whatever a figure is already doing, and
+     `transform` replaces it. `figure.duo` and the Studio's
+     preview both set one. */
+  @keyframes photo-rise {
+    from { translate: 0 26px; rotate: x 2.2deg; }
+    to   { translate: 0 0;    rotate: x 0deg; }
+  }
+  @keyframes photo-ground {
+    from { translate: 0 -18px; }
+    to   { translate: 0 10px; }
+  }
+  @keyframes photo-sheen {
+    from { background-position: -60% 0, 50% 42%; }
+    to   { background-position: 160% 0, 50% 42%; }
   }
   /* a photo allowed to break the measure and go full-bleed-ish */
   /* The two ways of asking a photo to leave the column. Both
