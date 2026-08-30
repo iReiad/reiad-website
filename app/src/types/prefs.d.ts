@@ -131,6 +131,22 @@ export declare const BLURS: readonly [{
     readonly note: "properly frosted";
     readonly amount: "1.7";
 }];
+export declare const TEXTURES: readonly [{
+    readonly id: "faint";
+    readonly label: "Faint";
+    readonly note: "barely a tooth";
+    readonly amount: "0.5";
+}, {
+    readonly id: "normal";
+    readonly label: "Normal";
+    readonly note: "the finish as it is cast";
+    readonly amount: "1";
+}, {
+    readonly id: "strong";
+    readonly label: "Strong";
+    readonly note: "you can feel it";
+    readonly amount: "1.6";
+}];
 export declare const VEILS: readonly [{
     readonly id: "clear";
     readonly label: "Clear";
@@ -171,6 +187,7 @@ export type Theme = (typeof THEMES)[number]["id"];
 export type Lang = (typeof LANGS)[number]["id"];
 export type Glass = (typeof GLASSES)[number]["id"];
 export type Blur = (typeof BLURS)[number]["id"];
+export type Texture = (typeof TEXTURES)[number]["id"];
 export type Veil = (typeof VEILS)[number]["id"];
 export type Sound = (typeof SOUNDS)[number]["id"];
 export type Weather = (typeof WEATHERS)[number]["id"];
@@ -181,6 +198,7 @@ export interface Prefs {
     lang: Lang;
     glass: Glass;
     blur: Blur;
+    texture: Texture;
     veil: Veil;
     sound: Sound;
     weather: Weather;

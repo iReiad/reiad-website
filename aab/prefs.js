@@ -140,6 +140,27 @@ export const BLURS = [
     { id: "normal", label: "Normal", note: "what this site has always been", amount: "1" },
     { id: "deep", label: "Deep", note: "properly frosted", amount: "1.7" },
 ];
+/* HOW MUCH OF THE FINISH a reader sees, which is a knob rather
+   than a ladder and had to be.
+
+   It rode on `--depth` for one draft, so a pane at 9 would carry
+   more of its pattern than a chip at 1, which is what more
+   material really does to a moulded surface. It computed to the
+   same number on every surface on the site: a custom property's
+   computed value is the specified value with `var()` already
+   substituted, on the element the declaration is on, and the
+   whole chain is declared on `:root`. `next/styles/site.css` says
+   it again where somebody would try it a second time.
+
+   So it is the reader's, which is the better answer anyway: the
+   eleven finishes already span an order between a thin reed and a
+   deep flute, and what somebody actually wants to say is "less of
+   that" or "more". */
+export const TEXTURES = [
+    { id: "faint", label: "Faint", note: "barely a tooth", amount: "0.5" },
+    { id: "normal", label: "Normal", note: "the finish as it is cast", amount: "1" },
+    { id: "strong", label: "Strong", note: "you can feel it", amount: "1.6" },
+];
 /* The middle one is the 0.72 the stylesheet has always carried,
    for the same reason the middle measure is 66ch: the steps are
    away from what is already there rather than a scale invented
@@ -192,7 +213,8 @@ export const WEATHERS = [
 ];
 const DEFAULTS = {
     text: "normal", measure: "normal", lang: "bn",
-    glass: "frost", blur: "normal", veil: "normal", sound: "on",
+    glass: "frost", blur: "normal", texture: "normal", veil: "normal",
+    sound: "on",
     weather: "on",
 };
 const known = (list, value, fallback) => (list.some((x) => x.id === value) ? value : fallback);
@@ -221,6 +243,7 @@ export function readPrefs() {
         lang: known(LANGS, stored.lang, DEFAULTS.lang),
         glass: known(GLASSES, stored.glass, DEFAULTS.glass),
         blur: known(BLURS, stored.blur, DEFAULTS.blur),
+        texture: known(TEXTURES, stored.texture, DEFAULTS.texture),
         veil: known(VEILS, stored.veil, DEFAULTS.veil),
         sound: known(SOUNDS, stored.sound, DEFAULTS.sound),
         weather: known(WEATHERS, stored.weather, DEFAULTS.weather),
@@ -305,10 +328,12 @@ export function applyPrefs(prefs = readPrefs()) {
     const measure = MEASURES.find((m) => m.id === prefs.measure) ?? MEASURES[1];
     const blur = BLURS.find((b) => b.id === prefs.blur) ?? BLURS[1];
     const veil = VEILS.find((v) => v.id === prefs.veil) ?? VEILS[1];
+    const texture = TEXTURES.find((t) => t.id === prefs.texture) ?? TEXTURES[1];
     root.style.setProperty("--read-scale", scale.size);
     root.style.setProperty("--read-measure", measure.ch);
     root.style.setProperty("--glass-amount", blur.amount);
     root.style.setProperty("--glass-veil", veil.alpha);
+    root.style.setProperty("--tex-strength", texture.amount);
     root.setAttribute("data-glass", prefs.glass);
     /* An ATTRIBUTE rather than a value the sound module reads out
        of storage itself. `next/lib/sound.ts` has to answer "is this

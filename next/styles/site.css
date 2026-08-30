@@ -619,24 +619,37 @@
     --tex-lit: oklch(100% 0 0 / var(--tex-lit-a));
     --tex-dim: oklch(0% 0 0 / var(--tex-dim-a));
 
-    /* HOW MUCH OF IT A GIVEN SURFACE SHOWS, and it is derived
-       rather than authored, like everything else in this design
-       system.
+    /* HOW MUCH OF IT, which is the reader's, and a note about the
+       way this cannot work.
 
-       `--depth` is the material's own thickness in `@layer glow`,
-       and a thicker piece of cast glass shows its pattern more:
-       that is not a metaphor, it is what more material does to a
-       moulded surface. So a pane at depth 9 carries 1.29 of the
-       texture, a card at 5 carries 0.95, a chip at 1 carries 0.61
-       and a groove at 1.6 carries 0.66. Nobody types a number and
-       the ladder cannot come apart from the one the material
-       already uses.
+       IT RODE ON `--depth` FOR ONE DRAFT, so that a pane at 9
+       carried more of its pattern than a chip at 1, which is what
+       more material really does to a moulded surface. It computed
+       to `calc(0.52 + 0 * 0.085)` on every surface on the site.
 
-       `--depth` is registered `inherits: false` with an initial
-       value of 0, so anything outside the material system lands
-       on the floor of 0.52 rather than on a fallback that would
-       never be reached. */
-    --tex-k: calc(0.52 + var(--depth) * 0.085);
+       A custom property's computed value is the specified value
+       with `var()` ALREADY SUBSTITUTED, on the element the
+       declaration is on. `--tex-k` is declared here, on `:root`,
+       where `--depth` is 0; what descendants inherit is the
+       resolved string, not the expression, so a token declared on
+       the root can never vary with a property a descendant sets.
+       The whole chain has that shape: `--glass-grain` names
+       `--tex-hi` names `--tex-k` names `--depth`, and all four
+       resolve here.
+
+       There is a way and it is not worth it: declaring the chain
+       on `*` substitutes it per element, at the price of three
+       custom properties on every node, one of them a nine-layer
+       gradient with nine `color-mix` calls in it. That is tens of
+       thousands of mixes on a long page to vary an alpha nobody
+       asked about.
+
+       So the strength is one number the READER sets, times a
+       constant per finish, which is a knob rather than a ladder
+       and is the thing that was actually wanted: a deep flute at
+       1.5 and a thin reed at 1 are already an order apart. */
+    --tex-strength: 1;
+    --tex-k: var(--tex-strength);
     --tex-hi: color-mix(in oklab, var(--tex-lit) calc(var(--tex-k) * 100%), transparent);
     --tex-lo: color-mix(in oklab, var(--tex-dim) calc(var(--tex-k) * 100%), transparent);
 
@@ -1175,7 +1188,7 @@
   :root[data-glass="linear-ridge"] {
     --glass-r:   10px;
     --glass-sat: 1.3;
-    --tex-k: calc((0.52 + var(--depth) * 0.085) * 1.25);
+    --tex-k: calc(var(--tex-strength) * 1.25);
     --glass-grain: repeating-linear-gradient(90deg,
       var(--tex-lo) 0, var(--tex-hi) 3px, transparent 6px,
       transparent 8px, var(--tex-lo) 12px);
@@ -1188,7 +1201,7 @@
   :root[data-glass="crossed-reed"] {
     --glass-r:   10px;
     --glass-sat: 1.3;
-    --tex-k: calc((0.52 + var(--depth) * 0.085) * 0.75);
+    --tex-k: calc(var(--tex-strength) * 0.75);
     --glass-grain:
       repeating-linear-gradient(90deg, var(--tex-lo) 0, var(--tex-hi) 2.4px,
         transparent 4.4px, transparent 5.6px, var(--tex-lo) 8px),
@@ -1206,7 +1219,7 @@
   :root[data-glass="deep-flute"] {
     --glass-r:   8px;
     --glass-sat: 1.25;
-    --tex-k: calc((0.52 + var(--depth) * 0.085) * 1.5);
+    --tex-k: calc(var(--tex-strength) * 1.5);
     --glass-grain: repeating-linear-gradient(90deg,
       var(--tex-hi) 0 1px, var(--tex-lo) 6px, transparent 12px,
       var(--tex-hi) 19px, var(--tex-hi) 21px, var(--tex-lo) 22px);
@@ -1249,7 +1262,7 @@
   :root[data-glass="arctic-ice"] {
     --glass-r:   12px;
     --glass-sat: 1.5;
-    --tex-k: calc((0.52 + var(--depth) * 0.085) * 0.85);
+    --tex-k: calc(var(--tex-strength) * 0.85);
     --glass-grain:
       conic-gradient(from 12deg at 34% 38%,
         var(--tex-hi) 0 8deg, transparent 8deg 62deg,
@@ -1275,7 +1288,7 @@
   :root[data-glass="callisto"] {
     --glass-r:   11px;
     --glass-sat: 1.35;
-    --tex-k: calc((0.52 + var(--depth) * 0.085) * 0.95);
+    --tex-k: calc(var(--tex-strength) * 0.95);
     --glass-grain:
       repeating-radial-gradient(circle at 34% 26%, var(--tex-hi) 0 0.8px, transparent 0.8px 5px),
       repeating-radial-gradient(circle at 72% 78%, var(--tex-lo) 0 0.8px, transparent 0.8px 6px),
@@ -1290,7 +1303,7 @@
   :root[data-glass="champagne"] {
     --glass-r:   12px;
     --glass-sat: 1.45;
-    --tex-k: calc((0.52 + var(--depth) * 0.085) * 1.15);
+    --tex-k: calc(var(--tex-strength) * 1.15);
     --glass-grain:
       radial-gradient(circle at 38% 34%, transparent 0 12%, var(--tex-hi) 15% 19%, transparent 24%),
       radial-gradient(circle at 74% 63%, transparent 0 9%,  var(--tex-lo) 12% 15%, transparent 20%),
@@ -1306,7 +1319,7 @@
   :root[data-glass="eurodrop"] {
     --glass-r:   11px;
     --glass-sat: 1.4;
-    --tex-k: calc((0.52 + var(--depth) * 0.085) * 1.15);
+    --tex-k: calc(var(--tex-strength) * 1.15);
     --glass-grain:
       radial-gradient(30% 40% at 38% 32%, var(--tex-hi) 0 40%, transparent 76%),
       radial-gradient(30% 40% at 38% 54%, var(--tex-lo) 0 36%, transparent 72%),

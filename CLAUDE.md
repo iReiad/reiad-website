@@ -704,10 +704,21 @@ no paper-making process produces, and it had to be written TWICE
 because naming `--accent` freezes it at the declaration site. A
 bump on green glass is green because the ground is.
 
-**`--tex-k` is derived from `--depth`, so a thicker surface shows
-more of its pattern.** A pane at 9 carries 1.29 of it, a card at 5
-carries 0.95, a chip at 1 carries 0.61. Nobody types a number and
-the ladder cannot come apart from the material's own.
+**How much of it a reader sees is a knob, and it had to be.** It
+rode on `--depth` for one draft, so a pane at 9 would carry more
+of its pattern than a chip at 1. It computed to the same number on
+every surface on the site: **a custom property's computed value is
+the specified value with `var()` ALREADY SUBSTITUTED, on the
+element the declaration is on**, and `--glass-grain` names
+`--tex-hi` names `--tex-k` names `--depth`, all four declared on
+`:root` where depth is 0. There is a way, declaring the chain on
+`*`, and it is three custom properties on every node with a
+nine-layer gradient among them, which is tens of thousands of
+`color-mix` calls on a long page to vary an alpha nobody asked
+about. `--tex-strength` is the reader's instead, which is what was
+actually wanted: the finishes already span an order between a thin
+reed and a deep flute, and what somebody wants to say is "less of
+that".
 
 **The paper is paper now.** Three things at three scales: a wove
 TOOTH, which is amorphous, out of five stipples at pitches sharing

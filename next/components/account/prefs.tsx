@@ -289,11 +289,12 @@ export function Preferences() {
           heading: "What the glass is made of",
           why: "The bar, the rail, the menus and every button, tab and "
             + "chip are made of the same translucent stuff, each scaled "
-            + "to its job. Pick the material first: the two below move "
-            + "whichever one is on, and Plain has no blur for them to "
-            + "move.",
+            + "to its job. Pick the finish first: the three below move "
+            + "whichever one is on, and Plain has no blur and no texture "
+            + "for them to move.",
           rows: [
             { key: "glass", label: "Finish", options: m.GLASSES },
+            { key: "texture", label: "Texture", options: m.TEXTURES },
             { key: "blur", label: "Blur", options: m.BLURS },
             { key: "veil", label: "Transparency", options: m.VEILS },
           ],

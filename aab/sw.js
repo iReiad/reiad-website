@@ -32,7 +32,8 @@
    precached file changes.
 
    v222: /fallback.css and /prefs.js. Eleven finishes where there
-        were three. The paper was two hairlines crossing at 45
+        were three, and a fourth knob beside the blur and the veil
+        for how much of one a reader sees. The paper was two hairlines crossing at 45
         degrees every five pixels, which is a fabric at an angle
         no paper-making process produces; it is a wove tooth, laid
         lines and formation now. The nine cast patterns are new,

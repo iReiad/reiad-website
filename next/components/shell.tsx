@@ -107,6 +107,8 @@ const BOOT = `(function(){var d=document.documentElement;try{`
   + `if(b)d.style.setProperty("--glass-amount",b);`
   + `var v={clear:"0.54",normal:"0.72",dense:"0.9"}[p.veil];`
   + `if(v)d.style.setProperty("--glass-veil",v);`
+  + `var x={faint:"0.5",normal:"1",strong:"1.6"}[p.texture];`
+  + `if(x)d.style.setProperty("--tex-strength",x);`
   /* WHETHER THE SITE MAKES A SOUND, as an attribute rather than a
      value the sound module digs out of storage on every press.
      Here rather than in that module because the first press can
