@@ -951,6 +951,27 @@ house. Doing it in the browser AND in the Worker is one place too
 few doing it, given that a coordinate is the most personal thing
 this site ever handles. It is also what makes the edge cache work.
 
+**`Permissions-Policy: geolocation` must be `(self)`, and it was
+`()` for the whole life of this feature.** An empty allowlist is
+not "ask the reader": it is the page telling the browser not to
+have the API. No prompt ever appeared, `getCurrentPosition` failed
+at once with PERMISSION_DENIED, and a reader who went into their
+browser's own site settings and granted location was told on
+reload that their browser had said no. The page rendered
+perfectly, the panel's copy was honest, and the answer was one
+pair of brackets in two header lists that `check-headers.ts` keeps
+in step.
+
+**Two ways in, and the second is not a fallback.** A browser can
+refuse, a desktop can have no radio, a work laptop can have it off
+three levels up, and a reader can simply prefer to say where they
+are. `/api/weather/place?q=` searches Open-Meteo's place index
+through the same Worker for the same two reasons, and a chosen
+town is kept under the same key with a name on it. `askForPlace()`
+answers with four states rather than a boolean, because "no" was
+the whole vocabulary while the bug above was live, and it made a
+policy failure indistinguishable from a person saying no.
+
 **`weather-place` is deliberately not synced.** Every other key
 `aab/sync.js` carries is something the reader MADE: a tick, a note,
 a preference. Where somebody is standing is not that, it is

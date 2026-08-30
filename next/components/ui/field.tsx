@@ -34,9 +34,7 @@
    looks it.
    ============================================================ */
 
-import type {
-  InputHTMLAttributes, ReactNode, SelectHTMLAttributes, TextareaHTMLAttributes,
-} from "react";
+import type { ComponentPropsWithRef, ReactNode } from "react";
 
 /* The box itself is `@layer base`, and this adds nothing to it.
 
@@ -101,9 +99,16 @@ function Wrap({
   );
 }
 
+/* `ComponentPropsWithRef` rather than `InputHTMLAttributes`, so a
+   `ref` reaches the box. React 19 passes one as an ordinary prop
+   and the element takes it; the older type simply did not name
+   it, so a caller wanting to focus its own field had to reach for
+   `getElementById` and address the box by a string. Two names for
+   one thing is how the id and the label came apart in the eleven
+   boxes this component replaced. */
 export function Field({
   label, hint, error, hideLabel, className, id, ...rest
-}: Shared & Omit<InputHTMLAttributes<HTMLInputElement>, "id">) {
+}: Shared & Omit<ComponentPropsWithRef<"input">, "id">) {
   const describedBy = error ? `${id}-error` : hint ? `${id}-hint` : undefined;
 
   return (
@@ -128,7 +133,7 @@ export function Field({
     nothing to the box either. */
 export function Select({
   label, hint, error, hideLabel, className, id, children, ...rest
-}: Shared & Omit<SelectHTMLAttributes<HTMLSelectElement>, "id">) {
+}: Shared & Omit<ComponentPropsWithRef<"select">, "id">) {
   const describedBy = error ? `${id}-error` : hint ? `${id}-hint` : undefined;
 
   return (
@@ -148,7 +153,7 @@ export function Select({
 
 export function TextArea({
   label, hint, error, hideLabel, className, id, rows = 4, ...rest
-}: Shared & Omit<TextareaHTMLAttributes<HTMLTextAreaElement>, "id">) {
+}: Shared & Omit<ComponentPropsWithRef<"textarea">, "id">) {
   const describedBy = error ? `${id}-error` : hint ? `${id}-hint` : undefined;
 
   return (

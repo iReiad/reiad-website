@@ -15,7 +15,16 @@
   # listed explicitly as (self) rather than left to the default, so a
   # future tightening of this line can't silently break the Studio's
   # passkey unlock.
-  Permissions-Policy: geolocation=(), camera=(), microphone=(), payment=(), interest-cohort=(), publickey-credentials-get=(self), publickey-credentials-create=(self)
+  #
+  # geolocation is (self) and was () for as long as the weather layer
+  # existed, which is the whole of that feature broken by one pair of
+  # brackets. An empty allowlist is not "ask the reader": it is the
+  # page telling the browser not to have the API at all, so
+  # getCurrentPosition fails instantly with PERMISSION_DENIED, no
+  # prompt is ever shown, and granting location in the browser's own
+  # site settings changes nothing. The panel then reported, honestly
+  # and uselessly, that the browser had said no.
+  Permissions-Policy: geolocation=(self), camera=(), microphone=(), payment=(), interest-cohort=(), publickey-credentials-get=(self), publickey-credentials-create=(self)
   # HTTPS only, including subdomains, for a year.
   Strict-Transport-Security: max-age=31536000; includeSubDomains
   # Content Security Policy. Everything comes from here except the
