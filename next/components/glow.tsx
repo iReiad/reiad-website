@@ -104,6 +104,20 @@
    it faded out, so returning to it lights the place you left
    rather than the middle. `--glow-a` is 0 for the whole time a
    surface is not hovered, so a stale position is invisible.
+
+   ---- and it publishes one fact for everybody else ----
+
+   `data-scrolling` on the root, for as long as the page is
+   moving. It is here because this is the shell's pointer
+   component and the fact is about the pointer: while the page
+   moves under a resting hand, nobody is aiming at anything, and
+   every light and every lean computed in that moment is computed
+   from a position that changed because the page moved.
+
+   Read by this file, by `/tilt.js`, which cannot import across
+   the wall and reads the attribute instead, and available to the
+   stylesheet. The attribute is the state, which is the same
+   arrangement `data-rail` and `data-sound` already are.
    ============================================================ */
 
 import { useEffect } from "react";
@@ -212,7 +226,57 @@ function paint(el: HTMLElement, clientX: number, clientY: number, lean: boolean)
   return { tx: (at.x - 50) / 50, ty: (at.y - 50) / 50 };
 }
 
+/** How long after the last scroll event the page is still
+    considered to be moving. Momentum on a trackpad arrives as a
+    run of events with gaps, so a value under about a tenth of a
+    second flickers the attribute on and off through one flick;
+    much over it and a reader who has stopped waits to be
+    answered. */
+const SCROLL_TAIL = 140;
+
 export function Glow() {
+  /* ---- while the page is moving, nobody is aiming ----
+
+     Its own effect, and deliberately outside the three guards
+     below. Those are about whether there is a pointer to follow;
+     this is about whether the page is under one, and a phone
+     wants the answer too: `/tilt.js` answers a handset's
+     orientation there and should stand down mid-scroll for the
+     same reason.
+
+     `capture: true` because a scroll event does not bubble from
+     an element that scrolls. The wide blocks on this site scroll
+     inside their own boxes, and a chart being dragged sideways is
+     as much a scroll as the page going down. */
+  useEffect(() => {
+    const root = document.documentElement;
+    let timer = 0;
+    let on = false;
+
+    const stop = () => {
+      timer = 0;
+      on = false;
+      root.removeAttribute("data-scrolling");
+    };
+
+    const start = () => {
+      /* Only when it changes. `setAttribute` with the value it
+         already has still invalidates style on the root, which on
+         this site is the whole document, and a scroll fires this
+         handler dozens of times a second. */
+      if (!on) { on = true; root.setAttribute("data-scrolling", ""); }
+      if (timer) clearTimeout(timer);
+      timer = window.setTimeout(stop, SCROLL_TAIL);
+    };
+
+    addEventListener("scroll", start, { passive: true, capture: true });
+    return () => {
+      removeEventListener("scroll", start, { capture: true });
+      if (timer) clearTimeout(timer);
+      stop();
+    };
+  }, []);
+
   useEffect(() => {
     if (!window.matchMedia) return;
     if (!matchMedia("(hover: hover) and (pointer: fine)").matches) return;
@@ -327,6 +391,21 @@ export function Glow() {
 
     const onMove = (e: PointerEvent) => {
       if (e.pointerType === "touch") return;
+
+      /* Not a cheaper frame: no frame. See the note at the top
+         about `data-scrolling`. The light freezes where it was,
+         which is where the reader last aimed it, and the first
+         real move after the scroll picks it up.
+
+         `fromNode` is dropped as well, because the page has moved
+         and the node the walk last resolved is very unlikely to
+         still be the one under the pointer. */
+      if (document.documentElement.hasAttribute("data-scrolling")) {
+        pending = null;
+        fromNode = null;
+        return;
+      }
+
       pending = e;
       if (!frame) frame = requestAnimationFrame(step);
     };
