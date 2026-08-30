@@ -4367,8 +4367,15 @@ it collapsed to the width of the word "Bangladesh". */
      reason: `50%` is half the column, so subtracting half the
      wider width centres the wider thing on the column's own
      centre line whatever the column is doing. */
-  .article .table-scroll,
-  .term-article .table-scroll {
+  /* NOT ONE INSIDE A LESSON BLOCK, and that exclusion is a fix
+     rather than a nicety. A block is a card with a frame round
+     it; a table inside one that breaks out of the column breaks
+     out of the card too, and the sheet in a money lesson painted
+     three hundred pixels past its own frame on both sides. The
+     rule is for a table in PROSE, where the column is the only
+     thing holding it. */
+  .article .table-scroll:not(.ls-block *),
+  .term-article .table-scroll:not(.ls-block *) {
     width: min(100% + 22rem, var(--read-out));
     margin-inline: calc(50% - min(50% + 11rem, var(--read-out) / 2));
   }
@@ -14653,6 +14660,100 @@ German for day, and .tag is what the site has always called
   .ls-out[data-tone="warn"] .ls-out-value { color: var(--gold); }
   .ls-out[data-tone="bad"] .ls-out-value { color: var(--danger); }
   .ls-out-note { font-size: var(--t-0); color: var(--ink-soft); }
+
+  /* ============================================================
+     THE SHEET, which is the one block a reader types into
+
+     A table and drawn as one: the row header is the label, the
+     cells are cells, and a screen reader announces "row 4, Gross
+     profit, 4200" out of the same markup a sighted reader scans
+     down. Nothing here is a grid of boxes wearing a table's
+     clothes.
+
+     The three kinds of cell are three grounds, and the reader
+     learns them in one glance: a printed cell is the page, a cell
+     they own is sunk into it, and a computed one is lit in the
+     accent because it is the sheet answering.
+     ============================================================ */
+
+  .ls-grid { display: grid; gap: var(--s-7); }
+  .ls-sheet {
+    width: 100%; border-collapse: collapse;
+    font-size: var(--t-3);
+
+    & th, & td {
+      padding: var(--s-4) var(--s-5);
+      border-bottom: 1px solid var(--hairline);
+      text-align: end;
+    }
+    & thead th {
+      font-family: var(--font-mono); font-size: var(--t-0);
+      letter-spacing: 0.06em; text-transform: uppercase;
+      color: var(--ink-soft); font-weight: 500;
+      border-bottom-color: var(--accent);
+    }
+    /* The row's own name, and the one column that is words.
+
+       `text-transform: none` is a RESET and it is load-bearing:
+       `@layer article` sets every `th` in a table to uppercase
+       mono, which is right for a column of figures in prose and
+       wrong for a row label that is a word in another language.
+       It rendered the German present tense as ICH, DU, ER, and
+       `ich` is lowercase in German. The title read NEHMEN. */
+    & tbody th, & thead th:first-child {
+      text-align: start; font-weight: 400; color: var(--ink);
+      font-family: inherit; letter-spacing: normal; text-transform: none;
+      font-size: var(--t-3);
+      max-width: 22ch;
+    }
+    /* A total, an answer, or the line the lesson is about. */
+    & tr[data-lead] {
+      & th, & td { font-weight: 500; }
+      & td[data-kind="calc"] { background: var(--accent-soft); }
+    }
+  }
+
+  /* A COMPUTED CELL IS THE SHEET ANSWERING, so it is lit rather
+     than typed into: the accent and the serif face are the two
+     things every answer on this site already wears. */
+  .ls-cell-out {
+    display: block;
+    font-family: var(--font-serif); font-variant-numeric: tabular-nums;
+    color: var(--accent);
+  }
+  .ls-cell-word { font-family: var(--font-read); }
+  .ls-cell-note {
+    display: block; margin-top: 2px;
+    font-size: var(--t-0); color: var(--ink-soft); text-align: end;
+  }
+
+  /* And a cell the reader owns is sunk into the page, which is
+     the groove the material system already has a word for. The
+     box itself is `<Field>`; this is only where it sits and how
+     wide. */
+  .ls-cell-in {
+    min-width: 7ch; max-width: 12ch; margin-inline-start: auto;
+    padding: var(--s-3) var(--s-4);
+    text-align: end; font: inherit;
+    color: var(--ink); background: var(--paper-sunk);
+    border: 1px solid var(--hairline); border-radius: var(--radius-xs);
+
+    &:focus-visible {
+      outline: 0; border-color: var(--accent);
+      --surface-shadow: var(--focus-ring);
+    }
+  }
+  td[data-kind="input"] { padding-block: var(--s-3); }
+
+  .ls-sheet-foot {
+    display: flex; flex-wrap: wrap; align-items: center; gap: var(--s-6);
+  }
+  .ls-sheet-score {
+    margin: 0; font-size: var(--t-2);
+
+    &[data-state="good"] { color: var(--accent); }
+    &[data-state="warn"] { color: var(--gold); }
+  }
 
   /* ============================================================
      Figures

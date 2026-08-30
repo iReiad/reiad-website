@@ -1191,6 +1191,162 @@ const MODELS: LabModel[] = [
       };
     },
   },
+
+  /* ---------- THE TWO CURVES THAT CROSS ----------
+
+     The first model here that plots two lines against each other
+     rather than one thing over time, and the reason it is worth
+     the extra shape is that a price is not a number somebody
+     sets: it is where two willingnesses meet.
+
+     The x axis is PRICE and the two series are quantities, which
+     is the transpose of how an economics textbook draws it. That
+     is deliberate: a textbook puts price up the side because it
+     is drawing a mathematical relation, and a reader who has
+     never seen one reads a chart left to right. Turning it costs
+     nothing and the crossing is the same crossing.
+
+     The clearing price is solved rather than drawn: `run` walks
+     the price axis and reports where the gap changes sign, so the
+     number under the chart is the answer to the chart rather than
+     a second calculation that could disagree with it. */
+  {
+    id: "supply-demand",
+    title: S("দাম কোথায় গিয়ে থামে", "Where the price settles"),
+    inputs: [
+      inp("want", "মানুষ কতটা চায়", "How much people want", 20, 300, 10, 180, "num",
+        S("দাম শূন্য হলে যতটা বিক্রি হতো।", "What would sell if it were free.")),
+      inp("sensitivity", "দাম বাড়লে চাহিদা কত কমে", "How fast wanting falls with price",
+        1, 20, 1, 4, "num",
+        S("বেশি হলে সামান্য দাম বাড়লেই মানুষ সরে যায়।",
+          "High means a small rise sends people away.")),
+      inp("cost", "যে দামের নিচে কেউ বানাবে না", "The price below which nobody makes it",
+        0, 40, 1, 10, "taka"),
+      /* THE DEFAULTS PUT THE CROSSING IN THE MIDDLE OF THE AXIS,
+         which is not decoration: the first set had it at 12 taka
+         on an axis running to 60, so the lesson opened on a chart
+         whose whole point was crammed into the left fifth of it
+         and whose right two thirds were two flat lines. */
+      inp("supply", "দাম বাড়লে কত বেশি বানায়", "How fast making it rises with price",
+        1, 20, 1, 4, "num"),
+    ],
+    run: (v) => {
+      /* Two straight lines, because a lesson about a crossing is
+         not helped by a curve nobody can read off. Demand falls
+         from `want` at the rate `sensitivity`; supply is nought
+         until `cost` and then rises at `supply`. */
+      const prices = Array.from({ length: 13 }, (_, i) => i * 5);
+      const demand = prices.map((p) => Math.max(0, v.want - v.sensitivity * p));
+      const supply = prices.map((p) => Math.max(0, (p - v.cost) * v.supply));
+
+      /* Where the gap changes sign, interpolated between the two
+         prices either side of it, which is the crossing itself
+         rather than the nearest point this chart happens to have
+         drawn. */
+      let clearing = 0;
+      let traded = 0;
+      for (let i = 1; i < prices.length; i += 1) {
+        const was = demand[i - 1] - supply[i - 1];
+        const now = demand[i] - supply[i];
+        if (was >= 0 && now < 0) {
+          const t = was / (was - now);
+          clearing = prices[i - 1] + t * (prices[i] - prices[i - 1]);
+          traded = demand[i - 1] + t * (demand[i] - demand[i - 1]);
+          break;
+        }
+      }
+
+      /* NO MARKET IS A QUANTITY OF NOUGHT, not a price of nought.
+         The first test here asked whether the crossing price was
+         zero, and the case it was written for reports a price of
+         40 with nothing changing hands: wanting runs out at 2
+         taka, nobody makes it below 40, and the two lines meet
+         where both are on the floor. A price with no trade behind
+         it is not a price. */
+      const never = traded < 0.5;
+      return {
+        outs: [
+          out("যে দামে বাজার থামে", "The price it settles at", clearing, "taka",
+            { big: true, tone: never ? "bad" : "good" }),
+          out("সেই দামে কত বিক্রি হয়", "How much changes hands at that price",
+            traded, "num"),
+          out("বানানোর সর্বনিম্ন দাম", "The floor under the price", v.cost, "taka"),
+        ],
+        chart: {
+          shape: "line",
+          labels: prices.map(String),
+          series: [
+            { name: S("যতটা কিনতে চায়", "What people will buy"), values: demand, tone: "good" },
+            { name: S("যতটা বানাতে চায়", "What sellers will make"), values: supply, tone: "warn" },
+          ],
+          unit: S("দাম, টাকা", "Price, taka"),
+        },
+        verdict: never
+          ? {
+            tone: "bad",
+            text: S("এই দামে কেউ বানাতে রাজি নয় এমন জায়গায় চাহিদা শেষ হয়ে যাচ্ছে: বাজারটাই তৈরি হয় না। এটাই বহু ভালো আইডিয়া ব্যবসা না হওয়ার কারণ।",
+              "Wanting runs out below the price at which anybody is willing to make it, so no market forms at all. That is why many good ideas are not businesses."),
+          }
+          : clearing < v.cost * 1.2
+            ? {
+              tone: "warn",
+              text: S("দাম খরচের ঠিক উপরে থামছে। বিক্রেতার হাতে প্রায় কিছুই থাকছে না, আর একটু খরচ বাড়লেই ব্যবসাটা বন্ধ।",
+                "The price settles barely above cost. There is almost nothing in it for the seller, and a small rise in costs closes the business."),
+            }
+            : {
+              tone: "good",
+              text: S("দুই দিকের ইচ্ছা যেখানে মেলে, দাম সেখানেই থামে। কেউ দামটা ঠিক করে দেয়নি: স্লাইডার সরিয়ে দেখুন, দাম নিজেই সরে যায়।",
+                "The price settles where the two willingnesses meet. Nobody set it: move a slider and watch it move on its own."),
+            },
+      };
+    },
+  },
+
+  /* ---------- what one late payment costs, over and over ---------- */
+  {
+    id: "late-fee",
+    title: S("দেরিতে দিলে কী হয়", "What paying late actually costs"),
+    inputs: [
+      inp("bill", "বিলের অঙ্ক", "The bill", 500, 100000, 500, 12000, "taka"),
+      inp("fee", "দেরির জরিমানা", "Late fee", 0, 20, 0.5, 2.5, "pct"),
+      inp("times", "বছরে কতবার দেরি হয়", "Times a year it happens", 0, 12, 1, 3, "times"),
+      inp("years", "কত বছর ধরে", "For how many years", 1, 20, 1, 5, "year"),
+    ],
+    run: (v) => {
+      const once = v.bill * (v.fee / 100);
+      const year = once * v.times;
+      const total = year * v.years;
+      /* What that money would have been, at a rate a savings
+         product here actually pays, so the cost is stated as
+         something forgone rather than as a scary total. */
+      const kept = grow(0, year / 12, 8, v.years);
+      return {
+        outs: [
+          out("একবারে", "Each time", once, "taka"),
+          out("বছরে", "Every year", year, "taka", { tone: "warn" }),
+          out("এই বছরগুলোয় মোট", "Over those years", total, "taka",
+            { big: true, tone: "bad" }),
+          out("সেই টাকা রাখলে হতো", "Saved instead, it would be",
+            kept[kept.length - 1], "taka", { tone: "good" }),
+        ],
+        chart: {
+          shape: "bar",
+          labels: years(v.years),
+          series: [{ name: S("জমা জরিমানা", "Fees paid, running total"),
+            values: Array.from({ length: v.years + 1 }, (_, i) => year * i), tone: "bad" }],
+          unit: S("টাকা", "Taka"),
+        },
+        verdict: {
+          tone: total > v.bill ? "bad" : "warn",
+          text: total > v.bill
+            ? S("জরিমানাগুলো মিলে একটা গোটা বিলের চেয়ে বেশি হয়ে গেছে। এটা কোনো বড় সিদ্ধান্তের ফল নয়: শুধু তারিখ মনে না থাকার ফল।",
+                "The fees now add up to more than one whole bill. None of that came from a big decision: it came from not remembering a date.")
+            : S("অঙ্কটা ছোট দেখাচ্ছে, কিন্তু এটা এমন খরচ যার বিনিময়ে আপনি কিছুই পাননি। একটা রিমাইন্ডারই যথেষ্ট।",
+                "The number looks small, and it is money spent on nothing at all. One reminder is the whole fix."),
+        },
+      };
+    },
+  },
 ];
 
 /* ------------------------------------------------------------

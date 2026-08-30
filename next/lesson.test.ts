@@ -51,6 +51,7 @@ import { load, open, skip, type Extra } from "./hydrate-fixture.ts";
    made there. The bundled source below uses the package name,
    because esbuild has no such restriction. */
 import { LAB_IDS } from "../shared/lesson-labs.ts";
+import { GRID_IDS, gridStart, solve } from "../shared/lesson-grids.ts";
 import { BLOCK_KINDS, FIGURE_SHAPES, blockProblems, type Block } from "../shared/lesson.ts";
 
 const say = (bn: string, en: string) => ({ bn, en });
@@ -96,6 +97,7 @@ const SAMPLES: Record<string, Block> = {
     lines: three.map((text, i) => i === 0 ? { text, flag: say("এটা", "This one") } : { text }) },
   drill: { kind: "drill", title: say("করুন", "Drill"),
     steps: three.map((text) => ({ text, hint: say("ইঙ্গিত", "Hint") })) },
+  grid: { kind: "grid", model: GRID_IDS[0], title: say("ছক", "Sheet") },
 };
 
 const short = BLOCK_KINDS.filter((k) => !SAMPLES[k]);
@@ -136,6 +138,14 @@ const CASES: Case[] = [
     name: `the ${model} lab`,
     block: { kind: "lab", model, title: say("হিসাব", "Lab") } as Block,
   })),
+  /* EVERY SHEET, not one of them. Three of the six are a language
+     school's, and a language school had no interactive at all
+     before this: a sheet that renders only for the money school's
+     numbers would be the whole point missed. */
+  ...GRID_IDS.map((model) => ({
+    name: `the ${model} sheet`,
+    block: { kind: "grid", model, title: say("ছক", "Sheet") } as Block,
+  })),
 ];
 
 let passed = 0;
@@ -146,8 +156,38 @@ const ok = (name: string, condition: unknown, detail = ""): void => {
 };
 
 for (const c of CASES) {
-  const problems = blockProblems(c.name, c.block, LAB_IDS);
+  const problems = blockProblems(c.name, c.block, LAB_IDS, GRID_IDS);
   ok(`${c.name} is a block the validator accepts`, problems.length === 0, problems[0]);
+}
+
+/* ---------- a sheet resolves a formula of a formula ----------
+
+   `solve()` runs two passes rather than sorting the rows, and the
+   six sheets that ship all happen to list their rows in the order
+   the formulas need, so one pass answers every one of them
+   correctly. That is the second pass being untested rather than
+   unnecessary: a model is a table somebody writes, and putting a
+   total ABOVE the things it totals is a thing somebody will
+   write. This is the case the six do not cover. */
+{
+  const OUT_OF_ORDER = {
+    id: "t", title: { bn: "", en: "" }, columns: [{ bn: "", en: "" }],
+    fmt: "num" as const,
+    rows: [
+      /* The answer first, then what it is made of. */
+      { id: "margin", label: { bn: "", en: "" }, cells: [
+        { kind: "calc" as const, op: "pct" as const, from: ["profit", "sales"] }] },
+      { id: "profit", label: { bn: "", en: "" }, cells: [
+        { kind: "calc" as const, op: "diff" as const, from: ["sales", "cost"] }] },
+      { id: "sales", label: { bn: "", en: "" }, cells: [{ kind: "input" as const, start: 200 }] },
+      { id: "cost", label: { bn: "", en: "" }, cells: [{ kind: "input" as const, start: 150 }] },
+    ],
+  };
+  const at = solve(OUT_OF_ORDER, gridStart(OUT_OF_ORDER));
+  ok("a sheet resolves a formula whose inputs are below it",
+    at.profit === 50, String(at.profit));
+  ok("and one whose inputs are themselves formulas",
+    Math.round(at.margin) === 25, String(at.margin));
 }
 
 /* Rendered from inside the bundle, so the React that renders is
@@ -277,6 +317,97 @@ for (const [i, c] of CASES.entries()) {
   ok(`${c.name} renders`, seen.blocks === 1 && seen.filled > 0,
     `${seen.blocks} blocks, ${seen.filled} characters`);
   ok(`${c.name} hydrates with no mismatch`, bad.length === 0, bad[0]?.slice(0, 600));
+}
+
+/* ============================================================
+   A SHEET IS THE ONE BLOCK THAT ANSWERS BACK
+
+   Everything above asks whether a block renders and survives
+   hydration, which for the eleven kinds that only display is the
+   whole question. A sheet is the twelfth and it computes: a
+   number typed into one cell has to move another, and a word
+   typed into a hole has to be marked against the right answer.
+
+   Both are invisible to anything reading HTML. A sheet whose
+   formulas never run renders a perfect table of noughts.
+   ============================================================ */
+{
+  const at = CASES.findIndex((c) => c.name === "the pnl sheet");
+  ok("the profit and loss sheet is one of the cases", at >= 0);
+  said = [];
+  await page.goto(`${fixture.origin}/c${at}`, { waitUntil: "load" });
+  await page.waitForTimeout(300);
+
+  const outs = (): Promise<string[]> => page.evaluate(() =>
+    [...document.querySelectorAll(".ls-cell-out")].map((n) => n.textContent ?? ""));
+
+  const before = await outs();
+  /* BENGALI DIGITS, because the fixture page is `data-read-lang="bn"`
+     and a sheet writes its numbers in the reader's own numerals.
+     The first draft of this line looked for [1-9] and failed on a
+     page that was working perfectly, which is the check being
+     wrong about the site rather than the other way round. */
+  const DIGIT = /[1-9\u09E7-\u09EF]/;
+  ok("the computed cells arrive computed", before.some((v) => DIGIT.test(v)),
+    JSON.stringify(before.slice(0, 4)));
+  ok("and in the reader's own numerals",
+    before.some((v) => /[\u09E6-\u09EF]/.test(v)),
+    JSON.stringify(before.slice(0, 4)));
+
+  /* Revenue is the first input on the sheet. Doubling it must
+     move gross profit, operating profit, net profit and the
+     margin, which are four cells at two levels of formula. */
+  await page.fill(".ls-sheet input[type=number]", "19000");
+  await page.waitForTimeout(250);
+  const after = await outs();
+  ok("typing into a cell moves the cells that depend on it",
+    after[0] !== before[0], `${before[0]} then ${after[0]}`);
+  ok("including the ones computed from those",
+    after.filter((v, i) => v !== before[i]).length >= 3,
+    JSON.stringify({ before: before.slice(0, 5), after: after.slice(0, 5) }));
+
+  const verdict = await page.evaluate(() =>
+    document.querySelector(".ls-grid .ls-verdict")?.textContent ?? "");
+  ok("and the sentence under it says something", verdict.trim().length > 20, verdict);
+  ok("nothing threw", said.filter((l) => BAD.test(l)).length === 0);
+}
+
+/* ---- and a drill is the same object with holes in it ---- */
+{
+  const at = CASES.findIndex((c) => c.name === "the de-praesens sheet");
+  ok("a language school's sheet is one of the cases too", at >= 0);
+  said = [];
+  await page.goto(`${fixture.origin}/c${at}`, { waitUntil: "load" });
+  await page.waitForTimeout(300);
+
+  ok("it offers to mark what was typed",
+    await page.$(".ls-sheet-foot button") !== null,
+    "a table with holes and no way to check them is a table nobody fills in");
+  ok("and marks nothing before it is asked",
+    await page.$(".ls-sheet-score") === null,
+    "a table that goes red while somebody is still typing tells them they are "
+    + "wrong before they have finished being right");
+
+  const boxes = await page.$$(".ls-sheet input[type=text]");
+  ok("every hole is a box", boxes.length === 5, String(boxes.length));
+  await boxes[0].fill("nimmst");
+  await boxes[1].fill("nimmt");
+  await boxes[2].fill("wrong");
+  await page.click(".ls-sheet-foot button");
+  await page.waitForTimeout(250);
+
+  const score = (await page.textContent(".ls-sheet-score")) ?? "";
+  ok("it counts what is right", /2/.test(score), score);
+  const states = await page.evaluate(() =>
+    [...document.querySelectorAll(".ls-sheet input[type=text]")]
+      .map((n) => n.getAttribute("data-state")));
+  ok("and says which is which", states[0] === "right" && states[2] === "wrong",
+    JSON.stringify(states));
+  /* A box nobody typed into is not wrong: it is not yet answered,
+     and a table that marks every empty cell red the moment
+     somebody checks two of six is a table that says they failed. */
+  ok("an empty box is not marked wrong", states[3] === null, JSON.stringify(states));
+  ok("nothing threw", said.filter((l) => BAD.test(l)).length === 0);
 }
 
 /* ---------- and nothing is drawn outside its own column ----------

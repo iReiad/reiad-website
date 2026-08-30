@@ -31,6 +31,13 @@
    login could not have reached anyone either. Bump this whenever a
    precached file changes.
 
+   v227: /fallback.css. The twelfth kind of lesson block: a sheet
+        a reader types into, where the eleven before it all had
+        the reader choosing. A profit and loss account, a loan's
+        first year, a month's budget, and the same object as a
+        German verb's six forms, so the three language schools
+        have an interactive at all.
+
    v226: /tools/stock.js, /tools/stock.i18n.js, /tools/live.js,
         /prefs.js and /fallback.css. The stock check opens with
         eleven fields instead of eighty-five and says what it is
@@ -2032,7 +2039,7 @@
    imports (crumbs, audience, learn progress) and the hub is a
    different page. Without a bump, a returning reader would be
    served the v3 app.js forever and none of it would appear. */
-const VERSION = "v226";
+const VERSION = "v227";
 const SHELL = `shell-${VERSION}`;
 const RUNTIME = `runtime-${VERSION}`;
 

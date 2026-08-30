@@ -2429,8 +2429,8 @@
 
   main:has(:is(.article, .term-article)) { overflow-x: clip; }
 
-  .article .table-scroll,
-  .term-article .table-scroll {
+  .article .table-scroll:not(.ls-block *),
+  .term-article .table-scroll:not(.ls-block *) {
     width: min(100% + 22rem, var(--read-out));
     margin-inline: calc(50% - min(50% + 11rem, var(--read-out) / 2));
   }
@@ -9385,6 +9385,71 @@
   .ls-out[data-tone="warn"] .ls-out-value { color: var(--gold); }
   .ls-out[data-tone="bad"] .ls-out-value { color: var(--danger); }
   .ls-out-note { font-size: var(--t-0); color: var(--ink-soft); }
+
+  .ls-grid { display: grid; gap: var(--s-7); }
+  .ls-sheet {
+    width: 100%; border-collapse: collapse;
+    font-size: var(--t-3);
+
+    & th, & td {
+      padding: var(--s-4) var(--s-5);
+      border-bottom: 1px solid var(--hairline);
+      text-align: end;
+    }
+    & thead th {
+      font-family: var(--font-mono); font-size: var(--t-0);
+      letter-spacing: 0.06em; text-transform: uppercase;
+      color: var(--ink-soft); font-weight: 500;
+      border-bottom-color: var(--accent);
+    }
+
+    & tbody th, & thead th:first-child {
+      text-align: start; font-weight: 400; color: var(--ink);
+      font-family: inherit; letter-spacing: normal; text-transform: none;
+      font-size: var(--t-3);
+      max-width: 22ch;
+    }
+
+    & tr[data-lead] {
+      & th, & td { font-weight: 500; }
+      & td[data-kind="calc"] { background: var(--accent-soft); }
+    }
+  }
+
+  .ls-cell-out {
+    display: block;
+    font-family: var(--font-serif); font-variant-numeric: tabular-nums;
+    color: var(--accent);
+  }
+  .ls-cell-word { font-family: var(--font-read); }
+  .ls-cell-note {
+    display: block; margin-top: 2px;
+    font-size: var(--t-0); color: var(--ink-soft); text-align: end;
+  }
+
+  .ls-cell-in {
+    min-width: 7ch; max-width: 12ch; margin-inline-start: auto;
+    padding: var(--s-3) var(--s-4);
+    text-align: end; font: inherit;
+    color: var(--ink); background: var(--paper-sunk);
+    border: 1px solid var(--hairline); border-radius: var(--radius-xs);
+
+    &:focus-visible {
+      outline: 0; border-color: var(--accent);
+      --surface-shadow: var(--focus-ring);
+    }
+  }
+  td[data-kind="input"] { padding-block: var(--s-3); }
+
+  .ls-sheet-foot {
+    display: flex; flex-wrap: wrap; align-items: center; gap: var(--s-6);
+  }
+  .ls-sheet-score {
+    margin: 0; font-size: var(--t-2);
+
+    &[data-state="good"] { color: var(--accent); }
+    &[data-state="warn"] { color: var(--gold); }
+  }
 
   .ls-figure { margin: 0; }
   .ls-fig-cap { font-size: var(--t-2); color: var(--ink-soft); margin: var(--s-6) 0 0; }

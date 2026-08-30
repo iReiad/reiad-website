@@ -1777,6 +1777,87 @@ this.
 - **A heading has to be findable at speed.** 1.35em on a 16px body
   is a paragraph in bold.
 
+## A lesson has twelve kinds of block, and one of them answers back
+
+`shared/lesson.ts` names them and `next/components/lesson/block.tsx`
+is the registry. Eleven of the twelve have the reader CHOOSING:
+an option, an order, a bucket, a slider. The twelfth has them
+typing.
+
+### A sheet, which is a table with holes in it
+
+`shared/lesson-grids.ts`. A cell is `given`, `input` or `calc`. A
+grid of `input` cells carrying `expectSay` is a drill and a grid
+of `calc` cells is a spreadsheet, and **they are the same object
+because they are the same thing**: a table with holes in it and a
+rule for what belongs in each hole.
+
+That is what let the three language schools have an interactive at
+all. Measured before this: 81 of the money school's 110 lessons
+carry a block, and **deutsch, english and quran carry nought
+between them**, because a multiple-choice question was the only
+thing a language lesson could hold. A German verb's six forms, an
+English verb's five and an Arabic root's derived words are each a
+table with holes in it.
+
+**A `calc` names cells and one operation out of six.** Not an
+expression string, and the difference is the whole safety
+argument: an expression has to be parsed, and a parser that takes
+arithmetic out of a database row is an evaluator with a database
+in front of it.
+
+**Two passes rather than a toposort**, and the second one is
+tested even though all six sheets would answer without it: they
+all list their rows in the order their formulas need, and a model
+is a table somebody writes, so a total ABOVE the things it totals
+is a thing somebody will write.
+
+**`fmt` is per cell as well as per sheet.** A profit and loss
+account is in taka down to its last row, which is a margin in per
+cent. One format for the whole table wrote that row as `15` and
+left a reader to work out whether that was fifteen taka.
+
+**A cell is named by its row header**, not by a label of its own.
+`<Field>` is this site's answer to an unlabelled box and it is the
+wrong answer inside a table: `aria-labelledby` at the
+`<th scope="row">` is a stronger association than a `<label>`
+beside the box, and a hidden label as well would announce the same
+words twice. `check-components.ts` skips an input carrying that
+attribute, which is a claim somebody can check.
+
+**And `@layer lesson` resets the header casing.** `@layer article`
+sets every `th` in a table to uppercase mono, which is right for a
+column of figures in prose and wrong for a row label that is a
+word in another language: it rendered the German present tense as
+ICH, DU, ER, and `ich` is lowercase in German.
+
+**A table inside a block does not break the column.** The
+full-width rule added for a table in prose reached this one too,
+so a sheet painted three hundred pixels past its own card on both
+sides. `:not(.ls-block *)` is the exclusion, and the reason is
+that a block is a card and a table inside one that leaves the
+column leaves the card.
+
+### Two curves that cross
+
+`supply-demand` in `shared/lesson-labs.ts` is the first model that
+plots two lines against each other rather than one thing over
+time, because a price is not a number somebody sets: it is where
+two willingnesses meet.
+
+The x axis is PRICE and the two series are quantities, which is
+the transpose of a textbook. A textbook puts price up the side
+because it is drawing a mathematical relation; a reader who has
+never seen one reads a chart left to right.
+
+**The crossing is solved, not read off the chart**: `run` walks
+the price axis and interpolates where the gap changes sign, so the
+number under the drawing is the answer TO the drawing rather than
+a second calculation that could disagree with it. And **no market
+is a quantity of nought, not a price of nought**: the first test
+asked whether the crossing price was zero, and the case it was
+written for reports a price of 40 with nothing changing hands.
+
 ## The blocks an article is made of
 
 A piece can hold a box of quick answers, a note in the margin, numbered
@@ -2223,12 +2304,14 @@ node next/keep.test.ts             # the Save and the note under a byline: nothi
                                    # other's column of the one row (109 checks,
                                    # needs Playwright and a browser, skips without)
 node next/lesson.test.ts           # every kind of lesson block, every shape a
-                                   # figure takes and every model behind a lab,
-                                   # hydrated one page at a time: a block whose
-                                   # markup the browser rearranges takes the
-                                   # reader's theme, rail and language with it
-                                   # (150 checks, needs Playwright and a browser,
-                                   # skips without)
+                                   # figure takes, every model behind a lab and
+                                   # every sheet, hydrated one page at a time: a
+                                   # block whose markup the browser rearranges
+                                   # takes the reader's theme, rail and language
+                                   # with it, and a sheet whose formulas never
+                                   # run renders a perfect table of noughts
+                                   # (474 checks, needs Playwright and a
+                                   # browser, skips without)
 node aab/schools/progress.test.ts  # a school's ticks filed under a key that is
                                    # not the one in somebody's browser, and the
                                    # three schools' shared engine (119 checks)

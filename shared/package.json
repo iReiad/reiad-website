@@ -26,6 +26,7 @@
     "./activity": "./activity.ts",
     "./csv": "./csv.ts",
     "./bundle": "./bundle.ts",
-    "./storage": "./storage.ts"
+    "./storage": "./storage.ts",
+    "./lesson-grids": "./lesson-grids.ts"
   }
 }

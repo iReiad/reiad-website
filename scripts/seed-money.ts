@@ -45,6 +45,7 @@ import { fileURLToPath, pathToFileURL } from "node:url";
 import { STAGES, lessonId, stageLessons, type Lesson, type Stage } from "../shared/curricula/money.ts";
 import { blockProblems, mountsIn, type Blocks } from "../shared/lesson.ts";
 import { LAB_IDS } from "../shared/lesson-labs.ts";
+import { GRID_IDS } from "../shared/lesson-grids.ts";
 import { readSnapshot, writeSnapshot, type Row, type Rows } from "./schools-snapshot.ts";
 import type { Written } from "./money/shape.ts";
 
@@ -207,7 +208,7 @@ export function problemsIn(written: Record<string, Written>): string[] {
       }
       for (const id2 of Object.keys(blocks)) {
         if (!bnMounts.includes(id2)) out.push(`${where}: block "${id2}" is never mounted`);
-        out.push(...blockProblems(`${where} ${id2}`, blocks[id2], LAB_IDS));
+        out.push(...blockProblems(`${where} ${id2}`, blocks[id2], LAB_IDS, GRID_IDS));
       }
     }
   }
