@@ -103,7 +103,7 @@ const REST = `${SUPABASE_URL}/rest/v1/progress`;
    as a union rather than as loose strings, so that a key added
    with a rule nobody implemented stops compiling here rather than
    silently falling through to the bookmark branch at runtime. */
-type Rule = "set" | "mark" | "count";
+type Rule = "set" | "mark" | "count" | "merge";
 
 /** A bookmark, or the reader's preferences: an object carrying
     its own timestamp, reconciled by taking the newer of two. */
@@ -185,6 +185,39 @@ const KEYS: Record<string, readonly [Rule, string]> = {
      back off the laptop, and again, and again. Nothing would
      look broken. */
   "home-board":    ["mark",  "board:sync"],
+
+  /* ---- the two that are a MAP, and why that needed a rule ----
+
+     How far into each piece the reader had got, and when they
+     last opened each calculator. Both are `{ <id>: { ts, ... } }`
+     rather than one value, and neither is a `mark`: a mark takes
+     the newer WHOLE object, so a phone that read one article
+     would throw away every position a laptop had recorded.
+     Nothing would look broken; the reader would simply find
+     themselves back at the top of pieces they were half way
+     through, on whichever device they used second.
+
+     `merge` reconciles entry by entry on each entry's own `ts`,
+     which is the only rule that is right for a map. It is what a
+     `mark` is, one level down. */
+  "where-read":    ["merge", "read:where"],
+  "tools-used":    ["merge", "tools:used"],
+
+  /* WHAT A LEARNER TYPED INTO A PRACTICE BOOK, which is the one
+     thing they AUTHOR anywhere in the four schools and was the
+     one thing this table did not carry. A learner wrote eight
+     German sentences on a laptop, opened the book on a phone, and
+     found every box empty; "take a copy of everything" did not
+     include them and "erase everything" left them behind. Nothing
+     said so, because nothing was comparing what a browser holds
+     against what an account holds. `scripts/check-storage.ts` is
+     what does now, and this is the first thing it found.
+
+     `merge`, and no change to the stored shape: both are
+     `{ <day>: "the text" }` in real browsers today. See `stamp()`
+     for what a plain entry is dated by and what that costs. */
+  "deutsch-schrift": ["merge", "deutsch:progress"],
+  "english-write":   ["merge", "english:progress"],
 };
 
 /** Every key the account owns, which is every key above. */
@@ -266,6 +299,57 @@ function reconcileMark(base: Value | undefined, mine: Value | undefined, remote:
 
 /** The further of the two through a practice book, unless this
     device went backwards, which only a reset does. */
+/** A MAP OF STAMPED ENTRIES, reconciled entry by entry.
+
+    `mark` one level down: for each id present on either side the
+    newer `ts` wins, and an id that was in `base` and is gone from
+    `mine` was removed here, so it goes.
+
+    `ts` at the top level is the map's own stamp and is not an
+    entry; it is skipped by name, which is why an entry may never
+    be called `ts`. `where-read` keys on a URL and `tools-used` on
+    a tool id, so neither can be. */
+function reconcileMerge(
+  base: Value | undefined, mine: Value | undefined, remote: Value | undefined,
+): Marked | null {
+  const was = there(base) ? base : {};
+  const now = there(mine) ? mine : {};
+  const theirs = there(remote) ? remote : {};
+  const out: Marked = {};
+
+  for (const id of new Set([...Object.keys(theirs), ...Object.keys(now)])) {
+    if (id === "ts") continue;
+    if (id in was && !(id in now)) continue;          // removed here
+    const a = now[id];
+    const b = theirs[id];
+    if (a === undefined) { out[id] = b; continue; }
+    if (b === undefined) { out[id] = a; continue; }
+    out[id] = stamp(b, theirs) > stamp(a, now) ? b : a;
+  }
+  return Object.keys(out).length ? out : null;
+}
+
+/** When an entry was written.
+
+    An entry that carries its own `ts` answers for itself, which
+    is what `where-read` and `tools-used` do. AN ENTRY THAT IS A
+    PLAIN VALUE FALLS BACK TO THE MAP'S OWN STAMP, and that is
+    what lets the practice books be carried without changing a
+    shape that has a learner's sentences in it: `deutsch-schrift`
+    is `{ <day>: "what they wrote" }` in real browsers today, and
+    rewriting every entry into an object to gain a timestamp is
+    exactly the edit CLAUDE.md warns about, one level in.
+
+    What the fallback costs is the one case where the SAME day was
+    written on two devices: the tiebreak is then which device
+    wrote last about anything, rather than which wrote that day
+    last. Every other case is exact, because a day written on only
+    one device is simply kept. A union that is right except in a
+    genuine conflict is worth more than a feature that does not
+    exist, which is what was there before. */
+const stamp = (entry: unknown, map: Marked): number =>
+  (there(entry) ? Number(entry.ts) : NaN) || Number(map.ts) || 0;
+
 function reconcileCount(base: Value | undefined, mine: Value | undefined, remote: Value | undefined): string {
   const was = Number(base) || 0;
   const now = Number(mine) || 0;
@@ -279,6 +363,7 @@ function reconcile(
 ): Value {
   if (rule === "set") return reconcileSet(base, mine, remote);
   if (rule === "count") return reconcileCount(base, mine, remote);
+  if (rule === "merge") return reconcileMerge(base, mine, remote);
   return reconcileMark(base, mine, remote);
 }
 
@@ -443,6 +528,13 @@ function adopt(remote: Map<string, Value>, pre: Map<string, Value | undefined>):
 
     let next: Value | undefined;
     if (rule === "set") next = [...new Set([...list(theirs), ...list(during)])];
+    /* A map is reconciled here rather than replaced, for the
+       reason its rule exists: taking `during` whole would throw
+       away every entry the account holds that this device has not
+       seen, which for `where-read` is every piece read on another
+       machine. `pre` is what this device held when the fetch went
+       out, which is exactly the base the rule wants. */
+    else if (rule === "merge") next = reconcileMerge(pre.get(key), mine, theirs) ?? undefined;
     else if (during !== null && during !== undefined) next = during;
     else next = theirs;
 

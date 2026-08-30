@@ -125,7 +125,18 @@ export function initWorkbook(school) {
     clearTimeout(writeTimer);
     writeTimer = setTimeout(() => {
       try {
-        localStorage.setItem(writeKey, JSON.stringify(written));
+        /* `ts` is the map's own stamp and is what `aab/sync.js`
+           dates these entries by: see `stamp()` there. It cannot
+           collide with a day, because a day is `stufe-1/tag-3` or
+           `term-1/day-3` and never a bare word, and nothing in
+           this module ever looks a day up by a name it was not
+           given by the page.
+
+           Stamping the map rather than each entry is deliberate:
+           these keys hold sentences somebody wrote, and changing
+           the shape of a value that is already in real browsers
+           is the edit CLAUDE.md opens by warning about. */
+        localStorage.setItem(writeKey, JSON.stringify({ ...written, ts: Date.now() }));
       } catch {
         /* Quota, or private mode. The text is still on screen and
            still typed into; losing the copy is not worth an alert

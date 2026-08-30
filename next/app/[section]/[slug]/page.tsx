@@ -44,6 +44,7 @@ import { Comments } from "@/components/comments";
 import { Engage } from "@/components/engage";
 import { Keep } from "@/components/keep";
 import { ReadAloud } from "@/components/read-aloud";
+import { Where } from "@/components/where";
 import { StagePage, stageMeta } from "@/components/stage-page";
 import { Eyebrow } from "../../../components/ui/label";
 
@@ -137,6 +138,16 @@ export default async function ReadingPage({ params }: Params) {
           <Keep url={`${look.mount}${article.slug}.html`}
                 title={article.title} kind="piece" />
           <ReadAloud />
+          {/* How far down this piece the reader had got, and one
+              control back to it, which is there only when there
+              is somewhere to go. It records either way, so it is
+              rendered on every piece rather than conditionally.
+
+              The canonical address, like `<Keep>` above and for
+              the same reason: this route answers at both forms of
+              it and a position filed under two spellings is two
+              positions. */}
+          <Where url={`${look.mount}${article.slug}.html`} />
         </div>
 
         <div dangerouslySetInnerHTML={{ __html: article.body }} />

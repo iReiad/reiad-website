@@ -44,7 +44,8 @@ import { Sidebar, DrawerBackdrop } from "./sidebar";
 import { TopBar } from "./topbar";
 import { NavTree } from "./nav-tree";
 import { SiteFooter } from "./footer";
-import { accentStyle } from "@reiad/shared/nav";
+import { accentStyle, TOOL_KEYS } from "@reiad/shared/nav";
+import { Used } from "./used";
 import { trailFor, trailJsonLd } from "../lib/crumbs";
 import { siteOrigin } from "../lib/article";
 import { Crumbs, type Crumb } from "./ui/crumbs";
@@ -337,6 +338,14 @@ export function SiteShell({
         <Glow />
         <Sound />
         <Weather />
+        {/* WHEN A CALCULATOR WAS LAST OPENED, and nothing else:
+            see `components/used.tsx`. Here rather than in the five
+            tool routes because the shell already knows which rail
+            key this page is, and `TOOL_KEYS` is derived from
+            `shared/nav.ts`, so a sixth tool is recorded by being
+            added to that table. A page that is not a tool renders
+            nothing at all. */}
+        {current && TOOL_KEYS.includes(current) ? <Used id={current} /> : null}
       </body>
     </html>
   );

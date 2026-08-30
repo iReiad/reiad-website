@@ -1046,7 +1046,27 @@ console.log("\ntaking a copy of everything");
   });
 
   await page.getByRole("tab", { name: "Your data" }).click();
-  await page.waitForTimeout(200);
+  await page.waitForTimeout(400);
+
+  /* WHAT THIS BROWSER IS HOLDING, drawn from `shared/storage.ts`
+     rather than written out on the page. The panel above it
+     counts what the reader has done per school; this is the list
+     that had no answer anywhere, which is what ALL of it is and
+     which parts leave the machine.
+
+     Asserted by its words rather than by a count, because the
+     count is the point: it grows on its own when a key is added
+     anywhere on the site, and a test that pinned it would have to
+     be edited by whoever adds one. */
+  const held = await page.locator(".held").innerText();
+  ok("the data panel says what this browser is holding",
+    held.includes("What you have done"), held.slice(0, 120));
+  ok("in a reader's words rather than in key names",
+    held.includes("lessons you have ticked") && !held.includes("learn-read"),
+    held.slice(0, 200));
+  ok("and marks what travels to the account",
+    (await page.locator(".held-mark").count()) > 0);
+
   const download = page.waitForEvent("download", { timeout: 10000 });
   await page.locator("#account-export").click();
   const file = await download;

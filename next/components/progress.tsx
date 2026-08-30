@@ -26,7 +26,8 @@
 
 import { useCallback, useEffect, useSyncExternalStore } from "react";
 import {
-  getLast, markRead, readSet, setLast, subscribe, toggleRead, type Bookmark,
+  getLast, lastKeyOf, markRead, readKeyOf, readSet, setLast, subscribe,
+  toggleRead, type Bookmark,
 } from "../lib/progress";
 import { GoCard } from "./deck";
 import { Icon } from "./icons";
@@ -60,7 +61,7 @@ function useRead(school: string): Set<string> {
   const raw = useSyncExternalStore(
     subscribe,
     () => {
-      try { return localStorage.getItem(keyOf(school)) ?? ""; } catch { return ""; }
+      try { return localStorage.getItem(readKeyOf(school)) ?? ""; } catch { return ""; }
     },
     () => "",
   );
@@ -69,14 +70,11 @@ function useRead(school: string): Set<string> {
   return readSet(school);
 }
 
-const keyOf = (school: string) =>
-  school === "quran" ? "quran-done" : `${school}-read`;
-
 function useBookmark(school: string, known: string[]): Bookmark | null {
   const raw = useSyncExternalStore(
     subscribe,
     () => {
-      try { return localStorage.getItem(`${school}-last`) ?? ""; } catch { return ""; }
+      try { return localStorage.getItem(lastKeyOf(school)) ?? ""; } catch { return ""; }
     },
     () => "",
   );

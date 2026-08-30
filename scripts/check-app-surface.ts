@@ -61,6 +61,11 @@ const ROOT = join(dirname(fileURLToPath(import.meta.url)), "..");
     name, carrying the reason, because the reason is what stops
     the next entry being added out of habit. */
 const NOT_FOR_APP: Record<string, string> = {
+  TOOL_KEYS:
+    "derived from NAV, which /api/site already sends whole. The app can "
+    + "compute the same list from the same table, and a second copy on the "
+    + "wire is a second thing to keep in step.",
+
   ARTICLES:
     "empty by design. Pieces have been rows in D1 since Stage 11.2 and "
     + "/api/articles is what answers for them.",

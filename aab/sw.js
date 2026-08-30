@@ -31,6 +31,15 @@
    login could not have reached anyone either. Bump this whenever a
    precached file changes.
 
+   v225: /sync.js, /schools/workbook.js and /fallback.css. What a
+        learner types into a practice book is carried to the
+        account now: two keys held eight German and eight English
+        sentences per stage and neither was in the sync table, so
+        the export left them out and the other device was blank.
+        `sync.js` gains a `merge` rule for a map of entries, which
+        is also what carries where in a piece a reader had got to
+        and when they last opened each calculator.
+
    v224: /fallback.css and /prefs.js. The measure stopped being
         `66ch`, which promised 66 characters and delivered 116 of
         them in Bangla: it is a length per script now, the
@@ -2016,7 +2025,7 @@
    imports (crumbs, audience, learn progress) and the hub is a
    different page. Without a bump, a returning reader would be
    served the v3 app.js forever and none of it would appear. */
-const VERSION = "v224";
+const VERSION = "v225";
 const SHELL = `shell-${VERSION}`;
 const RUNTIME = `runtime-${VERSION}`;
 

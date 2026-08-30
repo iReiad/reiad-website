@@ -219,6 +219,84 @@ console.log("\n--- across the schools ---");
   ok("a reader who has never started is offered nothing", P.latest() === null);
 }
 
+console.log("\n--- how far into a piece ---");
+{
+  reset();
+  const A = "/insights/one.html";
+  const B = "/insights/two.html";
+
+  ok("a page nobody has read has no position", P.whereRead(A) === null);
+
+  P.markWhere(A, { i: 4, of: 30, sig: "the first words" });
+  ok("a position is kept", P.whereRead(A)?.i === 4, String(P.whereRead(A)?.i));
+
+  /* THE LAST THING SAID IS THE POSITION. Forwards-only belongs to
+     the caller, because only the caller knows what one visit is:
+     `components/where.tsx` keeps the furthest block of this visit
+     and only calls in when it moves, and opening the page again
+     tomorrow to reread it legitimately starts lower down. A guard
+     here compared the signature too, which is of the block at
+     that index and therefore changes on every step, so it never
+     fired and the first thing it let through was a reader
+     arriving at the top of a piece and losing their half-way
+     position to the first paragraph. */
+  P.markWhere(A, { i: 9, of: 30, sig: "further in" });
+  ok("carrying on moves it", P.whereRead(A)?.i === 9);
+  P.markWhere(A, { i: 3, of: 26, sig: "different words entirely" });
+  ok("and a reread starts again where the reader is",
+    P.whereRead(A)?.i === 3, String(P.whereRead(A)?.i));
+  ok("the signature travels with it, because the index alone is a guess",
+    P.whereRead(A)?.sig === "different words entirely");
+
+  P.markWhere(B, { i: 1, of: 12, sig: "another piece" });
+  ok("one page's position is not another's", P.whereRead(A)?.i === 3 && P.whereRead(B)?.i === 1);
+  ok("and both are listed", Object.keys(P.everywhereRead()).length === 2);
+
+  P.forgetWhere(A);
+  ok("finishing a piece forgets it", P.whereRead(A) === null);
+  ok("and leaves the others alone", P.whereRead(B)?.i === 1);
+  P.forgetWhere("/never-read");
+  ok("forgetting a page that was never read is nothing", P.whereRead(B)?.i === 1);
+
+  /* THE MAP DOES NOT GROW FOR EVER. Every entry goes up to the
+     account with the rest, so the oldest are dropped rather than
+     kept: nobody returns to a piece they abandoned two hundred
+     pieces ago and expects to be remembered. */
+  reset();
+  const realNow = Date.now;
+  let clock = 1_700_000_000_000;
+  Date.now = () => clock;
+  for (let n = 0; n < 240; n += 1) {
+    clock += 1000;
+    P.markWhere(`/insights/p${n}.html`, { i: 3, of: 20, sig: `p${n}` });
+  }
+  Date.now = realNow;
+  const all = P.everywhereRead();
+  ok("the oldest positions are dropped", Object.keys(all).length === 200,
+    String(Object.keys(all).length));
+  ok("and the newest is kept", !!all["/insights/p239.html"]);
+  ok("while the oldest is gone", !all["/insights/p0.html"]);
+}
+
+console.log("\n--- which tools ---");
+{
+  reset();
+  ok("nothing used yet", Object.keys(P.toolsUsed()).length === 0);
+  P.markToolUsed("stock");
+  P.markToolUsed("diet");
+  ok("both are remembered", Object.keys(P.toolsUsed()).sort().join() === "diet,stock");
+  ok("and each carries when", P.toolsUsed().stock > 0);
+
+  /* A TIMESTAMP AND NEVER A COUNT: two devices each saying five
+     are either ten openings or the same five seen twice, and
+     nothing in the value can tell them apart. Opening a tool
+     twice is one fact, not two. */
+  const first = P.toolsUsed().stock;
+  P.markToolUsed("stock");
+  ok("opening it again is still one entry", Object.keys(P.toolsUsed()).length === 2);
+  ok("and moves the time rather than a count", P.toolsUsed().stock >= first);
+}
+
 if (failures.length) {
   console.error(`\nprogress: ${failures.length} failed of ${passed + failures.length}`);
   for (const f of failures) console.error(`  ✗ ${f}`);
