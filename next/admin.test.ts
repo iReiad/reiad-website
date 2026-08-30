@@ -858,6 +858,17 @@ console.log("\n/admin, the desk's own features");
   ok("and so is a recent enquiry",
     (await text(page, "#enquiries")).includes("new"));
 
+  /* ---- and the one queue that is not a queue of messages ----
+
+     Every lesson on this site shared its stage's standing card
+     until there was somewhere to draw one, so 251 of them were
+     six pictures. The panel is what draws them, one at a time, in
+     the tab: what is asserted here is that it is mounted and says
+     what it would do, because the drawing itself is
+     `aab/studio-publish.test.ts`'s subject and needs R2. */
+  ok("the desk offers to draw what has no picture",
+    (await text(page, "#cards")).length > 0);
+
   /* ---- reaching the person ---- */
   const asker = page.locator('#questions a[href^="mailto:"]').first();
   ok("a question offers a reply by email", await asker.count() === 1);

@@ -124,6 +124,11 @@ export interface CardWords {
   /** The token directly, for anything that already has it and
       for a caller with no rail to read. */
   accent?: string;
+  /** A stable identifier for this piece: a slug, a lesson id.
+      What the composition is derived from, so the same piece is
+      the same card every time it is drawn and two pieces are
+      never the same card. */
+  seed?: string;
 }
 
 /** A section's colour, out of the rail. Returns a token name so
@@ -288,12 +293,112 @@ function wrap(
    left edge, and the hairline rim.
    ============================================================ */
 
-/** Where the subject stands. The drawings are 520 by 400 with the
-    ground at y=300, so the whole box scales as one and the
-    reflection knows where the floor is without measuring
-    anything. Right of centre, because the words are on the left
-    and a card is read from there. */
-const STAGE = { x: 596, y: 22, w: 604, h: 465, ground: 22 + (300 / 400) * 465 };
+/* ============================================================
+   NO TWO CARDS THE SAME, and it is not a random number
+
+   The room is ten layers and the subject is one of twelve, which
+   is a lot of variety on paper and none at all in a feed: a
+   reader who follows this site sees the same room with a
+   different thing standing in it, at the same angle, under the
+   same four shafts of light, with the same five motes in the same
+   five places.
+
+   So the COMPOSITION is derived, out of the piece's own id. Same
+   hash `shared/art.ts` picks the subject and the colour with, and
+   the same reason: a card has to be the same card every time it
+   is drawn, or republishing a piece moves its picture. A random
+   number would be a card that changed under a link somebody had
+   already shared.
+
+   Eleven numbers come out of it: where the light falls, how high
+   the horizon is, how hard the floor converges, where the halo
+   sits, how the wall behind is offset and scaled, and where the
+   motes are. None of them changes what the card IS, which is why
+   they are safe to move: a card with its horizon 40px higher is
+   the same card from a slightly different chair.
+   ============================================================ */
+
+/** FNV-1a with the finaliser, which is `shared/art.ts`'s hash and
+    has to be: two files disagreeing about what an id hashes to
+    would be a card whose subject and whose room were chosen for
+    different pieces. Written out rather than imported because
+    `shared/` is not on the wire for a browser module, and it is
+    six lines. */
+function hash(seed: string): number {
+  let h = 0x811c9dc5;
+  for (let i = 0; i < seed.length; i += 1) {
+    h ^= seed.charCodeAt(i);
+    h = Math.imul(h, 0x01000193);
+  }
+  /* The finaliser, and it is not optional. FNV-1a avalanches
+     badly in its LOW bits and every read below is a fraction, so
+     without this a run of consecutive slugs comes out with the
+     same composition. `shared/art.ts` says the same thing where
+     it reads a pool. */
+  h ^= h >>> 16; h = Math.imul(h, 0x7feb352d);
+  h ^= h >>> 15; h = Math.imul(h, 0x846ca68b);
+  h ^= h >>> 16;
+  return h >>> 0;
+}
+
+/** A stream of fractions off one seed, read from the TOP bits for
+    the reason above. */
+function dice(seed: string): (lo: number, hi: number) => number {
+  let h = hash(seed);
+  return (lo, hi) => {
+    h = hash(String(h));
+    return lo + (h >>> 8) / 0x1000000 * (hi - lo);
+  };
+}
+
+/** Everything about this card that is not what it is OF. */
+interface Composition {
+  /** Where the ground line sits. */
+  horizon: number;
+  /** How hard the floor's lines converge: 0 is parallel, 1 is a
+      point. */
+  pitch: number;
+  /** The subject's box. */
+  stage: { x: number; y: number; w: number; h: number };
+  /** Where the bloom behind it is centred. */
+  halo: { x: number; y: number; r: number };
+  /** The shafts: where each starts and how wide it is. */
+  rays: Array<[at: number, width: number]>;
+  /** The motes in front, out of focus. */
+  motes: Array<[x: number, y: number, r: number, alpha: number]>;
+  /** How the wall behind is placed. */
+  wall: { dx: number; dy: number; scale: number; alpha: number };
+}
+
+function composeFor(seed: string): Composition {
+  const d = dice(seed || "reiad");
+
+  /* The subject box. The drawings are 520 by 400 with the ground
+     at y = 300, so the whole box scales as one and the reflection
+     knows where the floor is without measuring anything. Right of
+     centre always, because the words are on the left and a card
+     is read from there: what moves is how far right and how big,
+     which is the difference between standing back and stepping
+     forward. */
+  const w = d(548, 648);
+  const h = w * (465 / 604);
+  const x = d(560, 1200 - w + 34);
+  const y = d(6, 46);
+  const horizon = y + (300 / 400) * h;
+
+  return {
+    horizon,
+    pitch: d(0.14, 0.34),
+    stage: { x, y, w, h },
+    halo: { x: x + w / 2 + d(-70, 70), y: d(190, 300), r: d(470, 640) },
+    rays: [0, 1, 2, 3].map((i) =>
+      [d(0.02, 0.22) + i * 0.19, d(52, 156)] as [number, number]),
+    motes: [0, 1, 2, 3, 4].map(() =>
+      [d(120, 1160), d(60, 580), d(5, 12), d(0.1, 0.26)] as
+        [number, number, number, number]),
+    wall: { dx: d(-150, -80), dy: d(-40, 10), scale: d(1.3, 1.7), alpha: d(0.38, 0.6) },
+  };
+}
 
 /** A drawing, rasterised.
 
@@ -369,9 +474,10 @@ function weaveOf(ctx: OffscreenCanvasRenderingContext2D, p: Palette): CanvasPatt
     and the second has to erase the first, which cannot be done
     on a canvas that already has a room painted on it. */
 function drawStage(
-  ctx: OffscreenCanvasRenderingContext2D, art: ImageBitmap,
+  ctx: OffscreenCanvasRenderingContext2D, art: ImageBitmap, c: Composition,
 ): void {
-  const { x, y, w, h, ground } = STAGE;
+  const { x, y, w, h } = c.stage;
+  const ground = c.horizon;
 
   const mirror = new OffscreenCanvas(w, h);
   const m = mirror.getContext("2d");
@@ -391,14 +497,22 @@ function drawStage(
        reflection that reaches the foot of the card is a second
        copy of the drawing floating under the floor, which is
        what an arrow at the top of a subject looked like. */
-    fadeOut.addColorStop(0.42, "rgba(0,0,0,0)");
+    fadeOut.addColorStop(0.36, "rgba(0,0,0,0)");
     fadeOut.addColorStop(1, "rgba(0,0,0,0)");
     m.globalCompositeOperation = "destination-out";
     m.fillStyle = fadeOut;
     m.fillRect(0, 0, w, h);
 
     ctx.save();
-    ctx.globalAlpha = 0.24;
+    /* CLIPPED TO BELOW THE FLOOR, which is the one thing a
+       reflection must never break: the mirror is the whole box
+       flipped, so its top half is the empty space under the
+       subject and would paint back over the subject's own feet.
+       Mostly transparent, and "mostly" is not a promise. */
+    ctx.beginPath();
+    ctx.rect(0, ground, SHARE_W, SHARE_H - ground);
+    ctx.clip();
+    ctx.globalAlpha = 0.22;
     ctx.filter = "blur(2px)";
     /* Placed so the mirror's own ground line lands on the stage's,
        which is what makes it a reflection rather than a copy
@@ -415,6 +529,7 @@ function drawStage(
 function drawMaterial(
   ctx: OffscreenCanvasRenderingContext2D, p: Palette, hasPhoto: boolean,
   drawn: { subject: ImageBitmap | null; motif: ImageBitmap | null },
+  c: Composition,
 ): void {
   if (!hasPhoto) {
     /* ---- 1. sky ---- */
@@ -433,8 +548,9 @@ function drawMaterial(
     }
 
     /* ---- 3. halo: the bloom the subject throws behind it ---- */
-    const cx = STAGE.x + STAGE.w / 2;
-    const halo = ctx.createRadialGradient(cx, 250, 10, cx, 250, 560);
+    const cx = c.stage.x + c.stage.w / 2;
+    const halo = ctx.createRadialGradient(
+      c.halo.x, c.halo.y, 10, c.halo.x, c.halo.y, c.halo.r);
     halo.addColorStop(0, fade(p.accent, 0.38));
     halo.addColorStop(0.5, fade(p.accent, 0.12));
     halo.addColorStop(1, fade(p.accent, 0));
@@ -445,7 +561,7 @@ function drawMaterial(
        highlight on this site comes from ---- */
     ctx.save();
     ctx.globalAlpha = 0.5;
-    for (const [at, width] of [[0.1, 108], [0.28, 62], [0.44, 148], [0.62, 74]]) {
+    for (const [at, width] of c.rays) {
       const rx = SHARE_W * at;
       const ray = ctx.createLinearGradient(rx, 0, rx + 260, SHARE_H);
       ray.addColorStop(0, fade(p.ink, 0.055));
@@ -466,16 +582,17 @@ function drawMaterial(
        second picture. ---- */
     if (drawn.motif) {
       ctx.save();
-      ctx.globalAlpha = 0.5;
+      ctx.globalAlpha = c.wall.alpha;
       ctx.filter = "blur(2.5px)";
-      ctx.drawImage(drawn.motif, STAGE.x - 128, STAGE.y - 26,
-        STAGE.w + 256, STAGE.h + 40);
+      ctx.drawImage(drawn.motif,
+        c.stage.x + c.wall.dx, c.stage.y + c.wall.dy,
+        c.stage.w * c.wall.scale, c.stage.h * c.wall.scale);
       ctx.restore();
     }
 
     /* ---- 6. floor: every line aimed at ONE vanishing point,
        because parallel lines are a hatch ---- */
-    const horizon = STAGE.ground;
+    const horizon = c.horizon;
     const line = ctx.createLinearGradient(0, 0, SHARE_W, 0);
     line.addColorStop(0, fade(p.hot, 0.05));
     line.addColorStop(0.6, fade(p.hot, 0.3));
@@ -492,7 +609,7 @@ function drawMaterial(
     for (let x = -600; x < SHARE_W + 800; x += 116) {
       ctx.beginPath();
       ctx.moveTo(x, SHARE_H);
-      ctx.lineTo(cx + (x - cx) * 0.24, horizon);
+      ctx.lineTo(cx + (x - cx) * c.pitch, horizon);
       ctx.stroke();
     }
     const far = ctx.createLinearGradient(0, horizon, 0, SHARE_H);
@@ -503,15 +620,12 @@ function drawMaterial(
     ctx.fillRect(0, horizon, SHARE_W, SHARE_H - horizon);
 
     /* ---- 7. stage ---- */
-    if (drawn.subject) drawStage(ctx, drawn.subject);
+    if (drawn.subject) drawStage(ctx, drawn.subject, c);
 
     /* ---- 8. near: motes in front of it, out of focus ---- */
     ctx.save();
     ctx.filter = "blur(3px)";
-    for (const [mx, my, r, a] of [
-      [232, 96, 9, 0.24], [1042, 148, 7, 0.2], [742, 546, 11, 0.16],
-      [452, 470, 6, 0.18], [1136, 402, 8, 0.14],
-    ]) {
+    for (const [mx, my, r, a] of c.motes) {
       ctx.fillStyle = fade(p.hot, a);
       ctx.beginPath();
       ctx.arc(mx, my, r, 0, Math.PI * 2);
@@ -610,6 +724,12 @@ export async function shareCardBlob(
      taken on it, which cannot have happened one line after `new`. */
   const ctx = canvas.getContext("2d")!;
   const p = palette(accentOf(words));
+  /* The composition, off the piece's own id. `seed` rather than
+     the title, for the reason `shared/art.ts` gives beside its
+     own hash: a title moves on a typo fix and the picture must
+     not. Falls back to the title only because two callers have
+     nothing else. */
+  const c = composeFor(words.seed || words.title || "");
 
   let drew = false;
   if (src) {
@@ -639,12 +759,13 @@ export async function shareCardBlob(
      for instead of being scaled up with everything else. */
   const drawnArt = drew ? { subject: null, motif: null } : {
     subject: drawing.subject
-      ? await drawingOf(drawing.subject, p.art, STAGE.w, STAGE.h) : null,
+      ? await drawingOf(drawing.subject, p.art, c.stage.w, c.stage.h) : null,
     motif: drawing.motif
-      ? await drawingOf(drawing.motif, p.art, STAGE.w + 256, STAGE.h + 40) : null,
+      ? await drawingOf(drawing.motif, p.art,
+        c.stage.w * c.wall.scale, c.stage.h * c.wall.scale) : null,
   };
 
-  drawMaterial(ctx, p, drew, drawnArt);
+  drawMaterial(ctx, p, drew, drawnArt, c);
   drawWords(ctx, p, words);
 
   // JPEG deliberately. This is the one image on the site that is

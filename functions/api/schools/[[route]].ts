@@ -368,15 +368,39 @@ export async function onRequest(
            It is what "nobody has written this yet" looks like,
            and it is what makes the builders draw an আসছে page.
            Emptying a lesson has to stay possible. */
+        /* THE CARD IS MERGED INTO META, never written over it.
+
+           `meta` is the school's own fields: the lesson's English
+           title, its blurb, its icon, its day range. A PUT that
+           replaced the object would take all of them off the day
+           somebody drew a picture, and the Studio's lesson editor
+           does not send meta at all, so the replacement would be
+           `{}`. One key in, everything else untouched.
+
+           Narrow on purpose: this accepts `card` and nothing
+           else. A general meta merge would let any caller write
+           any field of a school's vocabulary through the one
+           endpoint that is meant for prose. */
+        let meta = existing.meta;
+        if (patch.card !== undefined) {
+          let held: Record<string, unknown> = {};
+          try { held = JSON.parse(String(existing.meta || "{}")); } catch { held = {}; }
+          const card = String(patch.card).trim();
+          if (card) held.card = card.slice(0, 300);
+          else delete held.card;
+          meta = JSON.stringify(held);
+        }
+
         await d1.prepare(
           `UPDATE school_lessons
-              SET body = ?, title = ?, minutes = ?, status = ?, updated_at = ?
+              SET body = ?, title = ?, minutes = ?, status = ?, meta = ?, updated_at = ?
             WHERE school = ? AND stage = ? AND slug = ?`
         ).bind(
           html,
           patch.title === undefined ? existing.title : String(patch.title),
           patch.minutes === undefined ? existing.minutes : Number(patch.minutes) || 0,
           patch.status === undefined ? existing.status : String(patch.status),
+          meta,
           nowISO(), school, String(stage), slug
         ).run();
 

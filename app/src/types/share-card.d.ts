@@ -46,6 +46,11 @@ export interface CardWords {
     /** The token directly, for anything that already has it and
         for a caller with no rail to read. */
     accent?: string;
+    /** A stable identifier for this piece: a slug, a lesson id.
+        What the composition is derived from, so the same piece is
+        the same card every time it is drawn and two pieces are
+        never the same card. */
+    seed?: string;
 }
 /** The nine tokens the twelve drawings and six walls between them
     actually name. Asserted against the strings by

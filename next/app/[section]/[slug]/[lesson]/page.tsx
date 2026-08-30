@@ -72,7 +72,21 @@ export async function generateMetadata({ params }: { params: Params }): Promise<
       description,
       url,
       siteName: "Reiad's Library",
-      images: [{ url: `${origin}/og/${look.og}${stage.slug}.png`, width: 1200, height: 630 }],
+      /* THE LESSON'S OWN CARD, where one has been drawn.
+
+         Every lesson in a stage used to share the stage's
+         standing card, so a reader pasting three lessons from one
+         stage into a chat pasted the same picture three times.
+         `meta.card` is the drawn one, stored by
+         `/api/schools/<school>/<stage>/<lesson>` and made by the
+         card queue on /admin, and the stage's card is what a
+         lesson nobody has drawn one for still gets. */
+      images: [{
+        url: typeof it.card === "string" && it.card
+          ? (it.card.startsWith("http") ? it.card : `${origin}${it.card}`)
+          : `${origin}/og/${look.og}${stage.slug}.png`,
+        width: 1200, height: 630,
+      }],
     },
     twitter: { card: "summary_large_image" },
     other: { "color-scheme": "light dark", "theme-color": "#0B3D2E" },

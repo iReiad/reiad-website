@@ -1532,6 +1532,41 @@ stands on.
 **Which means every piece can have one now.** It used to be the
 section's standing card for anything unillustrated.
 
+**And every lesson, which never had one at all.** All 251 fell
+back to their stage's standing card, so three lessons of one
+stage pasted into a chat were the same picture three times. A
+lesson's is `meta.card`, written by
+`PUT /api/schools/<school>/<stage>/<lesson>`, which MERGES that
+one key rather than replacing the object: the Studio's lesson
+editor sends no meta at all, so a replacement would be `{}` and
+would take the English title, the blurb, the icon and the day
+range with it.
+
+**No two cards are the same, and it is not a random number.**
+Eleven numbers come out of the piece's own id, through the hash
+`shared/art.ts` picks the subject and the colour with: where the
+light falls, how high the horizon is, how hard the floor
+converges, where the halo sits, how the wall behind is offset and
+scaled, where the motes are. Derived rather than random for the
+same reason the subject is: a card has to be the same card every
+time it is drawn, or republishing a piece moves the picture under
+a link somebody has already shared. None of them changes what the
+card IS, which is why they are safe to move: a card with its
+horizon 40px higher is the same card from a slightly different
+chair.
+
+**The Pictures panel on `/admin` is the queue.** Nothing can draw
+a card on the server: a card is a canvas, a canvas is a browser,
+and both Workers here have neither. So `GET /api/admin/cards`
+answers with what has none, oldest first, and the desk draws them
+one at a time in the tab and sends each back. Left open it works
+through everything; closed it stops where it was, and the next
+visit carries on, because the queue is whatever the database
+still answers with. That it needs the tab open is said in the
+panel's own copy, because a queue that claims to run in the
+background and stops when a tab closes is worse than one that
+says so.
+
 **It is always the dark one, and that is not a shortcut.** Every
 other picture on this site answers the theme; a JPEG in somebody's
 chat window cannot, because it is drawn once at publish and looked

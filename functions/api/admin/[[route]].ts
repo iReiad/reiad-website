@@ -37,7 +37,7 @@
 
    ============================================================ */
 
-import { fail, methods, ok } from "../../_lib/http.ts";
+import { fail, methods, notConfigured, ok } from "../../_lib/http.ts";
 import { readSession } from "../../_lib/auth.ts";
 import { readerFrom } from "../../_lib/reader.ts";
 import { isAdmin } from "../../_lib/admins.ts";
@@ -148,6 +148,81 @@ export async function onRequest(context: AdminContext): Promise<Response> {
         return ok({
           subjects: ART_SUBJECTS_SVG, motifs: ART_MOTIFS, motifOf: MOTIF_OF,
           box: ART_VIEWBOX, pick,
+        });
+      },
+    });
+  }
+
+  /* ---------- what has no picture yet ----------
+
+     THE QUEUE, and it is one list rather than two.
+
+     A drawn card is `/media/<slug>-card/<hash>.jpg`, and anything
+     else in a `cover` is a raw photograph, which half the
+     scrapers refuse to read. A lesson's is in its `meta`, and a
+     lesson with none falls back to its STAGE's standing card, so
+     every lesson in a stage shares one picture: three lessons
+     pasted into a chat are the same image three times.
+
+     Both are read here rather than in the browser because both
+     are one SQL query and neither is a thing the desk should be
+     assembling out of four ladder fetches. Nothing is drawn here:
+     a card is a canvas and this is a Worker. The browser draws
+     and PATCHes back, one at a time, which is what makes it a
+     queue rather than a job.
+
+     Answered oldest first, so the run always makes progress on
+     the things that have been waiting longest, and a run that is
+     interrupted has done the most useful half. */
+  if (route === "cards") {
+    return methods(request, {
+      GET: async () => {
+        if (!await allowed(context)) return fail("forbidden", 403);
+        if (!env.DB) return notConfigured();
+
+        const url = new URL(request.url);
+        const limit = Math.min(400, Math.max(1, Number(url.searchParams.get("limit")) || 200));
+
+        /* `LIKE` rather than the regexp `isDrawnCard` uses,
+           because SQLite has no regexp and the two agree on the
+           part that matters: a drawn card is under
+           `/media/<something>-card/`. A cover that passes here
+           and fails the browser's stricter test is drawn again,
+           which costs one card and is the safe direction. */
+        const pieces = await env.DB.prepare(
+          `SELECT slug, title, tag, section, cover, published_at
+             FROM articles
+            WHERE status = 'live'
+              AND (cover IS NULL OR cover = '' OR cover NOT LIKE '/media/%-card/%')
+            ORDER BY published_at ASC
+            LIMIT ?`
+        ).bind(limit).all<{ slug: string; title: string; tag: string;
+          section: string; cover: string | null }>();
+
+        const lessons = await env.DB.prepare(
+          `SELECT school, stage, slug, title, meta
+             FROM school_lessons
+            WHERE status = 'live' AND body <> ''
+              AND (meta IS NULL OR meta NOT LIKE '%"card"%')
+            ORDER BY school ASC, stage ASC, position ASC
+            LIMIT ?`
+        ).bind(limit).all<{ school: string; stage: string; slug: string;
+          title: string; meta: string | null }>();
+
+        return ok({
+          pieces: pieces.results ?? [],
+          lessons: (lessons.results ?? []).map((l) => {
+            let meta: Record<string, unknown> = {};
+            try { meta = JSON.parse(l.meta || "{}"); } catch { meta = {}; }
+            return {
+              school: l.school, stage: l.stage, slug: l.slug, title: l.title,
+              /* The lesson's own words, for the card's kicker and
+                 its subject: `blurb` and the English title are in
+                 `meta` and nothing else here has them. */
+              en: typeof meta.en === "string" ? meta.en : "",
+              icon: typeof meta.icon === "string" ? meta.icon : "",
+            };
+          }),
         });
       },
     });
