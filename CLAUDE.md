@@ -399,6 +399,19 @@ answers; nothing keeps a second copy in React, because the copy is
 the one that arrives a paint late. `@layer shell` in `styles.css`
 is where the rules are.
 
+**The audience switch turns on its side when the rail folds.** A
+folded rail is 76px and the switch is two halves reading
+"Learning / শিখতে এসেছি" and
+"Hiring / কাজের খোঁজে", so it measured
+173px inside a 76px column and spilled across the page, on the one
+width where the reader had asked for less. Hiding it was not the
+answer: folding the rail is not giving up the question. It becomes
+one column and two rows with a drawing each, the lozenge sliding
+down instead of across, and the rules are inside a
+`min-width: 901px` query rather than stated and then taken back in
+a second block, which is how the five older folded rules are
+written and four chances to get it wrong.
+
 **Two pages are not routes and cannot be:** `404.html` and
 `offline.html`, which have to answer when the Worker, the route and
 the network are all unavailable, which is exactly when a route

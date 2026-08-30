@@ -63,13 +63,29 @@ function pick(value: "learn" | "work") {
   document.dispatchEvent(new CustomEvent("audience:pick", { detail: value }));
 }
 
+/** One drawing per audience, for the one place the words do not
+    fit: a folded rail is 76px wide and the labels are
+    "Learning / \u09b6\u09bf\u0996\u09a4\u09c7 \u098f\u09b8\u09c7\u099b\u09bf" and
+    "Hiring / \u0995\u09be\u099c\u09c7\u09b0 \u0996\u09cb\u0981\u099c\u09c7".
+    Both icons are the money school's own, which is where every
+    other icon in this shell comes from. */
+const AUDIENCE_ICONS: Record<string, string> = { learn: "cap", work: "briefcase" };
+
 export function AudienceSwitch() {
   return (
     <div className="audience-switch" role="group" aria-label="What brings you here">
       <span className="audience-slider" aria-hidden="true" />
       {AUDIENCES.map((a) => (
+        /* The accessible name is on the button rather than left to
+           its contents, because in the folded rail the contents
+           are one icon and an icon is `aria-hidden`. Without it
+           the two halves of the switch announce as "button,
+           button". */
         <button key={a.id} type="button" className="audience-opt" data-pick={a.id}
-                onClick={() => pick(a.id)}>
+                aria-label={a.label} onClick={() => pick(a.id)}>
+          <span className="audience-ico" aria-hidden="true">
+            <Icon name={AUDIENCE_ICONS[a.id] ?? "person"} size={18} />
+          </span>
           <span className="audience-label">{a.label}</span>
           <span className="audience-sub" lang="bn">{a.sub}</span>
         </button>

@@ -6001,6 +6001,29 @@
   html[data-rail="closed"] .rail-mark { flex: 0 1 auto; justify-content: center; }
   html[data-rail="closed"] .rail-item[aria-current="page"]::before { left: -8px; }
 
+  @media (min-width: 901px) {
+    html[data-rail="closed"] .audience-switch {
+      grid-template-columns: 1fr;
+      grid-template-rows: 1fr 1fr;
+    }
+    html[data-rail="closed"] .audience-slider {
+
+      bottom: auto;
+      right: 3px;
+      width: auto;
+      height: calc(50% - 3px);
+    }
+    html[data-rail="closed"] .audience-opt { padding: 6px 0; }
+    html[data-rail="closed"] :is(.audience-label, .audience-sub) {
+      display: none;
+    }
+    html[data-rail="closed"] .audience-ico { display: inline-flex; }
+
+    html[data-rail="closed"][data-audience="work"] .audience-slider {
+      translate: 0 100%;
+    }
+  }
+
   .topbar {
     position: fixed;
     top: var(--top-gap);
@@ -6191,6 +6214,8 @@
     font-family: var(--font-bn); font-size: var(--t-1); opacity: 0.85;
   }
 
+  .audience-ico { display: none; }
+
   html[data-audience="learn"] .audience-opt[data-pick="learn"],
   html[data-audience="work"] .audience-opt[data-pick="work"] {
     color: #fff;
@@ -6271,7 +6296,6 @@
     html[data-rail="closed"] :is(.rail-item, .rail-toggle, .rail-head) {
       justify-content: flex-start; padding-inline: 12px;
     }
-
     .drawer-btn { display: inline-flex; }
 
     .rail-head {
