@@ -14270,8 +14270,24 @@ German for day, and .tag is what the site has always called
      inline spans by the rule above when they are showing. */
   .ls-body .ls-slice > .ls-bn,
   .ls-body .ls-slice > .ls-en { display: block; }
-  :root[data-read-lang="en"] .ls-body .ls-slice > .ls-bn,
-  :root:not([data-read-lang="en"]) .ls-body .ls-slice > .ls-en { display: none; }
+
+  /* AND ONE IS HIDDEN ONLY WHERE THERE ARE TWO. `data-langs` is
+     what `lesson/body.tsx` says the prose carries, and it is `bn`
+     on 144 of the 225 written lessons: every one of deutsch,
+     english and quran. Hiding the Bangla there hides the whole
+     lesson, on a page that renders no switch to undo it because
+     there is nothing to switch to, so a reader who had ever
+     pressed English on a calculator got a heading, a byline and a
+     prev/next pair round nothing at all. The rule above is what
+     leaves the Bangla showing when this one does not fire.
+
+     Not on the generic pair rule, which stays unguarded on
+     purpose: a `Say` inside a block is written in both languages
+     by construction and can always answer either. Only the prose
+     can be the sole thing on the page. */
+  :root[data-read-lang="en"] .ls-body[data-langs="both"] .ls-slice > .ls-bn,
+  :root:not([data-read-lang="en"]) .ls-body[data-langs="both"] .ls-slice > .ls-en
+    { display: none; }
 
   html .ls-bn { font-family: var(--font-bn); }
 

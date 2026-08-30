@@ -65,7 +65,14 @@ export function LessonBody(
   const rendered = new Set<string>();
 
   return (
-    <div className="ls-body">
+    /* WHICH LANGUAGES THE PROSE ACTUALLY CARRIES, because
+       `@layer lesson` may only hide a half that has a counterpart.
+       144 lessons (all of deutsch, english and quran) are Bangla
+       and nothing else, and a reader whose `tool-lang` is "en"
+       had every one of them hidden: a heading, a byline and a
+       prev/next pair round an empty page, with no switch to undo
+       it because there is nothing to switch to. */
+    <div className="ls-body" data-langs={english ? "both" : "bn"}>
       {bangla.parts.map((part, i) => {
         const id = ids[i];
         const block = id ? all[id] : undefined;

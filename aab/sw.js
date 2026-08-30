@@ -31,6 +31,13 @@
    login could not have reached anyone either. Bump this whenever a
    precached file changes.
 
+   v231: /fallback.css. Every lesson of deutsch, english and quran
+        was blank for a reader whose `tool-lang` was "en". Both
+        bodies of a lesson are in the markup and @layer lesson
+        hides one; 144 lessons have only the Bangla, so it hid the
+        lesson, on a page with no switch to undo it. The rule is
+        keyed on `data-langs` now.
+
    v230: /fallback.css. The page was 33px wider than a phone and
         the browser zoomed the whole thing out to fit, the bar
         included. `.home-aura::before` bleeds -14% either side
@@ -2060,7 +2067,7 @@
    imports (crumbs, audience, learn progress) and the hub is a
    different page. Without a bump, a returning reader would be
    served the v3 app.js forever and none of it would appear. */
-const VERSION = "v230";
+const VERSION = "v231";
 const SHELL = `shell-${VERSION}`;
 const RUNTIME = `runtime-${VERSION}`;
 

@@ -9023,8 +9023,10 @@
 
   .ls-body .ls-slice > .ls-bn,
   .ls-body .ls-slice > .ls-en { display: block; }
-  :root[data-read-lang="en"] .ls-body .ls-slice > .ls-bn,
-  :root:not([data-read-lang="en"]) .ls-body .ls-slice > .ls-en { display: none; }
+
+  :root[data-read-lang="en"] .ls-body[data-langs="both"] .ls-slice > .ls-bn,
+  :root:not([data-read-lang="en"]) .ls-body[data-langs="both"] .ls-slice > .ls-en
+    { display: none; }
 
   html .ls-bn { font-family: var(--font-bn); }
 
