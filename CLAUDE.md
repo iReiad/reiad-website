@@ -670,58 +670,311 @@ them being two components rather than one with a prop.
 not written, which is a `div` for the same reason a chip that goes
 nowhere is not a link.
 
-## A card wears a drawing, and the drawing is made of tokens
+## A card wears a scene, and the scene is made of tokens
 
-`next/components/card-art.tsx` holds twelve of them, one per
-SUBJECT: coins, a chart, sheets, a book, a pan, ridges, flashcards,
-an arch, bubbles, a gauge, a calendar, a plate. `shared/nav.ts`
-names which subject each school, tool and desk wears, so the board,
-`/skills` and the tools hub draw the same picture for the same
-thing out of one table, and the Android app is sent it like every
-other field.
+`next/components/card-art.tsx` holds twelve SUBJECTS: coins, a
+chart, sheets, a book, a pan, ridges, flashcards, an arch, bubbles,
+a gauge, a calendar, a plate. `shared/nav.ts` names which subject
+each school, tool and desk wears, so the board, `/skills` and the
+tools hub draw the same picture for the same thing out of one
+table, and the Android app is sent it like every other field.
 
 **They were twenty-five committed WebP files and are markup now.**
 A raster cannot answer a theme: light and dark would have meant
-fifty, kept in step by hand. Every colour in a drawing is a MIX of
-the card's own `--accent` with `--panel` and `--ink`, which are the
-two tokens that already flip, so one drawing is dark glass at night
-and inked glass on paper. That also took a build step, a browser, a
-stamp file and 300 KB of binaries out of the repository.
+fifty, kept in step by hand. That also took a build step, a
+browser, a stamp file and 300 KB of binaries out of the repository.
 
-**Which end a tone mixes towards is the whole trick.** A tone that
-has to be SEEN mixes towards `--ink`, so it brightens over a dark
-ground and darkens over a pale one. A tone that has to RECEDE mixes
-towards `--panel`. `--art-lit` mixed the wrong way for one build
-and every drawing came out as pale as the paper.
+### A scene is a room, not a picture
+
+Ten layers, back to front, and each is a different KIND of thing
+rather than the same wash at another opacity:
+
+| | |
+| --- | --- |
+| `art-sky` | the ground and the horizon |
+| `art-weave` | the tooth of the material, a stipple |
+| `art-halo` | the bloom the subject throws behind it |
+| `art-rays` | shafts of light from the top left |
+| `art-far` | the MOTIF: what is behind this subject |
+| `art-floor` | the plane it all stands on |
+| `art-stage` | the subject, and its reflection |
+| `art-near` | motes in front of it, out of focus |
+| `art-spec` | the highlight crossing the glass |
+| `art-veil` | the corners going down |
+
+They live inside `.art-space`, not inside the frame, and that is
+load-bearing: the frame CLIPS, a clip flattens, and the room has to
+turn inside something that is not turning.
+
+**Six motifs, not twelve.** A motif is about the KIND of thing a
+subject is: money and bubbles both belong in a field of orbits, a
+ridge and a plate both sit against strata. Twelve would be twelve
+more drawings to keep in step for a layer rendered at 62% opacity
+behind a 1.1px blur.
+
+**`<Scene>` takes a drawing rather than owning one.** The seven case
+studies each carry a sparkline describing that model, which is a
+better picture than any of the twelve, and it belongs in a room
+like everything else.
+
+**Three sizes, and each changes ONE number.** `band`, `tile`,
+`panel`. The layers, the depths and the drawing are identical;
+`--art-throw` is what differs, because a subject that slides 26px
+inside an 84px thumbnail slides off its own floor.
+
+### At night a thing is lit; on paper a thing is printed
+
+Believing a palette was enough is what made the first light mode
+look bleached. Light ADDS: a glowing edge over black is brighter
+than the black. Ink SUBTRACTS: nothing on paper is brighter than
+the paper, so a bloom over white is invisible and the only way to
+say "this is in front" is a cast shadow.
+
+| | |
+| --- | --- |
+| `--art-bloom` / `--art-cast` | the glow and the shadow, each transparent in the theme it is not for, so one filter list says both |
+| `--art-haze` | what a receding tone fades INTO: the dark at night, a warm grey on paper, because fading to white on white is fading into nothing |
+| `--art-sink` / `--art-shade` | the ground, and it is a tinted PLATE on paper. Nine per cent of an accent over near-white is white |
+| `--art-corner` | the vignette, which goes towards the accent on paper because a printed plate is darker at its edges from ink rather than from falloff |
+
+**Which end a tone mixes towards is the rest of the trick.** A tone
+that has to be SEEN mixes towards `--ink`. A tone that has to
+RECEDE mixes towards `--art-haze`. `--art-lit` mixed the wrong way
+for one build and every drawing came out as pale as the paper.
 
 **It is `.artwork`, not `.art`.** `.art` has been the icon beside a
 step's name since the schools were written, at 1.6em square, in
 `@layer money`. Taking the name made every drawing on the front
 page 27 pixels wide.
 
-**And it opens under the pointer.** Each layer carries a depth and
-translates against `--gpx`/`--gpy`, which `glow.tsx` already
-publishes. The strength is `--art-a`, registered so it animates and
-`inherits: true` so a layer inside the card can read it: `--glow-a`
-is `inherits: false`, so the material's own number reads 0 inside a
-drawing for ever. Only the strength animates, never `translate`
+**And a modifier handed to `<CardArt>` has to be two classes deep
+or declared after `.artwork`.** `.gate-feat-art` was one class and
+came first, so `.artwork`'s `position: relative` and 16:9 ratio won
+and the front page's biggest card carried a 540px stamp in its top
+left corner with two thirds of itself empty. It rendered perfectly
+wrong, which is why nothing failed.
+
+### The light is instant and the glass has weight
+
+`glow.tsx` publishes two signals and they are deliberately not the
+same signal.
+
+`--gx`/`--gy` is WHERE THE LIGHT IS and is assigned from the event:
+a lamp over a table is over the table the instant you move it.
+
+`--gpx`/`--gpy` is HOW THE GLASS IS LEANING and is INTEGRATED
+towards the pointer through a critically damped spring, because a
+sheet of glass has weight. `DAMPING` is exactly `2 * sqrt(STIFFNESS)`,
+which is the one value at which it arrives as fast as it can
+without crossing: softer drags, stiffer wobbles, and a wobble reads
+as a bug rather than as weight. The loop cancels itself once the
+error and the velocity are both under a threshold nobody can see,
+so a still pointer over a settled card costs no frames.
+
+`--gvx`/`--gvy` comes free out of that, and the specular stretches
+along it, which is what a real highlight does when the light
+crosses a surface faster than the surface can answer.
+
+**The strength is `--art-a`, registered `inherits: true`**, because
+`--glow-a` is `inherits: false` and a layer inside a drawing reads
+0 from it for ever. Only the strength animates, never `translate`
 itself, or the picture lags the hand.
+
+## Everything drawn ON a surface stands off it
+
+`@layer relief` is the same idea one order of magnitude down. A
+card's scene throws 26 pixels; a search button's icon throws two.
+Same light, same pointer, same curve, because the difference
+between a card and a button is size and nothing else.
+
+**`--lift` is not `--glow-a`**, for the reason above: it is a plain
+custom property set on any hovered ancestor, so it inherits, and
+the figure multiplies the pointer by it. Nothing transitions on the
+ancestor: a `transition` in a later layer REPLACES the list
+underneath rather than merging with it, so one on
+`:where(a, button)` would take the hover colour off every link on
+the site. The figure owns its own transition.
+
+**A relief layer may move a thing and may never lay it out**, which
+is how it earns the right to name classes other layers define. The
+material earns the same exception by setting nothing but the light;
+a relief cannot promise that, because moving is what it does. So
+`check-css.ts` knows about both kinds, and the one word this layer
+may never say is `transform`: `translate`, `rotate` and `scale`
+COMPOSE with whatever transform the owning layer set, and
+`transform` replaces it. One line of it naming `.art-floor` would
+stand every floor on this site back up with every rule still
+reading correctly.
+
+**The sign is what makes it one system.** `--gpx` is a VIEW
+direction, so a scene slides each layer by MINUS its depth, and a
+figure standing off a surface is a layer with a small depth and
+obeys the same arithmetic. It did not for one build: the relief
+moved its figures the other way, so a card with a scene and an icon
+had the two sliding apart under one pointer. The shadow then goes
+the other way from the figure, because `drop-shadow` offsets from
+the ELEMENT and the gap opening up between a thing and its shadow
+is the only cue saying it is above the page.
+
+```sh
+node scripts/check-relief.ts --list   # what lifts
+```
+
+Three questions, and each is a way of shipping something that looks
+correct: does every name in the list reach a class; does everything
+that lifts also STOP for a reader who asked for no motion; and is
+anything in both the scene and the relief, which would move it
+twice against one pointer.
 
 ## One thing is one card
 
 A school was a `<GoCard>` on `/skills` and a `.gate-tile` on the
-front page: the same school, two shapes, depending on which page a
-reader was standing on. The board, the writing widget and the tools
-hub all draw `<GoCard>` now.
+front page. A piece of writing was a `<GoCard>` on the board, a
+`.sample-card` on Insights and a `.read-card` on the two Bangla
+desks: the same row, three shapes, depending on which page a reader
+was standing on. All of them are `<GoCard>`.
 
 The rule is the one at the top of this file wearing another hat: a
 list of things that exist elsewhere is built from the shared table,
 and so is the CARD that draws one. A new kind of card is a second
 answer to a question `deck.tsx` has already answered.
 
-`art` puts a drawing across the top of one; `cover` puts a
+`art` puts a scene across the top of one; `cover` puts a
 photograph there instead, for a piece that has its own. Never both:
 two pictures on one card is two answers to the same question.
+
+**A card in a DECK gets a scene; a rung in a LADDER gets the
+relief.** A lesson card, a ladder row and a market headline are
+rows of a list, and thirty 16:9 scenes down a stage page is the
+cage the plate was invented to stop. They get the light and the
+depth on their own icon instead, which is the same treatment at the
+size the thing actually is.
+
+## A row that is not in the rail still gets a picture
+
+`shared/nav.ts` names a subject for the twenty things the rail
+lists. It cannot answer for the two hundred that are rows: a piece
+written next month, a headline off the market feed. Somebody would
+have to choose one for each, which means the newest thing on the
+site is always the one without a picture.
+
+`shared/art.ts` DERIVES one, out of the tag, the topics and the
+section a row already carries, plus a hash of its id. In order: a
+tag that names a subject wins outright, then the desk's own POOL,
+then prose. A pool rather than the desk's subject flat, because
+falling straight through made a hub of twenty pieces twenty copies
+of one drawing, which is worse than no drawing.
+
+The colour is the section's own two times in three, and one of six
+others otherwise. High on purpose: a hub whose cards are eight
+colours is a fruit bowl and a hub whose cards are all one colour is
+a spreadsheet.
+
+**The hash needs its finaliser and the reads need the top bits.**
+FNV-1a avalanches badly in its LOW bits and every use here is a
+`% n` against a small n. Fourteen consecutive slugs picked index 0
+or 5 out of a pool of six, so a hub drew fourteen copies of one
+picture and the POOL looked wrong. The xorshift-multiply finaliser
+spreads entropy downwards; `frac()` then reads the top bits rather
+than the low ones, which moved "two in three" from a measured 72
+per cent to 66.
+
+## The site says a few things out loud
+
+`next/lib/sound.ts`, and there is no audio file in this repository.
+Every cue is synthesised: a few oscillators, an envelope and a
+low-pass, which is the same argument the card scenes make one floor
+up. A committed `.mp3` cannot be diffed, has to be fetched, has to
+be licensed, and would be the second binary asset on a site that
+deliberately has none.
+
+**Every note is a degree of a D major pentatonic**, which is the
+whole reason two cues firing at once cannot sound wrong: there is
+no semitone in the scale, so there is no interval available that
+clashes. `HZ` is that scale and nothing may play a frequency
+outside it.
+
+| | |
+| --- | --- |
+| `press` | a button. The one a reader hears hundreds of times, so a tenth of the others |
+| `tick` | a checkpoint inside a lesson |
+| `lesson` | a lesson finished: the triad, rising |
+| `stage` | a whole stage, with the root held under it |
+| `next` / `prev` | a page turned, as a glide |
+| `saved` | a setting kept |
+| `refused` | the only one that falls |
+
+Three things keep it from being annoying, and all three are
+load-bearing: the master gain is low and a press is a tenth of a
+finish; every cue is under 400ms; and the attack is 6ms with a long
+release, because a square edge on either end is a click and a click
+is what makes synthesised audio sound cheap.
+
+**The context is built inside the first cue and never before.** An
+AudioContext made at import time starts suspended under every
+autoplay policy, so the first cue is silently dropped; building it
+inside the first cue means the first cue IS the gesture.
+
+**`data-sound` on `<html>` is the switch**, set before the first
+paint by the boot script and kept by `aab/src/prefs.ts`, so asking
+"is this allowed" inside a click handler is a string comparison
+rather than a JSON parse out of localStorage. It is ON by default:
+nothing can fire on a page load, and a browser will not let
+anything make a noise before the first gesture anyway.
+
+Anything under `next/` calls `cue()`. Anything that cannot import
+across the wall dispatches `reiad:sound` on the document, and
+`next/components/sound.tsx` listens. An element carrying
+`data-cue="next"` fires that cue when pressed, which is how a
+server-rendered prev/next link asks for one without a handler.
+
+**A cue on a LINK is cut short and that is why they are 110ms.** A
+link navigates, the document is torn down, and every scheduled note
+goes with it.
+
+## The reader's own sky, on the glass
+
+`next/components/weather.tsx` and `functions/api/weather.ts`. The
+site is made of glass lit from behind a window; this is the other
+side of that window.
+
+**The browser never talks to the weather service.** The same rule
+the broker follows and for the same two reasons: `connect-src` is
+`'self'`, so the fetch would be blocked before it left the page,
+and one caller is the only place that can cache honestly.
+`check-csp.ts` scans every string in `aab/` and `next/` and would
+fail on that hostname appearing in either.
+
+**Two decimal places, rounded in both places.** About a kilometre:
+enough to know whether it is raining, nowhere near enough to find a
+house. Doing it in the browser AND in the Worker is one place too
+few doing it, given that a coordinate is the most personal thing
+this site ever handles. It is also what makes the edge cache work.
+
+**`weather-place` is deliberately not synced.** Every other key
+`aab/sync.js` carries is something the reader MADE: a tick, a note,
+a preference. Where somebody is standing is not that, it is
+different on every device by definition, and a phone in Dhaka and a
+laptop in Brighton are two places.
+
+Seven skies, because seven is what can be told apart at forty per
+cent opacity, and the Worker does that reduction from the WMO codes
+so the drawing never sees a number. `@layer weather` is the whole
+of the drawing: gradients and keyframes, no canvas, no loop, and
+`display: none` when there is no weather.
+
+**Nothing flashes.** `storm` would ordinarily be lightning and
+deliberately is not: a bright frame on a dark page is a seizure
+risk and there is no version of it worth the risk. It is heavier
+rain and a slow eight-second bloom.
+
+**Three tilings at coprime sizes is what makes snow snow.** One
+tiled dot is wallpaper: the eye finds the lattice in about a second.
+Periods of 71, 97 and 113 line up again only after their least
+common multiple, which is further than any screen. The rain gets
+the same treatment from the other end, a mask ACROSS the streaks
+that cuts them into drops, because an unmasked repeating gradient
+is hatching rather than rain.
 
 ## What a reader has read
 
@@ -1057,8 +1310,37 @@ The same three-place rule covers the photo classes: `wide`, `full`,
 ## Share cards
 
 The picture a pasted link shows is drawn, not borrowed. `aab/share-card.js`
-makes a 1200×630 JPEG from the piece's lead photo, cropped around the part
-the writer marked, and that is what `cover` holds and `og:image` points at.
+makes a 1200×630 JPEG and that is what `cover` holds and `og:image` points
+at.
+
+**It is drawn as this site rather than as a photograph.** A cropped
+photo with nothing on it is somebody's photograph; a card arriving
+in a chat should look like the place it came from before anybody
+reads the title. So it carries the site's own material: the accent
+rail down the left edge that every `<GoCard>` has, the accent-lit
+ground the scenes stand on, a shaft of light, the hairline rim, the
+kicker in the mono face and the title in the serif. The piece's own
+photo, where there is one, is what all of that stands on.
+
+**Which means every piece can have one now.** It used to be the
+section's standing card for anything unillustrated.
+
+**It is always the dark one, and that is not a shortcut.** Every
+other picture on this site answers the theme; a JPEG in somebody's
+chat window cannot, because it is drawn once at publish and looked
+at by people whose settings this site will never see. The palette
+is READ with `<html>` held at dark for the length of one
+synchronous style read, so the cards follow the tokens and a change
+to the site's greens reaches them without anybody remembering that
+file.
+
+**The accent comes out of the rail.** `shared/nav.ts` is the one
+place a section's colour is written down, the rail renders every
+section with that colour inline on the link, and the page doing the
+publishing has a rail on it. A copy of six colours in that file
+would be the failure this document opens with, and putting `nav.ts`
+on the wire to carry a hue would cost a served module, a precache
+entry and a service worker bump.
 It is a JPEG because the scrapers behind WhatsApp, Facebook and LinkedIn
 will not read the WebP every photo here is stored as: pointing them at the
 photo itself is how a piece with a picture ends up sharing as the default
@@ -1211,6 +1493,9 @@ node scripts/check-closed.ts # a new file on the old system: a browser module in
                             # aab/src/, a hand-written page, a functions/*.js
 node scripts/check-material.ts # a pressable class on none of the five kinds, or
                             # one whose own gradient the material would erase
+node scripts/check-relief.ts # a figure that lifts and never stops for a reader
+                            # who asked for no motion, a relief on a class no
+                            # layer defines, and a scene layer moved twice
 node scripts/check-admin.ts # an endpoint under functions/api/ gated by neither
                             # requireAdmin nor isAdmin, and not named as public
 node scripts/check-mjs.ts   # a .mjs, which is a file nothing typechecks and the
@@ -1730,7 +2015,7 @@ silences the next complaint too.
 ## What more than one runtime has to agree on
 
 `shared/` is for anything the Worker, the browser and the Next.js
-route must all say the same way. Ten files and a directory, and
+route must all say the same way. Twenty files and a directory, and
 `check-types.ts` fails on one that `shared/README.md` does not
 describe, because that file said six while nine were there:
 `content.ts`, the site's own manifest and every number the site
@@ -1740,7 +2025,11 @@ every article page states; `headers.ts`, the security headers a
 response has to carry when it was not served as a static file;
 `schools.ts`, the same four curricula read out of D1, plus the
 ladder's arithmetic; `rows.ts`, what a row of this database is;
-`nav.ts`, the one table the whole menu comes from; `routine.ts`,
+`nav.ts`, the one table the whole menu comes from; `art.ts`,
+which of the twelve drawings a thing wears and in what colour,
+derived for the two hundred rows the rail does not list and
+owning the vocabulary both `nav.ts` and `card-art.tsx` take it
+from; `routine.ts`,
 what a routine's bands and tasks are and the templates the site
 ships; `courses.ts`, the third-party catalogue, which is the
 one `next/` may not import for its values; `diet.ts`, the

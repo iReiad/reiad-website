@@ -51,19 +51,19 @@ const PORT = 8993;
 const PIECES: Piece[] = [
   { slug: "dsex-basics", title: "What DSEX actually measures", dek: "The index, plainly.",
     tag: "Explainer", topics: ["Equities", "Beginner"], lang: "en", minutes: 8,
-    section: "insights", date: "2026-08-01", url: "/insights/dsex-basics.html" },
+    section: "insights", date: "2026-08-01", url: "/insights/dsex-basics.html", cover: "" },
   { slug: "bo-account", title: "Opening a BO account", dek: "Every step and every fee.",
     tag: "Guide", topics: ["Equities", "Beginner"], lang: "en", minutes: 6,
-    section: "insights", date: "2026-07-20", url: "/insights/bo-account.html" },
+    section: "insights", date: "2026-07-20", url: "/insights/bo-account.html", cover: "" },
   { slug: "tbill-ladder", title: "A treasury bill ladder", dek: "Where a saver's taka waits.",
     tag: "Note", topics: ["Bonds", "Equities"], lang: "en", minutes: 5,
-    section: "insights", date: "2026-07-10", url: "/insights/tbill-ladder.html" },
+    section: "insights", date: "2026-07-10", url: "/insights/tbill-ladder.html", cover: "" },
   { slug: "bank-margins", title: "What a bank earns on your deposit", dek: "The spread.",
     tag: "Explainer", topics: ["Banks"], lang: "en", minutes: 7,
-    section: "insights", date: "2026-07-05", url: "/insights/bank-margins.html" },
+    section: "insights", date: "2026-07-05", url: "/insights/bank-margins.html", cover: "" },
   { slug: "quiet-piece", title: "A piece with no topics", dek: "Filed under nothing.",
     tag: "Note", topics: [], lang: "en", minutes: 3,
-    section: "insights", date: "2026-07-01", url: "/insights/quiet-piece.html" },
+    section: "insights", date: "2026-07-01", url: "/insights/quiet-piece.html", cover: "" },
 ];
 
 const SOON = [{ title: "Sanchayapatra vs. FDR", dek: "Promised, not written." }];
@@ -183,13 +183,18 @@ console.log("the Insights hub's own behaviour");
   ok("and each topic counts its own",
     served.includes("Equities · 3") && served.includes("Beginner · 2")
     && served.includes("Banks · 1") && served.includes("Bonds · 1"), served);
-  ok("every card ships visible", !/class="cell sample-card"[^>]*hidden/.test(served));
+  ok("every card ships visible", !/data-kind="go"[^>]*hidden/.test(served));
   /* The deck's soon card, which is what the hub renders. It was
      `cell sample-card placeholder` here, the markup of a SECOND
      `SoonCard` that lived in `cards.tsx` beside the real one, and
      this line is what would have caught the two had it been
      pointed at the component the page uses rather than at a
-     string. */
+     string.
+
+     `.sample-card` has gone with it. A piece on a hub is the
+     `<GoCard>` the front page already drew it with, so what this
+     file selects is `[data-kind="go"]`: the card, not the class
+     one page's version of it used to carry. */
   ok("the teasers are in the grid too", served.includes('data-kind="soon"'), served.slice(0, 200));
   ok("the subscribe form ships hidden, so a site with no database shows "
     + "the RSS line alone",
@@ -209,7 +214,7 @@ console.log("the Insights hub's own behaviour");
 
   const chips = () => page.$$eval("#topic-filter .chip", (nodes: Element[]) =>
     nodes.map((n) => `${(n.textContent ?? "").trim()}|${n.getAttribute("aria-pressed")}`));
-  const shown = () => page.$$eval(".cards .sample-card:not(.placeholder)",
+  const shown = () => page.$$eval('.cards .card[data-kind="go"]',
     (nodes: Element[]) => nodes.filter((n) => !(n as HTMLElement).hidden)
       .map((n) => n.querySelector("h3")?.textContent ?? ""));
   const press = async (label: string): Promise<void> => {
@@ -243,7 +248,7 @@ console.log("the Insights hub's own behaviour");
     (await shown()).join(", "));
   ok("a piece filed under no topic at all is hidden by a topic",
     !(await shown()).includes("A piece with no topics"));
-  /* `[data-kind="soon"]` rather than `.sample-card.placeholder`:
+  /* `[data-kind="soon"]` rather than a class on the card:
      there were two `SoonCard` exports, this fixture imported the
      one in `cards.tsx` and the hub rendered the one in
      `deck.tsx`, so the selector here described a card the site

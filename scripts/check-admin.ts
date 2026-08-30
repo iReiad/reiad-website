@@ -57,6 +57,13 @@ const PUBLIC: Record<string, string> = {
   "news.ts":
     "the market board on the Insights hub. Public headlines, raced from two "
     + "public endpoints, cached at the edge.",
+  "weather.ts":
+    "what the sky is doing at two rounded coordinates. It takes no bearer, "
+    + "writes nothing, stores nothing and knows nobody: a request is two "
+    + "numbers in and a weather code out. The browser may not call the "
+    + "service itself because `connect-src` is 'self', which is the whole "
+    + "reason this endpoint exists, and gating it would only mean the page "
+    + "could not draw rain for a reader who is not signed in.",
   "search.ts":
     "the palette. It searches what is already published, which is what a "
     + "crawler reads anyway.",

@@ -147,11 +147,11 @@ export default async function ReadingPage({ params }: Params) {
         {article.section === "insights" ? <Engage slug={article.slug} /> : null}
 
         <div className="prev-next">
-          <a href={look.back.url}>
+          <a data-cue="prev" href={look.back.url}>
             <span className="mono">{look.back.kicker}</span>
             <strong>{look.back.label}</strong>
           </a>
-          <a href={look.side.url}>
+          <a data-cue="next" href={look.side.url}>
             <span className="mono">{look.side.kicker}</span>
             <strong>{look.side.label}</strong>
           </a>

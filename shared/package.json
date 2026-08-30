@@ -12,6 +12,7 @@
     "./rows": "./rows.ts",
     "./content": "./content.ts",
     "./nav": "./nav.ts",
+    "./art": "./art.ts",
     "./routine": "./routine.ts",
     "./profile": "./profile.ts",
     "./diet-words": "./diet-words.ts",

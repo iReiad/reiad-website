@@ -111,6 +111,24 @@ export declare const VEILS: readonly [{
     readonly note: "quieter behind the words";
     readonly alpha: "0.9";
 }];
+export declare const SOUNDS: readonly [{
+    readonly id: "on";
+    readonly label: "On";
+    readonly note: "a quiet note when something finishes";
+}, {
+    readonly id: "off";
+    readonly label: "Off";
+    readonly note: "the site is silent";
+}];
+export declare const WEATHERS: readonly [{
+    readonly id: "on";
+    readonly label: "On";
+    readonly note: "the sky where you are, on the page";
+}, {
+    readonly id: "off";
+    readonly label: "Off";
+    readonly note: "nothing, whatever the weather";
+}];
 export type Scale = (typeof SCALES)[number]["id"];
 export type Measure = (typeof MEASURES)[number]["id"];
 export type Theme = (typeof THEMES)[number]["id"];
@@ -118,6 +136,8 @@ export type Lang = (typeof LANGS)[number]["id"];
 export type Glass = (typeof GLASSES)[number]["id"];
 export type Blur = (typeof BLURS)[number]["id"];
 export type Veil = (typeof VEILS)[number]["id"];
+export type Sound = (typeof SOUNDS)[number]["id"];
+export type Weather = (typeof WEATHERS)[number]["id"];
 export interface Prefs {
     text: Scale;
     measure: Measure;
@@ -126,6 +146,8 @@ export interface Prefs {
     glass: Glass;
     blur: Blur;
     veil: Veil;
+    sound: Sound;
+    weather: Weather;
 }
 /** What this device holds, with anything unrecognised replaced.
 

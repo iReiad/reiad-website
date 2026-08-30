@@ -13,6 +13,7 @@
    the component off the page and the markup below still posts.
    ============================================================ */
 
+import { accentFor } from "@reiad/shared/nav";
 import type { Metadata } from "next";
 import { Field, TextArea } from "../../../components/ui/field";
 import { ContactForm } from "../../../components/contact-form";
@@ -144,18 +145,27 @@ export default function ContactPage() {
           <section>
             <SectionLabel>Who this is for
             </SectionLabel>
+            {/* Each one wearing the drawing and the colour of the
+                place it takes you, out of `shared/nav.ts` like
+                every other card on this site: a reader who has met
+                the portfolio's sheets on the board meets them
+                again here. `/about` is the one the rail names no
+                subject for, so it takes the book, which is what a
+                background is. */}
             <div className="grid-3">
-              <GoCard href="/about"
+              <GoCard href="/about" art="book" accent={accentFor("about") ?? undefined}
                       chip="Recruiters"
                       title="Roles in finance, risk or analysis"
                       dek="MSc Finance & Risk Management, CFA Level 1 candidate, comfortable in Excel, Python and R, and equally comfortable presenting the result to people who don't want the technical version. Happy to talk about roles in the UK or Bangladesh."
                       go="Full background" />
-              <GoCard href="/portfolio"
+              <GoCard href="/portfolio" art="sheets"
+                      accent={accentFor("portfolio") ?? undefined}
                       chip="Clients"
                       title="A model, an analysis, or something written"
                       dek="Send the brief in whatever state it's in: a paragraph and a spreadsheet is enough. You'll get a fixed price and a date back, and the files are yours at the end."
                       go="How projects run" />
-              <GoCard href="/money"
+              <GoCard href="/money" art="coins"
+                      accent={accentFor("money") ?? undefined}
                       chip="Readers"
                       title="A question, a correction, a request"
                       dek="If something on the site is wrong, tell me and I'll fix it and say so. If there's a term the Learn hub is missing, or a calculation you keep having to do by hand, that's exactly the kind of thing worth building."

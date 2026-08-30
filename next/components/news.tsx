@@ -178,7 +178,7 @@ export function NewsCard(
       onClick={(event) => onOpen(item, event.currentTarget)}
     >
       <span className="news-card-top">
-        <span className={`pill ${item.region === "BD" ? "pill-bd" : "pill-global"}`}>
+        <span className={`pill relief-lift ${item.region === "BD" ? "pill-bd" : "pill-global"}`}>
           {regionLabel(item)}
         </span>
         <time dateTime={item.published ?? undefined}>{relTime(item.published)}</time>
@@ -201,7 +201,7 @@ export function NewsCard(
             row, and the only way to fit it beside "The Business
             Standard" was to take the last five letters off the
             publisher's name, on every card that named them. */}
-        <span className="news-card-go" aria-hidden="true">→</span>
+        <span className="news-card-go relief-lift" aria-hidden="true">→</span>
       </span>
     </button>
   );

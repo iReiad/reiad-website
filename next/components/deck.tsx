@@ -84,9 +84,14 @@ function Inside({ art, cover, icon, chip, title, dek, children }: Common) {
 
 /** A card that takes you somewhere, or does something. */
 export function GoCard({
-  href, go, done, ...rest
+  href, go, done, hidden, ...rest
 }: Common & {
   href: string;
+  /** Taken out of the list without being taken off the page. The
+      topic filter's, and an attribute rather than a filtered array
+      so a card keeps its place in the DOM and its scroll position
+      when the filter is cleared. */
+  hidden?: boolean;
   /** What happens when you press it, written out. A node rather
       than a string because one card's action is in Bangla and the
       rest of it is not: `lang` on the card would put the English
@@ -98,7 +103,7 @@ export function GoCard({
   return (
     <a className={["card", (rest.art || rest.cover) ? "card-banded" : null, rest.className]
          .filter(Boolean).join(" ")}
-       data-kind="go" data-done={done ? "" : undefined}
+       data-kind="go" data-done={done ? "" : undefined} hidden={hidden}
        /* The light is what a card that answers you has and a card
           that does not has none of. `<InfoCard>` and `<SoonCard>`
           below deliberately carry no `data-glow`: they are the

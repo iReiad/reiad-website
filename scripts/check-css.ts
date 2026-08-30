@@ -526,6 +526,50 @@ const MATERIAL = new Map([
   ["glow", "the light inside the glass, which every surface carries"],
 ]);
 
+/* ============================================================
+   A RELIEF LAYER, which is the same exception earned differently
+
+   `@layer relief` names classes other layers define for the same
+   reason `@layer glow` does: a thing drawn on a surface sits
+   above it, and that is true of an icon in a button, a disc on a
+   card and a sparkline on a case study, which are four layers
+   apart. A copy of the rule in each of those layers is four
+   places for it to drift.
+
+   The material earns its exception by setting NOTHING but the
+   light. A relief cannot make that promise, because moving a
+   thing is the whole of what it does. So it earns the exception
+   the other way round:
+
+     a relief layer may move a thing and may never lay it out.
+
+   `translate`, `rotate` and `scale` COMPOSE with whatever
+   `transform` the owning layer already set, which is the entire
+   reason those three exist as separate properties in the spec.
+   `transform` REPLACES it. So `transform` is the one word this
+   layer may never say, and it is worth being precise about what
+   it would cost: `.art-floor` in `@layer deck` is a plane laid
+   down with `perspective(360px) rotateX(68deg)`, and one
+   `transform` here naming that class would stand every floor on
+   this site back up, with every rule still reading correctly.
+
+   Nothing about size, position, colour or type either, for
+   exactly the reason `position` is off the material's list.
+   ============================================================ */
+const RELIEF = new Map([
+  ["relief", "how far a thing drawn ON a surface stands off it"],
+]);
+
+const RELIEF_PROPS = new Set([
+  /* The three that compose. Never `transform`. */
+  "translate", "rotate", "scale",
+  "filter", "opacity", "transition", "transition-duration", "will-change",
+  "perspective", "transform-style", "transform-origin",
+  /* Its own tokens, and the pointer it reads. */
+  "--lift", "--relief-throw", "--relief-rise", "--relief-cast",
+  "--gpx", "--gpy", "--gx", "--gy", "--gvx", "--gvy",
+]);
+
 /* `position` was on this list for one draft and it is the reason
    the list is worth having. The material set `position: relative`
    for a pseudo-element it stopped using, and a later layer saying
@@ -575,7 +619,7 @@ for (const cls of new Set([...studioClasses, ...serverClasses])) {
      article block carrying the site's own weave and a still light
      is the design system reaching the prose, which is what "one
      system all around" has to mean if it means anything. */
-  const layers = definedIn(cls).filter((l) => !MATERIAL.has(l));
+  const layers = definedIn(cls).filter((l) => !MATERIAL.has(l) && !RELIEF.has(l));
   if (!layers.length) {
     // Some are modifiers on a selector that names the tag as well,
     // like figure.wide, so a bare rule is not required, only some
@@ -669,13 +713,19 @@ const ALLOWED = new Map([
    ============================================================ */
 
 
-for (const [name, why] of MATERIAL) {
+const CROSSING: Array<[Map<string, string>, Set<string>, string]> = [
+  [MATERIAL, MATERIAL_PROPS, "material"],
+  [RELIEF, RELIEF_PROPS, "relief"],
+];
+
+for (const [list, allowed, kind] of CROSSING)
+for (const [name, why] of list) {
   const body = layerBody(name);
   if (!body) {
     failures++;
-    console.error(`\n@layer ${name} is listed as a material layer and is not there.`);
-    console.error("        Remove it from MATERIAL in this file: an exception to a rule");
-    console.error("        that guards nothing is the stale entry the list exists to avoid.");
+    console.error(`\n@layer ${name} is listed as a ${kind} layer and is not there.`);
+    console.error(`        Remove it from ${kind.toUpperCase()} in this file: an exception to a`);
+    console.error("        rule that guards nothing is the stale entry the list exists to avoid.");
     continue;
   }
   /* Every property this layer sets, at any depth. A material
@@ -686,10 +736,10 @@ for (const [name, why] of MATERIAL) {
     [...bare.matchAll(/(^|[;{])\s*(-{2}[a-z0-9-]+|[a-z-]+)\s*:/gm)]
       .map((m) => m[2]),
   );
-  const stray = [...props].filter((prop) => !MATERIAL_PROPS.has(prop));
+  const stray = [...props].filter((prop) => !allowed.has(prop));
   if (!stray.length) continue;
   failures++;
-  console.error(`\n@layer ${name} sets ${stray.length} thing(s) that are not the material:`);
+  console.error(`\n@layer ${name} sets ${stray.length} thing(s) a ${kind} layer may not:`);
   console.error(`        ${stray.join(", ")}`);
   console.error(`        It is allowed to name classes other layers define because it is`);
   console.error(`        ${why}, and that only holds while it sets the light and nothing`);
@@ -717,7 +767,7 @@ for (const cls of [...everyClass].sort()) {
   if (ALLOWED.has(`.${cls}`)) continue;
   /* A material layer is not a second definition, and the block
      above is what makes that true rather than assumed. */
-  const layers = definedIn(cls).filter((l) => !MATERIAL.has(l));
+  const layers = definedIn(cls).filter((l) => !MATERIAL.has(l) && !RELIEF.has(l));
   if (layers.length < 2) continue;
   failures++;
   shared++;

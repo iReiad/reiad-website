@@ -20,7 +20,7 @@
    nothing to keep in step, because there is only one list.
    ============================================================ */
 
-import { ReadCard, bn } from "./cards";
+import { PieceCard, bn } from "./cards";
 import { SoonCard } from "./deck";
 import { SOON, type ReadHubCopy } from "../lib/hub";
 import type { Piece } from "../lib/pieces";
@@ -75,7 +75,7 @@ export function ReadHub({ copy, pieces }: { copy: ReadHubCopy; pieces: Piece[] |
               </p>
               <div className="cards grid-2">
                 {pieces.map((piece) => (
-                  <ReadCard key={piece.slug} piece={piece} icon={copy.icon} />
+                  <PieceCard key={piece.slug} piece={piece} icon={copy.icon} />
                 ))}
               </div>
             </>

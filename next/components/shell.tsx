@@ -38,6 +38,8 @@ import type { CSSProperties, ReactNode } from "react";
 import { FONTS, LOOK } from "@reiad/shared/look";
 import { SiteScripts } from "./scripts";
 import { Glow } from "./glow";
+import { Sound } from "./sound";
+import { Weather } from "./weather";
 import { Sidebar, DrawerBackdrop } from "./sidebar";
 import { TopBar } from "./topbar";
 import { NavTree } from "./nav-tree";
@@ -96,6 +98,13 @@ const BOOT = `(function(){var d=document.documentElement;try{`
   + `if(b)d.style.setProperty("--glass-amount",b);`
   + `var v={clear:"0.54",normal:"0.72",dense:"0.9"}[p.veil];`
   + `if(v)d.style.setProperty("--glass-veil",v);`
+  /* WHETHER THE SITE MAKES A SOUND, as an attribute rather than a
+     value the sound module digs out of storage on every press.
+     Here rather than in that module because the first press can
+     come before any module has loaded, and a cue that fired once
+     for somebody who had turned sound off would be the whole of
+     the promise broken. */
+  + `d.setAttribute("data-sound",p.sound==="off"?"off":"on");`
   /* WHICH LANGUAGE THE TOOLS SPEAK. `tool-lang` is the key the
      calculators have written since long before there were
      accounts, and `prefs.ts` writes that same one, so there is
@@ -119,7 +128,8 @@ const BOOT = `(function(){var d=document.documentElement;try{`
      somebody adding a school will see it. */
   + `d.setAttribute("data-read-lang",l==="en"?"en":"bn")}catch(e){`
   + `d.setAttribute("data-rail","open");d.setAttribute("data-glass","frost");`
-  + `d.setAttribute("data-tool-lang","en");d.setAttribute("data-read-lang","bn")}})()`;
+  + `d.setAttribute("data-tool-lang","en");d.setAttribute("data-read-lang","bn");`
+  + `d.setAttribute("data-sound","on")}})()`;
 
 /** Which nav item is marked as where you are.
 
@@ -314,6 +324,8 @@ export function SiteShell({
             nothing and its effect is one document listener, so
             it costs a page one element in the tree. */}
         <Glow />
+        <Sound />
+        <Weather />
       </body>
     </html>
   );

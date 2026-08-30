@@ -40,11 +40,16 @@ export type Piece = {
   section: string;
   date: string;
   url: string;
+  /** The share card the Studio drew from the piece's lead photo,
+      or "" where it has none. A card wears this in place of a
+      drawing, because a photograph is OF that piece and a drawing
+      is only of what it is about. */
+  cover: string;
 };
 
 type Row = Pick<Article,
   "slug" | "title" | "dek" | "tag" | "topics" | "lang" | "minutes"
-  | "section" | "published_at" | "updated_at">;
+  | "section" | "published_at" | "updated_at" | "cover">;
 
 /* Newest first, and anything undated last: "" sorts below every
    real date under a descending compare, which is where a piece
@@ -70,6 +75,7 @@ const asPiece = (row: Row): Piece => {
     minutes: row.minutes ?? 1,
     section,
     date: (row.published_at || row.updated_at || "").slice(0, 10),
+    cover: row.cover ?? "",
     /* Never built by hand. The whole reason a piece carries its
        section around is that this is the only line that turns one
        into an address, which is the bug `pieceUrl()` exists for:
@@ -92,7 +98,7 @@ const livePieces = cache(async (): Promise<Piece[] | null> => {
     const { results } = await db
       .prepare(
         `SELECT slug, title, dek, tag, topics, lang, minutes, section,
-                published_at, updated_at
+                published_at, updated_at, cover
            FROM articles WHERE status = 'live'`
       )
       .all<Row>();

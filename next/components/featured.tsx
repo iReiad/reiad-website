@@ -127,7 +127,7 @@ export function FeaturedCard() {
        about a grid that no longer exists. */
     <a className="gate-tile gate-feat" data-glow="card"
        href={c.href} lang={c.lang} style={style}>
-      <CardArt subject={c.art} className="gate-feat-art" />
+      <CardArt subject={c.art} size="panel" className="gate-feat-art" />
       <span className="flex items-center gap-2.5 min-w-0">
         <span className="gt-disc"><Icon name={c.icon} size={19} /></span>
         <span className="gt-chip mono">{c.chip}</span>

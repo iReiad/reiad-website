@@ -52,8 +52,27 @@
     "noFallthroughCasesInSwitch": true,
     "noEmit": true,
     "skipLibCheck": true,
+    "paths": {
+      "@reiad/shared/*": ["../shared/*.ts"]
+    },
     "types": ["node"]
   },
+  "//paths": [
+      "`@reiad/shared/x` resolved for a check only by accident until",
+      "30 August 2026, and the accident was `next/node_modules`.",
+      "",
+      "check-icons.ts imports `next/lib/diet-pages.ts`, so this",
+      "config typechecks that file, and node walks up from the",
+      "IMPORTING file to find a package: `next/lib/` reaches",
+      "`next/node_modules/@reiad/shared`, which exists on a laptop",
+      "and does not in CI, because CI runs `npm ci` at the root and",
+      "nowhere else. The day a next/lib file this config reaches",
+      "grew its first `@reiad/shared` import, it went red in CI on a",
+      "commit where every local check passed.",
+      "",
+      "The package IS `shared/`, so pointing at it is not a",
+      "shortcut: it is the same files the `file:` dependency copies."
+  ],
   "//include": [
     "The last entry is the Worker runtime globals. This program",
     "reaches functions/** through worker.js's imports, and an",

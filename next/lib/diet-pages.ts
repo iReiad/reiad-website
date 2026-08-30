@@ -21,6 +21,8 @@
    far as they can tell.
    ============================================================ */
 
+import type { ArtSubject } from "@reiad/shared/art";
+
 export interface DietPage {
   /** The path. `/tools/diet` itself is not in here: it is the
       page the strip sits on and a strip that links to the page
@@ -36,6 +38,14 @@ export interface DietPage {
   dek: { en: string; bn: string };
   /** Nothing on this page works signed out. */
   needsAccount?: true;
+  /** The drawing its card wears, out of the twelve in
+      `shared/art.ts`. Named here rather than derived, because
+      eight pages of one tool all say "diet" to a resolver and
+      would come back with eight plates: what separates them is
+      what each one DOES, and this table is the only place that
+      knows. Duplicates are fine and two of them share the chart,
+      because two of them really are about a line over time. */
+  art?: ArtSubject;
   /** THIS PAGE'S COLOUR, and it is the site's own token rather
       than a value: `--green`, `--blue`, `--teal`, `--violet`,
       `--rose`, `--plum` and `--gold` are the seven the rail
@@ -76,6 +86,7 @@ export const dietPage = (href: string): DietPage | undefined =>
 export const DIET_PAGES: DietPage[] = [
   {
     href: "/tools/diet/you",
+    art: "gauge",
     tone: "var(--teal)",
     tab: { en: "Your body", bn: "শরীর" },
     title: { en: "Your body", bn: "আপনার শরীর" },
@@ -87,6 +98,7 @@ export const DIET_PAGES: DietPage[] = [
   },
   {
     href: "/tools/diet/goal",
+    art: "chart",
     needs: ["/tools/diet/you"],
     tone: "var(--gold)",
     tab: { en: "Goal", bn: "লক্ষ্য" },
@@ -100,6 +112,7 @@ export const DIET_PAGES: DietPage[] = [
   },
   {
     href: "/tools/diet/trend",
+    art: "chart",
     needs: ["/tools/diet/you", "/tools/diet/goal"],
     tone: "var(--blue)",
     tab: { en: "Trend", bn: "ধারা" },
@@ -113,6 +126,7 @@ export const DIET_PAGES: DietPage[] = [
   },
   {
     href: "/tools/diet/year",
+    art: "calendar",
     needs: ["/tools/diet/trend"],
     tone: "var(--plum)",
     tab: { en: "The year", bn: "বছর" },
@@ -126,6 +140,7 @@ export const DIET_PAGES: DietPage[] = [
   },
   {
     href: "/tools/diet/expect",
+    art: "sheets",
     needs: ["/tools/diet/you", "/tools/diet/trend"],
     tone: "var(--violet)",
     tab: { en: "What to expect", bn: "কখন কী" },
@@ -138,6 +153,7 @@ export const DIET_PAGES: DietPage[] = [
   },
   {
     href: "/tools/diet/nutrition",
+    art: "plate",
     needs: ["/tools/diet/foods"],
     tone: "var(--green)",
     tab: { en: "Nutrients", bn: "পুষ্টি" },
@@ -151,6 +167,7 @@ export const DIET_PAGES: DietPage[] = [
   },
   {
     href: "/tools/diet/journal",
+    art: "book",
     needs: ["/tools/diet/goal"],
     tone: "var(--rose)",
     tab: { en: "How it is going", bn: "কেমন যাচ্ছে" },
@@ -164,6 +181,7 @@ export const DIET_PAGES: DietPage[] = [
   },
   {
     href: "/tools/diet/recipes",
+    art: "pan",
     tone: "var(--rose)",
     tab: { en: "Three taps", bn: "তিন চাপ" },
     title: { en: "Three taps, or it does not get logged", bn: "তিন চাপ, নইলে লেখাই হয় না" },
@@ -177,6 +195,7 @@ export const DIET_PAGES: DietPage[] = [
   },
   {
     href: "/tools/diet/keto",
+    art: "plate",
     tone: "var(--violet)",
     tab: { en: "Keto", bn: "কিটো" },
     title: { en: "Keto, hour by hour", bn: "কিটো, ঘণ্টায় ঘণ্টায়" },
@@ -190,6 +209,7 @@ export const DIET_PAGES: DietPage[] = [
   },
   {
     href: "/tools/diet/habits",
+    art: "calendar",
     tone: "var(--green)",
     tab: { en: "What you kept up", bn: "যা ধরে রেখেছেন" },
     title: { en: "What you kept up", bn: "যা ধরে রেখেছেন" },
@@ -203,6 +223,7 @@ export const DIET_PAGES: DietPage[] = [
   },
   {
     href: "/tools/diet/foods",
+    art: "pan",
     needs: ["/tools/diet/nutrition"],
     tone: "var(--plum)",
     tab: { en: "What it costs", bn: "খরচ" },
@@ -215,6 +236,7 @@ export const DIET_PAGES: DietPage[] = [
   },
   {
     href: "/tools/diet/health",
+    art: "gauge",
     needs: ["/tools/diet/glossary"],
     tone: "var(--teal)",
     tab: { en: "The clinic", bn: "ক্লিনিক" },
@@ -227,6 +249,7 @@ export const DIET_PAGES: DietPage[] = [
   },
   {
     href: "/tools/diet/summary",
+    art: "sheets",
     needs: ["/tools/diet/you", "/tools/diet/trend", "/tools/diet/health"],
     tone: "var(--blue)",
     tab: { en: "For a doctor", bn: "ডাক্তারের জন্য" },
@@ -240,6 +263,7 @@ export const DIET_PAGES: DietPage[] = [
   },
   {
     href: "/tools/diet/import",
+    art: "sheets",
     tone: "var(--plum)",
     tab: { en: "Bring your history", bn: "হিসাব নিয়ে আসুন" },
     title: { en: "Bring your history", bn: "আপনার হিসাব নিয়ে আসুন" },
@@ -252,6 +276,7 @@ export const DIET_PAGES: DietPage[] = [
   },
   {
     href: "/tools/diet/glossary",
+    art: "book",
     tone: "var(--gold)",
     tab: { en: "The words", bn: "শব্দ" },
     title: { en: "What the words mean", bn: "শব্দগুলোর মানে" },

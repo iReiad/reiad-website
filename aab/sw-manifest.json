@@ -1,8 +1,8 @@
 {
-  "version": "v218",
+  "version": "v219",
   "hashes": {
     "/offline.html": "bd9144e7162be323",
-    "/fallback.css": "6a7139addaf5cb19",
+    "/fallback.css": "a3b197ee87aec725",
     "/app.js": "d0b5bf300691d393",
     "/content.js": "024dccae1b55cc61",
     "/api.js": "a7bab41d860a4806",
@@ -14,7 +14,7 @@
     "/streak.js": "49344fc7d99e4925",
     "/photo.js": "658dcc6546e422ee",
     "/saved.js": "a19be7d350dc2498",
-    "/prefs.js": "833cad34b4e1dd1b",
+    "/prefs.js": "050034608171d7fa",
     "/checkpoints.js": "8903c0d041e563b3",
     "/audience.js": "1722399ba587b201",
     "/activation.js": "f3233d3de4e153e7",

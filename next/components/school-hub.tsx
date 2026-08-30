@@ -255,14 +255,14 @@ export function MoneyHub({ school }: { school: School }) {
         <section className="hub-section" id="ekhon">
           <div className="deck deck-2">
             <GoCard
-              href="/money/contents" accent="var(--green)" icon="book" lang="bn"
+              href="/money/contents" art="book" accent="var(--green)" icon="book" lang="bn"
               chip="পুরো তালিকা"
               title="সব লেখার তালিকা"
               dek="এক পাতায় প্রতিটা ধাপের প্রতিটা লেখা, নাম ধরে ধরে।"
               go="তালিকা দেখুন"
             />
             <GoCard
-              href="/tools" accent="var(--gold)" icon="calculator" lang="bn"
+              href="/tools" art="sheets" accent="var(--gold)" icon="calculator" lang="bn"
               chip="ক্যালকুলেটর"
               title="নিজের সংখ্যা বসিয়ে দেখুন"
               dek="চক্রবৃদ্ধি, কিস্তি, মূল্যস্ফীতি আর সঞ্চয়পত্র: পড়া জিনিসটা নিজের টাকায় মিলিয়ে নেওয়া।"
