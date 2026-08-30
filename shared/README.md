@@ -7,7 +7,7 @@ There are three renderers of this site now: the Worker in
 Next.js route in `next/`. Anything all of them must say the same
 way lives here, and nowhere else.
 
-Today that is twenty-three files and a directory of four, and
+Today that is twenty-four files and a directory of four, and
 `check-types.ts` fails if one of them is not described below.
 That check exists because this line said six while nine were
 here: `nav.ts` and `routine.ts` arrived in two changes that had
@@ -363,3 +363,19 @@ it reads the file that is actually here.
   not keep. Three runtimes read it, which is why it is here: the
   check under node, the account page's own panel, and the
   comparison against `sync.ts`.
+
+- **`lesson-grids.ts`** the sheets a reader types into, which is
+  the twelfth block kind and the first where a reader puts a
+  number IN rather than choosing between numbers somebody else
+  wrote. A cell is `given`, `input` or `calc`, and a `calc` names
+  other cells and one operation out of six rather than carrying an
+  expression: an expression has to be parsed, and a parser that
+  takes arithmetic out of a database row is an evaluator with a
+  database in front of it. The same object serves a profit and
+  loss account and a German verb's six forms, because both are a
+  table with holes in it and a rule for what belongs in each hole,
+  which is what let the three language schools have an interactive
+  at all. Here rather than in the component for the reason the
+  labs are: the Android app renders the same rows and a sheet
+  whose arithmetic lived in React would be a sheet the app could
+  not compute.

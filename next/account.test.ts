@@ -665,6 +665,7 @@ console.log("\nreading preferences");
   is("every row is labelled, and these are the rows",
     await page.locator("#account-prefs .pref-label").allTextContents(),
     ["Type size", "Line width", "Theme", "Calculators open in",
+    "Calculators open with",
      "Finish", "Texture", "Blur", "Transparency", "Sound",
      "Your place", "Weather"]);
   is("normal is the one chosen",

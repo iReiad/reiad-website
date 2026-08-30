@@ -287,6 +287,7 @@ export function Preferences() {
             { key: "measure", label: "Line width", options: m.MEASURES },
             { key: "theme", label: "Theme", options: m.THEMES },
             { key: "lang", label: "Calculators open in", options: m.LANGS },
+            { key: "depth", label: "Calculators open with", options: m.DEPTHS },
           ],
         },
         {

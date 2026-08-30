@@ -44,6 +44,7 @@
    ============================================================ */
 import { token, current } from "/account.js";
 import { dividendMonths, dividendTotal, holdingsOf, totalsOf } from "/portfolio.js";
+import { listScenarios } from "/saved.js";
 /* ---------- small helpers ---------- */
 const $ = (id) => {
     const node = document.getElementById(id);
@@ -159,7 +160,12 @@ const setTabKey = (value) => {
    ============================================================ */
 function weightRow(h, largest) {
     const width = largest > 0 ? Math.max(2, ((h.weightPct ?? 0) / largest) * 100) : 0;
-    return el("div", { className: "live-row" }, el("span", { className: "live-name" }, h.name || "–", h.ticker ? el("span", { className: "mono live-ticker" }, h.ticker) : null), el("span", { className: "live-bar" }, el("span", { className: "live-fill", style: `width:${width}%` })), el("span", { className: "mono live-weight" }, PCT(h.weightPct, { signed: false })), h.returnPct == null
+    /* A row the site has chosen to NAME can be opened in the check;
+       one it has chosen to number cannot, because there is nothing
+       to hand the check about "Holding 3". Which of the two this is
+       is the site's own switch, in the admin panel below. */
+    const named = Boolean(h.name || h.ticker);
+    return el("div", { className: "live-row" }, el(named ? "a" : "span", named ? { className: "live-name live-check", href: checkUrl(h) } : { className: "live-name" }, h.name || "–", h.ticker ? el("span", { className: "mono live-ticker" }, h.ticker) : null), el("span", { className: "live-bar" }, el("span", { className: "live-fill", style: `width:${width}%` })), el("span", { className: "mono live-weight" }, PCT(h.weightPct, { signed: false })), h.returnPct == null
         ? el("span", { className: "mono live-return" }, "")
         : el("span", { className: `mono live-return ${signClass(h.returnPct)}` }, PCT(h.returnPct)));
 }
@@ -183,6 +189,9 @@ async function drawPublic() {
     $("live-public-count").textContent = String(p.count ?? 0);
     if (Array.isArray(p.holdings) && p.holdings.length) {
         const largest = p.holdings[0]?.weightPct ?? 0;
+        /* The public list is named or numbered by the site's own
+           switches, so only a NAMED row can carry a link: there is
+           nothing to hand the check about "Holding 3". */
         host.replaceChildren(el("div", { className: "live-row live-head mono" }, el("span", {}, "Holding"), el("span", {}, ""), el("span", {}, "Weight"), el("span", {}, "Return")), ...p.holdings.map((h) => weightRow(h, largest)));
     }
     else {
@@ -197,13 +206,74 @@ async function drawPublic() {
 function statTile(k, v, n, cls = "") {
     return el("div", { className: "stat" }, el("span", { className: "k" }, k), el("span", { className: `v ${cls}`.trim() }, v), n ? el("span", { className: "n" }, n) : null);
 }
-function holdingsTable(positions, currency, invested) {
+/* ============================================================
+   A HOLDING IS A QUESTION, AND THE STOCK CHECK IS WHERE IT IS
+   ANSWERED
+
+   A list of what somebody owns and how it is doing is a list of
+   things to decide about, and until now every one of them was a
+   dead end: the reader read the row, and then went and typed the
+   company's name into another page by hand.
+
+   The link carries what this page actually knows, which is the
+   name, the ticker and the price. It does not carry the quantity:
+   `shares` in the stock check is the company's shares OUTSTANDING
+   and this reader's holding is not that, and a field filled in
+   with the wrong meaning is worse than an empty one.
+
+   THE BENCHMARKS ARE DHAKA'S. The check's sector medians, market
+   P/E, FDR and sanchayapatra rates are the ones a DSE investor
+   compares against, and a holding here may be listed anywhere.
+   Every one of those is an input the reader can change, which is
+   why the link is still worth making, and the check says so on
+   its own page rather than this one repeating it.
+   ============================================================ */
+const checkUrl = (h) => {
+    const p = new URLSearchParams();
+    if (h.name)
+        p.set("name", h.name.slice(0, 60));
+    if (h.ticker)
+        p.set("ticker", h.ticker.slice(0, 60));
+    if (Number.isFinite(h.price))
+        p.set("price", String(Math.round(h.price * 100) / 100));
+    const q = p.toString();
+    return q ? `/tools/stock?${q}` : "/tools/stock";
+};
+async function checksDone() {
+    const out = new Map();
+    try {
+        for (const row of await listScenarios("stock")) {
+            const query = String(row.inputs?.query ?? "");
+            const ticker = new URLSearchParams(query).get("ticker")?.trim().toUpperCase();
+            /* `.desc` order, so the first one seen is the newest and
+               the rest are older checks of the same company. */
+            if (ticker && !out.has(ticker)) {
+                out.set(ticker, { name: row.name, summary: row.summary ?? "", query });
+            }
+        }
+    }
+    catch { /* signed out, or the network: the rows are still a list */ }
+    return out;
+}
+/** The cell that names a holding: the company, its ticker, a link
+    into the check, and the verdict of the last check if there is
+    one. */
+function nameCell(h, done) {
+    const cell = el("td", {});
+    const was = done.get(String(h.ticker).toUpperCase());
+    cell.append(el("a", { className: "live-check", href: was ? `/tools/stock?${was.query}` : checkUrl(h) }, el("span", { className: "live-name" }, h.name || "–"), el("span", { className: "mono live-ticker" }, h.ticker)));
+    if (was) {
+        cell.append(el("span", { className: "live-verdict mono" }, was.summary || "checked"));
+    }
+    return cell;
+}
+function holdingsTable(positions, currency, invested, done = new Map()) {
     /* Sorted, weighted and gained by `shared/portfolio.ts`, which
        is the same derivation the Android app runs. What is left
        here is the table. */
     const rows = holdingsOf(positions, invested);
     return el("div", { className: "live-table" }, el("table", {}, el("thead", {}, el("tr", {}, ...["Holding", "Qty", "Avg paid", "Now", "Value", "P/L", "Weight"]
-        .map((h) => el("th", {}, h)))), el("tbody", {}, rows.map((h) => el("tr", {}, el("td", {}, el("span", { className: "live-name" }, h.name || "–"), el("span", { className: "mono live-ticker" }, h.ticker)), el("td", { className: "mono" }, QTY(h.quantity)), el("td", { className: "mono" }, MONEY(h.averagePaid, h.currency)), el("td", { className: "mono" }, MONEY(h.price, h.currency)), el("td", { className: "mono" }, MONEY(h.value, currency)), el("td", { className: `mono ${signClass(h.gain)}` }, `${MONEY(h.gain, currency)} (${PCT(h.gainPct)})`), el("td", {}, el("span", { className: "live-bar" }, el("span", { className: "live-fill", style: `width:${h.barPct}%` })), el("span", { className: "mono live-weight" }, PCT(h.weightPct, { signed: false }))))))));
+        .map((h) => el("th", {}, h)))), el("tbody", {}, rows.map((h) => el("tr", {}, nameCell(h, done), el("td", { className: "mono" }, QTY(h.quantity)), el("td", { className: "mono" }, MONEY(h.averagePaid, h.currency)), el("td", { className: "mono" }, MONEY(h.price, h.currency)), el("td", { className: "mono" }, MONEY(h.value, currency)), el("td", { className: `mono ${signClass(h.gain)}` }, `${MONEY(h.gain, currency)} (${PCT(h.gainPct)})`), el("td", {}, el("span", { className: "live-bar" }, el("span", { className: "live-fill", style: `width:${h.barPct}%` })), el("span", { className: "mono live-weight" }, PCT(h.weightPct, { signed: false }))))))));
 }
 /* Dividends, summed by month, drawn as one row of columns. One
    hue, because one series; the numbers ride in each column's
@@ -245,7 +315,7 @@ function activityLists(history, currency) {
 }
 /** The whole dashboard for one account's data, reused by the
     admin's view of the site account. */
-function accountDashboard(account, { title, note } = {}) {
+function accountDashboard(account, { title, note, done } = {}) {
     const t = totalsOf(account.summary);
     const currency = t.currency;
     const root = el("div", { className: "live-dash" });
@@ -255,7 +325,7 @@ function accountDashboard(account, { title, note } = {}) {
     root.append(el("div", { className: "stat-row" }, statTile("Account value", MONEY(t.total, currency), `all in, ${currency}`), statTile("Invested", MONEY(t.invested, currency), `cost ${MONEY(t.cost, currency)}`), statTile("Unrealised", MONEY(t.unrealised, currency), `${PCT(t.unrealisedPct)} on cost`, signClass(t.unrealised)), statTile("Realised, all time", MONEY(t.realised, currency), "", signClass(t.realised)), statTile("Free cash", MONEY(t.freeCash, currency), t.inPies ? `plus ${MONEY(t.inPies, currency)} parked in pies` : "")));
     const positions = account.positions ?? [];
     if (positions.length) {
-        root.append(el("div", { className: "live-block" }, el("h3", {}, `Holdings (${positions.length})`), holdingsTable(positions, currency, t.invested)));
+        root.append(el("div", { className: "live-block" }, el("h3", {}, `Holdings (${positions.length})`), holdingsTable(positions, currency, t.invested, done)));
     }
     else {
         root.append(el("p", { className: "muted" }, "No open positions."));
@@ -284,10 +354,15 @@ async function drawOwn() {
         return;
     }
     const currency = live.account.summary?.currency;
+    /* Asked for alongside the drawing rather than before it: a
+       reader with no account gets an empty map and the same table
+       without the verdicts, and the request is one round trip
+       against a table this reader already owns. */
     const dash = accountDashboard(live.account, {
         title: ownKeyMode === "saved"
             ? "Your account, from the saved key"
             : "Your account, key held by this tab",
+        done: await checksDone(),
     });
     const bar = el("div", { className: "live-actions" }, el("button", {
         className: "btn btn-ghost", type: "button",

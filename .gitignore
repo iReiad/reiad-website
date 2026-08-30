@@ -63,3 +63,10 @@ shared/curricula/*.d.ts
 # second copy of every lesson.
 /schools.sql
 /money.sql
+
+# Scratch bundles a harness writes into next/ so that node can
+# resolve `react-dom` from there: a data: URL cannot resolve a
+# bare specifier and os.tmpdir() has no node_modules. They are
+# deleted by the harness that made them; this is for the run that
+# was interrupted, and check-mjs.ts is what noticed.
+next/.*.mjs

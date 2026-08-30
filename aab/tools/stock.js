@@ -100,10 +100,23 @@ let style = "balanced";
    report and type once.
    ============================================================ */
 
+/* `quick: true` is the shorter way in.
+
+   ELEVEN FIELDS, and they are not the eleven that are easiest to
+   type: they are the ones the six pillars are most sensitive to,
+   which is why value, profitability, balance, cash and dividend
+   are all represented. Everything left out keeps the sector's
+   typical figure, which is what the example presets load, so a
+   quick check is a real check against an assumed background
+   rather than a different model. `depth.quickNote` says exactly
+   that to the reader, because a score computed partly from
+   somebody else's numbers has to say so. */
 const FIELDS = [
-  { g: "company", id: "price", step: 0.1, slider: [1, 500, 0.5] },
-  { g: "company", id: "shares", step: 1 },
-  { g: "company", id: "sector", select: Object.keys(SECTORS), prefix: "sector." },
+  { g: "company", id: "name", text: true, quick: true },
+  { g: "company", id: "ticker", text: true, quick: true, wide: false },
+  { g: "company", id: "price", step: 0.1, slider: [1, 500, 0.5], quick: true },
+  { g: "company", id: "shares", step: 1, quick: true },
+  { g: "company", id: "sector", select: Object.keys(SECTORS), prefix: "sector.", quick: true },
   { g: "company", id: "category", select: ["A", "B", "N", "Z"], plain: true },
   { g: "company", id: "benchmark", select: Object.keys(INDICES), plain: true },
   { g: "company", id: "high52", step: 0.1 },
@@ -115,26 +128,26 @@ const FIELDS = [
   { g: "company", id: "stockReturn12m", step: 1, slider: [-80, 150, 1] },
   { g: "company", id: "indexReturn12m", step: 1, slider: [-50, 80, 1] },
 
-  { g: "income", id: "revenue", step: 100 },
+  { g: "income", id: "revenue", step: 100, quick: true },
   { g: "income", id: "grossProfit", step: 100 },
   { g: "income", id: "ebit", step: 100 },
   { g: "income", id: "depreciation", step: 50 },
   { g: "income", id: "interestExpense", step: 50 },
-  { g: "income", id: "netIncome", step: 100 },
+  { g: "income", id: "netIncome", step: 100, quick: true },
 
-  { g: "balance", id: "totalAssets", step: 100 },
+  { g: "balance", id: "totalAssets", step: 100, quick: true },
   { g: "balance", id: "currentAssets", step: 100 },
   { g: "balance", id: "inventory", step: 100 },
-  { g: "balance", id: "cash", step: 100 },
+  { g: "balance", id: "cash", step: 100, quick: true },
   { g: "balance", id: "currentLiabilities", step: 100 },
-  { g: "balance", id: "totalDebt", step: 100 },
-  { g: "balance", id: "equity", step: 100 },
+  { g: "balance", id: "totalDebt", step: 100, quick: true },
+  { g: "balance", id: "equity", step: 100, quick: true },
   { g: "balance", id: "reserves", step: 100 },
 
-  { g: "cash", id: "cfo", step: 100 },
+  { g: "cash", id: "cfo", step: 100, quick: true },
   { g: "cash", id: "capex", step: 100 },
 
-  { g: "dividend", id: "dps", step: 0.1, slider: [0, 30, 0.1] },
+  { g: "dividend", id: "dps", step: 0.1, slider: [0, 30, 0.1], quick: true },
   { g: "dividend", id: "divTax", step: 1, slider: [0, 30, 1] },
   { g: "dividend", id: "yearsPaid", step: 1, slider: [0, 25, 1] },
 
@@ -169,6 +182,24 @@ const FIELDS = [
 const GROUPS = ["company", "income", "balance", "cash", "dividend", "prior", "bank", "benchmarks"];
 const OPEN_BY_DEFAULT = new Set(["company", "income"]);
 
+/* HOW MUCH OF THE FORM TO SHOW, and it is a view setting rather
+   than an input: the model reads the same eighty-five values
+   either way, and what changes is how many of them a reader is
+   asked to type. So it is not in `DEFAULTS`, it is skipped by
+   `readUrl` alongside `lang` and `style`, and it lives in
+   `reader-prefs` where the rest of the reader's choices are.
+
+   `tool-depth` is the calculator's own spelling of that field,
+   written by `aab/src/prefs.ts` and read here, so this file needs
+   no JSON parse before its first render. */
+let depth = "quick";
+try {
+  const stored = localStorage.getItem("tool-depth");
+  if (stored === "quick" || stored === "all") depth = stored;
+} catch { /* private mode: quick, which is the friendlier default */ }
+
+const shownIn = (f) => depth === "all" || f.quick === true;
+
 /* ============================================================
    URL STATE, an analysis you can send someone
    ============================================================ */
@@ -179,6 +210,7 @@ function readUrl() {
   let handSet = false;
   for (const [k, v] of p) {
     if (k === "lang" || k === "style") continue;
+    if (k === "depth") { if (v === "quick" || v === "all") depth = v; continue; }
     if (k in DEFAULTS) {
       out[k] = typeof DEFAULTS[k] === "number" ? Number(v) : v;
     } else if (k.startsWith("w.") && PILLARS.includes(k.slice(2))) {
@@ -208,6 +240,9 @@ function writeUrl() {
     if (weights[k] !== WEIGHT_PRESETS.balanced[k]) p.set(`w.${k}`, weights[k]);
   }
   if (lang !== "en" || langExplicit) p.set("lang", lang);
+  /* Carried on the link, so a check somebody sends opens the way
+     they were looking at it. */
+  if (depth !== "quick") p.set("depth", depth);
   const q = p.toString();
   history.replaceState(null, "", q ? `?${q}${location.hash}` : location.pathname + location.hash);
 }
@@ -235,6 +270,10 @@ function applyLang(next, { save = true } = {}) {
     : "Stock check · buy, hold or sell · Reiad's Library";
 
   localiseCrumbs();
+  /* Before `buildInputs`, because the note under the switch is
+     translated like everything else and the switch decides what
+     `buildInputs` draws. */
+  paintDepth();
   buildInputs();
   render();
 }
@@ -271,7 +310,7 @@ function buildInputs() {
   host.textContent = "";
 
   for (const g of GROUPS) {
-    const fields = FIELDS.filter((f) => f.g === g);
+    const fields = FIELDS.filter((f) => f.g === g && shownIn(f));
     if (!fields.length) continue;
 
     const box = el("details", "driver-group");
@@ -289,6 +328,16 @@ function buildInputs() {
     for (const f of fields) box.append(fieldNode(f));
     host.append(box);
   }
+}
+
+/** The switch's own state and the sentence under it. Called by
+    `applyLang` as well, because the note is translated. */
+function paintDepth() {
+  for (const b of $$("#depth-switch button[data-depth]")) {
+    b.setAttribute("aria-pressed", String(b.dataset.depth === depth));
+  }
+  const note = $("#depth-note");
+  if (note) note.textContent = t(depth === "quick" ? "depth.quickNote" : "depth.allNote", lang);
 }
 
 function fieldNode(f) {
@@ -319,6 +368,28 @@ function fieldNode(f) {
       commit();
     });
     wrap.append(sel);
+    val.textContent = "";
+    return wrap;
+  }
+
+  /* A LABEL RATHER THAN A NUMBER. `name` and `ticker` are the two,
+     nothing in `analyse()` reads either, and they are what make an
+     analysis be ABOUT something: the save box offers the company's
+     own name, and `/tools/live` finds the check somebody did on a
+     holding by its ticker. */
+  if (f.text) {
+    const box = el("input", "field-text");
+    box.type = "text";
+    box.id = `in-${f.id}`;
+    box.maxLength = 60;
+    box.value = String(state[f.id] ?? "");
+    box.placeholder = f.id === "ticker" ? "SQURPHARMA" : "Square Pharmaceuticals";
+    box.addEventListener("input", () => {
+      state[f.id] = box.value.slice(0, 60);
+      commit();
+    });
+    wrap.append(box);
+    wrap.append(el("p", "driver-note", esc(t(`f.${f.id}`, lang))));
     val.textContent = "";
     return wrap;
   }
@@ -647,7 +718,9 @@ function render() {
   }
   for (const r of $$("#weights input[type=range]")) paintRange(r);
   for (const f of FIELDS) {
-    if (f.slider || f.select) continue;
+    /* A label has no read-out beside it, and `fmtInt` on a
+       company name renders NaN. */
+    if (f.slider || f.select || f.text) continue;
     const box = $(`#val-${f.id}`);
     if (box) box.textContent = fmtInt(state[f.id], lang);
   }
@@ -668,6 +741,18 @@ function renderVerdict(a) {
   const tone = toneFor(a);
   $("#verdict-dial").innerHTML = dial(a.score, tone);
   $("#verdict").dataset.state = tone;
+
+  /* WHICH COMPANY THIS IS ABOUT, where the verdict is, because a
+     page that says "worth accumulating" over no name is a page a
+     reader can screenshot and later not be able to place. Nothing
+     is shown when nothing was typed, which is every reader who
+     has not filled the label in. */
+  const who = $("#verdict-who");
+  if (who) {
+    const label = [state.name, state.ticker].filter(Boolean).join(" · ");
+    who.hidden = !label;
+    who.textContent = label;
+  }
 
   $("#verdict-band").textContent = a.vetoed
     ? t("verdict.vetoed", lang)
@@ -1172,7 +1257,7 @@ function initSaved() {
   const field = $("#scenario-name");
 
   $("#save-scenario-go").addEventListener("click", async (e) => {
-    const name = field.value.trim();
+    const name = field.value.trim() || [state.name, state.ticker].filter(Boolean)[0] || "";
     if (!name) { note.textContent = t("a.saveNamed", lang); return; }
 
     const button = e.currentTarget;
@@ -1249,6 +1334,32 @@ function init() {
     b.dataset.mode = opening ? "open" : "closed";
     b.textContent = t(opening ? "a.collapseAll" : "a.expandAll", lang);
   });
+
+  /* ---- how much of the form to show ----
+
+     `buildInputs()` reads `depth` and `applyLang` calls it, so
+     switching is a rebuild of the panel and nothing else: no
+     value is touched, so a reader who fills in Everything, drops
+     to the main numbers and goes back finds what they typed
+     exactly where they left it. */
+  const depthSwitch = $("#depth-switch");
+  if (depthSwitch) {
+    depthSwitch.addEventListener("click", (e) => {
+      const b = e.target.closest("button[data-depth]");
+      if (!b || b.dataset.depth === depth) return;
+      depth = b.dataset.depth;
+      paintDepth();
+      buildInputs();
+      render();
+      /* Through `savePrefs`, so the account carries it and the
+         settings panel and this switch cannot disagree. It is one
+         dynamic import rather than a static one because this page
+         must still work with no account and no network. */
+      import("/prefs.js")
+        .then((m) => m.savePrefs({ depth }))
+        .catch(() => { /* the choice holds for this page */ });
+    });
+  }
 
   buildWeights();
   applyLang(lang, { save: false });          // builds the inputs and renders

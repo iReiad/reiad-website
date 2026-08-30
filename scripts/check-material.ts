@@ -86,6 +86,17 @@ const NOT_A_SURFACE = new Map<string, string>([
              + "not on the list, and the material on the list drew a rectangle "
              + "round the whole group inside the card that already holds it."],
   ["chip-row", "a row of chips. The chips light, the row does not."],
+  ["ls-cell-in", "a cell of a sheet, which is a text field in a table. The row "
+                 + "header names it and the caret is the affordance; a lit rim on "
+                 + "every hole in a profit and loss account would draw forty "
+                 + "buttons."],
+  ["field-text", "a text field. Its affordance is the caret and the focus ring, "
+                 + "and a lit resting rim on a box you type a company's name into "
+                 + "is a box that looks like a button."],
+  ["live-check", "a LINK IN A TABLE CELL, which is prose with a rule under it, "
+                 + "like `.term` in an article. The row is the surface; a second "
+                 + "piece of glass round the words inside one cell of it would be "
+                 + "a card inside a card."],
   ["seg", "a segmented control's frame. Its buttons are `.chip`."],
   ["segmented", "the other segmented frame, whose buttons are its own."],
   ["driver-group", "a row of `.driver` sliders."],
@@ -308,6 +319,11 @@ const NOT_GLASS = new Map<string, string>([
                           + "that has not arrived. A lit edge on it would promise a "
                           + "surface that is about to be replaced."],
   ["field-num",           "a text field: the caret is the affordance"],
+  ["ls-cell-in",          "a cell of a sheet: the same argument as `field-num`, in a "
+                          + "table"],
+  ["field-text",          "the same, one field along: the two label boxes on the stock "
+                          + "check, where a lit resting rim on a box you type a company "
+                          + "name into is a box that looks like a button"],
   ["social",              "a <ul>, not a surface. Its <a> children ARE the pills, and "
                           + "putting the material on the list drew a rectangle round the "
                           + "whole group, sitting inside the card that already holds it. "

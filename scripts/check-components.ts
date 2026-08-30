@@ -164,7 +164,17 @@ const OWNED: Owned[] = [
   {
     id: "input",
     find: /<input(?=[\s>]|$)/,
-    skip: /type="(?:range|checkbox|radio|hidden|file|submit|button)"|honeypot/,
+    /* AND ONE THAT IS NAMED BY SOMETHING ELSE ON THE PAGE.
+
+       `<Field>` exists so that a box is never unlabelled, and a
+       cell of a table already has a name: its row header. Wiring
+       `aria-labelledby` at that header is a stronger association
+       than a `<label>` beside it, and adding a hidden label as
+       well would announce the same words twice. So the escape
+       hatch is the attribute that does the job rather than a file
+       name: anything claiming it has to point at an id, which is
+       a claim somebody can check. */
+    skip: /type="(?:range|checkbox|radio|hidden|file|submit|button)"|honeypot|aria-labelledby/,
     use: "<Field> from ui/field",
   },
   { id: "textarea", find: /<textarea(?=[\s>]|$)/, use: "<TextArea> from ui/field" },

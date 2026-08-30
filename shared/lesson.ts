@@ -214,6 +214,26 @@ export interface SpotBlock extends BlockBase {
   lines: { text: Say; flag?: Say }[];
 }
 
+/** A SHEET THE READER TYPES INTO.
+
+    `model` names a table in `shared/lesson-grids.ts`, which owns
+    the rows, the columns, which cells are the reader's and what
+    the computed ones are computed from. Same arrangement as a
+    lab, and for the same reason: the Android app renders the
+    same rows and a table whose arithmetic lived in a component
+    would be a table the app could not compute.
+
+    `preset` moves an opening number for this lesson and cannot
+    invent a cell the model does not have, exactly as a lab's
+    does. There is no `hide`: a sheet with a row taken out of it
+    is a different sheet, and a total that no longer adds up is
+    worse than a row somebody did not want. */
+export interface GridBlock extends BlockBase {
+  kind: "grid";
+  model: string;
+  preset?: Record<string, number>;
+}
+
 /** Something to do away from the screen, ticked off here.
 
     It is deliberately not marked and not scored: nothing on this
@@ -228,13 +248,13 @@ export interface DrillBlock extends BlockBase {
 export type Block =
   | QuizBlock | OrderBlock | MatchBlock | BinsBlock | LabBlock
   | ChartBlock | FigureBlock | RevealBlock | CompareBlock
-  | SpotBlock | DrillBlock;
+  | SpotBlock | DrillBlock | GridBlock;
 
 export type BlockKind = Block["kind"];
 
 export const BLOCK_KINDS: readonly BlockKind[] = [
   "quiz", "order", "match", "bins", "lab", "chart",
-  "figure", "reveal", "compare", "spot", "drill",
+  "figure", "reveal", "compare", "spot", "drill", "grid",
 ];
 
 export const FIGURE_SHAPES: readonly FigureShape[] = [
@@ -317,7 +337,8 @@ const isSay = (v: unknown): boolean =>
     imported every model would pull the whole calculator library
     into the Android app's copy of this file. */
 export function blockProblems(
-  id: string, block: unknown, models: readonly string[] = []
+  id: string, block: unknown, models: readonly string[] = [],
+  grids: readonly string[] = [],
 ): string[] {
   const out: string[] = [];
   const at = (what: string): void => { out.push(`${id}: ${what}`); };
@@ -398,6 +419,14 @@ export function blockProblems(
       if (!model) at("names no model");
       else if (models.length && !models.includes(model)) {
         at(`model "${model}" is not in shared/lesson-labs.ts`);
+      }
+      break;
+    }
+    case "grid": {
+      const model = String(b.model ?? "");
+      if (!model) at("names no sheet");
+      else if (grids.length && !grids.includes(model)) {
+        at(`sheet "${model}" is not in shared/lesson-grids.ts`);
       }
       break;
     }

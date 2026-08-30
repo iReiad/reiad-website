@@ -191,6 +191,13 @@ export const KEPT: Keep[] = [
       + "which is synced, and they have read this key since long before there "
       + "were accounts. One choice, one source, two names.",
     by: "aab/src/prefs.ts" },
+  { key: "tool-depth", where: "local", held: "preference", syncs: false,
+    what: "Whether a calculator opens with its main numbers or all of them.",
+    why: "The calculators' own spelling of a field inside `reader-prefs`, which "
+      + "is synced. `stock.js` reads it before its first render and a string "
+      + "comparison there is cheaper than a JSON parse. One choice, one source, "
+      + "two names, exactly as `tool-lang` is.",
+    by: "aab/src/prefs.ts" },
   { key: "audience", where: "local", held: "preference", syncs: false,
     what: "Whether the menu leads with learning or with hiring.",
     why: "Which of two things somebody came for today, answered by pressing a "

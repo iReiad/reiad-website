@@ -20,6 +20,7 @@ import { T } from "./lang";
 import { Figure } from "./figure";
 import { Chart, Lab } from "./lab";
 import { Bins, Compare, Drill, Match, Order, Quiz, Reveal, Spot } from "./interactive";
+import { Grid } from "./grid";
 
 /** What each kind is called, above the block. Not decoration: a
     reader who sees "হাতে কলমে" knows before reading a word that
@@ -37,6 +38,7 @@ const KIND_WORDS: Record<Block["kind"], { bn: string; en: string }> = {
   compare: { bn: "পাশাপাশি", en: "Side by side" },
   spot: { bn: "খুঁজে বের করুন", en: "Find the problem" },
   drill: { bn: "করে ফেলুন", en: "Go and do it" },
+  grid: { bn: "ছকে বসান", en: "Fill in the sheet" },
 };
 
 export function LessonBlock(
@@ -59,6 +61,7 @@ export function LessonBlock(
       case "compare": return <Compare block={block} />;
       case "spot": return <Spot block={block} />;
       case "drill": return <Drill block={block} id={id} lesson={lesson} school={school} />;
+      case "grid": return <Grid block={block} />;
       default: return null;
     }
   })();
