@@ -1556,17 +1556,6 @@
     scroll-padding-top: calc(var(--top-space) + 0.9rem);
     text-size-adjust: 100%;
 
-    /* The bar is `position: fixed`, and a fixed element rides the
-       rubber band: overscrolling the root scroller on a phone drags
-       the bar out of its `--top-gap` and under the browser's own
-       chrome, then springs it back. `none` rather than `contain`,
-       because contain stops the scroll chaining and keeps the
-       bounce, which is the half that moves the bar. It also turns
-       off pull to refresh, which is the price: this site has no
-       gesture of its own on that axis and a reader who wants a
-       reload has the browser's button. */
-    overscroll-behavior-y: none;
-
     /* Here as well as on body, because this is the element the
        viewport scrollbar actually belongs to: body's overflow
        propagates up to it, so locking scrolling on body takes the
@@ -1592,6 +1581,23 @@
     flex-direction: column;
     font-synthesis-weight: none;
     text-rendering: optimizeLegibility;
+    /* THE CLIP ON <html> DOES NOT HOLD THE BLEED, AND THIS IS
+       WHERE IT IS HELD.
+
+       Decorative art is allowed past the column on purpose:
+       `.home-aura::before` is inset -14% on both sides. The root's
+       overflow PROPAGATES to the viewport, and a root that has
+       propagated computes to `visible` itself, so the viewport
+       clips the painting and the document stays as wide as the
+       bleed. A phone then lays the page out at that width and
+       zooms out to fit: measured at 360px, the document was 393px
+       and every page rendered at 88%, the bar included. Body does
+       not propagate, so the clip is real here.
+
+       `clip` and never `hidden`, for the reason <html> says: hidden
+       makes a scroll container, which gives the page a second
+       scrollport and breaks `position: sticky` inside it. */
+    overflow-x: clip;
     /* The gutter that stops the header jumping when something locks
        scrolling is on <html>, not here. It was here, and here it is
        worse than useless: body is not a scroll container while the
