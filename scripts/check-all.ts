@@ -119,6 +119,12 @@ const STAGES: Array<[stage: string, entries: Entry[]]> = [
        no motion. Two lists that have to agree, so they are
        compared rather than trusted. */
     "scripts/check-relief.ts",
+    /* The reader's own finish, which is three files: the panel's
+       table, the stylesheet's block and the boot script's
+       whitelist. One missing from the third is a choice that
+       will not survive the next page load, and nothing else
+       would ever say so. */
+    "scripts/check-glass.ts",
     "scripts/check-icons.ts",
     /* The extension rule, which was a paragraph in CLAUDE.md
        until 19 August 2026 and was broken anyway: the

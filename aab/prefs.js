@@ -84,21 +84,52 @@ export const LANGS = [
 /* ============================================================
    Glass
 
-   THREE FINISHES, NOT THREE BLURS. What separates them is what
-   the surface is made of: `frost` is cold and sees a long way
-   through, `paper` is the site's own weave with the blur pulled
-   back so the texture reads, and `plain` is not glass at all.
-   The two sliders below then move whichever of the three is on.
+   ELEVEN FINISHES, NOT ELEVEN BLURS. What separates them is what
+   the surface is MADE of, and the two sliders below then move
+   whichever one is on.
+
+   Nine of them are cast glass and the names are the trade's own.
+   The distinction that runs through them is the one the design
+   system already makes between a plate and a groove: REEDING is a
+   run of convex ridges and FLUTING is a run of concave channels,
+   so a reed is lit on the flank nearest the light and a flute on
+   the wall furthest from it.
+
+   Two are not glass. `paper` is the site's own sheet, rebuilt: it
+   was two hairlines crossing at 45 degrees every five pixels,
+   which is a fabric at an angle no paper-making process produces
+   and a lattice the eye finds in about a second. It is a wove
+   tooth, laid lines and the cloudiness a sheet has from the way
+   the pulp fell.
 
    `plain` is the one to keep working. It is what a browser with
    no `backdrop-filter` gets, what `prefers-reduced-transparency`
    gets, and what anybody who finds moving text under a bar hard
    to read chooses. So it is a real finish with its own solid
    grounds rather than the others with a feature switched off.
+
+   ---- adding one is three places and a check ----
+
+   Here, a `[data-glass="<id>"]` block in `next/styles/site.css`,
+   and the whitelist in the boot script in
+   `next/components/shell.tsx`. `scripts/check-glass.ts` fails if
+   the three stop being the same set, because each way of getting
+   it wrong is silent in its own way: a finish offered and never
+   drawn, a finish drawn and never offered, and a finish the boot
+   script throws away before the first paint.
    ============================================================ */
 export const GLASSES = [
     { id: "frost", label: "Frost", note: "cold, and you see a long way through" },
-    { id: "paper", label: "Paper", note: "the site's own weave, held closer" },
+    { id: "paper", label: "Paper", note: "a wove tooth, laid lines, and the way the pulp fell" },
+    { id: "thin-reed", label: "Thin reed", note: "narrow ridges, the quietest of the nine" },
+    { id: "linear-ridge", label: "Linear ridge", note: "the same ridge, broader and deeper" },
+    { id: "crossed-reed", label: "Crossed reed", note: "reeded both ways, into pillows" },
+    { id: "deep-flute", label: "Deep flute", note: "channels cut in, so the light runs the other way up" },
+    { id: "aquatex", label: "Aquatex", note: "rain standing on the glass" },
+    { id: "arctic-ice", label: "Arctic ice", note: "facets, and no two of them the same" },
+    { id: "callisto", label: "Callisto", note: "a fine ripple with no centre to it" },
+    { id: "champagne", label: "Champagne", note: "bubbles, sparse, rising" },
+    { id: "eurodrop", label: "Eurodrop", note: "drops, lit on top and shaded under" },
     { id: "plain", label: "Plain", note: "no blur at all, solid grounds" },
 ];
 /* A multiplier rather than a radius, so one step moves every

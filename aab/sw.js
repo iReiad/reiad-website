@@ -31,6 +31,15 @@
    login could not have reached anyone either. Bump this whenever a
    precached file changes.
 
+   v222: /fallback.css and /prefs.js. Eleven finishes where there
+        were three. The paper was two hairlines crossing at 45
+        degrees every five pixels, which is a fabric at an angle
+        no paper-making process produces; it is a wove tooth, laid
+        lines and formation now. The nine cast patterns are new,
+        and an old /prefs.js would drop a reader's choice of one
+        of them on the next write, because savePrefs keeps only
+        the ids it knows about.
+
    v221: /tilt.js. The lean was written straight out of the
         pointermove handler, after reading the card's box out of
         the layout, so a 1000Hz mouse forced sixteen layouts and
@@ -1987,7 +1996,7 @@
    imports (crumbs, audience, learn progress) and the hub is a
    different page. Without a bump, a returning reader would be
    served the v3 app.js forever and none of it would appear. */
-const VERSION = "v221";
+const VERSION = "v222";
 const SHELL = `shell-${VERSION}`;
 const RUNTIME = `runtime-${VERSION}`;
 

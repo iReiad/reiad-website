@@ -73,7 +73,43 @@ export declare const GLASSES: readonly [{
 }, {
     readonly id: "paper";
     readonly label: "Paper";
-    readonly note: "the site's own weave, held closer";
+    readonly note: "a wove tooth, laid lines, and the way the pulp fell";
+}, {
+    readonly id: "thin-reed";
+    readonly label: "Thin reed";
+    readonly note: "narrow ridges, the quietest of the nine";
+}, {
+    readonly id: "linear-ridge";
+    readonly label: "Linear ridge";
+    readonly note: "the same ridge, broader and deeper";
+}, {
+    readonly id: "crossed-reed";
+    readonly label: "Crossed reed";
+    readonly note: "reeded both ways, into pillows";
+}, {
+    readonly id: "deep-flute";
+    readonly label: "Deep flute";
+    readonly note: "channels cut in, so the light runs the other way up";
+}, {
+    readonly id: "aquatex";
+    readonly label: "Aquatex";
+    readonly note: "rain standing on the glass";
+}, {
+    readonly id: "arctic-ice";
+    readonly label: "Arctic ice";
+    readonly note: "facets, and no two of them the same";
+}, {
+    readonly id: "callisto";
+    readonly label: "Callisto";
+    readonly note: "a fine ripple with no centre to it";
+}, {
+    readonly id: "champagne";
+    readonly label: "Champagne";
+    readonly note: "bubbles, sparse, rising";
+}, {
+    readonly id: "eurodrop";
+    readonly label: "Eurodrop";
+    readonly note: "drops, lit on top and shaded under";
 }, {
     readonly id: "plain";
     readonly label: "Plain";
