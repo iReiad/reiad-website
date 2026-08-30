@@ -1,9 +1,9 @@
 {
   "format": 1,
   "kind": "articles",
-  "taken_at": "2026-08-22T03:23:03.992Z",
+  "taken_at": "2026-08-30T08:31:11.520Z",
   "note": "Live articles only. Generated nightly; do not edit by hand. Drafts, anything belonging to a reader, and any identifier of a system outside this site are deliberately absent: see functions/_lib/backup.ts.",
-  "count": 6,
+  "count": 7,
   "articles": [
     {
       "slug": "article-2026-08-12-aaoifi-intro",
@@ -36,6 +36,22 @@
       "published_at": "2021-06-10",
       "created_at": "2026-08-10T15:58:24.510Z",
       "updated_at": "2026-08-16T20:00:29.307Z"
+    },
+    {
+      "slug": "chocolate-kunafa-brownie-cookies",
+      "section": "insights",
+      "title": "Chocolate kunafa brownie cookies",
+      "dek": "",
+      "tag": "Food & Recipes",
+      "topics": "Food & Recipes",
+      "lang": "en",
+      "body": "<p>🧾 INGREDIENTS</p>\n<p>🍪 Brownie Cookies• 350 g powdered sugar• 60–65 g cocoa powder (good quality)• ½ tsp salt• 3 large egg whites (about ½ cup liquid egg whites)• 1 tsp instant coffee• 1 tsp vanilla extract or vanilla bean paste• ½–1 cup semi-sweet or dark chocolate chips (optional but recommended)</p>\n<p>🌰 Pistachio Kataifi Filling• 4 oz kataifi pastry (shredded phyllo)• 2–3 oz pistachio cream (to taste)• 30 g tahini• Butter for frying kataifi👩‍🍳 </p>\n<p>INSTRUCTIONS</p>\n<p>1️⃣ Make the Brownie Cookie BatterIn a big bowl, mix:• powdered sugar• cocoa powder• salt• egg whites• instant coffee• vanillaWhisk until thick, glossy, and smooth.Fold in chocolate chips.(Optional) Swirl in pistachio cream for extra flavor.👉 Chill batter in the fridge for 30–60 minutes.</p>\n<p>2️⃣ Bake the Brownie CookiesPreheat oven to 350°F (175°C).Line baking tray with parchment paper and lightly butter it.Scoop 2–3 tablespoons batter per cookie.Leave 4–5 inches space (they spread a lot).Bake 8–10 minutes:• 8 min = super fudgy• 10 min = more setCool completely.</p>\n<p>3️⃣ Make Pistachio Kataifi FillingIn a pan, melt butter and fry kataifi until golden and crispy.Mix with pistachio cream + tahini until creamy and crunchy.⸻</p>\n<p>4️⃣ Assemble Cookie SandwichSpread kataifi pistachio filling on one cookie.Top with another cookie.Press gently = Dubai brownie cookie sandwich 😍</p>",
+      "minutes": 1,
+      "status": "live",
+      "cover": "/media/chocolate-kunafa-brownie-cookies-card/6bc3e68260506cee.jpg",
+      "published_at": "2026-08-08",
+      "created_at": "2026-08-30T02:13:59.858Z",
+      "updated_at": "2026-08-30T02:13:59.858Z"
     },
     {
       "slug": "dse-basics",
