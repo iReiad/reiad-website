@@ -142,6 +142,7 @@ const seed = (): Record<string, Row[]> => ({
   research_questions: [],
   research_activity: [],
   research_highlights: [],
+  research_searches: [],
   research_projects: [],
   research_collections: [],
   research_lists: [],
@@ -275,7 +276,9 @@ async function open(path: string, { signedIn = true }: { signedIn?: boolean } = 
       const out: Row[] = posted.map((p) => {
         made += 1;
         const now = new Date().toISOString();
-        const row: Row = { ...p, id: `${table.replace("research_", "")}-${made}-new`, user_id: ME, created_at: now, updated_at: now };
+        /* What Postgres fills in: the one default a page reads back. */
+        const defaults = table === "research_sources" ? { status: "unread", priority: 0, files: [], tags: [], projects: [], collections: [] } : {};
+        const row: Row = { ...defaults, ...p, id: `${table.replace("research_", "")}-${made}-new`, user_id: ME, created_at: now, updated_at: now };
         held.unshift(row);
         return row;
       });
@@ -300,6 +303,8 @@ async function open(path: string, { signedIn = true }: { signedIn?: boolean } = 
   });
 
   const looked: string[] = [];
+  const searched: string[] = [];
+  const alerts: string[] = [];
   await page.route("**/api/**", (r: Route) => {
     const u = new URL(r.request().url());
     const answer = (data: unknown, status = 200): Promise<void> =>
@@ -320,12 +325,32 @@ async function open(path: string, { signedIn = true }: { signedIn?: boolean } = 
     if (u.pathname === "/api/research/files") {
       return answer({ ok: true, bytes: PDF.byteLength, files: 1, cap: 100 * 1024 * 1024, quota: 5 * 1024 * 1024 * 1024 });
     }
+    if (u.pathname === "/api/research/search") {
+      searched.push(u.search);
+      return answer({
+        ok: true, ms: 312,
+        asked: { openalex: "answered", crossref: "answered", semanticscholar: "failed", arxiv: "not-asked", europepmc: "not-asked", core: "no-key", doaj: "not-asked" },
+        hits: [
+          { csl: { type: "article-journal", title: "Weather shocks and farm incomes in Bangladesh", DOI: "10.1000/farm.2021", issued: { "date-parts": [[2021]] } },
+            doi: "10.1000/farm.2021", title: "Weather shocks and farm incomes in Bangladesh", year: 2021, authors: "Rahman and Khan", venue: "J. Dev. Econ.",
+            type: "article-journal", abstract: "", url: null, oa: { isOa: true, url: "https://example.org/oa.pdf" }, cited: 40, from: ["openalex", "crossref"], openalex: "W1", hash: "h-s-1" },
+          { csl: { type: "article-journal", title: "Index insurance uptake among smallholders", DOI: "10.1000/ins.2020", issued: { "date-parts": [[2020]] },
+              author: [{ family: "Jensen", given: "Nathaniel" }] },
+            doi: "10.1000/ins.2020", title: "Index insurance uptake among smallholders", year: 2020, authors: "Jensen", venue: "World Dev.",
+            type: "article-journal", abstract: "Uptake is low where basis risk is high.", url: null, oa: null, cited: 12, from: ["openalex"], openalex: "W2", hash: "h-ins" },
+        ],
+      });
+    }
+    if (u.pathname === "/api/research/alerts/hits") return answer({ ok: true, hits: [] });
+    if (u.pathname.startsWith("/api/research/alerts")) { alerts.push(`${r.request().method()} ${u.pathname}`); return answer({ ok: true, id: "x" }); }
     if (u.pathname === "/api/research/status") {
       return answer({ ok: true, services: { crossref: "on", openalex: "off", openlibrary: "on" } });
     }
     return answer({ ok: true });
   });
   (rows as Record<string, unknown>).looked = looked as unknown as Row[];
+  (rows as Record<string, unknown>).searched = searched as unknown as Row[];
+  (rows as Record<string, unknown>).alerts = alerts as unknown as Row[];
 
   await page.goto(`http://localhost:${PORT}${path}`, { waitUntil: "load" });
   await page.waitForTimeout(900);
@@ -345,7 +370,7 @@ const firstOf = (s: Sent | undefined): Record<string, unknown> =>
    1. signed out, a room invites rather than blanks
    ============================================================ */
 
-for (const path of ["/tools/research", "/tools/research/library", "/tools/research/read"]) {
+for (const path of ["/tools/research", "/tools/research/library", "/tools/research/read", "/tools/research/find"]) {
   const { page, errors } = await open(path, { signedIn: false });
   const words = await bodyText(page);
   ok(`${path} signed out says whose it is`, words.includes("This is yours"), words.slice(0, 200));
@@ -579,6 +604,57 @@ for (const path of ["/tools/research", "/tools/research/library", "/tools/resear
     wroteBack.some((x) => Array.isArray((x.body as { rects?: unknown[] }).rects) && ((x.body as { rects: unknown[] }).rects).length >= 1),
     JSON.stringify(wroteBack.map((x) => x.body)));
 
+  ok("and none of it threw", errors.length === 0, errors.join(" | "));
+  await page.close();
+}
+
+/* ============================================================
+   5. finding: one search, every index, and the library drawn on it
+   ============================================================ */
+
+{
+  const { page, errors, sent, rows } = await open("/tools/research/find");
+  await page.locator("#rs-fq").fill("weather shocks farm income");
+  await page.locator("#rs-ff").fill("2018");
+  await page.locator("#rs-fq").press("Enter");
+  await page.waitForTimeout(600);
+  const searched = rows.searched as unknown as string[];
+  ok("the query goes to the Worker with its fields, never to an index",
+    searched.length === 1 && searched[0].includes("q=weather+shocks+farm+income") && searched[0].includes("from=2018"), searched.join(" "));
+  ok("two hits are drawn", await page.locator(".rs-main li").count() === 2, `${await page.locator(".rs-main li").count()} row(s)`);
+  const first = await page.locator(".rs-main li").first().textContent() ?? "";
+  ok("a hit says which indexes had it", first.includes("OpenAlex") && first.includes("Crossref"), first.slice(0, 200));
+  ok("and that a free copy exists", /free copy|বিনামূল্যের কপি/.test(first));
+  ok("a work already in the library says so with its status, not an Add",
+    /unread|অপঠিত/i.test(first) && !/Add\b/.test(first), first.slice(0, 200));
+  ok("and links to its record", await page.locator('.rs-main li a[href="/tools/research/library/s-1"]').count() === 1);
+  const summary = await page.locator(".rs-main").textContent() ?? "";
+  ok("an index that did not answer is said so, not shown as empty", /Semantic Scholar: (did not answer|উত্তর দেয়নি)/.test(summary), summary.slice(0, 300));
+
+  const addBtn = page.locator(".rs-main li").nth(1).getByRole("button", { name: /Add|যোগ/ });
+  if (await addBtn.count()) await addBtn.click(); else failures.push(`no Add on row two: ${(await page.locator(".rs-main").textContent() ?? "").slice(0, 300)}`);
+  await page.waitForTimeout(400);
+  const added = firstOf(posts(sent, "research_sources")[0]);
+  ok("Add files the hit as a verified source that arrived by search",
+    added.title === "Index insurance uptake among smallholders" && added.added_via === "search" && added.verified === true && added.key === "jensen2020index",
+    JSON.stringify({ title: added.title, via: added.added_via, key: added.key }));
+  await page.waitForTimeout(400);
+  ok("and the row now says it is in the library", /unread|অপঠিত/i.test(await page.locator(".rs-main li").nth(1).textContent() ?? ""),
+    (await page.locator(".rs-main li").nth(1).textContent() ?? "").slice(0, 200));
+
+  const keepBtn = page.getByRole("button", { name: /Keep this search|এই খোঁজ রাখুন/ });
+  if (await keepBtn.count()) await keepBtn.click();
+  await page.waitForTimeout(400);
+  const kept = firstOf(posts(sent, "research_searches")[0]);
+  ok("keeping the search writes the search log's line: the string, the fields, the databases, the count",
+    kept.query === "weather shocks farm income" && (kept.fields as { from?: number }).from === 2018 && Array.isArray(kept.databases) && kept.hits === 2,
+    JSON.stringify(kept));
+  const alertBtn = page.locator(".rs-list").getByRole("button", { name: /Alert off|সতর্কতা বন্ধ/ });
+  if (await alertBtn.count()) await alertBtn.click();
+  await page.waitForTimeout(400);
+  const alerts = rows.alerts as unknown as string[];
+  ok("switching the alert on copies the search to D1 for the cron", alerts.some((a) => a.startsWith("PUT /api/research/alerts")), alerts.join(","));
+  ok("and the row carries the flag", sent.some((x) => x.method === "PATCH" && x.path.includes("research_searches") && (x.body as { alert?: boolean }).alert === true));
   ok("and none of it threw", errors.length === 0, errors.join(" | "));
   await page.close();
 }

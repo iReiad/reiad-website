@@ -318,6 +318,33 @@ export const RESEARCH_WORDS: Record<string, Phrase> = {
   "rs.lib.file.quota": { en: "That would take you over the space your account has.", bn: "এতে আপনার অ্যাকাউন্টের জায়গা পেরিয়ে যাবে।" },
   "rs.set.files": { en: "Files", bn: "ফাইল" },
   "rs.set.files.hint": { en: "What the reading room holds on your account, against the space it has.", bn: "পড়ার ঘর আপনার অ্যাকাউন্টে যা রাখে, তার জায়গার তুলনায়।" },
+
+  /* ---- finding ---- */
+  "rs.findroom.q": { en: "Search every index", bn: "সব সূচিতে খুঁজুন" },
+  "rs.findroom.q.hint": { en: "Words from the title, the abstract or the topic. Every index that is on is asked at once and the answers are merged.", bn: "শিরোনাম, সারাংশ বা বিষয়ের শব্দ। যেসব সূচি চালু আছে সবগুলোকে একসাথে জিজ্ঞেস করা হয়, উত্তর মেলানো হয়।" },
+  "rs.findroom.go": { en: "Search", bn: "খুঁজুন" },
+  "rs.findroom.save": { en: "Keep this search", bn: "এই খোঁজ রাখুন" },
+  "rs.findroom.author": { en: "Author", bn: "লেখক" },
+  "rs.findroom.from": { en: "From", bn: "থেকে" },
+  "rs.findroom.to": { en: "To", bn: "পর্যন্ত" },
+  "rs.findroom.anytype": { en: "Any type", bn: "যেকোনো ধরন" },
+  "rs.findroom.oa": { en: "Free copies only", bn: "শুধু বিনামূল্যের কপি" },
+  "rs.findroom.databases": { en: "Ask:", bn: "জিজ্ঞেস করুন:" },
+  "rs.findroom.searching": { en: "Asking the indexes", bn: "সূচিগুলোকে জিজ্ঞেস করছে" },
+  "rs.findroom.failed": { en: "The search did not answer. Try again in a moment.", bn: "খোঁজে উত্তর আসেনি। একটু পরে আবার চেষ্টা করুন।" },
+  "rs.findroom.noanswer": { en: "did not answer", bn: "উত্তর দেয়নি" },
+  "rs.findroom.none": { en: "Nothing found. Fewer words, or another index.", bn: "কিছু পাওয়া যায়নি। কম শব্দ, বা অন্য সূচি।" },
+  "rs.findroom.empty": { en: "Type something above. A row already in your library says so, with its status.", bn: "উপরে কিছু লিখুন। লাইব্রেরিতে আগে থেকে থাকা সারি নিজেই বলবে, অবস্থাসহ।" },
+  "rs.findroom.add": { en: "Add", bn: "যোগ করুন" },
+  "rs.findroom.saved": { en: "Kept searches", bn: "রাখা খোঁজ" },
+  "rs.findroom.saved.hint": { en: "Each one is a line of the search log a review prints. Switch the alert on and it is rerun every Monday; what is new lands in the inbox.", bn: "প্রতিটা রিভিউয়ের খোঁজ-লগের এক লাইন। সতর্কতা চালু করলে প্রতি সোমবার আবার চলে; নতুন যা আসে ইনবক্সে জমা হয়।" },
+  "rs.findroom.alert.on": { en: "Alert on", bn: "সতর্কতা চালু" },
+  "rs.findroom.alert.off": { en: "Alert off", bn: "সতর্কতা বন্ধ" },
+  "rs.findroom.alerted": { en: "New from your alerts, filed in the inbox:", bn: "আপনার সতর্কতা থেকে নতুন, ইনবক্সে রাখা হলো:" },
+  "rs.findroom.related": { en: "Related", bn: "সম্পর্কিত" },
+  "rs.findroom.show": { en: "Show", bn: "দেখান" },
+  "rs.findroom.citedby": { en: "Cited by", bn: "উদ্ধৃত করেছে" },
+  "rs.findroom.references": { en: "References", bn: "তথ্যসূত্র" },
 };
 
 /** One phrase, or a loud marker for a key nobody wrote. */

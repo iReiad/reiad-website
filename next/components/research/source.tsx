@@ -37,6 +37,7 @@ import { cue } from "../../lib/sound";
 import { T, W, both, useToolLang } from "./lang";
 import { SAID, SETTLE, when } from "./use-who";
 import { FileBox, readHref } from "./files";
+import { RelatedWorks } from "./find";
 
 export function SourceCard({ w, source, projects, collections, onChange, onGone }: {
   w: Who;
@@ -247,6 +248,7 @@ export function SourceCard({ w, source, projects, collections, onChange, onGone 
         </div>
       </Surface>
 
+      <RelatedWorks w={w} source={source} sources={[]} />
       <p className="text-t1 text-ink-soft mono">
         <W k="rs.lib.key" />: {source.key} · <W k="rs.lib.via" />: {source.added_via} · <W k="rs.updated" />: {when(source.updated_at)}
       </p>

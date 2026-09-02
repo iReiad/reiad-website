@@ -262,3 +262,26 @@ CREATE TABLE IF NOT EXISTS scholar_cache (
   json       TEXT NOT NULL,
   fetched_at TEXT NOT NULL
 );
+
+-- A saved search a reader flagged for the Monday cron, copied here
+-- by the browser because the Worker cannot read Supabase rows; and
+-- what the cron found, waiting to be collected into the inbox.
+-- RESEARCH.md section 10.
+CREATE TABLE IF NOT EXISTS research_alerts (
+  reader_id  TEXT NOT NULL,
+  id         TEXT NOT NULL,
+  query      TEXT NOT NULL,
+  fields     TEXT NOT NULL DEFAULT '{}',
+  databases  TEXT NOT NULL DEFAULT '[]',
+  seen       TEXT NOT NULL DEFAULT '[]',
+  last_run   TEXT,
+  created_at TEXT NOT NULL,
+  PRIMARY KEY (reader_id, id)
+);
+CREATE TABLE IF NOT EXISTS research_alert_hits (
+  id        INTEGER PRIMARY KEY AUTOINCREMENT,
+  reader_id TEXT NOT NULL,
+  alert_id  TEXT NOT NULL,
+  json      TEXT NOT NULL,
+  found_at  TEXT NOT NULL
+);

@@ -34,17 +34,23 @@ export interface ScholarEnv extends DbEnv {
   OPENALEX_KEY?: string;
   /** The email Crossref's polite pool asks for. Not a secret. */
   CROSSREF_MAILTO?: string;
+  /** Unpaywall's, the same: an email, no key. */
+  UNPAYWALL_EMAIL?: string;
+  /** Semantic Scholar answers without one at a lower rate; CORE
+      answers nothing without one. */
+  S2_KEY?: string;
+  CORE_KEY?: string;
 }
 
 export type Answered = "answered" | "no-key" | "failed" | "not-asked";
 
-const UA = "reiad.co.uk research studio (https://reiad.co.uk)";
+export const UA = "reiad.co.uk research studio (https://reiad.co.uk)";
 
 /* ============================================================
    the cache
    ============================================================ */
 
-async function cached<T>(
+export async function cached<T>(
   env: ScholarEnv, key: string, seconds: number, fetcher: () => Promise<T | null>,
 ): Promise<T | null> {
   const d1 = env.DB;
@@ -69,10 +75,10 @@ async function cached<T>(
   return fresh;
 }
 
-const DAY = 24 * 60 * 60;
-const WEEK = 7 * DAY;
+export const DAY = 24 * 60 * 60;
+export const WEEK = 7 * DAY;
 
-async function getJSON(url: string, headers: Record<string, string> = {}): Promise<unknown> {
+export async function getJSON(url: string, headers: Record<string, string> = {}): Promise<unknown> {
   const res = await fetch(url, {
     headers: { accept: "application/json", "user-agent": UA, ...headers },
     signal: AbortSignal.timeout(8000),
@@ -107,7 +113,7 @@ const CROSSREF_TYPES: Record<string, string> = {
   other: "document",
 };
 
-interface CrossrefWork {
+export interface CrossrefWork {
   DOI?: string; type?: string; title?: string[]; subtitle?: string[];
   author?: { given?: string; family?: string; name?: string }[];
   editor?: { given?: string; family?: string; name?: string }[];
@@ -185,8 +191,9 @@ export async function crossrefWork(env: ScholarEnv, doi: string): Promise<Crossr
    OpenAlex
    ============================================================ */
 
-interface OpenAlexWork {
-  id?: string; cited_by_count?: number;
+export interface OpenAlexWork {
+  id?: string; cited_by_count?: number; abstract_inverted_index?: Record<string, number[]>;
+  referenced_works?: string[]; related_works?: string[]; cited_by_api_url?: string;
   open_access?: { is_oa?: boolean; oa_url?: string | null };
   title?: string; publication_year?: number; type?: string; doi?: string;
   authorships?: { author?: { display_name?: string } }[];
@@ -250,7 +257,7 @@ export async function byDoi(env: ScholarEnv, raw: string): Promise<Lookup | null
   };
 }
 
-function cslFromOpenAlex(w: OpenAlexWork): CslItem {
+export function cslFromOpenAlex(w: OpenAlexWork): CslItem {
   const TYPES: Record<string, string> = {
     article: "article-journal", book: "book", "book-chapter": "chapter",
     dissertation: "thesis", report: "report", dataset: "dataset", preprint: "article",
@@ -479,6 +486,13 @@ export function status(env: ScholarEnv): Record<string, "on" | "off"> {
     crossref: "on",
     openalex: canOpenAlex(env) ? "on" : "off",
     openlibrary: "on",
+    unpaywall: env.UNPAYWALL_EMAIL ? "on" : "off",
+    semanticscholar: "on",
+    arxiv: "on",
+    europepmc: "on",
+    core: env.CORE_KEY ? "on" : "off",
+    doaj: "on",
+    orcid: "on",
     clipper: "on",
     zotero: "on",
     cache: env.DB ? "on" : "off",

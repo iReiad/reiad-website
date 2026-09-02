@@ -134,6 +134,8 @@ const DESCRIBES = {
   school_sections: "SchoolSectionRow",
   school_lessons: "SchoolLessonRow",
   scholar_cache: "ScholarCacheRow",
+  research_alerts: "ResearchAlertRow",
+  research_alert_hits: "ResearchAlertHitRow",
 };
 
 let described = 0;

@@ -260,6 +260,29 @@ export interface ScholarCacheRow {
   fetched_at: string;
 }
 
+/** A saved search a reader flagged, copied here by the browser so
+    the Monday cron can rerun it; `seen` is the keys already
+    reported, so a work is reported once. */
+export interface ResearchAlertRow {
+  reader_id: string;
+  id: string;
+  query: string;
+  fields: string;
+  databases: string;
+  seen: string;
+  last_run: string | null;
+  created_at: string;
+}
+
+/** What the cron found for one alert, waiting to be collected. */
+export interface ResearchAlertHitRow {
+  id: number;
+  reader_id: string;
+  alert_id: string;
+  json: string;
+  found_at: string;
+}
+
 export interface ThrottleRow {
   bucket: string;
   count: number;
@@ -344,6 +367,8 @@ export const TABLES: Record<string, string> = {
   settings: "the admin password hash, among other things",
   throttle: "the public write endpoints, slowed down without holding an IP",
   scholar_cache: "what Crossref, OpenAlex and Open Library answered for one DOI, ISBN or address, kept so the Research Studio never asks twice for the same record",
+  research_alerts: "a Research Studio search a reader flagged for the Monday cron, copied here because the Worker cannot read their Supabase rows",
+  research_alert_hits: "what that cron found, one row a work, waiting for the reader's browser to collect into their inbox",
   school_stages: "a school's ladder",
   school_sections: "a stage's sections",
   school_lessons: "a lesson, and its prose",

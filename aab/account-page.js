@@ -127,7 +127,7 @@ const DIET_TABLES = [
 const RESEARCH_TABLES = [
     "research_projects", "research_collections", "research_sources", "research_notes",
     "research_versions", "research_questions", "research_tasks", "research_lists",
-    "research_activity", "research_highlights",
+    "research_activity", "research_highlights", "research_searches",
 ];
 const MINE_TABLES = [
     ...RESEARCH_TABLES,

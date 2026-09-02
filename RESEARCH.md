@@ -2354,6 +2354,23 @@ removes the files after the rows, and `scripts/check-account.ts`
 asks that it does. Not yet from that section: the phone's swipes,
 keeping a file offline, and OCR, which section 31 always put later.
 
+**Stage 3 landed the same day, in part.** What it does:
+`functions/_lib/scholar-search.ts` asks OpenAlex, Crossref, Semantic
+Scholar, arXiv, Europe PMC, CORE and DOAJ in parallel within a
+budget, merges by DOI and by the title hash, ranks by how many had
+it, and reports an index that did not answer as such; Unpaywall
+answers for a free copy and OpenAlex for the three related lists,
+which sit on every source page. `/tools/research/find` is the
+room: fielded search, the databases as chips, every hit saying
+which indexes had it and whether it is already in the library,
+Add filing it as a verified source. A kept search is a
+`research_searches` row, the search log; its alert flag copies it
+to D1 through `PUT /api/research/alerts`, the Monday cron in
+`worker.js` reruns it and what is new is collected into the inbox
+at the next visit. Not yet from section 10: ORCID, the law shelf,
+the Islamic finance shelf and the data shelf, each of which is an
+adapter in the same shape and lands with the room that needs it.
+
 **Stage 1 is a week of work and the studio is used from its end.**
 Stages 2 to 5 are the next month, and at the end of stage 5 the
 studio does everything the old desk did and everything a reference

@@ -151,6 +151,17 @@ const MIGRATIONS = [
      request: see functions/_lib/scholar.ts. */
   `CREATE TABLE IF NOT EXISTS scholar_cache (
      key TEXT PRIMARY KEY, json TEXT NOT NULL, fetched_at TEXT NOT NULL)`,
+  /* The Research Studio's alerts: a flagged search copied here by
+     the browser, and what the Monday cron found for it. See
+     functions/_lib/scholar-search.ts. */
+  `CREATE TABLE IF NOT EXISTS research_alerts (
+     reader_id TEXT NOT NULL, id TEXT NOT NULL, query TEXT NOT NULL,
+     fields TEXT NOT NULL DEFAULT '{}', databases TEXT NOT NULL DEFAULT '[]',
+     seen TEXT NOT NULL DEFAULT '[]', last_run TEXT, created_at TEXT NOT NULL,
+     PRIMARY KEY (reader_id, id))`,
+  `CREATE TABLE IF NOT EXISTS research_alert_hits (
+     id INTEGER PRIMARY KEY AUTOINCREMENT, reader_id TEXT NOT NULL, alert_id TEXT NOT NULL,
+     json TEXT NOT NULL, found_at TEXT NOT NULL)`,
 ];
 
 /* Columns added after the first release.

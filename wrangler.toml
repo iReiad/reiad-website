@@ -247,7 +247,7 @@ bucket_name = "reiad-media"
 # exact strings, so changing one here without changing it there
 # stops that job running rather than running the wrong one.
 [triggers]
-crons = ["*/15 * * * *", "17 3 * * *"]
+crons = ["*/15 * * * *", "17 3 * * *", "0 6 * * 1"]
 
 # ---------- Workers AI (optional) ----------
 # functions/api/news.ts uses an `AI` binding to translate headlines

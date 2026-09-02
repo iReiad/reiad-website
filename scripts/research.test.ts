@@ -240,6 +240,37 @@ eq("parseAny reads a single CSL object", parseAny('{"type":"book","title":"x"}')
 }
 
 
+/* ---------- finding: one list out of several ---------- */
+
+{
+  const { merge, openalexHit } = await import("../functions/_lib/scholar-search.ts");
+  const mk = (from: string, title: string, doi: string | null, extra: Record<string, unknown> = {}) => ({
+    csl: { type: "article-journal", title, DOI: doi ?? undefined }, doi, title, year: 2020, authors: "A", venue: "", type: "article-journal",
+    abstract: "", url: null, oa: null, cited: null, from: [from], openalex: null,
+    hash: title.toLowerCase().replace(/\W/g, "") + "2020", ...extra,
+  });
+  const merged = merge([
+    [mk("openalex", "Weather shocks", "10.1/a", { cited: 40 }), mk("openalex", "Only here", null, { year: 2024 })],
+    [mk("crossref", "Weather shocks", "10.1/A", { abstract: "Long." }), mk("crossref", "Cited more", "10.1/b", { cited: 400 })],
+    [mk("arxiv", "Only here", null, { year: 2024 })],
+  ]);
+  eq("the same DOI in two cases is one row", merged.filter((h) => h.doi?.toLowerCase() === "10.1/a").length, 1);
+  const ws = merged.find((h) => h.title === "Weather shocks");
+  ok("which says both indexes had it", ws?.from.join(",") === "openalex,crossref", ws?.from.join(","));
+  ok("and keeps the fuller record", ws?.abstract === "Long." && ws?.cited === 40);
+  const only = merged.find((h) => h.title === "Only here");
+  ok("a work with no DOI is merged by its hash", only?.from.length === 2, only?.from.join(","));
+  eq("ranked by how many indexes had it, then by citations", merged.map((h) => h.title), ["Weather shocks", "Only here", "Cited more"]);
+  const h = openalexHit({
+    id: "https://openalex.org/W1", doi: "https://doi.org/10.5/x", title: "T", publication_year: 2019, type: "article",
+    authorships: [{ author: { display_name: "Michael Carter" } }], cited_by_count: 7,
+    open_access: { is_oa: true, oa_url: "https://x/pdf" },
+    abstract_inverted_index: { The: [0], effect: [1], is: [2], large: [3] },
+  });
+  ok("an OpenAlex work becomes a hit with its abstract put back in order",
+    h.abstract === "The effect is large" && h.openalex === "W1" && h.oa?.url === "https://x/pdf" && h.cited === 7, JSON.stringify(h));
+}
+
 if (failures.length) {
   console.error(`research: ${failures.length} failed, ${passed} passed`);
   for (const f of failures) console.error(`  x ${f}`);

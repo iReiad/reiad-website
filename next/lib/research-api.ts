@@ -855,3 +855,129 @@ export async function listQueue(w: Who): Promise<Source[]> {
     .filter((s) => ["unread", "skimmed"].includes(s.status) && (s.files.length > 0 || s.type === "book"))
     .sort((a, b) => b.priority - a.priority || b.updated_at.localeCompare(a.updated_at));
 }
+
+/* ============================================================
+   finding: the indexes, related works, saved searches, alerts
+   ============================================================ */
+
+export interface Hit {
+  csl: CslItem;
+  doi: string | null;
+  title: string;
+  year: number | null;
+  authors: string;
+  venue: string;
+  type: string;
+  abstract: string;
+  url: string | null;
+  oa: { isOa: boolean; url?: string } | null;
+  cited: number | null;
+  from: string[];
+  openalex: string | null;
+  hash: string;
+}
+
+export interface SearchQuery {
+  q: string;
+  author?: string;
+  from?: number;
+  to?: number;
+  oa?: boolean;
+  type?: string;
+  databases?: string[];
+}
+
+export interface Searched { hits: Hit[]; asked: Record<string, "answered" | "no-key" | "failed" | "not-asked">; ms: number }
+
+const bearer = (w: Who): Record<string, string> => ({ authorization: `Bearer ${w.token}` });
+
+export async function searchIndexes(w: Who, q: SearchQuery): Promise<Searched | null> {
+  const p = new URLSearchParams({ q: q.q });
+  if (q.author) p.set("author", q.author);
+  if (q.from) p.set("from", String(q.from));
+  if (q.to) p.set("to", String(q.to));
+  if (q.oa) p.set("oa", "1");
+  if (q.type) p.set("type", q.type);
+  if (q.databases?.length) p.set("db", q.databases.join(","));
+  try {
+    const res = await fetch(`/api/research/search?${p.toString()}`, { headers: bearer(w) });
+    if (!res.ok) return null;
+    const data = await res.json() as { ok: boolean } & Searched;
+    return data.ok ? { hits: data.hits, asked: data.asked, ms: data.ms } : null;
+  } catch { return null; }
+}
+
+export interface Related { references: Hit[]; citedBy: Hit[]; related: Hit[] }
+
+export async function relatedWorks(w: Who, doi: string): Promise<Related | null> {
+  try {
+    const res = await fetch(`/api/research/related/${enc(doi)}`, { headers: bearer(w) });
+    if (!res.ok) return null;
+    const data = await res.json() as { ok: boolean } & Related;
+    return data.ok ? { references: data.references, citedBy: data.citedBy, related: data.related } : null;
+  } catch { return null; }
+}
+
+export async function freeCopy(w: Who, doi: string): Promise<{ isOa: boolean; url?: string } | null> {
+  try {
+    const res = await fetch(`/api/research/oa/${enc(doi)}`, { headers: bearer(w) });
+    if (!res.ok) return null;
+    const data = await res.json() as { ok: boolean; isOa?: boolean; url?: string };
+    return data.ok ? { isOa: Boolean(data.isOa), url: data.url } : null;
+  } catch { return null; }
+}
+
+export interface Search extends Row {
+  query: string;
+  fields: Omit<SearchQuery, "q" | "databases">;
+  databases: string[];
+  hits: number | null;
+  alert: boolean;
+  last_run: string | null;
+  project_id: string | null;
+  review_id: string | null;
+}
+
+export const listSearches = (w: Who): Promise<Search[]> =>
+  rows<Search>(w, "research_searches", "order=updated_at.desc&limit=200");
+
+export const addSearch = (w: Who, q: SearchQuery, hits: number | null, project: string | null = null): Promise<Search | null> =>
+  insert<Search>(w, "research_searches", {
+    query: q.q, fields: { author: q.author, from: q.from, to: q.to, oa: q.oa, type: q.type },
+    databases: q.databases ?? [], hits, alert: false, last_run: new Date().toISOString(), project_id: project,
+  }, q.q.slice(0, 80));
+
+export const saveSearch = (w: Who, s: Search, part: Partial<Search>): Promise<PatchAnswer<Search>> =>
+  patch<Search>(w, "research_searches", s.id, part, s.query.slice(0, 80));
+
+export const removeSearch = (w: Who, s: Search): Promise<boolean> =>
+  remove(w, "research_searches", s.id, s.query.slice(0, 80));
+
+/** The flag, copied to D1 for the cron, or taken off it. */
+export async function pushAlert(w: Who, s: Search): Promise<boolean> {
+  try {
+    const res = await fetch("/api/research/alerts", {
+      method: "PUT", headers: { ...bearer(w), "content-type": "application/json" },
+      body: JSON.stringify({ id: s.id, query: s.query, fields: s.fields, databases: s.databases }),
+    });
+    return res.ok;
+  } catch { return false; }
+}
+
+export async function dropAlert(w: Who, id: string): Promise<boolean> {
+  try {
+    const res = await fetch(`/api/research/alerts/${enc(id)}`, { method: "DELETE", headers: bearer(w) });
+    return res.ok;
+  } catch { return false; }
+}
+
+/** What the cron found since the last visit, collected and cleared
+    on the Worker in one call, so a work is offered once. */
+export async function collectAlerts(w: Who): Promise<(Hit & { alert: string; found_at: string })[]> {
+  try {
+    const res = await fetch("/api/research/alerts/hits", { headers: bearer(w) });
+    if (!res.ok) return [];
+    const data = await res.json() as { ok: boolean; hits?: (Hit & { alert: string; found_at: string })[] };
+    return data.ok ? data.hits ?? [] : [];
+  } catch { return []; }
+}

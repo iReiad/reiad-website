@@ -17,6 +17,16 @@
    DELETE /api/research/files            everything under the prefix (the erase)
    POST   /api/research/capture          a web page, fetched, cleaned and stored
 
+   And Finding, RESEARCH.md section 10, every one for a signed-in
+   reader because each spends a key's allowance:
+
+   GET    /api/research/search?q=&author=&from=&to=&oa=1&type=&db=a,b
+   GET    /api/research/related/<doi>    OpenAlex's three lists
+   GET    /api/research/oa/<doi>         a free copy, through Unpaywall
+   PUT    /api/research/alerts           a flagged search, copied to D1 for the cron
+   DELETE /api/research/alerts/<id>      the flag taken off
+   GET    /api/research/alerts/hits      what the cron found, collected and cleared
+
    `RESEARCH.md` sections 10 and 22. This is the WHOLE of the
    studio's Worker surface in stage 1, and the split is the diet
    tool's: the reader's own rows are the browser's, read and
@@ -54,12 +64,21 @@ import {
 import type { FilesEnv } from "../../_lib/files.ts";
 import type { Reader } from "../../_lib/reader.ts";
 import { FILE_CAP, FILE_QUOTA, extOfName } from "../../../shared/research.ts";
+import { related, searchAll, unpaywall } from "../../_lib/scholar-search.ts";
+import type { SearchQuery } from "../../_lib/scholar-search.ts";
+import { db } from "../../_lib/db.ts";
+import type { ResearchAlertHitRow } from "../../../shared/rows.ts";
 
 interface ResearchEnv extends ScholarEnv, ReaderEnv, FilesEnv {}
 
 /** A page a minute is a person reading; more is a crawler with a
     bearer, which is still somebody else's server being asked. */
 const CAPTURES_A_MINUTE = 20;
+
+/** Thirty federated searches a minute is a person refining a
+    query; each one is up to seven requests to other people's
+    servers on this site's keys. */
+const SEARCHES_A_MINUTE = 30;
 
 /** Generous for a capture box, tight for a relay: sixty lookups
     a minute from one address is a person pasting a reading list,
@@ -146,6 +165,98 @@ export async function onRequest(
         if (!canTicket(env)) return fail("not-configured", 503);
         const t = await mintTicket(env, key, RESEARCH_TICKET);
         return ok({ url: `/api/research/file/${key}?t=${t}` });
+      },
+    });
+  }
+
+  if (head === "search") {
+    return methods(request, {
+      GET: async () => {
+        const reader = await whoAsks();
+        if (reader instanceof Response) return reader;
+        if (await throttle({ request, env }, "research-search", SEARCHES_A_MINUTE, 1)) return fail("too-many", 429);
+        const p = url.searchParams;
+        const q = str(p.get("q"), 500).trim();
+        if (!q) return fail("missing", 400);
+        const query: SearchQuery = {
+          q,
+          author: str(p.get("author"), 200) || undefined,
+          from: Number(p.get("from")) || undefined,
+          to: Number(p.get("to")) || undefined,
+          oa: p.get("oa") === "1",
+          type: str(p.get("type"), 40) || undefined,
+          databases: (p.get("db") ?? "").split(",").map((d) => d.trim()).filter(Boolean),
+        };
+        return ok(await searchAll(env, query));
+      },
+    });
+  }
+
+  if (head === "related") {
+    const doi = route.slice(1).join("/");
+    return methods(request, {
+      GET: async () => {
+        const reader = await whoAsks();
+        if (reader instanceof Response) return reader;
+        const found = await related(env, doi);
+        if (!found) return fail("not-found", 404);
+        return ok(found);
+      },
+    });
+  }
+
+  if (head === "oa") {
+    const doi = route.slice(1).join("/");
+    return methods(request, {
+      GET: async () => {
+        const reader = await whoAsks();
+        if (reader instanceof Response) return reader;
+        const found = await unpaywall(env, doi);
+        if (!found) return fail("not-configured", 503);
+        return ok(found);
+      },
+    });
+  }
+
+  if (head === "alerts") {
+    const d1 = await db(env);
+    if (!d1) return fail("not-configured", 503);
+    const sub = route[1] ?? "";
+    return methods(request, {
+      PUT: async () => {
+        const reader = await whoAsks();
+        if (reader instanceof Response) return reader;
+        const sent = await body(request);
+        const id = str(sent.id, 80);
+        const query = str(sent.query, 1000).trim();
+        if (!id || !query) return fail("missing", 400);
+        await d1.prepare(
+          "INSERT INTO research_alerts (reader_id, id, query, fields, databases, seen, last_run, created_at)"
+          + " VALUES (?, ?, ?, ?, ?, '[]', NULL, ?)"
+          + " ON CONFLICT(reader_id, id) DO UPDATE SET query = excluded.query, fields = excluded.fields, databases = excluded.databases",
+        ).bind(reader.id, id, query, JSON.stringify(sent.fields ?? {}), JSON.stringify(sent.databases ?? []), new Date().toISOString()).run();
+        return ok({ id });
+      },
+      DELETE: async () => {
+        const reader = await whoAsks();
+        if (reader instanceof Response) return reader;
+        if (!sub) return fail("missing", 400);
+        await d1.prepare("DELETE FROM research_alerts WHERE reader_id = ? AND id = ?").bind(reader.id, sub).run();
+        await d1.prepare("DELETE FROM research_alert_hits WHERE reader_id = ? AND alert_id = ?").bind(reader.id, sub).run();
+        return ok({ id: sub });
+      },
+      GET: async () => {
+        const reader = await whoAsks();
+        if (reader instanceof Response) return reader;
+        if (sub !== "hits") return fail("not-found", 404);
+        const { results } = await d1.prepare("SELECT * FROM research_alert_hits WHERE reader_id = ? ORDER BY id LIMIT 200")
+          .bind(reader.id).all<ResearchAlertHitRow>();
+        const hits = (results ?? []).map((r) => {
+          try { return { alert: r.alert_id, found_at: r.found_at, ...JSON.parse(r.json) }; } catch { return null; }
+        }).filter(Boolean);
+        const last = results?.length ? results[results.length - 1].id : 0;
+        if (last) await d1.prepare("DELETE FROM research_alert_hits WHERE reader_id = ? AND id <= ?").bind(reader.id, last).run();
+        return ok({ hits });
       },
     });
   }
