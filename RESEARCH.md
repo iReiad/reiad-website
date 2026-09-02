@@ -19,9 +19,10 @@ that the work is a matter of executing a list rather than of
 discovering the list while executing.
 
 The order of the file is the order a reader needs it in, not the
-order it will be built in. Section 31 is the build order. Section 34
-is every decision this plan takes, in one list, so that the build
-does not reopen them.
+order it will be built in. Section 31 is the build order and section
+36 amends it. Section 34 is every decision this plan takes, in one
+list, so that the build does not reopen them, and section 36 adds
+ten more.
 
 **What was read to write it.** The site as it stands, in particular
 the diet tool, whose fifteen routes and one pages table are the shape
@@ -2310,7 +2311,7 @@ are the ones that make the studio worth opening every day.
 | **10. The workshop** | the tools table and the thirty tools, several of which earlier stages already need (Cite this, Boolean builder, sample size) and land then | the small jobs | `scripts/check-api.ts` |
 | **11. The assistant and semantic search** | the Anthropic adapter, the task list, notes of kind `assistant`, the cost meter, `research_chunks` with embeddings, the RPC, "ask my library" | reading faster and drafting with the library open | question 6, the grounding test (an answer naming an unknown paper is struck through) |
 | **12. The methods room** | the hub over pieces tagged `method`, the first twelve pieces, the links from every tool to its method | learning a method where it is used | `scripts/check-pieces.ts` |
-| **13. Later, in this order when wanted** | Pyodide in the lab; webR after it; OCR in the reading room; the canvas in the atlas; the thirteenth drawing (a lens) in `shared/art-svg.ts` for the studio's own card; sharing with comments; the pg_cron backup; the front page's three research widgets; the app's reading room | | |
+| **13. Later, in this order when wanted** | webR in the lab after Python; OCR in the reading room; the canvas in the atlas; the thirteenth drawing (a lens) in `shared/art-svg.ts` for the studio's own card; sharing with comments; the pg_cron backup; the front page's three research widgets; the app's reading room | | |
 
 **Stage 1 is a week of work and the studio is used from its end.**
 Stages 2 to 5 are the next month, and at the end of stage 5 the
@@ -2513,3 +2514,351 @@ the studio shows them.
 | adapter | অ্যাডাপ্টার | the Worker's code for one outside service |
 | ticket | টিকিট | a signed pass to one file for thirty minutes |
 | sealed | সিলড | encrypted in the browser with a passphrase the site never sees |
+
+---
+
+## 36. The campaign plan, and what it adds to every room
+
+Added on 2 September 2026, after the first draft, from two things:
+the New Zealand campaign plan (agricultural and climate risk
+economics; Lincoln, Massey, Otago and Motu; six months from an
+orientation to a posted working paper, by replicating a published
+paper and extending it to Bangladesh) and one brief for the studio
+itself: **never having to leave this page**. Spreadsheets,
+regressions and the rest of econometrics, citing out of Google
+Scholar, saving lists of papers and opening and highlighting them,
+graphs, Python built in or connected, everything saved and nothing
+lost, everything connected so it can be found, every rough and every
+history, and the whole document written, edited and presented, in
+one place. Then everything else a year of finance, agriculture and
+economics would ask for, added rather than left.
+
+Every item below is placed in a room and is in the stages table of
+section 31, which this section amends.
+
+### Never leaving the page, item by item
+
+| the ask | where it is answered |
+| --- | --- |
+| spreadsheet tasks | the Lab's Sheets, below, a real grid with formulas and `.xlsx` both ways |
+| regressions and econometrics | the Lab's two tiers, section 14, with the additions below for panels, surveys and weather |
+| citing from Google Scholar | the clipper below, the BibTeX paste, and the Zotero pull; Scholar itself has no API and forbids robots, so the studio meets it on the page Scholar links to |
+| saving lists of papers | reading lists and collections, below |
+| opening and highlighting them | the reading room, section 11 |
+| making graphs | runs with figures, section 14, plus Python's own figures below; every figure is an SVG or PNG a document can hold |
+| Python built in or connected | Pyodide in the browser AND Colab through Drive, below; both are stage 8 now rather than stage 13 |
+| everything saved, nothing lost | every write immediate, versions, the thirty-day bin, the activity log below, and the backup of section 24 |
+| well connected, easy to find | links, backlinks, the Atlas, one search over everything, and collections |
+| all roughs and history | the `rough` state, the Roughs list and the activity log below |
+| presenting, editing, writing the whole thing | the writing desk, section 16, plus slides and a deck view below |
+
+### Collections, which are how a library is filed
+
+`research_collections`: a tree with a name, a parent and an order,
+and `collections uuid[]` on sources, notes, documents and datasets.
+The campaign's `NZ-PhD` with `Ag-Econ`, `Climate-Risk`, `Insurance`,
+`Methods` and `Target-Supervisors` under it is five rows. A Zotero
+pull brings Zotero's collections across as these, so filing done
+there is filing done here. Tags stay what they were: flat words for
+the gap matrix; a collection is a folder somebody chose.
+
+### The Zotero rule becomes a rule of the desk
+
+The campaign's first non-negotiable is that a citation exists only
+if the real paper is in the library. The studio holds it in code: a
+source carries `verified`, set only when its record came from
+Crossref, OpenAlex, Open Library or a database export, or when a
+file is attached. A citation chip that holds an unverified source
+renders with a mark, the claims audit lists every such chip, and the
+assistant's suggestions never become sources at all: they become a
+search. A reading list item that could not be found is deleted from
+the list by a press that says so, which is the campaign's Day 2 rule
+done in one place.
+
+### The clipper: Google Scholar without leaving
+
+A bookmarklet the Settings page hands out, "Save to the studio",
+which sends the current page's address to `/tools/research/clip`.
+The Worker fetches that page and reads the `citation_*` meta tags
+(the Highwire tags every publisher, SSRN, RePEc and arXiv page
+carries, and which are exactly what Scholar itself reads), the DOI,
+and the Open Graph fallback, and files a verified source with the
+PDF link where the tags name one. Scholar's own result pages are
+not fetched: the clipper works on the page a Scholar result links
+to, which is where the reader was going anyway. The other two ways
+in from Scholar are the BibTeX its "Cite" offers, pasted into the
+capture box, and its library's export dropped on the library.
+
+### The Lab's Sheets: a real spreadsheet
+
+The reader is strong in Excel and financial modelling, and the sheet
+model in `shared/lesson-grids.ts` is a table with holes in it, not a
+spreadsheet. So the Lab gains `/tools/research/lab/sheets`: a grid
+with formulas, a formula bar, fills, sorts and filters, from Univer
+(Apache 2.0, the successor to Luckysheet), with `.xlsx` in and out
+through ExcelJS (MIT), because the free Univer does not carry that.
+A workbook is a row (`research_sheets`, the workbook as JSON,
+versioned like a note), a range can be sent to a run (a regression
+over a range is a run whose input names the sheet, the range and the
+sheet's version), and a run's table drops into a sheet. Two
+templates ship: the supervisor directory with the campaign's
+columns, and the outreach email log.
+
+**The sheet is not the record of a dataset.** A dataset is a file
+in R2 and a DuckDB table, section 14; a sheet is where a person
+works by hand. A sheet can be saved as a dataset, and that is a copy
+with a provenance line.
+
+### Python built in, and Colab connected
+
+Pyodide moves from stage 13 to stage 8, because Python is not a
+later luxury for this reader but the campaign's own instrument: the
+Lab's notebook has Python cells beside SQL cells, with pandas,
+numpy, scipy, statsmodels and matplotlib loaded from the site's own
+copy, and further packages by `micropip` where a pure wheel exists
+(`linearmodels` for panels, `arch` for GARCH). A Python run stores
+its code, its printed output and its figures as PNG, and a figure
+chip in a document points at it. pandas reads Stata `.dta`, which is
+what LSMS and HIES arrive as, so a survey opens in the Lab without
+conversion.
+
+Colab is the connected half, for anything too heavy for a browser:
+"Open in Colab" writes a notebook that loads the dataset through a
+ticketed URL and saves it to a Drive folder the reader has shared
+with the service account the course section already holds; the
+studio lists that folder and pulls a finished notebook back as a
+run, with its outputs. Nothing about Colab is stored except the
+folder's id.
+
+R through webR stays after Python, section 31.
+
+### Agricultural and climate risk economics, as methods and data
+
+**Methods added to the two tiers of section 14.** First tier, in
+TypeScript with tests against R: panel fixed effects with clustered
+standard errors, difference in differences with an event-study plot,
+probit beside logit, two-stage least squares, survey-weighted means
+and regressions (weights, strata and clusters out of LSMS's own
+design columns), degree days and rainfall shocks from a daily
+series, and the actuarial arithmetic of a weather index insurance
+contract: expected loss, a loaded premium, and basis risk against a
+yield series. Second tier, in Python: regression discontinuity,
+quantile regression, GARCH families through `arch`, synthetic
+control, and anything with a random effects or a multilevel shape.
+Farm risk gets mean-variance and stochastic dominance in the first
+tier because both are arithmetic.
+
+**Data adapters added to section 22's table**, each with the same
+four functions and a status word:
+
+| service | for | credential | note |
+| --- | --- | --- | --- |
+| **FAOSTAT** | production, prices, trade, all countries | none | open bulk and query API |
+| **World Bank microdata catalogue** (LSMS, LSMS-ISA) | the survey catalogue and documentation | none for the catalogue; a file needs the reader's own registration | the studio finds and cites; the reader downloads and drops |
+| **Harvard Dataverse** (IFPRI's Bangladesh surveys) | dataset search, files, and the citation Dataverse mints | none for public files; a token for restricted ones, sealed per reader | a dataset arrives with its DOI and its own citation |
+| **Bangladesh Bureau of Statistics** (HIES) | household income and expenditure | none | manual: a `.dta` or `.csv` dropped on the Lab, with the source row typed once |
+| **NASA POWER** | daily weather at a point, from 1981 | none | the "climate for a place" tool below |
+| **ClimateSERV** (CHIRPS) | rainfall at a point or over an area | none | the same tool, second series |
+| **Copernicus CDS** (ERA5) | reanalysis | a key | later: the files are large and the queue is slow; the tool says so and offers POWER first |
+| **EM-DAT** | disaster events | the reader's own academic registration | manual: the CSV dropped, and the importer knows its shape |
+| **Ken French Data Library** | asset pricing factors | none | a zip the importer knows the shape of, for the finance-adjacent case |
+| **NZRIS** | New Zealand's funded projects | none; a portal rather than an API | manual: a paste from the portal into the people room's grants, below |
+| **GitHub** | the visible-progress rule | the reader's own token, contents scope on one repository, sealed per reader | the bridge below |
+
+FRED, the World Bank indicators, ORCID and OpenAlex are already in
+the table. Motu's working papers are in OpenAlex and RePEc.
+
+**"Climate for a place"** is a Workshop tool that takes a latitude
+and longitude (or a district picked from a short list of
+Bangladesh's), asks NASA POWER and ClimateSERV for daily
+temperature and rainfall, and files the answer as a dataset with
+its source and citation, so a weather regression starts from a row
+rather than from a download.
+
+### Replication, as a kind of project and a Lab template
+
+`replication` joins the project kinds. A replication project's
+`body` holds the paper (a source), the exact table to reproduce,
+the datasets with their URLs, download dates and filter settings,
+and the extension in one sentence. The Lab template that goes with
+it is the campaign's own week:
+
+1. **Raw is never edited.** A file dropped into a replication's
+   `raw` collection is flagged immutable; a transform writes to
+   `clean`, and the studio refuses a write to a raw file.
+2. **The four sanity checks run on every dataset by themselves**:
+   rows and columns against the paper's stated N, missing values per
+   column, summary statistics with anything a thousand times off
+   flagged, and the date and country coverage. They are a run, and
+   the run is the first line of the dataset's page.
+3. **Compare to the paper** is a panel on a run: the reader types
+   the paper's coefficients and standard errors for the target table
+   once, and every later run of that specification shows the gap
+   beside each number, with the five usual causes (sample filter,
+   transformation, clustering, missing values, and the fixed effects
+   the paper actually used) as a checklist the reader ticks off.
+4. **The extension is a second run** of the same specification on
+   the Bangladesh data, drawn beside the first.
+
+### Roughs and history
+
+Two additions and both are rows. `rough` joins the document states
+(`rough | outline | drafting | revising | done`), and a Roughs list
+on the desk holds everything in that state, because a rough should
+be easy to start and easy to find again. And `research_activity`
+holds one line for every write the studio makes (the kind, the item,
+the action, a one-line summary, the time), written by
+`next/lib/research-api` on every call so that nothing can forget to
+log itself. The Archive room draws it as the history of the whole
+project, searchable, and the daily log's automatic lines come out of
+it rather than being written twice.
+
+### Presenting
+
+`slides` joins the document kinds. A slides document is an outline
+whose headings are slides and whose paragraphs are bullets, edited
+in the same editor, with a figure chip per run as on any document.
+The deck view is a page (`/tools/research/write/<id>/present`) with
+arrows and space to move, `f` for full screen, presenter notes in a
+second window, and the site's own type. Export is PDF through the
+print stylesheet at 16:9, and `.pptx` through `pptxgenjs` (MIT),
+with the figures as images and the notes as speaker notes.
+
+### The research log, the way the campaign writes it
+
+The daily note's template is the campaign's five lines: time spent,
+what I did, what I learned, what is blocking me, tomorrow's first
+task. Closing a session fills the first from the timer; the
+activity log fills the second as a list the reader edits down; the
+last line is what the board's capture box shows the next morning,
+prefilled and unsent, so the day starts where yesterday said it
+should. The daily target is a fact on the board ("2h 10m of 2h 30m
+today") and there is still no streak.
+
+### Outreach
+
+The people room gains the supervisor directory's columns as fields
+on a person: institution, the pillar (primary industries,
+environment, technology, health), whether they hold an active grant,
+its end date, the last three papers (filled from OpenAlex by ORCID
+or name in one press), the data the reader could bring them, the
+contact status (`not contacted | emailed | replied | call booked`),
+and a priority of A, B or C. Grants from NZRIS are `body.grants` on
+a person, pasted from the portal: title, funder, institution, end
+date. The email log is events of kind `email` on a person: subject,
+sent, replied, next step; a draft is written by the assistant from
+the campaign's outreach rules (under two hundred words, a specific
+first sentence, one ask, no adverbs) and opened in `mailto:`,
+because the studio does not send mail. The directory is also a
+Sheets template for the reader who wants to see it as a grid.
+
+### The prompt library, and the project's brief
+
+`prompt` joins the note kinds: a note with `[PLACEHOLDERS]` that the
+assistant's drawer lists and fills. The campaign's seven ship as
+templates. A project's `body.brief` is its master prompt, the
+context the assistant reads first in project mode, so "who I am,
+what I have, how to work with me" is written once per project and
+never pasted.
+
+### The fresh-chat rule
+
+The assistant has two modes and the drawer says which it is in.
+`project` reads the brief and the rows. `fresh` reads nothing but
+what the reader pasted, carries no brief, and answers as the
+campaign's hostile reviewer. Every document has a "read this as a
+hostile reviewer" button that opens a fresh drawer, and the answer
+is kept as an `assistant` note marked `fresh`, so a review cannot be
+mistaken for a collaborator's encouragement.
+
+### Visible progress: the GitHub bridge
+
+`POST /api/research/github/push`, with the reader's own token sealed
+in `research_connections` (contents scope, one repository), commits
+a project's code folder: every Python cell as a notebook, every SQL
+transform as a file, every run's figure, and a README the studio
+writes from the project's brief, its datasets and its current state.
+A weekly "push this week's work" is a task the planner makes, which
+is a reminder without being a nag. SSRN, ORCID and the Scholar
+profile are outside the studio and are kept as facts on Settings and
+as a `preprint` event with a checklist when the paper is posted.
+
+### Deadlines and loose ends
+
+`deadline` joins the event kinds, with an institution on it, for the
+three scholarship rounds. The campaign's five loose ends (the
+English test, the partner visa, domestic tuition status, alumni
+library access, the round dates) are five tasks, three of them in
+`waiting`. The six monthly deliverables are `milestone` events, and
+the timeline of section 17 draws them.
+
+### Venues and reading lists
+
+`research_venues`: a journal with its ISSN, its OpenAlex id, whether
+DOAJ lists it, the reader's own rank and a "read regularly" flag,
+and a recent-issues feed from OpenAlex per flagged venue into the
+inbox. The campaign's Day 2 journal map is eight of these rows.
+`research_lists`: an ordered list of sources with a note per item
+and a per-item state (`to find | saved | not found`), which is the
+campaign's fifteen-paper list with the rule that a paper that cannot
+be found leaves the list, done as a press.
+
+### How to get this paper
+
+Every source page carries one derived line: open access through
+Unpaywall, the author's own page through OpenAlex, a request email
+from the template with the author's name filled in, and the
+interlibrary loan tracker of section 29. Alumni access is a fact on
+Settings (which library, which proxy address) so the "publisher"
+link rewrites through it where the reader has one.
+
+### The folder tree, which is the export
+
+The campaign's Drive tree (`00-Admin`, `01-Literature`, `02-Targets`,
+`03-Paper` with `data`, `code`, `output` and `drafts`, `04-Proposal`,
+`05-Outreach`) is what the Archive room's export writes, with the
+campaign's own file naming (`YYYY-MM-DD_short-description_v1.ext`),
+so a Drive folder and a studio export are the same shape. The
+service account can read a folder the reader shares with it, so the
+tree can be imported as well.
+
+### What this changes in the stages table
+
+- **Stage 1** also lands collections, the activity log, the clipper,
+  reading lists, `prompt` notes, `verified` on a source and the
+  `rough` state.
+- **Stage 4** also lands `slides`, the deck view and the `.pptx`
+  export.
+- **Stage 5** also lands the research log's template and session
+  fill, `deadline` and `milestone` events and the email log.
+- **Stage 6** also lands the outreach fields, grants, venues and the
+  people room's OpenAlex fill.
+- **Stage 8** also lands Sheets, Python in the browser, Colab through
+  Drive, the replication template and its four checks, the
+  agricultural and climate adapters, "climate for a place", and the
+  GitHub bridge. Pyodide leaves stage 13.
+- **Stage 11** also lands the two assistant modes and the prompt
+  library's runner.
+
+### Decisions this section adds
+
+37. Collections are a tree and a folder somebody chose; tags stay
+    flat.
+38. A citation chip on an unverified source is marked, and the
+    assistant's suggestions never become sources without a lookup.
+39. Google Scholar is met on the page it links to, through a
+    bookmarklet and the Highwire tags, never by fetching Scholar.
+40. The Lab's spreadsheet is Univer with ExcelJS for `.xlsx`; a
+    sheet is not a dataset until saved as one.
+41. Python is Pyodide in the browser from stage 8, with Colab
+    connected through the Drive service account; R follows.
+42. Raw files in a replication are immutable and the four sanity
+    checks run on every dataset by themselves.
+43. Every write is a line in the activity log, written by the API
+    layer so nothing can forget.
+44. Slides are a document kind with a deck view and a `.pptx`
+    export, not a slide editor.
+45. The assistant has a `fresh` mode that reads nothing, and every
+    document can be sent to it as a hostile reviewer.
+46. The GitHub bridge pushes with a sealed per-reader token, and
+    the weekly push is a task rather than a nag.
