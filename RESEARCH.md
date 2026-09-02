@@ -2392,6 +2392,26 @@ abbreviations list, the outline dragged into order, Google Docs and
 a piece on this site, and Vancouver, which the styles repository no
 longer carries under that name.
 
+**Stage 5 landed the same day, in its first form.** What it does:
+`/tools/research/plan` is four views, the board (the tasks room's
+lanes), the dates, the timeline and the sessions. A date is a
+`research_events` row with a body shaped by its kind: a meeting's
+agenda, minutes, decisions and actions, the actions becoming tasks
+with one press; a submission's journal, its status with the date
+each was reached, and the reviewers' comments as a table of
+comment, response and change. The timeline is the year in SVG,
+events as bars, documents beneath them, the present as a line and
+the past shaded. A session is a `research_sessions` row with a
+timer, the `stage` cue at twenty-five minutes, and a line in the
+daily note when it stops, made if there was none. The calendar goes
+out: `shared/research-plan.ts` writes the iCalendar file, the
+browser pushes it to `PUT /api/research/calendar`, and
+`/api/research/ics/<token>` serves it to any calendar, the token
+long-lived and remade on request. `/tools/research/plan/week` is
+the weekly review. Not yet from section 17: drag between lanes, the
+Gantt view, the project page whole, and the reading queue's own
+lane.
+
 **Stage 1 is a week of work and the studio is used from its end.**
 Stages 2 to 5 are the next month, and at the end of stage 5 the
 studio does everything the old desk did and everything a reference

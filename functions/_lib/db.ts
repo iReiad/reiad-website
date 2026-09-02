@@ -159,6 +159,8 @@ const MIGRATIONS = [
      fields TEXT NOT NULL DEFAULT '{}', databases TEXT NOT NULL DEFAULT '[]',
      seen TEXT NOT NULL DEFAULT '[]', last_run TEXT, created_at TEXT NOT NULL,
      PRIMARY KEY (reader_id, id))`,
+  `CREATE TABLE IF NOT EXISTS research_calendar (
+     reader_id TEXT PRIMARY KEY, token TEXT NOT NULL UNIQUE, ics TEXT NOT NULL, updated_at TEXT NOT NULL)`,
   `CREATE TABLE IF NOT EXISTS research_alert_hits (
      id INTEGER PRIMARY KEY AUTOINCREMENT, reader_id TEXT NOT NULL, alert_id TEXT NOT NULL,
      json TEXT NOT NULL, found_at TEXT NOT NULL)`,

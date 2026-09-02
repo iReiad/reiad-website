@@ -278,6 +278,15 @@ CREATE TABLE IF NOT EXISTS research_alerts (
   created_at TEXT NOT NULL,
   PRIMARY KEY (reader_id, id)
 );
+-- The studio's dates as an iCalendar file, written by the browser
+-- and served at /api/research/ics/<token> to any calendar that
+-- subscribes; the token is long-lived and remade on request.
+CREATE TABLE IF NOT EXISTS research_calendar (
+  reader_id  TEXT PRIMARY KEY,
+  token      TEXT NOT NULL UNIQUE,
+  ics        TEXT NOT NULL,
+  updated_at TEXT NOT NULL
+);
 CREATE TABLE IF NOT EXISTS research_alert_hits (
   id        INTEGER PRIMARY KEY AUTOINCREMENT,
   reader_id TEXT NOT NULL,

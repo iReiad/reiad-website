@@ -27,6 +27,16 @@
    DELETE /api/research/alerts/<id>      the flag taken off
    GET    /api/research/alerts/hits      what the cron found, collected and cleared
 
+   And the calendar going OUT (section 17): the browser writes the
+   reader's dates as one iCalendar file, and any calendar that has
+   the token reads it. The token is long-lived and remade on
+   request, and it is the only credential a calendar app ever
+   holds, because the studio holds none of theirs.
+
+   PUT    /api/research/calendar         the file, answered with the token
+   POST   /api/research/calendar/reset   a new token; the old one stops
+   GET    /api/research/ics/<token>      text/calendar, for a subscription
+
    `RESEARCH.md` sections 10 and 22. This is the WHOLE of the
    studio's Worker surface in stage 1, and the split is the diet
    tool's: the reader's own rows are the browser's, read and
@@ -67,7 +77,7 @@ import { FILE_CAP, FILE_QUOTA, extOfName } from "../../../shared/research.ts";
 import { related, searchAll, unpaywall } from "../../_lib/scholar-search.ts";
 import type { SearchQuery } from "../../_lib/scholar-search.ts";
 import { db } from "../../_lib/db.ts";
-import type { ResearchAlertHitRow } from "../../../shared/rows.ts";
+import type { ResearchAlertHitRow, ResearchCalendarRow } from "../../../shared/rows.ts";
 
 interface ResearchEnv extends ScholarEnv, ReaderEnv, FilesEnv {}
 
@@ -257,6 +267,57 @@ export async function onRequest(
         const last = results?.length ? results[results.length - 1].id : 0;
         if (last) await d1.prepare("DELETE FROM research_alert_hits WHERE reader_id = ? AND id <= ?").bind(reader.id, last).run();
         return ok({ hits });
+      },
+    });
+  }
+
+  if (head === "calendar") {
+    const d1 = await db(env);
+    if (!d1) return fail("not-configured", 503);
+    const token = (): string => [...crypto.getRandomValues(new Uint8Array(24))].map((b) => b.toString(16).padStart(2, "0")).join("");
+    return methods(request, {
+      PUT: async () => {
+        const reader = await whoAsks();
+        if (reader instanceof Response) return reader;
+        const sent = await body(request);
+        const ics = str(sent.ics, 200000);
+        if (!ics.startsWith("BEGIN:VCALENDAR")) return fail("not-a-calendar", 400);
+        const had = await d1.prepare("SELECT token FROM research_calendar WHERE reader_id = ?").bind(reader.id).first<{ token: string }>();
+        const t = had?.token ?? token();
+        await d1.prepare(
+          "INSERT INTO research_calendar (reader_id, token, ics, updated_at) VALUES (?, ?, ?, ?)"
+          + " ON CONFLICT(reader_id) DO UPDATE SET ics = excluded.ics, updated_at = excluded.updated_at",
+        ).bind(reader.id, t, ics, new Date().toISOString()).run();
+        return ok({ token: t, url: `/api/research/ics/${t}` });
+      },
+      POST: async () => {
+        const reader = await whoAsks();
+        if (reader instanceof Response) return reader;
+        if (route[1] !== "reset") return fail("not-found", 404);
+        const t = token();
+        await d1.prepare("UPDATE research_calendar SET token = ? WHERE reader_id = ?").bind(t, reader.id).run();
+        return ok({ token: t, url: `/api/research/ics/${t}` });
+      },
+    });
+  }
+
+  if (head === "ics") {
+    const d1 = await db(env);
+    if (!d1) return fail("not-configured", 503);
+    const t = route[1] ?? "";
+    return methods(request, {
+      GET: async () => {
+        if (!/^[0-9a-f]{48}$/.test(t)) return fail("not-found", 404);
+        const row = await d1.prepare("SELECT ics FROM research_calendar WHERE token = ?").bind(t).first<Pick<ResearchCalendarRow, "ics">>();
+        if (!row) return fail("not-found", 404);
+        return new Response(row.ics, {
+          headers: {
+            "Content-Type": "text/calendar; charset=utf-8",
+            "Cache-Control": "private, max-age=300",
+            "X-Content-Type-Options": "nosniff",
+            "Content-Disposition": "inline; filename=\"research-studio.ics\"",
+          },
+        });
       },
     });
   }

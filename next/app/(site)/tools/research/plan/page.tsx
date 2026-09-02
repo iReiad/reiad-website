@@ -5,7 +5,7 @@
 import type { Metadata } from "next";
 import { pageMeta } from "../../../../../lib/pageMeta";
 import { ResearchFrame } from "../../../../../components/research/frame";
-import { Tasks } from "../../../../../components/research/tasks";
+import { Planner } from "../../../../../components/research/plan";
 
 export const metadata: Metadata = pageMeta({
   path: "/tools/research/plan",
@@ -19,7 +19,7 @@ export const metadata: Metadata = pageMeta({
 export default function Page() {
   return (
     <ResearchFrame href="/tools/research/plan" wide>
-      <Tasks />
+      <Planner />
     </ResearchFrame>
   );
 }

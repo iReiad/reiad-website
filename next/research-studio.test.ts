@@ -145,6 +145,8 @@ const seed = (): Record<string, Row[]> => ({
   research_searches: [],
   research_documents: [],
   research_versions: [],
+  research_events: [],
+  research_sessions: [],
   research_projects: [],
   research_collections: [],
   research_lists: [],
@@ -254,7 +256,7 @@ async function open(path: string, { signedIn = true }: { signedIn?: boolean } = 
 
     if (method === "GET") {
       let out = held.filter((row) => row.user_id === ME);
-      for (const k of ["id", "doi", "isbn", "kind", "lane", "status", "type", "source_id"]) {
+      for (const k of ["id", "doi", "isbn", "kind", "lane", "status", "type", "source_id", "day"]) {
         const want = eq(k);
         if (want !== null) out = out.filter((row) => String(row[k]) === want);
       }
@@ -308,6 +310,7 @@ async function open(path: string, { signedIn = true }: { signedIn?: boolean } = 
   const looked: string[] = [];
   const searched: string[] = [];
   const alerts: string[] = [];
+  const calendar: { ics: string }[] = [];
   await page.route("**/api/**", (r: Route) => {
     const u = new URL(r.request().url());
     const answer = (data: unknown, status = 200): Promise<void> =>
@@ -345,6 +348,7 @@ async function open(path: string, { signedIn = true }: { signedIn?: boolean } = 
       });
     }
     if (u.pathname === "/api/research/alerts/hits") return answer({ ok: true, hits: [] });
+    if (u.pathname === "/api/research/calendar") { calendar.push(r.request().postDataJSON() as { ics: string }); return answer({ ok: true, token: "t".repeat(48), url: `/api/research/ics/${"t".repeat(48)}` }); }
     if (u.pathname.startsWith("/api/research/alerts")) { alerts.push(`${r.request().method()} ${u.pathname}`); return answer({ ok: true, id: "x" }); }
     if (u.pathname === "/api/research/status") {
       return answer({ ok: true, services: { crossref: "on", openalex: "off", openlibrary: "on" } });
@@ -354,6 +358,7 @@ async function open(path: string, { signedIn = true }: { signedIn?: boolean } = 
   (rows as Record<string, unknown>).looked = looked as unknown as Row[];
   (rows as Record<string, unknown>).searched = searched as unknown as Row[];
   (rows as Record<string, unknown>).alerts = alerts as unknown as Row[];
+  (rows as Record<string, unknown>).calendar = calendar as unknown as Row[];
 
   await page.goto(`http://localhost:${PORT}${path}`, { waitUntil: "load" });
   await page.waitForTimeout(900);
@@ -373,7 +378,7 @@ const firstOf = (s: Sent | undefined): Record<string, unknown> =>
    1. signed out, a room invites rather than blanks
    ============================================================ */
 
-for (const path of ["/tools/research", "/tools/research/library", "/tools/research/read", "/tools/research/find", "/tools/research/write"]) {
+for (const path of ["/tools/research", "/tools/research/library", "/tools/research/read", "/tools/research/find", "/tools/research/write", "/tools/research/plan"]) {
   const { page, errors } = await open(path, { signedIn: false });
   const words = await bodyText(page);
   ok(`${path} signed out says whose it is`, words.includes("This is yours"), words.slice(0, 200));
@@ -737,6 +742,48 @@ for (const path of ["/tools/research", "/tools/research/library", "/tools/resear
     /words|শব্দ/.test(await page.locator(".rs-main").textContent() ?? ""));
   ok("and none of it threw", errors.length === 0, errors.join(" | "));
   void rows;
+  await page.close();
+}
+
+/* ============================================================
+   7. the planner: a date, the calendar out, and a session logged
+   ============================================================ */
+
+{
+  const { page, errors, sent, rows } = await open("/tools/research/plan");
+  await page.getByRole("button", { name: /2 Dates|2 তারিখ/ }).click();
+  await page.waitForTimeout(400);
+  await page.locator("#rs-e-title").fill("Proposal due");
+  await page.locator("#rs-e-kind").selectOption("deadline");
+  await page.locator("#rs-e-when").fill("2026-10-01");
+  await page.locator("#rs-e-place").fill("Lincoln");
+  await page.locator("#rs-e-title").press("Enter");
+  await page.waitForTimeout(500);
+  const ev = firstOf(posts(sent, "research_events")[0]);
+  ok("a date is a row with its kind, its day and its place", ev.title === "Proposal due" && ev.kind === "deadline" && String(ev.starts).startsWith("2026-10-01") && ev.all_day === true && ev.place === "Lincoln", JSON.stringify(ev));
+  ok("and is listed with the days to go", /Proposal due/.test(await page.locator(".rs-main").textContent() ?? ""));
+
+  await page.getByRole("button", { name: /Make the address|ঠিকানা তৈরি করুন/ }).click();
+  await page.waitForTimeout(500);
+  const cal = rows.calendar as unknown as { ics: string }[];
+  ok("the calendar goes out as one iCalendar file the browser wrote", cal.length === 1 && cal[0].ics.startsWith("BEGIN:VCALENDAR") && cal[0].ics.includes("SUMMARY:Proposal due (deadline)"), cal[0]?.ics.slice(0, 120));
+  ok("and the subscription address is shown", /\/api\/research\/ics\/t{48}/.test(await page.locator(".rs-list").textContent() ?? ""));
+
+  await page.getByRole("button", { name: /4 Sessions|4 সেশন/ }).click();
+  await page.waitForTimeout(400);
+  await page.locator("#rs-ss-room").fill("Lab");
+  await page.getByRole("button", { name: /Start a session|সেশন শুরু/ }).click();
+  await page.waitForTimeout(500);
+  const ss = firstOf(posts(sent, "research_sessions")[0]);
+  ok("a session starts as a row with the room and no end", ss.room === "Lab" && ss.ended === null, JSON.stringify(ss));
+  ok("and a timer is shown", await page.locator('[role="timer"]').count() === 1);
+  await page.locator("#rs-ss-note").fill("Reproduced table 3");
+  await page.getByRole("button", { name: /^Stop$|^থামুন$/ }).click();
+  await page.waitForTimeout(700);
+  ok("stopping ends the row with the note", sent.some((x) => x.method === "PATCH" && x.path.includes("research_sessions") && (x.body as { ended?: string; note?: string }).ended && (x.body as { note?: string }).note === "Reproduced table 3"));
+  const day = firstOf(posts(sent, "research_notes").slice(-1)[0]) as { kind?: string; text?: string; day?: string };
+  ok("and writes a line to today's daily note, made if there was none", day.kind === "daily" && /Reproduced table 3/.test(day.text ?? "") && day.day === new Date().toISOString().slice(0, 10), JSON.stringify(day));
+  ok("and none of it threw", errors.length === 0, errors.join(" | "));
   await page.close();
 }
 

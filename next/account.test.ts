@@ -187,6 +187,7 @@ const RESEARCH_TABLES = [
   "research_projects", "research_collections", "research_sources", "research_notes",
   "research_versions", "research_questions", "research_tasks", "research_lists",
   "research_activity", "research_highlights", "research_searches", "research_documents",
+  "research_events", "research_sessions",
 ] as const;
 
 /** SOMEBODY ELSE'S PROFILE, and the reason it is here.
@@ -1214,6 +1215,8 @@ console.log("\ntaking a copy of everything");
     ["research_highlights", "every highlight made in the reader"],
     ["research_searches", "every search worth keeping, which is the search log"],
     ["research_documents", "every chapter, paper and proposal on the writing desk"],
+    ["research_events", "every deadline, meeting and submission"],
+    ["research_sessions", "the time log"],
     ["routines", "the shape of the week"],
     ["routine_entries", "every day marked on it"],
     ["routine_templates", "the templates this reader made"],

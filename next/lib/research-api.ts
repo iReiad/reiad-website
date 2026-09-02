@@ -41,6 +41,7 @@ import type {
   SourceVia, TaskLane, Tone,
 } from "@reiad/shared/research";
 import { runtimeModule } from "../components/account/runtime";
+import type { EventBody, EventKind } from "@reiad/shared/research-plan";
 
 type AccountModule = typeof import("/account.js");
 const accountModule = () => runtimeModule<AccountModule>("/account.js");
@@ -1031,3 +1032,91 @@ export const saveDocument = (w: Who, d: Document, part: Partial<Document>, seen?
     whatever the ten-minute rule says. */
 export const snapshot = (w: Who, d: Document, label: string): Promise<void> =>
   keepVersion(w, "document", d.id, d.body, label);
+
+/* ============================================================
+   the planner: events, sessions, the calendar out
+   ============================================================ */
+
+
+export interface Event extends Row {
+  project_id: string | null;
+  kind: EventKind;
+  title: string;
+  starts: string;
+  ends: string | null;
+  all_day: boolean;
+  place: string;
+  body: EventBody;
+  done: boolean;
+}
+
+export const listEvents = (w: Who, o: { from?: string; to?: string; project?: string } = {}): Promise<Event[]> =>
+  rows<Event>(w, "research_events",
+    "order=starts.asc&limit=1000" + (o.from ? `&starts=gte.${enc(o.from)}` : "") + (o.to ? `&starts=lte.${enc(o.to)}` : "")
+    + (o.project ? `&project_id=eq.${enc(o.project)}` : ""));
+
+export const addEvent = (
+  w: Who, e: { title: string; kind: EventKind; starts: string; ends?: string | null; all_day?: boolean; place?: string; project_id?: string | null; body?: EventBody },
+): Promise<Event | null> =>
+  insert<Event>(w, "research_events", {
+    title: e.title, kind: e.kind, starts: e.starts, ends: e.ends ?? null, all_day: e.all_day ?? true,
+    place: e.place ?? "", project_id: e.project_id ?? null, body: e.body ?? {}, done: false,
+  }, e.title.slice(0, 80));
+
+export const saveEvent = (w: Who, e: Event, part: Partial<Event>): Promise<PatchAnswer<Event>> =>
+  patch<Event>(w, "research_events", e.id, part, e.title.slice(0, 80));
+
+export const removeEvent = (w: Who, e: Event): Promise<boolean> =>
+  remove(w, "research_events", e.id, e.title.slice(0, 80));
+
+export interface Session extends Row {
+  project_id: string | null;
+  room: string;
+  started: string;
+  ended: string | null;
+  note: string;
+}
+
+export const listSessions = (w: Who, since?: string): Promise<Session[]> =>
+  rows<Session>(w, "research_sessions", "order=started.desc&limit=500" + (since ? `&started=gte.${enc(since)}` : ""));
+
+export const startSession = (w: Who, room: string, project: string | null): Promise<Session | null> =>
+  insert<Session>(w, "research_sessions", { room, project_id: project, started: new Date().toISOString(), ended: null, note: "" }, room || "session");
+
+export const endSession = (w: Who, s: Session, note: string): Promise<PatchAnswer<Session>> =>
+  patch<Session>(w, "research_sessions", s.id, { ended: new Date().toISOString(), note }, s.room || "session");
+
+/** The daily note for a day, made if there is none: the planner's
+    spine, which every session and every task done writes a line
+    to. A line is appended as a paragraph. */
+export async function appendToDay(w: Who, day: string, line: string): Promise<Note | null> {
+  const had = await rows<Note>(w, "research_notes", `kind=eq.daily&day=eq.${enc(day)}&deleted_at=is.null&limit=1`);
+  const para = `<p>${line.replace(/</g, "&lt;")}</p>`;
+  if (had[0]) {
+    const r = await patch<Note>(w, "research_notes", had[0].id, { body: `${had[0].body}${para}`, text: `${had[0].text}\n${line}` }, day);
+    return r.ok ? r.row : null;
+  }
+  return addNote(w, { kind: "daily", day, title: day, body: para, text: line });
+}
+
+/** The reader's dates, pushed to the Worker as one file, and the
+    address a calendar can subscribe to. */
+export async function pushCalendar(w: Who, ics: string): Promise<string | null> {
+  try {
+    const res = await fetch("/api/research/calendar", {
+      method: "PUT", headers: { ...bearer(w), "content-type": "application/json" }, body: JSON.stringify({ ics }),
+    });
+    if (!res.ok) return null;
+    const data = await res.json() as { ok: boolean; url?: string };
+    return data.ok && data.url ? data.url : null;
+  } catch { return null; }
+}
+
+export async function resetCalendar(w: Who): Promise<string | null> {
+  try {
+    const res = await fetch("/api/research/calendar/reset", { method: "POST", headers: bearer(w) });
+    if (!res.ok) return null;
+    const data = await res.json() as { ok: boolean; url?: string };
+    return data.ok && data.url ? data.url : null;
+  } catch { return null; }
+}

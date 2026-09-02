@@ -47,6 +47,7 @@ import {
   HIGHLIGHT_MEANINGS, NOTE_KINDS, PROJECT_KINDS, PROJECT_STATES, QUESTION_KINDS, QUESTION_STATES, SOURCE_STATUSES,
   SOURCE_TYPE_IDS, SOURCE_VIAS, TASK_LANES, TONES,
 } from "../shared/research.ts";
+import { EVENT_KINDS } from "../shared/research-plan.ts";
 import { RESEARCH_WORDS } from "../shared/research-words.ts";
 
 const ROOT = join(dirname(fileURLToPath(import.meta.url)), "..");
@@ -199,6 +200,8 @@ for (const s of ["doi", "isbn", "url", "bib", "todo", "note", "dup", "fail"]) if
   same("QUESTION_STATES", "research_questions", "state", QUESTION_STATES);
   same("PROJECT_KINDS", "research_projects", "kind", PROJECT_KINDS);
   same("HIGHLIGHT_MEANINGS", "research_highlights", "meaning", HIGHLIGHT_MEANINGS);
+  same("EVENT_KINDS", "research_events", "kind", EVENT_KINDS);
+  same("DOCUMENT_KINDS", "research_documents", "kind", ["chapter", "paper", "proposal", "abstract", "letter", "other"]);
   same("PROJECT_STATES", "research_projects", "state", PROJECT_STATES);
   same("TONES", "research_projects", "tone", TONES);
 }

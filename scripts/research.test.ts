@@ -297,6 +297,25 @@ eq("parseAny reads a single CSL object", parseAny('{"type":"book","title":"x"}')
   eq("and a short coincidence is not", W.overlapsOf("panel data from households", [{ name: "x", text: "panel data from households" }]), []);
 }
 
+/* ---------- the planner: a calendar out ---------- */
+
+{
+  const { toIcs, weekStart, minutesBetween } = await import("../shared/research-plan.ts");
+  const ics = toIcs([
+    { id: "e-1", title: "Proposal due", starts: "2026-10-01T00:00:00Z", all_day: true, kind: "deadline", updated_at: "2026-09-02T10:00:00Z" },
+    { id: "e-2", title: "Supervision; agenda: data, chapter 3", starts: "2026-09-08T09:30:00Z", ends: "2026-09-08T10:30:00Z", all_day: false, kind: "meeting", place: "Room 4.12, Lincoln" },
+  ]);
+  ok("a calendar file has the shape a subscriber reads", ics.startsWith("BEGIN:VCALENDAR\r\nVERSION:2.0") && ics.trimEnd().endsWith("END:VCALENDAR"), ics.slice(0, 80));
+  ok("an all-day event is a DATE that ends the day after", ics.includes("DTSTART;VALUE=DATE:20261001") && ics.includes("DTEND;VALUE=DATE:20261002"), ics);
+  ok("a timed one carries both instants in UTC", ics.includes("DTSTART:20260908T093000Z") && ics.includes("DTEND:20260908T103000Z"));
+  ok("a semicolon in a title is escaped, as the format asks", ics.includes("SUMMARY:Supervision\; agenda: data\\, chapter 3 (meeting)"), ics);
+  ok("and the kind is in the summary, the place in the location", ics.includes("(deadline)") && ics.includes("LOCATION:Room 4.12\\, Lincoln"));
+  ok("no line is over 75 octets", ics.split("\r\n").every((l) => Buffer.byteLength(l) <= 75));
+  eq("a week starts on Monday", weekStart(new Date(2026, 8, 2)), "2026-08-31");
+  eq("and Sunday belongs to the week before it", weekStart(new Date(2026, 8, 6)), "2026-08-31");
+  eq("minutes between two instants, never negative", [minutesBetween("2026-09-02T10:00:00Z", "2026-09-02T10:25:30Z"), minutesBetween("2026-09-02T10:00:00Z", "2026-09-02T09:00:00Z")], [26, 0]);
+}
+
 if (failures.length) {
   console.error(`research: ${failures.length} failed, ${passed} passed`);
   for (const f of failures) console.error(`  x ${f}`);

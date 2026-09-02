@@ -141,6 +141,7 @@ const RESEARCH_TABLES = [
   "research_projects", "research_collections", "research_sources", "research_notes",
   "research_versions", "research_questions", "research_tasks", "research_lists",
   "research_activity", "research_highlights", "research_searches", "research_documents",
+  "research_events", "research_sessions",
 ] as const;
 
 const MINE_TABLES = [

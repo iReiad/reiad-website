@@ -136,6 +136,7 @@ const DESCRIBES = {
   scholar_cache: "ScholarCacheRow",
   research_alerts: "ResearchAlertRow",
   research_alert_hits: "ResearchAlertHitRow",
+  research_calendar: "ResearchCalendarRow",
 };
 
 let described = 0;

@@ -24,7 +24,7 @@ import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { captureShape, toneVar } from "@reiad/shared/research";
 import { parseAny } from "@reiad/shared/research-bib";
 import {
-  addNote, addSource, addTask, findDuplicate, listActivity, listNotes, listQuestions,
+  addNote, addSource, addTask, findDuplicate, listActivity, listEvents, listNotes, listQuestions,
   listSources, listTasks, lookupDoi, lookupIsbn, lookupUrl, saveNote, saveTask,
   type Activity, type Note, type Question, type Source, type Task,
 } from "../../lib/research-api";
@@ -52,16 +52,19 @@ export function Board() {
   const [tasks, setTasks] = useState<Task[]>([]);
   const [inbox, setInbox] = useState<Note[]>([]);
   const [recent, setRecent] = useState<Activity[]>([]);
+  const [dates, setDates] = useState<Awaited<ReturnType<typeof listEvents>>>([]);
   const [q, setQ] = useState("");
   const [hits, setHits] = useState<{ sources: Source[]; notes: Note[]; questions: Question[]; tasks: Task[] } | null>(null);
   const box = useRef<HTMLInputElement>(null);
 
   const reload = useCallback(async () => {
     if (!w) return;
-    const [t, n, a] = await Promise.all([listTasks(w), listNotes(w, { inbox: true, limit: 20 }), listActivity(w, 12)]);
+    const since = new Date(Date.now() - 86400000).toISOString();
+    const [t, n, a, e] = await Promise.all([listTasks(w), listNotes(w, { inbox: true, limit: 20 }), listActivity(w, 12), listEvents(w, { from: since })]);
     setTasks(t);
     setInbox(n);
     setRecent(a);
+    setDates(e.filter((x) => !x.done).slice(0, 5));
   }, [w]);
 
   useEffect(() => { void reload(); }, [reload]);
@@ -217,6 +220,16 @@ export function Board() {
               ))}
             </ul>
           ) : <p className="text-t2 text-ink-soft"><W k="rs.board.today.empty" /></p>}
+          {dates.length ? (
+            <ul className="grid gap-1 text-t2" aria-label={both("rs.plan.next")}>
+              {dates.map((e) => (
+                <li key={e.id} className="flex items-baseline gap-2">
+                  <span className="text-t1 text-ink-soft mono">{e.starts.slice(5, 10)}</span>
+                  <span>{e.title}</span>
+                </li>
+              ))}
+            </ul>
+          ) : null}
           <ChipLink href="/tools/research/plan"><T en="The planner" bn="পরিকল্পনা" /></ChipLink>
         </Surface>
 

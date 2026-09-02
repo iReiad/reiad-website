@@ -94,6 +94,8 @@ const CARRIED: Record<string, { copy: string; erase?: string; how?: string }> = 
   research_highlights: { copy: "MINE_TABLES", erase: "RESEARCH_TABLES" },
   research_searches: { copy: "MINE_TABLES", erase: "RESEARCH_TABLES" },
   research_documents: { copy: "MINE_TABLES", erase: "RESEARCH_TABLES" },
+  research_events: { copy: "MINE_TABLES", erase: "RESEARCH_TABLES" },
+  research_sessions: { copy: "MINE_TABLES", erase: "RESEARCH_TABLES" },
   routines: { copy: "MINE_TABLES", erase: '"routines"' },
   routine_templates: {
     copy: "MINE_TABLES",
