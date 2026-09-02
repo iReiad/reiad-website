@@ -18,15 +18,16 @@
    ============================================================ */
 
 import { useCallback, useEffect, useState } from "react";
-import { PROJECT_KINDS, PROJECT_KIND_NAMES, TONES, toneVar, type ProjectKind, type Tone } from "@reiad/shared/research";
+import { PROJECT_KINDS, PROJECT_KIND_NAMES, TONES, fileSize, toneVar, type ProjectKind, type Tone } from "@reiad/shared/research";
 import {
-  addCollection, addProject, addSource, findDuplicate, getPrefs, listCollections, listProjects,
+  addCollection, addProject, addSource, fileUsage, findDuplicate, getPrefs, listCollections, listProjects,
   logImport, savePrefs, serviceStatus, zoteroPage,
-  type Prefs, type Project,
+  type Prefs, type Project, type Usage,
 } from "../../lib/research-api";
 import { Button } from "../ui/button";
 import { Chip, ChipLink } from "../ui/chip";
 import { Field, Select } from "../ui/field";
+import { Meter } from "../ui/meter";
 import { Surface } from "../ui/surface";
 import { cue } from "../../lib/sound";
 import { T, W, both, useToolLang } from "./lang";
@@ -44,6 +45,7 @@ export function Settings() {
   const [kind, setKind] = useState<ProjectKind>("degree");
   const [tone, setTone] = useState<Tone>("violet");
   const [services, setServices] = useState<Record<string, "on" | "off"> | null>(null);
+  const [usage, setUsage] = useState<Usage | null>(null);
   const [zUser, setZUser] = useState("");
   const [zKey, setZKey] = useState("");
   const [pulling, setPulling] = useState<string>("");
@@ -54,6 +56,7 @@ export function Settings() {
     void getPrefs(w).then(setPrefs);
     void listProjects(w).then(setProjects);
     void serviceStatus().then(setServices);
+    void fileUsage(w).then(setUsage);
   }, [w]);
 
   const keep = useCallback(async (part: Prefs) => {
@@ -177,6 +180,15 @@ export function Settings() {
           </Select>
           <Button type="submit" kind="solid" disabled={!name.trim()}><W k="rs.set.project.new" /></Button>
         </form>
+      </Surface>
+
+      <Surface material="pane" className="px-5 py-4 grid gap-3">
+        <h2 className="text-t3 font-medium"><W k="rs.set.files" /></h2>
+        <p className="text-t2 text-ink-soft"><W k="rs.set.files.hint" /></p>
+        {usage ? (
+          <Meter done={usage.bytes} total={usage.quota} label={both("rs.set.files")}
+                 figure={<span className="mono">{fileSize(usage.bytes)} / {fileSize(usage.quota)} · {usage.files}</span>} />
+        ) : <p className="text-t1 text-ink-soft"><W k="rs.moment" /></p>}
       </Surface>
 
       <Surface material="pane" className="px-5 py-4 grid gap-3">

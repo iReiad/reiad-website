@@ -123,8 +123,22 @@ const policy = (await readFile(join(AAB, "_headers"), "utf8"))
 if (!policy) throw new Error("aab/_headers carries no Content-Security-Policy");
 const CSP = policy.trim();
 
+/* The one Worker endpoint the erase calls: the reading room's
+   files live in R2 under the reader's prefix, not in a table, so
+   the page asks the Worker to clear them after the rows. Counted,
+   because "erased" with the files left behind is the failure
+   `scripts/check-account.ts` reads the source for and this is
+   the half that says the button really sends it. */
+let filesErased = 0;
+
 const server = createServer(async (req, res) => {
   const path = new URL(req.url ?? "/", "http://x").pathname;
+  if (path === "/api/research/files" && req.method === "DELETE") {
+    filesErased += 1;
+    res.writeHead(200, { "Content-Type": "application/json" });
+    res.end(JSON.stringify({ ok: true, removed: 3 }));
+    return;
+  }
   const prerendered = PRERENDERED[path];
   const file = prerendered
     ? join(BUILD, "server/app", prerendered)
@@ -172,7 +186,7 @@ const NOW = new Date().toISOString();
 const RESEARCH_TABLES = [
   "research_projects", "research_collections", "research_sources", "research_notes",
   "research_versions", "research_questions", "research_tasks", "research_lists",
-  "research_activity",
+  "research_activity", "research_highlights",
 ] as const;
 
 /** SOMEBODY ELSE'S PROFILE, and the reason it is here.
@@ -1117,6 +1131,8 @@ console.log("\nerasing everything");
   }
   ok("and the account really is empty of them",
     [...state.others.values()].every((list) => list.length === 0));
+  ok("and the reading room's files went too, through the Worker, after the rows",
+    filesErased === 1, `${filesErased} call(s)`);
 
   is("no page errors", errors.length ? errors[0] : "none", "none");
   await context.close();
@@ -1195,6 +1211,7 @@ console.log("\ntaking a copy of everything");
     ["research_tasks", "its tasks"],
     ["research_lists", "its lists"],
     ["research_activity", "everything that happened in it"],
+    ["research_highlights", "every highlight made in the reader"],
     ["routines", "the shape of the week"],
     ["routine_entries", "every day marked on it"],
     ["routine_templates", "the templates this reader made"],

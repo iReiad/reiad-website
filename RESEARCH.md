@@ -2331,6 +2331,29 @@ tables. `scripts/check-research.ts` asks its five questions,
 a browser. The rooms stages 2 to 12 open say so on their own page
 rather than answering 404.
 
+**Stage 2 landed the same day.** What it does: a source carries
+files, sent as bytes to `PUT /api/research/file` and kept in R2
+under `research/<user id>/<sha256>.<ext>` by
+`functions/_lib/files.ts`, against the 100 MB cap and the 5 GB
+quota Settings draws as a meter; the bytes come back through a
+thirty-minute ticket, whole or as a Range, because pdf.js and
+`<audio>` send no bearer; a web page is captured through
+`POST /api/research/capture`, cleaned by the site's own sanitiser
+and kept as the page that was read. `/tools/research/read` is the
+queue, and with `?source=` it is the reader:
+`next/components/research/reader.tsx` draws a PDF with pdf.js's
+legacy build and a text layer, a captured page as prose, audio as a
+player and a book as a form, and a highlight in any of them is a
+row of `research_highlights` anchored to its quote and thirty
+characters either side, with the rectangles as a cache and
+`findAnchor()` in `shared/research.ts` as the way back when they
+are gone. Five meanings on the keys 1 to 5, a card each with a note
+and the extraction fields, the place kept on the row, and one line
+asked once when the status moves to read. Erasing the account
+removes the files after the rows, and `scripts/check-account.ts`
+asks that it does. Not yet from that section: the phone's swipes,
+keeping a file offline, and OCR, which section 31 always put later.
+
 **Stage 1 is a week of work and the studio is used from its end.**
 Stages 2 to 5 are the next month, and at the end of stage 5 the
 studio does everything the old desk did and everything a reference

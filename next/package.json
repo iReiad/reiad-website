@@ -12,14 +12,15 @@
     "@opennextjs/cloudflare": "^1.20.2",
     "@reiad/shared": "file:../shared",
     "next": "^16.3.1",
+    "pdfjs-dist": "^6.3.289",
     "react": "^19.2.8",
     "react-dom": "^19.2.8"
   },
   "devDependencies": {
     "@cloudflare/workers-types": "^5.20260816.1",
+    "@tailwindcss/postcss": "^4.3.3",
     "@types/node": "^26.2.0",
     "@types/react": "19.2.18",
-    "typescript": "7.0.2",
-    "@tailwindcss/postcss": "^4.3.3"
+    "typescript": "7.0.2"
   }
 }

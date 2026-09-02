@@ -1,11 +1,15 @@
-/* /tools/research/read. RESEARCH.md is the plan; the room's own file is the
-   reasoning. The frame takes the title, the colour and the lede out
-   of the one table in `lib/research-pages.ts`. */
+/* /tools/research/read: the queue, or the reader when
+   `?source=<id>&file=<key>` names a source. One static route on
+   purpose: the reader has nothing to render on the server (every
+   row is the reader's own and arrives after the page does), so a
+   dynamic segment would cost a server render to draw a shell, and
+   the browser test can serve a prerendered page and not a
+   dynamic one. RESEARCH.md section 11. */
 
 import type { Metadata } from "next";
 import { pageMeta } from "../../../../../lib/pageMeta";
 import { ResearchFrame } from "../../../../../components/research/frame";
-import { Soon } from "../../../../../components/research/soon";
+import { ReadingRoom } from "../../../../../components/research/queue";
 
 export const metadata: Metadata = pageMeta({
   path: "/tools/research/read",
@@ -19,7 +23,7 @@ export const metadata: Metadata = pageMeta({
 export default function Page() {
   return (
     <ResearchFrame href="/tools/research/read" wide>
-      <Soon href="/tools/research/read" />
+      <ReadingRoom />
     </ResearchFrame>
   );
 }

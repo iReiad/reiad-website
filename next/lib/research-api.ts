@@ -35,7 +35,7 @@
    ============================================================ */
 
 import type { CslItem } from "@reiad/shared/research";
-import { citeKey, fieldsOf, normaliseDoi } from "@reiad/shared/research";
+import { citeKey, fieldsOf, normaliseDoi, type HighlightMeaning, type SourceFile } from "@reiad/shared/research";
 import type {
   NoteKind, ProjectKind, ProjectState, QuestionKind, QuestionState, SourceStatus,
   SourceVia, TaskLane, Tone,
@@ -711,4 +711,147 @@ export async function zoteroPage(
     const data = await res.json() as { ok: boolean; page?: ZoteroPage; reason?: string };
     return data.ok && data.page ? { page: data.page } : { reason: data.reason ?? `${res.status}` };
   } catch { return { reason: "network" }; }
+}
+
+/* ============================================================
+   the reading room: highlights, files, the queue
+   ============================================================ */
+
+export interface Highlight extends Row {
+  source_id: string;
+  file_key: string | null;
+  page: number | null;
+  quote: string;
+  prefix: string;
+  suffix: string;
+  /** In the page's own units at scale one, top-left origin:
+      `[x, y, w, h]` each. A cache; the quote is the anchor. */
+  rects: number[][];
+  meaning: HighlightMeaning;
+  note: string;
+  /** The extraction card. Each a field rather than free text so the
+      review room's table can be filled from the reading. */
+  fields: { number?: string; unit?: string; n?: string; method?: string; finding?: string; typed?: boolean };
+  /** A time range for audio, `{ start, end }` in seconds. */
+  position: { start?: number; end?: number };
+}
+
+const HIGHLIGHT_COLUMNS = "id,source_id,file_key,page,quote,prefix,suffix,rects,meaning,note,fields,position,created_at,updated_at";
+
+export const listHighlights = (w: Who, sourceId: string): Promise<Highlight[]> =>
+  rows<Highlight>(w, "research_highlights",
+    `select=${HIGHLIGHT_COLUMNS}&source_id=eq.${enc(sourceId)}&order=page.asc.nullsfirst,created_at.asc&limit=2000`);
+
+export const addHighlight = (
+  w: Who, h: Omit<Partial<Highlight>, "id" | "created_at" | "updated_at"> & { source_id: string; meaning: HighlightMeaning },
+): Promise<Highlight | null> =>
+  insert<Highlight>(w, "research_highlights", {
+    source_id: h.source_id, file_key: h.file_key ?? null, page: h.page ?? null,
+    quote: h.quote ?? "", prefix: h.prefix ?? "", suffix: h.suffix ?? "", rects: h.rects ?? [],
+    meaning: h.meaning, note: h.note ?? "", fields: h.fields ?? {}, position: h.position ?? {},
+  }, (h.quote ?? "").slice(0, 80) || h.meaning);
+
+export const saveHighlight = (
+  w: Who, h: Highlight, part: Partial<Highlight>, seen?: string,
+): Promise<PatchAnswer<Highlight>> =>
+  patch<Highlight>(w, "research_highlights", h.id, part, h.quote.slice(0, 80) || h.meaning, seen);
+
+export const removeHighlight = (w: Who, h: Highlight): Promise<boolean> =>
+  remove(w, "research_highlights", h.id, h.quote.slice(0, 80) || h.meaning);
+
+/* ---- the files, through the Worker ----
+
+   Bytes never go to PostgREST and never come from it: the Worker
+   stores them in R2 under the reader's prefix and answers with a
+   key, and the key goes on the source row as one of its `files`.
+   Reading is by ticket, because pdf.js and <audio> send no bearer. */
+
+export interface Usage { bytes: number; files: number; cap: number; quota: number }
+
+export async function fileUsage(w: Who): Promise<Usage | null> {
+  try {
+    const res = await fetch("/api/research/files", { headers: { authorization: `Bearer ${w.token}` } });
+    if (!res.ok) return null;
+    const data = await res.json() as { ok: boolean } & Usage;
+    return data.ok ? { bytes: data.bytes, files: data.files, cap: data.cap, quota: data.quota } : null;
+  } catch { return null; }
+}
+
+export type Uploaded = { ok: true; key: string; ext: string; size: number; already: boolean } | { ok: false; reason: string };
+
+export async function uploadFile(w: Who, file: File): Promise<Uploaded> {
+  try {
+    const res = await fetch(`/api/research/file?name=${enc(file.name)}`, {
+      method: "PUT",
+      headers: { authorization: `Bearer ${w.token}`, "content-type": file.type || "application/octet-stream" },
+      body: file,
+    });
+    const data = await res.json() as { ok: boolean; reason?: string; key?: string; ext?: string; size?: number; already?: boolean };
+    if (!res.ok || !data.ok || !data.key) return { ok: false, reason: data.reason ?? `http-${res.status}` };
+    return { ok: true, key: data.key, ext: data.ext ?? "", size: data.size ?? file.size, already: Boolean(data.already) };
+  } catch { return { ok: false, reason: "network" }; }
+}
+
+/** A thirty-minute address for one file, or null. */
+export async function fileTicket(w: Who, key: string): Promise<string | null> {
+  try {
+    const res = await fetch(`/api/research/ticket/${key}`, { headers: { authorization: `Bearer ${w.token}` } });
+    if (!res.ok) return null;
+    const data = await res.json() as { ok: boolean; url?: string };
+    return data.ok && data.url ? data.url : null;
+  } catch { return null; }
+}
+
+export type Captured = { ok: true; key: string; size: number; title: string; words: number } | { ok: false; reason: string };
+
+export async function captureUrl(w: Who, url: string): Promise<Captured> {
+  try {
+    const res = await fetch("/api/research/capture", {
+      method: "POST",
+      headers: { authorization: `Bearer ${w.token}`, "content-type": "application/json" },
+      body: JSON.stringify({ url }),
+    });
+    const data = await res.json() as { ok: boolean; reason?: string; key?: string; size?: number; title?: string; words?: number };
+    if (!res.ok || !data.ok || !data.key) return { ok: false, reason: data.reason ?? `http-${res.status}` };
+    return { ok: true, key: data.key, size: data.size ?? 0, title: data.title ?? "", words: data.words ?? 0 };
+  } catch { return { ok: false, reason: "network" }; }
+}
+
+/** Every file under the reader's prefix, gone. The account page's
+    erase calls the same endpoint through its own module. */
+export async function eraseFiles(w: Who): Promise<boolean> {
+  try {
+    const res = await fetch("/api/research/files", { method: "DELETE", headers: { authorization: `Bearer ${w.token}` } });
+    return res.ok;
+  } catch { return false; }
+}
+
+/** A file put on a source. `files` is replaced whole, which is
+    what PostgREST does with a jsonb column, so the caller sends the
+    row it has rather than a merge. */
+export function attachFile(w: Who, s: Source, file: SourceFile, seen?: string): Promise<PatchAnswer<Source>> {
+  const files = [...(s.files as SourceFile[]).filter((f) => f.key !== file.key), file];
+  return saveSource(w, s, { files } as Partial<Source>, seen);
+}
+
+/** Where the reader got to in one file, on the row so it follows
+    the account. Quiet: no activity line, because "page 12" is not
+    a thing that happened. */
+export async function keepPlace(w: Who, s: Source, key: string, page: number, pages?: number): Promise<Source | null> {
+  const files = (s.files as SourceFile[]).map((f) => f.key === key ? { ...f, page, ...(pages ? { pages } : {}) } : f);
+  const r = await call<Source[]>(`research_sources?user_id=eq.${w.id}&id=eq.${enc(s.id)}`, {
+    method: "PATCH", headers: { prefer: "return=representation" }, body: JSON.stringify({ files }),
+  }, w);
+  return r.ok && r.data?.length ? r.data[0] : null;
+}
+
+/** The queue: every source with a file and a status short of
+    read, priority first, then the most recently touched. A book
+    with no file is queued too, because a book is read from paper
+    and its highlights are typed. */
+export async function listQueue(w: Who): Promise<Source[]> {
+  const all = await listSources(w, { limit: 1000 });
+  return all
+    .filter((s) => ["unread", "skimmed"].includes(s.status) && (s.files.length > 0 || s.type === "book"))
+    .sort((a, b) => b.priority - a.priority || b.updated_at.localeCompare(a.updated_at));
 }

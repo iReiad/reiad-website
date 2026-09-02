@@ -44,7 +44,7 @@ import { dirname, join, relative } from "node:path";
 import { fileURLToPath } from "node:url";
 import { RESEARCH_PAGES } from "../next/lib/research-pages.ts";
 import {
-  NOTE_KINDS, PROJECT_KINDS, PROJECT_STATES, QUESTION_KINDS, QUESTION_STATES, SOURCE_STATUSES,
+  HIGHLIGHT_MEANINGS, NOTE_KINDS, PROJECT_KINDS, PROJECT_STATES, QUESTION_KINDS, QUESTION_STATES, SOURCE_STATUSES,
   SOURCE_TYPE_IDS, SOURCE_VIAS, TASK_LANES, TONES,
 } from "../shared/research.ts";
 import { RESEARCH_WORDS } from "../shared/research-words.ts";
@@ -198,6 +198,7 @@ for (const s of ["doi", "isbn", "url", "bib", "todo", "note", "dup", "fail"]) if
   same("QUESTION_KINDS", "research_questions", "kind", QUESTION_KINDS);
   same("QUESTION_STATES", "research_questions", "state", QUESTION_STATES);
   same("PROJECT_KINDS", "research_projects", "kind", PROJECT_KINDS);
+  same("HIGHLIGHT_MEANINGS", "research_highlights", "meaning", HIGHLIGHT_MEANINGS);
   same("PROJECT_STATES", "research_projects", "state", PROJECT_STATES);
   same("TONES", "research_projects", "tone", TONES);
 }

@@ -73,7 +73,7 @@ import {
   TONES, SOURCE_TYPES, SOURCE_TYPE_IDS, SOURCE_STATUSES, SOURCE_VIAS, NOTE_KINDS,
   NOTE_KIND_NAMES, TASK_LANES, LANE_NAMES, QUESTION_KINDS, QUESTION_KIND_NAMES,
   QUESTION_STATES, EVIDENCE_STANCES, PROJECT_KINDS, PROJECT_KIND_NAMES, PROJECT_STATES,
-  LIST_ITEM_STATES,
+  LIST_ITEM_STATES, HIGHLIGHT_MEANINGS, MEANING_NAMES, MEANING_TONES, FILE_TYPES, FILE_CAP, FILE_QUOTA,
 } from "../../shared/research.ts";
 import { RESEARCH_WORDS } from "../../shared/research-words.ts";
 
@@ -196,6 +196,15 @@ export function onRequest(context: RouteContext): Response | Promise<Response> {
           projectKindNames: { ...PROJECT_KIND_NAMES },
           projectStates: [...PROJECT_STATES],
           listItemStates: [...LIST_ITEM_STATES],
+          highlightMeanings: [...HIGHLIGHT_MEANINGS],
+          meaningNames: { ...MEANING_NAMES },
+          meaningTones: { ...MEANING_TONES },
+          /* The extensions alone: the MIME map is the Worker's, and one of
+             its values reads as a Drive id to the test that guards the
+             course catalogue against leaking through this endpoint. */
+          fileExts: Object.keys(FILE_TYPES),
+          fileCap: FILE_CAP,
+          fileQuota: FILE_QUOTA,
           words: { ...RESEARCH_WORDS },
         },
         profile: {

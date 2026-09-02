@@ -7,6 +7,16 @@
    GET  /api/research/lookup/url?u=       a page's own tags (the clipper)
    POST /api/research/zotero/pull         a page of somebody's Zotero library
 
+   And the reading room's files, RESEARCH.md section 23, every one
+   of them the signed-in reader's own and under their prefix:
+
+   GET    /api/research/files            what the reader holds, against the quota
+   PUT    /api/research/file?name=       store one file, answer its key
+   GET    /api/research/ticket/<key>     a thirty-minute pass for one file
+   GET    /api/research/file/<key>?t=    the bytes, whole or a Range, on that pass
+   DELETE /api/research/files            everything under the prefix (the erase)
+   POST   /api/research/capture          a web page, fetched, cleaned and stored
+
    `RESEARCH.md` sections 10 and 22. This is the WHOLE of the
    studio's Worker surface in stage 1, and the split is the diet
    tool's: the reader's own rows are the browser's, read and
@@ -37,8 +47,19 @@ import { readerFrom } from "../../_lib/reader.ts";
 import type { ReaderEnv } from "../../_lib/reader.ts";
 import { byDoi, byIsbn, clip, status, zoteroPull } from "../../_lib/scholar.ts";
 import type { ScholarEnv } from "../../_lib/scholar.ts";
+import { canTicket, checkTicket, mintTicket } from "../../_lib/ticket.ts";
+import {
+  RESEARCH_TICKET, capturePage, keyIsMine, readFile, removeAll, storeFile, usage,
+} from "../../_lib/files.ts";
+import type { FilesEnv } from "../../_lib/files.ts";
+import type { Reader } from "../../_lib/reader.ts";
+import { FILE_CAP, FILE_QUOTA, extOfName } from "../../../shared/research.ts";
 
-interface ResearchEnv extends ScholarEnv, ReaderEnv {}
+interface ResearchEnv extends ScholarEnv, ReaderEnv, FilesEnv {}
+
+/** A page a minute is a person reading; more is a crawler with a
+    bearer, which is still somebody else's server being asked. */
+const CAPTURES_A_MINUTE = 20;
 
 /** Generous for a capture box, tight for a relay: sixty lookups
     a minute from one address is a person pasting a reading list,
@@ -54,7 +75,99 @@ export async function onRequest(
   const head = route[0] ?? "";
 
   if (head === "status") {
-    return methods(request, { GET: () => ok({ services: status(env) }) });
+    return methods(request, {
+      GET: () => ok({ services: { ...status(env), files: env.MEDIA && canTicket(env) ? "on" : "off" } }),
+    });
+  }
+
+  /* ---- the files: every branch reads the reader first ---- */
+  const whoAsks = async (): Promise<Reader | Response> => {
+    let reader: Reader | null;
+    try { reader = await readerFrom(request, env); } catch { return fail("bad-token", 401); }
+    return reader ?? fail("signed-out", 401);
+  };
+
+  if (head === "files") {
+    if (!env.MEDIA) return fail("not-configured", 503);
+    const bucket = env.MEDIA;
+    return methods(request, {
+      GET: async () => {
+        const reader = await whoAsks();
+        if (reader instanceof Response) return reader;
+        return ok({ ...(await usage(bucket, reader.id)), cap: FILE_CAP, quota: FILE_QUOTA });
+      },
+      DELETE: async () => {
+        const reader = await whoAsks();
+        if (reader instanceof Response) return reader;
+        return ok({ removed: await removeAll(bucket, reader.id) });
+      },
+    });
+  }
+
+  if (head === "file" && route.length === 1) {
+    if (!env.MEDIA) return fail("not-configured", 503);
+    const bucket = env.MEDIA;
+    return methods(request, {
+      PUT: async () => {
+        const reader = await whoAsks();
+        if (reader instanceof Response) return reader;
+        const buffer = await request.arrayBuffer();
+        const name = url.searchParams.get("name") ?? "";
+        const stored = await storeFile(bucket, reader.id, buffer, request.headers.get("Content-Type") ?? "", extOfName(name));
+        if (!stored.ok) return fail(stored.reason, stored.status, stored.extra ?? {});
+        return ok({ key: stored.key, ext: stored.ext, size: stored.size, already: stored.already });
+      },
+    });
+  }
+
+  if (head === "file" && route.length > 1) {
+    if (!env.MEDIA) return fail("not-configured", 503);
+    const bucket = env.MEDIA;
+    const key = route.slice(1).join("/");
+    return methods(request, {
+      GET: async () => {
+        /* The ticket is the whole of the proof here: a <audio> and
+           pdf.js's own fetch carry no bearer. It names one key. */
+        if (!await checkTicket(env, key, url.searchParams.get("t"), RESEARCH_TICKET)) {
+          return fail("no-ticket", 403);
+        }
+        return readFile(bucket, key, request.headers.get("Range"));
+      },
+    });
+  }
+
+  if (head === "ticket") {
+    const key = route.slice(1).join("/");
+    return methods(request, {
+      GET: async () => {
+        const reader = await whoAsks();
+        if (reader instanceof Response) return reader;
+        if (!keyIsMine(reader.id, key)) return fail("not-yours", 403);
+        if (!canTicket(env)) return fail("not-configured", 503);
+        const t = await mintTicket(env, key, RESEARCH_TICKET);
+        return ok({ url: `/api/research/file/${key}?t=${t}` });
+      },
+    });
+  }
+
+  if (head === "capture") {
+    if (!env.MEDIA) return fail("not-configured", 503);
+    const bucket = env.MEDIA;
+    return methods(request, {
+      POST: async () => {
+        const reader = await whoAsks();
+        if (reader instanceof Response) return reader;
+        if (await throttle({ request, env }, "research-capture", CAPTURES_A_MINUTE, 1)) {
+          return fail("too-many", 429);
+        }
+        const sent = await body(request);
+        const address = str(sent.url, 2000);
+        if (!address) return fail("missing", 400);
+        const got = await capturePage(bucket, reader.id, address);
+        if (!got.ok) return fail(got.reason, got.status);
+        return ok({ key: got.key, size: got.size, title: got.title, words: got.words, already: got.already });
+      },
+    });
   }
 
   if (head === "lookup") {

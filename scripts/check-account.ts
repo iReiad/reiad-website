@@ -91,6 +91,7 @@ const CARRIED: Record<string, { copy: string; erase?: string; how?: string }> = 
   research_tasks: { copy: "MINE_TABLES", erase: "RESEARCH_TABLES" },
   research_lists: { copy: "MINE_TABLES", erase: "RESEARCH_TABLES" },
   research_activity: { copy: "MINE_TABLES", erase: "RESEARCH_TABLES" },
+  research_highlights: { copy: "MINE_TABLES", erase: "RESEARCH_TABLES" },
   routines: { copy: "MINE_TABLES", erase: '"routines"' },
   routine_templates: {
     copy: "MINE_TABLES",
@@ -327,6 +328,20 @@ if (!SYNC.includes("SYNCED_KEYS")) {
   fail("aab/src/sync.ts no longer exports SYNCED_KEYS.",
     "That is what the copy walks to gather the mirror, so the progress half of",
     "a downloaded account would be empty and nothing would say so.");
+}
+
+/* ---------- and the files, which are not rows ----------
+
+   The reading room's files are bytes in R2 under the reader's
+   prefix, and no migration names them, so the rule above cannot
+   see them. RESEARCH.md section 23: the erase calls
+   DELETE /api/research/files after the rows are gone, so leaving
+   takes the files too. This is the question that says it does. */
+if (!/fetch\(\s*"\/api\/research\/files"[\s\S]{0,200}method:\s*"DELETE"/.test(ERASE)) {
+  fail("the erase does not call DELETE /api/research/files.",
+    "The reading room's files live in R2 under the reader's prefix and no",
+    "row-level policy reaches them: a reader who erased everything would",
+    "leave every PDF they uploaded behind, and nothing would say so.");
 }
 
 if (LIST) {

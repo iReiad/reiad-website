@@ -83,6 +83,7 @@ const { chromium } = playwright;
 const TYPES: Record<string, string> = {
   ".html": "text/html; charset=utf-8",
   ".js": "text/javascript; charset=utf-8",
+  ".mjs": "text/javascript; charset=utf-8",
   ".css": "text/css; charset=utf-8",
   ".json": "application/json",
   ".svg": "image/svg+xml",
@@ -130,13 +131,17 @@ const source = (
 
 const seed = (): Record<string, Row[]> => ({
   research_sources: [
-    source("s-1", "Weather shocks and farm incomes in Bangladesh", 2021, "Rahman and Khan", "10.1000/farm.2021", ["agriculture", "bd"], 3),
+    {
+      ...source("s-1", "Weather shocks and farm incomes in Bangladesh", 2021, "Rahman and Khan", "10.1000/farm.2021", ["agriculture", "bd"], 3),
+      files: [{ key: PDF_KEY, kind: "pdf", ext: "pdf", size: PDF.byteLength, name: "rahman2021.pdf" }],
+    },
     source("s-2", "Bank provisioning over the cycle", 2019, "Ahmed", "10.1000/banks.2019", ["banks"], 9),
   ],
   research_notes: [],
   research_tasks: [],
   research_questions: [],
   research_activity: [],
+  research_highlights: [],
   research_projects: [],
   research_collections: [],
   research_lists: [],
@@ -159,6 +164,37 @@ const FOUND = {
   },
 };
 
+/* ---- a PDF with a text layer, written by hand ----
+
+   Two lines in Helvetica, one of the fourteen standard fonts, so
+   nothing is embedded and pdf.js's text layer holds exactly these
+   words. The cross-reference table is computed, because a PDF
+   whose offsets are wrong is one a reader repairs silently and a
+   test should not rely on that. */
+const PDF_LINES = ["Weather shocks reduce farm income by 12 per cent.", "The effect is larger for rainfed plots."];
+const PDF: Uint8Array = (() => {
+  const content = `BT /F1 14 Tf 72 720 Td (${PDF_LINES[0]}) Tj 0 -20 Td (${PDF_LINES[1]}) Tj ET`;
+  const objects = [
+    "<< /Type /Catalog /Pages 2 0 R >>",
+    "<< /Type /Pages /Kids [3 0 R] /Count 1 >>",
+    "<< /Type /Page /Parent 2 0 R /MediaBox [0 0 612 792] /Resources << /Font << /F1 4 0 R >> >> /Contents 5 0 R >>",
+    "<< /Type /Font /Subtype /Type1 /BaseFont /Helvetica >>",
+    `<< /Length ${Buffer.byteLength(content)} >>\nstream\n${content}\nendstream`,
+  ];
+  let out = "%PDF-1.4\n";
+  const offsets: number[] = [];
+  objects.forEach((body, i) => {
+    offsets.push(Buffer.byteLength(out));
+    out += `${i + 1} 0 obj\n${body}\nendobj\n`;
+  });
+  const xref = Buffer.byteLength(out);
+  out += `xref\n0 ${objects.length + 1}\n0000000000 65535 f \n`;
+  for (const o of offsets) out += `${String(o).padStart(10, "0")} 00000 n \n`;
+  out += `trailer\n<< /Size ${objects.length + 1} /Root 1 0 R >>\nstartxref\n${xref}\n%%EOF\n`;
+  return new Uint8Array(Buffer.from(out, "latin1"));
+})();
+const PDF_KEY = `research/${"reader-1"}/${"c".repeat(64)}.pdf`;
+
 /* ---- one page, with a PostgREST that behaves like one ---- */
 
 interface Sent { method: string; path: string; body: unknown }
@@ -177,6 +213,7 @@ async function open(path: string, { signedIn = true }: { signedIn?: boolean } = 
   page.on("console", (m) => {
     const t = m.text();
     if (/Minified React error #(418|423|425)|did not match|Hydration failed/.test(t)) errors.push(t);
+    if (m.type() === "error" && process.env.DEBUG) console.log("console:", t.slice(0, 300));
   });
   await page.route("https://fonts.googleapis.com/**", (r: Route) => r.abort());
 
@@ -214,7 +251,7 @@ async function open(path: string, { signedIn = true }: { signedIn?: boolean } = 
 
     if (method === "GET") {
       let out = held.filter((row) => row.user_id === ME);
-      for (const k of ["id", "doi", "isbn", "kind", "lane", "status", "type"]) {
+      for (const k of ["id", "doi", "isbn", "kind", "lane", "status", "type", "source_id"]) {
         const want = eq(k);
         if (want !== null) out = out.filter((row) => String(row[k]) === want);
       }
@@ -271,6 +308,18 @@ async function open(path: string, { signedIn = true }: { signedIn?: boolean } = 
       looked.push(decodeURIComponent(u.pathname.slice("/api/research/lookup/doi/".length)));
       return answer(FOUND);
     }
+    if (u.pathname.startsWith("/api/research/ticket/")) {
+      return answer({ ok: true, url: `/api/research/file/${u.pathname.slice("/api/research/ticket/".length)}?t=pass` });
+    }
+    if (u.pathname.startsWith("/api/research/file/")) {
+      /* The bytes, as the Worker serves them: no bearer, a ticket
+         in the query, and a PDF. */
+      if (u.searchParams.get("t") !== "pass") return answer({ ok: false, reason: "no-ticket" }, 403);
+      return r.fulfill({ status: 200, contentType: "application/pdf", body: Buffer.from(PDF) });
+    }
+    if (u.pathname === "/api/research/files") {
+      return answer({ ok: true, bytes: PDF.byteLength, files: 1, cap: 100 * 1024 * 1024, quota: 5 * 1024 * 1024 * 1024 });
+    }
     if (u.pathname === "/api/research/status") {
       return answer({ ok: true, services: { crossref: "on", openalex: "off", openlibrary: "on" } });
     }
@@ -296,7 +345,7 @@ const firstOf = (s: Sent | undefined): Record<string, unknown> =>
    1. signed out, a room invites rather than blanks
    ============================================================ */
 
-for (const path of ["/tools/research", "/tools/research/library"]) {
+for (const path of ["/tools/research", "/tools/research/library", "/tools/research/read"]) {
   const { page, errors } = await open(path, { signedIn: false });
   const words = await bodyText(page);
   ok(`${path} signed out says whose it is`, words.includes("This is yours"), words.slice(0, 200));
@@ -443,6 +492,92 @@ for (const path of ["/tools/research", "/tools/research/library"]) {
   await page.waitForTimeout(150);
   ok("j walks to the next row",
     (await page.locator('.rs-row[aria-current="true"]').textContent() ?? "").includes("Bank provisioning"));
+
+  ok("and none of it threw", errors.length === 0, errors.join(" | "));
+  await page.close();
+}
+
+/* ============================================================
+   4. the reading room: the queue, and a highlight anchored to text
+   ============================================================ */
+
+{
+  const { page, errors, sent } = await open("/tools/research/read");
+  ok("the queue lists the source with a file and not the one without",
+    await page.locator(".rs-row").count() === 1, `${await page.locator(".rs-row").count()} row(s)`);
+  await page.locator("h1").click();
+  await page.keyboard.press("Enter");
+  await page.waitForTimeout(400);
+  ok("Enter opens the top of the queue", page.url().includes("source=s-1") && page.url().includes("file="), page.url());
+  ok("and nothing threw on the way", errors.length === 0, errors.join(" | "));
+  await page.close();
+}
+
+{
+  const { page, errors, sent, rows } = await open(`/tools/research/read?source=s-1&file=${encodeURIComponent(PDF_KEY)}`);
+  await page.waitForSelector(".rs-textlayer span", { timeout: 20000 }).catch(() => null);
+  const spans = await page.locator(".rs-textlayer span").count();
+  ok("pdf.js draws the page and lays the words over it, from a worker served by this origin", spans >= 2, `${spans} span(s)`);
+  const words = await page.locator(".rs-textlayer").textContent() ?? "";
+  ok("and the text layer holds the file's own words", words.includes("rainfed plots"), words.slice(0, 120));
+  await page.waitForTimeout(400);
+  ok("where the reader is goes on the row, with the page count",
+    sent.some((x) => x.method === "PATCH" && x.path.includes("research_sources")
+      && (x.body as { files?: { pages?: number }[] })?.files?.[0]?.pages === 1),
+    JSON.stringify(sent.filter((x) => x.method === "PATCH").map((x) => x.body)));
+
+  /* ---- select four words and press 2 ---- */
+  const selected = await page.evaluate(() => {
+    const span = [...document.querySelectorAll(".rs-textlayer span")].find((el) => (el.textContent ?? "").includes("rainfed"));
+    const node = span?.firstChild as Text | null;
+    if (!node) return null;
+    const text = node.data;
+    const range = document.createRange();
+    range.setStart(node, text.indexOf("larger"));
+    range.setEnd(node, text.indexOf("plots") + "plots".length);
+    const sel = getSelection();
+    sel?.removeAllRanges();
+    sel?.addRange(range);
+    return sel?.toString() ?? null;
+  });
+  ok("a selection over the text layer is the words under it", selected === "larger for rainfed plots", String(selected));
+  await page.waitForTimeout(250);
+  ok("and the five meanings appear under it", await page.locator(".rs-hl-bar").count() === 1);
+  await page.keyboard.press("2");
+  await page.waitForTimeout(500);
+  const made = posts(sent, "research_highlights");
+  ok("2 files ONE highlight", made.length === 1, `${made.length} POST(s)`);
+  const h = firstOf(made[0]) as { meaning?: string; page?: number; quote?: string; prefix?: string; suffix?: string; rects?: number[][]; source_id?: string; file_key?: string };
+  ok("as evidence, on page one, of this source and this file",
+    h.meaning === "evidence" && h.page === 1 && h.source_id === "s-1" && h.file_key === PDF_KEY, JSON.stringify(h));
+  ok("anchored to the words and their neighbours, not to pixels",
+    h.quote === "larger for rainfed plots" && (h.prefix ?? "").endsWith("The effect is ") && (h.suffix ?? "").startsWith("."),
+    JSON.stringify({ quote: h.quote, prefix: h.prefix, suffix: h.suffix }));
+  ok("with the rectangles beside them as a cache, in the page's own units",
+    Array.isArray(h.rects) && h.rects.length >= 1 && h.rects[0].length === 4 && h.rects[0][2] > 20 && h.rects[0][2] < 400,
+    JSON.stringify(h.rects));
+  ok("and the selection is cleared", await page.evaluate(() => getSelection()?.isCollapsed ?? true));
+  ok("the highlight is drawn over the page", await page.locator(".rs-mark").count() >= 1);
+  const card = await page.locator(".rs-hl-card").count() ? (await page.locator(".rs-hl-card").first().textContent() ?? "") : "";
+  ok("and has a card with its page and its words", card.includes("larger for rainfed plots") && /Page|পাতা/.test(card), card.slice(0, 160));
+  ok("and the activity log has a line for it",
+    posts(sent, "research_activity").some((x) => (firstOf(x) as { kind?: string }).kind === "highlights"));
+
+  /* ---- it survives a reload, and its rectangles going ---- */
+  await page.reload({ waitUntil: "load" });
+  await page.waitForSelector(".rs-mark", { timeout: 20000 }).catch(() => null);
+  ok("a highlight survives a reload", await page.locator(".rs-mark").count() >= 1);
+  if (rows.research_highlights[0]) rows.research_highlights[0].rects = [];
+  const before = sent.filter((x) => x.method === "PATCH" && x.path.includes("research_highlights")).length;
+  await page.reload({ waitUntil: "load" });
+  await page.waitForSelector(".rs-mark", { timeout: 20000 }).catch(() => null);
+  ok("AND IS FOUND BY ITS QUOTE WHEN ITS RECTANGLES ARE REMOVED", await page.locator(".rs-mark").count() >= 1,
+    `${await page.locator(".rs-mark").count()} mark(s)`);
+  await page.waitForTimeout(300);
+  const wroteBack = sent.filter((x) => x.method === "PATCH" && x.path.includes("research_highlights")).slice(before);
+  ok("and the rectangles found are written back as the cache",
+    wroteBack.some((x) => Array.isArray((x.body as { rects?: unknown[] }).rects) && ((x.body as { rects: unknown[] }).rects).length >= 1),
+    JSON.stringify(wroteBack.map((x) => x.body)));
 
   ok("and none of it threw", errors.length === 0, errors.join(" | "));
   await page.close();

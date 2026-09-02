@@ -74,16 +74,21 @@ export interface TicketEnv {
 
 export const canTicket = (env: TicketEnv): boolean => Boolean(env.GOOGLE_SA_KEY);
 
-const sign = async (env: TicketEnv, message: string): Promise<string> => {
-  const key = await hmacKey(env.GOOGLE_SA_KEY as string, LABEL);
+/* A second PURPOSE derives a second key from the same secret,
+   which is what domain separation is for: a research file ticket
+   verifies against nothing a course ticket signed and the other
+   way round. The label is the caller's, defaulting to the
+   course's, so the one existing call site did not change. */
+const sign = async (env: TicketEnv, message: string, label = LABEL): Promise<string> => {
+  const key = await hmacKey(env.GOOGLE_SA_KEY as string, label);
   return b64url(await crypto.subtle.sign("HMAC", key, enc.encode(message)));
 };
 
 /** A pass for one file, as `<expiry>.<signature>`. */
-export async function mintTicket(env: TicketEnv, id: string): Promise<string | null> {
+export async function mintTicket(env: TicketEnv, id: string, label = LABEL): Promise<string | null> {
   if (!canTicket(env)) return null;
   const expires = Date.now() + MINUTES * 60 * 1000;
-  return `${expires}.${await sign(env, `${id}.${expires}`)}`;
+  return `${expires}.${await sign(env, `${id}.${expires}`, label)}`;
 }
 
 /**
@@ -95,7 +100,7 @@ export async function mintTicket(env: TicketEnv, id: string): Promise<string | n
  * beside it.
  */
 export async function checkTicket(
-  env: TicketEnv, id: string, ticket: string | null
+  env: TicketEnv, id: string, ticket: string | null, label = LABEL,
 ): Promise<boolean> {
   if (!canTicket(env) || !ticket) return false;
 
@@ -105,7 +110,7 @@ export async function checkTicket(
   const expires = Number(ticket.slice(0, dot));
   if (!Number.isFinite(expires) || Date.now() > expires) return false;
 
-  const want = await sign(env, `${id}.${expires}`);
+  const want = await sign(env, `${id}.${expires}`, label);
   const got = ticket.slice(dot + 1);
 
   /* Constant time, because a comparison that returns early on the

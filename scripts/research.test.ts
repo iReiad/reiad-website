@@ -202,6 +202,44 @@ eq("parseAny reads a single CSL object", parseAny('{"type":"book","title":"x"}')
   eq("the container is the first title", csl["container-title"], "Journal of Banking & Finance");
 }
 
+/* ---------- the reading room: where a highlight is ---------- */
+
+{
+  const { anchorOf, findAnchor, ownsKey, extOfType, extOfName, fileKey, fileKind, FILE_TYPES, HIGHLIGHT_MEANINGS } =
+    await import("../shared/research.ts");
+  const page = "Weather shocks reduce farm income by 12 per cent\non average (Table 3). The effect is larger for\nrainfed plots. Weather shocks reduce farm income for tenants too.";
+  const a = anchorOf(page, page.indexOf("larger for"), page.indexOf("larger for") + "larger for\nrainfed plots".length);
+  eq("an anchor is the quote and thirty characters either side",
+    [a.quote, a.prefix.length <= 30, a.suffix.length <= 30], ["larger for\nrainfed plots", true, true]);
+  const back = findAnchor(page, a);
+  ok("and the quote finds itself", back !== null && page.slice(back.start, back.end) === a.quote,
+    JSON.stringify(back));
+  const twice = findAnchor(page, { quote: "Weather shocks reduce farm income", prefix: "rainfed plots. ", suffix: " for tenants" });
+  ok("a phrase a paper uses twice lands on the one that was marked, by its neighbours",
+    twice !== null && twice.start === page.lastIndexOf("Weather shocks reduce farm income"), JSON.stringify(twice));
+  const first = findAnchor(page, { quote: "Weather shocks reduce farm income", prefix: "", suffix: " by 12" });
+  ok("and on the first when the suffix says so", first !== null && first.start === 0, JSON.stringify(first));
+  const wrapped = findAnchor(page, { quote: "larger for rainfed plots", prefix: "", suffix: "" });
+  ok("a selection made across a line break finds text the layer broke differently",
+    wrapped !== null && page.slice(wrapped.start, wrapped.end) === "larger for\nrainfed plots", JSON.stringify(wrapped));
+  eq("a quote that is not on the page is null rather than a guess", findAnchor(page, { quote: "irrigation", prefix: "", suffix: "" }), null);
+  eq("an empty quote anchors nothing", findAnchor(page, { quote: "  ", prefix: "", suffix: "" }), null);
+
+  const me = "0b3f1d4e-8a7b-4c6d-9e2f-1a2b3c4d5e6f";
+  const hash = "a".repeat(64);
+  const key = fileKey(me, hash, "pdf");
+  eq("a file key is the reader's prefix, the hash and the extension", key, `research/${me}/${hash}.pdf`);
+  ok("and the reader owns it", ownsKey(me, key));
+  ok("and nobody else does", !ownsKey("1b3f1d4e-8a7b-4c6d-9e2f-1a2b3c4d5e6f", key));
+  ok("a key with a path in it is not a key", !ownsKey(me, `research/${me}/../other/${hash}.pdf`));
+  eq("the extension for a type the Worker accepts", [extOfType("application/pdf"), extOfType("image/jpeg; charset=binary"), extOfType("text/x-python")], ["pdf", "jpg", null]);
+  eq("and for a name, where the browser sent nothing useful", [extOfName("panel.parquet"), extOfName("talk.M4A"), extOfName("notes.docx")], ["parquet", "m4a", null]);
+  eq("what kind of thing each is", ["pdf", "html", "mp3", "csv", "png"].map(fileKind), ["pdf", "html", "audio", "data", "image"]);
+  ok("every accepted type has an extension and the other way round", Object.keys(FILE_TYPES).every((ext) => extOfType(FILE_TYPES[ext]) === ext));
+  eq("five meanings, in the order of the keys", [...HIGHLIGHT_MEANINGS], ["claim", "evidence", "method", "quote", "question"]);
+}
+
+
 if (failures.length) {
   console.error(`research: ${failures.length} failed, ${passed} passed`);
   for (const f of failures) console.error(`  x ${f}`);

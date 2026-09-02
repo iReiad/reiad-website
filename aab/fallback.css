@@ -11493,5 +11493,60 @@
   :root[data-density="dense"] .rs-page { --gap: var(--s-3); --step: var(--s-4); }
   :root[data-density="dense"] .rs-row { padding-block: var(--s-1); }
 
+  .rs-reader {
+    display: grid;
+    gap: var(--gap);
+    align-items: start;
+    min-inline-size: 0;
+  }
+  @media (min-width: 60rem) {
+    .rs-reader { grid-template-columns: minmax(0, 1fr) minmax(16rem, 22rem); }
+    .rs-reader > .rs-side {
+      position: sticky;
+      top: calc(var(--top-space) + var(--top-gap) + 3.5rem);
+      max-block-size: calc(100vh - var(--top-space) - var(--top-gap) - 4.5rem);
+      overflow: auto;
+      padding-inline-end: var(--s-1);
+    }
+  }
+  .rs-pages { display: grid; gap: var(--s-4); justify-items: center; min-inline-size: 0; }
+  .rs-sheet { position: relative; max-inline-size: 100%; }
+  .rs-sheet canvas { display: block; max-inline-size: 100%; block-size: auto; }
+  .rs-textlayer {
+    position: absolute;
+    inset: 0;
+    overflow: hidden;
+    line-height: 1;
+    -webkit-text-size-adjust: none;
+    text-size-adjust: none;
+    forced-color-adjust: none;
+  }
+  .rs-textlayer span, .rs-textlayer br {
+    position: absolute;
+    white-space: pre;
+    color: transparent;
+    transform-origin: 0 0;
+    cursor: text;
+  }
+  .rs-textlayer ::selection { background: color-mix(in oklab, var(--accent) 38%, transparent); color: transparent; }
+
+  .rs-mark {
+    position: absolute;
+    background: color-mix(in oklab, var(--tone, var(--accent)) 34%, transparent);
+    mix-blend-mode: multiply;
+    border-radius: var(--radius-xs);
+  }
+  .rs-mark[data-on] { outline: 2px solid var(--tone, var(--accent)); outline-offset: 1px; }
+  .rs-capture { max-inline-size: var(--measure); line-height: 1.65; }
+  .rs-capture img { max-inline-size: 100%; block-size: auto; }
+
+  .rs-hl-bar { position: absolute; z-index: 3; display: flex; gap: 2px; padding: 3px; }
+
+  .rs-hl-card { border-inline-start: 3px solid var(--tone, var(--accent)); padding-inline-start: var(--s-3); }
+  .rs-hl-card[aria-current="true"] { background: var(--paper-sunk); }
+  .rs-hl-card blockquote { margin: 0; font-size: var(--t-2); line-height: 1.45; }
+  @media (max-width: 59.99rem) {
+    .rs-pages { gap: var(--s-3); }
+  }
   @media print { .rs-list { display: none; } }
 }

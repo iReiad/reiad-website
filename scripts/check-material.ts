@@ -229,6 +229,12 @@ const NOT_GLASS = new Map<string, string>([
      colour down a list of two hundred rows in the Research
      Studio. A bevel on it is detail nobody can resolve. */
   ["rs-row-dot", "a mark: the 8px dot carrying one row's colour, one per row of a list"],
+  /* A HIGHLIGHT IS A MARK ON THE PAGE, not a thing on it. A
+     rectangle of the meaning's colour multiplied over the words,
+     so they show through; a bevel on it would be a box drawn on
+     somebody's paper. The outline on the one that is current is
+     the same outline a focus ring is. */
+  ["rs-mark", "a mark: a highlight's rectangle over the words it marks, multiplied so they show through"],
   /* THE ONE SURFACE ON THIS SITE THAT IS MEANT TO BE PAPER.
      It is the sheet somebody hands across a desk in a ten minute
      appointment, and a clinician reading a translucent panel with
