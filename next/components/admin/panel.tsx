@@ -285,11 +285,12 @@ export function AdminPanel() {
         <Surface material="pane" className="ad-panel">
           <h3>Research</h3>
           <p className="ad-quiet">
-            A question, what has been read about it, what is left, and what on
-            this site it touches. Threads are rows under your own account.
+            The desk that lived here is the Research Studio now, under
+            /tools, with the library, the notebook, the questions and the
+            plan. Its threads went with it.
           </p>
-          <ButtonLink kind="ghost" size="sm" href="/admin/research">
-            Open the desk
+          <ButtonLink kind="ghost" size="sm" href="/tools/research">
+            Open the studio
           </ButtonLink>
         </Surface>
       ) : null}

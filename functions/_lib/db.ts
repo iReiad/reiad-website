@@ -147,6 +147,10 @@ const MIGRATIONS = [
      ON school_lessons (school, stage, position)`,
   `CREATE TABLE IF NOT EXISTS throttle (
      bucket TEXT PRIMARY KEY, count INTEGER NOT NULL DEFAULT 0, resets TEXT NOT NULL)`,
+  /* The Research Studio's lookup cache. Public data keyed by the
+     request: see functions/_lib/scholar.ts. */
+  `CREATE TABLE IF NOT EXISTS scholar_cache (
+     key TEXT PRIMARY KEY, json TEXT NOT NULL, fetched_at TEXT NOT NULL)`,
 ];
 
 /* Columns added after the first release.

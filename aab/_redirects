@@ -70,6 +70,12 @@
 /tools/stock.html     /tools/stock          301
 /tools/live.html      /tools/live           301
 /desk/index.html      /admin                301
+# The research desk that lived under /admin is the Research Studio
+# as of 2 September 2026 (RESEARCH.md), and its threads are that
+# studio's questions. The address left run_worker_first in the
+# same commit, which is what lets these two fire.
+/admin/research       /tools/research/questions   301
+/admin/research/      /tools/research/questions   301
 /studio/index.html    /studio               301
 /cooking/index.html   /cooking              301
 /travel/index.html    /travel               301

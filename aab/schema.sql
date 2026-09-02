@@ -253,3 +253,12 @@ CREATE TABLE IF NOT EXISTS school_lessons (
 
 CREATE INDEX IF NOT EXISTS idx_school_lessons_order
   ON school_lessons (school, stage, position);
+
+-- The Research Studio's lookup cache: a DOI's record, a book, a
+-- search, keyed by the request and nothing about a reader. Public
+-- data, kept a week; functions/_lib/scholar.ts is the only writer.
+CREATE TABLE IF NOT EXISTS scholar_cache (
+  key        TEXT PRIMARY KEY,
+  json       TEXT NOT NULL,
+  fetched_at TEXT NOT NULL
+);

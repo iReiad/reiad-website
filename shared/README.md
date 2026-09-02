@@ -123,6 +123,26 @@ this repository got written.
   `COUNTS`, never typed, which is the rule at the top of
   `CLAUDE.md`.
 
+- **`research.ts`** what the Research Studio's rows are made of:
+  the vocabularies every table's CHECK constraint carries (source
+  types with a colour and a CSL type each, note kinds, lanes,
+  question kinds and states, project kinds), the shape of a CSL
+  record, and the four pieces of arithmetic every importer needs:
+  which columns a record fills, its citation key, its duplicate
+  hash, and its authors in one line. `RESEARCH.md` is the plan
+  and `scripts/research.test.ts` holds the arithmetic.
+
+- **`research-bib.ts`** BibTeX and RIS, read into CSL-JSON and
+  written back out of it, so an export from any reference manager
+  drops on the library and the library leaves as either. Written
+  rather than depended on: a parser this size can be read in one
+  sitting, and `citation-js` is a megabyte the writing desk will
+  want in stage 4 and the library does not need to import a file.
+
+- **`research-words.ts`** the studio's own phrases in both
+  languages, beside `diet-words.ts` for that file's reason, and
+  in `shared/` because the Android app will draw the same rooms.
+
 - **`widgets.ts`** the catalogue of what the front page can be
   made of, and the layout a reader who has arranged nothing gets.
   The catalogue is DATA, so a widget renamed here is renamed on a

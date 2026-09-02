@@ -160,6 +160,11 @@ const STAGES: Array<[stage: string, entries: Entry[]]> = [
        and a column in the migration nothing can ever fill. The
        arithmetic is scripts/diet.test.ts in the tests stage. */
     "scripts/check-diet.ts",
+    /* RESEARCH.md section 30's page-level half: the pages table
+       against the routes, both halves of every phrase, every
+       vocabulary against the migration, and that the desk it
+       replaced is really gone. */
+    "scripts/check-research.ts",
     "scripts/check-accents.ts",
   ]],
   ["generated", [
@@ -186,6 +191,7 @@ const STAGES: Array<[stage: string, entries: Entry[]]> = [
     "scripts/snapshot.test.ts",
     "scripts/routine.test.ts",
     "scripts/diet.test.ts", "scripts/csv.test.ts",
+    "scripts/research.test.ts",
     "scripts/insights.test.ts", "scripts/activity.test.ts",
     "scripts/widgets.test.ts",
     /* `next/research.test.ts` is deliberately not here beside its

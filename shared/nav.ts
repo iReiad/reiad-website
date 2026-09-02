@@ -202,6 +202,14 @@ export const NAV: NavGroup[] = [
          all, so the entry keeps its promise to anybody who
          presses it. */
       { label: "Diet", sub: "খাদ্য ও ওজন", href: "/tools/diet", icon: "leaf", key: "diet", art: "plate" },
+      /* The Research Studio. RESEARCH.md is the plan. Listed for
+         the reason the routine is: it explains itself signed out
+         and keeps its promise to anybody who presses it. The
+         drawing is `sheets` until a lens is drawn (stage 13). */
+      {
+        label: "Research", sub: "গবেষণা", href: "/tools/research",
+        icon: "microscope", key: "research", art: "sheets", accent: "var(--gold)",
+      },
     ],
   },
   {

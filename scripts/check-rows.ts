@@ -133,6 +133,7 @@ const DESCRIBES = {
   school_stages: "SchoolStageRow",
   school_sections: "SchoolSectionRow",
   school_lessons: "SchoolLessonRow",
+  scholar_cache: "ScholarCacheRow",
 };
 
 let described = 0;
@@ -318,7 +319,9 @@ const VOCABULARIES: Array<{
   },
   {
     what: "targets.kind",
-    pattern: /kind\s+text\s+not\s+null\s+check\s*\(\s*kind\s+in\s*\(([^)]*)\)/,
+    /* Anchored to the targets table: `research_versions.kind` is
+       written the same way and means documents, notes and sheets. */
+    pattern: /create table[^;]*?\btargets\s*\([^;]*?kind\s+text\s+not\s+null\s+check\s*\(\s*kind\s+in\s*\(([^)]*)\)/,
     want: TARGET_KINDS.map((k) => k.id),
     besides: [],
   },

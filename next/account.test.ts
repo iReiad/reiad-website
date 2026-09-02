@@ -167,6 +167,14 @@ const session = (sub: string) => JSON.stringify({
 const ME = "u-1";
 const NOW = new Date().toISOString();
 
+/** The Research Studio's tables, spelled as `aab/src/account-page.ts`
+    spells them: the copy and the erase both spread this list. */
+const RESEARCH_TABLES = [
+  "research_projects", "research_collections", "research_sources", "research_notes",
+  "research_versions", "research_questions", "research_tasks", "research_lists",
+  "research_activity",
+] as const;
+
 /** SOMEBODY ELSE'S PROFILE, and the reason it is here.
     `profiles` is the one table whose select policy is
     `using (true)`, so a read with no `id=eq.` filter returns
@@ -311,9 +319,17 @@ async function open(
     /* One row each, so a copy that stopped carrying one is a
        copy with an empty list where a row was. */
     others: new Map<string, Record<string, unknown>[]>([
-      ["threads", [{ id: "th-1", question: "Are the banks over-provisioned?",
-        state: "open", tags: ["banks"], body: { note: "Three of six." },
-        created_at: NOW, updated_at: NOW }]],
+      /* The Research Studio's nine, one row each, and the row
+         that matters is the question the old desk's thread became:
+         a copy that dropped the studio would drop a year's reading. */
+      ...RESEARCH_TABLES.map((table): [string, Record<string, unknown>[]] => [table, [{
+        id: `${table}-1`, user_id: ME, created_at: NOW, updated_at: NOW,
+        ...(table === "research_questions"
+          ? { text: "Are the banks over-provisioned?", state: "open", body: { carried: true } }
+          : table === "research_sources"
+            ? { type: "article-journal", title: "Weather shocks and farm incomes", key: "rahman2021weather", csl: {} }
+            : {}),
+      }]]),
       ["routines", [{ id: "rt-1", name: "A week", bands: [], tasks: [], is_active: true,
         created_at: NOW, updated_at: NOW }]],
       ["routine_entries", [{ id: "re-1", routine_id: "rt-1", entry_date: "2026-08-01",
@@ -390,7 +406,7 @@ async function open(
 
     /* ---- the five the page reads whole ----
 
-       `threads`, the three routine tables and `broker_tokens`
+       The studio's nine, the three routine tables and `broker_tokens`
        have no module on this page: it asks for all of each,
        once, which is what an export is. They fell through to
        `[]` here until 30 August 2026, so the copy could have
@@ -1093,7 +1109,7 @@ console.log("\nerasing everything");
      them is the request. All five reported success without ever
      being asked for until 30 August 2026. */
   for (const table of [
-    "threads", "routines", "routine_entries", "routine_templates", "broker_tokens",
+    ...RESEARCH_TABLES, "routines", "routine_entries", "routine_templates", "broker_tokens",
   ]) {
     ok(`${table} was erased too`,
       state.sent.some((x) => x.table === table && x.method === "DELETE"),
@@ -1170,7 +1186,15 @@ console.log("\ntaking a copy of everything");
      a table nothing carries; this is the other half of that,
      which is whether the file it actually writes holds one. */
   for (const [table, what] of [
-    ["threads", "the research threads"],
+    ["research_projects", "the studio's projects"],
+    ["research_collections", "its collections"],
+    ["research_sources", "its library"],
+    ["research_notes", "its notes"],
+    ["research_versions", "the versions of them"],
+    ["research_questions", "its questions, the old desk's threads among them"],
+    ["research_tasks", "its tasks"],
+    ["research_lists", "its lists"],
+    ["research_activity", "everything that happened in it"],
     ["routines", "the shape of the week"],
     ["routine_entries", "every day marked on it"],
     ["routine_templates", "the templates this reader made"],

@@ -80,7 +80,17 @@ const CARRIED: Record<string, { copy: string; erase?: string; how?: string }> = 
   diet_phases: { copy: "DIET_TABLES", erase: "DIET_TABLES" },
   diet_labs: { copy: "DIET_TABLES", erase: "DIET_TABLES" },
 
-  threads: { copy: "MINE_TABLES", erase: '"threads"' },
+  /* The Research Studio, RESEARCH.md section 23: one constant
+     spread into both halves, so a tenth table is one line. */
+  research_projects: { copy: "MINE_TABLES", erase: "RESEARCH_TABLES" },
+  research_collections: { copy: "MINE_TABLES", erase: "RESEARCH_TABLES" },
+  research_sources: { copy: "MINE_TABLES", erase: "RESEARCH_TABLES" },
+  research_notes: { copy: "MINE_TABLES", erase: "RESEARCH_TABLES" },
+  research_versions: { copy: "MINE_TABLES", erase: "RESEARCH_TABLES" },
+  research_questions: { copy: "MINE_TABLES", erase: "RESEARCH_TABLES" },
+  research_tasks: { copy: "MINE_TABLES", erase: "RESEARCH_TABLES" },
+  research_lists: { copy: "MINE_TABLES", erase: "RESEARCH_TABLES" },
+  research_activity: { copy: "MINE_TABLES", erase: "RESEARCH_TABLES" },
   routines: { copy: "MINE_TABLES", erase: '"routines"' },
   routine_templates: {
     copy: "MINE_TABLES",
@@ -142,6 +152,14 @@ for (const m of sql.matchAll(
   /create table (?:if not exists )?public\.([a-z_]+)\s*\(([\s\S]*?)\n\);/g)) {
   if (!created.has(m[1])) created.set(m[1], m[2]);
 }
+/* A table a later migration DROPPED is not the reader's any more,
+   and a check that went on demanding it be carried would demand
+   a copy of nothing. `threads` was the first: the research desk's
+   one table, carried into `research_questions` and dropped in the
+   same file. */
+for (const m of sql.matchAll(/drop table (?:if exists )?public\.([a-z_]+)/g)) {
+  created.delete(m[1]);
+}
 
 /* THE RULE, and it is one line: a column named `user_id` pointing
    at `auth.users` means these rows belong to a person and leaving
@@ -177,7 +195,12 @@ const holds = (name: string): Set<string> | null => {
      tables. */
   const body = PAGE.match(new RegExp(`const ${name} = \\[([\\s\\S]*?)\\]`))?.[1];
   if (body === undefined) return null;
-  return new Set([...body.matchAll(/"([a-z_]+)"/g)].map((m) => m[1]));
+  const names = new Set([...body.matchAll(/"([a-z_]+)"/g)].map((m) => m[1]));
+  /* A list spread into this one is held by this one. `MINE_TABLES`
+     opens with `...RESEARCH_TABLES`, so that the nine names are
+     written once and the erase loop spreads the same list. */
+  for (const m of body.matchAll(/\.\.\.([A-Z_]+)/g)) for (const t of holds(m[1]) ?? []) names.add(t);
+  return names;
 };
 
 /* THE TWO HALVES, AS TWO REGIONS. Grepping the whole file was

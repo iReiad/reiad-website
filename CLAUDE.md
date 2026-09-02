@@ -1483,56 +1483,36 @@ no account still gets all of it. Nothing here has that history
 and nothing here works signed out, so a second copy would be a
 second record to keep in step for nobody's benefit.
 
-### A research desk, and it is a route rather than a panel
+### The Research Studio, which replaced the desk
 
-`/admin/research`, `next/components/admin/threads.tsx`, and
-`public.threads` in Supabase under the same row-level security
-everything above has. `ADMIN.md` section 7 is the whole of it;
-three things are worth knowing from here.
+`/tools/research`, and `RESEARCH.md` is the plan: seventeen
+rooms in one pages table, `research_*` tables in Supabase under
+the same row-level security everything above has, the outside
+world reached only through `functions/api/research/`, and a
+check of its own. The desk that was under `/admin` went into it
+on 2 September 2026 and its two lessons are that plan's rules: a
+save is one write and cannot half-succeed, and nothing is typed
+that could have been picked. Three things are worth knowing from
+here.
 
-**It is a route because of what it IS.** Every one of the
-nineteen panels on `/admin` is a list, a queue or a count:
-something looked at for ten seconds. This is a surface somebody
-sits at for an hour, and an hour's work inside a column of
-nineteen panels is work you scroll to.
+**Every row is the reader's own and the browser is the caller.**
+`next/lib/research-api.ts` reads and writes PostgREST with the
+reader's own bearer, exactly as the diet tool does, and every
+write it makes is a line in `research_activity`, written by the
+one function every write passes through so nothing can forget to
+log itself. A patch carries the `updated_at` it last saw, and
+zero rows changed is shown as a conflict rather than silently won.
 
-**ONE JSONB COLUMN, FIVE CONTROLS.** The note, the sources, what
-is left and the three link lists all live in `body`, so a
-fortnight of reading is one write. PostgREST REPLACES a jsonb
-column rather than merging into it, so a control patching
-`{ body: { note } }` deletes the sources, silently, on a page
-that renders perfectly. `patchBody` sends a whole body built from
-the row the last write returned, and `next/threads.test.ts` has a
-PostgREST-shaped fake that applies what it is sent: a fixture
-that merged would pass the broken page, which is
-`next/account.test.ts`'s own lesson.
+**CSL-JSON is the record.** A source is stored whole in that
+shape and the columns beside it are copies filled by
+`fieldsOf()` in `shared/research.ts` on every write, so every
+citation style is a rendering rather than a migration. A citation
+key is made once and never regenerated.
 
-**A controlled field is the reader's, not the row's.** The note
-saves on a debounce, so a write is in flight while somebody is
-still typing, and deriving its value from the row on every change
-of the row means every response puts the server's answer back
-into the box: the half sentence that was in flight replaces the
-whole one under the caret. It HEALS on the next write, which is
-what makes it dangerous, and it is why the check for it watches
-the box across the window rather than reading it at the end. The
-first draft of that check read it at the end and passed against
-the bug it was written for.
-
-**Nothing under Connected is typed.** A check is picked from the
-stock checks already saved and links to `/tools/stock` with that
-check's own query in it, so a thread and `/tools/live` open the
-same analysis. A tool is picked from `shared/nav.ts`. A page is
-picked from the reader's library. A reference somebody typed is a
-reference that can be wrong.
-
-**The keyboard is `f`, and `/` was taken.** `aab/src/app.ts`
-binds `/` and Ctrl+K to the command palette, `?` to the shortcut
-list, `t` to the theme and `g` to a go-to, on `window`, on every
-page of this site. The desk bound `/` for one build and it did
-not fail: both listeners ran, the search box took the focus, and
-a modal took it away again. **A shortcut that collides does the
-other thing**, which is the whole reason a new one is checked
-against that list rather than against what looks free.
+**The keyboard is `f`, `n`, `j`, `k` and `c`, and `/` is
+still the site's.** `next/components/research/keys.ts` refuses
+to bind one of the site's own at bind time, because a shortcut
+that collides does the other thing.
 
 ### What else an account is for
 
@@ -1582,7 +1562,7 @@ at.
   the account holds in it. Leaving should be as easy as arriving.
 - **Erase everything**, which means the account and the mirror.
 
-`next/account.test.ts` is the guard: 128 checks in a real browser
+`next/account.test.ts` is the guard: 157 checks in a real browser
 against a routed Supabase.
 
 #### Those two buttons are lists, and a list goes stale
@@ -2354,7 +2334,7 @@ node next/account.test.ts        # the account's five features, the popover
                                   # menu, the Save under a byline, the panel
                                   # that says what this browser is holding, and
                                   # the picture a Google sign-in brings, under
-                                  # the real CSP (128 checks, needs the Next
+                                  # the real CSP (157 checks, needs the Next
                                   # build and a browser, skips without)
 node aab/sync.test.ts             # a browser's own progress getting into an
                                    # account, resetting, signing out, two
@@ -2379,14 +2359,13 @@ node next/routine-day.test.ts      # a day that renders and does not mark, an
                                    # list being deleted rather than archived
                                    # (53 checks, needs the Next build and a
                                    # browser, skips without)
-node next/threads.test.ts          # the research desk: five controls writing one
-                                   # jsonb column, and whether the fifth is the
-                                   # only one left afterwards. Plus the keyboard,
-                                   # including that `/` still belongs to the
-                                   # site's palette, and whether typing through
-                                   # a save loses the half you typed after the
-                                   # request went out (60 checks, needs the Next
-                                   # build and a browser, skips without)
+node next/research-studio.test.ts  # the Research Studio: the capture box
+                                   # filing a DOI as a source, the library
+                                   # listing it, a signed-out room that invites
+                                   # rather than blanks, and that `/` still
+                                   # belongs to the site's palette (47 checks,
+                                   # needs the Next build and a browser, skips
+                                   # without)
 node next/progress.test.ts         # a page that costs a reader their ticks just
                                    # by being read, where in a piece they had
                                    # got to, and which tools they use

@@ -140,7 +140,11 @@ const handlers: string[] = [];
 for (const file of handlers) {
   const src = readFileSync(file, "utf8")
     .replace(/\/\*[\s\S]*?\*\//g, "")
-    .replace(/^\s*\/\/.*$/gm, "");
+    .replace(/^\s*\/\/.*$/gm, "")
+    /* An `accept` header on a fetch the Worker MAKES is a request
+       rather than a response: the clipper asks a publisher's page
+       for HTML and answers with JSON. */
+    .replace(/\baccept\b["']?\s*:\s*["'`]text\/html[^"'`]*["'`]/gi, "");
   if (!/["'`]text\/html/.test(src)) continue;
   if (/\bhtmlResponse\s*\(/.test(src)) continue;
   failures.push(

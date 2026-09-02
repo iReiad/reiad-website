@@ -47,7 +47,7 @@ to change it.
 reads every tracked file and fails on a path into this repository
 that reaches nothing. A plan for things that do not exist yet cannot
 name them with their extensions, so every file this plan promises is
-written without one (`next/lib/research-pages`, not the `.ts` form),
+written without one (`next/lib/research-pages.ts`, not the `.ts` form),
 and every file it names WITH an extension is one that exists today.
 That is a rule about this document, and it is also the first thing
 the build gets to delete: once a file exists, the sentence naming it
@@ -209,7 +209,7 @@ studio never translates it without being asked.
 
 ## 3. The floor plan
 
-Seventeen addresses, and the table in `next/lib/research-pages` is
+Seventeen addresses, and the table in `next/lib/research-pages.ts` is
 the count, not this paragraph. Each room has a tone out of the seven
 the rail already themes six schools with, and a drawing out of the
 twelve in `shared/art.ts`, for the reason `next/lib/diet-pages.ts`
@@ -285,7 +285,7 @@ Android app lists it at its next fetch. `microscope` is a name
 `next/lib/school-icons.ts` already draws; `scripts/check-icons.ts`
 would fail on one that was not.
 
-**The pages table.** `next/lib/research-pages`, the same shape as
+**The pages table.** `next/lib/research-pages.ts`, the same shape as
 `next/lib/diet-pages.ts`: `href`, `tab` and `title` in both
 languages, `go`, `dek`, `tone`, `art`, `needsAccount`, and `needs`,
 the rooms this room reads from. The strip across every room and the
@@ -326,7 +326,7 @@ host that is not this site's; `scripts/check-csp.ts` would fail it.
 The desk under `/admin/research` is retired in the studio's first
 stage, and retired properly:
 
-- `next/components/admin/threads.tsx` goes to `archive/`, with the
+- the desk's threads component goes to `archive/desk-research/threads.tsx`, with the
   forty-five `.rd-` rules in `@layer admin` of `next/styles/site.css`
   and the route directory. `scripts/check-css.ts` would otherwise
   report forty-five rules styling nothing.
@@ -344,7 +344,7 @@ stage, and retired properly:
 - `"threads"` leaves `MINE_TABLES` in `aab/src/account-page.ts` in
   the same commit and `"research_questions"` arrives, or
   `scripts/check-account.ts` fails, which is what it is for.
-- `next/threads.test.ts` goes with the desk. Its lesson about a
+- its test goes with it, as `archive/desk-research/threads.test.ts`. Its lesson about a
   controlled field is section 12's, written into the studio's own
   test.
 - The `/admin` panel that linked to the desk links to the studio.
@@ -376,7 +376,7 @@ makes the studio colourful is that the THINGS in it carry colour:
 | the thing | carries | so that |
 | --- | --- | --- |
 | a room | one of the seven tones | the strip is scannable and a room is known before it is read |
-| a source | a tone by type, out of `shared/research` | a case, a paper, a dataset and a verse read as four kinds of thing in one list |
+| a source | a tone by type, out of `shared/research.ts` | a case, a paper, a dataset and a verse read as four kinds of thing in one list |
 | a highlight | one of five colours with a meaning | claim, evidence, method, quote, question; the colours are the five that `scripts/check-contrast.ts` has already measured against both grounds |
 | a code in the codebook | a colour the reader chooses from the seven | a coded transcript reads at a glance |
 | a project | a tone | three projects side by side on the board are three colours |
@@ -384,7 +384,7 @@ makes the studio colourful is that the THINGS in it carry colour:
 | a card in a deck | a scene out of `next/components/card-art.tsx` | the board is a room, not a menu |
 
 Two of those are new tables of colour (source types, highlight
-meanings) and both are DATA in `shared/research`, so the Android app
+meanings) and both are DATA in `shared/research.ts`, so the Android app
 gets them at its next fetch.
 
 **Three panes, and the middle one is the work.** Every room that
@@ -629,7 +629,7 @@ every write.
 | `added_via` | `doi | search | bibtex | ris | zotero | pdf | url | manual | review` | the provenance line on the source page |
 | `deleted_at` | timestamptz | the thirty-day bin |
 
-**The types**, in `shared/research` as a vocabulary with a colour, a
+**The types**, in `shared/research.ts` as a vocabulary with a colour, a
 CSL type and a citation shape each, because a source is not always
 a paper:
 
@@ -985,7 +985,7 @@ prefilled from the extraction cards the reader made while reading
 
 **Quality appraisal** is a checklist per included source, from a
 template (CASP, JBI, or the reader's own), with the score derived and
-the answers kept. Templates are data in `shared/research`.
+the answers kept. Templates are data in `shared/research.ts`.
 
 **Synthesis** is themes: tags across included sources, drawn as the
 gap matrix of section 8 scoped to the review.
@@ -1940,7 +1940,7 @@ The diet tool's arrangement, exactly: both languages in the markup,
 `data-tool-lang` on the root choosing one before the first paint,
 the `<T>` component out of `next/components/diet/lang.tsx` promoted
 to `next/components/ui/` so a third tool does not copy it, and a
-words table `shared/research-words` beside `shared/diet-words.ts`
+words table `shared/research-words.ts` beside `shared/diet-words.ts`
 for every phrase more than one runtime says, so the Android app
 gets the studio's vocabulary at its next fetch.
 
@@ -2242,7 +2242,7 @@ figure numbering by position.
 Against the built routes, with a fixture Supabase the way
 `next/account.test.ts` and `next/diet.test.ts` have one, and the
 fixture is PostgREST-shaped and replaces a jsonb column rather than
-merging, which is `next/threads.test.ts`'s lesson carried forward:
+merging, which is the archived desk test's lesson carried forward:
 
 - the capture box files a DOI as a source, a URL as a capture, a
   `todo` line as a task;
@@ -2312,6 +2312,24 @@ are the ones that make the studio worth opening every day.
 | **11. The assistant and semantic search** | the Anthropic adapter, the task list, notes of kind `assistant`, the cost meter, `research_chunks` with embeddings, the RPC, "ask my library" | reading faster and drafting with the library open | question 6, the grounding test (an answer naming an unknown paper is struck through) |
 | **12. The methods room** | the hub over pieces tagged `method`, the first twelve pieces, the links from every tool to its method | learning a method where it is used | `scripts/check-pieces.ts` |
 | **13. Later, in this order when wanted** | webR in the lab after Python; OCR in the reading room; the canvas in the atlas; the thirteenth drawing (a lens) in `shared/art-svg.ts` for the studio's own card; sharing with comments; the pg_cron backup; the front page's three research widgets; the app's reading room | | |
+
+**Stage 1 landed on 2 September 2026, in the pull request that
+carried this plan.** What it does, as against what it will:
+`shared/nav.ts` has the entry, `next/lib/research-pages.ts` is the
+pages table and every one of its seventeen rooms answers at its
+address, the board's capture box files a DOI, an ISBN, an address,
+BibTeX, RIS, CSL-JSON, a todo and a sentence each as the thing it
+is, the library lists and searches and opens a source page that
+autosaves, the notebook mounts the site's editor, the tasks are
+five lanes, Settings holds the preferences and the projects and
+pulls a Zotero library through the Worker, the archive exports
+JSON, BibTeX and RIS, and
+`supabase/migrations/20260902150000_research.sql` is the nine
+tables. `scripts/check-research.ts` asks its five questions,
+`scripts/research.test.ts` is the arithmetic and
+`next/research-studio.test.ts` drives the board and the library in
+a browser. The rooms stages 2 to 12 open say so on their own page
+rather than answering 404.
 
 **Stage 1 is a week of work and the studio is used from its end.**
 Stages 2 to 5 are the next month, and at the end of stage 5 the
@@ -2708,7 +2726,7 @@ on the desk holds everything in that state, because a rough should
 be easy to start and easy to find again. And `research_activity`
 holds one line for every write the studio makes (the kind, the item,
 the action, a one-line summary, the time), written by
-`next/lib/research-api` on every call so that nothing can forget to
+`next/lib/research-api.ts` on every call so that nothing can forget to
 log itself. The Archive room draws it as the history of the whole
 project, searchable, and the daily log's automatic lines come out of
 it rather than being written twice.

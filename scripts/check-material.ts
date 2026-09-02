@@ -224,6 +224,11 @@ const NOT_GLASS = new Map<string, string>([
      material on any of them would be a second piece of glass
      inside the first. */
   ["art-veil", "a layer of a scene: the inside of a picture's frame, not a surface"],
+  /* A MARK, one order of magnitude down from the dot in a
+     calculator's tab strip: the 8px disc carrying one row's
+     colour down a list of two hundred rows in the Research
+     Studio. A bevel on it is detail nobody can resolve. */
+  ["rs-row-dot", "a mark: the 8px dot carrying one row's colour, one per row of a list"],
   /* THE ONE SURFACE ON THIS SITE THAT IS MEANT TO BE PAPER.
      It is the sheet somebody hands across a desk in a ten minute
      appointment, and a clinician reading a translucent panel with
