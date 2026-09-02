@@ -63,8 +63,13 @@ console.log("\nthe route");
     !existsSync(join(ROOT, "next/app/(site)/admin/layout.tsx")));
 
   /* The desk, which is what the group exists for. */
-  ok("the research desk is a route under it",
-    existsSync(join(ROOT, "next/app/(site)/admin/research/page.tsx")));
+  /* The desk went into the Research Studio on 2 September 2026,
+     and a route that came back under /admin would be the second
+     shell the comment above describes. */
+  ok("the research desk is not a route under it any more",
+    !existsSync(join(ROOT, "next/app/(site)/admin/research")));
+  ok("and the Research Studio is where it went",
+    existsSync(join(ROOT, "next/app/(site)/tools/research/questions/page.tsx")));
 
   const src = read(page);
   ok("it is noindex", /robots:\s*\{[^}]*index:\s*false/.test(src),

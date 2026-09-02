@@ -39,6 +39,7 @@ what anybody is served.
 | `studio.html`, `studio.js` | `aab/studio/`, built from `app/src/studio/**` | 16 August 2026 |
 | `desk.html`, `desk.js` | `desk-react/`, which was `aab/desk/` built from `app/src/**` | 16 August 2026 |
 | `schools/<school>/*.js` | `content/schools.backup.json`, exported from D1 | 16 August 2026 |
+| `desk-research/threads.tsx`, its test | the Research Studio under `/tools/research`, whose questions room carries every thread (`RESEARCH.md`) | 2 September 2026 |
 | `schools-build.test.mjs` | `scripts/check-schools-built.mjs` | 16 August 2026 |
 | `work.html`, `services.html` | `_redirects`, which forwards both to `/portfolio` | 16 August 2026 |
 | `insights.html`, `cooking-index.html`, `travel-index.html`, `reads.js` | Next.js routes, rendered from D1 | 16 August 2026 |

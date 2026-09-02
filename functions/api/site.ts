@@ -69,6 +69,13 @@ import {
   DIET_WORDS, BMI_BANDS, WHTR_BANDS, SEX_FORMS, CUT_SETS,
 } from "../../shared/diet-words.ts";
 import { WIDGETS, HOME_DEFAULT } from "../../shared/widgets.ts";
+import {
+  TONES, SOURCE_TYPES, SOURCE_TYPE_IDS, SOURCE_STATUSES, SOURCE_VIAS, NOTE_KINDS,
+  NOTE_KIND_NAMES, TASK_LANES, LANE_NAMES, QUESTION_KINDS, QUESTION_KIND_NAMES,
+  QUESTION_STATES, EVIDENCE_STANCES, PROJECT_KINDS, PROJECT_KIND_NAMES, PROJECT_STATES,
+  LIST_ITEM_STATES,
+} from "../../shared/research.ts";
+import { RESEARCH_WORDS } from "../../shared/research-words.ts";
 
 /** Half an hour, the same as the market board next door. The
     furniture changes when somebody deploys, so a stale answer is
@@ -165,6 +172,32 @@ export function onRequest(context: RouteContext): Response | Promise<Response> {
            write: sending them is what stops the app spelling them
            a third time. `check-rows.ts` holds all three to the
            migration. */
+        /* The Research Studio's vocabularies and words, spread
+           for the reason everything above is: a source type or a
+           lane added in shared/research.ts reaches a phone at the
+           next fetch. Every one is a CHECK constraint in the
+           migration and check-research.ts holds the two to each
+           other. */
+        research: {
+          tones: [...TONES],
+          sourceTypes: SOURCE_TYPES.map((t) => ({ ...t })),
+          sourceTypeIds: [...SOURCE_TYPE_IDS],
+          sourceStatuses: [...SOURCE_STATUSES],
+          sourceVias: [...SOURCE_VIAS],
+          noteKinds: [...NOTE_KINDS],
+          noteKindNames: { ...NOTE_KIND_NAMES },
+          lanes: [...TASK_LANES],
+          laneNames: { ...LANE_NAMES },
+          questionKinds: [...QUESTION_KINDS],
+          questionKindNames: { ...QUESTION_KIND_NAMES },
+          questionStates: [...QUESTION_STATES],
+          evidenceStances: [...EVIDENCE_STANCES],
+          projectKinds: [...PROJECT_KINDS],
+          projectKindNames: { ...PROJECT_KIND_NAMES },
+          projectStates: [...PROJECT_STATES],
+          listItemStates: [...LIST_ITEM_STATES],
+          words: { ...RESEARCH_WORDS },
+        },
         profile: {
           paces: PACES.map((pace) => ({ ...pace })),
           targetKinds: TARGET_KINDS.map((kind) => ({ ...kind })),

@@ -133,9 +133,18 @@ const DIET_TABLES = [
    the migrations rather than this list: a reader-owned table
    nothing here names fails, and a name here that no table
    answers fails too. */
+/** The Research Studio's tables, RESEARCH.md section 23. Every
+    one is the reader's own rows and every one goes into BOTH
+    halves below in the commit that creates it, which is what
+    `scripts/check-account.ts` reads this list for. */
+const RESEARCH_TABLES = [
+  "research_projects", "research_collections", "research_sources", "research_notes",
+  "research_versions", "research_questions", "research_tasks", "research_lists",
+  "research_activity",
+] as const;
+
 const MINE_TABLES = [
-  /* The research desk. `next/components/admin/threads.tsx`. */
-  "threads",
+  ...RESEARCH_TABLES,
   /* The routine: the shape of somebody's week, and a year of what
      they actually did with it. The second is the bigger loss of
      the two and was the one nothing carried. */
@@ -395,7 +404,7 @@ $("#account-forget")?.addEventListener("click", async () => {
      the foreign key cascades, but a delete that leaves entries
      behind for a moment is a delete somebody could interrupt. */
   for (const table of [
-    "routine_entries", "routines", "routine_templates", "threads", "broker_tokens",
+    "routine_entries", "routines", "routine_templates", ...RESEARCH_TABLES, "broker_tokens",
   ]) {
     if (await readerTable(table, "DELETE") === null) {
       console.warn("account: could not erase", table);

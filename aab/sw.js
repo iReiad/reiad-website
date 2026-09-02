@@ -31,6 +31,17 @@
    login could not have reached anyone either. Bump this whenever a
    precached file changes.
 
+   v233: /fallback.css. @layer research arrived in site.css for the
+        Research Studio (RESEARCH.md): the two-pane room, the row
+        list and the dense setting, and the two pages that are
+        files link the copy.
+
+   v232: /saved.js and /account-page.js. The research desk under
+        /admin went into the Research Studio (RESEARCH.md): the
+        threads half of saved.js is gone, and the account page's
+        two halves carry the studio's nine tables instead of the
+        desk's one.
+
    v231: /fallback.css. Every lesson of deutsch, english and quran
         was blank for a reader whose `tool-lang` was "en". Both
         bodies of a lesson are in the markup and @layer lesson
@@ -2067,7 +2078,7 @@
    imports (crumbs, audience, learn progress) and the hub is a
    different page. Without a bump, a returning reader would be
    served the v3 app.js forever and none of it would appear. */
-const VERSION = "v231";
+const VERSION = "v233";
 const SHELL = `shell-${VERSION}`;
 const RUNTIME = `runtime-${VERSION}`;
 

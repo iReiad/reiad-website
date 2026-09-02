@@ -55,6 +55,7 @@ import { onRequest as schools } from "./functions/api/schools/[[route]].ts";
 import { onRequest as courses } from "./functions/api/courses/[[route]].ts";
 import { onRequest as routine } from "./functions/api/routine/[[route]].ts";
 import { onRequest as diet } from "./functions/api/diet/[[route]].ts";
+import { onRequest as research } from "./functions/api/research/[[route]].ts";
 import { onRequest as admin } from "./functions/api/admin/[[route]].ts";
 import { onRequest as insight } from "./functions/insights/[slug].ts";
 import { onRequest as feeds } from "./functions/feeds/[kind].ts";
@@ -92,6 +93,7 @@ const API_ROUTES = [
   ["/api/courses", courses, "route"],
   ["/api/routine", routine, "route"],
   ["/api/diet", diet, "route"],
+  ["/api/research", research, "route"],
   ["/api/admin", admin, "route"],
 ];
 
@@ -190,12 +192,16 @@ export const NEXT_ROUTES = [
   /^\/tools\/(stock|live|routine|diet)$/i,
   /^\/tools\/routine\/(settings|print|day|year)$/i,
   /^\/tools\/diet\/(you|glossary|goal|trend|year|journal|nutrition|expect|foods|health|summary|habits|keto|recipes|import)$/i,
-  /* The admin panel, and the research desk under it. ADMIN.md is
-     the plan; it is `unlisted` in shared/nav.ts for the reason
-     the course section is. `bare()` takes the trailing slash off
-     before this list is consulted, so /admin/research/ reaches
-     the same route. */
-  /^\/admin(\/research)?$/i,
+  /* The Research Studio, RESEARCH.md: the board, seventeen rooms
+     and their children, as one prefix, so a room added to the
+     table gets this without knowing about it. */
+  /^\/tools\/research(\/.*)?$/i,
+  /* The admin panel. ADMIN.md is the plan; it is `unlisted` in
+     shared/nav.ts for the reason the course section is. The
+     research desk that lived under it went into the Research
+     Studio on 2 September 2026 and `aab/_redirects` sends its
+     address there. */
+  /^\/admin$/i,
   /* The Studio's shell. Its bundle is NOT here: that is a file in
      aab/studio/, and the asset router answers it as it always
      has. `/desk` was the other one and is a 301 to /admin in

@@ -77,6 +77,14 @@ const PUBLIC: Record<string, string> = {
     + "27 puts the reader's own rows in the browser and only this behind a "
     + "Worker. Gating it would only mean the food search stopped working on "
     + "the one page of that tool needing no account.",
+  "research/[[route]].ts":
+    "the Research Studio's lookups: a DOI, an ISBN or a page's own tags, "
+    + "read out of Crossref, OpenAlex, Open Library and the page itself, which "
+    + "the browser may not call because the CSP names none of them. They take "
+    + "no bearer, write nothing but a public cache and never see a reader's "
+    + "rows, which live in Supabase behind the reader's own token. The one "
+    + "route that carries a reader's own key, the Zotero pull, answers only a "
+    + "signed-in reader through readerFrom() and stores nothing.",
   "site.ts":
     "the site's own furniture, which the browser gets as an ES module at "
     + "/content.js and a native client cannot. Every value in it is already "

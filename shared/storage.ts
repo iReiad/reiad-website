@@ -86,6 +86,12 @@ export interface Keep {
 }
 
 export const KEPT: Keep[] = [
+  /* ---------------- the Research Studio ---------------- */
+  { key: "research-dense", where: "local", held: "cache", syncs: false,
+    what: "Whether the Research Studio draws itself with less air around everything, "
+      + "copied from your account so the first paint can read it.",
+    by: "next/components/research/settings.tsx" },
+
   /* ---------------- what a reader has done ---------------- */
   { key: "learn-read", where: "local", held: "progress", syncs: true,
     what: "The money school's lessons you have ticked.",

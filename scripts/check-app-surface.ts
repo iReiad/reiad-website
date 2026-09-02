@@ -125,6 +125,10 @@ const SOURCES = [
      find: a table the site holds, the app draws, and nothing
      sends. */
   "shared/routine.ts",
+  /* The Research Studio's vocabularies and words, which the app
+     will draw the rooms with. */
+  "shared/research.ts",
+  "shared/research-words.ts",
   /* The two vocabularies an account answers with, which are
      also two CHECK constraints. A third added there and not
      sent would be an option the site offers and the app does

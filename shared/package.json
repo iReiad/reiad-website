@@ -27,6 +27,9 @@
     "./csv": "./csv.ts",
     "./bundle": "./bundle.ts",
     "./storage": "./storage.ts",
-    "./lesson-grids": "./lesson-grids.ts"
+    "./lesson-grids": "./lesson-grids.ts",
+    "./research": "./research.ts",
+    "./research-bib": "./research-bib.ts",
+    "./research-words": "./research-words.ts"
   }
 }

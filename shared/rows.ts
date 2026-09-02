@@ -249,6 +249,17 @@ export interface SettingRow {
 /** The public write endpoints, slowed down without the table ever
     holding an IP address: the bucket is a salted hash of the
     caller and the salt rotates daily. */
+/** What the Research Studio's lookups cache: a DOI's record, a
+    book, a search, keyed by the request and nothing about a
+    reader, because a DOI's record is the same for everybody and
+    a rate limit is a shared resource. `functions/_lib/scholar.ts`
+    is the only writer. */
+export interface ScholarCacheRow {
+  key: string;
+  json: string;
+  fetched_at: string;
+}
+
 export interface ThrottleRow {
   bucket: string;
   count: number;
@@ -332,6 +343,7 @@ export const TABLES: Record<string, string> = {
   sessions: "admin sessions",
   settings: "the admin password hash, among other things",
   throttle: "the public write endpoints, slowed down without holding an IP",
+  scholar_cache: "what Crossref, OpenAlex and Open Library answered for one DOI, ISBN or address, kept so the Research Studio never asks twice for the same record",
   school_stages: "a school's ladder",
   school_sections: "a stage's sections",
   school_lessons: "a lesson, and its prose",

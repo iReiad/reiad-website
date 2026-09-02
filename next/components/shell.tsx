@@ -151,7 +151,7 @@ const BOOT = `(function(){var d=document.documentElement;try{`
     school is in the money school. `null` is for a page the rail
     does not list, a case study or an article. */
 export type Current =
-  | "money" | "skills" | "tools" | "stock" | "live" | "routine" | "diet"
+  | "money" | "skills" | "tools" | "stock" | "live" | "routine" | "diet" | "research"
   | "insights"
   | "portfolio"
   | "about" | "contact" | "account" | "deutsch" | "quran" | "english"
