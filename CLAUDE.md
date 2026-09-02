@@ -1562,7 +1562,7 @@ at.
   the account holds in it. Leaving should be as easy as arriving.
 - **Erase everything**, which means the account and the mirror.
 
-`next/account.test.ts` is the guard: 162 checks in a real browser
+`next/account.test.ts` is the guard: 164 checks in a real browser
 against a routed Supabase.
 
 #### Those two buttons are lists, and a list goes stale
@@ -2334,7 +2334,7 @@ node next/account.test.ts        # the account's five features, the popover
                                   # menu, the Save under a byline, the panel
                                   # that says what this browser is holding, and
                                   # the picture a Google sign-in brings, under
-                                  # the real CSP (162 checks, needs the Next
+                                  # the real CSP (164 checks, needs the Next
                                   # build and a browser, skips without)
 node aab/sync.test.ts             # a browser's own progress getting into an
                                    # account, resetting, signing out, two
@@ -2367,7 +2367,7 @@ node next/research-studio.test.ts  # the Research Studio: the capture box
                                    # reader: a PDF drawn from a worker on this
                                    # origin, a highlight anchored to its words
                                    # and found again with its rectangles gone
-                                   # (90 checks, needs the Next build and a
+                                   # (111 checks, needs the Next build and a
                                    # browser, skips without)
 node next/progress.test.ts         # a page that costs a reader their ticks just
                                    # by being read, where in a piece they had

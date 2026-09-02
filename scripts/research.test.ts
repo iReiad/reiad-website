@@ -271,6 +271,32 @@ eq("parseAny reads a single CSL object", parseAny('{"type":"book","title":"x"}')
     h.abstract === "The effect is large" && h.openalex === "W1" && h.oa?.url === "https://x/pdf" && h.cited === 7, JSON.stringify(h));
 }
 
+/* ---------- the writing desk's arithmetic ---------- */
+
+{
+  const W = await import("../shared/research-write.ts");
+  const chip = W.chipHtml({ key: "bashar2020bank", locator: "14" }, "(Bashar, 2020, p. 14)");
+  eq("a chip carries its key and locator in the href", W.chipOf("#cite=bashar2020bank&loc=14"), { key: "bashar2020bank", locator: "14", label: undefined, suppress: false });
+  const html = `<h2>Findings</h2><p>Provisions rose by 12% in Q2 ${chip}.</p><p>The effect is significant.</p><p>Banks lend.<sup><a class="fn-ref" href="#fn-2">2</a></sup> And borrow.<sup><a class="fn-ref" href="#fn-1">1</a></sup></p><h3>Method</h3><p>We use panel data.</p><ol class="fn"><li>First note ${W.chipHtml({ key: "rahman2021weather" }, "Rahman 2021")}</li><li>Second note</li></ol>`;
+  eq("every chip in order", W.keysCited(html), ["bashar2020bank", "rahman2021weather"]);
+  const outline = W.outlineOf(html);
+  eq("the outline is the headings with the words under each", outline.map((h) => [h.level, h.text, h.words > 0]), [[2, "Findings", true], [3, "Method", true]]);
+  eq("words in both scripts", [W.countWords("The rain in Spain"), W.countWords("আমি ভাত খাই। তুমি কি খাবে?"), W.countWords("Bank-level data, 2,400 households")], [4, 6, 5]);
+  const renumbered = W.renumber(html);
+  ok("footnote markers are renumbered by position and the notes follow", /href="#fn-1">1<\/a>.*href="#fn-2">2<\/a>/.test(renumbered) && /<ol class="fn"><li>Second note<\/li><li>First note/.test(renumbered), renumbered.slice(-160));
+  const md = W.toMarkdown(html, "Chapter 3");
+  ok("Markdown carries Pandoc citations and footnotes", md.includes("[@bashar2020bank, p. 14]") && md.includes("Banks lend.[^2]") && md.includes("[^1]: First note [@rahman2021weather]") && md.startsWith("# Chapter 3\n\n## Findings"), md);
+  const tex = W.toLatex(html);
+  ok("LaTeX carries \\cite with the page and a footnote", tex.includes("\\cite[p.~14]{bashar2020bank}") && tex.includes("\\footnote{Second note}") && tex.includes("\\section{Findings}") && tex.includes("12\\%"), tex);
+  const claims = W.claimsOf(html);
+  eq("the claims audit lists the numbers and the claim words, and whether a chip sits in the sentence",
+    claims.map((c) => [c.why, c.cited]), [["number", true], ["claim", false]]);
+  const over = W.overlapsOf("we estimate the effect of rainfall shocks on farm income using panel data from households and find a large fall",
+    [{ name: "Rahman 2021", text: "We estimate the effect of rainfall shocks on farm income using panel data from 2,400 households across four divisions." }]);
+  ok("an unquoted run of eight words shared with a source is found", over.length === 1 && over[0].words >= 12 && over[0].with === "Rahman 2021", JSON.stringify(over));
+  eq("and a short coincidence is not", W.overlapsOf("panel data from households", [{ name: "x", text: "panel data from households" }]), []);
+}
+
 if (failures.length) {
   console.error(`research: ${failures.length} failed, ${passed} passed`);
   for (const f of failures) console.error(`  x ${f}`);

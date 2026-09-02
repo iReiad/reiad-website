@@ -150,7 +150,7 @@ export function Find() {
 
   return (
     <div className="grid gap-4">
-      <Surface material="pane" className="px-5 py-4 grid gap-3" accent={toneVar("teal")}>
+      <Surface material="pane" className="rs-tint px-5 py-4 grid gap-3" accent={toneVar("teal")}>
         <form className="grid gap-3" onSubmit={(e) => { e.preventDefault(); void search(); }}>
           <div className="flex flex-wrap items-end gap-3">
             <div className="grow min-w-[16rem]">
@@ -202,7 +202,7 @@ export function Find() {
               <ul className="grid gap-2">
                 {searches.map((s) => (
                   <li key={s.id} className="grid gap-1 text-t2">
-                    <button type="button" className="text-left font-medium underline-offset-2 hover:underline" onClick={() => rerun(s)}>{s.query}</button>
+                    <button type="button" className="text-left font-medium bg-transparent border-0 p-0 text-inherit cursor-pointer underline-offset-2 hover:underline" style={{ color: "inherit", font: "inherit" }} onClick={() => rerun(s)}>{s.query}</button>
                     <span className="text-t1 text-ink-soft mono">
                       {s.hits !== null ? `${s.hits} · ` : ""}{s.databases.length ? `${s.databases.map(dbName).join(", ")} · ` : ""}{when(s.last_run ?? s.created_at)}
                     </span>

@@ -2499,6 +2499,21 @@
     }
   }
 
+  .cite {
+    text-decoration: none;
+    color: inherit;
+    background: color-mix(in oklab, var(--accent) 12%, transparent);
+    border-radius: var(--radius-xs);
+    padding: 0 0.25em;
+    -webkit-box-decoration-break: clone;
+    box-decoration-break: clone;
+  }
+  .cite:hover { background: color-mix(in oklab, var(--accent) 24%, transparent); }
+  .fn-ref { text-decoration: none; font-weight: 600; padding-inline: 0.1em; }
+  .fn { font-size: var(--t-1); color: var(--ink-soft); padding-inline-start: 1.4em; margin-block-start: var(--step); border-block-start: 1px solid var(--hairline); padding-block-start: var(--s-3); }
+  .fn li { margin-block: 0.35em; }
+  .bib { margin-block-start: var(--step); border-block-start: 1px solid var(--hairline); padding-block-start: var(--s-3); }
+  .bib > div { margin-block: 0.5em; padding-inline-start: 2em; text-indent: -2em; }
   .checklist {
     list-style: none; padding-left: 0;
     margin-block: 20px 26px; display: grid; gap: var(--s-5);
@@ -11492,6 +11507,13 @@
 
   :root[data-density="dense"] .rs-page { --gap: var(--s-3); --step: var(--s-4); }
   :root[data-density="dense"] .rs-row { padding-block: var(--s-1); }
+
+  .rs-tint {
+    --surface-image: linear-gradient(135deg,
+      color-mix(in oklab, var(--accent) 16%, transparent) 0%,
+      color-mix(in oklab, var(--accent) 5%, transparent) 38%,
+      transparent 70%);
+  }
 
   .rs-reader {
     display: grid;

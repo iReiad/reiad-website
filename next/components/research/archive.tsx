@@ -80,7 +80,7 @@ export function Archive() {
 
   return (
     <div className="grid gap-6">
-      <Surface material="pane" className="px-5 py-4 grid gap-3" accent={toneVar("rose")}>
+      <Surface material="pane" className="rs-tint px-5 py-4 grid gap-3" accent={toneVar("rose")}>
         <h2 className="text-t3 font-medium"><W k="rs.arc.export" /></h2>
         <p className="text-t2 text-ink-soft"><W k="rs.arc.export.hint" /></p>
         <div className="flex flex-wrap gap-2 items-center">

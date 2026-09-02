@@ -7,7 +7,7 @@ There are three renderers of this site now: the Worker in
 Next.js route in `next/`. Anything all of them must say the same
 way lives here, and nowhere else.
 
-Today that is twenty-four files and a directory of four, and
+Today that is twenty-five files and two directories, and
 `check-types.ts` fails if one of them is not described below.
 That check exists because this line said six while nine were
 here: `nav.ts` and `routine.ts` arrived in two changes that had
@@ -20,6 +20,10 @@ this repository got written.
   than typed into a sentence, which is the rule `check-content.ts`
   enforces. It has an output: see below.
 
+- **`csl/`** the citation styles the writing desk renders with, each
+  vendored as a string by `scripts/import-csl.ts` and loaded when a
+  document asks for it, plus the en-GB locale and the registry that
+  says which cite in footnotes. RESEARCH.md section 16.
 - **`curricula/`** the four schools' ladders, one file each:
   every stage, section and lesson of `/money/`, `/deutsch/`,
   `/quran/` and `/english/`, with the helpers each school spells
@@ -132,6 +136,11 @@ this repository got written.
   hash, and its authors in one line. `RESEARCH.md` is the plan
   and `scripts/research.test.ts` holds the arithmetic.
 
+- **`research-write.ts`** the writing desk's arithmetic over the
+  article HTML a document is: the citation chips, the outline, the
+  counts in both scripts, Markdown and LaTeX out, the claims audit
+  and the self-overlap check, every one pure so the research test
+  holds it. RESEARCH.md section 16.
 - **`research-bib.ts`** BibTeX and RIS, read into CSL-JSON and
   written back out of it, so an export from any reference manager
   drops on the library and the library leaves as either. Written

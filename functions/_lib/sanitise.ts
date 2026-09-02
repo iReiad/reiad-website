@@ -56,6 +56,8 @@ const ALLOWED_CLASSES: Set<string> = new Set([
   "at-a-glance", "at-a-glance-label", "side-note", "side-note-label",
   "step-list", "checklist", "figures", "fig",
   "table-scroll", "term", "note", "ex",
+  /* the writing desk's chips and blocks; see aab/src/editor.ts */
+  "cite", "fn-ref", "fn", "bib",
   /* Where an interactive block goes. The div is empty and the
      route replaces it; MONEY.md has the whole arrangement. */
   "mount",

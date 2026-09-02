@@ -981,3 +981,53 @@ export async function collectAlerts(w: Who): Promise<(Hit & { alert: string; fou
     return data.ok ? data.hits ?? [] : [];
   } catch { return []; }
 }
+
+/* ============================================================
+   the writing desk: documents and snapshots
+   ============================================================ */
+
+export const DOCUMENT_KINDS = ["chapter", "paper", "proposal", "abstract", "letter", "other"] as const;
+export type DocumentKind = typeof DOCUMENT_KINDS[number];
+export const DOCUMENT_STATES = ["outline", "drafting", "revising", "done"] as const;
+export type DocumentState = typeof DOCUMENT_STATES[number];
+
+export interface Document extends Row {
+  project_id: string | null;
+  kind: DocumentKind;
+  position: number;
+  title: string;
+  outline: { text: string; budget?: number }[];
+  body: string;
+  text: string;
+  budget: number | null;
+  style: string;
+  state: DocumentState;
+  meta: { author?: string; affiliation?: string; abstract?: string };
+  deleted_at: string | null;
+}
+
+const DOCUMENT_COLUMNS = "id,project_id,kind,position,title,outline,body,text,budget,style,state,meta,deleted_at,created_at,updated_at";
+
+export const listDocuments = (w: Who, o: { project?: string; binned?: boolean } = {}): Promise<Document[]> =>
+  rows<Document>(w, "research_documents",
+    `select=${DOCUMENT_COLUMNS.replace(",body,", ",")}&deleted_at=${o.binned ? "not.is.null" : "is.null"}`
+    + (o.project ? `&project_id=eq.${enc(o.project)}` : "") + "&order=position.asc,updated_at.desc&limit=500");
+
+export const getDocument = (w: Who, id: string): Promise<Document | null> =>
+  row<Document>(w, "research_documents", id);
+
+export const addDocument = (
+  w: Who, d: { title: string; kind: DocumentKind; project_id?: string | null; style?: string; position?: number },
+): Promise<Document | null> =>
+  insert<Document>(w, "research_documents", {
+    title: d.title, kind: d.kind, project_id: d.project_id ?? null, style: d.style ?? "apa", position: d.position ?? 0,
+    body: "<p></p>", text: "", outline: [], state: "outline", meta: {},
+  }, d.title.slice(0, 80));
+
+export const saveDocument = (w: Who, d: Document, part: Partial<Document>, seen?: string): Promise<PatchAnswer<Document>> =>
+  patch<Document>(w, "research_documents", d.id, part, d.title.slice(0, 80) || d.kind, seen);
+
+/** A named version: "sent to supervisor 14 May". Always kept,
+    whatever the ten-minute rule says. */
+export const snapshot = (w: Who, d: Document, label: string): Promise<void> =>
+  keepVersion(w, "document", d.id, d.body, label);

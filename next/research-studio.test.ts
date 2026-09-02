@@ -143,6 +143,8 @@ const seed = (): Record<string, Row[]> => ({
   research_activity: [],
   research_highlights: [],
   research_searches: [],
+  research_documents: [],
+  research_versions: [],
   research_projects: [],
   research_collections: [],
   research_lists: [],
@@ -214,7 +216,7 @@ async function open(path: string, { signedIn = true }: { signedIn?: boolean } = 
   page.on("console", (m) => {
     const t = m.text();
     if (/Minified React error #(418|423|425)|did not match|Hydration failed/.test(t)) errors.push(t);
-    if (m.type() === "error" && process.env.DEBUG) console.log("console:", t.slice(0, 300));
+    if ((m.type() === "error" || m.type() === "warning") && process.env.DEBUG && !/fonts|ERR_FAILED|404|view-transition/.test(t)) console.log("console:", t.slice(0, 400));
   });
   await page.route("https://fonts.googleapis.com/**", (r: Route) => r.abort());
 
@@ -277,7 +279,8 @@ async function open(path: string, { signedIn = true }: { signedIn?: boolean } = 
         made += 1;
         const now = new Date().toISOString();
         /* What Postgres fills in: the one default a page reads back. */
-        const defaults = table === "research_sources" ? { status: "unread", priority: 0, files: [], tags: [], projects: [], collections: [] } : {};
+        const defaults = table === "research_sources" ? { status: "unread", priority: 0, files: [], tags: [], projects: [], collections: [] }
+          : table === "research_documents" ? { position: 0, outline: [], body: "<p></p>", text: "", budget: null, style: "apa", state: "outline", meta: {}, deleted_at: null } : {};
         const row: Row = { ...defaults, ...p, id: `${table.replace("research_", "")}-${made}-new`, user_id: ME, created_at: now, updated_at: now };
         held.unshift(row);
         return row;
@@ -370,7 +373,7 @@ const firstOf = (s: Sent | undefined): Record<string, unknown> =>
    1. signed out, a room invites rather than blanks
    ============================================================ */
 
-for (const path of ["/tools/research", "/tools/research/library", "/tools/research/read", "/tools/research/find"]) {
+for (const path of ["/tools/research", "/tools/research/library", "/tools/research/read", "/tools/research/find", "/tools/research/write"]) {
   const { page, errors } = await open(path, { signedIn: false });
   const words = await bodyText(page);
   ok(`${path} signed out says whose it is`, words.includes("This is yours"), words.slice(0, 200));
@@ -656,6 +659,84 @@ for (const path of ["/tools/research", "/tools/research/library", "/tools/resear
   ok("switching the alert on copies the search to D1 for the cron", alerts.some((a) => a.startsWith("PUT /api/research/alerts")), alerts.join(","));
   ok("and the row carries the flag", sent.some((x) => x.method === "PATCH" && x.path.includes("research_searches") && (x.body as { alert?: boolean }).alert === true));
   ok("and none of it threw", errors.length === 0, errors.join(" | "));
+  await page.close();
+}
+
+/* ============================================================
+   6. the writing desk: a chip, a style, a footnote, an export
+   ============================================================ */
+
+{
+  const { page, errors, sent, rows } = await open("/tools/research/write");
+  await page.locator("#rs-d-new").fill("Chapter 3: weather shocks");
+  await page.locator("#rs-d-new").press("Enter");
+  await page.waitForTimeout(900);
+  const made = firstOf(posts(sent, "research_documents")[0]);
+  ok("a document is a row: kind, style and an empty body", made.title === "Chapter 3: weather shocks" && made.kind === "chapter" && made.style === "apa", JSON.stringify(made));
+  await page.waitForSelector(".rs-editor", { timeout: 10000 }).catch(() => null);
+  ok("the site's editor is mounted for it", await page.locator(".rs-editor[contenteditable]").count() === 1);
+
+  /* ---- type, cite, and read the chip back ---- */
+  await page.locator(".rs-editor").click();
+  await page.keyboard.type("Farm incomes fall after a shock ");
+  await page.keyboard.press("@");
+  await page.waitForTimeout(400);
+  const byKey = await page.locator("#rs-c-q").count() === 1;
+  ok("@ in the text opens the picker over the library", byKey);
+  if (!byKey) { await page.getByRole("button", { name: /Cite|উদ্ধৃত করুন/ }).first().click(); await page.waitForTimeout(300); }
+  if (!await page.locator("#rs-c-q").count()) { failures.push("no picker at all"); await page.close(); await browser.close(); server.close(); process.exit(1); }
+  await page.locator("#rs-c-q").fill("weather");
+  await page.locator("#rs-c-loc").fill("14");
+  await page.locator("#rs-c-loc").press("Enter");
+  await page.waitForTimeout(2500);
+  const chips = await page.locator(".rs-editor a.cite").count();
+  ok("a chip lands in the text", chips === 1, `${chips} chip(s)`);
+  if (!chips) { failures.push(`no chip: ${(await page.locator(".rs-editor").innerHTML()).slice(0, 300)}`); await page.close(); await browser.close(); server.close(); console.log(failures.join("\n")); process.exit(1); }
+  const href = await page.locator(".rs-editor a.cite").first().getAttribute("href") ?? "";
+  ok("carrying the key and the locator in its href", href.startsWith("#cite=rahman2021weather") && href.includes("loc=14"), href);
+  const apa = (await page.locator(".rs-editor a.cite").first().textContent() ?? "").trim();
+  ok("and rendered by citeproc in APA", /Rahman.*2021.*p\. ?14/.test(apa), apa);
+  await page.waitForTimeout(800);
+  const bibText = await page.locator(".bib").count() ? await page.locator(".bib").first().textContent() ?? "" : "";
+  ok("the bibliography is made from the chips, never typed", bibText.includes("Rahman") && bibText.includes("Weather shocks"), bibText.slice(0, 160));
+  ok("a cited source moves to status cited",
+    sent.some((x) => x.method === "PATCH" && x.path.includes("research_sources") && x.path.includes("s-1") && (x.body as { status?: string }).status === "cited"));
+  const saved = sent.filter((x) => x.method === "PATCH" && x.path.includes("research_documents")).map((x) => x.body as { body?: string });
+  ok("the body is saved with the chip in it", saved.some((b) => (b.body ?? "").includes("#cite=rahman2021weather")), `${saved.length} save(s)`);
+
+  /* ---- the same chip in OSCOLA is a different rendering ---- */
+  await page.locator("#rs-d-style").selectOption("oscola");
+  await page.waitForTimeout(2500);
+  const oscola = (await page.locator(".rs-editor a.cite").first().textContent() ?? "").trim();
+  ok("changing the style renders every chip again out of the same href", oscola !== apa && oscola.length > 0, `apa=${apa} oscola=${oscola}`);
+  ok("and the row remembers the style", sent.some((x) => x.method === "PATCH" && x.path.includes("research_documents") && (x.body as { style?: string }).style === "oscola"));
+
+  /* ---- a footnote ---- */
+  await page.locator(".rs-editor").click();
+  await page.keyboard.press("End");
+  await page.getByRole("button", { name: /Footnote|পাদটীকা/ }).click();
+  await page.waitForTimeout(400);
+  ok("a footnote is a marker in the text and a note at the foot, numbered by position",
+    await page.locator(".rs-editor sup a.fn-ref").count() === 1 && await page.locator(".rs-editor ol.fn li").count() === 1
+      && (await page.locator(".rs-editor sup a.fn-ref").first().textContent()) === "1",
+    (await page.locator(".rs-editor").innerHTML()).slice(-400));
+
+  /* ---- exports ---- */
+  await page.getByRole("button", { name: /^Export$|^রপ্তানি$/ }).click();
+  await page.waitForTimeout(1500);
+  ok("the exports are offered as files: Word, Markdown, LaTeX and BibTeX",
+    await page.locator('a[download$=".docx"]').count() === 1 && await page.locator('a[download$=".md"]').count() === 1
+      && await page.locator('a[download$=".tex"]').count() === 1 && await page.locator('a[download$=".bib"]').count() === 1);
+  const md = await page.evaluate(async () => {
+    const a = document.querySelector<HTMLAnchorElement>('a[download$=".md"]');
+    return a ? fetch(a.href).then((r) => r.text()) : "";
+  });
+  ok("and the Markdown carries the Pandoc citation with its page", md.includes("[@rahman2021weather, p. 14]"), md.slice(0, 200));
+
+  ok("the outline pane lists no heading yet and the counts are derived",
+    /words|শব্দ/.test(await page.locator(".rs-main").textContent() ?? ""));
+  ok("and none of it threw", errors.length === 0, errors.join(" | "));
+  void rows;
   await page.close();
 }
 

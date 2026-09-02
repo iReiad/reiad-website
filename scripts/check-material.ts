@@ -235,6 +235,11 @@ const NOT_GLASS = new Map<string, string>([
      somebody's paper. The outline on the one that is current is
      the same outline a focus ring is. */
   ["rs-mark", "a mark: a highlight's rectangle over the words it marks, multiplied so they show through"],
+  /* A CITATION CHIP IS A TINT ON WORDS in a line of prose, the
+     way a highlight is on a page: it is read, never pressed, and a
+     bevel on a run of words inside a sentence is a box drawn
+     through the line. */
+  ["cite", "a mark: a citation chip's tint on the words it renders, inline in prose"],
   /* THE ONE SURFACE ON THIS SITE THAT IS MEANT TO BE PAPER.
      It is the sheet somebody hands across a desk in a ten minute
      appointment, and a clinician reading a translucent panel with

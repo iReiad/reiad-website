@@ -2371,6 +2371,27 @@ at the next visit. Not yet from section 10: ORCID, the law shelf,
 the Islamic finance shelf and the data shelf, each of which is an
 adapter in the same shape and lands with the room that needs it.
 
+**Stage 4 landed the same day, in its first form.** What it does:
+a document is a `research_documents` row and
+`/tools/research/write` is the desk over it, the site's editor with
+a citation chip (`@` or the button opens a picker over the library,
+a page after it is the locator) whose href holds the key and whose
+text is what `next/lib/cite.ts` rendered last through citeproc,
+with nine styles vendored as strings under `shared/csl/` by
+`scripts/import-csl.ts`; the whole document is rendered again when
+a chip lands or the style changes, the bibliography under it is the
+engine's, and a cited source moves to `cited`. Footnotes are a
+marker and a note numbered by position, and a note style renders a
+note's chips as one citation with ibid. `shared/research-write.ts`
+is the outline, the counts in both scripts, Markdown with Pandoc
+citations, a LaTeX skeleton with the cited BibTeX, the claims audit
+and the self-overlap check; `next/lib/export-docx.ts` is Word with
+real footnotes and a bibliography. A named snapshot is a version.
+Not yet from section 16: figures from runs, the glossary and the
+abbreviations list, the outline dragged into order, Google Docs and
+a piece on this site, and Vancouver, which the styles repository no
+longer carries under that name.
+
 **Stage 1 is a week of work and the studio is used from its end.**
 Stages 2 to 5 are the next month, and at the end of stage 5 the
 studio does everything the old desk did and everything a reference

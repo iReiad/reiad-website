@@ -30,6 +30,9 @@
     "./lesson-grids": "./lesson-grids.ts",
     "./research": "./research.ts",
     "./research-bib": "./research-bib.ts",
-    "./research-words": "./research-words.ts"
+    "./research-words": "./research-words.ts",
+    "./research-write": "./research-write.ts",
+    "./csl": "./csl/index.ts",
+    "./csl/*": "./csl/*.ts"
   }
 }

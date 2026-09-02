@@ -59,7 +59,7 @@ export function Queue() {
   if (!w) return <SignedOut answered={answered} />;
 
   return (
-    <Surface material="pane" className="px-5 py-4 grid gap-3">
+    <Surface material="pane" className="rs-tint px-5 py-4 grid gap-3">
       <h2 className="text-t3 font-medium"><W k="rs.read.queue" /> {rows ? <Chip>{rows.length}</Chip> : null}</h2>
       <p className="text-t2 text-ink-soft"><W k="rs.read.queue.hint" /></p>
       {rows === null ? <p className="text-t2 text-ink-soft"><W k="rs.moment" /></p>

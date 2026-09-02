@@ -169,7 +169,7 @@ export function Board() {
   return (
     <div className="grid gap-6">
       {/* ---- the capture line ---- */}
-      <Surface material="pane" className="px-5 py-4 grid gap-3" accent={toneVar("gold")}>
+      <Surface material="pane" className="rs-tint px-5 py-4 grid gap-3" accent={toneVar("gold")}>
         <form
           className="flex flex-wrap items-end gap-3"
           onSubmit={(e) => { e.preventDefault(); void capture(); }}
@@ -200,7 +200,7 @@ export function Board() {
 
       <div className="grid gap-6 lg:grid-cols-2">
         {/* ---- today ---- */}
-        <Surface material="pane" className="px-5 py-4 grid gap-3" accent={toneVar("gold")}>
+        <Surface material="pane" className="rs-tint px-5 py-4 grid gap-3" accent={toneVar("gold")}>
           <h2 className="text-t3 font-medium flex items-center gap-2">
             <Icon name="calendar" size={18} /> <W k="rs.board.today" />
           </h2>
@@ -221,7 +221,7 @@ export function Board() {
         </Surface>
 
         {/* ---- pick up where you left off ---- */}
-        <Surface material="pane" className="px-5 py-4 grid gap-3" accent={toneVar("blue")}>
+        <Surface material="pane" className="rs-tint px-5 py-4 grid gap-3" accent={toneVar("blue")}>
           <h2 className="text-t3 font-medium flex items-center gap-2">
             <Icon name="keep" size={18} /> <W k="rs.board.resume" />
           </h2>
@@ -238,7 +238,7 @@ export function Board() {
         </Surface>
 
         {/* ---- the inbox ---- */}
-        <Surface material="pane" className="px-5 py-4 grid gap-3" accent={toneVar("plum")}>
+        <Surface material="pane" className="rs-tint px-5 py-4 grid gap-3" accent={toneVar("plum")}>
           <h2 className="text-t3 font-medium flex items-center gap-2">
             <Icon name="note" size={18} /> <W k="rs.board.inbox" />
             {inbox.length ? <Chip>{inbox.length}</Chip> : null}
@@ -259,7 +259,7 @@ export function Board() {
         </Surface>
 
         {/* ---- one search over everything ---- */}
-        <Surface material="pane" className="px-5 py-4 grid gap-3" accent={toneVar("teal")}>
+        <Surface material="pane" className="rs-tint px-5 py-4 grid gap-3" accent={toneVar("teal")}>
           <h2 className="text-t3 font-medium flex items-center gap-2">
             <Icon name="search" size={18} /> <W k="rs.board.search" />
           </h2>
