@@ -240,7 +240,7 @@ for (const s of ["doi", "isbn", "url", "bib", "todo", "note", "dup", "fail"]) if
   same("REVIEW_STATES", "research_reviews", "state", REVIEW_STATES);
   same("RECORD_STAGES", "research_review_records", "stage", RECORD_STAGES);
   same("RECORD_STAGES", "research_review_records", "decision2", RECORD_STAGES);
-  same("DOCUMENT_KINDS", "research_documents", "kind", ["chapter", "paper", "proposal", "abstract", "letter", "other"]);
+  same("DOCUMENT_KINDS", "research_documents", "kind", ["chapter", "paper", "proposal", "abstract", "letter", "other", "slides"]);
   same("PROJECT_STATES", "research_projects", "state", PROJECT_STATES);
   same("TONES", "research_projects", "tone", TONES);
 }

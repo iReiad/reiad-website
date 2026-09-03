@@ -1092,6 +1092,22 @@ export const RESEARCH_WORDS: Record<string, Phrase> = {
   "rs.rev.word": { en: "Word table", bn: "Word ছক" },
   "rs.rev.word.search": { en: "Search log", bn: "খোঁজের লগ" },
   "rs.rev.word.extract": { en: "Extraction sheet", bn: "নিষ্কাশনের ছক" },
+
+  /* ---- the writing desk's deferred four ---- */
+  "rs.write.slides": { en: "Slides", bn: "স্লাইড" },
+  "rs.write.deck": { en: "Deck", bn: "স্লাইড দৃশ্য" },
+  "rs.write.figure": { en: "Figure", bn: "চিত্র" },
+  "rs.write.figure.insert": { en: "Insert a figure", bn: "চিত্র বসান" },
+  "rs.write.figure.hint": { en: "Pick a run from the lab. Its chart, or its table, lands at the caret.", bn: "ল্যাবের একটা রান বাছুন। এর চার্ট বা ছক কার্সরে বসবে।" },
+  "rs.write.outline.up": { en: "Move up", bn: "ওপরে সরান" },
+  "rs.write.outline.down": { en: "Move down", bn: "নিচে সরান" },
+  "rs.write.glossary": { en: "Glossary", bn: "শব্দকোষ" },
+  "rs.write.glossary.hint": { en: "Terms marked with a definition, and abbreviations, read out of the text.", bn: "সংজ্ঞাসহ চিহ্নিত শব্দ, আর সংক্ষেপ, লেখা থেকে পড়া।" },
+  "rs.write.glossary.empty": { en: "No terms or abbreviations found yet.", bn: "এখনো কোনো শব্দ বা সংক্ষেপ মেলেনি।" },
+  "rs.write.glossary.insert": { en: "Insert glossary", bn: "শব্দকোষ বসান" },
+  "rs.write.abbr": { en: "Abbreviations", bn: "সংক্ষেপ" },
+  "rs.write.abbr.warn": { en: "used before it is defined", bn: "সংজ্ঞার আগেই ব্যবহৃত" },
+  "rs.write.abbr.insert": { en: "Insert abbreviations", bn: "সংক্ষেপ বসান" },
 };
 
 /** One phrase, or a loud marker for a key nobody wrote. */
