@@ -2,28 +2,33 @@
    lib/duck.ts: DuckDB in the browser, loaded once. RESEARCH.md
    section 14.
 
-   The engine and its worker are chunks of this build, named by
-   URL so Turbopack emits them under this origin: `script-src` is
-   'self' and the WASM needs 'wasm-unsafe-eval', which both header
-   lists carry. Nothing of the data passes through the Worker after
-   the upload: a file is fetched on its ticket and registered as a
-   buffer here. The first open costs the engine's download, about
-   thirty megabytes, cached by the browser after; the lab says so
-   before it asks.
+   The engine and its worker are served by the Worker at
+   /api/engine/duckdb-wasm/<version>/<file>, fetched once from their
+   CDN and cached at the edge, because DuckDB's WASM is 35 MB and a
+   Worker's static asset may be 25 MiB at most: as a chunk of this
+   build it deployed nowhere. `script-src` is 'self' and the WASM
+   needs 'wasm-unsafe-eval', which both header lists carry. Nothing
+   of the data passes through the Worker after the upload: a file is
+   fetched on its ticket and registered as a buffer here. The first
+   open costs the engine's download, cached by the browser after;
+   the lab says so before it asks. The version here and in
+   functions/api/engine/[[route]].ts move together.
    ============================================================ */
 
 import type { AsyncDuckDB, AsyncDuckDBConnection } from "@duckdb/duckdb-wasm";
 
 export interface Duck { db: AsyncDuckDB; conn: AsyncDuckDBConnection }
 
+const ENGINE = "/api/engine/duckdb-wasm/1.29.0";
+
 let once: Promise<Duck> | null = null;
 
 export function duck(): Promise<Duck> {
   once ??= (async () => {
     const lib = await import("@duckdb/duckdb-wasm");
-    const worker = new Worker(new URL("../node_modules/@duckdb/duckdb-wasm/dist/duckdb-browser-eh.worker.js", import.meta.url));
+    const worker = new Worker(`${ENGINE}/duckdb-browser-eh.worker.js`);
     const db = new lib.AsyncDuckDB(new lib.ConsoleLogger(lib.LogLevel.WARNING), worker);
-    await db.instantiate(new URL("../node_modules/@duckdb/duckdb-wasm/dist/duckdb-eh.wasm", import.meta.url).href);
+    await db.instantiate(new URL(`${ENGINE}/duckdb-eh.wasm`, location.origin).href);
     const conn = await db.connect();
     return { db, conn };
   })();

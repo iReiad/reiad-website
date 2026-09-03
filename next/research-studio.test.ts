@@ -98,6 +98,8 @@ const server = createServer(async (req, res) => {
     ? join(BUILD, `server/app${path}.html`)
     : path.startsWith("/_next/static/")
       ? join(BUILD, "static", path.slice("/_next/static/".length))
+      : path.startsWith("/api/engine/duckdb-wasm/")
+        ? join(HERE, "node_modules/@duckdb/duckdb-wasm/dist", path.split("/").pop() ?? "")
       : join(AAB, path.replace(/^\//, ""));
   try {
     const body = await readFile(file);
@@ -329,6 +331,9 @@ async function open(path: string, { signedIn = true }: { signedIn?: boolean } = 
   const calendar: { ics: string }[] = [];
   await page.route("**/api/**", (r: Route) => {
     const u = new URL(r.request().url());
+    /* The engine's two files are the server's, exactly as the Worker
+       would answer them under this origin. */
+    if (u.pathname.startsWith("/api/engine/")) return r.fallback();
     const answer = (data: unknown, status = 200): Promise<void> =>
       r.fulfill({ status, contentType: "application/json", body: JSON.stringify(data) });
     if (u.pathname.startsWith("/api/research/lookup/doi/")) {

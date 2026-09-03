@@ -54,6 +54,13 @@ const API = join(ROOT, "functions", "api");
    and a NEW ungated one is not covered by somebody else's
    entry. */
 const PUBLIC: Record<string, string> = {
+  "engine/[[route]].ts":
+    "the lab's engine (RESEARCH.md section 14): DuckDB's 35 MB WASM and its "
+    + "worker, two public files at one pinned version, fetched once from their "
+    + "CDN and answered from the edge cache under this origin, because a "
+    + "Worker's static asset may be 25 MiB at most and connect-src is 'self'. "
+    + "No bearer because new Worker(url) cannot carry one; a path not on the "
+    + "list is a 404, never a proxy.",
   "news.ts":
     "the market board on the Insights hub. Public headlines, raced from two "
     + "public endpoints, cached at the edge.",
