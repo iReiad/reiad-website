@@ -2,7 +2,7 @@ import type { MethodLesson } from "../research-methods";
 
 export const LESSON: MethodLesson = {
   slug: "event-study-by-hand",
-  minutes: 7,
+  minutes: 5,
   en: `<div class="at-a-glance"><p class="at-a-glance-label">At a glance</p><ul>
 <li>An event study asks whether a stock's return around one date was larger, or smaller, than what the market alone would have predicted.</li>
 <li>The estimation window is an ordinary stretch of days used to fit a market model; the event window is the days around the date being tested.</li>

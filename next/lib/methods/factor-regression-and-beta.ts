@@ -2,7 +2,7 @@ import type { MethodLesson } from "../research-methods";
 
 export const LESSON: MethodLesson = {
   slug: "factor-regression-and-beta",
-  minutes: 7,
+  minutes: 5,
   en: `<div class="at-a-glance"><p class="at-a-glance-label">At a glance</p><ul>
 <li>A factor regression puts a stock's return above a safe rate against the market's return above the same rate, and reports the slope.</li>
 <li>Beta is that slope: how many percent the stock's excess return tends to move for every one percent the market's excess return moves, in the same direction.</li>

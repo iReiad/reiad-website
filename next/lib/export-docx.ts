@@ -75,10 +75,10 @@ export async function toDocx(o: {
           rows: trows.map((r) => new D.TableRow({
             children: r.map((c) => new D.TableCell({ children: [new D.Paragraph({ children: [new D.TextRun({ text: c, font })] })] })),
           })),
-        }) as unknown as InstanceType<typeof D.Paragraph>);
+        }));
       }
       const cap = /<figcaption\b[^>]*>([\s\S]*?)<\/figcaption>/i.exec(m[2]);
-      if (cap) children.push(new D.Paragraph({ alignment: D.AlignmentType.CENTER, children: runs(cap[1]).map((r) => (r instanceof D.TextRun ? new D.TextRun({ text: (r as InstanceType<typeof D.TextRun>).text as unknown as string, italics: true, font }) : r)) }));
+      if (cap) children.push(new D.Paragraph({ alignment: D.AlignmentType.CENTER, children: runs(cap[1]) }));
     }
     else { const r = runs(m[2]); if (r.length) children.push(new D.Paragraph({ children: r })); }
   }
