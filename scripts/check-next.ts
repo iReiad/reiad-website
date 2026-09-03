@@ -54,7 +54,7 @@
    than about a transition, and they do not go away.
    ============================================================ */
 
-import { readFileSync } from "node:fs";
+import { existsSync, readFileSync, readdirSync } from "node:fs";
 import { dirname, join } from "node:path";
 import { fileURLToPath } from "node:url";
 import { SCHOOL_ICONS } from "../next/lib/school-icons.ts";
@@ -68,6 +68,9 @@ const ROOT = join(dirname(fileURLToPath(import.meta.url)), "..");
 const read = (rel: string): string => readFileSync(join(ROOT, rel), "utf8");
 
 let failures = 0;
+/** How many shared files the copy in next/node_modules matches, or
+    0 where there is no copy to compare (every CI runner). */
+let copiedShared = 0;
 const fail = (line: string, ...detail: string[]): void => {
   failures += 1;
   console.error(`FAIL  ${line}`);
@@ -362,10 +365,68 @@ for (const rung of [...STUFEN, ...TERMS] as Rung[]) {
   }
 }
 
+/* ------------------------------------------------------------
+   3. `@reiad/shared`, copied into next/node_modules by npm
+
+   `next/.npmrc` sets `install-links=true`, so a `file:`
+   dependency is COPIED rather than symlinked, and npm keys that
+   copy by VERSION: editing a file in `shared/` leaves the copy
+   in place however much the contents changed, and `next build`
+   compiles the old code without a word. CLAUDE.md writes this up
+   under "What more than one runtime has to agree on" because it
+   shipped Devanagari digits on a page whose source had been
+   fixed.
+
+   It costs an hour every time, because what it looks like is a
+   function that is plainly exported reported as missing, or a
+   fix that does not take. So it is a check now, and the fix is
+   the one line in that section:
+
+       rm -rf next/node_modules/@reiad/shared && (cd next && npm install)
+
+   It SKIPS where the copy is absent, which is every CI runner
+   and any clone that has not installed next/'s dependencies:
+   there is no stale copy where there is no copy.
+   ------------------------------------------------------------ */
+{
+  const copied = join(ROOT, "next", "node_modules", "@reiad", "shared");
+  if (existsSync(copied)) {
+    const source = join(ROOT, "shared");
+    const walk = (dir: string, base: string): string[] =>
+      readdirSync(dir, { withFileTypes: true }).flatMap((e) =>
+        e.name === "node_modules" || e.name.startsWith(".")
+          ? []
+          : e.isDirectory()
+            ? walk(join(dir, e.name), `${base}${e.name}/`)
+            : e.name.endsWith(".ts")
+              ? [`${base}${e.name}`]
+              : []);
+    const stale: string[] = [];
+    for (const rel of walk(source, "")) {
+      const there = join(copied, rel);
+      if (!existsSync(there)) { stale.push(`${rel} (missing from the copy)`); continue; }
+      if (readFileSync(join(source, rel), "utf8") !== readFileSync(there, "utf8")) stale.push(rel);
+    }
+    if (stale.length) {
+      fail(`next/node_modules/@reiad/shared is ${stale.length} file(s) behind shared/.`,
+        `The first is ${stale[0]}.`,
+        "npm keys a file: dependency by its version, so it will not notice.",
+        "Next compiles the copy, so a fix to shared/ has not taken and a",
+        "function you can read in the source is reported as not exported.",
+        "  rm -rf next/node_modules/@reiad/shared && (cd next && npm install)");
+    } else {
+      copiedShared = walk(source, "").length;
+    }
+  }
+}
+
 console.log(failures
   ? `\n${failures} copy(ies) in next/ have drifted from the original.\n`
   : `next/ holds 3 drawings copied out of aab/ by hand and ${drawings}\n`
     + `generated, every one still matches what icons.js draws, and all\n`
     + `${asked.size} names a card asks for come back with a drawing in them,\n`
-    + `and ${books} practice book(s) are as long as their ladder says.\n`);
+    + `and ${books} practice book(s) are as long as their ladder says.\n`
+    + (copiedShared
+      ? `next/node_modules/@reiad/shared matches all ${copiedShared} of shared/.\n`
+      : "next/ has no copy of @reiad/shared installed, so there is none to be stale.\n"));
 process.exit(failures ? 1 : 0);

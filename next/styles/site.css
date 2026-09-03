@@ -18318,4 +18318,20 @@ German for day, and .tag is what the site has always called
     .rs-pages { gap: var(--s-3); }
   }
   @media print { .rs-list { display: none; } }
+
+  /* ---- the writing desk's deck: kind slides, RESEARCH.md 16 ----
+
+     16:9 cards on screen. A named page for print, because @page
+     has no selector of its own: an unnamed one here would turn
+     every OTHER print job on the site landscape too, not only a
+     slide deck's. */
+  .rs-deck { display: grid; grid-template-columns: repeat(auto-fill, minmax(14rem, 1fr)); gap: var(--gap); }
+  .rs-slide { aspect-ratio: 16 / 9; padding: var(--s-4); display: grid; gap: var(--s-2); align-content: start; overflow: auto; }
+  .rs-slide h4 { margin: 0; }
+  .rs-slide ul { margin: 0; padding-inline-start: 1.2em; }
+  @page rs-slide-page { size: landscape; margin: 0; }
+  @media print {
+    [data-kind="slides"] :is(.rs-write-bar, .rs-write-prose, .rs-side) { display: none; }
+    .rs-slide { page: rs-slide-page; break-after: page; aspect-ratio: auto; block-size: 100vh; }
+  }
 }

@@ -1428,8 +1428,18 @@ for (const path of ["/tools/research", "/tools/research/library", "/tools/resear
   const room = page.locator('[data-testid="rs-methods"]');
   ok("the methods room is public and lists the twelve planned lessons under six kinds", await room.locator("section .card").count() === 13 && await room.locator("h2").count() === 7 && await room.locator("#quantitative .card").count() === 4, `${await room.locator("section .card").count()} cards, ${await room.locator("h2").count()} headings`);
   ok("a lesson written in the Studio with the tag method is a card that goes to the piece, anchored by its slug", await room.locator('a.card#ols-and-robust-errors[href="/insights/ols-and-robust-errors.html"]').count() === 1);
-  ok("and the eleven not yet written are promised rather than linked", await room.locator('.card[data-kind="soon"]').count() === 11 && await room.locator('.card[data-kind="soon"]#event-study-by-hand').count() === 1);
+  ok("and the eleven with no piece yet go to the lesson written here, not to a promise", await room.locator('.card[data-kind="soon"]').count() === 0 && await room.locator('a.card#event-study-by-hand[href="/tools/research/methods/event-study-by-hand"]').count() === 1 && await room.locator('a.card[href^="/tools/research/methods/"]').count() === 11);
   ok("a method piece the table does not plan is listed after them, and a piece that is not a method is not", await page.locator('[data-testid="rs-methods-more"] a.card[href="/insights/reading-a-regression-table.html"]').count() === 1 && await room.locator('a[href="/insights/weather-and-farms.html"]').count() === 0);
+  ok("and none of it threw", errors.length === 0, errors.join(" | "));
+  await page.close();
+}
+
+{
+  const { page, errors } = await open("/tools/research/methods/event-study-by-hand", { signedIn: false });
+  const lesson = page.locator('[data-testid="rs-method-lesson"]');
+  ok("a lesson page is public and is an article in both languages", await lesson.count() === 1 && await lesson.locator('.t-en h2').count() >= 3 && await lesson.locator('.t-bn h2').count() >= 3, `${await lesson.locator('.t-en h2').count()} en, ${await lesson.locator('.t-bn h2').count()} bn headings`);
+  ok("with a worked example that has numbers in it", /\d/.test(await lesson.locator('.t-en .ex').first().innerText().catch(() => "")));
+  ok("and it says where in the studio this is done", await page.locator('[data-testid="rs-lesson-places"] a[href="/tools/research/lab"]').count() === 1);
   ok("and none of it threw", errors.length === 0, errors.join(" | "));
   await page.close();
 }
@@ -1446,6 +1456,164 @@ for (const path of ["/tools/research", "/tools/research/library", "/tools/resear
   ok("a room's head carries its methods", await page.locator('[data-testid="rs-room-methods"] a[href="/tools/research/methods#event-study-by-hand"]').count() === 1 && await page.locator('[data-testid="rs-room-methods"] a').count() === 4);
   ok("and a room with none carries no empty line", await page.locator('[data-testid="rs-room-methods"]').count() === 1);
   ok("and threw nothing", errors.length === 0, errors.join(" | "));
+  await page.close();
+}
+
+/* ============================================================
+   the planner's deferred four: a move by keyboard, the Gantt,
+   the reading queue's lane and the project page
+   ============================================================ */
+
+{
+  const { page, errors, sent, rows } = await open("/tools/research/plan");
+  /* Seeded after the first paint and read on reload: a project,
+     two tasks (one with a due date), two events (one with an end),
+     a document and a session this month. */
+  const now = new Date();
+  const later = (days: number): string => new Date(Date.now() + days * 86400000).toISOString();
+  rows.research_projects.push({ id: "p-1", user_id: ME, name: "Weather and farm income", kind: "thesis", state: "active", tone: "green", body: { brief: "Who I am and what I have." }, created_at: ago(30), updated_at: ago(30) });
+  rows.research_tasks.push(
+    { id: "t-1", user_id: ME, project_id: "p-1", title: "Clean the panel", lane: "week", position: 0, due: later(10).slice(0, 10), done_at: null, waiting_since: null, links: [], note: null, created_at: ago(5), updated_at: ago(5) },
+    { id: "t-2", user_id: ME, project_id: "p-1", title: "Email the supervisor", lane: "today", position: 0, due: null, done_at: null, waiting_since: null, links: [], note: null, created_at: ago(1), updated_at: ago(1) },
+  );
+  rows.research_events.push(
+    { id: "e-1", user_id: ME, project_id: "p-1", kind: "conference", title: "BEA annual", starts: later(20), ends: later(22), all_day: true, place: "Dhaka", body: {}, done: false, created_at: ago(2), updated_at: ago(2) },
+    { id: "e-2", user_id: ME, project_id: "p-1", kind: "deadline", title: "Proposal due", starts: later(40), ends: null, all_day: true, place: "", body: {}, done: false, created_at: ago(2), updated_at: ago(2) },
+  );
+  rows.research_documents.push({ id: "d-1", user_id: ME, project_id: "p-1", kind: "chapter", position: 0, title: "Chapter 3", outline: [], body: "<p>Rain fell and incomes fell with it.</p>", text: "Rain fell and incomes fell with it.", budget: 8000, style: "apa", state: "draft", meta: {}, deleted_at: null, created_at: ago(3), updated_at: ago(1) });
+  rows.research_sessions.push({ id: "ss-1", user_id: ME, project_id: "p-1", room: "Lab", started: new Date(now.getTime() - 3600000).toISOString(), ended: new Date(now.getTime() - 1800000).toISOString(), note: "Table 3", created_at: ago(0), updated_at: ago(0) });
+  await page.reload();
+  await page.waitForTimeout(600);
+
+  ok("a task card is draggable", await page.locator('[data-task="t-1"][draggable="true"]').count() === 1);
+  ok("and every lane is a drop target while the reading queue is not", await page.locator("[data-lane]").count() === 6 && await page.locator('[data-lane="queue"]').count() === 1);
+  ok("the reading queue lists an unread source as a link into the reader", await page.locator('[data-lane="queue"] a[href="/tools/research/read?source=s-1"]').count() === 1 && await page.locator('[data-lane="queue"] a[href^="/tools/research/read?source="]').count() === 2);
+  await page.locator("#rs-t-move-t-1").selectOption("today");
+  await page.waitForTimeout(600);
+  const moved = sent.find((x) => x.method === "PATCH" && x.path.includes("research_tasks") && x.path.includes("t-1"));
+  ok("the keyboard's way, the Move to menu, patches the lane", (moved?.body as { lane?: string } | undefined)?.lane === "today", JSON.stringify(moved?.body));
+  ok("and the card now sits in that lane", await page.locator('[data-lane="today"] [data-task="t-1"]').count() === 1);
+  ok("and the move is a line in the activity log on its own", posts(sent, "research_activity").some((a) => (firstOf(a) as { kind?: string; item_id?: string }).item_id === "t-1"));
+
+  await page.getByRole("button", { name: /5 Gantt|5 গ্যান্ট/ }).click();
+  await page.waitForTimeout(500);
+  ok("the Gantt draws one bar a task with a due date and one an event with an end, and no more", await page.locator('[data-testid="rs-gantt"] [data-bar="task"]').count() === 1 && await page.locator('[data-testid="rs-gantt"] [data-bar="event"]').count() === 1);
+  ok("grouped under the project's name, with the present as a line", /Weather and farm income · 2/.test(await page.locator('[data-testid="rs-gantt"] svg').textContent() ?? "") && await page.locator('[data-testid="rs-gantt"] svg line[stroke="var(--rose)"]').count() === 1);
+
+  await page.getByRole("button", { name: /6 Project page|6 প্রজেক্টের পাতা/ }).click();
+  await page.waitForTimeout(400);
+  await page.locator("#rs-pp-project").selectOption("p-1");
+  await page.waitForTimeout(700);
+  ok("the project page opens on the address too", new URL(page.url()).searchParams.get("project") === "p-1");
+  const pp = await page.locator('[data-testid="rs-project"]').textContent() ?? "";
+  ok("and shows the project's title and its brief", /Weather and farm income/.test(pp) && /Who I am and what I have\./.test(pp), pp.slice(0, 200));
+  ok("its question links to the questions room", await page.locator('[data-testid="rs-project"] a[href="/tools/research/questions"]').count() >= 1);
+  ok("its document with a word count links to the writing room", await page.locator('[data-testid="rs-project"] a[href="/tools/research/write"]').count() >= 1 && /Chapter 3.*7 words/.test(pp), pp);
+  ok("its open tasks are by lane, its next dates three at most, and this month's session is a fact in minutes", /Clean the panel/.test(pp) && /BEA annual/.test(pp) && /Proposal due/.test(pp) && /30 min/.test(pp), pp);
+  ok("and none of it threw", errors.length === 0, errors.join(" | "));
+  await page.close();
+}
+
+/* ============================================================
+   the writing desk's deferred four: slides, a figure from a run,
+   the glossary and the abbreviations, the outline moved
+   ============================================================ */
+
+{
+  const { page, errors, sent, rows } = await open("/tools/research/write");
+  rows.research_documents.push({
+    id: "d-slides", user_id: ME, project_id: null, kind: "slides", position: 0, title: "Findings deck",
+    outline: [], body: "<h2>Why it matters</h2><p>Farm incomes fall after a shock.</p><ul><li>Rainfall shocks cut income</li></ul><h2>Method</h2><p>Panel data.</p>",
+    text: "", budget: null, style: "apa", state: "outline", meta: {}, deleted_at: null, created_at: ago(1), updated_at: ago(1),
+  });
+  rows.research_documents.push({
+    id: "d-terms", user_id: ME, project_id: null, kind: "chapter", position: 1, title: "Definitions",
+    outline: [],
+    body: "<h2>Risk</h2><p><dfn>Liquidity risk</dfn> is the risk a firm cannot meet its obligations.</p><h3>Credit risk detail</h3><p><strong>Credit risk</strong> is the risk a borrower does not repay. LCR measures it.</p><h2>Method</h2><p>Liquidity Coverage Ratio (LCR) is defined here.</p>",
+    text: "", budget: null, style: "apa", state: "outline", meta: {}, deleted_at: null, created_at: ago(2), updated_at: ago(2),
+  });
+  rows.research_runs.push({
+    id: "r-1", user_id: ME, dataset_id: null, project_id: null, kind: "stat", label: "OLS: income on rainfall",
+    input: { roles: { y: ["income"] } }, code: "", data_hash: "", ms: 12, figure: null,
+    output: { fit: { names: ["Intercept", "rainfall"], coef: [10, -0.5], se: [1, 0.1], p: [0.001, 0.02], n: 120, r2: 0.31, adjR2: 0.3, robust: "classical" } },
+    created_at: ago(3), updated_at: ago(3),
+  });
+  await page.reload();
+  await page.waitForTimeout(500);
+
+  /* ---- the glossary and the abbreviations ----
+     FIRST, while the prose document is the one open. The deck and
+     the figure below both leave the slides document open, and a
+     glossary read off a deck is empty, which is what this asked
+     for until 3 September 2026. */
+  await page.locator(".rs-row", { hasText: "Definitions" }).click();
+  await page.waitForFunction(() => (document.querySelector("#rs-d-title") as HTMLInputElement | null)?.value === "Definitions", null, { timeout: 10000 });
+  await page.locator(".rs-side").getByRole("button", { name: /Glossary/ }).click();
+  await page.waitForTimeout(300);
+  const glossaryPane = await page.locator(".rs-side").textContent() ?? "";
+  ok("an abbreviation used before it is defined is warned about",
+    /LCR/.test(glossaryPane) && /used before it is defined|সংজ্ঞার আগেই/.test(glossaryPane), glossaryPane.slice(0, 300));
+  ok("a <dfn> and a bold-first-use term are both listed", /Liquidity risk/.test(glossaryPane) && /Credit risk/.test(glossaryPane), glossaryPane.slice(0, 300));
+  await page.getByRole("button", { name: /Insert glossary|শব্দকোষ বসান/ }).click();
+  await page.waitForTimeout(400);
+  await page.getByRole("button", { name: /Insert abbreviations|সংক্ষেপ বসান/ }).click();
+  await page.waitForTimeout(400);
+  const afterInsert = await page.locator(".rs-editor").innerHTML();
+  ok("Insert list appends the glossary and the abbreviations to the document",
+    afterInsert.includes("Liquidity risk") && /Liquidity Coverage Ratio/.test(afterInsert), afterInsert.slice(-600));
+
+  /* ---- the outline moved: the pointer's way and the keyboard's ---- */
+  await page.locator(".rs-side").getByRole("button", { name: /^Outline/ }).click();
+  await page.waitForTimeout(300);
+  ok("a heading is draggable, the pointer's way to reorder it", await page.locator(".rs-side li[draggable=\"true\"]").count() >= 3);
+  const before = await page.locator(".rs-editor h2, .rs-editor h3").allTextContents();
+  ok("the outline starts Risk, its own deeper heading, then Method", before[0] === "Risk" && before[1] === "Credit risk detail", before.join(" | "));
+  await page.getByRole("button", { name: /Move down|নিচে সরান/ }).first().click();
+  await page.waitForTimeout(400);
+  const after = await page.locator(".rs-editor h2, .rs-editor h3").allTextContents();
+  ok("the keyboard's way carries a section's own deeper heading with it",
+    after[0] === "Method" && after[1] === "Risk" && after[2] === "Credit risk detail", after.join(" | "));
+  /* ---- slides: joins the kind picker, draws as a deck ---- */
+  ok("slides joins the kind a new document can be", await page.locator('#rs-d-kind option[value="slides"]').count() === 1);
+  await page.locator(".rs-row", { hasText: "Findings deck" }).click();
+  await page.waitForFunction(() => (document.querySelector("#rs-d-title") as HTMLInputElement | null)?.value === "Findings deck", null, { timeout: 10000 });
+  await page.waitForSelector(".rs-editor", { timeout: 10000 }).catch(() => null);
+  await page.waitForTimeout(400);
+  const cards = await page.locator(".rs-deck .rs-slide").count();
+  ok("a deck view draws one 16:9 card a heading", cards === 2, String(cards));
+  const firstCard = await page.locator(".rs-deck .rs-slide").first().textContent() ?? "";
+  ok("a card carries its heading's own title and its list as bullets",
+    /Why it matters/.test(firstCard) && /Rainfall shocks cut income/.test(firstCard), firstCard);
+  await page.emulateMedia({ media: "print" });
+  const barHidden = await page.locator(".rs-write-bar").evaluate((el) => getComputedStyle(el).display === "none");
+  const proseHidden = await page.locator(".rs-write-prose").evaluate((el) => getComputedStyle(el).display === "none");
+  const deckShown = await page.locator(".rs-deck").evaluate((el) => getComputedStyle(el).display !== "none");
+  ok("printing a slides document hides the prose and shows the deck", barHidden && proseHidden && deckShown, `${barHidden} ${proseHidden} ${deckShown}`);
+  await page.emulateMedia({ media: "screen" });
+
+  /* ---- a figure from a run, at the caret ---- */
+  await page.locator(".rs-editor").click();
+  await page.keyboard.press("End");
+  await page.getByRole("button", { name: /Insert a figure|চিত্র বসান/ }).click();
+  await page.waitForTimeout(400);
+  await page.locator(".rs-row", { hasText: "OLS: income on rainfall" }).click();
+  await page.waitForTimeout(400);
+  const tableCount = await page.locator(".rs-editor figure table").count();
+  ok("a run with a fit and no chart inserts its APA table as a real table",
+    tableCount === 1, (await page.locator(".rs-editor").innerHTML()).slice(-500));
+  const caption = await page.locator(".rs-editor figcaption").first().textContent() ?? "";
+  ok("captioned with the run's own label", caption.includes("OLS: income on rainfall"), caption);
+
+  /* THE ONE THAT LOSES SOMEBODY'S CHAPTER. Leaving a document
+     while its debounced save is still in flight sent that save
+     with the editor already emptied, at the document being left:
+     a reader writes, clicks the next document in the list, and
+     the first one is blank. It renders perfectly either way. */
+  const emptied = sent.filter((x) => x.method === "PATCH" && x.path.includes("research_documents")
+    && typeof (x.body as { body?: unknown }).body === "string" && (x.body as { body: string }).body.trim() === "");
+  ok("switching documents never writes an empty body over the one being left",
+    emptied.length === 0, emptied.map((x) => x.path).join(" | "));
+  ok("and none of it threw", errors.length === 0, errors.join(" | "));
   await page.close();
 }
 

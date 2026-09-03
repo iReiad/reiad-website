@@ -91,14 +91,6 @@ const PUBLIC: Record<string, string> = {
     + "27 puts the reader's own rows in the browser and only this behind a "
     + "Worker. Gating it would only mean the food search stopped working on "
     + "the one page of that tool needing no account.",
-  "research/[[route]].ts":
-    "the Research Studio's lookups: a DOI, an ISBN or a page's own tags, "
-    + "read out of Crossref, OpenAlex, Open Library and the page itself, which "
-    + "the browser may not call because the CSP names none of them. They take "
-    + "no bearer, write nothing but a public cache and never see a reader's "
-    + "rows, which live in Supabase behind the reader's own token. The one "
-    + "route that carries a reader's own key, the Zotero pull, answers only a "
-    + "signed-in reader through readerFrom() and stores nothing.",
   "site.ts":
     "the site's own furniture, which the browser gets as an ES module at "
     + "/content.js and a native client cannot. Every value in it is already "
@@ -127,11 +119,39 @@ const walk = (dir: string): void => {
     else if (/\.(js|ts)$/.test(name) && !/\.test\.[a-z]+$/.test(name)) files.push(full);
   }
 };
+/** A FILE THAT IS BOTH, keyed by path with the reason and with
+    which of its routes are which.
+
+    One route file can hold routes that answer anybody and routes
+    that answer one person, and the studio's does: the lookups
+    are open because the browser cannot reach Crossref itself,
+    and the three metered services are gated because they spend
+    something the SITE pays for. Calling such a file "public"
+    hides the gate and calling it "gated" hides the open half, so
+    it says both, and the check holds it to both: a file listed
+    here that has stopped gating anything is as stale an entry as
+    a PUBLIC one that has grown a gate. */
+const MIXED: Record<string, string> = {
+  "research/[[route]].ts":
+    "PUBLIC: the Research Studio's lookups. A DOI, an ISBN or a page's own "
+    + "tags, read out of Crossref, OpenAlex, Open Library and the page itself, "
+    + "which the browser may not call because the CSP names none of them. They "
+    + "take no bearer, write nothing but a public cache and never see a "
+    + "reader's rows, which live in Supabase behind the reader's own token. "
+    + "The Zotero pull carries a reader's own key and answers only a signed-in "
+    + "reader through readerFrom(), storing nothing. "
+    + "GATED, by isAdmin(): /assistant, /embed and /transcribe. Those three "
+    + "spend the SITE's allowance rather than the reader's, a model key with a "
+    + "bill on it and one Workers AI quota for everybody, and sign-up is open, "
+    + "so a signed-in stranger was a stranger with the key. RESEARCH.md 31.",
+};
+
 walk(API);
 files.sort();
 
 let bad = 0;
 const seen = new Set<string>();
+const mixedSeen = new Set<string>();
 
 for (const full of files) {
   const rel = relative(API, full).split("\\").join("/");
@@ -139,13 +159,26 @@ for (const full of files) {
   const gated = /\b(requireAdmin|isAdmin)\s*\(/.test(src);
 
   if (gated) {
+    if (MIXED[rel]) { mixedSeen.add(rel); continue; }
     if (PUBLIC[rel]) {
       bad += 1;
       seen.add(rel);
       console.error(`\n  x functions/api/${rel} is listed as public and gates itself.`);
-      console.error("        Take it out of PUBLIC in this file: an exception that is not");
-      console.error("        one is the stale entry the list is keyed by path to avoid.");
+      console.error("        Take it out of PUBLIC in this file, or move it to MIXED with");
+      console.error("        which of its routes are open and which are gated: an exception");
+      console.error("        that is not one is the stale entry the list is keyed by path");
+      console.error("        to avoid.");
     }
+    continue;
+  }
+
+  if (MIXED[rel]) {
+    bad += 1;
+    mixedSeen.add(rel);
+    console.error(`\n  x functions/api/${rel} is listed as MIXED and gates nothing.`);
+    console.error("        Its entry says which routes isAdmin() holds and none does any");
+    console.error("        more. Either the gate went, which is the thing this check is");
+    console.error("        for, or the file is simply public now and belongs in PUBLIC.");
     continue;
   }
 
@@ -167,10 +200,17 @@ for (const rel of Object.keys(PUBLIC)) {
   console.error("        Remove the entry. A list of exceptions nobody prunes stops being");
   console.error("        a description of anything.");
 }
+for (const rel of Object.keys(MIXED)) {
+  if (mixedSeen.has(rel)) continue;
+  bad += 1;
+  console.error(`\n  x MIXED names functions/api/${rel}, which is not there.`);
+  console.error("        Remove the entry, for the reason above.");
+}
 
 console.log(
   bad
     ? `\nadmin: ${bad} problem(s).`
-    : `admin: ${files.length} endpoint file(s), ${Object.keys(PUBLIC).length} public on purpose.`,
+    : `admin: ${files.length} endpoint file(s), ${Object.keys(PUBLIC).length} public on purpose, `
+      + `${Object.keys(MIXED).length} open in part and gated in part.`,
 );
 process.exit(bad ? 1 : 0);

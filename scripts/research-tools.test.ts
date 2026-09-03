@@ -6,9 +6,9 @@
    ============================================================ */
 
 import {
-  abbreviations, booleanString, daysBetween, dInterval, dToOR, dToR, dueCards, fromHijri, gridOf, idKind, intervalFromP, nCorrelation, nMean, nProportion, nRegression,
-  nTwoMeans, newCard, orToD, pFromInterval, powerTwoMeans, questionFrom, rInterval, randomInts, readability, review, rToD, sample, shiftDays, toHijri, toLatex,
-  toMarkdown, whichTest, wordStats, workingDays,
+  abbreviations, booleanString, daysBetween, dInterval, dToOR, dToR, dueCards, fromHijri, fromSm2, gridOf, idKind, intervalFromP, memoryOf, nCorrelation, nMean,
+  nProportion, nRegression, nTwoMeans, newCard, orToD, pFromInterval, powerTwoMeans, questionFrom, rInterval, randomInts, ratingOf, readability, rToD, sample, shiftDays,
+  toHijri, toLatex, toMarkdown, whichTest, withMemory, wordStats, workingDays,
 } from "../shared/research-tools.ts";
 
 let passed = 0;
@@ -63,13 +63,22 @@ ok("and in PubMed's", booleanString([{ field: "abstract", terms: ["rainfall"], o
 const q = questionFrom("pico", { population: "smallholders in Bangladesh", intervention: "index insurance", outcome: "credit uptake" });
 ok("a PICO frame becomes a question and criteria", q.question === "In smallholders in Bangladesh, does index insurance affect credit uptake?" && q.criteria.some((c) => c.startsWith("- ")), q.question);
 
-let card = newCard("c1", "basis risk", "the gap between payout and loss", "2026-09-03");
-card = review(card, 4, "2026-09-03");
-ok("a first good review is due tomorrow", card.due === "2026-09-04" && card.reps === 1, JSON.stringify(card));
-card = review(card, 4, "2026-09-04");
-ok("the second in six days", card.due === "2026-09-10" && card.interval === 6);
-card = review(card, 5, "2026-09-10");
-ok("then by the ease, and a lapse starts over", card.interval === 15 && review(card, 1, "2026-09-25").reps === 0, String(card.interval));
+const fresh = newCard("c1", "basis risk", "the gap between payout and loss", "2026-09-03");
+ok("a new card's first interval is zero, its ease SM-2's default, and it reads as a new memory", fresh.interval === 0 && fresh.ease === 2.5 && fresh.reps === 0 && memoryOf(fresh).state === 0 && memoryOf(fresh).stability === 0, JSON.stringify(fresh));
+ok("a card never reviewed is a new memory whatever its fields say", fromSm2(fresh).state === 0 && fromSm2({ ...fresh, ease: 1.3, interval: 6 }).state === 0);
+const old = { ...fresh, ease: 2.5, interval: 15, reps: 3, due: "2026-09-25" };
+const m = fromSm2(old);
+ok("an SM-2 card's interval is its stability, 2.5 is difficulty 5, and it is in review since the day it was last seen", m.stability === 15 && m.difficulty === 5 && m.state === 2 && m.reps === 3 && m.last_review?.toISOString().slice(0, 10) === "2026-09-10", JSON.stringify(m));
+ok("the ease floor of 1.3 is the hardest card and an easy 3.7 the easiest", fromSm2({ ...old, ease: 1.3 }).difficulty === 10 && fromSm2({ ...old, ease: 3.7 }).difficulty === 1, `${fromSm2({ ...old, ease: 1.3 }).difficulty} ${fromSm2({ ...old, ease: 3.7 }).difficulty}`);
+ok("a card carrying only its SM-2 fields migrates through fromSm2 by the same route memoryOf reads it by, so it is not lost", JSON.stringify(memoryOf(old)) === JSON.stringify(fromSm2(old)));
+const after = withMemory(old, { ...m, due: new Date("2026-10-20"), stability: 25.5, difficulty: 4.2, scheduled_days: 25, reps: 4, lapses: 0, state: 2, last_review: new Date("2026-09-25T09:00:00Z") });
+ok("the scheduler's answer is written back on to the note's own fields, the due date a date", after.due === "2026-10-20" && after.interval === 25 && after.reps === 4 && after.stability === 25.5 && after.lastReview === "2026-09-25T09:00:00.000Z", JSON.stringify(after));
+ok("and a card that carries a memory is read from it rather than from its ease", memoryOf(after).stability === 25.5 && memoryOf(after).difficulty === 4.2 && memoryOf(old).stability === 15);
+const good = withMemory(old, { ...m, due: new Date("2026-10-25"), stability: 30, difficulty: 3, scheduled_days: 30, reps: 4, lapses: 0, state: 2, last_review: new Date("2026-09-25T09:00:00Z") });
+const bad = withMemory(old, { ...m, due: new Date("2026-09-26"), stability: 1, difficulty: 8, scheduled_days: 1, reps: 4, lapses: 1, state: 3, last_review: new Date("2026-09-25T09:00:00Z") });
+ok("a card reviewed well is due later than the same card reviewed badly", good.due > bad.due, `${good.due} ${bad.due}`);
+ok("the four buttons map on to FSRS's four ratings", ratingOf(0) === 1 && ratingOf(2) === 1 && ratingOf(3) === 2 && ratingOf(4) === 3 && ratingOf(5) === 4);
+const card = after;
 ok("due cards are the ones at or before today", dueCards([card, newCard("c2", "a", "b", "2026-09-01")], "2026-09-01").length === 1);
 
 ok("the same seed gives the same numbers", JSON.stringify(randomInts(7, 5, 1, 10)) === JSON.stringify(randomInts(7, 5, 1, 10)) && randomInts(7, 50, 1, 6).every((v) => v >= 1 && v <= 6));

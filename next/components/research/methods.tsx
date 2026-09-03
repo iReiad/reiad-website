@@ -6,8 +6,9 @@
    A method is a piece with the tag `method`, so the room owns no
    rows: it draws the twelve the table plans, by kind, and asks the
    public articles list which of them have been written. A written
-   one is a card that goes to the piece, with its cover; one still
-   to write is promised rather than linked, which is the deck's own
+   one is a card that goes to the piece, with its cover; one with a
+   lesson written here under `lib/methods/` goes there; one with
+   neither is promised rather than linked, which is the deck's own
    distinction. A method piece the table does not plan is listed
    after them, so the newest lesson is never the one without a
    card. Public, because a piece is public: the one part of the
@@ -19,6 +20,7 @@ import { lookFor } from "@reiad/shared/look";
 import { toneVar } from "@reiad/shared/research";
 import { GoCard, SoonCard } from "../deck";
 import { KIND_TONE, METHOD_KINDS, RESEARCH_METHODS, isMethodPiece, type MethodKind } from "../../lib/research-methods";
+import { writtenLesson } from "../../lib/methods/written";
 import { researchPage } from "../../lib/research-pages";
 import { T, W, both } from "./lang";
 
@@ -52,10 +54,15 @@ export function Methods() {
           <div className="cards grid-2">
             {RESEARCH_METHODS.filter((m) => m.kind === kind).map((m) => {
               const p = written.get(m.slug);
+              const lesson = p ? undefined : writtenLesson(m.slug);
               return p ? (
                 <GoCard key={m.slug} id={m.slug} href={urlOf(p)} art={p.cover ? undefined : art} cover={p.cover ?? undefined} accent={toneVar(KIND_TONE[kind])}
                         chip={<span className="mono">{p.minutes ?? 1} min</span>}
                         title={<T en={m.title.en} bn={m.title.bn} />} dek={<T en={m.dek.en} bn={m.dek.bn} />} go={<W k="rs.me.read" />} />
+              ) : lesson ? (
+                <GoCard key={m.slug} id={m.slug} href={`/tools/research/methods/${m.slug}`} art={art} accent={toneVar(KIND_TONE[kind])}
+                        chip={<span className="mono">{lesson.minutes} min · <W k="rs.me.here" /></span>}
+                        title={<T en={m.title.en} bn={m.title.bn} />} dek={<T en={m.dek.en} bn={m.dek.bn} />} go={<W k="rs.me.open" />} />
               ) : (
                 <SoonCard key={m.slug} id={m.slug} accent={toneVar(KIND_TONE[kind])} soon={<W k="rs.me.planned" />}
                           title={<T en={m.title.en} bn={m.title.bn} />} dek={<T en={m.dek.en} bn={m.dek.bn} />} />

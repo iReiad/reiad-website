@@ -64,7 +64,10 @@ export interface Keep {
       somebody's data, it loses it. CLAUDE.md says this three
       times and it is still the easiest mistake here. */
   key: string;
-  where: "local" | "session";
+  /** `indexeddb` is a database name rather than a key: one row
+      describes the whole store, because what it holds is one kind
+      of thing. */
+  where: "local" | "session" | "indexeddb";
   held: Held;
   /** One line, in the second person, because the account page
       prints it to the reader who owns the thing. */
@@ -222,6 +225,12 @@ export const KEPT: Keep[] = [
     why: "A 13-inch laptop and a 27-inch monitor want different answers, and "
       + "the fold is about how much room there is rather than about the reader.",
     by: "next/components/sidebar.tsx" },
+  { key: "research-files", where: "indexeddb", held: "device", syncs: false,
+    what: "The research files you chose to keep on this device, for reading offline.",
+    why: "A copy of a file the account already holds, kept where the reader asked "
+      + "for it: this browser. A phone and a laptop have different room and "
+      + "different signal, and a choice about one says nothing about the other.",
+    by: "next/lib/offline-files.ts" },
   { key: "weather-place", where: "local", held: "device", syncs: false,
     what: "Where you are, to two decimal places, for the sky on the glass.",
     why: "Every other synced key is something the reader MADE. Where somebody "

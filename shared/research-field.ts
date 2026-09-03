@@ -20,7 +20,9 @@ export const CONSENT_NAMES: Record<ConsentState, Word> = {
   withdrawn: { en: "Withdrawn", bn: "প্রত্যাহার" },
 };
 
-export interface Consent { status?: ConsentState; date?: string; file_key?: string; scope?: string; quotes?: boolean; withdrawn?: string }
+/** `file` is the signed form's R2 key, uploaded through the same
+    path a source's file takes, and `file_name` what it was called. */
+export interface Consent { status?: ConsentState; date?: string; file?: string; file_name?: string; scope?: string; quotes?: boolean; withdrawn?: string }
 
 export const TRANSCRIPT_STATES = ["draft", "checked"] as const;
 export type TranscriptState = typeof TRANSCRIPT_STATES[number];
@@ -204,6 +206,29 @@ export const tableCsv = (t: { columns: string[]; rows: (string | number | null)[
 
 /** A public token: 22 characters from a UUID's own randomness. */
 export const tokenOf = (uuid: string): string => uuid.replace(/-/g, "").slice(0, 22);
+
+/* ---------- a quote into a draft, and a memo as a note ---------- */
+
+const esc = (s: string): string => s.replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;");
+
+/** The block a coding becomes in a draft: the segment, its
+    translation beneath where there is one (section 15: a thesis in
+    English about interviews in Bangla shows its working), and a
+    line naming the pseudonym, the interview and the time. Article
+    HTML, so the writing desk's sanitiser keeps all of it. */
+export function quoteBlock(q: { text: string; translation?: string | null; pseudonym: string; interview: string; at?: string }): { html: string; text: string } {
+  const who = [q.pseudonym, q.interview, q.at].filter(Boolean).join(", ");
+  const lines = [q.text.trim(), (q.translation ?? "").trim(), who].filter(Boolean);
+  const html = `<blockquote>${lines.map((l, i) => (i === lines.length - 1 ? `<p><em>${esc(l)}</em></p>` : `<p>${esc(l)}</p>`)).join("")}</blockquote>`;
+  return { html, text: lines.join("\n") };
+}
+
+/** A memo note's text: the coding's own memo field stays and is
+    the first line, and what was typed follows it. */
+export const memoText = (first: string | null | undefined, typed: string): string =>
+  [(first ?? "").trim(), typed.trim()].filter(Boolean).join("\n");
+
+export const memoBody = (text: string): string => text.split("\n").filter(Boolean).map((l) => `<p>${esc(l)}</p>`).join("");
 
 /** The guide's questions with a tick per interview. */
 export interface Guide { questions: string[]; asked: Record<string, number[]> }

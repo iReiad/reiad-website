@@ -8,7 +8,7 @@
    ============================================================ */
 
 import {
-  byParticipant, cleanAnswers, coOccurrence, matrixCsv, overInterviews, questionsOf, questionsText, responsesTable, secondsOf, segmentsFromModel, segmentsOf, stampOf, tokenOf,
+  byParticipant, cleanAnswers, coOccurrence, matrixCsv, memoBody, memoText, overInterviews, questionsOf, questionsText, quoteBlock, responsesTable, secondsOf, segmentsFromModel, segmentsOf, stampOf, tokenOf,
 } from "../shared/research-field.ts";
 
 let passed = 0;
@@ -51,6 +51,13 @@ ok("and a wrong answer is null rather than an error", bad.q1 === null && bad.q2 
 const t = responsesTable(qs, [{ answers: a, at: "2026-09-03T00:00:00Z" }]);
 ok("responses are a table with one column a question", t.columns.join(",") === "submitted_at,q1,q2,q3,q4" && t.rows[0][1] === 4);
 ok("a token is 22 hex characters of a UUID", /^[a-f0-9]{22}$/.test(tokenOf("6c575bc4-6e34-9145-ee63-698c081b2fa5")));
+
+const q = quoteBlock({ text: "আমরা আমন ফসল হারিয়েছি <all>", translation: "We lost the aman crop.", pseudonym: "P07", interview: "Interview 1", at: "00:12" });
+ok("a quote into a draft is a blockquote: the words, the translation beneath, and a line naming the pseudonym, the interview and the time",
+  q.html.startsWith("<blockquote><p>আমরা আমন ফসল হারিয়েছি &lt;all&gt;</p><p>We lost the aman crop.</p><p><em>P07, Interview 1, 00:12</em></p></blockquote>") && q.text === "আমরা আমন ফসল হারিয়েছি <all>\nWe lost the aman crop.\nP07, Interview 1, 00:12", q.html);
+ok("and with no translation the block has two lines", quoteBlock({ text: "x", pseudonym: "P07", interview: "I" }).html === "<blockquote><p>x</p><p><em>P07, I</em></p></blockquote>");
+ok("a memo note keeps the coding's own memo as its first line", memoText("bank refused", "Compare with P03.") === "bank refused\nCompare with P03." && memoText(null, "only this") === "only this" && memoText("  ", "") === "");
+ok("and its body is a paragraph a line", memoBody("a\nb <c>") === "<p>a</p><p>b &lt;c&gt;</p>");
 
 console.log(`research-field: ${passed} checks passed${failures.length ? `, ${failures.length} failed` : ""}`);
 for (const f of failures) console.log(`  x ${f}`);

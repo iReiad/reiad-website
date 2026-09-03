@@ -25,14 +25,17 @@ import type { CSSProperties } from "react";
 import { toneVar } from "@reiad/shared/research";
 import { word } from "@reiad/shared/research-words";
 import {
-  APPRAISALS, FRAMES, FRAME_SLOTS, REVIEW_KINDS, REVIEW_KIND_NAMES, REVIEW_STATES, REVIEW_STATE_NAMES, appraisalScore, duplicatesOf, prisma,
-  type Criterion, type Frame, type PrismaCounts, type Protocol, type ReviewKind, type ReviewState,
+  APPRAISALS, FRAMES, FRAME_SLOTS, REVIEW_KINDS, REVIEW_KIND_NAMES, REVIEW_STATES, REVIEW_STATE_NAMES, agreement, appraisalScore, duplicatesOf, fillFromCards, prisma, verdictA, verdictB,
+  type CardFields, type Criterion, type Frame, type PrismaCounts, type Protocol, type ReviewKind, type ReviewState, type Verdict,
 } from "@reiad/shared/research-review";
 import { gapMatrix } from "@reiad/shared/research-graph";
+import type { SourceFile } from "@reiad/shared/research";
 import {
-  addRecords, addReview, addSearch, addSource, findDuplicate, listRecords, listReviews, listSearches, listSources, saveRecord, saveReview, searchIndexes,
+  addRecords, addReview, addSearch, addSource, findDuplicate, listHighlights, listRecords, listReviews, listSearches, listSources, saveRecord, saveReview, searchIndexes,
   type Hit, type Review, type ReviewRecord, type Search, type Source, type Who,
 } from "../../lib/research-api";
+import type { DocTable } from "../../lib/export-docx-tables";
+import { Reader } from "./reader";
 import { Button } from "../ui/button";
 import { Chip, ChipButton } from "../ui/chip";
 import { Field, Select, TextArea } from "../ui/field";
@@ -79,6 +82,37 @@ function download(name: string, body: string | Blob, type: string): void {
   setTimeout(() => URL.revokeObjectURL(url), 1000);
 }
 
+/** Tables as a Word file, the library loaded only now. */
+async function downloadDocx(name: string, title: string, tables: DocTable[], bangla: boolean): Promise<void> {
+  const { tablesDocx } = await import("../../lib/export-docx-tables");
+  download(name, await tablesDocx(title, tables, { bangla }), "application/vnd.openxmlformats-officedocument.wordprocessingml.document");
+}
+
+/** The one moment a record becomes a library source: linked if the
+    library already has it, added if not. Shared by an include at
+    full text and by a disagreement resolved as one. */
+async function becomeSource(w: Who, rec: ReviewRecord, onSource: (s: Source) => void): Promise<string | null> {
+  if (rec.source_id) return rec.source_id;
+  const dup = await findDuplicate(w, rec.record.csl);
+  if (dup?.sure) return dup.source.id;
+  const s = await addSource(w, rec.record.csl, {
+    via: "search", verified: true,
+    oa: rec.record.oa ? { isOa: rec.record.oa.isOa, url: rec.record.oa.url, at: new Date().toISOString() } : null,
+    identifiers: rec.record.openalex ? { openalex: rec.record.openalex } : {},
+  });
+  if (s) onSource(s);
+  return s?.id ?? null;
+}
+
+/** The library source a record stands for: the one it was linked
+    to, or the one with its DOI or its hash. */
+const sourceOf = (rec: ReviewRecord, sources: Source[]): Source | null =>
+  (rec.source_id ? sources.find((s) => s.id === rec.source_id) : null)
+  ?? sources.find((s) => (rec.doi && s.doi && s.doi.toLowerCase() === rec.doi.toLowerCase()) || s.hash === rec.hash)
+  ?? null;
+
+const pdfOf = (s: Source | null): SourceFile | null => (s?.files as SourceFile[] | undefined)?.find((f) => f.kind === "pdf") ?? null;
+
 /* ---------- criteria: one a line, minus for an exclusion ---------- */
 
 /** Ids are STABLE across edits: a line whose text and kind match a
@@ -121,6 +155,9 @@ export function ReviewRoom() {
   const [sources, setSources] = useState<Source[]>([]);
   const [view, setView] = useState<View>("protocol");
   const [picking, setPicking] = useState(false);
+  /* The reader is open beside full-text screening: its own 1 to 5
+     mark a highlight, so the room's view digits stand down. */
+  const [reading, setReading] = useState(false);
   const [title, setTitle] = useState("");
   const [kind, setKind] = useState<ReviewKind>("systematic");
   const [ready, setReady] = useState(false);
@@ -143,11 +180,11 @@ export function ReviewRoom() {
   useEffect(() => { if (!views.includes(view)) setView("protocol"); }, [views, view]);
 
   useKeys(useMemo(() => {
-    if (picking) return {};
+    if (picking || reading) return {};
     const map: Record<string, () => void> = {};
     views.forEach((v, i) => { map[String(i + 1)] = () => setView(v); });
     return map;
-  }, [views, picking]), Boolean(w));
+  }, [views, picking, reading]), Boolean(w));
 
   const start = async (): Promise<void> => {
     if (!w || !title.trim()) return;
@@ -208,9 +245,9 @@ export function ReviewRoom() {
                 onSearch={(s) => setSearches((was) => [s, ...was])} onRecords={(made) => setRecords((was) => [...was, ...made])} onRecordChanged={recordChanged}
               />
             ) : null}
-            {view === "screen" ? <Screen w={w} review={review} records={records} sources={sources} onChanged={recordChanged} onSource={sourceMade} onPicking={setPicking} /> : null}
+            {view === "screen" ? <Screen w={w} review={review} records={records} sources={sources} onChanged={recordChanged} onSource={sourceMade} onPicking={setPicking} onReading={setReading} /> : null}
             {view === "prisma" ? <Prisma review={review} records={records} /> : null}
-            {view === "extract" ? <Extraction w={w} review={review} records={records} onChanged={recordChanged} /> : null}
+            {view === "extract" ? <Extraction w={w} review={review} records={records} sources={sources} onChanged={recordChanged} /> : null}
             {view === "appraise" ? <Appraisal w={w} review={review} records={records} onChanged={recordChanged} /> : null}
             {view === "synthesis" ? <Synthesis records={records} sources={sources} /> : null}
           </>
@@ -235,13 +272,14 @@ function ProtocolForm({ w, review, onChanged }: { w: Who; review: Review; onChan
   const [screeners, setScreeners] = useState((p0.screeners ?? []).join(", "));
   const [columns, setColumns] = useState((p0.columns ?? []).join(", "));
   const [appraisal, setAppraisal] = useState(p0.appraisal ?? "econ");
+  const [second, setSecond] = useState(Boolean(p0.second));
   const [said, setSaid] = useState("");
 
   const save = async (): Promise<void> => {
     const protocol: Protocol = {
       frame, question, criteria: parseCriteria(criteria, p0.criteria ?? []), databases: [...dbs],
       from: from ? Number(from) : undefined, to: to ? Number(to) : undefined,
-      languages: list(languages), screeners: list(screeners), columns: list(columns), appraisal,
+      languages: list(languages), screeners: list(screeners), second, columns: list(columns), appraisal,
     };
     const r = await saveReview(w, review, { protocol });
     if (r.ok) { onChanged(r.row); setCriteria(criteriaText(protocol.criteria ?? [])); setSaid(both("rs.saved")); cue("saved"); }
@@ -275,6 +313,10 @@ function ProtocolForm({ w, review, onChanged }: { w: Who; review: Review; onChan
           <Field id="rs-rev-to" label={<W k="rs.rev.to" />} inputMode="numeric" value={to} onChange={(e) => setTo(e.target.value.replace(/\D/g, "").slice(0, 4))} />
           <Field id="rs-rev-languages" label={<W k="rs.rev.languages" />} value={languages} onChange={(e) => setLanguages(e.target.value)} autoComplete="off" />
           <Field id="rs-rev-screeners" label={<W k="rs.rev.screeners" />} value={screeners} onChange={(e) => setScreeners(e.target.value)} autoComplete="off" />
+        </div>
+        <div className="flex flex-wrap items-center gap-2">
+          <ChipButton pressed={second} onClick={() => setSecond((s) => !s)}>{both("rs.rev.second")}</ChipButton>
+          <span className="text-t1 text-ink-soft"><W k="rs.rev.second.hint" /></span>
         </div>
         <div className="grid gap-2 md:grid-cols-[minmax(0,1fr)_minmax(0,14rem)]">
           <Field id="rs-rev-columns" label={<W k="rs.rev.columns" />} hint={<W k="rs.rev.columns.hint" />} value={columns} onChange={(e) => setColumns(e.target.value)} autoComplete="off" />
@@ -402,77 +444,125 @@ function SearchLog({ w, review, records, searches, onSearch, onRecords, onRecord
 
 /* ---------- screening, by keyboard ---------- */
 
-function Screen({ w, review, records, sources, onChanged, onSource, onPicking }: {
+function Screen({ w, review, records, sources, onChanged, onSource, onPicking, onReading }: {
   w: Who; review: Review; records: ReviewRecord[]; sources: Source[];
-  onChanged: (r: ReviewRecord) => void; onSource: (s: Source) => void; onPicking: (on: boolean) => void;
+  onChanged: (r: ReviewRecord) => void; onSource: (s: Source) => void; onPicking: (on: boolean) => void; onReading: (on: boolean) => void;
 }) {
   const [stage, setStage] = useState<"title" | "fulltext">("title");
   const [at, setAt] = useState(0);
   const [picking, setPicking] = useState(false);
   const [said, setSaid] = useState("");
+  /* Screener B's own "stage", read off `decision2` the way `stage`
+     itself is read for A: absent is "found", the queue's start. */
+  const stageOf2 = (r: ReviewRecord) => r.decision2 ?? "found";
+  const canSecond = Boolean(review.protocol.second);
+  const [actingB, setActingB] = useState(false);
+  /* Writing to column B rather than to the review's own decision.
+     Off whenever the protocol has no second screener, so a review
+     that turns the toggle off mid-flight cannot leave B's writes
+     half finished. */
+  const writingB = canSecond && actingB;
+  const [readerOpen, setReaderOpen] = useState(false);
   const exclusions = useMemo(() => (review.protocol.criteria ?? []).filter((c) => c.kind === "exclude"), [review.protocol.criteria]);
   const queue = useMemo(
-    () => records.filter((r) => (stage === "title" ? r.stage === "found" || r.stage === "title" : r.stage === "fulltext")),
-    [records, stage],
+    () => records.filter((r) => {
+      const s = writingB ? stageOf2(r) : r.stage;
+      return stage === "title" ? s === "found" || s === "title" : s === "fulltext";
+    }),
+    [records, stage, writingB],
   );
-  const total = stage === "title"
-    ? records.filter((r) => r.stage !== "deduplicated").length
-    : records.filter((r) => r.stage === "fulltext" || r.stage === "included" || (r.stage === "excluded" && r.record.fullText)).length;
+  const total = writingB
+    ? (stage === "title"
+        ? records.filter((r) => r.stage !== "deduplicated").length
+        : records.filter((r) => stageOf2(r) === "fulltext" || stageOf2(r) === "included" || (stageOf2(r) === "excluded" && r.record.fullText2)).length)
+    : (stage === "title"
+        ? records.filter((r) => r.stage !== "deduplicated").length
+        : records.filter((r) => r.stage === "fulltext" || r.stage === "included" || (r.stage === "excluded" && r.record.fullText)).length);
   const done = total - queue.length;
   const cur = queue[Math.min(at, Math.max(0, queue.length - 1))] ?? null;
   const curId = cur?.id ?? null;
   useEffect(() => { onPicking(picking); return () => onPicking(false); }, [picking, onPicking]);
-  useEffect(() => { setPicking(false); }, [curId]);
-  const inLibrary = cur ? sources.find((s) => (cur.doi && s.doi && s.doi.toLowerCase() === cur.doi.toLowerCase()) || s.hash === cur.hash) ?? null : null;
+  useEffect(() => { onReading(readerOpen); return () => onReading(false); }, [readerOpen, onReading]);
+  useEffect(() => { setPicking(false); setReaderOpen(false); }, [curId]);
+  /* Blind while acting as B: the library link is A's own decision,
+     so showing it here would show A's verdict before B has one. */
+  const inLibrary = cur && !writingB ? sources.find((s) => (cur.doi && s.doi && s.doi.toLowerCase() === cur.doi.toLowerCase()) || s.hash === cur.hash) ?? null : null;
+  const readerPdf = stage === "fulltext" ? pdfOf(inLibrary) : null;
 
   const decide = useCallback(async (rec: ReviewRecord, part: Partial<ReviewRecord>): Promise<void> => {
-    const r = await saveRecord(w, rec, { ...part, decided_at: new Date().toISOString() });
+    const stamp = writingB ? { decided2_at: new Date().toISOString(), screener2: w.id } : { decided_at: new Date().toISOString() };
+    const r = await saveRecord(w, rec, { ...part, ...stamp });
     if (r.ok) { onChanged(r.row); cue("next"); } else setSaid(both("rs.conflict"));
-  }, [w, onChanged]);
+  }, [w, onChanged, writingB]);
 
   /** At title stage an include sends the record on to full text.
-      At full text it is the one moment a record becomes a library
-      source: linked if the library already has it, added if not. */
+      At full text, for the review's own column, it is the one
+      moment a record becomes a library source: linked if the
+      library already has it, added if not. Column B never links a
+      source: it is a check on the decision, not the decision. */
   const include = useCallback(async (): Promise<void> => {
     if (!cur) return;
-    if (stage === "title") { await decide(cur, { stage: "fulltext" }); return; }
-    let source_id = cur.source_id;
-    if (!source_id) {
-      const dup = await findDuplicate(w, cur.record.csl);
-      if (dup?.sure) source_id = dup.source.id;
-      else {
-        const s = await addSource(w, cur.record.csl, {
-          via: "search", verified: true,
-          oa: cur.record.oa ? { isOa: cur.record.oa.isOa, url: cur.record.oa.url, at: new Date().toISOString() } : null,
-          identifiers: cur.record.openalex ? { openalex: cur.record.openalex } : {},
-        });
-        if (s) { source_id = s.id; onSource(s); }
-      }
+    if (writingB) {
+      if (stage === "title") { await decide(cur, { decision2: "fulltext" }); return; }
+      await decide(cur, { decision2: "included", record: { ...cur.record, fullText2: true } });
+      return;
     }
+    if (stage === "title") { await decide(cur, { stage: "fulltext" }); return; }
+    const source_id = await becomeSource(w, cur, onSource);
     await decide(cur, { stage: "included", source_id, record: { ...cur.record, fullText: true } });
-  }, [cur, stage, w, decide, onSource]);
+  }, [cur, stage, writingB, w, decide, onSource]);
 
   const exclude = useCallback(async (reason: string | null): Promise<void> => {
     if (!cur) return;
     setPicking(false);
+    if (writingB) { await decide(cur, { decision2: "excluded", reason2: reason, record: { ...cur.record, fullText2: stage === "fulltext" } }); return; }
     await decide(cur, { stage: "excluded", reason, record: { ...cur.record, fullText: stage === "fulltext" } });
-  }, [cur, stage, decide]);
+  }, [cur, stage, writingB, decide]);
 
   /** Maybe is "seen, undecided": the record stays in the queue and
       the page moves on, so a hard call can be left for the end. */
   const maybe = useCallback(async (): Promise<void> => {
     if (!cur) return;
-    if (stage === "title" && cur.stage === "found") {
+    if (writingB) {
+      if (stage === "title" && stageOf2(cur) === "found") {
+        const r = await saveRecord(w, cur, { decision2: "title" });
+        if (r.ok) onChanged(r.row);
+      }
+    } else if (stage === "title" && cur.stage === "found") {
       const r = await saveRecord(w, cur, { stage: "title" });
       if (r.ok) onChanged(r.row);
     }
     setAt((a) => (a + 1 < queue.length ? a + 1 : 0));
-  }, [cur, stage, w, onChanged, queue.length]);
+  }, [cur, stage, writingB, w, onChanged, queue.length]);
 
   const askReason = useCallback((): void => {
     if (!cur) return;
     if (exclusions.length) setPicking(true); else void exclude(null);
   }, [cur, exclusions.length, exclude]);
+
+  /** A resolved disagreement writes the review's own column: the
+      diagram reads `stage`, never `decision2`, so this is the only
+      way a disagreement changes PRISMA. */
+  const resolve = useCallback(async (rec: ReviewRecord, v: Verdict): Promise<void> => {
+    if (stage === "title") {
+      const part: Partial<ReviewRecord> = v === "include"
+        ? { stage: "fulltext" }
+        : { stage: "excluded", reason: rec.reason2 ?? rec.reason ?? null, record: { ...rec.record, fullText: false } };
+      const r = await saveRecord(w, rec, { ...part, decided_at: new Date().toISOString() });
+      if (r.ok) { onChanged(r.row); cue("next"); }
+      return;
+    }
+    if (v === "include") {
+      const source_id = await becomeSource(w, rec, onSource);
+      const r = await saveRecord(w, rec, { stage: "included", source_id, record: { ...rec.record, fullText: true }, decided_at: new Date().toISOString() });
+      if (r.ok) { onChanged(r.row); cue("next"); }
+      return;
+    }
+    const r = await saveRecord(w, rec, { stage: "excluded", reason: rec.reason2 ?? rec.reason ?? null, record: { ...rec.record, fullText: true }, decided_at: new Date().toISOString() });
+    if (r.ok) { onChanged(r.row); cue("next"); }
+  }, [stage, w, onChanged, onSource]);
+
+  const agree = useMemo(() => agreement(records, stage), [records, stage]);
 
   useKeys(useMemo(() => {
     const map: Record<string, () => void> = {
@@ -495,12 +585,16 @@ function Screen({ w, review, records, sources, onChanged, onSource, onPicking }:
       <div className="flex flex-wrap items-center gap-2">
         <ChipButton pressed={stage === "title"} onClick={() => { setStage("title"); setAt(0); }}>{both("rs.rev.screen.title")}</ChipButton>
         <ChipButton pressed={stage === "fulltext"} onClick={() => { setStage("fulltext"); setAt(0); }}>{both("rs.rev.screen.fulltext")}</ChipButton>
+        {canSecond ? (
+          <ChipButton pressed={actingB} onClick={() => setActingB((v) => !v)}>{both(actingB ? "rs.rev.second.on" : "rs.rev.second")}</ChipButton>
+        ) : null}
         <span className="ml-auto text-t1 text-ink-soft tabular-nums" data-testid="rs-rev-meter">{done} {both("rs.rev.of")} {total} {both("rs.rev.decided")}</span>
       </div>
       <div className="h-1.5 rounded-full overflow-hidden" style={{ background: "var(--paper-sunk)" }} aria-hidden="true">
         <div className="h-full rounded-full" style={{ width: `${pct}%`, background: toneVar("rose"), transition: "width 240ms ease-out" }} />
       </div>
       <p className="text-t1 text-ink-soft"><W k="rs.rev.screen.hint" /></p>
+      {canSecond ? <p className="text-t1 text-ink-soft"><W k="rs.rev.second.hint" /></p> : null}
       {said ? <p className="text-t1 text-danger" role="status">{said}</p> : null}
       {!cur ? <p className="text-t2 text-ink-soft"><W k="rs.rev.screen.done" /></p> : (
         <article className="grid gap-2" data-testid="rs-rev-record">
@@ -511,7 +605,16 @@ function Screen({ w, review, records, sources, onChanged, onSource, onPicking }:
             {cur.doi ? <a href={`https://doi.org/${cur.doi}`} target="_blank" rel="noreferrer">{both("rs.rev.opendoi")}</a> : null}
             {cur.record.oa?.url ? <a href={cur.record.oa.url} target="_blank" rel="noreferrer">{both("rs.rev.openoa")}</a> : null}
             {inLibrary ? <Chip tone="accent">{both("rs.rev.inlibrary")} · {inLibrary.key}</Chip> : null}
+            {stage === "fulltext" ? (readerPdf
+              ? <ChipButton pressed={readerOpen} onClick={() => setReaderOpen((v) => !v)}>{both("rs.read.open")}</ChipButton>
+              : <span className="text-ink-soft"><W k="rs.rev.reader.none" /></span>) : null}
           </p>
+          {readerOpen && inLibrary && readerPdf ? (
+            <div className="grid gap-1" data-testid="rs-rev-reader">
+              <p className="text-t1 text-ink-soft"><W k="rs.rev.reader.hint" /></p>
+              <Reader id={inLibrary.id} />
+            </div>
+          ) : null}
           <div className="flex flex-wrap items-center gap-2">
             <Button type="button" kind="solid" size="sm" onClick={() => { void include(); }}><W k="rs.rev.include" /> <kbd>y</kbd></Button>
             <Button type="button" kind="soft" size="sm" onClick={askReason}><W k="rs.rev.exclude" /> <kbd>x</kbd></Button>
@@ -535,6 +638,33 @@ function Screen({ w, review, records, sources, onChanged, onSource, onPicking }:
           {!exclusions.length ? <p className="text-t1 text-ink-soft"><W k="rs.rev.noreason" /></p> : null}
         </article>
       )}
+      {canSecond ? (
+        <Surface material="sunk" className="px-3 py-2 grid gap-2" data-testid="rs-rev-agreement">
+          <p className="text-t1"><W k="rs.rev.agreement" /></p>
+          <p className="text-t1 text-ink-soft"><W k="rs.rev.agreement.hint" /></p>
+          {!agree.n ? <p className="text-t1 text-ink-soft"><W k="rs.rev.agreement.none" /></p> : (
+            <p className="text-t1 tabular-nums">κ = {agree.k === null ? "?" : agree.k.toFixed(2)} · {agree.agreed} / {agree.n} {both("rs.rev.agreed")}</p>
+          )}
+          <p className="text-t1"><W k="rs.rev.disagreements" /></p>
+          {!agree.disagreed.length ? <p className="text-t1 text-ink-soft"><W k="rs.rev.disagreements.none" /></p> : (
+            <ul className="grid gap-2">
+              {agree.disagreed.map((r) => (
+                <li key={r.id} className="grid gap-1">
+                  <span>{r.record.title}</span>
+                  <span className="flex flex-wrap items-center gap-2">
+                    <Chip>{both("rs.rev.colA")}: {verdictA(r, stage) === "include" ? both("rs.rev.include") : both("rs.rev.exclude")}</Chip>
+                    <Chip>{both("rs.rev.colB")}: {verdictB(r, stage) === "include" ? both("rs.rev.include") : both("rs.rev.exclude")}</Chip>
+                    <span className="ml-auto flex flex-wrap gap-1">
+                      <Button type="button" kind="soft" size="sm" onClick={() => { void resolve(r, "include"); }}>{both("rs.rev.resolve")} {both("rs.rev.include")}</Button>
+                      <Button type="button" kind="soft" size="sm" onClick={() => { void resolve(r, "exclude"); }}>{both("rs.rev.resolve")} {both("rs.rev.exclude")}</Button>
+                    </span>
+                  </span>
+                </li>
+              ))}
+            </ul>
+          )}
+        </Surface>
+      ) : null}
     </Surface>
   );
 }
@@ -661,10 +791,12 @@ export function PrismaFigure({ c, reason, title }: { c: PrismaCounts; reason: (i
 
 /* ---------- extraction, a sheet with the reader's columns ---------- */
 
-function Extraction({ w, review, records, onChanged }: { w: Who; review: Review; records: ReviewRecord[]; onChanged: (r: ReviewRecord) => void }) {
+function Extraction({ w, review, records, sources, onChanged }: { w: Who; review: Review; records: ReviewRecord[]; sources: Source[]; onChanged: (r: ReviewRecord) => void }) {
   const cols = review.protocol.columns?.length ? review.protocol.columns : DEFAULT_COLUMNS;
   const included = records.filter((r) => r.stage === "included");
   const [drafts, setDrafts] = useState<Record<string, Record<string, string>>>({});
+  const [filling, setFilling] = useState(false);
+  const [said, setSaid] = useState("");
   const value = (r: ReviewRecord, c: string): string => drafts[r.id]?.[c] ?? r.extraction[c] ?? "";
   const keep = async (r: ReviewRecord, c: string): Promise<void> => {
     const v = value(r, c);
@@ -678,12 +810,38 @@ function Extraction({ w, review, records, onChanged }: { w: Who; review: Review;
     const lines = included.map((r) => [r.record.title, r.record.authors, r.record.year ? String(r.record.year) : "", r.doi ?? "", ...cols.map((c) => value(r, c))].map(esc).join(","));
     download(`${slug(review.title)}-extraction.csv`, `${[head, ...lines].join("\n")}\n`, "text/csv");
   };
+  /** Every included row's empty cells, from the extraction cards
+      made while reading its source. A cell already typed is never
+      touched, so running this twice costs nothing the second time. */
+  const fillFromReading = async (): Promise<void> => {
+    setFilling(true);
+    let filled = 0;
+    for (const r of included) {
+      const src = sourceOf(r, sources);
+      if (!src) continue;
+      const highlights = await listHighlights(w, src.id);
+      const cards: CardFields[] = highlights.map((h) => h.fields);
+      if (!cards.length) continue;
+      const next = fillFromCards(r.extraction, cols, cards);
+      const touched = cols.filter((c) => next[c] !== (r.extraction[c] ?? ""));
+      if (touched.length) {
+        const res = await saveRecord(w, r, { extraction: next });
+        if (res.ok) { onChanged(res.row); filled += touched.length; }
+      }
+    }
+    setFilling(false);
+    setSaid(`${filled} ${both("rs.rev.filled")}`);
+    if (filled) cue("saved");
+  };
   return (
     <Surface material="pane" className="px-4 py-3 grid gap-3">
       <p className="text-t1 text-ink-soft"><W k="rs.rev.extract.hint" /></p>
+      <p className="text-t1 text-ink-soft"><W k="rs.rev.fill.hint" /></p>
       <div className="flex flex-wrap items-center gap-2">
         <Chip>{included.length} {both("rs.rev.prisma.included")}</Chip>
+        <Button type="button" kind="soft" size="sm" disabled={!included.length || filling} onClick={() => { void fillFromReading(); }}><W k="rs.rev.fill" /></Button>
         <Button type="button" kind="soft" size="sm" disabled={!included.length} onClick={csv}><W k="rs.rev.extract.csv" /></Button>
+        {said ? <span className="text-t1 text-ink-soft">{said}</span> : null}
       </div>
       {!included.length ? <p className="text-t2 text-ink-soft"><W k="rs.rev.included.none" /></p> : (
         <div className="overflow-x-auto">

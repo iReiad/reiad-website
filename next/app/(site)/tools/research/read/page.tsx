@@ -9,7 +9,7 @@
 import type { Metadata } from "next";
 import { pageMeta } from "../../../../../lib/pageMeta";
 import { ResearchFrame } from "../../../../../components/research/frame";
-import { ReadingRoom } from "../../../../../components/research/queue";
+import { ReadingRoom } from "../../../../../components/research/rooms-client";
 
 export const metadata: Metadata = pageMeta({
   path: "/tools/research/read",

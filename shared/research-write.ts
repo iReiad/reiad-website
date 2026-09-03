@@ -147,6 +147,14 @@ export const countWords = (text: string): number => (text.match(WORD) ?? []).len
 
 export const readingMinutes = (words: number): number => Math.max(1, Math.round(words / 200));
 
+/* ---------- what kind a document is ---------- */
+
+/** The migration's own CHECK constraint, said once. `slides` joined
+    it in 20260903100000_research_slides.sql; check-research.ts
+    compares this list against that constraint by name. */
+export const DOCUMENT_KINDS = ["chapter", "paper", "proposal", "abstract", "letter", "other", "slides"] as const;
+export type DocumentKind = typeof DOCUMENT_KINDS[number];
+
 /* ---------- the outline ---------- */
 
 export interface Heading { level: 2 | 3; text: string; words: number; index: number }
@@ -162,6 +170,90 @@ export function outlineOf(html: string): Heading[] {
     if (!m) continue;
     out.push({ level: Number(m[1]) as 2 | 3, text: textOf(m[2]).trim(), words: countWords(textOf(m[3])), index });
     index += 1;
+  }
+  return out;
+}
+
+/* ---------- slides ---------- */
+
+export interface Slide { title: string; bullets: string[] }
+
+/** A kind-`slides` document as a deck: every h2 a slide, its own
+    text the title, and its `<li>` items the bullets (its
+    paragraphs where it holds no list). Content before the first
+    h2 is not a slide, the same rule `outlineOf` uses. */
+export function slidesOf(html: string): Slide[] {
+  const parts = normalise(html).split(/(?=<h2\b)/i);
+  const out: Slide[] = [];
+  for (const part of parts) {
+    const m = /^<h2\b[^>]*>([\s\S]*?)<\/h2>([\s\S]*)$/i.exec(part);
+    if (!m) continue;
+    const body = m[2];
+    const bullets = [...body.matchAll(/<li\b[^>]*>([\s\S]*?)<\/li>/gi)].map((li) => textOf(li[1]).trim()).filter(Boolean);
+    if (!bullets.length) for (const p of body.matchAll(/<p\b[^>]*>([\s\S]*?)<\/p>/gi)) { const t = textOf(p[1]).trim(); if (t) bullets.push(t); }
+    out.push({ title: textOf(m[1]).trim(), bullets });
+  }
+  return out;
+}
+
+/* ---------- moving a section ---------- */
+
+const HEADING_LEVEL = /^<h([23])\b/i;
+
+/** The heading at outline index `from`, and everything under it
+    down to (not including) the next heading of the same or
+    higher level, moved to sit at outline index `to`: the standard
+    array move, `from` spliced out and reinserted at `to` in the
+    result. A heading's own subheadings move with it because they
+    are between it and the next boundary. Out-of-range or a no-op
+    move returns `html` unchanged. */
+export function moveSection(html: string, from: number, to: number): string {
+  const pieces = normalise(html).split(/(?=<h[23]\b)/i);
+  const levelOf = (p: string): 2 | 3 | null => { const m = HEADING_LEVEL.exec(p); return m ? (Number(m[1]) as 2 | 3) : null; };
+  const levels = pieces.map(levelOf);
+  const headingAt: number[] = [];
+  levels.forEach((lvl, i) => { if (lvl !== null) headingAt.push(i); });
+  const n = headingAt.length;
+  if (from < 0 || from >= n || to < 0 || to >= n || from === to) return html;
+  const startPiece = headingAt[from];
+  const level = levels[startPiece] as 2 | 3;
+  let endPiece = startPiece + 1;
+  while (endPiece < pieces.length && (levels[endPiece] ?? 0) > level) endPiece += 1;
+  const section = pieces.slice(startPiece, endPiece);
+  const without = [...pieces.slice(0, startPiece), ...pieces.slice(endPiece)];
+  const withoutHeadingAt: number[] = [];
+  without.forEach((p, i) => { if (levelOf(p) !== null) withoutHeadingAt.push(i); });
+  const insertPiece = to < withoutHeadingAt.length ? withoutHeadingAt[to] : without.length;
+  return [...without.slice(0, insertPiece), ...section, ...without.slice(insertPiece)].join("");
+}
+
+/* ---------- the glossary ---------- */
+
+export interface GlossaryTerm { term: string; definition: string }
+
+/** A term marked with `<dfn>`, its definition the rest of the
+    paragraph; or a term bold at the start of a paragraph, its
+    definition the rest of that paragraph. First use only, so a
+    term explained once is not listed twice. */
+export function glossaryOf(html: string): GlossaryTerm[] {
+  const out: GlossaryTerm[] = [];
+  const seen = new Set<string>();
+  for (const block of normalise(splitNotes(html).rest).matchAll(/<p\b[^>]*>([\s\S]*?)<\/p>/gi)) {
+    const inner = block[1];
+    for (const m of inner.matchAll(/<dfn\b[^>]*>([\s\S]*?)<\/dfn>/gi)) {
+      const term = textOf(m[1]).trim();
+      if (!term || seen.has(term.toLowerCase())) continue;
+      const definition = textOf(inner.replace(m[0], "")).trim();
+      if (!definition) continue;
+      seen.add(term.toLowerCase());
+      out.push({ term, definition });
+    }
+    const bold = /^\s*<strong\b[^>]*>([\s\S]*?)<\/strong>/i.exec(inner);
+    if (bold) {
+      const term = textOf(bold[1]).trim();
+      const definition = textOf(inner.slice(bold[0].length)).trim();
+      if (term && definition && !seen.has(term.toLowerCase())) { seen.add(term.toLowerCase()); out.push({ term, definition }); }
+    }
   }
   return out;
 }

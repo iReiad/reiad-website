@@ -45,6 +45,16 @@ import { fileURLToPath } from "node:url";
 import { RESEARCH_PAGES } from "../next/lib/research-pages.ts";
 import { RESEARCH_TOOLS } from "../next/lib/research-tools.ts";
 import { METHOD_KINDS, RESEARCH_METHODS } from "../next/lib/research-methods.ts";
+import { METHOD_LESSONS } from "../next/lib/methods/index.ts";
+import { WRITTEN } from "../next/lib/methods/written.ts";
+
+/** The classes a lesson may wear: the article blocks the
+    sanitiser keeps, minus the photo ones, since a lesson has no
+    photograph. Kept in step with ALLOWED_CLASSES by hand because
+    that set is not exported and this one is deliberately smaller. */
+const LESSON_CLASSES = new Set([
+  "at-a-glance", "at-a-glance-label", "side-note", "side-note-label", "step-list", "checklist", "table-scroll", "note", "ex", "term",
+]);
 import {
   HIGHLIGHT_MEANINGS, NOTE_KINDS, PROJECT_KINDS, PROJECT_STATES, QUESTION_KINDS, QUESTION_STATES, SOURCE_STATUSES,
   SOURCE_TYPE_IDS, SOURCE_VIAS, TASK_LANES, TONES,
@@ -198,8 +208,19 @@ for (const s of ["doi", "isbn", "url", "bib", "todo", "note", "dup", "fail"]) if
     .map((f) => readFileSync(join(dir, f), "utf8")).join("\n")
     .replace(/^\s*--.*$/gm, "");
   const constraint = (table: string, column: string): string[] => {
+    /* A constraint widened later, by name: `alter table <table>
+       drop constraint ... add constraint <table>_<column>_check
+       check (<column> in (...))`, the migration that joins a new
+       value on without touching the column's own definition. The
+       named constraint wins over the column's original one, which
+       is what "widened" means. */
+    const widened = new RegExp(`add constraint ${table}_${column}_check\\s+check \\(${column} in \\(([^)]*)\\)`).exec(sql);
+    if (widened) return widened[1].split(",").map((s) => s.trim().replace(/^'|'$/g, ""));
     const body = new RegExp(`create table if not exists public\\.${table} \\(([\\s\\S]*?)\\n\\);`).exec(sql)?.[1] ?? "";
-    const col = new RegExp(`\\n\\s*${column}\\s+text[^\\n]*(?:\\n[^\\n]*)*?check \\(${column} in \\(([^)]*)\\)`).exec(body);
+    const col = new RegExp(`\\n\\s*${column}\\s+text[^\\n]*(?:\\n[^\\n]*)*?check \\(${column} in \\(([^)]*)\\)`).exec(body)
+      /* A column added later: `alter table ... add column if not
+         exists <column> text check (<column> in (...))`. */
+      ?? new RegExp(`add column if not exists ${column}\\s+text[^\\n]*(?:\\n[^\\n]*)*?check \\(${column} in \\(([^)]*)\\)`).exec(sql);
     if (!col) return [];
     return col[1].split(",").map((s) => s.trim().replace(/^'|'$/g, ""));
   };
@@ -227,7 +248,8 @@ for (const s of ["doi", "isbn", "url", "bib", "todo", "note", "dup", "fail"]) if
   same("CHUNK_KINDS", "research_chunks", "kind", CHUNK_KINDS);
   same("REVIEW_STATES", "research_reviews", "state", REVIEW_STATES);
   same("RECORD_STAGES", "research_review_records", "stage", RECORD_STAGES);
-  same("DOCUMENT_KINDS", "research_documents", "kind", ["chapter", "paper", "proposal", "abstract", "letter", "other"]);
+  same("RECORD_STAGES", "research_review_records", "decision2", RECORD_STAGES);
+  same("DOCUMENT_KINDS", "research_documents", "kind", ["chapter", "paper", "proposal", "abstract", "letter", "other", "slides"]);
   same("PROJECT_STATES", "research_projects", "state", PROJECT_STATES);
   same("TONES", "research_projects", "tone", TONES);
 }
@@ -288,6 +310,47 @@ if (bad) {
     for (const r of m.rooms ?? []) if (!keys.has(r)) fail(`method ${m.slug} names the room ${r}, which the pages table does not have`, "A key from next/lib/research-pages.ts.");
     if (!m.title.en || !m.title.bn || !m.dek.en || !m.dek.bn) fail(`method ${m.slug} is missing a language`, "Both languages, always.");
   }
+}
+
+/* ---- every lesson written here is a planned method, and every
+   planned method has a lesson. A lesson is article HTML and may
+   wear only the classes the article layer styles: a class outside
+   that set renders as nothing, on a page that looks finished. ---- */
+{
+  const planned = new Set(RESEARCH_METHODS.map((m) => m.slug));
+  const written = new Set(METHOD_LESSONS.map((l) => l.slug));
+  for (const l of METHOD_LESSONS) {
+    if (!planned.has(l.slug)) fail(`next/lib/methods/${l.slug}.ts is a lesson the methods table does not plan`, "Add it to RESEARCH_METHODS or remove the file.");
+    if (!l.en.trim() || !l.bn.trim()) fail(`lesson ${l.slug} is missing a language`);
+    if (!BANGLA.test(l.bn)) fail(`lesson ${l.slug}: the bn half is not Bangla`);
+    if (!(l.minutes > 0)) fail(`lesson ${l.slug} says it takes ${l.minutes} minutes`);
+    for (const half of [l.en, l.bn]) {
+      for (const m of half.matchAll(/class="([^"]+)"/g)) {
+        for (const c of m[1].split(/\s+/)) if (!LESSON_CLASSES.has(c)) fail(`lesson ${l.slug} wears the class "${c}", which @layer article does not style`);
+      }
+      if (/<(h1|script|style|iframe|img|a)\b/i.test(half)) fail(`lesson ${l.slug} holds a tag a lesson may not: ${/<(h1|script|style|iframe|img|a)\b/i.exec(half)?.[1]}`);
+    }
+  }
+  for (const m of RESEARCH_METHODS) if (!written.has(m.slug)) fail(`method ${m.slug} has no lesson under next/lib/methods/`, "Write one, or the card is a promise.");
+
+  /* WRITTEN is the room's own copy, and it is a copy on purpose:
+     the room is a client component, so importing the lessons to
+     ask which cards are links puts every lesson body in the
+     browser's bundle. A copy nobody checks is this file's whole
+     subject, so it is checked both ways. */
+  for (const w of WRITTEN) {
+    const real = METHOD_LESSONS.find((l) => l.slug === w.slug);
+    if (!real) fail(`written.ts lists ${w.slug} and there is no such lesson`, "Remove the row, or write the lesson.");
+    else if (real.minutes !== w.minutes) fail(`written.ts says ${w.slug} takes ${w.minutes} minutes and the lesson says ${real.minutes}`);
+  }
+  for (const l of METHOD_LESSONS) {
+    if (!WRITTEN.some((w) => w.slug === l.slug)) {
+      fail(`the lesson ${l.slug} is not in written.ts`,
+        "The methods room reads that list, so the card stays a promise and",
+        "the lesson is reachable only by typing its address.");
+    }
+  }
+  if (!existsSync(join(ROUTES, "methods", "[slug]", "page.tsx"))) fail("the lesson route next/app/(site)/tools/research/methods/[slug]/page.tsx is gone");
 }
 
 console.log(`research: ${RESEARCH_PAGES.length} rooms routed, ${Object.keys(RESEARCH_WORDS).length} phrases in both languages, every vocabulary the migration's, the desk gone.`);

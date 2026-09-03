@@ -21,7 +21,7 @@ import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import type { CSSProperties } from "react";
 import { toneVar } from "@reiad/shared/research";
 import {
-  COLUMN_TYPES, apaTable, canonicalColumns, chartSvg, completeCases, dayOf, hashText, histogram, importerFor, inferColumns, parseDelimited, sanity,
+  COLUMN_TYPES, apaTable, canonicalColumns, chartSvg, compareRuns, completeCases, dayOf, hashText, histogram, importerFor, inferColumns, modelOf, parseDelimited, sanity,
   type Cell, type ChartOptions, type Column, type ColumnType, type Sanity, type Series, type Table,
 } from "@reiad/shared/research-lab";
 import {
@@ -30,8 +30,8 @@ import {
   surveyMean, tTest, tsls, type Fit, type Robust,
 } from "@reiad/shared/research-stats";
 import {
-  addDataset, addRun, addSource, addTransform, fileTicket, listDatasets, listQuestions, listRuns, listTransforms, marketSeries, removeDataset, removeRun,
-  removeTransform, saveDataset, uploadFile, type Dataset, type Question, type Run, type Transform, type Who,
+  addDataset, addRun, addSource, addTransform, climateSeries, fileTicket, findPlaces, listDatasets, listQuestions, listRuns, listTransforms, marketSeries, removeDataset, removeRun,
+  removeTransform, saveDataset, uploadFile, type ClimateSeries, type Dataset, type PlaceFound, type Question, type Run, type Transform, type Who,
 } from "../../lib/research-api";
 import { ident, loadTable, query, type Answer } from "../../lib/duck";
 import { Button, ButtonLabel } from "../ui/button";
@@ -44,8 +44,8 @@ import { SignedOut } from "./signed-out";
 import { useWho } from "./use-who";
 import { useKeys } from "./keys";
 
-type View = "datasets" | "sql" | "stats" | "charts" | "runs" | "market";
-const VIEWS: View[] = ["datasets", "sql", "stats", "charts", "runs", "market"];
+type View = "datasets" | "sql" | "stats" | "charts" | "runs" | "market" | "climate";
+const VIEWS: View[] = ["datasets", "sql", "stats", "charts", "runs", "market", "climate"];
 const ACCEPT = ".csv,.tsv,.txt,.xlsx,.parquet,.json";
 const TEXT_EXT = new Set(["csv", "tsv", "txt", "json"]);
 
@@ -334,7 +334,12 @@ export function Lab({ openRun }: { openRun?: string } = {}) {
     void (async () => {
       const [d, r, q] = await Promise.all([listDatasets(w), listRuns(w), listQuestions(w)]);
       setDatasets(d); setRuns(r); setVariables(q.filter((x) => x.kind === "variable")); setReady(true);
-      if (d.length) setChosen((c) => c ?? d[0].id);
+      /* The workshop's Which test links here with ?method=&dataset=,
+         so a named dataset wins over the first and opens on stats. */
+      const url = new URLSearchParams(location.search);
+      const named = d.find((x) => x.id === url.get("dataset"))?.id ?? null;
+      if (d.length) setChosen((c) => named ?? c ?? d[0].id);
+      if (url.get("method")) setView("stats");
     })();
   }, [w]);
 
@@ -348,20 +353,9 @@ export function Lab({ openRun }: { openRun?: string } = {}) {
   const ensureLoaded = useCallback(async (d: Dataset): Promise<string> => {
     if (!w) throw new Error("signed out");
     if (loaded[d.id]) return loaded[d.id];
-    const file = d.files[0];
-    if (!file) throw new Error("no file");
     setBusy(both("rs.lab.loading"));
     try {
-      const ticket = await fileTicket(w, file.key);
-      if (!ticket) throw new Error("no ticket");
-      const res = await fetch(ticket);
-      if (!res.ok) throw new Error(`http-${res.status}`);
-      const bytes = new Uint8Array(await res.arrayBuffer());
-      const name = tableOf(d);
-      /* The dictionary's canonical names go on the table at
-         creation, by position, so the file's own headings never
-         reach a query. */
-      await loadTable(name, bytes, file.ext, d.dictionary.map((c) => c.name));
+      const name = await loadDataset(w, d);
       setLoaded((was) => ({ ...was, [d.id]: name }));
       if (!d.dictionary.length || d.rows === null) {
         const desc = await query(`DESCRIBE ${ident(name)}`);
@@ -399,8 +393,9 @@ export function Lab({ openRun }: { openRun?: string } = {}) {
       {view === "sql" ? (dataset ? <Sql w={w} dataset={dataset} ensureLoaded={ensureLoaded} keepRun={keepRun} setSaid={setSaid} /> : <NoDataset />) : null}
       {view === "stats" ? (dataset ? <Stats lang={lang} dataset={dataset} ensureLoaded={ensureLoaded} keepRun={keepRun} setSaid={setSaid} /> : <NoDataset />) : null}
       {view === "charts" ? (dataset ? <Charts dataset={dataset} ensureLoaded={ensureLoaded} keepRun={keepRun} setSaid={setSaid} /> : <NoDataset />) : null}
-      {view === "runs" ? <Runs w={w} lang={lang} runs={runs} datasets={datasets} onRemoved={(r) => setRuns((was) => was.filter((x) => x.id !== r.id))} /> : null}
+      {view === "runs" ? <Runs w={w} lang={lang} runs={runs} datasets={datasets} onRemoved={(r) => setRuns((was) => was.filter((x) => x.id !== r.id))} setSaid={setSaid} /> : null}
       {view === "market" ? <Market w={w} onMade={(d) => { setDatasets((was) => [d, ...was]); setChosen(d.id); setView("datasets"); }} setSaid={setSaid} /> : null}
+      {view === "climate" ? <Climate w={w} onMade={(d) => { setDatasets((was) => [d, ...was]); setChosen(d.id); setView("datasets"); }} setSaid={setSaid} /> : null}
     </div>
   );
 }
@@ -410,6 +405,55 @@ const NoDataset = (): React.ReactNode => <p className="text-t2 text-ink-soft"><W
 const duckType = (t: string): ColumnType => (/INT|DOUBLE|DECIMAL|FLOAT|HUGEINT|BIGINT|REAL/i.test(t) ? "number" : /DATE|TIME/i.test(t) ? "date" : /BOOL/i.test(t) ? "boolean" : "text");
 
 /* ---------- datasets: the upload, the dictionary, the checks ---------- */
+
+/** The dataset's file, fetched on its ticket and registered in the
+    engine under the dataset's own table name. The dictionary's
+    canonical names go on the table at creation, by position, so
+    the file's own headings never reach a query. */
+export async function loadDataset(w: Who, d: Dataset): Promise<string> {
+  const file = d.files[0];
+  if (!file) throw new Error("no file");
+  const ticket = await fileTicket(w, file.key);
+  if (!ticket) throw new Error("no ticket");
+  const res = await fetch(ticket);
+  if (!res.ok) throw new Error(`http-${res.status}`);
+  const bytes = new Uint8Array(await res.arrayBuffer());
+  const name = tableOf(d);
+  await loadTable(name, bytes, file.ext, d.dictionary.map((c) => c.name));
+  return name;
+}
+
+/** What a statistics run records of what was asked, and what a
+    re-run reads back. */
+export interface StatInput { method: string; roles: Record<string, string[]>; options: Record<string, string>; stars?: boolean }
+
+/** One method on the columns its roles name, read out of the
+    loaded table. The same function serves the form and "Run
+    again", which is what makes a re-run the same computation
+    rather than a second copy of it. */
+export async function runStored(table: string, input: StatInput): Promise<{ result: Result; code: string; method: Method; ms: number }> {
+  const method = METHODS.find((m) => m.id === input.method);
+  if (!method) throw new Error(`no method ${input.method}`);
+  const picks = input.roles;
+  const cols = [...new Set(method.roles.flatMap((r) => picks[r.key] ?? []))];
+  const code = `SELECT ${cols.map(ident).join(", ")} FROM ${ident(table)}`;
+  const a = await query(code);
+  const rows = a.rows.filter((r) => r.every((v) => v !== null && v !== ""));
+  const col = (c: string): Cell[] => rows.map((r) => { const v = r[a.columns.indexOf(c)]; return typeof v === "boolean" ? (v ? 1 : 0) : v; });
+  const p: Picked = {
+    num: (k) => (picks[k]?.[0] ? col(picks[k][0]).map(Number) : []),
+    nums: (k) => (picks[k] ?? []).map((c) => col(c).map(Number)),
+    any: (k) => (picks[k]?.[0] ? col(picks[k][0]) : []),
+    names: (k) => picks[k] ?? [],
+  };
+  const options = { ...Object.fromEntries(method.options.map((o) => [o.key, o.value])), ...input.options };
+  const t0 = performance.now();
+  const result = method.run(p, options);
+  return { result, code, method, ms: Math.round(performance.now() - t0) };
+}
+
+/** The outcome a fit's table names, out of the roles. */
+export const depvarOf = (roles: Record<string, string[]>): string => roles.y?.[0] ?? roles.r?.[0] ?? "y";
 
 /** One upload is three writes and cannot half-succeed in a way
     the reader cannot see: the bytes go to R2 first, then the
@@ -681,7 +725,7 @@ function Sql({ w, dataset, ensureLoaded, keepRun, setSaid }: {
 function Stats({ lang, dataset, ensureLoaded, keepRun, setSaid }: {
   lang: "en" | "bn"; dataset: Dataset; ensureLoaded: (d: Dataset) => Promise<string>; keepRun: (part: Partial<Run> & { kind: Run["kind"]; label: string }) => Promise<Run | null>; setSaid: (s: string) => void;
 }) {
-  const [methodId, setMethodId] = useState("describe");
+  const [methodId, setMethodId] = useState(() => { const m = new URLSearchParams(location.search).get("method"); return METHODS.some((x) => x.id === m) ? String(m) : "describe"; });
   const method = METHODS.find((m) => m.id === methodId) ?? METHODS[0];
   const [picks, setPicks] = useState<Record<string, string[]>>({});
   const [options, setOptions] = useState<Record<string, string>>({});
@@ -704,37 +748,17 @@ function Stats({ lang, dataset, ensureLoaded, keepRun, setSaid }: {
     setError("");
     try {
       const name = await ensureLoaded(dataset);
+      const { result: res } = await runStored(name, { method: method.id, roles: picks, options });
       const cols = [...new Set(method.roles.flatMap((r) => picks[r.key] ?? []))];
-      const sql = `SELECT ${cols.map(ident).join(", ")} FROM ${ident(name)}`;
-      const a = await query(sql);
-      const rows = a.rows.filter((r) => r.every((v) => v !== null && v !== ""));
-      const col = (c: string): Cell[] => rows.map((r) => { const v = r[a.columns.indexOf(c)]; return typeof v === "boolean" ? (v ? 1 : 0) : v; });
-      const p: Picked = {
-        num: (k) => (picks[k]?.[0] ? col(picks[k][0]).map(Number) : []),
-        nums: (k) => (picks[k] ?? []).map((c) => col(c).map(Number)),
-        any: (k) => (picks[k]?.[0] ? col(picks[k][0]) : []),
-        names: (k) => picks[k] ?? [],
-      };
-      const t0 = performance.now();
-      const res = method.run(p, options);
-      const ms = Math.round(performance.now() - t0);
       setResult(res);
       setLabel(`${lang === "bn" ? method.bn : method.en}: ${cols.join(", ")}`.slice(0, 80));
-      void ms;
     } catch (e) { setError(String((e as Error).message ?? e)); setResult(null); }
   };
   const keep = async (): Promise<void> => {
     if (!result) return;
-    const fit = result.fit ? { ...result.fit, residuals: undefined, fitted: undefined } : undefined;
-    const apa = result.fit ? apaTable(result.fit, { stars, depvar: picks.y?.[0] ?? picks.r?.[0] ?? "y" }) : null;
-    await keepRun({
-      kind: "stat", label: label || method.id, input: { method: method.id, roles: picks, options, stars },
-      code: `SELECT ${[...new Set(method.roles.flatMap((r) => picks[r.key] ?? []))].map(ident).join(", ")} FROM ${ident(tableOf(dataset))}`,
-      output: { summary: result.summary, tables: result.tables, fit, apa: apa?.markdown ?? null, notes: apa?.notes ?? null },
-      figure: result.chart ? chartSvg({ ...result.chart, title: label }) : null,
-    });
+    await keepRun(statRun(result, { method: method.id, roles: picks, options, stars }, label || method.id, tableOf(dataset)));
   };
-  const apa = result?.fit ? apaTable(result.fit, { stars, depvar: picks.y?.[0] ?? picks.r?.[0] ?? "y" }) : null;
+  const apa = result?.fit ? apaTable(result.fit, { stars, depvar: depvarOf(picks) }) : null;
   const groups = [...new Set(METHODS.map((m) => m.group))];
 
   return (
@@ -795,6 +819,21 @@ function Stats({ lang, dataset, ensureLoaded, keepRun, setSaid }: {
       ) : null}
     </Surface>
   );
+}
+
+/** A result as the row a statistics run is kept as: the fit
+    without its residuals, the APA text, the figure as SVG. */
+export function statRun(result: Result, input: StatInput, label: string, table: string): Partial<Run> & { kind: Run["kind"]; label: string } {
+  const fit = result.fit ? { ...result.fit, residuals: undefined, fitted: undefined } : undefined;
+  const apa = result.fit ? apaTable(result.fit, { stars: input.stars, depvar: depvarOf(input.roles) }) : null;
+  const method = METHODS.find((m) => m.id === input.method);
+  const cols = [...new Set((method?.roles ?? []).flatMap((r) => input.roles[r.key] ?? []))];
+  return {
+    kind: "stat", label, input: { ...input },
+    code: `SELECT ${cols.map(ident).join(", ")} FROM ${ident(table)}`,
+    output: { summary: result.summary, tables: result.tables, fit, apa: apa?.markdown ?? null, notes: apa?.notes ?? null },
+    figure: result.chart ? chartSvg({ ...result.chart, title: label }) : null,
+  };
 }
 
 /* ---------- charts ---------- */
@@ -860,14 +899,39 @@ function Charts({ dataset, ensureLoaded, keepRun, setSaid }: {
 
 const KIND_TONES: Record<string, string> = { sql: "teal", stat: "blue", chart: "gold", python: "violet", check: "rose" };
 
-function Runs({ w, lang, runs, datasets, onRemoved }: { w: Who; lang: "en" | "bn"; runs: Run[]; datasets: Dataset[]; onRemoved: (r: Run) => void }) {
+function Runs({ w, lang, runs, datasets, onRemoved, setSaid }: { w: Who; lang: "en" | "bn"; runs: Run[]; datasets: Dataset[]; onRemoved: (r: Run) => void; setSaid: (s: string) => void }) {
+  const [ticked, setTicked] = useState<string[]>([]);
+  const models = ticked.map((id) => runs.find((r) => r.id === id)).filter((r): r is Run => Boolean(r)).map(modelOf).filter((m): m is NonNullable<typeof m> => m !== null);
+  const cmp = models.length >= 2 ? compareRuns(models) : null;
+  const copy = (text: string): void => { void navigator.clipboard?.writeText(text); setSaid(both("rs.copied")); };
   return (
     <Surface material="pane" className="px-4 py-3 grid gap-2">
-      <p className="text-t1 text-ink-soft"><W k="rs.lab.runs.hint" /></p>
+      <p className="text-t1 text-ink-soft"><W k="rs.lab.runs.hint" /> <W k="rs.lab.compare.hint" /></p>
+      {ticked.length >= 2 ? (
+        <div className="grid gap-2" data-testid="rs-lab-compare">
+          <h3 className="text-t2 font-medium"><W k="rs.lab.compare" /></h3>
+          {!cmp ? <p className="text-t1 text-ink-soft"><W k="rs.lab.compare.none" /></p> : (
+            <>
+              <div className="overflow-x-auto">
+                <table className="text-t1 tabular-nums">
+                  <thead><tr>{cmp.rows[0].map((c, i) => <th key={i} className="text-left font-normal text-ink-soft pr-3 whitespace-nowrap">{c}</th>)}</tr></thead>
+                  <tbody>{cmp.rows.slice(1).map((r, i) => <tr key={i}>{r.map((v, j) => <td key={j} className="pr-3 whitespace-nowrap">{v}</td>)}</tr>)}</tbody>
+                </table>
+              </div>
+              <p className="text-t1 text-ink-soft">{cmp.notes}</p>
+              <div className="flex flex-wrap gap-2">
+                <Button type="button" kind="ghost" size="sm" onClick={() => copy(cmp.markdown)}><W k="rs.lab.compare.md" /></Button>
+                <Button type="button" kind="ghost" size="sm" onClick={() => copy(cmp.latex)}><W k="rs.lab.compare.tex" /></Button>
+              </div>
+            </>
+          )}
+        </div>
+      ) : null}
       {!runs.length ? <p className="text-t2 text-ink-soft"><W k="rs.none" /></p> : (
         <ul className="rs-rows grid gap-1" data-testid="rs-lab-runs">
           {runs.map((r) => (
             <li key={r.id} className="rs-row">
+              {modelOf(r) ? <input type="checkbox" className="mr-1" aria-label={`${both("rs.lab.compare")}: ${r.label || r.kind}`} checked={ticked.includes(r.id)} onChange={(e) => setTicked((was) => (e.target.checked ? [...was, r.id] : was.filter((x) => x !== r.id)))} /> : null}
               <span className="rs-row-dot" aria-hidden="true" style={{ "--tone": toneVar(KIND_TONES[r.kind] as "teal") } as CSSProperties} />
               <span className="rs-row-main">
                 <a className="rs-row-title" href={`/tools/research/lab/run/${r.id}`}>{r.label || r.kind}</a>
@@ -921,6 +985,100 @@ function Market({ w, onMade, setSaid }: { w: Who; onMade: (d: Dataset) => void; 
           <p className="text-t1"><Chip tone="accent">{series.symbol}</Chip> {series.bars.length} {both("rs.lab.bars")} · {series.bars[0]?.date} → {series.bars[series.bars.length - 1]?.date} · {series.source}</p>
           <img src={svgUrl(svg)} alt={series.symbol} className="max-w-full h-auto" />
           <div><Button type="button" kind="soft" size="sm" onClick={() => { void save(); }}><W k="rs.lab.market.save" /></Button></div>
+        </div>
+      ) : null}
+    </Surface>
+  );
+}
+
+/* ---------- climate for a place, through the Worker ---------- */
+
+/** A coordinate as the Worker will round it, or null. */
+const coordOf = (raw: string, limit: number): number | null => {
+  const n = Number(raw);
+  return raw.trim() !== "" && Number.isFinite(n) && Math.abs(n) <= limit ? Math.round(n * 100) / 100 : null;
+};
+
+function Climate({ w, onMade, setSaid }: { w: Who; onMade: (d: Dataset) => void; setSaid: (s: string) => void }) {
+  const year = new Date().getFullYear();
+  const [place, setPlace] = useState("");
+  const [found, setFound] = useState<PlaceFound[]>([]);
+  const [chosen, setChosen] = useState("");
+  const [lat, setLat] = useState("");
+  const [lon, setLon] = useState("");
+  const [from, setFrom] = useState(`${year - 1}-01-01`);
+  const [to, setTo] = useState(`${year - 1}-12-31`);
+  const [series, setSeries] = useState<ClimateSeries | null>(null);
+  const [busy, setBusy] = useState(false);
+  const [error, setError] = useState("");
+  useEffect(() => {
+    const q = place.trim();
+    if (q.length < 2) { setFound([]); return; }
+    let alive = true;
+    const timer = setTimeout(() => { void findPlaces(q).then((p) => { if (alive) setFound(p); }); }, 280);
+    return () => { alive = false; clearTimeout(timer); };
+  }, [place]);
+  const la = coordOf(lat, 90), lo = coordOf(lon, 180);
+  const ready = la !== null && lo !== null && /^\d{4}-\d{2}-\d{2}$/.test(from) && /^\d{4}-\d{2}-\d{2}$/.test(to) && from <= to;
+  const fetchIt = async (): Promise<void> => {
+    if (la === null || lo === null) return;
+    setBusy(true); setError("");
+    try {
+      const s = await climateSeries(w, { lat: la, lon: lo, from, to });
+      if (!s) { setError(both("rs.lab.climate.off")); setSeries(null); return; }
+      setSeries(s);
+    } finally { setBusy(false); }
+  };
+  const save = async (): Promise<void> => {
+    if (!series) return;
+    const csv = [series.columns.join(","), ...series.rows.map((r) => r.map((v) => (v === null ? "" : String(v))).join(","))].join("\n") + "\n";
+    const where = chosen || `${series.lat}, ${series.lon}`;
+    const file = new File([csv], `climate-${series.lat}-${series.lon}-${series.from}-${series.to}.csv`.replace(/[^a-z0-9.-]+/gi, "-"), { type: "text/csv" });
+    const made = await importFile(w, file, {
+      name: `${both("rs.lab.climate")}: ${where} ${series.from.slice(0, 4)}${series.to.slice(0, 4) !== series.from.slice(0, 4) ? `–${series.to.slice(0, 4)}` : ""}`,
+      licence: series.licence,
+      provenance: { kind: "climate", source: series.source, licence: series.licence, lat: series.lat, lon: series.lon, from: series.from, to: series.to, place: chosen || null, units: series.units, fetched: series.fetched },
+    });
+    if ("error" in made) { setError(`${both("rs.lab.failed")}: ${made.error}`); return; }
+    onMade(made); cue("saved"); setSaid(both("rs.saved"));
+  };
+  const svg = series ? chartSvg({
+    kind: "line", xDates: true, yLabel: "°C", title: chosen || `${series.lat}, ${series.lon}`,
+    series: [
+      { name: "tmax", points: series.rows.flatMap((r) => (typeof r[1] === "number" ? [{ x: dayOf(String(r[0])) ?? 0, y: r[1] }] : [])) },
+      { name: "tmin", points: series.rows.flatMap((r) => (typeof r[2] === "number" ? [{ x: dayOf(String(r[0])) ?? 0, y: r[2] }] : [])) },
+    ],
+  }) : "";
+  const rain = series ? series.rows.reduce((a, r) => a + (typeof r[4] === "number" ? r[4] : 0), 0) : 0;
+  return (
+    <Surface material="pane" className="px-4 py-3 grid gap-3">
+      <p className="text-t1 text-ink-soft"><W k="rs.lab.climate.hint" /></p>
+      <div className="grid gap-1">
+        <Field id="rs-lab-place" label={<W k="rs.lab.place" />} value={place} onChange={(e) => setPlace(e.target.value)} autoComplete="off" />
+        <p className="text-t1 text-ink-soft"><W k="rs.lab.place.hint" /></p>
+        {found.length ? (
+          <div className="flex flex-wrap gap-1" data-testid="rs-lab-places">
+            {found.map((p) => <ChipButton key={p.id} pressed={chosen === (p.where ? `${p.name}, ${p.where}` : p.name)} onClick={() => { setLat(String(p.lat)); setLon(String(p.lon)); setChosen(p.where ? `${p.name}, ${p.where}` : p.name); setFound([]); setPlace(""); }}>{p.name}{p.where ? `, ${p.where}` : ""}</ChipButton>)}
+          </div>
+        ) : null}
+      </div>
+      <form className="grid gap-2 md:grid-cols-4" onSubmit={(e) => { e.preventDefault(); void fetchIt(); }}>
+        <Field id="rs-lab-lat" label={<W k="rs.lab.lat" />} inputMode="decimal" value={lat} onChange={(e) => { setLat(e.target.value); setChosen(""); }} autoComplete="off" />
+        <Field id="rs-lab-lon" label={<W k="rs.lab.lon" />} inputMode="decimal" value={lon} onChange={(e) => { setLon(e.target.value); setChosen(""); }} autoComplete="off" />
+        <Field id="rs-lab-from" label={<W k="rs.lab.from" />} type="date" value={from} onChange={(e) => setFrom(e.target.value)} />
+        <Field id="rs-lab-to" label={<W k="rs.lab.to" />} type="date" value={to} onChange={(e) => setTo(e.target.value)} />
+        <div className="md:col-span-4 flex flex-wrap items-center gap-2">
+          {chosen ? <Chip tone="accent">{chosen}</Chip> : null}
+          <Button type="submit" kind="solid" size="sm" disabled={!ready || busy}><W k="rs.lab.fetch" /></Button>
+        </div>
+      </form>
+      {error ? <p className="text-t1 text-danger" role="alert">{error}</p> : null}
+      {series ? (
+        <div className="grid gap-2" data-testid="rs-lab-climate">
+          <p className="text-t1"><Chip tone="accent">{series.lat}, {series.lon}</Chip> {series.rows.length} {both("rs.lab.days")} · {series.from} → {series.to} · {fmt(rain, 1)} mm · {series.source}, {series.licence}</p>
+          <img src={svgUrl(svg)} alt={`${series.lat}, ${series.lon}`} className="max-w-full h-auto" />
+          <ResultTable table={{ title: both("rs.lab.preview"), columns: series.columns, rows: series.rows.slice(0, 10) }} max={10} />
+          <div><Button type="button" kind="soft" size="sm" onClick={() => { void save(); }}><W k="rs.lab.climate.save" /></Button></div>
         </div>
       ) : null}
     </Surface>

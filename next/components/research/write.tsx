@@ -27,14 +27,19 @@ import type { CslItem } from "@reiad/shared/research";
 import { sourceType, toneVar } from "@reiad/shared/research";
 import { CSL_STYLES } from "@reiad/shared/csl";
 import {
-  chipHtml, claimsOf, countWords, keysCited, outlineOf, overlapsOf, readingMinutes, renumber, textOf, toLatex, toMarkdown,
-  type Chip,
+  DOCUMENT_KINDS, chipHtml, claimsOf, countWords, escape, glossaryOf, keysCited, moveSection, outlineOf, overlapsOf,
+  readingMinutes, renumber, slidesOf, textOf, toLatex, toMarkdown,
+  type Chip, type DocumentKind, type Slide,
 } from "@reiad/shared/research-write";
+import { abbreviations } from "@reiad/shared/research-tools";
+import { apaTable, modelOf, type Model } from "@reiad/shared/research-lab";
+import { toHtml as tableHtml } from "@reiad/shared/research-tools";
+import { word } from "@reiad/shared/research-words";
 import { toBibtex } from "@reiad/shared/research-bib";
 import {
-  DOCUMENT_KINDS, DOCUMENT_STATES, addDocument, bin, getDocument, listDocuments, listProjects, listSources,
+  DOCUMENT_STATES, addDocument, bin, getDocument, listDocuments, listProjects, listRuns, listSources,
   listVersions, rows, saveDocument, saveSource, snapshot,
-  type Document, type DocumentKind, type DocumentState, type Highlight, type Project, type Source, type Version, type Who,
+  type Document, type DocumentKind as ApiDocumentKind, type DocumentState, type Highlight, type Project, type Run, type Source, type Version, type Who,
 } from "../../lib/research-api";
 import { isNoteStyle, makeEngine, preview, renderDocument } from "../../lib/cite";
 import { runtimeModule } from "../account/runtime";
@@ -60,14 +65,20 @@ interface EditorModule {
   createEditor(o: { root: HTMLElement; onChange?: () => void; lang?: () => string | undefined }): EditorHandle;
 }
 
-const KIND_TONES: Record<DocumentKind, string> = { chapter: "violet", paper: "blue", proposal: "gold", abstract: "teal", letter: "rose", other: "plum" };
+const KIND_TONES: Record<DocumentKind, string> = { chapter: "violet", paper: "blue", proposal: "gold", abstract: "teal", letter: "rose", other: "plum", slides: "green" };
 const KIND_NAMES: Record<DocumentKind, { en: string; bn: string }> = {
   chapter: { en: "Chapter", bn: "অধ্যায়" }, paper: { en: "Paper", bn: "পেপার" }, proposal: { en: "Proposal", bn: "প্রস্তাব" },
-  abstract: { en: "Abstract", bn: "সারাংশ" }, letter: { en: "Letter", bn: "চিঠি" }, other: { en: "Other", bn: "অন্য" },
+  abstract: { en: "Abstract", bn: "সারাংশ" }, letter: { en: "Letter", bn: "চিঠি" }, other: { en: "Other", bn: "অন্য" }, slides: { en: "Slides", bn: "স্লাইড" },
 };
 const STATE_NAMES: Record<DocumentState, { en: string; bn: string }> = {
   outline: { en: "Outline", bn: "রূপরেখা" }, drafting: { en: "Drafting", bn: "খসড়া" }, revising: { en: "Revising", bn: "সংশোধন" }, done: { en: "Done", bn: "শেষ" },
 };
+
+/** A document's kind widened to the vocabulary `slides` joined:
+    research-api.ts's own alias is append-only from here, so every
+    equality check against "slides" goes through this rather than
+    `doc.kind` directly. */
+const kindOf = (d: Document): DocumentKind => d.kind as DocumentKind;
 
 export function Desk({ openId }: { openId?: string }) {
   const { w, answered } = useWho();
@@ -79,6 +90,14 @@ export function Desk({ openId }: { openId?: string }) {
   const [doc, setDoc] = useState<Document | null>(null);
   const [title, setTitle] = useState("");
   const [kind, setKind] = useState<DocumentKind>("chapter");
+  /* A stale document's own save can resolve after the reader has
+     switched to another one: `write()` in the OLD Paper keeps its
+     OWN closure over `onChange`, so a `useState` check here would
+     read the value that closure was born with, not the current
+     one. A ref is the one thing every closure, however old, reads
+     live. */
+  const openRef = useRef(open);
+  useEffect(() => { openRef.current = open; }, [open]);
 
   useEffect(() => {
     if (!w) return;
@@ -93,7 +112,11 @@ export function Desk({ openId }: { openId?: string }) {
 
   const make = useCallback(async () => {
     if (!w || !title.trim()) return;
-    const d = await addDocument(w, { title: title.trim(), kind, position: (docs?.length ?? 0) + 1 });
+    /* research-api.ts's own DocumentKind predates `slides` and is
+       append-only from here: shared/research-write.ts's is the
+       vocabulary check-research.ts holds to the migration, and the
+       two agree on every member that alias had before. */
+    const d = await addDocument(w, { title: title.trim(), kind: kind as ApiDocumentKind, position: (docs?.length ?? 0) + 1 });
     if (d) { setDocs((was) => [...(was ?? []), d]); setOpen(d.id); setTitle(""); cue("saved"); }
   }, [w, title, kind, docs]);
 
@@ -139,7 +162,7 @@ export function Desk({ openId }: { openId?: string }) {
       <section className="rs-main min-w-0" aria-live="polite">
         {doc ? (
           <Paper key={doc.id} w={w} doc={doc} sources={sources} projects={projects}
-                 onChange={(d) => { setDoc(d); setDocs((was) => (was ?? []).map((x) => x.id === d.id ? { ...x, ...d, body: x.body } : x)); }}
+                 onChange={(d) => { if (openRef.current === d.id) setDoc(d); setDocs((was) => (was ?? []).map((x) => x.id === d.id ? { ...x, ...d, body: x.body } : x)); }}
                  onGone={() => { setDocs((was) => (was ?? []).filter((x) => x.id !== doc.id)); setOpen(null); }}
                  onSourceChange={(s) => setSources((was) => was.map((x) => x.id === s.id ? s : x))} />
         ) : open ? <p className="text-t2 text-ink-soft"><W k="rs.moment" /></p> : <p className="text-t2 text-ink-soft"><W k="rs.write.pick" /></p>}
@@ -166,10 +189,11 @@ function Paper({ w, doc, sources, projects, onChange, onGone, onSourceChange }: 
   const [bib, setBib] = useState("");
   const [picker, setPicker] = useState(false);
   const [quotes, setQuotes] = useState(false);
-  const [pane, setPane] = useState<"outline" | "audit" | "overlap" | "versions">("outline");
+  const [figures, setFigures] = useState(false);
+  const [pane, setPane] = useState<"outline" | "audit" | "overlap" | "versions" | "glossary">("outline");
   const [versions, setVersions] = useState<Version[] | null>(null);
   const [others, setOthers] = useState<{ name: string; text: string }[]>([]);
-  const [files, setFiles] = useState<{ word?: string; md?: string; tex?: string; bib?: string } | null>(null);
+  const [files, setFiles] = useState<{ word?: string; md?: string; tex?: string; bib?: string; pptx?: string } | null>(null);
   const [snapName, setSnapName] = useState("");
   /* Where the caret was in the prose the last time it was there.
      Opening the picker moves the focus into a field, and the
@@ -210,9 +234,22 @@ function Paper({ w, doc, sources, projects, onChange, onGone, onSourceChange }: 
     } else setState(r.conflict ? "conflict" : "failed");
   }, [w, doc, onChange]);
 
+  /* WHAT the pending save is for, kept beside the timer.
+
+     Leaving a document flushes that save so the last keystrokes
+     are not lost, and it used to flush `box.current.innerHTML`
+     read AT TEARDOWN, which is after React has emptied the
+     editor for the next document: the save went to the right
+     document carrying an empty body. A reader wrote a chapter,
+     clicked the next document in the list, and came back to a
+     blank one. Flush what was scheduled, never what the DOM
+     happens to hold once it is being taken apart. */
+  const pending = useRef<Partial<Document> | null>(null);
+
   const later = useCallback((part: Partial<Document>) => {
     if (timer.current) clearTimeout(timer.current);
-    timer.current = setTimeout(() => { void write(part); }, SETTLE);
+    pending.current = { ...pending.current, ...part };
+    timer.current = setTimeout(() => { const p = pending.current; pending.current = null; if (p) void write(p); }, SETTLE);
   }, [write]);
 
   /** The body as the editor holds it, renumbered, saved. */
@@ -252,7 +289,7 @@ function Paper({ w, doc, sources, projects, onChange, onGone, onSourceChange }: 
     return () => {
       alive = false;
       root.removeEventListener("keydown", onKey, true);
-      if (timer.current) { clearTimeout(timer.current); const html = box.current?.innerHTML ?? ""; void write({ body: html, text: textOf(html) }); }
+      if (timer.current) { clearTimeout(timer.current); const p = pending.current; pending.current = null; if (p) void write(p); }
       editor.current?.destroy();
       editor.current = null;
     };
@@ -331,6 +368,57 @@ function Paper({ w, doc, sources, projects, onChange, onGone, onSourceChange }: 
     void render();
   }, [changed, render, restoreCaret]);
 
+  /** apaTable wants a full OLS fit; a run only ever carries what
+      modelOf reads out of its own output. Every field apaTable
+      itself uses (names, coef, se, p, n, r2, adjR2, pseudoR2,
+      robust, clusters) comes from the run; the rest is required
+      by the wider type and never read, so it carries the shape's
+      own zero. */
+  const toFit = (m: Model["fit"]): Parameters<typeof apaTable>[0] => ({
+    ...m, n: m.n ?? 0, r2: m.r2 ?? 0, adjR2: m.adjR2 ?? 0, t: m.p.map(() => 0), k: 0, df: 0, sigma: 0, residuals: [], fitted: [],
+    robust: (m.robust ?? "classical") as Parameters<typeof apaTable>[0]["robust"],
+  });
+
+  /** A run's own chart, or its APA table where it has none: the
+      shape section 16 asks for, RESEARCH.md 14 for what a run
+      carries. */
+  const figureHtml = useCallback((run: Run): string => {
+    const model = modelOf(run);
+    const inner = run.figure ? run.figure : model ? tableHtml(apaTable(toFit(model.fit), { depvar: model.depvar }).rows) : "";
+    if (!inner) return "";
+    const caption = `${word("rs.write.figure")[lang]}: ${run.label}`;
+    return `<figure>${inner}<figcaption>${escape(caption)}</figcaption></figure><p></p>`;
+  }, [lang]);
+
+  const insertFigure = useCallback((run: Run) => {
+    if (!editor.current) return;
+    const html = figureHtml(run);
+    if (!html) return;
+    restoreCaret();
+    editor.current.insertHtmlAtCaret(html);
+    setFigures(false);
+    changed();
+  }, [figureHtml, changed, restoreCaret]);
+
+  /** At the end of the document rather than at the caret: a
+      glossary or an abbreviations list is appended to, never
+      dropped mid-sentence. */
+  const appendBlock = useCallback((html: string) => {
+    if (!editor.current || !box.current) return;
+    box.current.insertAdjacentHTML("beforeend", html);
+    changed();
+  }, [changed]);
+
+  /** A heading moved in the outline, by drag or by the up/down
+      buttons: the pure move, renumbered so a footnote that moved
+      with its section keeps counting from the top. */
+  const reorder = useCallback((from: number, to: number) => {
+    if (!editor.current || from === to) return;
+    const html = renumber(moveSection(editor.current.html(), from, to));
+    editor.current.setHtml(html);
+    changed();
+  }, [changed]);
+
   const restyle = useCallback((styleId: string) => { void write({ style: styleId }); void render(styleId); }, [write, render]);
 
   const exportAll = useCallback(async () => {
@@ -348,6 +436,12 @@ function Paper({ w, doc, sources, projects, onChange, onGone, onSourceChange }: 
       const word = await toDocx({ title: doc.title, html, bibliography: bib, author: doc.meta.author, affiliation: doc.meta.affiliation, bangla: lang === "bn" });
       out.word = URL.createObjectURL(word);
     } catch (err) { console.warn("docx", err); }
+    if (kindOf(doc) === "slides") {
+      try {
+        const { toPptx } = await import("../../lib/export-pptx");
+        out.pptx = URL.createObjectURL(await toPptx({ title: doc.title, slides: slidesOf(html) }));
+      } catch (err) { console.warn("pptx", err); }
+    }
     setFiles(out);
     cue("saved");
   }, [body, sources, doc, bib, lang]);
@@ -379,14 +473,30 @@ function Paper({ w, doc, sources, projects, onChange, onGone, onSourceChange }: 
   const outline = useMemo(() => outlineOf(body), [body]);
   const claims = useMemo(() => pane === "audit" ? claimsOf(body) : [], [pane, body]);
   const overlaps = useMemo(() => pane === "overlap" ? overlapsOf(text, others) : [], [pane, text, others]);
+  const glossary = useMemo(() => pane === "glossary" ? glossaryOf(body) : [], [pane, body]);
+  const abbrevAll = useMemo(() => pane === "glossary" ? abbreviations(text) : [], [pane, text]);
+  const abbrevWarn = abbrevAll.filter((a) => a.usedBefore);
+  const slides = useMemo(() => kindOf(doc) === "slides" ? slidesOf(body) : [], [doc, body]);
   const cited = keysCited(body).length;
   const budgets = doc.outline;
   const day = new Date().toISOString().slice(0, 10);
   const slug = (doc.title || doc.kind).toLowerCase().replace(/[^a-z0-9]+/g, "-").replace(/^-|-$/g, "");
 
+  const insertGlossary = useCallback(() => {
+    if (!glossary.length) return;
+    const items = glossary.map((g) => `<li><strong>${escape(g.term)}</strong>. ${escape(g.definition)}</li>`).join("");
+    appendBlock(`<h2>${escape(word("rs.write.glossary")[lang])}</h2><ul>${items}</ul>`);
+  }, [glossary, appendBlock, lang]);
+
+  const insertAbbrevList = useCallback(() => {
+    const items = abbrevAll.filter((a) => a.definition).map((a) => `<li><strong>${escape(a.abbr)}</strong>. ${escape(a.definition ?? "")}</li>`).join("");
+    if (!items) return;
+    appendBlock(`<h2>${escape(word("rs.write.abbr")[lang])}</h2><ul>${items}</ul>`);
+  }, [abbrevAll, appendBlock, lang]);
+
   return (
-    <div className="grid gap-3" style={{ "--accent": toneVar(KIND_TONES[doc.kind] as "blue") } as React.CSSProperties}>
-      <Surface material="pane" className="rs-tint px-4 py-3 grid gap-3">
+    <div className="grid gap-3" data-kind={doc.kind} style={{ "--accent": toneVar(KIND_TONES[doc.kind] as "blue") } as React.CSSProperties}>
+      <Surface material="pane" className="rs-tint rs-write-bar px-4 py-3 grid gap-3">
         <div className="flex flex-wrap items-center gap-2">
           <Pill tone="accent">{KIND_NAMES[doc.kind][lang]}</Pill>
           <span className="text-t1 text-ink-soft mono grow text-right" role="status">
@@ -414,10 +524,12 @@ function Paper({ w, doc, sources, projects, onChange, onGone, onSourceChange }: 
           <ChipButton onClick={() => setPicker((p) => !p)} pressed={picker} title={both("rs.write.cite.hint")}>@ <W k="rs.write.cite" /></ChipButton>
           <ChipButton onClick={insertFootnote} title={both("rs.write.footnote.hint")}>¹ <W k="rs.write.footnote" /></ChipButton>
           <ChipButton onClick={() => setQuotes((q) => !q)} pressed={quotes}><W k="rs.write.quote" /></ChipButton>
+          <ChipButton onClick={() => setFigures((f) => !f)} pressed={figures} title={both("rs.write.figure.hint")}><W k="rs.write.figure.insert" /></ChipButton>
           <ChipButton onClick={() => { void render(); }}><W k="rs.write.render" /></ChipButton>
           <span className="grow" />
           <ChipButton onClick={() => { void exportAll(); }}><W k="rs.write.export" /></ChipButton>
           {files?.word ? <ChipLink href={files.word} download={`${slug}-${day}.docx`}><W k="rs.write.export.word" /></ChipLink> : null}
+          {files?.pptx ? <ChipLink href={files.pptx} download={`${slug}-${day}.pptx`}><W k="rs.write.slides" /></ChipLink> : null}
           {files?.md ? <ChipLink href={files.md} download={`${slug}-${day}.md`}><W k="rs.write.export.md" /></ChipLink> : null}
           {files?.tex ? <ChipLink href={files.tex} download={`${slug}-${day}.tex`}><W k="rs.write.export.tex" /></ChipLink> : null}
           {files?.bib ? <ChipLink href={files.bib} download={`library-${day}.bib`}>BibTeX</ChipLink> : null}
@@ -425,11 +537,12 @@ function Paper({ w, doc, sources, projects, onChange, onGone, onSourceChange }: 
         </div>
         {picker ? <CitePicker sources={sources} styleId={doc.style} items={items} onPick={(c) => { void insertChip(c); }} onClose={() => setPicker(false)} /> : null}
         {quotes ? <QuotePicker w={w} sources={sources} onPick={insertQuote} /> : null}
+        {figures ? <FigurePicker w={w} onPick={insertFigure} /> : null}
       </Surface>
 
       <div className="rs-reader">
         <div className="min-w-0 grid gap-2">
-          <Surface material="pane" className="px-5 py-4">
+          <Surface material="pane" className="rs-write-prose px-5 py-4">
             <div ref={box} className="rs-editor article" lang={lang} contentEditable suppressContentEditableWarning />
             {bib ? <div className="article" dangerouslySetInnerHTML={{ __html: bib }} /> : null}
           </Surface>
@@ -437,11 +550,26 @@ function Paper({ w, doc, sources, projects, onChange, onGone, onSourceChange }: 
             {words} <W k="rs.write.words" />{doc.budget ? ` ${both("rs.write.of")} ${doc.budget}` : ""} · {readingMinutes(words)} <W k="rs.write.minutes" /> · {cited} <W k="rs.write.citations" />
           </p>
           {doc.budget ? <Meter done={words} total={doc.budget} label={both("rs.write.budget")} size="sm" /> : null}
+          {kindOf(doc) === "slides" ? (
+            <div className="rs-deck-wrap grid gap-2">
+              <h3 className="text-t2 font-medium"><W k="rs.write.deck" /></h3>
+              {slides.length ? (
+                <div className="rs-deck">
+                  {slides.map((s, i) => (
+                    <Surface key={i} material="pane" className="rs-slide">
+                      <h4 className="text-t2 font-medium">{s.title || "…"}</h4>
+                      {s.bullets.length ? <ul className="text-t2">{s.bullets.map((b, j) => <li key={j}>{b}</li>)}</ul> : null}
+                    </Surface>
+                  ))}
+                </div>
+              ) : <p className="text-t2 text-ink-soft"><W k="rs.write.outline.empty" /></p>}
+            </div>
+          ) : null}
         </div>
         <aside className="rs-side grid gap-3">
           <Surface material="pane" className="px-4 py-3 grid gap-3">
             <div className="flex flex-wrap gap-1">
-              {(["outline", "audit", "overlap", "versions"] as const).map((p) => (
+              {(["outline", "audit", "overlap", "glossary", "versions"] as const).map((p) => (
                 <ChipButton key={p} pressed={pane === p} onClick={() => setPane(p)}>{both(`rs.write.${p}`)}</ChipButton>
               ))}
             </div>
@@ -453,13 +581,19 @@ function Paper({ w, doc, sources, projects, onChange, onGone, onSourceChange }: 
                     {outline.map((h) => {
                       const budget = budgets.find((b) => b.text === h.text)?.budget;
                       return (
-                        <li key={h.index} className={h.level === 3 ? "pl-4" : ""}>
+                        <li key={h.index} className={h.level === 3 ? "pl-4" : ""} draggable
+                            onDragStart={(e) => { e.dataTransfer.setData("text/plain", String(h.index)); e.dataTransfer.effectAllowed = "move"; }}
+                            onDragOver={(e) => e.preventDefault()}
+                            onDrop={(e) => { e.preventDefault(); const from = Number(e.dataTransfer.getData("text/plain")); if (Number.isInteger(from)) reorder(from, h.index); }}>
                           <div className="flex items-baseline gap-2">
                             <button type="button" className="text-left bg-transparent border-0 p-0 cursor-pointer hover:underline" style={{ color: "inherit", font: "inherit" }}
                                     onClick={() => { const el = [...(box.current?.querySelectorAll("h2, h3") ?? [])][h.index]; el?.scrollIntoView({ block: "center", behavior: "smooth" }); }}>
                               {h.text || "…"}
                             </button>
                             <span className="text-t1 text-ink-soft mono">{h.words}{budget ? ` / ${budget}` : ""}</span>
+                            <span className="grow" />
+                            <ChipButton onClick={() => reorder(h.index, h.index - 1)} disabled={h.index === 0} aria-label={both("rs.write.outline.up")} title={both("rs.write.outline.up")}>↑</ChipButton>
+                            <ChipButton onClick={() => reorder(h.index, h.index + 1)} disabled={h.index === outline.length - 1} aria-label={both("rs.write.outline.down")} title={both("rs.write.outline.down")}>↓</ChipButton>
                           </div>
                           {budget ? <Meter done={h.words} total={budget} label={h.text} size="sm" /> : null}
                           <div className="mt-1 max-w-[8rem]">
@@ -501,6 +635,37 @@ function Paper({ w, doc, sources, projects, onChange, onGone, onSourceChange }: 
                     ))}
                   </ul>
                 ) : <p className="text-t2 text-ink-soft"><W k="rs.write.overlap.clean" /></p>}
+              </>
+            ) : null}
+            {pane === "glossary" ? (
+              <>
+                <p className="text-t1 text-ink-soft"><W k="rs.write.glossary.hint" /></p>
+                {abbrevWarn.length ? (
+                  <ul className="grid gap-2 text-t2">
+                    {abbrevWarn.map((a) => (
+                      <li key={a.abbr} className="rs-hl-card" style={{ "--tone": toneVar("gold") } as React.CSSProperties}>
+                        <span className="text-t1 text-ink-soft mono">{a.abbr} · <W k="rs.write.abbr.warn" /></span>
+                        {a.definition ? <blockquote>{a.definition}</blockquote> : null}
+                      </li>
+                    ))}
+                  </ul>
+                ) : null}
+                {!abbrevAll.length && !glossary.length ? <p className="text-t2 text-ink-soft"><W k="rs.write.glossary.empty" /></p> : (
+                  <div className="flex flex-wrap gap-2">
+                    <Button size="sm" kind="soft" disabled={!abbrevAll.some((a) => a.definition)} onClick={insertAbbrevList}><W k="rs.write.abbr.insert" /></Button>
+                    <Button size="sm" kind="soft" disabled={!glossary.length} onClick={insertGlossary}><W k="rs.write.glossary.insert" /></Button>
+                  </div>
+                )}
+                {glossary.length ? (
+                  <ul className="grid gap-2 text-t2">
+                    {glossary.map((g) => (
+                      <li key={g.term} className="rs-hl-card">
+                        <span className="text-t1 text-ink-soft mono">{g.term}</span>
+                        <blockquote>{g.definition}</blockquote>
+                      </li>
+                    ))}
+                  </ul>
+                ) : null}
               </>
             ) : null}
             {pane === "versions" ? (
@@ -604,6 +769,32 @@ function QuotePicker({ w, sources, onPick }: { w: Who; sources: Source[]; onPick
               </li>
             );
           })}
+        </ul>
+      ) : <p className="text-t2 text-ink-soft"><W k="rs.none" /></p>}
+    </Surface>
+  );
+}
+
+/** A run's own chart, or its fit as an APA table where it has
+    neither, over the reader's `research_runs`. RESEARCH.md 16 and
+    14. */
+function FigurePicker({ w, onPick }: { w: Who; onPick: (run: Run) => void }) {
+  const [runs, setRuns] = useState<Run[] | null>(null);
+  useEffect(() => { void listRuns(w).then(setRuns); }, [w]);
+  const usable = (runs ?? []).filter((r) => r.figure || modelOf(r));
+  return (
+    <Surface material="sunk" className="px-4 py-3 grid gap-2">
+      <h3 className="text-t2 font-medium"><W k="rs.write.figure.insert" /></h3>
+      {runs === null ? <p className="text-t2 text-ink-soft"><W k="rs.moment" /></p> : usable.length ? (
+        <ul className="grid gap-1 text-t2 max-h-64 overflow-auto">
+          {usable.map((r) => (
+            <li key={r.id}>
+              <button type="button" className="rs-row" onClick={() => onPick(r)}>
+                <span className="rs-row-dot" aria-hidden="true" />
+                <span className="rs-row-main"><span className="rs-row-title">{r.label}</span><span className="rs-row-sub">{r.figure ? "SVG" : "APA"}</span></span>
+              </button>
+            </li>
+          ))}
         </ul>
       ) : <p className="text-t2 text-ink-soft"><W k="rs.none" /></p>}
     </Surface>

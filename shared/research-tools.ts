@@ -9,8 +9,8 @@
    ways, the which-test tree, dates including the tabular Islamic
    calendar, words in both scripts, abbreviations, readability as
    facts, a grid to four table syntaxes, Boolean strings in each
-   database's syntax, a question from a frame, spaced repetition,
-   and a seeded random.
+   database's syntax, a question from a frame, a card's memory for
+   ts-fsrs, and a seeded random.
    ============================================================ */
 
 import { normalCdf, normalInv } from "./research-stats.ts";
@@ -307,21 +307,64 @@ export function questionFrom(frame: "pico" | "spider" | "peo", slots: Record<str
   };
 }
 
-/* ---------- spaced repetition, SM-2 ---------- */
+/* ---------- spaced repetition: the card, and its memory ---------- */
 
-export interface Card { id: string; front: string; back: string; ease: number; interval: number; reps: number; due: string }
+/** A card is the quiz note's own shape and its four scheduling
+    fields are NOT renamed: `ease`, `interval`, `reps` and `due`
+    are what SM-2 wrote into every card before 3 September 2026,
+    they are still written after every review, and `due` stays a
+    date so a build reading either shape draws the same card. The
+    FSRS fields arrive with the first review under `ts-fsrs` and
+    a card without them is read through `fromSm2`. */
+export interface Card {
+  id: string; front: string; back: string;
+  ease: number; interval: number; reps: number; due: string;
+  stability?: number; difficulty?: number; state?: number; lapses?: number; lastReview?: string;
+}
 
 export const newCard = (id: string, front: string, back: string, today: string): Card => ({ id, front, back, ease: 2.5, interval: 0, reps: 0, due: today });
 
-/** SM-2: a grade under three starts the card over, three and above
-    grows the interval by the ease, and the ease moves with the grade
-    and never under 1.3. */
-export function review(card: Card, grade: 0 | 1 | 2 | 3 | 4 | 5, today: string): Card {
-  if (grade < 3) return { ...card, reps: 0, interval: 1, due: shiftDays(today, 1) };
-  const interval = card.reps === 0 ? 1 : card.reps === 1 ? 6 : Math.round(card.interval * card.ease);
-  const ease = Math.max(1.3, card.ease + (0.1 - (5 - grade) * (0.08 + (5 - grade) * 0.02)));
-  return { ...card, reps: card.reps + 1, interval, ease, due: shiftDays(today, interval) };
+/** What ts-fsrs reads and writes, spelled here so this file needs
+    no import of it: node holds the mapping without the package
+    and the page hands the object straight to `fsrs().next`. The
+    states are the package's: 0 new, 1 learning, 2 review, 3
+    relearning. */
+export interface Memory {
+  due: Date; stability: number; difficulty: number; elapsed_days: number; scheduled_days: number; learning_steps: number;
+  reps: number; lapses: number; state: number; last_review?: Date;
 }
+
+const dateOf = (iso: string): Date => new Date(iso);
+const dayOf = (d: Date): string => d.toISOString().slice(0, 10);
+
+/** An SM-2 card as an FSRS memory. Stability is the interval at
+    which recall is nine in ten, which is what an SM-2 interval
+    was, so it carries over as it is. Difficulty runs 1 to 10 the
+    other way from ease: 2.5 is 5, the floor of 1.3 is 10. A card
+    never reviewed is new, whatever else it says. */
+export function fromSm2(card: Card): Memory {
+  if (card.reps === 0 || card.interval <= 0) return { due: dateOf(card.due), stability: 0, difficulty: 0, elapsed_days: 0, scheduled_days: 0, learning_steps: 0, reps: 0, lapses: 0, state: 0 };
+  const difficulty = Math.min(10, Math.max(1, 5 + (2.5 - card.ease) * (5 / 1.2)));
+  return {
+    due: dateOf(card.due), stability: Math.max(0.1, card.interval), difficulty, elapsed_days: 0, scheduled_days: card.interval, learning_steps: 0,
+    reps: card.reps, lapses: 0, state: 2, last_review: dateOf(shiftDays(card.due, -card.interval)),
+  };
+}
+
+/** The memory a card carries, or the one its SM-2 fields imply. */
+export const memoryOf = (card: Card): Memory => (card.stability !== undefined && card.difficulty !== undefined && card.state !== undefined
+  ? { due: dateOf(card.due), stability: card.stability, difficulty: card.difficulty, elapsed_days: 0, scheduled_days: card.interval, learning_steps: 0, reps: card.reps, lapses: card.lapses ?? 0, state: card.state, last_review: card.lastReview ? dateOf(card.lastReview) : undefined }
+  : fromSm2(card));
+
+/** The scheduler's answer written back, with the SM-2 fields kept
+    current so an older reader of the note still agrees on when. */
+export function withMemory(card: Card, m: Memory): Card {
+  return { ...card, due: dayOf(m.due), interval: m.scheduled_days, reps: m.reps, stability: m.stability, difficulty: m.difficulty, state: m.state, lapses: m.lapses, lastReview: m.last_review ? m.last_review.toISOString() : undefined };
+}
+
+/** The four buttons are still SM-2's grades, so the words and the
+    ids on them stay; FSRS rates Again 1, Hard 2, Good 3, Easy 4. */
+export const ratingOf = (grade: 0 | 1 | 2 | 3 | 4 | 5): 1 | 2 | 3 | 4 => (grade < 3 ? 1 : grade === 3 ? 2 : grade === 4 ? 3 : 4);
 
 export const dueCards = (cards: Card[], today: string): Card[] => cards.filter((c) => c.due <= today).sort((a, b) => a.due.localeCompare(b.due));
 

@@ -71,6 +71,8 @@ export interface Protocol {
   to?: number;
   languages?: string[];
   screeners?: string[];
+  /** Screener B is on: the screening keys write to `decision2`. */
+  second?: boolean;
   /** The extraction sheet's columns, the reader's own. */
   columns?: string[];
   /** Which appraisal template. */
@@ -175,6 +177,131 @@ export function duplicatesOf(records: { id: string; doi?: string | null; hash: s
   for (const r of [...records].sort((a, b) => a.created_at.localeCompare(b.created_at))) {
     const k = recordKey(r);
     if (seen.has(k)) out.push(r.id); else seen.add(k);
+  }
+  return out;
+}
+
+/* ---------- a second screener ----------
+
+   Column B is `decision2`, in the SAME vocabulary as `stage`,
+   so it says where B would have sent the record: `fulltext` is
+   an include at title, `included` an include at full text,
+   `excluded` an exclusion, `title` a maybe. B's flow is monotonic
+   like A's (B screens full text only for what B sent on), which
+   is what makes a title decision recoverable from a later one.
+   A's exclusion says which stage in `record.fullText`; B's says
+   it in `record.fullText2`, the same flag one column along.
+
+   PRISMA reads `stage` and never `decision2`: the diagram is the
+   review's decision, and B's column is the check on it. */
+
+export type Verdict = "include" | "exclude";
+
+export interface Decided { fullText?: boolean; fullText2?: boolean }
+
+export interface Screened {
+  stage: RecordStage;
+  decision2?: RecordStage | null;
+  record?: Decided;
+}
+
+/** A's verdict at a stage, or null while the record has not been
+    decided there. A record at `included` passed title; one
+    excluded at full text passed title too. */
+export function verdictA(r: Screened, at: "title" | "fulltext"): Verdict | null {
+  if (r.stage === "deduplicated" || r.stage === "found" || r.stage === "title") return null;
+  if (at === "title") return r.stage === "excluded" && !r.record?.fullText ? "exclude" : "include";
+  if (r.stage === "included") return "include";
+  if (r.stage === "excluded" && r.record?.fullText) return "exclude";
+  return null;
+}
+
+/** B's verdict at a stage, read the same way off `decision2`. */
+export function verdictB(r: Screened, at: "title" | "fulltext"): Verdict | null {
+  const d = r.decision2 ?? null;
+  if (!d || d === "found" || d === "title" || d === "deduplicated") return null;
+  if (at === "title") return d === "excluded" && !r.record?.fullText2 ? "exclude" : "include";
+  if (d === "included") return "include";
+  if (d === "excluded" && r.record?.fullText2) return "exclude";
+  return null;
+}
+
+/** Cohen's kappa over pairs of categories. `k` is null with no
+    pair; when both raters only ever use one category and agree,
+    chance agreement is one and the ratio is 0/0, which is read as
+    full agreement rather than as nothing. */
+export function kappa(pairs: [string, string][]): { k: number | null; n: number; agreed: number } {
+  const n = pairs.length;
+  if (!n) return { k: null, n: 0, agreed: 0 };
+  const cats = new Set<string>();
+  const a: Record<string, number> = {};
+  const b: Record<string, number> = {};
+  let agreed = 0;
+  for (const [x, y] of pairs) {
+    cats.add(x); cats.add(y);
+    a[x] = (a[x] ?? 0) + 1;
+    b[y] = (b[y] ?? 0) + 1;
+    if (x === y) agreed += 1;
+  }
+  const po = agreed / n;
+  let pe = 0;
+  for (const c of cats) pe += ((a[c] ?? 0) / n) * ((b[c] ?? 0) / n);
+  if (1 - pe < 1e-12) return { k: po === 1 ? 1 : 0, n, agreed };
+  return { k: (po - pe) / (1 - pe), n, agreed };
+}
+
+export interface Agreement<T> {
+  k: number | null;
+  n: number;
+  agreed: number;
+  /** The records both decided and decided differently. */
+  disagreed: T[];
+}
+
+/** Agreement at one stage: the records BOTH screeners decided
+    there, as kappa, and the ones they differ on. */
+export function agreement<T extends Screened>(records: T[], at: "title" | "fulltext"): Agreement<T> {
+  const pairs: [string, string][] = [];
+  const disagreed: T[] = [];
+  for (const r of records) {
+    const x = verdictA(r, at);
+    const y = verdictB(r, at);
+    if (!x || !y) continue;
+    pairs.push([x, y]);
+    if (x !== y) disagreed.push(r);
+  }
+  return { ...kappa(pairs), disagreed };
+}
+
+/* ---------- extraction prefilled from the reading ---------- */
+
+/** What a highlight's card holds, as `research_highlights.fields`. */
+export interface CardFields { number?: string; unit?: string; n?: string; method?: string; finding?: string; typed?: boolean }
+
+/** Which card field answers a sheet column, by the column's
+    name in either language. A column named none of these is the
+    reader's own and stays empty. */
+export const CARD_COLUMNS: { field: "n" | "method" | "finding" | "number"; names: string[] }[] = [
+  { field: "n", names: ["sample", "sample size", "n", "নমুনা", "নমুনার আকার"] },
+  { field: "method", names: ["method", "methods", "design", "পদ্ধতি", "নকশা"] },
+  { field: "finding", names: ["finding", "findings", "result", "results", "ফলাফল"] },
+  { field: "number", names: ["effect size", "effect", "estimate", "number", "প্রভাবের আকার", "প্রভাব", "সংখ্যা"] },
+];
+
+/** The extraction row with its EMPTY cells filled from the cards:
+    a cell somebody typed is never written over, and a card's
+    number carries its unit. The first card that answers a column
+    wins, in the order the highlights were made. */
+export function fillFromCards(extraction: Record<string, string>, columns: string[], cards: CardFields[]): Record<string, string> {
+  const out = { ...extraction };
+  for (const col of columns) {
+    if ((out[col] ?? "").trim()) continue;
+    const want = CARD_COLUMNS.find((m) => m.names.includes(col.trim().toLowerCase()));
+    if (!want) continue;
+    for (const c of cards) {
+      const v = want.field === "number" && c.number ? [c.number, c.unit].filter(Boolean).join(" ") : (c[want.field] ?? "");
+      if (v.trim()) { out[col] = v.trim(); break; }
+    }
   }
   return out;
 }

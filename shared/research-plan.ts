@@ -144,3 +144,94 @@ export function toIcs(events: CalendarEvent[], name = "Research Studio"): string
   lines.push("END:VCALENDAR");
   return lines.map(fold).join("\r\n") + "\r\n";
 }
+
+/* ---------- the Gantt ---------- */
+
+/** A row the Gantt draws. A task has no start column and none is
+    added: its bar runs from the day the row was made (`created_at`)
+    to its due date, and a task with no due date is not a bar. An
+    event is a bar only where it has an end, which is what section
+    17 says a Gantt is. `group` is the project's name, and "" is
+    the rows with none. */
+export interface GanttRow {
+  id: string;
+  title: string;
+  start: string;
+  end: string;
+  group: string;
+  tone: string;
+  kind: "task" | "event";
+  done?: boolean;
+}
+
+export interface GanttBar extends GanttRow { x1: number; x2: number; y: number }
+
+export interface GanttLayout {
+  width: number;
+  height: number;
+  /** ISO days, the first of a month each. `to` is exclusive. */
+  from: string;
+  to: string;
+  months: { x: number; year: number; month: number }[];
+  groups: { name: string; y: number; count: number }[];
+  bars: GanttBar[];
+  /** Null when the present is off the axis, which cannot happen
+      while `now` is folded into the range, and is kept so a caller
+      never draws a line at 0 or at `width` by mistake. */
+  nowX: number | null;
+}
+
+/** The vertical rhythm, in the SVG's own units. */
+export const GANTT = { top: 30, head: 22, row: 24, bar: 12 } as const;
+
+const DAY = 86400000;
+const monthOf = (ms: number): number => { const d = new Date(ms); return Date.UTC(d.getUTCFullYear(), d.getUTCMonth(), 1); };
+const monthAfter = (ms: number): number => { const d = new Date(ms); return Date.UTC(d.getUTCFullYear(), d.getUTCMonth() + 1, 1); };
+const isoOf = (ms: number): string => new Date(ms).toISOString().slice(0, 10);
+
+/** Bars on a month axis, grouped by project, the present folded
+    into the range so it is always on the page. Pure: the same rows
+    and the same `now` draw the same picture, which is what
+    scripts/research.test.ts holds it to. Groups are named ones in
+    alphabetical order and the unnamed group last; bars inside a
+    group are in order of start. An end before its start is a
+    point, never a bar running backwards. */
+export function ganttLayout(rows: GanttRow[], o: { width?: number; now?: Date } = {}): GanttLayout {
+  const width = o.width ?? 1000;
+  const nowMs = (o.now ?? new Date()).getTime();
+  const dated = rows
+    .map((r) => ({ r, s: new Date(r.start).getTime(), e: new Date(r.end).getTime() }))
+    .filter((x) => Number.isFinite(x.s) && Number.isFinite(x.e))
+    .map((x) => ({ ...x, e: Math.max(x.s, x.e) }));
+  let lo = nowMs;
+  let hi = nowMs;
+  for (const x of dated) { lo = Math.min(lo, x.s); hi = Math.max(hi, x.e); }
+  const fromMs = monthOf(lo);
+  const toMs = monthAfter(hi);
+  const span = toMs - fromMs;
+  const x = (ms: number): number => Math.max(0, Math.min(width, ((ms - fromMs) / span) * width));
+
+  const months: GanttLayout["months"] = [];
+  for (let m = fromMs; m < toMs; m = monthAfter(m)) {
+    const d = new Date(m);
+    months.push({ x: x(m), year: d.getUTCFullYear(), month: d.getUTCMonth() });
+  }
+
+  const names = [...new Set(dated.map((d) => d.r.group))].sort((a, b) => (a === "" ? 1 : b === "" ? -1 : a.localeCompare(b)));
+  const groups: GanttLayout["groups"] = [];
+  const bars: GanttBar[] = [];
+  let y = GANTT.top;
+  for (const name of names) {
+    const mine = dated.filter((d) => d.r.group === name).sort((a, b) => a.s - b.s || a.r.title.localeCompare(b.r.title));
+    groups.push({ name, y, count: mine.length });
+    y += GANTT.head;
+    for (const d of mine) {
+      const x1 = x(d.s);
+      const x2 = Math.max(x1 + 4, x(d.e + DAY));
+      bars.push({ ...d.r, x1, x2, y });
+      y += GANTT.row;
+    }
+  }
+  const nowX = nowMs >= fromMs && nowMs < toMs ? x(nowMs) : null;
+  return { width, height: y + 8, from: isoOf(fromMs), to: isoOf(toMs), months, groups, bars, nowX };
+}

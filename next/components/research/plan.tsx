@@ -3,28 +3,36 @@
 /* ============================================================
    research/plan.tsx: the planner. RESEARCH.md section 17.
 
-   Four views over the rows the studio already keeps. The board
-   is the tasks room's four lanes with drag; the dates are events
-   with a body shaped by their kind, a meeting's actions becoming
-   tasks; the timeline is the year drawn in SVG, the present as a
-   line and the past shaded; and a session is the time log, a
-   timer with a bell that writes a line to the daily note when it
-   stops. The calendar goes OUT: the reader's dates as an
-   iCalendar file behind a token, and the studio holds no grant
-   to anybody's calendar.
+   Six views over the rows the studio already keeps. The board
+   is the tasks room's lanes with drag and the reading queue; the
+   dates are events with a body shaped by their kind, a meeting's
+   actions becoming tasks; the timeline is the year drawn in SVG,
+   the present as a line and the past shaded; a session is the
+   time log, a timer with a bell that writes a line to the daily
+   note when it stops; the Gantt is every task with a due date
+   and every event with an end, as bars by project on a month
+   axis; and the project page is one project whole, each of its
+   lists a link to the room that owns it. The calendar goes OUT:
+   the reader's dates as an iCalendar file behind a token, and
+   the studio holds no grant to anybody's calendar.
+
+   Nothing here counts days in a row and nothing is red for being
+   late: a due date is a fact, which is the rule the routine and
+   check-research both hold.
    ============================================================ */
 
 import Link from "next/link";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
-import { TASK_LANES, LANE_NAMES, toneVar, type TaskLane } from "@reiad/shared/research";
+import { SOURCE_STATUSES, TASK_LANES, LANE_NAMES, toneVar, type TaskLane, type Tone } from "@reiad/shared/research";
 import {
-  EVENT_KINDS, EVENT_KIND_NAMES, EVENT_TONES, SESSION_MINUTES, SUBMISSION_STATES, SUBMISSION_STATE_NAMES, minutesBetween, toIcs,
-  type EventKind, type SubmissionState,
+  EVENT_KINDS, EVENT_KIND_NAMES, EVENT_TONES, GANTT, SESSION_MINUTES, SUBMISSION_STATES, SUBMISSION_STATE_NAMES, ganttLayout, minutesBetween, toIcs,
+  type EventKind, type GanttRow, type SubmissionState,
 } from "@reiad/shared/research-plan";
+import { countWords } from "@reiad/shared/research-write";
 import {
-  addEvent, addTask, appendToDay, endSession, listDocuments, listEvents, listProjects, listSessions, listTasks, pushCalendar,
+  addEvent, addTask, appendToDay, endSession, listDocuments, listEvents, listProjects, listQuestions, listSessions, listSources, listTasks, pushCalendar,
   removeEvent, resetCalendar, saveEvent, saveTask, startSession,
-  type Document, type Event, type Project, type Session, type Task, type Who,
+  type Document, type Event, type Project, type Question, type Session, type Source, type Task, type Who,
 } from "../../lib/research-api";
 import { Button } from "../ui/button";
 import { Chip, ChipButton, ChipLink } from "../ui/chip";
@@ -37,19 +45,34 @@ import { useWho, when, isoDay } from "./use-who";
 import { useKeys } from "./keys";
 import { Tasks } from "./tasks";
 
-type View = "board" | "dates" | "timeline" | "sessions";
+type View = "board" | "dates" | "timeline" | "sessions" | "gantt" | "project";
+
+/** The strip's order is the keys' order, and sessions keeps 4
+    because the browser test presses it by that name. */
+const VIEWS = ["board", "dates", "timeline", "sessions", "gantt", "project"] as const;
 
 export function Planner() {
   const { w, answered } = useWho();
   const [view, setView] = useState<View>("board");
-  useKeys(useMemo(() => ({
-    "1": () => setView("board"), "2": () => setView("dates"), "3": () => setView("timeline"), "4": () => setView("sessions"),
-  }), []), Boolean(w));
+  const [project, setProject] = useState<string>("");
+  /* `?project=<id>` opens the project page. Read after the first
+     paint because the server has no idea and must not guess. */
+  useEffect(() => {
+    const id = new URLSearchParams(location.search).get("project");
+    if (id) { setProject(id); setView("project"); }
+  }, []);
+  const pick = useCallback((id: string) => {
+    setProject(id);
+    const url = new URL(location.href);
+    if (id) url.searchParams.set("project", id); else url.searchParams.delete("project");
+    history.replaceState(history.state, "", url);
+  }, []);
+  useKeys(useMemo(() => Object.fromEntries(VIEWS.map((v, i) => [String(i + 1), () => setView(v)])), []), Boolean(w));
   if (!w) return <SignedOut answered={answered} />;
   return (
     <div className="grid gap-4">
       <div className="flex flex-wrap items-center gap-2">
-        {(["board", "dates", "timeline", "sessions"] as const).map((v, i) => (
+        {VIEWS.map((v, i) => (
           <ChipButton key={v} pressed={view === v} onClick={() => setView(v)}>{i + 1} {both(`rs.plan.${v}`)}</ChipButton>
         ))}
         <span className="grow" />
@@ -59,6 +82,8 @@ export function Planner() {
       {view === "dates" ? <Dates w={w} /> : null}
       {view === "timeline" ? <Timeline w={w} /> : null}
       {view === "sessions" ? <Sessions w={w} /> : null}
+      {view === "gantt" ? <Gantt w={w} /> : null}
+      {view === "project" ? <ProjectPage w={w} id={project} onPick={pick} onView={setView} /> : null}
     </div>
   );
 }
@@ -392,6 +417,192 @@ function Sessions({ w }: { w: Who }) {
           </ul>
         ) : <p className="text-t2 text-ink-soft"><W k="rs.none" /></p>}
       </Surface>
+    </div>
+  );
+}
+
+/* ---------- the Gantt ---------- */
+
+const MONTH_LABEL = (lang: "en" | "bn", year: number, month: number): string =>
+  new Date(Date.UTC(year, month, 1)).toLocaleString(lang === "bn" ? "bn-BD" : "en-GB", { month: "short", year: "2-digit", timeZone: "UTC" });
+
+/** Bars on a month axis, out of `ganttLayout`. A task's bar
+    starts at `created_at` because the table has no start column
+    and none was added; the words say so on the page. */
+function Gantt({ w }: { w: Who }) {
+  const lang = useToolLang();
+  const [tasks, setTasks] = useState<Task[]>([]);
+  const [events, setEvents] = useState<Event[]>([]);
+  const [projects, setProjects] = useState<Project[]>([]);
+  useEffect(() => {
+    void listTasks(w).then(setTasks);
+    void listEvents(w).then(setEvents);
+    void listProjects(w).then(setProjects);
+  }, [w]);
+  const layout = useMemo(() => {
+    const nameOf = (id: string | null): string => projects.find((p) => p.id === id)?.name ?? "";
+    const toneOf = (id: string | null): string => toneVar(projects.find((p) => p.id === id)?.tone ?? "blue");
+    const rows: GanttRow[] = [
+      ...tasks.filter((t) => t.due).map((t): GanttRow => ({
+        id: t.id, title: t.title, start: t.created_at, end: t.due as string, group: nameOf(t.project_id), tone: toneOf(t.project_id), kind: "task", done: t.lane === "done",
+      })),
+      ...events.filter((e) => e.ends).map((e): GanttRow => ({
+        id: e.id, title: e.title, start: e.starts, end: e.ends as string, group: nameOf(e.project_id), tone: toneVar(EVENT_TONES[e.kind] as Tone), kind: "event", done: e.done,
+      })),
+    ];
+    return ganttLayout(rows);
+  }, [tasks, events, projects]);
+  const { width, height } = layout;
+  return (
+    <Surface material="pane" className="px-4 py-3 grid gap-2" data-testid="rs-gantt">
+      <h2 className="text-t3 font-medium"><W k="rs.plan.gantt" /></h2>
+      <p className="text-t1 text-ink-soft"><W k="rs.plan.gantt.hint" /></p>
+      {!layout.bars.length ? <p className="text-t2 text-ink-soft"><W k="rs.plan.gantt.none" /></p> : (
+        <div className="overflow-x-auto">
+          <svg viewBox={`0 0 ${width} ${height}`} className="w-full" style={{ minWidth: "40rem" }} role="img" aria-label={both("rs.plan.gantt")}>
+            {layout.nowX !== null ? <rect x={0} y={0} width={layout.nowX} height={height} fill="currentColor" opacity={0.05} /> : null}
+            {layout.months.map((m) => (
+              <g key={`${m.year}-${m.month}`}>
+                <line x1={m.x} y1={GANTT.top - 4} x2={m.x} y2={height} stroke="currentColor" opacity={0.12} />
+                <text x={m.x + 4} y={16} fontSize={11} fill="currentColor" opacity={0.7} fontFamily="ui-monospace, monospace">{MONTH_LABEL(lang, m.year, m.month)}</text>
+              </g>
+            ))}
+            {layout.groups.map((g) => (
+              <text key={g.name || "none"} x={4} y={g.y + 14} fontSize={11} fill="currentColor" opacity={0.8} fontWeight={600}>
+                {g.name || both("rs.noproject")} · {g.count}
+              </text>
+            ))}
+            {layout.bars.map((b) => (
+              <g key={b.id} data-bar={b.kind}>
+                <rect x={b.x1} y={b.y + (GANTT.row - GANTT.bar) / 2} width={b.x2 - b.x1} height={GANTT.bar} rx={b.kind === "task" ? 3 : 4}
+                      fill={b.tone} opacity={b.done ? 0.4 : b.kind === "task" ? 0.7 : 0.9} />
+                <text x={Math.min(b.x2 + 6, width - 220)} y={b.y + GANTT.row / 2 + 4} fontSize={11} fill="currentColor" opacity={b.done ? 0.6 : 1}>{b.title}</text>
+              </g>
+            ))}
+            {layout.nowX !== null ? <line x1={layout.nowX} y1={0} x2={layout.nowX} y2={height} stroke={toneVar("rose")} strokeWidth={2} /> : null}
+          </svg>
+        </div>
+      )}
+    </Surface>
+  );
+}
+
+/* ---------- the project page ---------- */
+
+function ProjectPage({ w, id, onPick, onView }: { w: Who; id: string; onPick: (id: string) => void; onView: (v: View) => void }) {
+  const lang = useToolLang();
+  const [projects, setProjects] = useState<Project[] | null>(null);
+  const [questions, setQuestions] = useState<Question[]>([]);
+  const [sources, setSources] = useState<Source[]>([]);
+  const [docs, setDocs] = useState<Document[]>([]);
+  const [tasks, setTasks] = useState<Task[]>([]);
+  const [events, setEvents] = useState<Event[]>([]);
+  const [sessions, setSessions] = useState<Session[]>([]);
+  const monthStart = useMemo(() => { const d = new Date(); d.setDate(1); d.setHours(0, 0, 0, 0); return d.toISOString(); }, []);
+  useEffect(() => { void listProjects(w).then(setProjects); }, [w]);
+  useEffect(() => {
+    if (!id) return;
+    void listQuestions(w).then(setQuestions);
+    void listSources(w, { project: id, limit: 1000 }).then(setSources);
+    void listDocuments(w, { project: id }).then(setDocs);
+    void listTasks(w).then(setTasks);
+    void listEvents(w, { project: id, from: new Date().toISOString() }).then(setEvents);
+    void listSessions(w, monthStart).then(setSessions);
+  }, [w, id, monthStart]);
+
+  const p = projects?.find((x) => x.id === id) ?? null;
+  /* Filtered here as well as in the query: a fake or a stale
+     cache that ignores the filter must not draw another
+     project's rows on this one. */
+  const mine = {
+    questions: questions.filter((q) => q.project_id === id),
+    sources: sources.filter((s) => s.projects.includes(id)),
+    docs: docs.filter((d) => d.project_id === id),
+    tasks: tasks.filter((t) => t.project_id === id && t.lane !== "done"),
+    dates: events.filter((e) => e.project_id === id && !e.done).slice(0, 3),
+    sessions: sessions.filter((s) => s.project_id === id && s.ended),
+  };
+  const minutes = mine.sessions.reduce((n, s) => n + minutesBetween(s.started, s.ended as string), 0);
+  const byStatus = SOURCE_STATUSES.map((st) => ({ st, n: mine.sources.filter((s) => s.status === st).length }));
+  const byLane = TASK_LANES.filter((l) => l !== "done").map((l) => ({ l, rows: mine.tasks.filter((t) => t.lane === l) }));
+  const head = (k: string, n: number) => (
+    <h3 className="text-t2 font-medium flex items-center gap-2"><W k={k} /> <Chip>{n}</Chip></h3>
+  );
+
+  return (
+    <div className="grid gap-3" data-testid="rs-project">
+      <Surface material="pane" className="px-4 py-3 grid gap-2">
+        <div className="grid gap-2 md:grid-cols-[minmax(0,1fr)_16rem] items-end">
+          <div>
+            <h2 className="text-t3 font-medium">{p ? p.name : <W k="rs.plan.project" />}</h2>
+            <p className="text-t1 text-ink-soft"><W k="rs.plan.project.hint" /></p>
+          </div>
+          {projects === null ? <p className="text-t2 text-ink-soft"><W k="rs.moment" /></p>
+            : !projects.length ? <p className="text-t2 text-ink-soft"><W k="rs.plan.project.none" /> <Link href="/tools/research/settings"><W k="rs.plan.project.go" /></Link></p>
+              : (
+                <Select id="rs-pp-project" label={<W k="rs.plan.project.pick" />} value={id} onChange={(e) => onPick(e.target.value)}>
+                  <option value="">{both("rs.plan.project.pick")}</option>
+                  {projects.map((x) => <option key={x.id} value={x.id}>{x.name}</option>)}
+                </Select>
+              )}
+        </div>
+      </Surface>
+      {p ? (
+        <div className="grid gap-3 max-w-[60rem]">
+          <Surface material="pane" className="rs-tint px-4 py-3 grid gap-2" accent={toneVar(p.tone)}>
+            <h3 className="text-t2 font-medium"><W k="rs.plan.project.brief" /></h3>
+            {p.body.brief || p.body.aims
+              ? <p className="text-t2 whitespace-pre-line">{p.body.brief ?? p.body.aims}</p>
+              : <p className="text-t2 text-ink-soft"><W k="rs.plan.project.brief.none" /></p>}
+          </Surface>
+          <Surface material="pane" className="px-4 py-3 grid gap-2">
+            {head("rs.plan.project.questions", mine.questions.length)}
+            {mine.questions.length ? <ul className="grid gap-1 text-t2">{mine.questions.map((q) => <li key={q.id}><Link href="/tools/research/questions">{q.text}</Link></li>)}</ul> : <p className="text-t2 text-ink-soft"><W k="rs.plan.wk.nothing" /></p>}
+            <div><ChipLink href="/tools/research/questions"><W k="rs.plan.project.go" /></ChipLink></div>
+          </Surface>
+          <Surface material="pane" className="px-4 py-3 grid gap-2">
+            {head("rs.plan.project.sources", mine.sources.length)}
+            <ul className="flex flex-wrap gap-2 text-t2">
+              {byStatus.map(({ st, n }) => <li key={st}><Link href="/tools/research/library" className="no-underline"><Chip>{both(`rs.lib.status.${st}`)} · {n}</Chip></Link></li>)}
+            </ul>
+            <div><ChipLink href="/tools/research/library"><W k="rs.plan.project.go" /></ChipLink></div>
+          </Surface>
+          <Surface material="pane" className="px-4 py-3 grid gap-2">
+            {head("rs.plan.project.documents", mine.docs.length)}
+            {mine.docs.length ? (
+              <ul className="grid gap-1 text-t2">
+                {mine.docs.map((d) => <li key={d.id} className="flex flex-wrap items-baseline gap-2"><Link href="/tools/research/write">{d.title}</Link><span className="text-t1 text-ink-soft mono">{countWords(d.text)} {both("rs.write.words")}{d.budget ? ` / ${d.budget}` : ""}</span></li>)}
+              </ul>
+            ) : <p className="text-t2 text-ink-soft"><W k="rs.plan.wk.nothing" /></p>}
+            <div><ChipLink href="/tools/research/write"><W k="rs.plan.project.go" /></ChipLink></div>
+          </Surface>
+          <Surface material="pane" className="px-4 py-3 grid gap-2">
+            {head("rs.plan.project.tasks", mine.tasks.length)}
+            {mine.tasks.length ? byLane.filter((x) => x.rows.length).map(({ l, rows }) => (
+              <div key={l} className="grid gap-1">
+                <p className="text-t1 text-ink-soft mono uppercase">{LANE_NAMES[l][lang]} · {rows.length}</p>
+                <ul className="grid gap-1 text-t2">{rows.map((t) => <li key={t.id}>{t.title}{t.due ? <span className="text-t1 text-ink-soft mono"> · {t.due}</span> : null}</li>)}</ul>
+              </div>
+            )) : <p className="text-t2 text-ink-soft"><W k="rs.plan.wk.nothing" /></p>}
+            <div><ChipButton onClick={() => onView("board")}><W k="rs.plan.board" /></ChipButton></div>
+          </Surface>
+          <Surface material="pane" className="px-4 py-3 grid gap-2">
+            {head("rs.plan.project.dates", mine.dates.length)}
+            {mine.dates.length ? <ul className="grid gap-1 text-t2">{mine.dates.map((e) => <li key={e.id}><span className="text-t1 text-ink-soft mono">{dayText(e.starts)} </span>{e.title} <span className="text-t1 text-ink-soft">{EVENT_KIND_NAMES[e.kind][lang]}</span></li>)}</ul> : <p className="text-t2 text-ink-soft"><W k="rs.plan.wk.nothing" /></p>}
+            <div><ChipButton onClick={() => onView("dates")}><W k="rs.plan.dates" /></ChipButton></div>
+          </Surface>
+          <Surface material="pane" className="px-4 py-3 grid gap-2">
+            {head("rs.plan.project.sessions", mine.sessions.length)}
+            <p className="text-t1 text-ink-soft mono">{minutes} {both("rs.plan.minutes")}</p>
+            {mine.sessions.length ? (
+              <ul className="grid gap-1 text-t2">
+                {mine.sessions.slice(0, 12).map((s) => <li key={s.id} className="flex flex-wrap items-baseline gap-2"><span className="text-t1 text-ink-soft mono w-16">{when(s.started)}</span><span className="mono">{minutesBetween(s.started, s.ended as string)} {both("rs.plan.minutes")}</span>{s.room ? <Chip>{s.room}</Chip> : null}<span className="text-ink-soft">{s.note}</span></li>)}
+              </ul>
+            ) : null}
+            <div><ChipButton onClick={() => onView("sessions")}><W k="rs.plan.sessions" /></ChipButton></div>
+          </Surface>
+        </div>
+      ) : null}
     </div>
   );
 }

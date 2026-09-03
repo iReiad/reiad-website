@@ -297,6 +297,32 @@ eq("parseAny reads a single CSL object", parseAny('{"type":"book","title":"x"}')
   eq("and a short coincidence is not", W.overlapsOf("panel data from households", [{ name: "x", text: "panel data from households" }]), []);
 }
 
+/* ---------- the writing desk's deferred four: slides, moving a section, the glossary ---------- */
+
+{
+  const W = await import("../shared/research-write.ts");
+  eq("slides joins the document kinds the migration checks against", W.DOCUMENT_KINDS.includes("slides"), true);
+
+  const deck = "<h2>Why it matters</h2><p>Farm incomes fall after a shock.</p><ul><li>Rainfall shocks cut income</li><li>Credit is rationed</li></ul><h2>Method</h2><p>Panel data, fixed effects.</p>";
+  eq("a slide a heading: its own text the title, its list items the bullets", W.slidesOf(deck), [
+    { title: "Why it matters", bullets: ["Rainfall shocks cut income", "Credit is rationed"] },
+    { title: "Method", bullets: ["Panel data, fixed effects."] },
+  ]);
+  eq("no list on the slide falls back to its paragraphs", W.slidesOf("<h2>One</h2><p>First.</p><p>Second.</p>")[0].bullets, ["First.", "Second."]);
+  eq("content before the first heading is not a slide", W.slidesOf("<p>Cover</p><h2>One</h2><p>Body</p>").length, 1);
+
+  const doc = "<h2>Risk</h2><p>Def A.</p><h3>Credit risk</h3><p>Def B.</p><h2>Method</h2><p>Def C.</p>";
+  const moved = "<h2>Method</h2><p>Def C.</p><h2>Risk</h2><p>Def A.</p><h3>Credit risk</h3><p>Def B.</p>";
+  eq("a section carries its own deeper heading with it when moved up", W.moveSection(doc, 2, 0), moved);
+  eq("moving the section above it down lands in the same order", W.moveSection(doc, 0, 1), moved);
+  eq("a no-op move and an out-of-range one leave the document as it was", [W.moveSection(doc, 1, 1), W.moveSection(doc, 5, 0)], [doc, doc]);
+
+  const gloss = "<p><dfn>Liquidity risk</dfn> is the risk a firm cannot meet its obligations as they fall due.</p><p><strong>Credit risk</strong> is the risk a borrower does not repay.</p><p>Ordinary prose with no term in it.</p><p><dfn>Liquidity risk</dfn> said again.</p>";
+  const terms = W.glossaryOf(gloss);
+  eq("a <dfn> and a bold-first-use term both become glossary entries, and a second <dfn> of the same term does not repeat", terms.map((g) => g.term), ["Liquidity risk", "Credit risk"]);
+  ok("with the rest of its own paragraph as the definition", terms[0].definition.startsWith("is the risk") && terms[1].definition.startsWith("is the risk"), JSON.stringify(terms));
+}
+
 /* ---------- the planner: a calendar out ---------- */
 
 {
@@ -314,6 +340,38 @@ eq("parseAny reads a single CSL object", parseAny('{"type":"book","title":"x"}')
   eq("a week starts on Monday", weekStart(new Date(2026, 8, 2)), "2026-08-31");
   eq("and Sunday belongs to the week before it", weekStart(new Date(2026, 8, 6)), "2026-08-31");
   eq("minutes between two instants, never negative", [minutesBetween("2026-09-02T10:00:00Z", "2026-09-02T10:25:30Z"), minutesBetween("2026-09-02T10:00:00Z", "2026-09-02T09:00:00Z")], [26, 0]);
+}
+
+/* ---------- the planner: the Gantt's layout ---------- */
+
+{
+  const { ganttLayout, GANTT } = await import("../shared/research-plan.ts");
+  const now = new Date("2026-09-03T12:00:00Z");
+  const rows = [
+    { id: "t-1", title: "Draft chapter 3", start: "2026-08-20T09:00:00Z", end: "2026-09-30", group: "Thesis", tone: "var(--blue)", kind: "task" as const },
+    { id: "t-2", title: "Clean the panel", start: "2026-09-01T09:00:00Z", end: "2026-09-10", group: "", tone: "var(--blue)", kind: "task" as const },
+    { id: "e-1", title: "Conference", start: "2026-11-02T00:00:00Z", end: "2026-11-04T00:00:00Z", group: "Thesis", tone: "var(--violet)", kind: "event" as const },
+    { id: "e-2", title: "Backwards", start: "2026-10-05T00:00:00Z", end: "2026-10-01T00:00:00Z", group: "Aside", tone: "var(--gold)", kind: "event" as const },
+  ];
+  const g = ganttLayout(rows, { now, width: 1000 });
+  eq("the axis runs from the first month touched to the month after the last", [g.from, g.to], ["2026-08-01", "2026-12-01"]);
+  eq("one label a month", g.months.map((m) => m.month), [7, 8, 9, 10]);
+  eq("named projects first in alphabetical order, the unnamed rows last", g.groups.map((x) => x.name), ["Aside", "Thesis", ""]);
+  eq("and every group knows how many bars it holds", g.groups.map((x) => x.count), [1, 2, 1]);
+  eq("bars inside a group are in order of start", g.bars.filter((b) => b.group === "Thesis").map((b) => b.id), ["t-1", "e-1"]);
+  ok("every bar runs left to right and sits inside the box", g.bars.every((b) => b.x2 > b.x1 && b.x1 >= 0 && b.x2 <= 1000 && b.y >= GANTT.top), JSON.stringify(g.bars.map((b) => [b.id, b.x1, b.x2])));
+  const dayWidth = 1000 / 122;
+  ok("an end before its start is one day wide rather than a bar running backwards", (() => { const b = g.bars.find((x) => x.id === "e-2")!; return b.x2 > b.x1 && b.x2 - b.x1 <= dayWidth + 0.001; })());
+  ok("the present is a line inside the box", g.nowX !== null && g.nowX > 0 && g.nowX < 1000, String(g.nowX));
+  ok("a bar that began before the present starts left of the line", (() => { const b = g.bars.find((x) => x.id === "t-2")!; return b.x1 < (g.nowX ?? 0); })());
+  eq("the rows stack: a heading a group and a row a bar", g.height, GANTT.top + 3 * GANTT.head + 4 * GANTT.row + 8);
+  const same = ganttLayout(rows, { now, width: 1000 });
+  eq("the same rows draw the same picture", same.bars.map((b) => [b.x1, b.x2, b.y]), g.bars.map((b) => [b.x1, b.x2, b.y]));
+  const empty = ganttLayout([], { now });
+  eq("no rows is no bars and the present month alone", [empty.bars.length, empty.groups.length, empty.months.length, empty.from], [0, 0, 1, "2026-09-01"]);
+  const past = ganttLayout([rows[1]], { now: new Date("2027-03-01T00:00:00Z") });
+  ok("a picture entirely in the past still has the present on it", past.nowX !== null && past.months.length === 7, `${past.nowX} ${past.months.length}`);
+  eq("a row whose date cannot be read is left out rather than drawn at nought", ganttLayout([{ ...rows[0], end: "soon" }], { now }).bars.length, 0);
 }
 
 /* ---------- the atlas: a layout that is the same every time ---------- */
@@ -360,6 +418,67 @@ eq("parseAny reads a single CSL object", parseAny('{"type":"book","title":"x"}')
     { id: "c", doi: null, hash: "h3", created_at: "2026-09-03" }, { id: "d", doi: null, hash: "h3", created_at: "2026-09-04" },
   ]), ["b", "d"]);
   eq("an appraisal's score counts yes as one and unclear as a half", appraisalScore({ "0": "yes", "1": "unclear", "2": "no" }, APPRAISALS.econ.questions), 1.5);
+}
+
+/* ---------- the review room: a second screener ---------- */
+
+{
+  const { agreement, verdictA, verdictB } = await import("../shared/research-review.ts");
+  type Screened = Parameters<typeof verdictA>[0];
+  /** A's title verdict is "fulltext" (still going) for an include and
+      "excluded" with no fullText flag for an exclude; B is the same
+      shape one column along. */
+  const rec = (a: "include" | "exclude", b: "include" | "exclude"): Screened => ({
+    stage: a === "include" ? "fulltext" : "excluded",
+    decision2: b === "include" ? "fulltext" : "excluded",
+    record: { fullText: a === "exclude" ? false : undefined, fullText2: b === "exclude" ? false : undefined },
+  });
+  eq("A's title verdict on a record still going is include, and exclude once excluded there", [verdictA(rec("include", "include"), "title"), verdictA(rec("exclude", "include"), "title")], ["include", "exclude"]);
+  eq("B reads the same way off decision2", [verdictB(rec("include", "exclude"), "title"), verdictB(rec("include", "include"), "title")], ["exclude", "include"]);
+  eq("neither has a full text verdict while the record has not reached full text", [verdictA(rec("include", "include"), "fulltext"), verdictB(rec("include", "include"), "fulltext")], [null, null]);
+  eq("an undecided record has no verdict at all", [verdictA({ stage: "found" }, "title"), verdictB({ stage: "found", decision2: null }, "title")], [null, null]);
+
+  // A textbook 2x2 confusion matrix (Landis & Koch's own shape): 20
+  // records both screeners include, 5 only A includes, 10 only B
+  // includes, 15 both exclude. By hand: n = 50, agreed = 35, po =
+  // 35/50 = 0.7. A includes 25/50 = 0.5 of the time, excludes the
+  // other half; B includes 30/50 = 0.6, excludes 20/50 = 0.4. Chance
+  // agreement pe = 0.5*0.6 + 0.5*0.4 = 0.5. kappa = (po - pe) / (1 - pe)
+  // = (0.7 - 0.5) / 0.5 = 0.4.
+  const sample = [
+    ...Array.from({ length: 20 }, () => rec("include", "include")),
+    ...Array.from({ length: 5 }, () => rec("include", "exclude")),
+    ...Array.from({ length: 10 }, () => rec("exclude", "include")),
+    ...Array.from({ length: 15 }, () => rec("exclude", "exclude")),
+  ];
+  const agr = agreement(sample, "title");
+  ok(
+    "Cohen's kappa on the textbook 2x2: n=50, agreed=35, kappa=0.4",
+    agr.n === 50 && agr.agreed === 35 && Math.abs((agr.k ?? NaN) - 0.4) < 1e-9,
+    `got n=${agr.n} agreed=${agr.agreed} k=${agr.k}`,
+  );
+  eq("the disagreements are exactly the off-diagonal records, 5 plus 10", agr.disagreed.length, 15);
+  eq("no record decided by both is null, not a divide by zero", agreement([{ stage: "found", decision2: null }], "title"), { k: null, n: 0, agreed: 0, disagreed: [] });
+  const bothAlwaysInclude = Array.from({ length: 5 }, () => rec("include", "include"));
+  eq("both screeners in one category the whole time is full agreement, not 0/0", agreement(bothAlwaysInclude, "title"), { k: 1, n: 5, agreed: 5, disagreed: [] });
+}
+
+/* ---------- the review room: extraction filled from the reading ---------- */
+
+{
+  const { fillFromCards } = await import("../shared/research-review.ts");
+  const filled = fillFromCards(
+    { sample: "", finding: "already typed" },
+    ["sample", "method", "effect size"],
+    [{ n: "412", method: "RCT" }, { number: "0.34", unit: "SD" }],
+  );
+  eq(
+    "empty cells fill from the cards, the first card to answer wins, and a number carries its unit",
+    filled,
+    { sample: "412", finding: "already typed", method: "RCT", "effect size": "0.34 SD" },
+  );
+  eq("a cell somebody typed is never written over", fillFromCards({ sample: "200 patients" }, ["sample"], [{ n: "999" }]).sample, "200 patients");
+  eq("a column matching no card field, and a card with nothing for it, are both left empty", fillFromCards({}, ["country"], [{ method: "RCT" }]), {});
 }
 
 if (failures.length) {

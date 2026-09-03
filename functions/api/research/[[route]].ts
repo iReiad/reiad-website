@@ -27,6 +27,7 @@
    GET    /api/research/related/<doi>    OpenAlex's three lists
    GET    /api/research/oa/<doi>         a free copy, through Unpaywall
    GET    /api/research/market/<symbol>?full=1   a daily series, through Alpha Vantage (section 14)
+   GET    /api/research/climate?lat=&lon=&from=&to=   daily temperature and rain at a point, through Open-Meteo's archive (section 36)
    POST   /api/research/transcribe      one stored audio file, through Workers AI (section 15)
    POST   /api/research/assistant       a task for the model, streamed back as it answers (section 21)
    POST   /api/research/embed           embeddings for the semantic search, through Workers AI
@@ -77,6 +78,7 @@ import { readerFrom } from "../../_lib/reader.ts";
 import type { ReaderEnv } from "../../_lib/reader.ts";
 import { byDoi, byIsbn, clip, status, zoteroPull } from "../../_lib/scholar.ts";
 import { canMarket, dailySeries } from "../../_lib/market.ts";
+import { CLIMATE_A_MINUTE, climateQuery, dailyClimate } from "../../_lib/climate.ts";
 import { checkJournal, findJournals, parseReference } from "../../_lib/workshop.ts";
 import { ask, canAssist, canEmbed, embed, MODEL, type AssistantEnv } from "../../_lib/assistant.ts";
 import { canTranscribe, closeSurvey, publishSurvey, responsesOf, transcribe, TOKEN, type AiEnv } from "../../_lib/field.ts";
@@ -92,9 +94,11 @@ import { FILE_CAP, FILE_QUOTA, extOfName } from "../../../shared/research.ts";
 import { orcidWorks, related, searchAll, unpaywall } from "../../_lib/scholar-search.ts";
 import type { SearchQuery } from "../../_lib/scholar-search.ts";
 import { db } from "../../_lib/db.ts";
+import { isAdmin } from "../../_lib/admins.ts";
+import type { AdminEnv } from "../../_lib/admins.ts";
 import type { ResearchAlertHitRow, ResearchCalendarRow } from "../../../shared/rows.ts";
 
-interface ResearchEnv extends ScholarEnv, ReaderEnv, FilesEnv, AiEnv, AssistantEnv {}
+interface ResearchEnv extends ScholarEnv, ReaderEnv, FilesEnv, AiEnv, AssistantEnv, AdminEnv {}
 
 /** A page a minute is a person reading; more is a crawler with a
     bearer, which is still somebody else's server being asked. */
@@ -120,9 +124,32 @@ export async function onRequest(
 
   if (head === "status") {
     return methods(request, {
-      GET: () => ok({ services: { ...status(env), files: env.MEDIA && canTicket(env) ? "on" : "off", market: canMarket(env) ? "on" : "off", transcribe: canTranscribe(env) ? "on" : "off", assistant: canAssist(env) ? "on" : "off", embed: canEmbed(env) ? "on" : "off" } }),
+      GET: async () => {
+        /* The three metered services answer "owner" to anybody who
+           is not: on, but not for you. The bearer is optional here
+           and a bad one reads as signed out rather than as a 401,
+           because the status is asked before a room decides what
+           to draw. */
+        let owner = false;
+        try { const r = await readerFrom(request, env); owner = r ? await isAdmin(env, request, r.id) : false; } catch { owner = false; }
+        const metered = (on: boolean): "on" | "off" | "owner" => (!on ? "off" : owner ? "on" : "owner");
+        return ok({ services: { ...status(env), files: env.MEDIA && canTicket(env) ? "on" : "off", market: canMarket(env) ? "on" : "off", transcribe: metered(canTranscribe(env)), assistant: metered(canAssist(env)), embed: metered(canEmbed(env)) } });
+      },
     });
   }
+
+  /* ---- THE METERED SERVICES ARE THE OWNER'S ----
+     The model key, the embeddings and the transcription all spend
+     an allowance the site holds, not the reader: a key with a bill
+     on it and a Workers AI quota that is one number for the whole
+     site. Sign-up is open, so "signed in" alone would let any
+     stranger with a Google account spend it at the throttle's
+     rate. `isAdmin()` is the one place that decides, as it is for
+     the broker's levers. A second reader ever getting the
+     assistant means a per-reader key, sealed the way the broker's
+     is, not a wider gate here. */
+  const ownerOnly = async (reader: Reader): Promise<Response | null> =>
+    (await isAdmin(env, request, reader.id)) ? null : fail("owner-only", 403);
 
   /* ---- the files: every branch reads the reader first ---- */
   const whoAsks = async (): Promise<Reader | Response> => {
@@ -236,6 +263,8 @@ export async function onRequest(
       POST: async () => {
         const reader = await whoAsks();
         if (reader instanceof Response) return reader;
+        const owned = await ownerOnly(reader);
+        if (owned) return owned;
         if (!canAssist(env)) return fail("no-key", 503);
         if (await throttle({ request, env }, "research-assistant", 30, 15)) return fail("too-many", 429);
         const sent = await body(request);
@@ -255,6 +284,8 @@ export async function onRequest(
       POST: async () => {
         const reader = await whoAsks();
         if (reader instanceof Response) return reader;
+        const owned = await ownerOnly(reader);
+        if (owned) return owned;
         if (!canEmbed(env)) return fail("no-ai", 503);
         const sent = await body(request);
         const texts = Array.isArray(sent.texts) ? (sent.texts as unknown[]).filter((x): x is string => typeof x === "string" && x.trim().length > 0) : [];
@@ -272,6 +303,8 @@ export async function onRequest(
       POST: async () => {
         const reader = await whoAsks();
         if (reader instanceof Response) return reader;
+        const owned = await ownerOnly(reader);
+        if (owned) return owned;
         if (!env.MEDIA) return fail("not-configured", 503);
         if (!canTranscribe(env)) return fail("no-ai", 503);
         const sent = await body(request);
@@ -337,6 +370,21 @@ export async function onRequest(
         const series = await dailySeries(env, symbol, url.searchParams.get("full") === "1");
         if (!series) return fail("not-found", 404);
         return ok({ series });
+      },
+    });
+  }
+
+  if (head === "climate") {
+    return methods(request, {
+      GET: async () => {
+        const reader = await whoAsks();
+        if (reader instanceof Response) return reader;
+        if (await throttle({ request, env }, "research-climate", CLIMATE_A_MINUTE, 1)) return fail("too-many", 429);
+        const asked = climateQuery(url.searchParams);
+        if (!asked) return fail("bad-place", 400);
+        const series = await dailyClimate(context, asked);
+        if (!series) return fail("no-answer", 502);
+        return ok({ series }, { "Cache-Control": "private, max-age=86400" });
       },
     });
   }

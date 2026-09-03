@@ -22,7 +22,7 @@ import { PROJECT_KINDS, PROJECT_KIND_NAMES, TONES, fileSize, toneVar, type Proje
 import { GBP_PER_USD, pounds } from "@reiad/shared/research-assist";
 import {
   addCollection, addProject, addSource, fileUsage, findDuplicate, getPrefs, listCollections, listNotes, listProjects,
-  logImport, savePrefs, serviceStatus, zoteroPage,
+  logImport, savePrefs, serviceStatus, zoteroPage, type ServiceState,
   type Prefs, type Project, type Usage,
 } from "../../lib/research-api";
 import { Button } from "../ui/button";
@@ -45,7 +45,7 @@ export function Settings() {
   const [name, setName] = useState("");
   const [kind, setKind] = useState<ProjectKind>("degree");
   const [tone, setTone] = useState<Tone>("violet");
-  const [services, setServices] = useState<Record<string, "on" | "off"> | null>(null);
+  const [services, setServices] = useState<Record<string, ServiceState> | null>(null);
   const [usage, setUsage] = useState<Usage | null>(null);
   const [zUser, setZUser] = useState("");
   const [zKey, setZKey] = useState("");
@@ -207,7 +207,7 @@ export function Settings() {
         <p className="text-t2 text-ink-soft"><W k="rs.set.connections.hint" /></p>
         <ul className="flex flex-wrap gap-2">
           {services ? Object.entries(services).map(([k, v]) => (
-            <li key={k}><Chip tone={v === "on" ? "accent" : "quiet"}>{k}: {both(v === "on" ? "rs.set.on" : "rs.set.off")}</Chip></li>
+            <li key={k}><Chip tone={v === "on" ? "accent" : "quiet"}>{k}: {both(v === "on" ? "rs.set.on" : v === "owner" ? "rs.set.owner" : "rs.set.off")}</Chip></li>
           )) : <li className="text-t2 text-ink-soft"><W k="rs.moment" /></li>}
         </ul>
         <h3 className="text-t2 font-medium mt-2"><W k="rs.set.zotero" /></h3>
