@@ -2453,6 +2453,39 @@ the extraction sheet on the writing desk as Word tables, the reader
 open beside full-text screening, extraction prefilled from reading
 cards, and a second screener's column.
 
+**Stage 8 landed the same day, in its first form.** What it does:
+`/tools/research/lab` holds datasets as files in R2 that are ALSO
+library sources of type dataset, read into DuckDB in the browser
+(`next/lib/duck.ts`, self-hosted with `'wasm-unsafe-eval'` in both
+header lists) on the first ask and never through the Worker after
+the upload; a dictionary one row a column, typed on upload and
+bound to the questions room's variables; the Dhaka Stock Exchange,
+Alpha Vantage, Ken French and EM-DAT column names recognised and
+renamed; the four sanity checks of the replication template as a
+run of kind `check`; SQL over the loaded tables, kept as
+`research_transforms` and made views; twenty-four methods in
+`shared/research-stats.ts`, each held to a closed form by
+`scripts/research-stats.test.ts` (descriptives, correlation, the
+tests, OLS with HC and clustered errors, logit and probit, panel
+fixed effects, difference in differences, 2SLS with first-stage F,
+survey means, CAPM, Sharpe, Sortino and VaR, ADF, an event study,
+CSAD, Fama-MacBeth, factor regressions, degree days, rainfall
+shocks, index insurance, mean-variance and dominance); every
+result a `research_runs` row with a page at
+`/tools/research/lab/run/<id>`, its input, code, data hash,
+output whole, APA table and figure as SVG; charts as SVG text; and
+a daily market series through `GET /api/research/market/<symbol>`
+saved as a dataset with its source. Not yet from sections 14 and
+36: Univer sheets, Python cells through Pyodide and Colab, the
+origin private file system between visits, CodeMirror for the SQL,
+Observable Plot, the Word export of an APA table from the desk,
+regression tables with several models side by side, re-running a
+run from its page, the compare-to-the-paper panel, the data
+adapters beyond the market series, "climate for a place", and the
+GitHub bridge. Where no R was to hand the arithmetic test's
+references are closed forms and hand computations rather than a
+number copied from a console, which is written into that file.
+
 **Stage 1 is a week of work and the studio is used from its end.**
 Stages 2 to 5 are the next month, and at the end of stage 5 the
 studio does everything the old desk did and everything a reference

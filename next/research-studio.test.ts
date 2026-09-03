@@ -89,6 +89,7 @@ const TYPES: Record<string, string> = {
   ".svg": "image/svg+xml",
   ".webp": "image/webp",
   ".ico": "image/x-icon",
+  ".wasm": "application/wasm",
 };
 
 const server = createServer(async (req, res) => {
@@ -153,6 +154,9 @@ const seed = (): Record<string, Row[]> => ({
   research_people: [],
   research_reviews: [],
   research_review_records: [],
+  research_datasets: [],
+  research_transforms: [],
+  research_runs: [],
   research_projects: [],
   research_collections: [],
   research_lists: [],
@@ -290,7 +294,10 @@ async function open(path: string, { signedIn = true }: { signedIn?: boolean } = 
         const defaults = table === "research_sources" ? { status: "unread", priority: 0, files: [], tags: [], projects: [], collections: [] }
           : table === "research_documents" ? { position: 0, outline: [], body: "<p></p>", text: "", budget: null, style: "apa", state: "outline", meta: {}, deleted_at: null }
           : table === "research_reviews" ? { project_id: null, protocol: {}, state: "protocol" }
-          : table === "research_review_records" ? { database: "", search_id: null, stage: "found", reason: null, decided_at: null, source_id: null, extraction: {}, appraisal: {} } : {};
+          : table === "research_review_records" ? { database: "", search_id: null, stage: "found", reason: null, decided_at: null, source_id: null, extraction: {}, appraisal: {} }
+          : table === "research_datasets" ? { project_id: null, source_id: null, files: [], dictionary: [], provenance: {}, licence: null, notes: null, rows: null, columns: null, hash: "", raw: false }
+          : table === "research_transforms" ? { position: 0 }
+          : table === "research_runs" ? { dataset_id: null, project_id: null, label: "", input: {}, code: "", data_hash: "", output: {}, figure: null, ms: null } : {};
         const row: Row = { ...defaults, ...p, id: `${table.replace("research_", "")}-${made}-new`, user_id: ME, created_at: now, updated_at: now };
         held.unshift(row);
         return row;
@@ -316,6 +323,7 @@ async function open(path: string, { signedIn = true }: { signedIn?: boolean } = 
   });
 
   const looked: string[] = [];
+  const stored = new Map<string, { bytes: Buffer; type: string }>();
   const searched: string[] = [];
   const alerts: string[] = [];
   const calendar: { ics: string }[] = [];
@@ -330,11 +338,29 @@ async function open(path: string, { signedIn = true }: { signedIn?: boolean } = 
     if (u.pathname.startsWith("/api/research/ticket/")) {
       return answer({ ok: true, url: `/api/research/file/${u.pathname.slice("/api/research/ticket/".length)}?t=pass` });
     }
+    if (u.pathname === "/api/research/file" && r.request().method() === "PUT") {
+      /* An upload: the bytes kept by key, so the lab can read them
+         back on a ticket exactly as R2 would serve them. */
+      const name = u.searchParams.get("name") ?? "file";
+      const ext = name.split(".").pop() ?? "bin";
+      const bytes = r.request().postDataBuffer() ?? Buffer.alloc(0);
+      const key = `research/${ME}/up-${stored.size + 1}.${ext}`;
+      stored.set(key, { bytes, type: r.request().headers()["content-type"] ?? "application/octet-stream" });
+      return answer({ ok: true, key, ext, size: bytes.byteLength, already: false });
+    }
     if (u.pathname.startsWith("/api/research/file/")) {
       /* The bytes, as the Worker serves them: no bearer, a ticket
-         in the query, and a PDF. */
+         in the query, and a PDF, or whatever was uploaded. */
       if (u.searchParams.get("t") !== "pass") return answer({ ok: false, reason: "no-ticket" }, 403);
+      const key = decodeURIComponent(u.pathname.slice("/api/research/file/".length));
+      const held = stored.get(key);
+      if (held) return r.fulfill({ status: 200, contentType: held.type, body: held.bytes });
       return r.fulfill({ status: 200, contentType: "application/pdf", body: Buffer.from(PDF) });
+    }
+    if (u.pathname.startsWith("/api/research/market/")) {
+      const symbol = decodeURIComponent(u.pathname.slice("/api/research/market/".length));
+      const bars = [101, 102.5, 101.8, 103.2, 104, 103.1].map((close, i) => ({ date: `2024-02-0${i + 1}`, open: close - 0.5, high: close + 1, low: close - 1, close, volume: 1000 + i }));
+      return answer({ ok: true, series: { symbol, source: "Alpha Vantage", fetched: "2024-02-07T00:00:00.000Z", bars } });
     }
     if (u.pathname === "/api/research/files") {
       return answer({ ok: true, bytes: PDF.byteLength, files: 1, cap: 100 * 1024 * 1024, quota: 5 * 1024 * 1024 * 1024 });
@@ -935,6 +961,103 @@ for (const path of ["/tools/research", "/tools/research/library", "/tools/resear
   await page.getByRole("button", { name: /7 Synthesis|7 সংশ্লেষ/ }).click();
   await page.waitForTimeout(300);
   ok("synthesis is the gap matrix of the included sources' tags", await page.locator('[data-testid="rs-rev-gaps"] tbody tr').count() === 2);
+  ok("and none of it threw", errors.length === 0, errors.join(" | "));
+  await page.close();
+}
+
+/* ============================================================
+   10. the lab: a DSE export read by its column names, loaded into
+       DuckDB in the browser, the four checks as a run, a column
+       bound in the dictionary, OLS with an APA table saved as a
+       run with its figure, SQL kept as a transform, a chart, and a
+       market series saved as a dataset with its source
+   ============================================================ */
+
+{
+  const { page, errors, sent } = await open("/tools/research/lab");
+  await page.waitForTimeout(500);
+  ok("a lab with no dataset says so", ((await page.locator(".rs-list").textContent()) ?? "").includes("No dataset yet"));
+  const CSV = ["DATE,TRADING CODE,LTP*,HIGH,LOW,OPENP*,CLOSEP*,YCP*,TRADE,VALUE (mn),VOLUME",
+    ...Array.from({ length: 12 }, (_v, i) => {
+      const open = 300 + i * 2, close = open + (i % 3) - 1;
+      return `2024-01-${String(i + 2).padStart(2, "0")},GP,${close},${close + 3},${open - 2},${open},${close},${open - 1},${1000 + i},${(40 + i).toFixed(1)},${150000 + i * 10}`;
+    })].join("\n");
+  await page.setInputFiles('[data-testid="rs-lab-file"]', { name: "dse-export.csv", mimeType: "text/csv", buffer: Buffer.from(CSV) });
+  await page.waitForTimeout(1500);
+  const src = firstOf(posts(sent, "research_sources")[0]);
+  ok("an upload is a library source of type dataset first", src.type === "dataset" && src.title === "dse-export", JSON.stringify(src).slice(0, 200));
+  const ds = firstOf(posts(sent, "research_datasets")[0]) as { dictionary?: { name: string; type: string }[]; provenance?: { importer?: string; kind?: string }; rows?: number; hash?: string; files?: { key: string }[] };
+  ok("and a dataset row whose columns the DSE importer renamed, typed, counted and hashed",
+    ds.provenance?.importer === "dse" && ds.provenance.kind === "upload" && ds.rows === 12 && ds.hash?.length === 16 && ds.files?.[0]?.key.startsWith("research/")
+    && ds.dictionary?.map((c) => c.name).join(",") === "date,symbol,last,high,low,open,close,previous_close,trades,value_mn,volume"
+    && ds.dictionary[0].type === "date" && ds.dictionary[1].type === "text" && ds.dictionary[6].type === "number",
+    JSON.stringify(ds ?? null).slice(0, 300));
+  await page.getByRole("button", { name: /Load into the engine|ইঞ্জিনে লোড করুন/ }).click();
+  const preview = page.locator('.rs-main div:has(> p:has-text("First rows")) table');
+  await preview.waitFor({ timeout: 120000 }).catch(() => undefined);
+  ok("DuckDB in the browser reads the file back on its ticket and shows the first rows", await preview.locator("tbody tr").count() === 12, `${await preview.count()} preview table(s); status: ${await page.locator('[role="status"]').count() ? await page.locator('[role="status"]').first().textContent() : ""}`);
+  await page.locator("#rs-lab-n").fill("12");
+  await page.getByRole("button", { name: /Run the checks|যাচাই চালান/ }).click();
+  await page.locator('[data-testid="rs-lab-sanity"]').waitFor({ timeout: 20000 }).catch(() => undefined);
+  await page.waitForTimeout(800);
+  const sane = await page.locator('[data-testid="rs-lab-sanity"]').count() ? (await page.locator('[data-testid="rs-lab-sanity"]').textContent()) ?? "" : "";
+  const status = await page.locator('[role="status"]').count() ? (await page.locator('[role="status"]').first().textContent()) ?? "" : "";
+  ok("the four checks read the shape against the stated N and the date coverage", /N matches|N মিলেছে/.test(sane) && sane.includes("2024-01-02") && sane.includes("2024-01-13"), `${sane.slice(0, 200)} status: ${status}`);
+  const check = posts(sent, "research_runs").map(firstOf).find((r) => r.kind === "check") as { output?: { rows?: number } } | undefined;
+  ok("and the result is a run of kind check", check?.output?.rows === 12, JSON.stringify(check ?? null).slice(0, 200));
+  await page.locator("#rs-dc-unit-6").fill("BDT");
+  await page.locator("#rs-dc-unit-6").press("Tab");
+  await page.waitForTimeout(800);
+  const dict = sent.filter((x) => x.method === "PATCH" && x.path.includes("research_datasets")).map((x) => x.body as { dictionary?: { name: string; unit?: string }[] }).find((b) => b.dictionary?.some((c) => c.unit === "BDT"));
+  ok("a unit typed into the dictionary is one column of the dataset's own row", dict?.dictionary?.[6]?.name === "close" && dict.dictionary[6].unit === "BDT", JSON.stringify(dict ?? null).slice(0, 200));
+  await page.getByRole("button", { name: /3 Statistics|3 পরিসংখ্যান/ }).click();
+  await page.waitForTimeout(300);
+  await page.locator("#rs-lab-method").selectOption("ols");
+  await page.locator("#rs-role-y").selectOption("close");
+  await page.locator('[data-testid="rs-role-x"] button', { hasText: /^open$/ }).click();
+  await page.getByRole("button", { name: /^Run\b/ }).click();
+  await page.waitForTimeout(2000);
+  const apa = await page.locator('[data-testid="rs-lab-apa"]').count() ? (await page.locator('[data-testid="rs-lab-apa"]').textContent()) ?? "" : "";
+  const alert = await page.locator('[role="alert"]').count() ? (await page.locator('[role="alert"]').first().textContent()) ?? "" : "";
+  ok("OLS runs in the browser and prints an APA table with the intercept, the slope and R squared", apa.includes("(Intercept)") && apa.includes("| open |") && apa.includes("R²") && apa.includes("N | 12"), `${apa.slice(0, 300)} alert: ${alert} main: ${((await page.locator("main").textContent()) ?? "").slice(0, 400)}`);
+  await page.getByRole("button", { name: /Save as a run|রান হিসেবে রাখুন/ }).click();
+  await page.waitForTimeout(800);
+  const stat = posts(sent, "research_runs").map(firstOf).find((r) => r.kind === "stat") as { output?: { fit?: { names: string[]; coef: number[] }; apa?: string }; figure?: string; data_hash?: string; input?: { method?: string } } | undefined;
+  ok("and the run holds the fit whole, the APA text, the data hash and the figure as SVG",
+    stat?.output?.fit?.names.join(",") === "(Intercept),open" && stat.output.fit.coef.length === 2 && typeof stat.output.apa === "string" && stat.figure?.startsWith("<svg") && stat.data_hash?.length === 16 && stat.input?.method === "ols",
+    JSON.stringify(stat ?? null).slice(0, 200));
+  await page.getByRole("button", { name: /2 SQL/ }).click();
+  await page.waitForTimeout(300);
+  ok("the SQL box opens on the dataset's own table", ((await page.locator("#rs-lab-sql").inputValue()) ?? "").startsWith("SELECT * FROM"));
+  await page.getByRole("button", { name: /^Run\b/ }).click();
+  await page.waitForTimeout(2000);
+  ok("and DuckDB answers it", await page.locator("table tbody tr").count() === 12);
+  await page.locator("#rs-lab-tname").fill("closes");
+  await page.getByRole("button", { name: /Save as a transform|ট্রান্সফর্ম হিসেবে রাখুন/ }).click();
+  await page.waitForTimeout(800);
+  const tr = firstOf(posts(sent, "research_transforms")[0]);
+  ok("a transform is SQL kept as a row", tr.name === "closes" && String(tr.sql).startsWith("SELECT"), JSON.stringify(tr).slice(0, 200));
+  await page.getByRole("button", { name: /4 Charts|4 চার্ট/ }).click();
+  await page.waitForTimeout(300);
+  await page.locator("#rs-chart-x").selectOption("date");
+  await page.locator("button", { hasText: /^close$/ }).first().click();
+  await page.getByRole("button", { name: /Draw|আঁকুন/ }).click();
+  await page.waitForTimeout(2000);
+  ok("a chart is drawn as SVG", await page.locator('[data-testid="rs-lab-chart"]').count() === 1);
+  await page.getByRole("button", { name: /Save as a run|রান হিসেবে রাখুন/ }).click();
+  await page.waitForTimeout(800);
+  ok("and saved as a run with the figure", posts(sent, "research_runs").map(firstOf).some((r) => r.kind === "chart" && String(r.figure).startsWith("<svg")));
+  await page.getByRole("button", { name: /6 Market data|6 বাজারের তথ্য/ }).click();
+  await page.waitForTimeout(300);
+  await page.locator("#rs-lab-symbol").fill("AAPL");
+  await page.locator("#rs-lab-symbol").press("Enter");
+  await page.waitForTimeout(1000);
+  const ser = await page.locator('[data-testid="rs-lab-series"]').count() ? (await page.locator('[data-testid="rs-lab-series"]').textContent()) ?? "" : "";
+  ok("a market series comes through the Worker with its dates", ser.includes("AAPL") && ser.includes("2024-02-01") && ser.includes("2024-02-06"), ser.slice(0, 200));
+  await page.getByRole("button", { name: /Save as a dataset|ডেটাসেট হিসেবে রাখুন/ }).click();
+  await page.waitForTimeout(2000);
+  const market = posts(sent, "research_datasets").map(firstOf).find((d) => (d.provenance as { kind?: string })?.kind === "market") as { provenance?: { symbol?: string; importer?: string }; rows?: number; dictionary?: { name: string }[] } | undefined;
+  ok("and saved it is a dataset with its provenance, its rows and canonical columns", market?.provenance?.symbol === "AAPL" && market.rows === 6 && market.dictionary?.map((c) => c.name).join(",") === "date,open,high,low,close,volume", JSON.stringify(market ?? null).slice(0, 200));
   ok("and none of it threw", errors.length === 0, errors.join(" | "));
   await page.close();
 }

@@ -7,7 +7,7 @@ There are three renderers of this site now: the Worker in
 Next.js route in `next/`. Anything all of them must say the same
 way lives here, and nowhere else.
 
-Today that is twenty-eight files and two directories, and
+Today that is thirty files and two directories, and
 `check-types.ts` fails if one of them is not described below.
 That check exists because this line said six while nine were
 here: `nav.ts` and `routine.ts` arrived in two changes that had
@@ -144,6 +144,17 @@ this repository got written.
 - **`research-review.ts`** the review room's stages, frames and
   appraisal templates, and PRISMA 2020 derived from the records by
   stage and reason. RESEARCH.md section 13.
+- **`research-stats.ts`** the lab's first tier of statistics in
+  TypeScript: descriptives, the tests, OLS with classical, HC and
+  clustered errors, logit and probit, panels, differences in
+  differences, instruments, survey means, the finance helpers and
+  the agricultural arithmetic, each held to a closed form by
+  scripts/research-stats.test.ts. RESEARCH.md sections 14 and 36.
+- **`research-lab.ts`** what the lab does that is not a statistic:
+  a delimited file read with its types inferred, the importers that
+  know a DSE or an Alpha Vantage file by its columns, the four
+  sanity checks, a fit as an APA table, and a chart as SVG text.
+  RESEARCH.md section 14.
 - **`research-graph.ts`** the atlas's arithmetic: a deterministic
   force layout for the graph, the argument map and the gap matrix
   as cells, the literature timeline as dots. RESEARCH.md 8 and 18.

@@ -188,6 +188,7 @@ const RESEARCH_TABLES = [
   "research_versions", "research_questions", "research_tasks", "research_lists",
   "research_activity", "research_highlights", "research_searches", "research_documents",
   "research_events", "research_sessions", "research_people", "research_reviews", "research_review_records",
+  "research_datasets", "research_transforms", "research_runs",
 ] as const;
 
 /** SOMEBODY ELSE'S PROFILE, and the reason it is here.
@@ -1220,6 +1221,9 @@ console.log("\ntaking a copy of everything");
     ["research_people", "the supervisors, authors and examiners"],
     ["research_reviews", "every review's protocol"],
     ["research_review_records", "every record screened for one"],
+    ["research_datasets", "a dataset in the lab"],
+    ["research_transforms", "a transform kept as SQL"],
+    ["research_runs", "a run, which is every result"],
     ["routines", "the shape of the week"],
     ["routine_entries", "every day marked on it"],
     ["routine_templates", "the templates this reader made"],

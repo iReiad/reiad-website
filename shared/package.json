@@ -36,6 +36,8 @@
     "./research-graph": "./research-graph.ts",
     "./research-review": "./research-review.ts",
     "./csl": "./csl/index.ts",
-    "./csl/*": "./csl/*.ts"
+    "./csl/*": "./csl/*.ts",
+    "./research-stats": "./research-stats.ts",
+    "./research-lab": "./research-lab.ts"
   }
 }

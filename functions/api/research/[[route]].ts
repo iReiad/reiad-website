@@ -23,6 +23,7 @@
    GET    /api/research/search?q=&author=&from=&to=&oa=1&type=&db=a,b
    GET    /api/research/related/<doi>    OpenAlex's three lists
    GET    /api/research/oa/<doi>         a free copy, through Unpaywall
+   GET    /api/research/market/<symbol>?full=1   a daily series, through Alpha Vantage (section 14)
    PUT    /api/research/alerts           a flagged search, copied to D1 for the cron
    DELETE /api/research/alerts/<id>      the flag taken off
    GET    /api/research/alerts/hits      what the cron found, collected and cleared
@@ -66,6 +67,7 @@ import { throttle } from "../../_lib/auth.ts";
 import { readerFrom } from "../../_lib/reader.ts";
 import type { ReaderEnv } from "../../_lib/reader.ts";
 import { byDoi, byIsbn, clip, status, zoteroPull } from "../../_lib/scholar.ts";
+import { canMarket, dailySeries } from "../../_lib/market.ts";
 import type { ScholarEnv } from "../../_lib/scholar.ts";
 import { canTicket, checkTicket, mintTicket } from "../../_lib/ticket.ts";
 import {
@@ -105,7 +107,7 @@ export async function onRequest(
 
   if (head === "status") {
     return methods(request, {
-      GET: () => ok({ services: { ...status(env), files: env.MEDIA && canTicket(env) ? "on" : "off" } }),
+      GET: () => ok({ services: { ...status(env), files: env.MEDIA && canTicket(env) ? "on" : "off", market: canMarket(env) ? "on" : "off" } }),
     });
   }
 
@@ -211,6 +213,20 @@ export async function onRequest(
         const found = await related(env, doi);
         if (!found) return fail("not-found", 404);
         return ok(found);
+      },
+    });
+  }
+
+  if (head === "market") {
+    const symbol = decodeURIComponent(route[1] ?? "");
+    return methods(request, {
+      GET: async () => {
+        const reader = await whoAsks();
+        if (reader instanceof Response) return reader;
+        if (!canMarket(env)) return fail("no-key", 503);
+        const series = await dailySeries(env, symbol, url.searchParams.get("full") === "1");
+        if (!series) return fail("not-found", 404);
+        return ok({ series });
       },
     });
   }

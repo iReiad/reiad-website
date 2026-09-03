@@ -2334,7 +2334,7 @@ node next/account.test.ts        # the account's five features, the popover
                                   # menu, the Save under a byline, the panel
                                   # that says what this browser is holding, and
                                   # the picture a Google sign-in brings, under
-                                  # the real CSP (174 checks, needs the Next
+                                  # the real CSP (180 checks, needs the Next
                                   # build and a browser, skips without)
 node aab/sync.test.ts             # a browser's own progress getting into an
                                    # account, resetting, signing out, two
@@ -2369,8 +2369,11 @@ node next/research-studio.test.ts  # the Research Studio: the capture box
                                    # and found again with its rectangles gone,
                                    # and the review room: a record screened by
                                    # keyboard that becomes a source only when
-                                   # included, and PRISMA out of the rows
-                                   # (158 checks, needs the Next build and a
+                                   # included, and PRISMA out of the rows;
+                                   # and the lab: a DSE export read by its
+                                   # headings into DuckDB in the browser, OLS
+                                   # with an APA table saved as a run
+                                   # (175 checks, needs the Next build and a
                                    # browser, skips without)
 node next/progress.test.ts         # a page that costs a reader their ticks just
                                    # by being read, where in a piece they had

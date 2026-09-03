@@ -43,6 +43,7 @@ import type {
 import { runtimeModule } from "../components/account/runtime";
 import type { EventBody, EventKind, PersonRole } from "@reiad/shared/research-plan";
 import type { Protocol, RecordStage, ReviewKind, ReviewState } from "@reiad/shared/research-review";
+import type { Column, RunKind } from "@reiad/shared/research-lab";
 
 type AccountModule = typeof import("/account.js");
 const accountModule = () => runtimeModule<AccountModule>("/account.js");
@@ -1216,3 +1217,81 @@ export async function addRecords(w: Who, review: string, database: string, searc
 
 export const saveRecord = (w: Who, rec: ReviewRecord, part: Partial<ReviewRecord>): Promise<PatchAnswer<ReviewRecord>> =>
   patch<ReviewRecord>(w, "research_review_records", rec.id, part, rec.record.title?.slice(0, 80) ?? "record");
+
+/* ============================================================
+   the lab: datasets, transforms, runs, and a market series
+   ============================================================ */
+
+export interface Dataset extends Row {
+  project_id: string | null;
+  source_id: string | null;
+  name: string;
+  files: { key: string; ext: string; size: number; name: string }[];
+  dictionary: Column[];
+  provenance: Record<string, unknown>;
+  licence: string | null;
+  notes: string | null;
+  rows: number | null;
+  columns: number | null;
+  hash: string;
+  raw: boolean;
+}
+
+export interface Transform extends Row { dataset_id: string; name: string; sql: string; position: number }
+
+export interface Run extends Row {
+  dataset_id: string | null;
+  project_id: string | null;
+  kind: RunKind;
+  label: string;
+  input: Record<string, unknown>;
+  code: string;
+  data_hash: string;
+  output: Record<string, unknown>;
+  figure: string | null;
+  ms: number | null;
+}
+
+export const listDatasets = (w: Who): Promise<Dataset[]> => rows<Dataset>(w, "research_datasets", "order=updated_at.desc&limit=200");
+
+export const addDataset = (w: Who, d: Partial<Dataset> & { name: string }): Promise<Dataset | null> =>
+  insert<Dataset>(w, "research_datasets", { files: [], dictionary: [], provenance: {}, raw: false, ...d }, d.name.slice(0, 80));
+
+export const saveDataset = (w: Who, d: Dataset, part: Partial<Dataset>): Promise<PatchAnswer<Dataset>> =>
+  patch<Dataset>(w, "research_datasets", d.id, part, d.name.slice(0, 80));
+
+export const removeDataset = (w: Who, d: Dataset): Promise<boolean> => remove(w, "research_datasets", d.id, d.name.slice(0, 80));
+
+export const listTransforms = (w: Who, dataset: string): Promise<Transform[]> =>
+  rows<Transform>(w, "research_transforms", `dataset_id=eq.${enc(dataset)}&order=position.asc&limit=200`);
+
+export const addTransform = (w: Who, dataset: string, name: string, sql: string, position: number): Promise<Transform | null> =>
+  insert<Transform>(w, "research_transforms", { dataset_id: dataset, name, sql, position }, name.slice(0, 80));
+
+export const saveTransform = (w: Who, t: Transform, part: Partial<Transform>): Promise<PatchAnswer<Transform>> =>
+  patch<Transform>(w, "research_transforms", t.id, part, t.name.slice(0, 80));
+
+export const removeTransform = (w: Who, t: Transform): Promise<boolean> => remove(w, "research_transforms", t.id, t.name.slice(0, 80));
+
+export const listRuns = (w: Who, dataset?: string | null): Promise<Run[]> =>
+  rows<Run>(w, "research_runs", `${dataset ? `dataset_id=eq.${enc(dataset)}&` : ""}order=created_at.desc&limit=300`);
+
+export const getRun = (w: Who, id: string): Promise<Run | null> => row<Run>(w, "research_runs", id);
+
+export const addRun = (w: Who, r: Partial<Run> & { kind: RunKind; label: string }): Promise<Run | null> =>
+  insert<Run>(w, "research_runs", { input: {}, code: "", data_hash: "", output: {}, figure: null, ...r }, r.label.slice(0, 80));
+
+export const removeRun = (w: Who, r: Run): Promise<boolean> => remove(w, "research_runs", r.id, r.label.slice(0, 80));
+
+export interface MarketSeries { symbol: string; source: string; fetched: string; bars: { date: string; open: number; high: number; low: number; close: number; volume: number }[] }
+
+/** A daily series through the Worker, or null where the service is
+    off or the symbol unknown. */
+export async function marketSeries(w: Who, symbol: string, full = false): Promise<MarketSeries | null> {
+  try {
+    const res = await fetch(`/api/research/market/${enc(symbol)}${full ? "?full=1" : ""}`, { headers: bearer(w) });
+    if (!res.ok) return null;
+    const data = await res.json() as { ok: boolean; series?: MarketSeries };
+    return data.ok && data.series ? data.series : null;
+  } catch { return null; }
+}
