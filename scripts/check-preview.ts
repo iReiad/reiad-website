@@ -210,7 +210,21 @@ for (const route of ROUTES) {
      from /api/articles after it has painted. */
   if (route.section) {
     const pieces = await livePieces(route.section);
-    const cards = (pre.html.match(/class="cell (?:read-card|sample-card)"/g) ?? []).length;
+    /* COUNT WHAT A CARD IS TODAY, WHICH IS A LINK TO A PIECE.
+       This counted `class="cell read-card"` and `sample-card`
+       until 3 September 2026, and those are two of the three
+       shapes a piece wore before `<GoCard>` became the only one:
+       CLAUDE.md's "One thing is one card". So it reported nought
+       cards on every hub, on main as much as on a branch, and it
+       had been doing so since that change: the one check nobody
+       runs without a preview URL to hand.
+
+       A class is a fact about a stylesheet and it moved once
+       already. An anchor to `/<section>/<slug>.html` is what a
+       hub listing a piece IS, so that is what is counted. */
+    const linked = new Set([...pre.html.matchAll(
+      new RegExp(`href="/${route.section}/([a-z0-9-]+)\\.html"`, "g"))].map((m) => m[1]));
+    const cards = linked.size;
 
     okay(`the preview lists ${pieces.length} piece(s), which is what the`
       + " database has", cards === pieces.length, `${cards} card(s) rendered`);
