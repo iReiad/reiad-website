@@ -28,6 +28,31 @@
 -- and the questions room draws them as "carried from the desk".
 -- ============================================================
 
+-- ---------- one function, because a generated column may not
+-- call a stable one ----------
+--
+-- `array_to_string(anyarray, text)` is STABLE, not immutable: it
+-- runs the element type's output function, which in general
+-- depends on settings. Postgres therefore refuses it inside a
+-- `generated always as ... stored` column, and the whole
+-- migration fails on its first table with `42P17: generation
+-- expression is not immutable`. Nothing here could see that:
+-- every check reads the FILES, so this schema was correct on
+-- paper while the database had none of it.
+--
+-- For a `text[]` joined on a constant the result really is
+-- immutable, so this says so and the two search columns call it.
+-- Fully qualified under an empty search_path, which is what
+-- 20260817181442 asks of a function others depend on.
+
+create or replace function public.words_to_text(words text[])
+returns text
+language sql
+immutable
+parallel safe
+set search_path = ''
+as $$ select pg_catalog.array_to_string(coalesce(words, '{}'::text[]), ' ') $$;
+
 -- ---------- projects ----------
 
 create table if not exists public.research_projects (
@@ -163,7 +188,7 @@ create table if not exists public.research_sources (
                 to_tsvector('simple',
                   coalesce(title, '') || ' ' || coalesce(abstract, '') || ' '
                   || coalesce(authors, '') || ' ' || coalesce(why, '') || ' '
-                  || array_to_string(tags, ' '))) stored,
+                  || public.words_to_text(tags))) stored,
   created_at  timestamptz not null default now(),
   updated_at  timestamptz not null default now(),
   unique (user_id, key)
@@ -234,7 +259,7 @@ create table if not exists public.research_notes (
   deleted_at  timestamptz,
   fts         tsvector generated always as (
                 to_tsvector('simple', coalesce(title, '') || ' ' || coalesce(text, '')
-                  || ' ' || array_to_string(tags, ' '))) stored,
+                  || ' ' || public.words_to_text(tags))) stored,
   created_at  timestamptz not null default now(),
   updated_at  timestamptz not null default now()
 );

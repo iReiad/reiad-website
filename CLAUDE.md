@@ -2277,6 +2277,10 @@ node scripts/check-account.ts # a table this account holds that leaving does
                             # not carry: absent from "take a copy of
                             # everything", or left behind by "erase
                             # everything", both of which report success
+node scripts/check-migrations.ts # SQL the runner will refuse: a generated
+                            # column calling a stable function, which fails the
+                            # whole migration at 42P17 while every check that
+                            # reads the file rather than the database passes
 node scripts/check-rls.ts  # a Supabase table created with no row-level
                             # security on it, which has no symptom at all, or
                             # a second table readable by anyone
