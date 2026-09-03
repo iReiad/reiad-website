@@ -297,6 +297,32 @@ eq("parseAny reads a single CSL object", parseAny('{"type":"book","title":"x"}')
   eq("and a short coincidence is not", W.overlapsOf("panel data from households", [{ name: "x", text: "panel data from households" }]), []);
 }
 
+/* ---------- the writing desk's deferred four: slides, moving a section, the glossary ---------- */
+
+{
+  const W = await import("../shared/research-write.ts");
+  eq("slides joins the document kinds the migration checks against", W.DOCUMENT_KINDS.includes("slides"), true);
+
+  const deck = "<h2>Why it matters</h2><p>Farm incomes fall after a shock.</p><ul><li>Rainfall shocks cut income</li><li>Credit is rationed</li></ul><h2>Method</h2><p>Panel data, fixed effects.</p>";
+  eq("a slide a heading: its own text the title, its list items the bullets", W.slidesOf(deck), [
+    { title: "Why it matters", bullets: ["Rainfall shocks cut income", "Credit is rationed"] },
+    { title: "Method", bullets: ["Panel data, fixed effects."] },
+  ]);
+  eq("no list on the slide falls back to its paragraphs", W.slidesOf("<h2>One</h2><p>First.</p><p>Second.</p>")[0].bullets, ["First.", "Second."]);
+  eq("content before the first heading is not a slide", W.slidesOf("<p>Cover</p><h2>One</h2><p>Body</p>").length, 1);
+
+  const doc = "<h2>Risk</h2><p>Def A.</p><h3>Credit risk</h3><p>Def B.</p><h2>Method</h2><p>Def C.</p>";
+  const moved = "<h2>Method</h2><p>Def C.</p><h2>Risk</h2><p>Def A.</p><h3>Credit risk</h3><p>Def B.</p>";
+  eq("a section carries its own deeper heading with it when moved up", W.moveSection(doc, 2, 0), moved);
+  eq("moving the section above it down lands in the same order", W.moveSection(doc, 0, 1), moved);
+  eq("a no-op move and an out-of-range one leave the document as it was", [W.moveSection(doc, 1, 1), W.moveSection(doc, 5, 0)], [doc, doc]);
+
+  const gloss = "<p><dfn>Liquidity risk</dfn> is the risk a firm cannot meet its obligations as they fall due.</p><p><strong>Credit risk</strong> is the risk a borrower does not repay.</p><p>Ordinary prose with no term in it.</p><p><dfn>Liquidity risk</dfn> said again.</p>";
+  const terms = W.glossaryOf(gloss);
+  eq("a <dfn> and a bold-first-use term both become glossary entries, and a second <dfn> of the same term does not repeat", terms.map((g) => g.term), ["Liquidity risk", "Credit risk"]);
+  ok("with the rest of its own paragraph as the definition", terms[0].definition.startsWith("is the risk") && terms[1].definition.startsWith("is the risk"), JSON.stringify(terms));
+}
+
 /* ---------- the planner: a calendar out ---------- */
 
 {

@@ -27,14 +27,19 @@ import type { CslItem } from "@reiad/shared/research";
 import { sourceType, toneVar } from "@reiad/shared/research";
 import { CSL_STYLES } from "@reiad/shared/csl";
 import {
-  chipHtml, claimsOf, countWords, keysCited, outlineOf, overlapsOf, readingMinutes, renumber, textOf, toLatex, toMarkdown,
-  type Chip,
+  DOCUMENT_KINDS, chipHtml, claimsOf, countWords, escape, glossaryOf, keysCited, moveSection, outlineOf, overlapsOf,
+  readingMinutes, renumber, slidesOf, textOf, toLatex, toMarkdown,
+  type Chip, type DocumentKind, type Slide,
 } from "@reiad/shared/research-write";
+import { abbreviations } from "@reiad/shared/research-tools";
+import { apaTable, modelOf } from "@reiad/shared/research-lab";
+import { toHtml as tableHtml } from "@reiad/shared/research-tools";
+import { word } from "@reiad/shared/research-words";
 import { toBibtex } from "@reiad/shared/research-bib";
 import {
-  DOCUMENT_KINDS, DOCUMENT_STATES, addDocument, bin, getDocument, listDocuments, listProjects, listSources,
+  DOCUMENT_STATES, addDocument, bin, getDocument, listDocuments, listProjects, listRuns, listSources,
   listVersions, rows, saveDocument, saveSource, snapshot,
-  type Document, type DocumentKind, type DocumentState, type Highlight, type Project, type Source, type Version, type Who,
+  type Document, type DocumentKind as ApiDocumentKind, type DocumentState, type Highlight, type Project, type Run, type Source, type Version, type Who,
 } from "../../lib/research-api";
 import { isNoteStyle, makeEngine, preview, renderDocument } from "../../lib/cite";
 import { runtimeModule } from "../account/runtime";
@@ -60,14 +65,20 @@ interface EditorModule {
   createEditor(o: { root: HTMLElement; onChange?: () => void; lang?: () => string | undefined }): EditorHandle;
 }
 
-const KIND_TONES: Record<DocumentKind, string> = { chapter: "violet", paper: "blue", proposal: "gold", abstract: "teal", letter: "rose", other: "plum" };
+const KIND_TONES: Record<DocumentKind, string> = { chapter: "violet", paper: "blue", proposal: "gold", abstract: "teal", letter: "rose", other: "plum", slides: "green" };
 const KIND_NAMES: Record<DocumentKind, { en: string; bn: string }> = {
   chapter: { en: "Chapter", bn: "অধ্যায়" }, paper: { en: "Paper", bn: "পেপার" }, proposal: { en: "Proposal", bn: "প্রস্তাব" },
-  abstract: { en: "Abstract", bn: "সারাংশ" }, letter: { en: "Letter", bn: "চিঠি" }, other: { en: "Other", bn: "অন্য" },
+  abstract: { en: "Abstract", bn: "সারাংশ" }, letter: { en: "Letter", bn: "চিঠি" }, other: { en: "Other", bn: "অন্য" }, slides: { en: "Slides", bn: "স্লাইড" },
 };
 const STATE_NAMES: Record<DocumentState, { en: string; bn: string }> = {
   outline: { en: "Outline", bn: "রূপরেখা" }, drafting: { en: "Drafting", bn: "খসড়া" }, revising: { en: "Revising", bn: "সংশোধন" }, done: { en: "Done", bn: "শেষ" },
 };
+
+/** A document's kind widened to the vocabulary `slides` joined:
+    research-api.ts's own alias is append-only from here, so every
+    equality check against "slides" goes through this rather than
+    `doc.kind` directly. */
+const kindOf = (d: Document): DocumentKind => d.kind as DocumentKind;
 
 export function Desk({ openId }: { openId?: string }) {
   const { w, answered } = useWho();
@@ -93,7 +104,11 @@ export function Desk({ openId }: { openId?: string }) {
 
   const make = useCallback(async () => {
     if (!w || !title.trim()) return;
-    const d = await addDocument(w, { title: title.trim(), kind, position: (docs?.length ?? 0) + 1 });
+    /* research-api.ts's own DocumentKind predates `slides` and is
+       append-only from here: shared/research-write.ts's is the
+       vocabulary check-research.ts holds to the migration, and the
+       two agree on every member that alias had before. */
+    const d = await addDocument(w, { title: title.trim(), kind: kind as ApiDocumentKind, position: (docs?.length ?? 0) + 1 });
     if (d) { setDocs((was) => [...(was ?? []), d]); setOpen(d.id); setTitle(""); cue("saved"); }
   }, [w, title, kind, docs]);
 
@@ -166,10 +181,11 @@ function Paper({ w, doc, sources, projects, onChange, onGone, onSourceChange }: 
   const [bib, setBib] = useState("");
   const [picker, setPicker] = useState(false);
   const [quotes, setQuotes] = useState(false);
-  const [pane, setPane] = useState<"outline" | "audit" | "overlap" | "versions">("outline");
+  const [figures, setFigures] = useState(false);
+  const [pane, setPane] = useState<"outline" | "audit" | "overlap" | "versions" | "glossary">("outline");
   const [versions, setVersions] = useState<Version[] | null>(null);
   const [others, setOthers] = useState<{ name: string; text: string }[]>([]);
-  const [files, setFiles] = useState<{ word?: string; md?: string; tex?: string; bib?: string } | null>(null);
+  const [files, setFiles] = useState<{ word?: string; md?: string; tex?: string; bib?: string; pptx?: string } | null>(null);
   const [snapName, setSnapName] = useState("");
   /* Where the caret was in the prose the last time it was there.
      Opening the picker moves the focus into a field, and the
@@ -331,6 +347,46 @@ function Paper({ w, doc, sources, projects, onChange, onGone, onSourceChange }: 
     void render();
   }, [changed, render, restoreCaret]);
 
+  /** A run's own chart, or its APA table where it has none: the
+      shape section 16 asks for, RESEARCH.md 14 for what a run
+      carries. */
+  const figureHtml = useCallback((run: Run): string => {
+    const model = modelOf(run);
+    const inner = run.figure ? run.figure : model ? tableHtml(apaTable(model.fit, { depvar: model.depvar }).rows) : "";
+    if (!inner) return "";
+    const caption = `${word("rs.write.figure")[lang]}: ${run.label}`;
+    return `<figure>${inner}<figcaption>${escape(caption)}</figcaption></figure><p></p>`;
+  }, [lang]);
+
+  const insertFigure = useCallback((run: Run) => {
+    if (!editor.current) return;
+    const html = figureHtml(run);
+    if (!html) return;
+    restoreCaret();
+    editor.current.insertHtmlAtCaret(html);
+    setFigures(false);
+    changed();
+  }, [figureHtml, changed, restoreCaret]);
+
+  /** At the end of the document rather than at the caret: a
+      glossary or an abbreviations list is appended to, never
+      dropped mid-sentence. */
+  const appendBlock = useCallback((html: string) => {
+    if (!editor.current || !box.current) return;
+    box.current.insertAdjacentHTML("beforeend", html);
+    changed();
+  }, [changed]);
+
+  /** A heading moved in the outline, by drag or by the up/down
+      buttons: the pure move, renumbered so a footnote that moved
+      with its section keeps counting from the top. */
+  const reorder = useCallback((from: number, to: number) => {
+    if (!editor.current || from === to) return;
+    const html = renumber(moveSection(editor.current.html(), from, to));
+    editor.current.setHtml(html);
+    changed();
+  }, [changed]);
+
   const restyle = useCallback((styleId: string) => { void write({ style: styleId }); void render(styleId); }, [write, render]);
 
   const exportAll = useCallback(async () => {
@@ -348,6 +404,12 @@ function Paper({ w, doc, sources, projects, onChange, onGone, onSourceChange }: 
       const word = await toDocx({ title: doc.title, html, bibliography: bib, author: doc.meta.author, affiliation: doc.meta.affiliation, bangla: lang === "bn" });
       out.word = URL.createObjectURL(word);
     } catch (err) { console.warn("docx", err); }
+    if (kindOf(doc) === "slides") {
+      try {
+        const { toPptx } = await import("../../lib/export-pptx");
+        out.pptx = URL.createObjectURL(await toPptx({ title: doc.title, slides: slidesOf(html) }));
+      } catch (err) { console.warn("pptx", err); }
+    }
     setFiles(out);
     cue("saved");
   }, [body, sources, doc, bib, lang]);
