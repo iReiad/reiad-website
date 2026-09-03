@@ -12,7 +12,7 @@ export const LESSON: MethodLesson = {
 </ul></div>
 
 <h2>The question tree</h2>
-<p>A chapter answers one question, and a question that size is never answered in one move. Break it into three to five sub-questions, each one small enough that a reader could see, on its own, what evidence would settle it. "Why does uptake of index insurance remain low" is a main question nobody could answer in a single section; "what do farmers themselves say is stopping them" is a sub-question with a shape: interview or survey evidence, not a regression.</p>
+<p>A chapter answers one question, and a question that size is never answered in one move. Break it into three to five sub-questions, each small enough that a reader could see, on its own, what evidence would settle it. "Why does uptake of index insurance remain low" is a main question nobody could answer in a single section; "what do farmers themselves say is stopping them" is a sub-question with a shape: interview or survey evidence, not a regression.</p>
 <p>Each sub-question asks for a different kind of evidence, and naming that in advance is most of the outline's work: a question about how a term has been used needs a review of definitions, a question about what farmers say needs qualitative material, coded and quoted, and a question about willingness to pay needs an experiment or a survey with a price manipulation in it. Write the evidence type beside each sub-question before drafting; one with no evidence type beside it is a question the chapter cannot actually answer.</p>
 <ol class="step-list">
 <li><strong>Write the main question as one sentence</strong>, the one the chapter's last paragraph has to answer.</li>
@@ -36,7 +36,7 @@ export const LESSON: MethodLesson = {
 <p class="note">A paragraph that ends on the evidence and never says what it means has done two thirds of the work, and a reader left to draw the conclusion may draw a different one from the one intended.</p>
 
 <h2>Worked example: index insurance uptake</h2>
-<div class="ex"><b>Worked example.</b> Main question: why does uptake of index insurance among smallholder farmers remain low despite premiums falling across the sector over the past decade. Four sub-questions, each with the evidence it needs, turned into a chapter outline with a heading and a word budget for each section. The budgets sum to 9,000 words.</div>
+<div class="ex"><b>Worked example.</b> Main question: why does uptake of index insurance among smallholder farmers remain low despite premiums falling across the sector. Four sub-questions, each with its evidence, turned into an outline with a heading and a word budget per section, summing to 9,000 words.</div>
 <div class="table-scroll"><table>
 <thead><tr><th>Sub-question</th><th>Evidence needed</th><th>Section heading</th><th>Words</th></tr></thead>
 <tbody>
@@ -122,20 +122,20 @@ export const LESSON: MethodLesson = {
 
 <h2>কোথায় ভুল হয়</h2>
 <ul>
-<li>এত বড় মূল প্রশ্ন যে একটা উপ-প্রশ্নও তার কোনো অংশের উত্তর কখনো দিতে পারবে না।</li>
-<li>শিরোনামে একটা বিষয়ের নাম, তাই পরপর দুটো অংশ পাঠক টেরই না পেয়ে জায়গা বদলে ফেলতে পারেন।</li>
-<li>উৎস যে বছর প্রকাশিত হয়েছিল সেই ক্রমে অংশ সাজানো, তাতে একটা শক্তিশালী সাম্প্রতিক ফল মাঝখানে চাপা পড়ে যায়, শুরুতে বা শেষে যে কাজটা করার কথা সেটা না করে।</li>
-<li>একদমই কোনো শব্দের বাজেট না থাকা, তাতে যে অংশে সবচেয়ে বেশি উৎস আছে সেটাই সবচেয়ে লম্বা হয়ে যায়, ভার বেশি বহন করুক বা না করুক।</li>
-<li>একটা অনুচ্ছেদ যা একটা দাবি বলে থেমে যায়, প্রমাণটা শুধু একটা উদ্ধৃতি হয়ে থাকে যা পাঠককে নিজে গিয়ে যাচাই করতে হয়।</li>
+<li>এত বড় মূল প্রশ্ন যে একটা উপ-প্রশ্নও তার কোনো অংশের উত্তর দিতে পারবে না।</li>
+<li>শিরোনামে বিষয়ের নাম, তাই পরপর দুটো অংশ পাঠক টেরই না পেয়ে জায়গা বদলে ফেলতে পারেন।</li>
+<li>উৎস প্রকাশের বছর ধরে অংশ সাজানো, তাতে শক্তিশালী সাম্প্রতিক ফল মাঝখানে চাপা পড়ে, শুরুতে বা শেষে যে কাজটা করার কথা তা না করে।</li>
+<li>কোনো শব্দের বাজেট না থাকা, তাতে সবচেয়ে বেশি উৎসের অংশটাই সবচেয়ে লম্বা হয়ে যায়, ভার বেশি বহন করুক বা না করুক।</li>
+<li>একটা দাবি বলে থেমে যাওয়া অনুচ্ছেদ, প্রমাণ শুধু একটা উদ্ধৃতি হয়ে থাকে যা পাঠককে নিজে গিয়ে যাচাই করতে হয়।</li>
 </ul>
 
 <ul class="checklist">
 <li>মূল প্রশ্নটা এক বাক্যে লেখা, যেটার উত্তর অধ্যায়ের শেষ অনুচ্ছেদকে দিতেই হবে।</li>
 <li>তিন থেকে পাঁচটা উপ-প্রশ্ন, প্রতিটার পাশে দরকারি প্রমাণের ধরন লেখা।</li>
-<li>প্রতিটা অংশের শিরোনাম একটা দাবি বলে, বিষয় নয়।</li>
+<li>প্রতিটা শিরোনাম একটা দাবি বলে, বিষয় নয়।</li>
 <li>ক্রমটা অনুসরণ করে পাঠকের আগে কী জানা দরকার তা, উৎস কোন ক্রমে পড়া হয়েছিল তা নয়।</li>
-<li>প্রতিটা অংশের একটা শব্দের বাজেট আছে, খসড়ার আগেই ঠিক করা, যা যোগ করলে অধ্যায়ের লক্ষ্য দৈর্ঘ্য হয়।</li>
-<li>অন্তত একটা অনুচ্ছেদ দাবি, প্রমাণ, তাতে কী হিসেবে পরিকল্পনা করা হয়েছে, পুরো অংশটা খসড়া করার আগেই।</li>
+<li>প্রতিটা অংশের শব্দের বাজেট আছে, খসড়ার আগেই ঠিক করা, যোগফল অধ্যায়ের লক্ষ্য দৈর্ঘ্যের সমান।</li>
+<li>অন্তত একটা অনুচ্ছেদ দাবি, প্রমাণ, তাতে কী হিসেবে পরিকল্পনা করা হয়েছে, পুরো অংশ খসড়া করার আগেই।</li>
 </ul>
 
 <p>প্রশ্ন ঘরেই গাছটা বানানো হয়, উপ-প্রশ্ন মূল প্রশ্নের নিচে, লাইব্রেরিতে যা আছে তার সঙ্গে প্রতিটা জোড়া লাগানো; লেখার টেবিল রূপরেখাটাকে একটা খসড়ায় বদলায়, শিরোনামসহ আর বাজেটের বিপরীতে চলমান শব্দ গোনাসহ, তাই লক্ষ্যের চেয়ে বেড়ে যাওয়া কোনো অংশ অধ্যায় শেষ হওয়ার আগেই চোখে পড়ে, পরে নয়।</p>`,

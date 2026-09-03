@@ -37,7 +37,7 @@ export const LESSON: MethodLesson = {
 <h2>Saturation, said honestly</h2>
 <p>Saturation is the point at which further transcripts stop changing your account: new interviews confirm the themes you already have rather than adding new ones. It is a judgement from what the last few transcripts actually contributed, not a sample size fixed before fieldwork starts. Stating in a proposal that "saturation will be reached at fifteen interviews" promises a number the data have not been allowed to decide. What a methods section can honestly say is what was watched for: that the final three or four transcripts were coded specifically to check whether they introduced anything the existing themes could not absorb. That is a claim about a process you ran, checkable against your own coding record, where a number picked in advance cannot be checked against anything.</p>
 
-<div class="ex"><b>Worked example.</b> Three interview lines, written for this lesson and clearly illustrative, from smallholder farmers describing a bad growing season. Each is coded line by line, and two themes are drawn from the codes underneath them.
+<div class="ex"><b>Worked example.</b> Three interview lines, written for this lesson and clearly illustrative, from smallholder farmers on a bad growing season. Each is coded line by line, and two themes are drawn from the codes.
 <div class="table-scroll"><table>
 <thead><tr><th>Line</th><th>Initial codes</th></tr></thead>
 <tbody>
@@ -51,14 +51,14 @@ export const LESSON: MethodLesson = {
 <h2>Where it goes wrong</h2>
 <ul class="checklist">
 <li>A theme that is really a topic. If it cannot be written as a sentence somebody could disagree with, it is not yet a theme.</li>
-<li>Themes drawn from the questions asked rather than the answers given. Every theme should trace back to codes, every code to an extract you can point at.</li>
-<li>Coding once and treating it as final, skipping the review against the whole data set that tests a first guess at grouping.</li>
-<li>Claiming saturation as a number decided before fieldwork rather than a judgement from what the later transcripts contributed.</li>
-<li>A write up that is mostly quotations with no argument connecting them. The extract shows the theme; it does not replace the sentence naming it.</li>
-<li>No reflexive note, leaving a reader no way to weigh how much of the theme is the data and how much is the person reading it.</li>
+<li>Themes drawn from the questions asked rather than the answers given. Every theme should trace back to codes, every code to an extract.</li>
+<li>Coding once and treating it as final, skipping the review against the whole data set.</li>
+<li>Claiming saturation as a number decided before fieldwork rather than a judgement from what later transcripts contributed.</li>
+<li>A write up that is mostly quotations with no argument connecting them.</li>
+<li>No reflexive note, leaving a reader no way to weigh how much of the theme is the data and how much is the reader of it.</li>
 </ul>
-<p class="note">Anonymise before an extract leaves your files. A worked extract travels into a codebook, an appendix, sometimes a published article, and it should never carry a name or a detail that identifies who said it.</p>
-<p>The field room's codebook and coding are where this happens on real transcripts: the initial codes go in one pass, the candidate themes are grouped and reviewed in the next, and each theme is defined and named before it is written up.</p>`,
+<p class="note">Anonymise before an extract leaves your files. It travels into a codebook, an appendix, sometimes a published article, and should never carry a name or a detail that identifies who said it.</p>
+<p>The field room's codebook and coding are where this happens on real transcripts: initial codes go in one pass, candidate themes are grouped and reviewed in the next, and each theme is defined and named before it is written up.</p>`,
   bn: `<div class="at-a-glance"><p class="at-a-glance-label">এক নজরে</p><ul>
 <li>Braun আর Clarke-এর ছয় ধাপ: চেনাজানা হওয়া, প্রথম দফায় কোড করা, বিষয় খোঁজা, বিষয় যাচাই করা, বিষয় সংজ্ঞায়িত করে নাম দেওয়া, আর লিখে ফেলা।</li>
 <li>কোড হলো কোনো অংশের গায়ে বসানো ছোট একটা লেবেল। বিষয় হলো অনেক কোড জুড়ে অর্থের একটা ধরন, যা আপনি বানান, তথ্যের ভেতর বসে থাকা কোনো কিছু খুঁজে বের করেন না।</li>
@@ -93,7 +93,7 @@ export const LESSON: MethodLesson = {
 <h2>স্যাচুরেশন, সৎভাবে বলা</h2>
 <p>স্যাচুরেশন সেই বিন্দু, যেখানে আরও ট্রান্সক্রিপ্ট আপনার বিবরণ বদলানো বন্ধ করে দেয়: নতুন সাক্ষাৎকার আগে থাকা বিষয় নিশ্চিত করে, নতুন কিছু যোগ করে না। এটা শেষের কয়েকটা ট্রান্সক্রিপ্ট আসলে কী যোগ করল তা দেখে করা বিচার, মাঠকাজের আগে ঠিক করা নমুনার আকার নয়। প্রস্তাবে লেখা "পনেরোটা সাক্ষাৎকারে স্যাচুরেশন পাওয়া যাবে" সংখ্যার প্রতিশ্রুতি দেয় যা তথ্যকে এখনো ঠিক করতে দেওয়া হয়নি। সততার সঙ্গে যা বলা যায় তা হলো আসলে কী খেয়াল করা হয়েছিল: শেষের তিন-চারটা ট্রান্সক্রিপ্ট নির্দিষ্টভাবে কোড করা হয়েছিল বর্তমান বিষয় নিতে না পারা কিছু এল কি না দেখতে। এটা এমন একটা প্রক্রিয়ার দাবি, নিজের কোডিং রেকর্ডের বিপরীতে যাচাই করা যায়, যেখানে আগে বেছে নেওয়া সংখ্যা কিছুর বিপরীতে যাচাই করা যায় না।</p>
 
-<div class="ex"><b>কাজ করে দেখা।</b> এই পাঠের জন্য লেখা, স্পষ্টভাবে কাল্পনিক, খারাপ একটা মৌসুম বর্ণনা করা প্রান্তিক কৃষকদের তিনটা সাক্ষাৎকার-লাইন। প্রতিটা লাইন-ধরে-লাইন কোড করা হয়েছে, আর নিচের কোড থেকে দুটো বিষয় বের করা হয়েছে।
+<div class="ex"><b>কাজ করে দেখা।</b> এই পাঠের জন্য লেখা, স্পষ্টভাবে কাল্পনিক, খারাপ মৌসুম নিয়ে প্রান্তিক কৃষকদের তিনটা সাক্ষাৎকার-লাইন। প্রতিটা লাইন কোড করা হয়েছে, আর কোড থেকে দুটো বিষয় বের করা হয়েছে।
 <div class="table-scroll"><table>
 <thead><tr><th>লাইন</th><th>প্রথম দফার কোড</th></tr></thead>
 <tbody>
