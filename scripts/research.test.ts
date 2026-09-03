@@ -424,10 +424,11 @@ eq("parseAny reads a single CSL object", parseAny('{"type":"book","title":"x"}')
 
 {
   const { agreement, verdictA, verdictB } = await import("../shared/research-review.ts");
+  type Screened = Parameters<typeof verdictA>[0];
   /** A's title verdict is "fulltext" (still going) for an include and
       "excluded" with no fullText flag for an exclude; B is the same
       shape one column along. */
-  const rec = (a: "include" | "exclude", b: "include" | "exclude") => ({
+  const rec = (a: "include" | "exclude", b: "include" | "exclude"): Screened => ({
     stage: a === "include" ? "fulltext" : "excluded",
     decision2: b === "include" ? "fulltext" : "excluded",
     record: { fullText: a === "exclude" ? false : undefined, fullText2: b === "exclude" ? false : undefined },

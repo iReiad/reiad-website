@@ -32,7 +32,7 @@ import {
   type Chip, type DocumentKind, type Slide,
 } from "@reiad/shared/research-write";
 import { abbreviations } from "@reiad/shared/research-tools";
-import { apaTable, modelOf } from "@reiad/shared/research-lab";
+import { apaTable, modelOf, type Model } from "@reiad/shared/research-lab";
 import { toHtml as tableHtml } from "@reiad/shared/research-tools";
 import { word } from "@reiad/shared/research-words";
 import { toBibtex } from "@reiad/shared/research-bib";
@@ -347,12 +347,23 @@ function Paper({ w, doc, sources, projects, onChange, onGone, onSourceChange }: 
     void render();
   }, [changed, render, restoreCaret]);
 
+  /** apaTable wants a full OLS fit; a run only ever carries what
+      modelOf reads out of its own output. Every field apaTable
+      itself uses (names, coef, se, p, n, r2, adjR2, pseudoR2,
+      robust, clusters) comes from the run; the rest is required
+      by the wider type and never read, so it carries the shape's
+      own zero. */
+  const toFit = (m: Model["fit"]): Parameters<typeof apaTable>[0] => ({
+    ...m, n: m.n ?? 0, r2: m.r2 ?? 0, adjR2: m.adjR2 ?? 0, t: m.p.map(() => 0), k: 0, df: 0, sigma: 0, residuals: [], fitted: [],
+    robust: (m.robust ?? "classical") as Parameters<typeof apaTable>[0]["robust"],
+  });
+
   /** A run's own chart, or its APA table where it has none: the
       shape section 16 asks for, RESEARCH.md 14 for what a run
       carries. */
   const figureHtml = useCallback((run: Run): string => {
     const model = modelOf(run);
-    const inner = run.figure ? run.figure : model ? tableHtml(apaTable(model.fit, { depvar: model.depvar }).rows) : "";
+    const inner = run.figure ? run.figure : model ? tableHtml(apaTable(toFit(model.fit), { depvar: model.depvar }).rows) : "";
     if (!inner) return "";
     const caption = `${word("rs.write.figure")[lang]}: ${run.label}`;
     return `<figure>${inner}<figcaption>${escape(caption)}</figcaption></figure><p></p>`;

@@ -31,6 +31,10 @@
    login could not have reached anyone either. Bump this whenever a
    precached file changes.
 
+   v235: /fallback.css. The writing desk's deck: a document of kind
+        slides is one 16:9 card per h2, and the print rules lay one
+        out to a landscape page.
+
    v234: /account-page.js and /fallback.css. The reading room
         (RESEARCH.md section 11): the erase now clears the studio's
         files in R2 after its rows and names research_highlights,
@@ -2083,7 +2087,7 @@
    imports (crumbs, audience, learn progress) and the hub is a
    different page. Without a bump, a returning reader would be
    served the v3 app.js forever and none of it would appear. */
-const VERSION = "v234";
+const VERSION = "v235";
 const SHELL = `shell-${VERSION}`;
 const RUNTIME = `runtime-${VERSION}`;
 
