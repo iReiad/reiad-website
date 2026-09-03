@@ -441,14 +441,30 @@ function Paper({ w, doc, sources, projects, onChange, onGone, onSourceChange }: 
   const outline = useMemo(() => outlineOf(body), [body]);
   const claims = useMemo(() => pane === "audit" ? claimsOf(body) : [], [pane, body]);
   const overlaps = useMemo(() => pane === "overlap" ? overlapsOf(text, others) : [], [pane, text, others]);
+  const glossary = useMemo(() => pane === "glossary" ? glossaryOf(body) : [], [pane, body]);
+  const abbrevAll = useMemo(() => pane === "glossary" ? abbreviations(text) : [], [pane, text]);
+  const abbrevWarn = abbrevAll.filter((a) => a.usedBefore);
+  const slides = useMemo(() => kindOf(doc) === "slides" ? slidesOf(body) : [], [doc, body]);
   const cited = keysCited(body).length;
   const budgets = doc.outline;
   const day = new Date().toISOString().slice(0, 10);
   const slug = (doc.title || doc.kind).toLowerCase().replace(/[^a-z0-9]+/g, "-").replace(/^-|-$/g, "");
 
+  const insertGlossary = useCallback(() => {
+    if (!glossary.length) return;
+    const items = glossary.map((g) => `<li><strong>${escape(g.term)}</strong>. ${escape(g.definition)}</li>`).join("");
+    appendBlock(`<h2>${escape(word("rs.write.glossary")[lang])}</h2><ul>${items}</ul>`);
+  }, [glossary, appendBlock, lang]);
+
+  const insertAbbrevList = useCallback(() => {
+    const items = abbrevAll.filter((a) => a.definition).map((a) => `<li><strong>${escape(a.abbr)}</strong>. ${escape(a.definition ?? "")}</li>`).join("");
+    if (!items) return;
+    appendBlock(`<h2>${escape(word("rs.write.abbr")[lang])}</h2><ul>${items}</ul>`);
+  }, [abbrevAll, appendBlock, lang]);
+
   return (
-    <div className="grid gap-3" style={{ "--accent": toneVar(KIND_TONES[doc.kind] as "blue") } as React.CSSProperties}>
-      <Surface material="pane" className="rs-tint px-4 py-3 grid gap-3">
+    <div className="grid gap-3" data-kind={doc.kind} style={{ "--accent": toneVar(KIND_TONES[doc.kind] as "blue") } as React.CSSProperties}>
+      <Surface material="pane" className="rs-tint rs-write-bar px-4 py-3 grid gap-3">
         <div className="flex flex-wrap items-center gap-2">
           <Pill tone="accent">{KIND_NAMES[doc.kind][lang]}</Pill>
           <span className="text-t1 text-ink-soft mono grow text-right" role="status">
@@ -476,10 +492,12 @@ function Paper({ w, doc, sources, projects, onChange, onGone, onSourceChange }: 
           <ChipButton onClick={() => setPicker((p) => !p)} pressed={picker} title={both("rs.write.cite.hint")}>@ <W k="rs.write.cite" /></ChipButton>
           <ChipButton onClick={insertFootnote} title={both("rs.write.footnote.hint")}>¹ <W k="rs.write.footnote" /></ChipButton>
           <ChipButton onClick={() => setQuotes((q) => !q)} pressed={quotes}><W k="rs.write.quote" /></ChipButton>
+          <ChipButton onClick={() => setFigures((f) => !f)} pressed={figures} title={both("rs.write.figure.hint")}><W k="rs.write.figure.insert" /></ChipButton>
           <ChipButton onClick={() => { void render(); }}><W k="rs.write.render" /></ChipButton>
           <span className="grow" />
           <ChipButton onClick={() => { void exportAll(); }}><W k="rs.write.export" /></ChipButton>
           {files?.word ? <ChipLink href={files.word} download={`${slug}-${day}.docx`}><W k="rs.write.export.word" /></ChipLink> : null}
+          {files?.pptx ? <ChipLink href={files.pptx} download={`${slug}-${day}.pptx`}><W k="rs.write.slides" /></ChipLink> : null}
           {files?.md ? <ChipLink href={files.md} download={`${slug}-${day}.md`}><W k="rs.write.export.md" /></ChipLink> : null}
           {files?.tex ? <ChipLink href={files.tex} download={`${slug}-${day}.tex`}><W k="rs.write.export.tex" /></ChipLink> : null}
           {files?.bib ? <ChipLink href={files.bib} download={`library-${day}.bib`}>BibTeX</ChipLink> : null}
@@ -487,11 +505,12 @@ function Paper({ w, doc, sources, projects, onChange, onGone, onSourceChange }: 
         </div>
         {picker ? <CitePicker sources={sources} styleId={doc.style} items={items} onPick={(c) => { void insertChip(c); }} onClose={() => setPicker(false)} /> : null}
         {quotes ? <QuotePicker w={w} sources={sources} onPick={insertQuote} /> : null}
+        {figures ? <FigurePicker w={w} onPick={insertFigure} /> : null}
       </Surface>
 
       <div className="rs-reader">
         <div className="min-w-0 grid gap-2">
-          <Surface material="pane" className="px-5 py-4">
+          <Surface material="pane" className="rs-write-prose px-5 py-4">
             <div ref={box} className="rs-editor article" lang={lang} contentEditable suppressContentEditableWarning />
             {bib ? <div className="article" dangerouslySetInnerHTML={{ __html: bib }} /> : null}
           </Surface>
@@ -499,11 +518,26 @@ function Paper({ w, doc, sources, projects, onChange, onGone, onSourceChange }: 
             {words} <W k="rs.write.words" />{doc.budget ? ` ${both("rs.write.of")} ${doc.budget}` : ""} · {readingMinutes(words)} <W k="rs.write.minutes" /> · {cited} <W k="rs.write.citations" />
           </p>
           {doc.budget ? <Meter done={words} total={doc.budget} label={both("rs.write.budget")} size="sm" /> : null}
+          {kindOf(doc) === "slides" ? (
+            <div className="rs-deck-wrap grid gap-2">
+              <h3 className="text-t2 font-medium"><W k="rs.write.deck" /></h3>
+              {slides.length ? (
+                <div className="rs-deck">
+                  {slides.map((s, i) => (
+                    <Surface key={i} material="pane" className="rs-slide">
+                      <h4 className="text-t2 font-medium">{s.title || "…"}</h4>
+                      {s.bullets.length ? <ul className="text-t2">{s.bullets.map((b, j) => <li key={j}>{b}</li>)}</ul> : null}
+                    </Surface>
+                  ))}
+                </div>
+              ) : <p className="text-t2 text-ink-soft"><W k="rs.write.outline.empty" /></p>}
+            </div>
+          ) : null}
         </div>
         <aside className="rs-side grid gap-3">
           <Surface material="pane" className="px-4 py-3 grid gap-3">
             <div className="flex flex-wrap gap-1">
-              {(["outline", "audit", "overlap", "versions"] as const).map((p) => (
+              {(["outline", "audit", "overlap", "glossary", "versions"] as const).map((p) => (
                 <ChipButton key={p} pressed={pane === p} onClick={() => setPane(p)}>{both(`rs.write.${p}`)}</ChipButton>
               ))}
             </div>
@@ -515,13 +549,19 @@ function Paper({ w, doc, sources, projects, onChange, onGone, onSourceChange }: 
                     {outline.map((h) => {
                       const budget = budgets.find((b) => b.text === h.text)?.budget;
                       return (
-                        <li key={h.index} className={h.level === 3 ? "pl-4" : ""}>
+                        <li key={h.index} className={h.level === 3 ? "pl-4" : ""} draggable
+                            onDragStart={(e) => { e.dataTransfer.setData("text/plain", String(h.index)); e.dataTransfer.effectAllowed = "move"; }}
+                            onDragOver={(e) => e.preventDefault()}
+                            onDrop={(e) => { e.preventDefault(); const from = Number(e.dataTransfer.getData("text/plain")); if (Number.isInteger(from)) reorder(from, h.index); }}>
                           <div className="flex items-baseline gap-2">
                             <button type="button" className="text-left bg-transparent border-0 p-0 cursor-pointer hover:underline" style={{ color: "inherit", font: "inherit" }}
                                     onClick={() => { const el = [...(box.current?.querySelectorAll("h2, h3") ?? [])][h.index]; el?.scrollIntoView({ block: "center", behavior: "smooth" }); }}>
                               {h.text || "…"}
                             </button>
                             <span className="text-t1 text-ink-soft mono">{h.words}{budget ? ` / ${budget}` : ""}</span>
+                            <span className="grow" />
+                            <ChipButton onClick={() => reorder(h.index, h.index - 1)} disabled={h.index === 0} aria-label={both("rs.write.outline.up")} title={both("rs.write.outline.up")}>↑</ChipButton>
+                            <ChipButton onClick={() => reorder(h.index, h.index + 1)} disabled={h.index === outline.length - 1} aria-label={both("rs.write.outline.down")} title={both("rs.write.outline.down")}>↓</ChipButton>
                           </div>
                           {budget ? <Meter done={h.words} total={budget} label={h.text} size="sm" /> : null}
                           <div className="mt-1 max-w-[8rem]">
@@ -563,6 +603,37 @@ function Paper({ w, doc, sources, projects, onChange, onGone, onSourceChange }: 
                     ))}
                   </ul>
                 ) : <p className="text-t2 text-ink-soft"><W k="rs.write.overlap.clean" /></p>}
+              </>
+            ) : null}
+            {pane === "glossary" ? (
+              <>
+                <p className="text-t1 text-ink-soft"><W k="rs.write.glossary.hint" /></p>
+                {abbrevWarn.length ? (
+                  <ul className="grid gap-2 text-t2">
+                    {abbrevWarn.map((a) => (
+                      <li key={a.abbr} className="rs-hl-card" style={{ "--tone": toneVar("gold") } as React.CSSProperties}>
+                        <span className="text-t1 text-ink-soft mono">{a.abbr} · <W k="rs.write.abbr.warn" /></span>
+                        {a.definition ? <blockquote>{a.definition}</blockquote> : null}
+                      </li>
+                    ))}
+                  </ul>
+                ) : null}
+                {!abbrevAll.length && !glossary.length ? <p className="text-t2 text-ink-soft"><W k="rs.write.glossary.empty" /></p> : (
+                  <div className="flex flex-wrap gap-2">
+                    <Button size="sm" kind="soft" disabled={!abbrevAll.some((a) => a.definition)} onClick={insertAbbrevList}><W k="rs.write.abbr.insert" /></Button>
+                    <Button size="sm" kind="soft" disabled={!glossary.length} onClick={insertGlossary}><W k="rs.write.glossary.insert" /></Button>
+                  </div>
+                )}
+                {glossary.length ? (
+                  <ul className="grid gap-2 text-t2">
+                    {glossary.map((g) => (
+                      <li key={g.term} className="rs-hl-card">
+                        <span className="text-t1 text-ink-soft mono">{g.term}</span>
+                        <blockquote>{g.definition}</blockquote>
+                      </li>
+                    ))}
+                  </ul>
+                ) : null}
               </>
             ) : null}
             {pane === "versions" ? (
