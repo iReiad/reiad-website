@@ -90,6 +90,14 @@ export function Desk({ openId }: { openId?: string }) {
   const [doc, setDoc] = useState<Document | null>(null);
   const [title, setTitle] = useState("");
   const [kind, setKind] = useState<DocumentKind>("chapter");
+  /* A stale document's own save can resolve after the reader has
+     switched to another one: `write()` in the OLD Paper keeps its
+     OWN closure over `onChange`, so a `useState` check here would
+     read the value that closure was born with, not the current
+     one. A ref is the one thing every closure, however old, reads
+     live. */
+  const openRef = useRef(open);
+  useEffect(() => { openRef.current = open; }, [open]);
 
   useEffect(() => {
     if (!w) return;
@@ -154,7 +162,7 @@ export function Desk({ openId }: { openId?: string }) {
       <section className="rs-main min-w-0" aria-live="polite">
         {doc ? (
           <Paper key={doc.id} w={w} doc={doc} sources={sources} projects={projects}
-                 onChange={(d) => { setDoc(d); setDocs((was) => (was ?? []).map((x) => x.id === d.id ? { ...x, ...d, body: x.body } : x)); }}
+                 onChange={(d) => { if (openRef.current === d.id) setDoc(d); setDocs((was) => (was ?? []).map((x) => x.id === d.id ? { ...x, ...d, body: x.body } : x)); }}
                  onGone={() => { setDocs((was) => (was ?? []).filter((x) => x.id !== doc.id)); setOpen(null); }}
                  onSourceChange={(s) => setSources((was) => was.map((x) => x.id === s.id ? s : x))} />
         ) : open ? <p className="text-t2 text-ink-soft"><W k="rs.moment" /></p> : <p className="text-t2 text-ink-soft"><W k="rs.write.pick" /></p>}
@@ -226,9 +234,22 @@ function Paper({ w, doc, sources, projects, onChange, onGone, onSourceChange }: 
     } else setState(r.conflict ? "conflict" : "failed");
   }, [w, doc, onChange]);
 
+  /* WHAT the pending save is for, kept beside the timer.
+
+     Leaving a document flushes that save so the last keystrokes
+     are not lost, and it used to flush `box.current.innerHTML`
+     read AT TEARDOWN, which is after React has emptied the
+     editor for the next document: the save went to the right
+     document carrying an empty body. A reader wrote a chapter,
+     clicked the next document in the list, and came back to a
+     blank one. Flush what was scheduled, never what the DOM
+     happens to hold once it is being taken apart. */
+  const pending = useRef<Partial<Document> | null>(null);
+
   const later = useCallback((part: Partial<Document>) => {
     if (timer.current) clearTimeout(timer.current);
-    timer.current = setTimeout(() => { void write(part); }, SETTLE);
+    pending.current = { ...pending.current, ...part };
+    timer.current = setTimeout(() => { const p = pending.current; pending.current = null; if (p) void write(p); }, SETTLE);
   }, [write]);
 
   /** The body as the editor holds it, renumbered, saved. */
@@ -268,7 +289,7 @@ function Paper({ w, doc, sources, projects, onChange, onGone, onSourceChange }: 
     return () => {
       alive = false;
       root.removeEventListener("keydown", onKey, true);
-      if (timer.current) { clearTimeout(timer.current); const html = box.current?.innerHTML ?? ""; void write({ body: html, text: textOf(html) }); }
+      if (timer.current) { clearTimeout(timer.current); const p = pending.current; pending.current = null; if (p) void write(p); }
       editor.current?.destroy();
       editor.current = null;
     };

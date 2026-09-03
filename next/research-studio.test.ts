@@ -1514,6 +1514,109 @@ for (const path of ["/tools/research", "/tools/research/library", "/tools/resear
   await page.close();
 }
 
+/* ============================================================
+   the writing desk's deferred four: slides, a figure from a run,
+   the glossary and the abbreviations, the outline moved
+   ============================================================ */
+
+{
+  const { page, errors, sent, rows } = await open("/tools/research/write");
+  rows.research_documents.push({
+    id: "d-slides", user_id: ME, project_id: null, kind: "slides", position: 0, title: "Findings deck",
+    outline: [], body: "<h2>Why it matters</h2><p>Farm incomes fall after a shock.</p><ul><li>Rainfall shocks cut income</li></ul><h2>Method</h2><p>Panel data.</p>",
+    text: "", budget: null, style: "apa", state: "outline", meta: {}, deleted_at: null, created_at: ago(1), updated_at: ago(1),
+  });
+  rows.research_documents.push({
+    id: "d-terms", user_id: ME, project_id: null, kind: "chapter", position: 1, title: "Definitions",
+    outline: [],
+    body: "<h2>Risk</h2><p><dfn>Liquidity risk</dfn> is the risk a firm cannot meet its obligations.</p><h3>Credit risk detail</h3><p><strong>Credit risk</strong> is the risk a borrower does not repay. LCR measures it.</p><h2>Method</h2><p>Liquidity Coverage Ratio (LCR) is defined here.</p>",
+    text: "", budget: null, style: "apa", state: "outline", meta: {}, deleted_at: null, created_at: ago(2), updated_at: ago(2),
+  });
+  rows.research_runs.push({
+    id: "r-1", user_id: ME, dataset_id: null, project_id: null, kind: "stat", label: "OLS: income on rainfall",
+    input: { roles: { y: ["income"] } }, code: "", data_hash: "", ms: 12, figure: null,
+    output: { fit: { names: ["Intercept", "rainfall"], coef: [10, -0.5], se: [1, 0.1], p: [0.001, 0.02], n: 120, r2: 0.31, adjR2: 0.3, robust: "classical" } },
+    created_at: ago(3), updated_at: ago(3),
+  });
+  await page.reload();
+  await page.waitForTimeout(500);
+
+  /* ---- the glossary and the abbreviations ----
+     FIRST, while the prose document is the one open. The deck and
+     the figure below both leave the slides document open, and a
+     glossary read off a deck is empty, which is what this asked
+     for until 3 September 2026. */
+  await page.locator(".rs-row", { hasText: "Definitions" }).click();
+  await page.waitForFunction(() => (document.querySelector("#rs-d-title") as HTMLInputElement | null)?.value === "Definitions", null, { timeout: 10000 });
+  await page.locator(".rs-side").getByRole("button", { name: /Glossary/ }).click();
+  await page.waitForTimeout(300);
+  const glossaryPane = await page.locator(".rs-side").textContent() ?? "";
+  ok("an abbreviation used before it is defined is warned about",
+    /LCR/.test(glossaryPane) && /used before it is defined|সংজ্ঞার আগেই/.test(glossaryPane), glossaryPane.slice(0, 300));
+  ok("a <dfn> and a bold-first-use term are both listed", /Liquidity risk/.test(glossaryPane) && /Credit risk/.test(glossaryPane), glossaryPane.slice(0, 300));
+  await page.getByRole("button", { name: /Insert glossary|শব্দকোষ বসান/ }).click();
+  await page.waitForTimeout(400);
+  await page.getByRole("button", { name: /Insert abbreviations|সংক্ষেপ বসান/ }).click();
+  await page.waitForTimeout(400);
+  const afterInsert = await page.locator(".rs-editor").innerHTML();
+  ok("Insert list appends the glossary and the abbreviations to the document",
+    afterInsert.includes("Liquidity risk") && /Liquidity Coverage Ratio/.test(afterInsert), afterInsert.slice(-600));
+
+  /* ---- the outline moved: the pointer's way and the keyboard's ---- */
+  await page.locator(".rs-side").getByRole("button", { name: /^Outline/ }).click();
+  await page.waitForTimeout(300);
+  ok("a heading is draggable, the pointer's way to reorder it", await page.locator(".rs-side li[draggable=\"true\"]").count() >= 3);
+  const before = await page.locator(".rs-editor h2, .rs-editor h3").allTextContents();
+  ok("the outline starts Risk, its own deeper heading, then Method", before[0] === "Risk" && before[1] === "Credit risk detail", before.join(" | "));
+  await page.getByRole("button", { name: /Move down|নিচে সরান/ }).first().click();
+  await page.waitForTimeout(400);
+  const after = await page.locator(".rs-editor h2, .rs-editor h3").allTextContents();
+  ok("the keyboard's way carries a section's own deeper heading with it",
+    after[0] === "Method" && after[1] === "Risk" && after[2] === "Credit risk detail", after.join(" | "));
+  /* ---- slides: joins the kind picker, draws as a deck ---- */
+  ok("slides joins the kind a new document can be", await page.locator('#rs-d-kind option[value="slides"]').count() === 1);
+  await page.locator(".rs-row", { hasText: "Findings deck" }).click();
+  await page.waitForFunction(() => (document.querySelector("#rs-d-title") as HTMLInputElement | null)?.value === "Findings deck", null, { timeout: 10000 });
+  await page.waitForSelector(".rs-editor", { timeout: 10000 }).catch(() => null);
+  await page.waitForTimeout(400);
+  const cards = await page.locator(".rs-deck .rs-slide").count();
+  ok("a deck view draws one 16:9 card a heading", cards === 2, String(cards));
+  const firstCard = await page.locator(".rs-deck .rs-slide").first().textContent() ?? "";
+  ok("a card carries its heading's own title and its list as bullets",
+    /Why it matters/.test(firstCard) && /Rainfall shocks cut income/.test(firstCard), firstCard);
+  await page.emulateMedia({ media: "print" });
+  const barHidden = await page.locator(".rs-write-bar").evaluate((el) => getComputedStyle(el).display === "none");
+  const proseHidden = await page.locator(".rs-write-prose").evaluate((el) => getComputedStyle(el).display === "none");
+  const deckShown = await page.locator(".rs-deck").evaluate((el) => getComputedStyle(el).display !== "none");
+  ok("printing a slides document hides the prose and shows the deck", barHidden && proseHidden && deckShown, `${barHidden} ${proseHidden} ${deckShown}`);
+  await page.emulateMedia({ media: "screen" });
+
+  /* ---- a figure from a run, at the caret ---- */
+  await page.locator(".rs-editor").click();
+  await page.keyboard.press("End");
+  await page.getByRole("button", { name: /Insert a figure|চিত্র বসান/ }).click();
+  await page.waitForTimeout(400);
+  await page.locator(".rs-row", { hasText: "OLS: income on rainfall" }).click();
+  await page.waitForTimeout(400);
+  const tableCount = await page.locator(".rs-editor figure table").count();
+  ok("a run with a fit and no chart inserts its APA table as a real table",
+    tableCount === 1, (await page.locator(".rs-editor").innerHTML()).slice(-500));
+  const caption = await page.locator(".rs-editor figcaption").first().textContent() ?? "";
+  ok("captioned with the run's own label", caption.includes("OLS: income on rainfall"), caption);
+
+  /* THE ONE THAT LOSES SOMEBODY'S CHAPTER. Leaving a document
+     while its debounced save is still in flight sent that save
+     with the editor already emptied, at the document being left:
+     a reader writes, clicks the next document in the list, and
+     the first one is blank. It renders perfectly either way. */
+  const emptied = sent.filter((x) => x.method === "PATCH" && x.path.includes("research_documents")
+    && typeof (x.body as { body?: unknown }).body === "string" && (x.body as { body: string }).body.trim() === "");
+  ok("switching documents never writes an empty body over the one being left",
+    emptied.length === 0, emptied.map((x) => x.path).join(" | "));
+  ok("and none of it threw", errors.length === 0, errors.join(" | "));
+  await page.close();
+}
+
 await browser.close();
 server.close();
 

@@ -13,7 +13,7 @@ import { T, W } from "./lang";
 import { KIND_TONE, RESEARCH_METHODS, type MethodKind } from "../../lib/research-methods";
 import { RESEARCH_PAGES } from "../../lib/research-pages";
 import { researchTool } from "../../lib/research-tools";
-import { methodLesson } from "../../lib/methods";
+import { writtenLesson } from "../../lib/methods/written";
 
 export function MethodLessonFoot({ slug, kind, tools, rooms }: { slug: string; kind: MethodKind; tools: string[]; rooms: string[] }) {
   const places = [
@@ -22,7 +22,7 @@ export function MethodLessonFoot({ slug, kind, tools, rooms }: { slug: string; k
     ...tools.map((t) => researchTool(t)).filter((t): t is NonNullable<typeof t> => Boolean(t))
       .map((t) => ({ href: `/tools/research/tools/${t.slug}`, title: t.name })),
   ];
-  const others = RESEARCH_METHODS.filter((m) => m.kind === kind && m.slug !== slug && methodLesson(m.slug));
+  const others = RESEARCH_METHODS.filter((m) => m.kind === kind && m.slug !== slug && writtenLesson(m.slug));
   return (
     <footer className="grid gap-4 mt-8" style={{ "--accent": toneVar(KIND_TONE[kind]) } as React.CSSProperties} data-testid="rs-lesson-foot">
       {places.length ? (

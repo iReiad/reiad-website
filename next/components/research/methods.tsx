@@ -20,7 +20,7 @@ import { lookFor } from "@reiad/shared/look";
 import { toneVar } from "@reiad/shared/research";
 import { GoCard, SoonCard } from "../deck";
 import { KIND_TONE, METHOD_KINDS, RESEARCH_METHODS, isMethodPiece, type MethodKind } from "../../lib/research-methods";
-import { methodLesson } from "../../lib/methods";
+import { writtenLesson } from "../../lib/methods/written";
 import { researchPage } from "../../lib/research-pages";
 import { T, W, both } from "./lang";
 
@@ -54,7 +54,7 @@ export function Methods() {
           <div className="cards grid-2">
             {RESEARCH_METHODS.filter((m) => m.kind === kind).map((m) => {
               const p = written.get(m.slug);
-              const lesson = p ? undefined : methodLesson(m.slug);
+              const lesson = p ? undefined : writtenLesson(m.slug);
               return p ? (
                 <GoCard key={m.slug} id={m.slug} href={urlOf(p)} art={p.cover ? undefined : art} cover={p.cover ?? undefined} accent={toneVar(KIND_TONE[kind])}
                         chip={<span className="mono">{p.minutes ?? 1} min</span>}

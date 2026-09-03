@@ -46,6 +46,7 @@ import { RESEARCH_PAGES } from "../next/lib/research-pages.ts";
 import { RESEARCH_TOOLS } from "../next/lib/research-tools.ts";
 import { METHOD_KINDS, RESEARCH_METHODS } from "../next/lib/research-methods.ts";
 import { METHOD_LESSONS } from "../next/lib/methods/index.ts";
+import { WRITTEN } from "../next/lib/methods/written.ts";
 
 /** The classes a lesson may wear: the article blocks the
     sanitiser keeps, minus the photo ones, since a lesson has no
@@ -331,6 +332,24 @@ if (bad) {
     }
   }
   for (const m of RESEARCH_METHODS) if (!written.has(m.slug)) fail(`method ${m.slug} has no lesson under next/lib/methods/`, "Write one, or the card is a promise.");
+
+  /* WRITTEN is the room's own copy, and it is a copy on purpose:
+     the room is a client component, so importing the lessons to
+     ask which cards are links puts every lesson body in the
+     browser's bundle. A copy nobody checks is this file's whole
+     subject, so it is checked both ways. */
+  for (const w of WRITTEN) {
+    const real = METHOD_LESSONS.find((l) => l.slug === w.slug);
+    if (!real) fail(`written.ts lists ${w.slug} and there is no such lesson`, "Remove the row, or write the lesson.");
+    else if (real.minutes !== w.minutes) fail(`written.ts says ${w.slug} takes ${w.minutes} minutes and the lesson says ${real.minutes}`);
+  }
+  for (const l of METHOD_LESSONS) {
+    if (!WRITTEN.some((w) => w.slug === l.slug)) {
+      fail(`the lesson ${l.slug} is not in written.ts`,
+        "The methods room reads that list, so the card stays a promise and",
+        "the lesson is reachable only by typing its address.");
+    }
+  }
   if (!existsSync(join(ROUTES, "methods", "[slug]", "page.tsx"))) fail("the lesson route next/app/(site)/tools/research/methods/[slug]/page.tsx is gone");
 }
 
