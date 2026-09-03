@@ -66,7 +66,7 @@ export const LESSON: MethodLesson = {
 <li>Firms sharing one event date are treated as one clustered observation, not several independent ones.</li>
 </ul>
 
-<p>The lab runs an event study from the method list: fit the market model over the estimation window, then feed it the event window's own returns to get the abnormal and cumulative abnormal returns and the t statistic written straight into the APA table; its market button fetches the daily series both windows need, so the two need never be typed in by hand.</p>`,
+<p>The lab runs an event study from the method list: fit the market model over the estimation window, then feed it the event window's own returns for the abnormal returns, the CAR and its t statistic, written straight into the APA table; its market button fetches the daily series both windows need, so neither is typed in by hand.</p>`,
   bn: `<div class="at-a-glance"><p class="at-a-glance-label">এক নজরে</p><ul>
 <li>ইভেন্ট স্টাডি জিজ্ঞেস করে, একটা শেয়ারের একটা তারিখের চারপাশের রিটার্ন শুধু বাজার যা দিত তার চেয়ে বড় ছিল কি না, নাকি ছোট।</li>
 <li>এস্টিমেশন উইন্ডো হলো সাধারণ দিনগুলোর একটা পর্ব, যা দিয়ে বাজার মডেল বসানো হয়; ইভেন্ট উইন্ডো হলো পরীক্ষা করা তারিখের চারপাশের দিনগুলো।</li>
@@ -130,5 +130,5 @@ export const LESSON: MethodLesson = {
 <li>একই ইভেন্ট তারিখ ভাগ করা কোম্পানিগুলোকে একটা একসঙ্গে জমা হওয়া পর্যবেক্ষণ হিসেবে ধরা হয়েছে, কয়েকটা স্বাধীন পর্যবেক্ষণ হিসেবে নয়।</li>
 </ul>
 
-<p>ল্যাব পদ্ধতির তালিকা থেকে ইভেন্ট স্টাডি চালায়: এস্টিমেশন উইন্ডোয় বাজার মডেল বসায়, তারপর ইভেন্ট উইন্ডোর নিজের রিটার্ন দিয়ে অস্বাভাবিক রিটার্ন, CAR আর t সরাসরি APA টেবিলে লিখে দেয়; এর market বোতাম দুটো উইন্ডোরই দৈনিক তথ্য এনে দেয়, তাই কোনোটাই হাতে টাইপ করতে হয় না।</p>`,
+<p>ল্যাব পদ্ধতির তালিকা থেকে ইভেন্ট স্টাডি চালায়: এস্টিমেশন উইন্ডোয় বাজার মডেল বসায়, তারপর ইভেন্ট উইন্ডোর রিটার্ন দিয়ে অস্বাভাবিক রিটার্ন, CAR আর t সরাসরি APA টেবিলে লিখে দেয়; এর market বোতাম দুটো উইন্ডোরই দৈনিক তথ্য এনে দেয়, কোনোটাই হাতে টাইপ করতে হয় না।</p>`,
 };
