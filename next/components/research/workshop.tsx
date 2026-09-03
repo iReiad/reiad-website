@@ -758,9 +758,11 @@ function QuizMe() {
      and fuzz is off so the same answer is the same date. */
   const grade = async (g: 0 | 1 | 2 | 3 | 4 | 5): Promise<void> => {
     if (!current) return;
-    const { fsrs, Rating } = await import("ts-fsrs");
-    const rating = [Rating.Again, Rating.Hard, Rating.Good, Rating.Easy][ratingOf(g) - 1];
-    const scheduled = withMemory(current, fsrs({ enable_short_term: false, enable_fuzz: false }).next(memoryOf(current), new Date(), rating).card);
+    /* ratingOf's 1..4 already IS ts-fsrs's Grade: both spell Again,
+       Hard, Good, Easy in that order, so no table has to repeat it
+       and no cast has to paper over the two staying in step. */
+    const { fsrs } = await import("ts-fsrs");
+    const scheduled = withMemory(current, fsrs({ enable_short_term: false, enable_fuzz: false }).next(memoryOf(current), new Date(), ratingOf(g)).card);
     setNext(scheduled.due);
     await keep(cards.map((c) => (c.id === current.id ? scheduled : c)));
     setShow(false); cue("tick");

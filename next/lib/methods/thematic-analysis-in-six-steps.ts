@@ -21,12 +21,12 @@ export const LESSON: MethodLesson = {
 
 <h2>The six phases</h2>
 <ol class="step-list">
-<li><strong>Familiarising yourself with the data.</strong> Read the whole transcript, or listen to the recording, before coding a single line. Note first impressions as you go, not codes yet, just what strikes you. Skipping this is how a striking passage on page eleven gets missed because you were already three codes deep by the time you reached it.</li>
-<li><strong>Generating initial codes.</strong> Work through the data systematically, giving a short label to anything that seems interesting or relevant, whether or not you can yet see what it is interesting for. Code inclusively: a passage can carry more than one code, and a pattern you never labelled cannot be found again.</li>
-<li><strong>Searching for themes.</strong> Gather the codes into candidate groups by sorting, physically or in software, rather than by writing: lay the codes out and ask which ones point at the same underlying idea. A candidate theme here is a working hypothesis, not a finding, and it is normal for half of them to fall apart at the next step.</li>
-<li><strong>Reviewing themes.</strong> Check each candidate theme two ways: against its own coded extracts, reading every passage filed under it to ask whether they cohere, and against the whole data set, reading the transcripts again to ask whether the theme fits the data as a whole or only the passages you pulled out. A theme that survives both is kept, refined, split, or merged; one that survives neither is dropped.</li>
-<li><strong>Defining and naming themes.</strong> Write, for each surviving theme, what it is, what it is not, and how it relates to the others. Give it a short, specific name that could stand as a subheading. A theme you cannot define in two or three sentences is still a bundle of codes waiting for the argument that ties them together.</li>
-<li><strong>Writing up.</strong> Choose extracts that carry the theme clearly, and write the analytic narrative around them rather than letting a wall of quotations stand in for the argument. Every extract should show the theme, not merely mention the topic.</li>
+<li><strong>Familiarising yourself with the data.</strong> Read the whole transcript, or listen to the recording, before coding a single line. Note first impressions as you go, not codes yet, just what strikes you.</li>
+<li><strong>Generating initial codes.</strong> Work through the data systematically, giving a short label to anything that seems interesting or relevant. Code inclusively: a passage can carry more than one code, and a pattern never labelled cannot be found again.</li>
+<li><strong>Searching for themes.</strong> Gather the codes into candidate groups by sorting, physically or in software: lay them out and ask which point at the same underlying idea. A candidate theme here is a working hypothesis, and it is normal for half to fall apart at the next step.</li>
+<li><strong>Reviewing themes.</strong> Check each candidate two ways: against its own coded extracts, reading every passage filed under it to ask whether they cohere, and against the whole data set, asking whether the theme fits the data as a whole or only the passages pulled out. A theme that survives both is kept, refined, split, or merged; one that survives neither is dropped.</li>
+<li><strong>Defining and naming themes.</strong> Write, for each surviving theme, what it is, what it is not, and how it relates to the others. A theme you cannot define in two or three sentences is still a bundle of codes waiting for the argument that ties them together.</li>
+<li><strong>Writing up.</strong> Choose extracts that carry the theme clearly, and write the analytic narrative around them rather than letting a wall of quotations stand in for it. Every extract should show the theme, not merely mention the topic.</li>
 </ol>
 
 <h2>Inductive against deductive</h2>
@@ -109,11 +109,11 @@ export const LESSON: MethodLesson = {
 <h2>কোথায় ভুল হয়</h2>
 <ul class="checklist">
 <li>বিষয় বলতে গিয়ে আসলে একটা প্রসঙ্গ। এমন বাক্যে লেখা না গেলে যাতে কেউ দ্বিমত করতে পারে, তাহলে এটা এখনো বিষয় নয়।</li>
-<li>বিষয়গুলো প্রশ্ন থেকে বের করা, উত্তর থেকে নয়। প্রতিটা বিষয়ের পথ কোড পর্যন্ত ফিরে যাওয়া উচিত, আর প্রতিটা কোডের পথ আপনি দেখাতে পারেন এমন একটা অংশ পর্যন্ত।</li>
-<li>একবার কোড করে সেটাকেই চূড়ান্ত ধরা। চার নম্বর ধাপ থাকার কারণ হলো কোডগুলো প্রথমবার দলে সাজানোটা একটা অনুমান, আর পুরো তথ্যের বিপরীতে যাচাই করাই সেটা পরীক্ষা করে।</li>
-<li>স্যাচুরেশনকে মাঠকাজের আগে ঠিক করা একটা সংখ্যা বলে দাবি করা, পরের ট্রান্সক্রিপ্টগুলো আসলে কী যোগ করল তা দেখে করা বিচারের বদলে।</li>
-<li>লেখাটা বেশিরভাগ উদ্ধৃতি, তাদের জোড়া দেওয়ার যুক্তি নেই। অংশটা বিষয় দেখায়; নাম দেওয়া বাক্যের জায়গা নেয় না।</li>
-<li>কোনো রিফ্লেক্সিভ নোট নেই। এটা না থাকলে পাঠকের কোনো উপায় থাকে না বুঝতে বিষয়টার কতটা তথ্য থেকে আর কতটা পড়া মানুষটা থেকে এসেছে।</li>
+<li>বিষয়গুলো প্রশ্ন থেকে বের করা, উত্তর থেকে নয়। প্রতিটা বিষয়ের পথ কোড পর্যন্ত ফিরে যাওয়া উচিত, আর প্রতিটা কোডের পথ একটা অংশ পর্যন্ত।</li>
+<li>একবার কোড করে সেটাকেই চূড়ান্ত ধরা, প্রথমবার দলে সাজানোটা যাচাই করা রিভিউ বাদ দিয়ে।</li>
+<li>স্যাচুরেশনকে মাঠকাজের আগে ঠিক করা সংখ্যা বলে দাবি করা, পরের ট্রান্সক্রিপ্ট কী যোগ করল তা দেখে করা বিচারের বদলে।</li>
+<li>লেখাটা বেশিরভাগ উদ্ধৃতি, জোড়া দেওয়ার যুক্তি নেই। অংশটা বিষয় দেখায়; নাম দেওয়া বাক্যের জায়গা নেয় না।</li>
+<li>কোনো রিফ্লেক্সিভ নোট নেই, ফলে পাঠকের বোঝার উপায় থাকে না বিষয়টার কতটা তথ্য থেকে আর কতটা পড়া মানুষটা থেকে এসেছে।</li>
 </ul>
 <p class="note">কোনো অংশ ফাইল ছেড়ে বেরোনোর আগে নাম মুছুন। কাজ করা একটা অংশ কোডবইয়ে, একটা পরিশিষ্টে, কখনো ছাপা একটা নিবন্ধে যায়, আর সেখানে কখনো এমন কোনো নাম বা বিবরণ থাকা উচিত নয় যা কে বলেছে তা চিনিয়ে দেয়।</p>
 <p>মাঠ ঘরের কোডবই আর কোডিং হলো যেখানে এটা আসল ট্রান্সক্রিপ্টে ঘটে: প্রথম দফার কোড এক ধাপে বসে, প্রার্থী বিষয়গুলো পরের ধাপে দলে সাজানো আর যাচাই করা হয়, আর লেখার আগে প্রতিটা বিষয় সংজ্ঞায়িত করে নাম দেওয়া হয়।</p>`,

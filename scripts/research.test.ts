@@ -394,6 +394,66 @@ eq("parseAny reads a single CSL object", parseAny('{"type":"book","title":"x"}')
   eq("an appraisal's score counts yes as one and unclear as a half", appraisalScore({ "0": "yes", "1": "unclear", "2": "no" }, APPRAISALS.econ.questions), 1.5);
 }
 
+/* ---------- the review room: a second screener ---------- */
+
+{
+  const { agreement, verdictA, verdictB } = await import("../shared/research-review.ts");
+  /** A's title verdict is "fulltext" (still going) for an include and
+      "excluded" with no fullText flag for an exclude; B is the same
+      shape one column along. */
+  const rec = (a: "include" | "exclude", b: "include" | "exclude") => ({
+    stage: a === "include" ? "fulltext" : "excluded",
+    decision2: b === "include" ? "fulltext" : "excluded",
+    record: { fullText: a === "exclude" ? false : undefined, fullText2: b === "exclude" ? false : undefined },
+  });
+  eq("A's title verdict on a record still going is include, and exclude once excluded there", [verdictA(rec("include", "include"), "title"), verdictA(rec("exclude", "include"), "title")], ["include", "exclude"]);
+  eq("B reads the same way off decision2", [verdictB(rec("include", "exclude"), "title"), verdictB(rec("include", "include"), "title")], ["exclude", "include"]);
+  eq("neither has a full text verdict while the record has not reached full text", [verdictA(rec("include", "include"), "fulltext"), verdictB(rec("include", "include"), "fulltext")], [null, null]);
+  eq("an undecided record has no verdict at all", [verdictA({ stage: "found" }, "title"), verdictB({ stage: "found", decision2: null }, "title")], [null, null]);
+
+  // A textbook 2x2 confusion matrix (Landis & Koch's own shape): 20
+  // records both screeners include, 5 only A includes, 10 only B
+  // includes, 15 both exclude. By hand: n = 50, agreed = 35, po =
+  // 35/50 = 0.7. A includes 25/50 = 0.5 of the time, excludes the
+  // other half; B includes 30/50 = 0.6, excludes 20/50 = 0.4. Chance
+  // agreement pe = 0.5*0.6 + 0.5*0.4 = 0.5. kappa = (po - pe) / (1 - pe)
+  // = (0.7 - 0.5) / 0.5 = 0.4.
+  const sample = [
+    ...Array.from({ length: 20 }, () => rec("include", "include")),
+    ...Array.from({ length: 5 }, () => rec("include", "exclude")),
+    ...Array.from({ length: 10 }, () => rec("exclude", "include")),
+    ...Array.from({ length: 15 }, () => rec("exclude", "exclude")),
+  ];
+  const agr = agreement(sample, "title");
+  ok(
+    "Cohen's kappa on the textbook 2x2: n=50, agreed=35, kappa=0.4",
+    agr.n === 50 && agr.agreed === 35 && Math.abs((agr.k ?? NaN) - 0.4) < 1e-9,
+    `got n=${agr.n} agreed=${agr.agreed} k=${agr.k}`,
+  );
+  eq("the disagreements are exactly the off-diagonal records, 5 plus 10", agr.disagreed.length, 15);
+  eq("no record decided by both is null, not a divide by zero", agreement([{ stage: "found", decision2: null }], "title"), { k: null, n: 0, agreed: 0, disagreed: [] });
+  const bothAlwaysInclude = Array.from({ length: 5 }, () => rec("include", "include"));
+  eq("both screeners in one category the whole time is full agreement, not 0/0", agreement(bothAlwaysInclude, "title"), { k: 1, n: 5, agreed: 5, disagreed: [] });
+}
+
+/* ---------- the review room: extraction filled from the reading ---------- */
+
+{
+  const { fillFromCards } = await import("../shared/research-review.ts");
+  const filled = fillFromCards(
+    { sample: "", finding: "already typed" },
+    ["sample", "method", "effect size"],
+    [{ n: "412", method: "RCT" }, { number: "0.34", unit: "SD" }],
+  );
+  eq(
+    "empty cells fill from the cards, the first card to answer wins, and a number carries its unit",
+    filled,
+    { sample: "412", finding: "already typed", method: "RCT", "effect size": "0.34 SD" },
+  );
+  eq("a cell somebody typed is never written over", fillFromCards({ sample: "200 patients" }, ["sample"], [{ n: "999" }]).sample, "200 patients");
+  eq("a column matching no card field, and a card with nothing for it, are both left empty", fillFromCards({}, ["country"], [{ method: "RCT" }]), {});
+}
+
 if (failures.length) {
   console.error(`research: ${failures.length} failed, ${passed} passed`);
   for (const f of failures) console.error(`  x ${f}`);

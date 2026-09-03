@@ -803,7 +803,11 @@ function AudioSheet({ w, source, file, onMade }: { w: Who; source: Source; file:
   const [url, setUrl] = useState<string | null>(null);
   const [from, setFrom] = useState<number | null>(null);
   const [to, setTo] = useState<number | null>(null);
-  useEffect(() => { void fileTicket(w, file.key).then(setUrl); }, [w, file.key]);
+  useEffect(() => {
+    let src: { url: string; from: From } | null = null;
+    void fileSource(w, file.key).then((s) => { src = s; setUrl(s?.url ?? null); });
+    return () => letGo(src);
+  }, [w, file.key]);
   const now = (): number => audio.current?.currentTime ?? 0;
   const mark = async (meaning: HighlightMeaning): Promise<void> => {
     if (from === null) return;
@@ -830,7 +834,11 @@ function AudioSheet({ w, source, file, onMade }: { w: Who; source: Source; file:
 
 function ImageSheet({ w, file }: { w: Who; file: SourceFile }) {
   const [url, setUrl] = useState<string | null>(null);
-  useEffect(() => { void fileTicket(w, file.key).then(setUrl); }, [w, file.key]);
+  useEffect(() => {
+    let src: { url: string; from: From } | null = null;
+    void fileSource(w, file.key).then((s) => { src = s; setUrl(s?.url ?? null); });
+    return () => letGo(src);
+  }, [w, file.key]);
   return (
     <Surface material="pane" className="px-5 py-4">
       {url ? <img src={url} alt={file.name ?? ""} className="max-w-full h-auto" /> : <p className="text-t2 text-ink-soft" role="status"><W k="rs.read.loading" /></p>}
