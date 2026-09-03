@@ -2547,6 +2547,48 @@ with the seed shown. Not yet from section 19: KaTeX for the
 equation, the lab opening with the picked test's data selected,
 `ts-fsrs` in place of SM-2, and Word export of the table maker.
 
+**Stage 11 landed the same day, in its first form.** What it does:
+`/tools/research/ask` is the thirteen tasks of section 21 in
+`shared/research-assist.ts`, each saying what it needs (a
+source with its abstract and highlights, a question with its
+evidence, a document, the codebook and a segment, a review's
+PRISMA counts, a run's table, pasted text, or the library) and
+how hard the model should think; the Worker's
+`functions/_lib/assistant.ts` holds the one key and calls the
+API over raw HTTP, streaming, with the system prompt cached and
+`fallbacks: "default"`, and `POST /api/research/assistant`
+hands the same server-sent events to the browser, which prices
+the usage off the last event. Every answer's `[@key]` marks are
+grounded by `groundAnswer()`: a key the library holds is a
+chip to the source, one it does not is struck through with "not
+in your library" and a search, and the whole answer is a note of
+kind `assistant` carrying the task, the mode, the model, the
+context ids, the usage and the cost in dollars and pounds. Two
+modes: with the studio's rows and the project's brief, or fresh,
+where a hostile reviewer reads the pasted text and nothing else.
+The prompt library is the seven templates and any note of kind
+`prompt`, with the square-bracket marks filled in the room.
+Semantic search is `research_chunks` in
+`supabase/migrations/20260903040000_research_chunks.sql`, a
+pgvector column of 1024 from Workers AI's `bge-m3` through
+`POST /api/research/embed`, indexed from the room ("Index my
+library": every source's citation, one line, abstract and
+highlights, every note and every document, chunked by
+`chunkText()` and replaced whole per row, only what changed),
+and found by `match_research_chunks`, an RPC that runs as the
+reader under the same row-level security; "ask my library" is
+that search with the model reading the top twenty, and the
+board's search box lists the nearest passages beside the
+full-text hits. Settings has the switch (`prefs.assistant`, off
+until pressed) and the month's spend in pounds at the stated
+rate. Held by `scripts/research-assist.test.ts` (the grounding,
+the chunking, the cost, the placeholders) and section 13 of
+`next/research-studio.test.ts`, which streams a fake answer
+through the real parser. Not yet from section 21: the model
+picked by task rather than one model with an effort knob, the
+reading room's own "ask about this source" door, and insert at
+the caret rather than copy.
+
 **Stage 1 is a week of work and the studio is used from its end.**
 Stages 2 to 5 are the next month, and at the end of stage 5 the
 studio does everything the old desk did and everything a reference

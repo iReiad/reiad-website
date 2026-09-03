@@ -40,6 +40,7 @@
     "./research-stats": "./research-stats.ts",
     "./research-lab": "./research-lab.ts",
     "./research-field": "./research-field.ts",
-    "./research-tools": "./research-tools.ts"
+    "./research-tools": "./research-tools.ts",
+    "./research-assist": "./research-assist.ts"
   }
 }

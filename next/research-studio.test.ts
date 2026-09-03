@@ -164,6 +164,7 @@ const seed = (): Record<string, Row[]> => ({
   research_codings: [],
   research_surveys: [],
   research_projects: [],
+  research_chunks: [],
   research_collections: [],
   research_lists: [],
 });
@@ -263,7 +264,17 @@ async function open(path: string, { signedIn = true }: { signedIn?: boolean } = 
         body: (() => { try { return request.postDataJSON(); } catch { return null; } })(),
       });
     }
-    if (!(table in rows)) return json(table === "profiles" && method === "GET" ? [{ id: ME, research_prefs: {} }] : []);
+    if (table === "rpc/match_research_chunks") {
+      /* The nearest passages, as the RPC answers under RLS: two,
+         one cut from a source the library holds and one from a
+         note, with a similarity each. */
+      matched.push(request.postDataJSON() as Record<string, unknown>);
+      return json([
+        { id: "c-1", kind: "source", ref_id: "s-1", part: 0, title: "Weather shocks and farm incomes in Bangladesh", text: "Farm incomes fell by a fifth in the year after a flood.", similarity: 0.82 },
+        { id: "c-2", kind: "note", ref_id: "n-9", part: 0, title: "Reading note", text: "Credit after a shock is rationed.", similarity: 0.71 },
+      ]);
+    }
+    if (!(table in rows)) return json(table === "profiles" && method === "GET" ? [{ id: ME, research_prefs: { assistant: true } }] : []);
     const held = rows[table];
     const eq = (k: string): string | null => {
       const v = url.searchParams.get(k);
@@ -333,6 +344,9 @@ async function open(path: string, { signedIn = true }: { signedIn?: boolean } = 
   });
 
   const looked: string[] = [];
+  const matched: Record<string, unknown>[] = [];
+  const assistant: Record<string, unknown>[] = [];
+  const embedded: string[][] = [];
   const published: { token: string }[] = [];
   const stored = new Map<string, { bytes: Buffer; type: string }>();
   const searched: string[] = [];
@@ -370,6 +384,28 @@ async function open(path: string, { signedIn = true }: { signedIn?: boolean } = 
       const held = stored.get(key);
       if (held) return r.fulfill({ status: 200, contentType: held.type, body: held.bytes });
       return r.fulfill({ status: 200, contentType: "application/pdf", body: Buffer.from(PDF) });
+    }
+    if (u.pathname === "/api/research/assistant") {
+      /* The model's stream as the Worker passes it through: a
+         message_start with the usage, two text deltas, one citing a
+         key the library holds and one a key it does not, and the
+         message_delta with the output tokens. */
+      assistant.push(r.request().postDataJSON() as Record<string, unknown>);
+      const events = [
+        ["message_start", { type: "message_start", message: { id: "msg_1", usage: { input_tokens: 1200, output_tokens: 1, cache_read_input_tokens: 300 } } }],
+        ["content_block_start", { type: "content_block_start", index: 0, content_block: { type: "text", text: "" } }],
+        ["content_block_delta", { type: "content_block_delta", index: 0, delta: { type: "text_delta", text: "Rahman and Khan support it [@rahman2021weather]. " } }],
+        ["content_block_delta", { type: "content_block_delta", index: 0, delta: { type: "text_delta", text: "A paper the library lacks says otherwise [@smith2020nothing]." } }],
+        ["content_block_stop", { type: "content_block_stop", index: 0 }],
+        ["message_delta", { type: "message_delta", delta: { stop_reason: "end_turn" }, usage: { output_tokens: 42 } }],
+        ["message_stop", { type: "message_stop" }],
+      ] as const;
+      return r.fulfill({ status: 200, headers: { "content-type": "text/event-stream", "x-model": "claude-opus-5" }, body: events.map(([e, d]) => `event: ${e}\ndata: ${JSON.stringify(d)}\n\n`).join("") });
+    }
+    if (u.pathname === "/api/research/embed") {
+      const texts = (r.request().postDataJSON() as { texts: string[] }).texts;
+      embedded.push(texts);
+      return answer({ ok: true, vectors: texts.map((_, i) => [0.1, 0.2, 0.3 + i / 100]) });
     }
     if (u.pathname === "/api/research/transcribe") {
       return answer({ ok: true, text: "We lost the aman crop. And the bank said no.", segments: [{ start: 0, end: 4, speaker: "", text: "We lost the aman crop." }, { start: 4, end: 8, speaker: "", text: "And the bank said no." }] });
@@ -414,7 +450,7 @@ async function open(path: string, { signedIn = true }: { signedIn?: boolean } = 
       return answer({ ok: true, works: [{ csl: { type: "article-journal", title: "Drought and credit", DOI: "10.1000/orcid.1", issued: { "date-parts": [[2024]] } }, doi: "10.1000/orcid.1", title: "Drought and credit", year: 2024, authors: "Carter", venue: "", type: "article-journal", abstract: "", url: null, oa: null, cited: 3, from: ["orcid"], openalex: null, hash: "h-orcid" }] });
     }
     if (u.pathname === "/api/research/status") {
-      return answer({ ok: true, services: { crossref: "on", openalex: "off", openlibrary: "on" } });
+      return answer({ ok: true, services: { crossref: "on", openalex: "off", openlibrary: "on", assistant: "on", embed: "on" } });
     }
     return answer({ ok: true });
   });
@@ -422,6 +458,9 @@ async function open(path: string, { signedIn = true }: { signedIn?: boolean } = 
   (rows as Record<string, unknown>).searched = searched as unknown as Row[];
   (rows as Record<string, unknown>).alerts = alerts as unknown as Row[];
   (rows as Record<string, unknown>).calendar = calendar as unknown as Row[];
+  (rows as Record<string, unknown>).matched = matched as unknown as Row[];
+  (rows as Record<string, unknown>).assistant = assistant as unknown as Row[];
+  (rows as Record<string, unknown>).embedded = embedded as unknown as Row[];
 
   await page.goto(`http://localhost:${PORT}${path}`, { waitUntil: "load" });
   await page.waitForTimeout(900);
@@ -441,7 +480,7 @@ const firstOf = (s: Sent | undefined): Record<string, unknown> =>
    1. signed out, a room invites rather than blanks
    ============================================================ */
 
-for (const path of ["/tools/research", "/tools/research/library", "/tools/research/read", "/tools/research/find", "/tools/research/write", "/tools/research/plan", "/tools/research/atlas"]) {
+for (const path of ["/tools/research", "/tools/research/library", "/tools/research/read", "/tools/research/find", "/tools/research/write", "/tools/research/plan", "/tools/research/atlas", "/tools/research/ask"]) {
   const { page, errors } = await open(path, { signedIn: false });
   const words = await bodyText(page);
   ok(`${path} signed out says whose it is`, words.includes("This is yours"), words.slice(0, 200));
@@ -1282,6 +1321,87 @@ for (const path of ["/tools/research", "/tools/research/library", "/tools/resear
   await page.waitForTimeout(200);
   const words = (await page.locator('[data-testid="rs-ws-words"]').textContent()) ?? "";
   ok("words are counted in both scripts", /Words[^0-9]*8/.test(words) && /Bangla words[^0-9]*3/.test(words), words.slice(0, 200));
+  ok("and none of it threw", errors.length === 0, errors.join(" | "));
+  await page.close();
+}
+
+/* ============================================================
+   13. the assistant: a task handed a question and its evidence,
+       the answer streamed and grounded (a key the library holds is
+       a chip, one it does not is struck through with a search), kept
+       as a note with its cost; ask my library through the
+       embeddings and the RPC; the index; the prompt library's
+       marks; the fresh mode's cold read; and the switch
+   ============================================================ */
+
+{
+  const { page, errors, sent, rows } = await open("/tools/research/ask");
+  await page.waitForTimeout(600);
+  const calls = rows.assistant as unknown as { system: string; messages: { role: string; content: string }[]; effort: string }[];
+  const embedded = rows.embedded as unknown as string[][];
+  const matched = rows.matched as unknown as { query_embedding?: number[]; match_count?: number }[];
+  ok("the room opens on the task list with the switch on and the month's cost", await page.locator("#rs-ask-task").count() === 1 && await page.locator("#rs-ask-on").isChecked() && ((await page.locator('[data-testid="rs-ask-cost"]').textContent()) ?? "").includes("£0.00"));
+  await page.locator("#rs-ask-task").selectOption("speak");
+  await page.locator("#rs-ask-question").selectOption({ label: "Do weather shocks lower farm income?" });
+  await page.getByRole("button", { name: /^Ask\b|জিজ্ঞাসা করুন/ }).click();
+  await page.waitForTimeout(1500);
+  ok("the task is sent with its instruction, the question and its evidence cited by key, at the task's effort", calls.length === 1 && calls[0].effort === "medium" && calls[0].system.startsWith("You are the assistant")
+    && calls[0].messages[0].content.includes("Do weather shocks lower farm income?") && calls[0].messages[0].content.includes("[@rahman2021weather]") && calls[0].messages[0].content.includes("Stance: supports, p.3") && calls[0].messages[0].content.includes("[@ahmed2019bank]"),
+    JSON.stringify(calls[0] ?? null).slice(0, 300));
+  const ans = page.locator('[data-testid="rs-ask-answer"]');
+  ok("the answer streamed in, with a key the library holds drawn as a chip to the source", await ans.locator('a[href="/tools/research/library/s-1"]', { hasText: "rahman2021weather" }).count() === 1, (await ans.textContent() ?? "").slice(0, 200));
+  ok("and a key it does not hold struck through, said so, and offered as a search", await ans.locator("s", { hasText: "smith2020nothing" }).count() === 1 && (await ans.textContent() ?? "").includes("not in your library") && await ans.locator('a[href="/tools/research/find?q=smith2020nothing"]').count() === 1);
+  const note = firstOf(posts(sent, "research_notes")[0]) as { kind?: string; text?: string; meta?: { task?: string; mode?: string; model?: string; usage?: { input_tokens?: number; output_tokens?: number }; usd?: number; gbp?: number; context?: { question?: string; sources?: string[] } } };
+  ok("the answer is kept as a note of kind assistant with the task, the model, the usage, the cost and the context ids on it",
+    note.kind === "assistant" && note.meta?.task === "speak" && note.meta.mode === "project" && note.meta.model === "claude-opus-5" && note.meta.usage?.input_tokens === 1200 && note.meta.usage.output_tokens === 42
+    && Math.abs((note.meta.usd ?? 0) - 0.0057) < 0.0001 && note.meta.context?.question === "q-1" && note.meta.context.sources?.join() === "s-1,s-2" && (note.text ?? "").includes("[@rahman2021weather]"),
+    JSON.stringify(note).slice(0, 300));
+  const result = (await page.locator('[data-testid="rs-ask-result"]').textContent()) ?? "";
+  ok("and the call's cost is shown in pounds with the model, and the month's figure moved", result.includes("£0.0045") && result.includes("claude-opus-5") && ((await page.locator('[data-testid="rs-ask-cost"]').textContent()) ?? "").includes("£0.0045"), result);
+
+  /* ---- ask my library ---- */
+  await page.locator("#rs-ask-task").selectOption("ask");
+  await page.locator("#rs-ask-q").fill("Does credit dry up after a flood?");
+  await page.getByRole("button", { name: /^Ask\b|জিজ্ঞাসা করুন/ }).click();
+  await page.waitForTimeout(1500);
+  ok("asking the library embeds the question and asks the RPC for the nearest twenty", embedded[0]?.join() === "Does credit dry up after a flood?" && matched[0]?.query_embedding?.length === 3 && matched[0].match_count === 20, JSON.stringify({ embedded, matched }).slice(0, 200));
+  ok("the passages found are listed, each to the row it was cut from", await page.locator('[data-testid="rs-ask-passages"] li').count() === 2 && await page.locator('[data-testid="rs-ask-passages"] a[href="/tools/research/library/s-1"]').count() === 1 && await page.locator('[data-testid="rs-ask-passages"] a[href="/tools/research/notes/n-9"]').count() === 1);
+  ok("and the model is handed the passages, the source's by its key, and told to answer from them only", calls.length === 2 && calls[1].messages[0].content.includes("[@rahman2021weather] Farm incomes fell by a fifth") && calls[1].messages[0].content.includes("(note: Reading note) Credit after a shock") && calls[1].messages[0].content.includes("from the passages only"), (calls[1]?.messages[0].content ?? "").slice(0, 300));
+
+  /* ---- the index ---- */
+  await page.locator('[data-testid="rs-ask-index"]').click();
+  await page.waitForTimeout(1500);
+  const chunks = posts(sent, "research_chunks").map(firstOf) as { kind?: string; ref_id?: string; part?: number; title?: string; text?: string; embedding?: number[] }[];
+  ok("indexing embeds every source as passages and stores them as the reader, the vector on each", embedded[embedded.length - 1]?.length === 2 && chunks.length === 2 && chunks.every((c) => c.kind === "source" && c.part === 0 && Array.isArray(c.embedding) && c.embedding.length === 3) && chunks.map((c) => c.ref_id).sort().join() === "s-1,s-2" && (chunks.find((c) => c.ref_id === "s-1")?.text ?? "").includes("[@rahman2021weather]"), JSON.stringify(chunks).slice(0, 300));
+  ok("and says how many", ((await page.locator('[data-testid="rs-ask-indexed"]').textContent()) ?? "").includes("2"), (await page.locator('[data-testid="rs-ask-indexed"]').textContent()) ?? "");
+
+  /* ---- the prompt library ---- */
+  await page.locator("details summary").first().click();
+  await page.locator("#rs-ask-template").selectOption({ label: "Weekly review" });
+  await page.waitForTimeout(200);
+  ok("a template's marks become fields, in order", await page.locator('[data-testid="rs-ask-marks"] input').count() === 4 && await page.locator("#rs-ask-ph-PROJECT").count() === 1);
+  await page.locator("#rs-ask-ph-PROJECT").fill("Drought thesis");
+  await page.getByRole("button", { name: /Use this prompt|এই প্রম্পট ব্যবহার করুন/ }).click();
+  await page.waitForTimeout(200);
+  const filled = await page.locator("#rs-ask-q").inputValue();
+  ok("using it fills the marks given and leaves the others to see", filled.includes("Drought thesis") && filled.includes("[SOURCES]") && filled.startsWith("This week I read"), filled.slice(0, 120));
+
+  /* ---- the fresh mode ---- */
+  await page.locator("#rs-ask-mode").selectOption("fresh");
+  await page.waitForTimeout(200);
+  ok("fresh hides every picker: nothing from the studio goes with it", await page.locator("#rs-ask-task, #rs-ask-question, #rs-ask-source").count() === 0 && await page.locator("#rs-ask-project").isDisabled());
+  await page.locator("#rs-ask-q").fill("Our results show that weather shocks are very significant for farm incomes.");
+  await page.getByRole("button", { name: /^Ask\b|জিজ্ঞাসা করুন/ }).click();
+  await page.waitForTimeout(1500);
+  ok("and the model is a hostile reviewer with the text alone", calls.length === 3 && calls[2].system.startsWith("You are a hostile") && calls[2].messages[0].content === "Our results show that weather shocks are very significant for farm incomes." && calls[2].effort === "medium", (calls[2]?.system ?? "").slice(0, 60));
+  const freshNote = posts(sent, "research_notes").map(firstOf).find((n) => (n.meta as { fresh?: boolean })?.fresh === true) as { title?: string; meta?: { task?: string } } | undefined;
+  ok("a fresh read is kept as a note that says so", freshNote?.meta?.task === "fresh" && (freshNote.title ?? "").startsWith("Fresh read"), JSON.stringify(freshNote ?? null).slice(0, 120));
+
+  /* ---- the switch ---- */
+  await page.locator("#rs-ask-on").click();
+  await page.waitForTimeout(400);
+  ok("switched off, the room says so and the Ask button is gone", await page.locator('[data-testid="rs-ask-off"]').count() === 1 && await page.getByRole("button", { name: /^Ask\b|জিজ্ঞাসা করুন/ }).count() === 0);
+  ok("and the choice is kept on the profile", sent.some((x) => x.method === "PATCH" && x.path.includes("profiles") && (x.body as { research_prefs?: { assistant?: boolean } })?.research_prefs?.assistant === false));
   ok("and none of it threw", errors.length === 0, errors.join(" | "));
   await page.close();
 }

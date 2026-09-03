@@ -45,6 +45,7 @@ import type { EventBody, EventKind, PersonRole } from "@reiad/shared/research-pl
 import type { Protocol, RecordStage, ReviewKind, ReviewState } from "@reiad/shared/research-review";
 import type { Column, RunKind } from "@reiad/shared/research-lab";
 import type { Answers, Consent, Segment, SurveyQuestion } from "@reiad/shared/research-field";
+import type { ChunkKind } from "@reiad/shared/research-assist";
 
 type AccountModule = typeof import("/account.js");
 const accountModule = () => runtimeModule<AccountModule>("/account.js");
@@ -1419,4 +1420,93 @@ export async function checkJournal(w: Who, issn: string): Promise<JournalCheck |
     const data = await res.json() as { ok: boolean; check?: JournalCheck };
     return data.ok && data.check ? data.check : null;
   } catch { return null; }
+}
+
+/* ============================================================
+   the assistant, and the chunks the semantic search runs on
+   ============================================================ */
+
+export interface Chunk extends Row { kind: ChunkKind; ref_id: string; part: number; title: string; text: string; embedding: number[] | null }
+export interface Match { id: string; kind: ChunkKind; ref_id: string; part: number; title: string; text: string; similarity: number }
+
+/** Where a found passage takes the reader: the row it was cut from. */
+export const chunkHref = (kind: ChunkKind, ref: string): string =>
+  kind === "note" ? `/tools/research/notes/${ref}` : kind === "document" ? "/tools/research/write" : `/tools/research/library/${ref}`;
+export interface AssistantUsage { input_tokens: number; output_tokens: number; cache_read_input_tokens?: number; cache_creation_input_tokens?: number }
+
+/** One task to the model, the answer arriving piece by piece
+    through `onDelta`, and the usage off the last event. Null where
+    the assistant is not connected or the reader is over the line. */
+export async function askAssistant(
+  w: Who, a: { system: string; messages: { role: "user" | "assistant"; content: string }[]; effort: string }, onDelta: (text: string) => void,
+): Promise<{ text: string; usage: AssistantUsage; model: string; stop: string | null } | { error: string }> {
+  let res: Response;
+  try {
+    res = await fetch("/api/research/assistant", { method: "POST", headers: { ...bearer(w), "content-type": "application/json" }, body: JSON.stringify(a) });
+  } catch { return { error: "network" }; }
+  if (!res.ok || !res.body) {
+    const data = await res.json().catch(() => ({})) as { reason?: string };
+    return { error: data.reason ?? `http-${res.status}` };
+  }
+  const model = res.headers.get("X-Model") ?? "claude-opus-5";
+  const reader = res.body.getReader();
+  const decoder = new TextDecoder();
+  let text = "", buffer = "", stop: string | null = null;
+  const usage: AssistantUsage = { input_tokens: 0, output_tokens: 0 };
+  for (;;) {
+    const { done, value } = await reader.read();
+    if (done) break;
+    buffer += decoder.decode(value, { stream: true });
+    const events = buffer.split("\n\n");
+    buffer = events.pop() ?? "";
+    for (const ev of events) {
+      const line = ev.split("\n").find((l) => l.startsWith("data:"));
+      if (!line) continue;
+      let data: Record<string, unknown>;
+      try { data = JSON.parse(line.slice(5).trim()) as Record<string, unknown>; } catch { continue; }
+      if (data.type === "message_start") {
+        const u = (data.message as { usage?: AssistantUsage } | undefined)?.usage;
+        if (u) { usage.input_tokens = u.input_tokens ?? 0; usage.cache_read_input_tokens = u.cache_read_input_tokens; usage.cache_creation_input_tokens = u.cache_creation_input_tokens; }
+      } else if (data.type === "content_block_delta") {
+        const d = data.delta as { type?: string; text?: string } | undefined;
+        if (d?.type === "text_delta" && d.text) { text += d.text; onDelta(d.text); }
+      } else if (data.type === "message_delta") {
+        const u = (data.usage as { output_tokens?: number } | undefined);
+        if (u?.output_tokens) usage.output_tokens = u.output_tokens;
+        const d = data.delta as { stop_reason?: string } | undefined;
+        if (d?.stop_reason) stop = d.stop_reason;
+      }
+    }
+  }
+  return { text, usage, model, stop };
+}
+
+export async function embedTexts(w: Who, texts: string[]): Promise<number[][] | null> {
+  try {
+    const res = await fetch("/api/research/embed", { method: "POST", headers: { ...bearer(w), "content-type": "application/json" }, body: JSON.stringify({ texts }) });
+    if (!res.ok) return null;
+    const data = await res.json() as { ok: boolean; vectors?: number[][] };
+    return data.ok && data.vectors ? data.vectors : null;
+  } catch { return null; }
+}
+
+/** The nearest chunks, through the RPC that runs as the reader. */
+export async function matchChunks(w: Who, embedding: number[], count = 20): Promise<Match[]> {
+  const r = await call<Match[]>("rpc/match_research_chunks", { method: "POST", body: JSON.stringify({ query_embedding: embedding, match_count: count }) }, w);
+  return r.ok && Array.isArray(r.data) ? r.data : [];
+}
+
+export const listChunks = (w: Who): Promise<Pick<Chunk, "id" | "kind" | "ref_id" | "part" | "updated_at">[]> =>
+  rows<Pick<Chunk, "id" | "kind" | "ref_id" | "part" | "updated_at">>(w, "research_chunks", "select=id,kind,ref_id,part,updated_at&limit=5000");
+
+/** A row's chunks replaced whole: the old ones out, the new ones
+    in, one POST for the lot. */
+export async function replaceChunks(w: Who, kind: ChunkKind, ref: string, chunks: { part: number; title: string; text: string; embedding: number[] }[]): Promise<number> {
+  await call("research_chunks?" + `kind=eq.${enc(kind)}&ref_id=eq.${enc(ref)}`, { method: "DELETE" }, w);
+  if (!chunks.length) return 0;
+  const r = await call<Chunk[]>("research_chunks", {
+    method: "POST", headers: { prefer: "return=representation" },
+    body: JSON.stringify(chunks.map((c) => ({ user_id: w.id, kind, ref_id: ref, part: c.part, title: c.title, text: c.text, embedding: c.embedding }))),
+  }, w);
+  return r.ok && r.data ? r.data.length : 0;
 }

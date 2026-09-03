@@ -28,6 +28,8 @@
    GET    /api/research/oa/<doi>         a free copy, through Unpaywall
    GET    /api/research/market/<symbol>?full=1   a daily series, through Alpha Vantage (section 14)
    POST   /api/research/transcribe      one stored audio file, through Workers AI (section 15)
+   POST   /api/research/assistant       a task for the model, streamed back as it answers (section 21)
+   POST   /api/research/embed           embeddings for the semantic search, through Workers AI
    PUT    /api/research/survey          a survey copied to D1 for its public page
    GET    /api/research/survey/<token>/responses   what strangers answered, for the owner
    POST   /api/research/survey/<token>  open or close it
@@ -76,6 +78,7 @@ import type { ReaderEnv } from "../../_lib/reader.ts";
 import { byDoi, byIsbn, clip, status, zoteroPull } from "../../_lib/scholar.ts";
 import { canMarket, dailySeries } from "../../_lib/market.ts";
 import { checkJournal, findJournals, parseReference } from "../../_lib/workshop.ts";
+import { ask, canAssist, canEmbed, embed, MODEL, type AssistantEnv } from "../../_lib/assistant.ts";
 import { canTranscribe, closeSurvey, publishSurvey, responsesOf, transcribe, TOKEN, type AiEnv } from "../../_lib/field.ts";
 import type { SurveyQuestion } from "../../../shared/research-field.ts";
 import type { ScholarEnv } from "../../_lib/scholar.ts";
@@ -91,7 +94,7 @@ import type { SearchQuery } from "../../_lib/scholar-search.ts";
 import { db } from "../../_lib/db.ts";
 import type { ResearchAlertHitRow, ResearchCalendarRow } from "../../../shared/rows.ts";
 
-interface ResearchEnv extends ScholarEnv, ReaderEnv, FilesEnv, AiEnv {}
+interface ResearchEnv extends ScholarEnv, ReaderEnv, FilesEnv, AiEnv, AssistantEnv {}
 
 /** A page a minute is a person reading; more is a crawler with a
     bearer, which is still somebody else's server being asked. */
@@ -117,7 +120,7 @@ export async function onRequest(
 
   if (head === "status") {
     return methods(request, {
-      GET: () => ok({ services: { ...status(env), files: env.MEDIA && canTicket(env) ? "on" : "off", market: canMarket(env) ? "on" : "off", transcribe: canTranscribe(env) ? "on" : "off" } }),
+      GET: () => ok({ services: { ...status(env), files: env.MEDIA && canTicket(env) ? "on" : "off", market: canMarket(env) ? "on" : "off", transcribe: canTranscribe(env) ? "on" : "off", assistant: canAssist(env) ? "on" : "off", embed: canEmbed(env) ? "on" : "off" } }),
     });
   }
 
@@ -223,6 +226,42 @@ export async function onRequest(
         const found = await related(env, doi);
         if (!found) return fail("not-found", 404);
         return ok(found);
+      },
+    });
+  }
+
+  /* ---- the assistant, and the embeddings the search runs on ---- */
+  if (head === "assistant") {
+    return methods(request, {
+      POST: async () => {
+        const reader = await whoAsks();
+        if (reader instanceof Response) return reader;
+        if (!canAssist(env)) return fail("no-key", 503);
+        if (await throttle({ request, env }, "research-assistant", 30, 15)) return fail("too-many", 429);
+        const sent = await body(request);
+        const system = str(sent.system, 20000);
+        const messages = Array.isArray(sent.messages) ? (sent.messages as { role?: string; content?: string }[]).filter((m) => (m.role === "user" || m.role === "assistant") && typeof m.content === "string").map((m) => ({ role: m.role as "user" | "assistant", content: (m.content ?? "").slice(0, 120000) })) : [];
+        if (!messages.length) return fail("missing", 400);
+        const effort = (["low", "medium", "high", "xhigh"] as const).find((e) => e === sent.effort) ?? "medium";
+        const upstream = await ask(env, { system, messages, effort });
+        if (!upstream.ok || !upstream.body) return fail("upstream", 502, { status: upstream.status });
+        return new Response(upstream.body, { status: 200, headers: { "Content-Type": "text/event-stream", "Cache-Control": "no-store", "X-Model": MODEL } });
+      },
+    });
+  }
+
+  if (head === "embed") {
+    return methods(request, {
+      POST: async () => {
+        const reader = await whoAsks();
+        if (reader instanceof Response) return reader;
+        if (!canEmbed(env)) return fail("no-ai", 503);
+        const sent = await body(request);
+        const texts = Array.isArray(sent.texts) ? (sent.texts as unknown[]).filter((x): x is string => typeof x === "string" && x.trim().length > 0) : [];
+        if (!texts.length) return fail("missing", 400);
+        const vectors = await embed(env, texts);
+        if (!vectors) return fail("no-ai", 503);
+        return ok({ vectors });
       },
     });
   }

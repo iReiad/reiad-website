@@ -24,9 +24,9 @@ import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { captureShape, toneVar } from "@reiad/shared/research";
 import { parseAny } from "@reiad/shared/research-bib";
 import {
-  addNote, addSource, addTask, findDuplicate, listActivity, listEvents, listNotes, listQuestions,
-  listSources, listTasks, lookupDoi, lookupIsbn, lookupUrl, saveNote, saveTask,
-  type Activity, type Note, type Question, type Source, type Task,
+  addNote, addSource, addTask, chunkHref, embedTexts, findDuplicate, listActivity, listEvents, listNotes, listQuestions,
+  listSources, listTasks, lookupDoi, lookupIsbn, lookupUrl, matchChunks, saveNote, saveTask, serviceStatus,
+  type Activity, type Match, type Note, type Question, type Source, type Task,
 } from "../../lib/research-api";
 import { RESEARCH_PAGES, isOpen } from "../../lib/research-pages";
 import { GoCard } from "../deck";
@@ -55,6 +55,8 @@ export function Board() {
   const [dates, setDates] = useState<Awaited<ReturnType<typeof listEvents>>>([]);
   const [q, setQ] = useState("");
   const [hits, setHits] = useState<{ sources: Source[]; notes: Note[]; questions: Question[]; tasks: Task[] } | null>(null);
+  const [passages, setPassages] = useState<Match[] | null>(null);
+  const [embedOn, setEmbedOn] = useState(false);
   const box = useRef<HTMLInputElement>(null);
 
   const reload = useCallback(async () => {
@@ -133,9 +135,13 @@ export function Board() {
     } finally { setBusy(false); }
   }, [w, line, busy, reload]);
 
-  /* One search over everything, from two characters. */
+  useEffect(() => { void serviceStatus().then((s) => setEmbedOn(s?.embed === "on")); }, []);
+
+  /* One search over everything, from two characters; and, where
+     the embeddings are on, the nearest passages by meaning through
+     the RPC that runs as the reader. */
   useEffect(() => {
-    if (!w || q.trim().length < 2) { setHits(null); return; }
+    if (!w || q.trim().length < 2) { setHits(null); setPassages(null); return; }
     let alive = true;
     const t = setTimeout(() => {
       void Promise.all([
@@ -149,9 +155,12 @@ export function Board() {
           tasks: ts.filter((x) => x.title.toLowerCase().includes(needle)).slice(0, 20),
         });
       });
+      if (embedOn && q.trim().length >= 3) {
+        void embedTexts(w, [q.trim()]).then((v) => (v?.[0] ? matchChunks(w, v[0], 8) : [])).then((m) => { if (alive) setPassages(m); });
+      }
     }, 250);
     return () => { alive = false; clearTimeout(t); };
-  }, [w, q]);
+  }, [w, q, embedOn]);
 
   const today = tasks.filter((t) => t.lane === "today");
 
@@ -280,6 +289,17 @@ export function Board() {
                  value={q} onChange={(e) => setQ(e.target.value)} autoComplete="off"
                  placeholder={both("rs.board.search")} />
           {hits ? <Hits hits={hits} /> : <p className="text-t2 text-ink-soft"><W k="rs.board.search.empty" /></p>}
+          {passages?.length ? (
+            <div className="grid gap-1" data-testid="rs-board-passages">
+              <h3 className="text-t2 font-medium"><W k="rs.board.passages" /></h3>
+              {passages.map((m) => (
+                <Link key={m.id} href={chunkHref(m.kind, m.ref_id)} className="flex gap-2 items-baseline">
+                  <span className="grow">{m.title}</span>
+                  <span className="text-t1 text-ink-soft mono shrink-0">{Math.round(m.similarity * 100)}%</span>
+                </Link>
+              ))}
+            </div>
+          ) : null}
         </Surface>
       </div>
 

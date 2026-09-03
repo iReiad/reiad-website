@@ -19,8 +19,9 @@
 
 import { useCallback, useEffect, useState } from "react";
 import { PROJECT_KINDS, PROJECT_KIND_NAMES, TONES, fileSize, toneVar, type ProjectKind, type Tone } from "@reiad/shared/research";
+import { GBP_PER_USD, pounds } from "@reiad/shared/research-assist";
 import {
-  addCollection, addProject, addSource, fileUsage, findDuplicate, getPrefs, listCollections, listProjects,
+  addCollection, addProject, addSource, fileUsage, findDuplicate, getPrefs, listCollections, listNotes, listProjects,
   logImport, savePrefs, serviceStatus, zoteroPage,
   type Prefs, type Project, type Usage,
 } from "../../lib/research-api";
@@ -50,6 +51,7 @@ export function Settings() {
   const [zKey, setZKey] = useState("");
   const [pulling, setPulling] = useState<string>("");
   const [saidPrefs, setSaidPrefs] = useState(false);
+  const [spent, setSpent] = useState(0);
 
   useEffect(() => {
     if (!w) return;
@@ -57,6 +59,10 @@ export function Settings() {
     void listProjects(w).then(setProjects);
     void serviceStatus().then(setServices);
     void fileUsage(w).then(setUsage);
+    /* The month's assistant cost: the notes' own figures, summed. */
+    const month = new Date().toISOString().slice(0, 7);
+    void listNotes(w, { kind: "assistant", limit: 300 }).then((ns) =>
+      setSpent(ns.filter((n) => n.created_at.slice(0, 7) === month).reduce((sum, n) => sum + (typeof n.meta.usd === "number" ? n.meta.usd : 0), 0)));
   }, [w]);
 
   const keep = useCallback(async (part: Prefs) => {
@@ -153,6 +159,11 @@ export function Settings() {
           <span><W k="rs.set.dense" /></span>
         </label>
         <p className="text-t1 text-ink-soft"><W k="rs.set.dense.hint" /></p>
+        <label className="flex items-center gap-2 text-t2">
+          <input id="rs-p-assistant" type="checkbox" checked={Boolean(prefs.assistant)} onChange={(e) => { void keep({ assistant: e.target.checked }); }} />
+          <span><W k="rs.set.assistant" /></span>
+        </label>
+        <p className="text-t1 text-ink-soft"><W k="rs.set.assistant.hint" /> <span className="mono" data-testid="rs-set-spent"><W k="rs.set.assistant.month" /> {pounds(spent)} (£{GBP_PER_USD}/$)</span></p>
       </Surface>
 
       <Surface material="pane" className="px-5 py-4 grid gap-3">

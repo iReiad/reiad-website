@@ -190,6 +190,7 @@ const RESEARCH_TABLES = [
   "research_events", "research_sessions", "research_people", "research_reviews", "research_review_records",
   "research_datasets", "research_transforms", "research_runs",
   "research_participants", "research_codes", "research_codings", "research_surveys",
+  "research_chunks",
 ] as const;
 
 /** SOMEBODY ELSE'S PROFILE, and the reason it is here.
@@ -1229,6 +1230,7 @@ console.log("\ntaking a copy of everything");
     ["research_codes", "the codebook"],
     ["research_codings", "a code on a span of a transcript"],
     ["research_surveys", "a survey and its questions"],
+    ["research_chunks", "the semantic search's index of it all"],
     ["routines", "the shape of the week"],
     ["routine_entries", "every day marked on it"],
     ["routine_templates", "the templates this reader made"],

@@ -2334,7 +2334,7 @@ node next/account.test.ts        # the account's five features, the popover
                                   # menu, the Save under a byline, the panel
                                   # that says what this browser is holding, and
                                   # the picture a Google sign-in brings, under
-                                  # the real CSP (188 checks, needs the Next
+                                  # the real CSP (190 checks, needs the Next
                                   # build and a browser, skips without)
 node aab/sync.test.ts             # a browser's own progress getting into an
                                    # account, resetting, signing out, two
@@ -2377,8 +2377,13 @@ node next/research-studio.test.ts  # the Research Studio: the capture box
                                    # a transcript coded by selecting words, and
                                    # a survey published to D1; and the workshop:
                                    # thirty tools a page each, a sample size to
-                                   # the textbook's number, a DOI cited in APA
-                                   # (212 checks, needs the Next build and a
+                                   # the textbook's number, a DOI cited in APA;
+                                   # and the assistant: a fake stream through
+                                   # the real parser, a key the library holds
+                                   # drawn as a chip and one it lacks struck
+                                   # through, the answer kept as a note with
+                                   # its cost, the index and the RPC
+                                   # (236 checks, needs the Next build and a
                                    # browser, skips without)
 node next/progress.test.ts         # a page that costs a reader their ticks just
                                    # by being read, where in a piece they had
