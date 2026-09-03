@@ -2375,8 +2375,10 @@ node next/research-studio.test.ts  # the Research Studio: the capture box
                                    # with an APA table saved as a run; and the
                                    # field room: a name sealed in the browser,
                                    # a transcript coded by selecting words, and
-                                   # a survey published to D1
-                                   # (196 checks, needs the Next build and a
+                                   # a survey published to D1; and the workshop:
+                                   # thirty tools a page each, a sample size to
+                                   # the textbook's number, a DOI cited in APA
+                                   # (212 checks, needs the Next build and a
                                    # browser, skips without)
 node next/progress.test.ts         # a page that costs a reader their ticks just
                                    # by being read, where in a piece they had

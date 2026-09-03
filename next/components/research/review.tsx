@@ -26,7 +26,7 @@ import { toneVar } from "@reiad/shared/research";
 import { word } from "@reiad/shared/research-words";
 import {
   APPRAISALS, FRAMES, FRAME_SLOTS, REVIEW_KINDS, REVIEW_KIND_NAMES, REVIEW_STATES, REVIEW_STATE_NAMES, appraisalScore, duplicatesOf, prisma,
-  type Criterion, type Frame, type Protocol, type ReviewKind, type ReviewState,
+  type Criterion, type Frame, type PrismaCounts, type Protocol, type ReviewKind, type ReviewState,
 } from "@reiad/shared/research-review";
 import { gapMatrix } from "@reiad/shared/research-graph";
 import {
@@ -546,14 +546,21 @@ interface Box { x: number; y: number; w: number; h: number; lines: string[] }
 const clip = (s: string, n = 46): string => (s.length > n ? `${s.slice(0, n - 1)}…` : s);
 
 function Prisma({ review, records }: { review: Review; records: ReviewRecord[] }) {
-  const lang = useToolLang();
-  const ref = useRef<SVGSVGElement>(null);
   const c = useMemo(() => prisma(records), [records]);
-  const say = (k: string): string => word(k)[lang];
   const reason = (id: string): string => {
     const found = (review.protocol.criteria ?? []).find((x) => x.id === id);
     return found ? `${id} ${found.text}` : id;
   };
+  return <PrismaFigure c={c} reason={reason} title={review.title} />;
+}
+
+/** The flow diagram out of counts, wherever the counts came from:
+    the review's rows here, or numbers typed into the workshop's
+    drawer for a review not run in the studio. */
+export function PrismaFigure({ c, reason, title }: { c: PrismaCounts; reason: (id: string) => string; title: string }) {
+  const lang = useToolLang();
+  const ref = useRef<SVGSVGElement>(null);
+  const say = (k: string): string => word(k)[lang];
   const byDb = Object.entries(c.byDatabase).sort((a, b) => b[1] - a[1]).slice(0, 4).map(([d, n]) => `${dbName(d)}: ${n}`);
   const reasons = Object.entries(c.byReason).sort((a, b) => b[1] - a[1]).slice(0, 6).map(([id, n]) => `${clip(reason(id), 38)} (n = ${n})`);
   const L = 20, LW = 320, R = 380, RW = 300, LINE = 17;
@@ -604,7 +611,7 @@ function Prisma({ review, records }: { review: Review; records: ReviewRecord[] }
     copy.setAttribute("style", "color:#111;font-family:system-ui,sans-serif");
     return `<?xml version="1.0" encoding="UTF-8"?>\n${copy.outerHTML}`;
   };
-  const exportSvg = (): void => download(`${slug(review.title)}-prisma.svg`, svgText(), "image/svg+xml");
+  const exportSvg = (): void => download(`${slug(title)}-prisma.svg`, svgText(), "image/svg+xml");
   /** Through an <img> from a data URL, never createImageBitmap on
       the blob: an SVG is a document, and Chrome refuses to decode
       one as a bitmap. data: is allowed under img-src. */
@@ -617,7 +624,7 @@ function Prisma({ review, records }: { review: Review; records: ReviewRecord[] }
       if (!ctx) return;
       ctx.fillStyle = "#fff"; ctx.fillRect(0, 0, canvas.width, canvas.height);
       ctx.drawImage(img, 0, 0, canvas.width, canvas.height);
-      canvas.toBlob((blob) => { if (blob) download(`${slug(review.title)}-prisma.png`, blob, "image/png"); }, "image/png");
+      canvas.toBlob((blob) => { if (blob) download(`${slug(title)}-prisma.png`, blob, "image/png"); }, "image/png");
     };
     img.src = `data:image/svg+xml;charset=utf-8,${encodeURIComponent(svgText())}`;
   };

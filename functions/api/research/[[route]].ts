@@ -5,6 +5,9 @@
    GET  /api/research/lookup/doi/<doi>    one record, verified
    GET  /api/research/lookup/isbn/<isbn>  one book
    GET  /api/research/lookup/url?u=       a page's own tags (the clipper)
+   GET  /api/research/lookup/ref?q=       a messy reference matched by Crossref (the workshop)
+   GET  /api/research/lookup/journals?q=  journals by name or concept, from OpenAlex
+   GET  /api/research/lookup/journal/<issn>   one journal's DOAJ record
    POST /api/research/zotero/pull         a page of somebody's Zotero library
 
    And the reading room's files, RESEARCH.md section 23, every one
@@ -72,6 +75,7 @@ import { readerFrom } from "../../_lib/reader.ts";
 import type { ReaderEnv } from "../../_lib/reader.ts";
 import { byDoi, byIsbn, clip, status, zoteroPull } from "../../_lib/scholar.ts";
 import { canMarket, dailySeries } from "../../_lib/market.ts";
+import { checkJournal, findJournals, parseReference } from "../../_lib/workshop.ts";
 import { canTranscribe, closeSurvey, publishSurvey, responsesOf, transcribe, TOKEN, type AiEnv } from "../../_lib/field.ts";
 import type { SurveyQuestion } from "../../../shared/research-field.ts";
 import type { ScholarEnv } from "../../_lib/scholar.ts";
@@ -461,6 +465,12 @@ export async function onRequest(
         if (kind === "url") {
           const found = await clip(env, str(url.searchParams.get("u"), 2000));
           return found ? ok({ found }) : fail("not-found", 404);
+        }
+        if (kind === "ref") return ok({ matches: await parseReference(env, str(url.searchParams.get("q"), 500)) });
+        if (kind === "journals") return ok({ journals: await findJournals(env, str(url.searchParams.get("q"), 200)) });
+        if (kind === "journal") {
+          const check = await checkJournal(env, str(route[2], 12));
+          return check ? ok({ check }) : fail("bad-issn", 400);
         }
         return fail("not-found", 404);
       },

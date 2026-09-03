@@ -39,6 +39,7 @@
     "./csl/*": "./csl/*.ts",
     "./research-stats": "./research-stats.ts",
     "./research-lab": "./research-lab.ts",
-    "./research-field": "./research-field.ts"
+    "./research-field": "./research-field.ts",
+    "./research-tools": "./research-tools.ts"
   }
 }

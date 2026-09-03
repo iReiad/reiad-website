@@ -2517,6 +2517,36 @@ memo field is the first form), the quote with its translation
 inserted into a draft, the consent form as a file on the row, and
 a second screener's column.
 
+**Stage 10 landed the same day, in its first form.** What it does:
+`/tools/research/tools` is the thirty tools of the table in
+`next/lib/research-tools.ts`, one card each and one prerendered
+page each under `/tools/research/tools/<slug>`, with the
+arithmetic in `shared/research-tools.ts` held to textbook numbers
+by `scripts/research-tools.test.ts`: Cite this (any id, any of
+the nine styles, into the library), Parse a reference (Crossref's
+bibliographic search with its score, through
+`GET /api/research/lookup/ref`), Resolve an id, Find a free copy,
+Is it retracted (one DOI or the whole library), Journal finder
+(OpenAlex sources with OA, fee and DOAJ), Predatory check (DOAJ's
+record and the four questions, never a blacklist), Boolean builder
+(five syntaxes, kept as a search), Question builder (PICO, SPIDER,
+PEO, into a review with its protocol), Sample size and power (a
+proportion with design effect and finite population, a mean, two
+means, two proportions, a correlation, a regression, and power),
+Effect size converter, p and CI both ways, Which test (into the
+lab's own method), Returns, the calculators, Hijri and Gregorian
+(the tabular calendar, said to be within a day), Date arithmetic
+with either weekend, Word counter in both scripts, Abbreviations
+with the ones used before definition, Readability as facts, Self-
+overlap against the desk's documents, Table maker to Markdown,
+HTML and LaTeX, Equation editor as kept source, PRISMA drawer out
+of the review room's own figure, Quiz me with SM-2, Viva bank with
+answers kept, Ethics helper in both languages, Email templates with
+the reader's details, CV from the library, and Random and sampling
+with the seed shown. Not yet from section 19: KaTeX for the
+equation, the lab opening with the picked test's data selected,
+`ts-fsrs` in place of SM-2, and Word export of the table maker.
+
 **Stage 1 is a week of work and the studio is used from its end.**
 Stages 2 to 5 are the next month, and at the end of stage 5 the
 studio does everything the old desk did and everything a reference

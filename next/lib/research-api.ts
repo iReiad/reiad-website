@@ -1385,3 +1385,38 @@ export async function surveyResponses(w: Who, token: string): Promise<{ answers:
     return data.ok && data.responses ? data.responses : null;
   } catch { return null; }
 }
+
+/* ============================================================
+   the workshop's three lookups
+   ============================================================ */
+
+export interface ParsedReference { csl: CslItem; score: number; doi: string | null }
+export interface Journal { id: string; name: string; issn: string | null; publisher: string | null; oa: boolean; apc: number | null; works: number; cited: number; homepage: string | null; doaj: boolean }
+export interface JournalCheck { issn: string; inDoaj: boolean; title: string | null; publisher: string | null; country: string | null; apc: boolean | null; licence: string[]; since: string | null }
+
+export async function parseReference(w: Who, text: string): Promise<ParsedReference[] | null> {
+  try {
+    const res = await fetch(`/api/research/lookup/ref?q=${enc(text)}`, { headers: bearer(w) });
+    if (!res.ok) return null;
+    const data = await res.json() as { ok: boolean; matches?: ParsedReference[] };
+    return data.ok ? data.matches ?? [] : null;
+  } catch { return null; }
+}
+
+export async function findJournals(w: Who, q: string): Promise<Journal[] | null> {
+  try {
+    const res = await fetch(`/api/research/lookup/journals?q=${enc(q)}`, { headers: bearer(w) });
+    if (!res.ok) return null;
+    const data = await res.json() as { ok: boolean; journals?: Journal[] };
+    return data.ok ? data.journals ?? [] : null;
+  } catch { return null; }
+}
+
+export async function checkJournal(w: Who, issn: string): Promise<JournalCheck | null> {
+  try {
+    const res = await fetch(`/api/research/lookup/journal/${enc(issn)}`, { headers: bearer(w) });
+    if (!res.ok) return null;
+    const data = await res.json() as { ok: boolean; check?: JournalCheck };
+    return data.ok && data.check ? data.check : null;
+  } catch { return null; }
+}

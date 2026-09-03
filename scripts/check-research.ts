@@ -256,7 +256,7 @@ for (const s of ["doi", "isbn", "url", "bib", "todo", "note", "dup", "fail"]) if
       if (n !== "page.tsx") continue;
       const src = readFileSync(at, "utf8");
       const rel = relative(ROOT, at);
-      if (!/export const metadata/.test(src)) fail(`${rel} exports no metadata`);
+      if (!/export const metadata|export async function generateMetadata/.test(src)) fail(`${rel} exports no metadata`);
       const under = relative(ROUTES, at);
       if (!/<ResearchFrame/.test(src) && !NOT_FRAMED[under]) fail(`${rel} does not use the studio's frame`);
       if (NOT_FRAMED[under] && /<ResearchFrame/.test(src)) fail(`${rel} is in NOT_FRAMED and wears the frame`, "Take it out of the list.");

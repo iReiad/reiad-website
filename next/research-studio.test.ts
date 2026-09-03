@@ -94,7 +94,7 @@ const TYPES: Record<string, string> = {
 
 const server = createServer(async (req, res) => {
   const path = new URL(req.url ?? "/", "http://x").pathname;
-  const file = /^\/tools\/research(\/[a-z]+)?$/.test(path)
+  const file = /^\/tools\/research(\/[a-z-]+)*$/.test(path)
     ? join(BUILD, `server/app${path}.html`)
     : path.startsWith("/_next/static/")
       ? join(BUILD, "static", path.slice("/_next/static/".length))
@@ -1196,6 +1196,92 @@ for (const path of ["/tools/research", "/tools/research/library", "/tools/resear
   await page.waitForTimeout(800);
   const asked = sent.filter((x) => x.method === "PATCH" && x.path.includes("research_notes")).map((x) => (x.body as { meta?: { asked?: Record<string, number[]> } }).meta?.asked).find(Boolean);
   ok("and a tick says this question was put in that interview", asked !== undefined && Object.values(asked).some((v) => v.includes(0)), JSON.stringify(asked ?? null));
+  ok("and none of it threw", errors.length === 0, errors.join(" | "));
+  await page.close();
+}
+
+/* ============================================================
+   12. the workshop: thirty cards, and a tool a page: a sample size
+       to the textbook's number, a Boolean string in a database's
+       syntax, a Hijri date, a citation rendered from a looked-up
+       DOI, a question out of a frame, and words in two scripts
+   ============================================================ */
+
+{
+  const { page, errors } = await open("/tools/research/tools", { signedIn: false });
+  await page.waitForTimeout(300);
+  ok("the workshop lists thirty tools, each a link to its page", await page.locator('[data-testid="rs-ws-deck"] a').count() === 30);
+  ok("and none of it threw", errors.length === 0, errors.join(" | "));
+  await page.close();
+}
+
+{
+  const { page, errors } = await open("/tools/research/tools/sample-size", { signedIn: false });
+  await page.waitForTimeout(300);
+  ok("a proportion at 50%, ±5%, 95% is 385 on the page", ((await page.locator('[data-testid="rs-ws-n"]').textContent()) ?? "").includes("385"));
+  await page.getByRole("button", { name: /A correlation|সহসম্পর্ক/ }).click();
+  await page.waitForTimeout(200);
+  ok("and a correlation of 0.3 needs 85", ((await page.locator('[data-testid="rs-ws-n"]').textContent()) ?? "").includes("85"));
+  ok("and none of it threw", errors.length === 0, errors.join(" | "));
+  await page.close();
+}
+
+{
+  const { page, errors } = await open("/tools/research/tools/boolean-builder", { signedIn: false });
+  await page.waitForTimeout(300);
+  await page.locator("#rs-ws-terms-0").fill("weather index insurance, crop insurance");
+  await page.locator("#rs-ws-terms-1").fill("Bangladesh");
+  await page.locator("#rs-ws-syntax").selectOption("scopus");
+  await page.waitForTimeout(200);
+  ok("a Boolean string in Scopus syntax", ((await page.locator('[data-testid="rs-ws-boolean"]').textContent()) ?? "").includes('(TITLE("weather index insurance") OR TITLE("crop insurance")) AND ALL(Bangladesh)'));
+  ok("and none of it threw", errors.length === 0, errors.join(" | "));
+  await page.close();
+}
+
+{
+  const { page, errors } = await open("/tools/research/tools/hijri", { signedIn: false });
+  await page.waitForTimeout(300);
+  await page.locator("#rs-ws-greg").fill("2025-06-27");
+  await page.waitForTimeout(200);
+  ok("27 June 2025 is 1 Muharram 1447 in the tabular calendar", /1 Muharram 1447 AH|১ মুহররম 1447 AH|1 মুহররম 1447 AH/.test((await page.locator('[data-testid="rs-ws-hijri"]').textContent()) ?? ""), (await page.locator('[data-testid="rs-ws-hijri"]').textContent()) ?? "");
+  ok("and none of it threw", errors.length === 0, errors.join(" | "));
+  await page.close();
+}
+
+{
+  const { page, errors, sent } = await open("/tools/research/tools/cite-this");
+  await page.waitForTimeout(500);
+  await page.locator("#rs-ws-id").fill("10.1016/j.jdeveco.2018.03.001");
+  await page.locator("#rs-ws-id").press("Enter");
+  await page.waitForTimeout(2500);
+  const cite = (await page.locator('[data-testid="rs-ws-cite"]').textContent()) ?? "";
+  ok("a DOI is looked up through the Worker and rendered in APA, in the text and in the list", cite.includes("Carter") && cite.includes("2018") && cite.includes("Climate risk and agricultural insurance uptake"), cite.slice(0, 200));
+  await page.getByRole("button", { name: /Into the library|লাইব্রেরিতে/ }).click();
+  await page.waitForTimeout(800);
+  ok("and one press puts it in the library", posts(sent, "research_sources").length === 1 && String(firstOf(posts(sent, "research_sources")[0]).doi).includes("10.1016/j.jdeveco.2018.03.001"));
+  ok("and none of it threw", errors.length === 0, errors.join(" | "));
+  await page.close();
+}
+
+{
+  const { page, errors } = await open("/tools/research/tools/question-builder", { signedIn: false });
+  await page.waitForTimeout(300);
+  await page.locator("#rs-ws-slot-population").fill("smallholders in Bangladesh");
+  await page.locator("#rs-ws-slot-intervention").fill("index insurance");
+  await page.locator("#rs-ws-slot-outcome").fill("credit uptake");
+  await page.waitForTimeout(200);
+  ok("a PICO frame becomes a question on the page", ((await page.locator('[data-testid="rs-ws-question"]').textContent()) ?? "") === "In smallholders in Bangladesh, does index insurance affect credit uptake?");
+  ok("and none of it threw", errors.length === 0, errors.join(" | "));
+  await page.close();
+}
+
+{
+  const { page, errors } = await open("/tools/research/tools/words", { signedIn: false });
+  await page.waitForTimeout(300);
+  await page.locator("#rs-ws-text").fill("The bank said no. ব্যাংক না বলেছে। Twice.");
+  await page.waitForTimeout(200);
+  const words = (await page.locator('[data-testid="rs-ws-words"]').textContent()) ?? "";
+  ok("words are counted in both scripts", /Words[^0-9]*8/.test(words) && /Bangla words[^0-9]*3/.test(words), words.slice(0, 200));
   ok("and none of it threw", errors.length === 0, errors.join(" | "));
   await page.close();
 }

@@ -7,7 +7,7 @@ There are three renderers of this site now: the Worker in
 Next.js route in `next/`. Anything all of them must say the same
 way lives here, and nowhere else.
 
-Today that is thirty-one files and two directories, and
+Today that is thirty-two files and two directories, and
 `check-types.ts` fails if one of them is not described below.
 That check exists because this line said six while nine were
 here: `nav.ts` and `routine.ts` arrived in two changes that had
@@ -159,6 +159,12 @@ this repository got written.
   a transcript's segments out of pasted text or the model's answer,
   the code matrices derived from the codings, and a survey's
   questions and answers as a table. RESEARCH.md section 15.
+- **`research-tools.ts`** the workshop's arithmetic: sample sizes and
+  power, effect sizes, p and CI both ways, the which-test tree, dates
+  with the tabular Islamic calendar, words in both scripts,
+  abbreviations, readability as facts, a grid to four table
+  syntaxes, Boolean strings per database, a question from a frame,
+  spaced repetition and a seeded random. RESEARCH.md section 19.
 - **`research-graph.ts`** the atlas's arithmetic: a deterministic
   force layout for the graph, the argument map and the gap matrix
   as cells, the literature timeline as dots. RESEARCH.md 8 and 18.
