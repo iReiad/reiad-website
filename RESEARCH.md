@@ -2623,10 +2623,36 @@ yet written is promised rather than linked; a method piece the
 table does not plan is listed after them. A tool page and a
 room's head link the methods behind them by slug, and every card
 carries its slug as an anchor. `check-research.ts` fails on a
-method naming a tool or a room that does not exist. Not yet from
-section 20: the twelve pieces themselves, which are written in
-the Article Studio like every other piece and appear here the
-moment they are live.
+method naming a tool or a room that does not exist.
+
+**The twelve lessons are written, and they are lessons rather
+than promises.** Section 20 always said a method is a piece,
+written in the Article Studio, and that is still how one is
+replaced: a live piece carrying the slug wins over everything
+below it. What was wrong with leaving it there is that a room of
+twelve cards saying "still to write" is a room that teaches
+nobody, and the piece a stranger reads is the studio's public
+face. So each of the twelve is a file under `next/lib/methods/`,
+one lesson each in both languages, prerendered at
+`/tools/research/methods/<slug>`: article markup in the site's
+own vocabulary, a box of quick answers at the top, numbered
+steps, a checklist, a worked example with real arithmetic in it,
+and a foot naming the room or the tool where the reader does the
+thing. `next/components/research/method-lesson.tsx` is that foot.
+
+The cards now go three ways rather than two: to the piece where
+one is live, to the lesson where one is written, and to a promise
+where there is neither. `check-research.ts` asks the rest: a
+lesson the table does not plan, a planned method with no lesson
+at all, a half in one language, and a class outside the set
+`@layer article` styles, which is the one that renders as nothing
+on a page that looks finished.
+
+The imports in `next/lib/methods/index.ts` carry their `.ts`
+extension, because that check reads them under plain node with no
+bundler to guess for it, and `allowImportingTsExtensions` in
+`next/tsconfig.json` is what lets the route import the same file.
+Same rule as `shared/`, one directory along.
 
 **Stage 1 is a week of work and the studio is used from its end.**
 Stages 2 to 5 are the next month, and at the end of stage 5 the
