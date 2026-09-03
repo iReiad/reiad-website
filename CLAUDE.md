@@ -2236,7 +2236,9 @@ node scripts/check-relief.ts # a figure that lifts and never stops for a reader
                             # who asked for no motion, a relief on a class no
                             # layer defines, and a scene layer moved twice
 node scripts/check-admin.ts # an endpoint under functions/api/ gated by neither
-                            # requireAdmin nor isAdmin, and not named as public
+                            # requireAdmin nor isAdmin, and not named as public,
+                            # or a file that is open in part and gated in part
+                            # whose gate has quietly gone
 node scripts/check-mjs.ts   # a .mjs, which is a file nothing typechecks and the
                             # reason the next one gets written
 node scripts/check-dashes.ts # the one character this file opens by banning,
