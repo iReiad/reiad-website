@@ -2625,6 +2625,21 @@ room's head link the methods behind them by slug, and every card
 carries its slug as an anchor. `check-research.ts` fails on a
 method naming a tool or a room that does not exist.
 
+**A WORKER IS 3 MiB AND THIS STAGE SPENT IT.** `reiad-next` was
+2946 KiB gzipped before it and 3294 after, so every deploy of the
+branch failed while `checks` stayed green: the only symptom was a
+line in a Cloudflare dashboard that a pull request cannot show.
+What crossed it was four libraries that run only in a browser and
+were in the SERVER bundle anyway, because a client component's
+dynamic imports are in the server graph too: pdf.js at 148 KiB
+gzipped, `docx` at 112, citeproc at 95, KaTeX at 77.
+`next/components/research/rooms-client.tsx` is the `ssr: false`
+boundary for the four rooms that carry them, which is also a file
+of its own because a Server Component may not pass that flag to
+`next/dynamic`. The bundle is 2464 KiB now, under where it started,
+and `scripts/check-worker-size.ts` is what fails before a deploy
+does.
+
 **The twelve lessons are written, and they are lessons rather
 than promises.** Section 20 always said a method is a piece,
 written in the Article Studio, and that is still how one is

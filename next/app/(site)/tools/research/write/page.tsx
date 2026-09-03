@@ -5,7 +5,7 @@
 import type { Metadata } from "next";
 import { pageMeta } from "../../../../../lib/pageMeta";
 import { ResearchFrame } from "../../../../../components/research/frame";
-import { Desk } from "../../../../../components/research/write";
+import { Desk } from "../../../../../components/research/rooms-client";
 
 export const metadata: Metadata = pageMeta({
   path: "/tools/research/write",

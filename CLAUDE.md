@@ -2502,6 +2502,9 @@ And when anything under `next/` or `shared/` changed, after
 `cd next && npx opennextjs-cloudflare build`:
 
 ```sh
+node scripts/check-worker-size.ts  # the Next Worker over Cloudflare's 3 MiB, which
+                                   # is a deploy that fails with every check green
+                                   # and one line in a dashboard nobody can read
 node next/parity.test.ts          # the Next.js route saying something the
                                    # Worker's own renderer does not, and a
                                    # reading hub that has stopped agreeing with

@@ -5,7 +5,7 @@
 import type { Metadata } from "next";
 import { pageMeta } from "../../../../../../lib/pageMeta";
 import { ResearchFrame } from "../../../../../../components/research/frame";
-import { Workshop } from "../../../../../../components/research/workshop";
+import { Workshop } from "../../../../../../components/research/rooms-client";
 import { RESEARCH_TOOLS, researchTool } from "../../../../../../lib/research-tools";
 
 export const dynamicParams = false;
