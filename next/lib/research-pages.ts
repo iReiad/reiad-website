@@ -221,5 +221,5 @@ export const researchPage = (href: string): ResearchPage | undefined =>
   RESEARCH_PAGES.find((p) => p.href === href || `${p.href}/` === href);
 
 /** The rooms that are open today. */
-export const OPEN_STAGE = 8;
+export const OPEN_STAGE = 9;
 export const isOpen = (page: ResearchPage): boolean => page.stage <= OPEN_STAGE;

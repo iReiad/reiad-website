@@ -164,6 +164,14 @@ const MIGRATIONS = [
   `CREATE TABLE IF NOT EXISTS research_alert_hits (
      id INTEGER PRIMARY KEY AUTOINCREMENT, reader_id TEXT NOT NULL, alert_id TEXT NOT NULL,
      json TEXT NOT NULL, found_at TEXT NOT NULL)`,
+  /* The field room's surveys: the form a stranger reads with no
+     bearer, and the answers the public endpoint writes. See
+     functions/_lib/field.ts. */
+  `CREATE TABLE IF NOT EXISTS survey_forms (
+     token TEXT PRIMARY KEY, owner TEXT NOT NULL, title TEXT NOT NULL, intro TEXT NOT NULL DEFAULT '',
+     questions TEXT NOT NULL DEFAULT '[]', open INTEGER NOT NULL DEFAULT 1, created_at TEXT NOT NULL)`,
+  `CREATE TABLE IF NOT EXISTS survey_responses (
+     id INTEGER PRIMARY KEY AUTOINCREMENT, token TEXT NOT NULL, answers TEXT NOT NULL, created_at TEXT NOT NULL)`,
 ];
 
 /* Columns added after the first release.

@@ -70,6 +70,16 @@ const fail = (line: string, ...detail: string[]): void => {
 const NOT_A_ROOM: Record<string, string> = {
   clip: "the bookmarklet's landing: a press on a paper's page arrives here and "
     + "leaves for the source it filed. Not in the strip because nobody goes there on purpose.",
+  survey: "a field room survey as a stranger sees it (RESEARCH.md 15): a public form "
+    + "read from /api/survey/<token> with no bearer. Not in the strip because it is not the reader's page.",
+};
+
+/** A route that deliberately stands outside the studio's frame: a
+    page for somebody who is not the reader. Every other page under
+    tools/research wears the frame, and the walk below fails a page
+    that does not unless it is named here with the reason. */
+const NOT_FRAMED: Record<string, string> = {
+  "survey/[token]/page.tsx": "a stranger answering a survey should see the form and nothing of the studio.",
 };
 
 {
@@ -88,6 +98,9 @@ const NOT_A_ROOM: Record<string, string> = {
   }
   for (const name of Object.keys(NOT_A_ROOM)) {
     if (!existsSync(join(ROUTES, name))) fail(`NOT_A_ROOM names ${name}/, which is not there.`, "Remove the entry.");
+  }
+  for (const name of Object.keys(NOT_FRAMED)) {
+    if (!existsSync(join(ROUTES, name))) fail(`NOT_FRAMED names ${name}, which is not there.`, "Remove the entry.");
   }
   const seen = new Set<string>();
   for (const p of RESEARCH_PAGES) {
@@ -207,6 +220,7 @@ for (const s of ["doi", "isbn", "url", "bib", "todo", "note", "dup", "fail"]) if
   same("PEOPLE_ROLES", "research_people", "role", PEOPLE_ROLES);
   same("REVIEW_KINDS", "research_reviews", "kind", REVIEW_KINDS);
   same("RUN_KINDS", "research_runs", "kind", RUN_KINDS);
+  same("TONES", "research_codes", "colour", TONES);
   same("REVIEW_STATES", "research_reviews", "state", REVIEW_STATES);
   same("RECORD_STAGES", "research_review_records", "stage", RECORD_STAGES);
   same("DOCUMENT_KINDS", "research_documents", "kind", ["chapter", "paper", "proposal", "abstract", "letter", "other"]);
@@ -243,7 +257,9 @@ for (const s of ["doi", "isbn", "url", "bib", "todo", "note", "dup", "fail"]) if
       const src = readFileSync(at, "utf8");
       const rel = relative(ROOT, at);
       if (!/export const metadata/.test(src)) fail(`${rel} exports no metadata`);
-      if (!/<ResearchFrame/.test(src)) fail(`${rel} does not use the studio's frame`);
+      const under = relative(ROUTES, at);
+      if (!/<ResearchFrame/.test(src) && !NOT_FRAMED[under]) fail(`${rel} does not use the studio's frame`);
+      if (NOT_FRAMED[under] && /<ResearchFrame/.test(src)) fail(`${rel} is in NOT_FRAMED and wears the frame`, "Take it out of the list.");
       if (!/card: "tools"/.test(src)) fail(`${rel} names no share card`);
     }
   };

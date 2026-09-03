@@ -292,6 +292,26 @@ export interface ResearchAlertHitRow {
   found_at: string;
 }
 
+/** A published survey's form, copied here so a stranger's browser
+    can read it with no bearer; the owner is the reader's id. */
+export interface SurveyFormRow {
+  token: string;
+  owner: string;
+  title: string;
+  intro: string;
+  questions: string;
+  open: number;
+  created_at: string;
+}
+
+/** One stranger's answers to a survey, as JSON. */
+export interface SurveyResponseRow {
+  id: number;
+  token: string;
+  answers: string;
+  created_at: string;
+}
+
 export interface ThrottleRow {
   bucket: string;
   count: number;
@@ -379,6 +399,8 @@ export const TABLES: Record<string, string> = {
   research_alerts: "a Research Studio search a reader flagged for the Monday cron, copied here because the Worker cannot read their Supabase rows",
   research_alert_hits: "what that cron found, one row a work, waiting for the reader's browser to collect into their inbox",
   research_calendar: "a reader's Research Studio dates as an iCalendar file, written by their browser and served by a long-lived token to whatever calendar subscribes",
+  survey_forms: "a Research Studio survey a reader published, copied here so the public form page can read it with no bearer and the owner's id says whose it is",
+  survey_responses: "one stranger's answers to that survey, written by the throttled public endpoint because the Worker cannot insert into Supabase as nobody",
   school_stages: "a school's ladder",
   school_sections: "a stage's sections",
   school_lessons: "a lesson, and its prose",

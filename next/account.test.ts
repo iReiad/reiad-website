@@ -189,6 +189,7 @@ const RESEARCH_TABLES = [
   "research_activity", "research_highlights", "research_searches", "research_documents",
   "research_events", "research_sessions", "research_people", "research_reviews", "research_review_records",
   "research_datasets", "research_transforms", "research_runs",
+  "research_participants", "research_codes", "research_codings", "research_surveys",
 ] as const;
 
 /** SOMEBODY ELSE'S PROFILE, and the reason it is here.
@@ -1224,6 +1225,10 @@ console.log("\ntaking a copy of everything");
     ["research_datasets", "a dataset in the lab"],
     ["research_transforms", "a transform kept as SQL"],
     ["research_runs", "a run, which is every result"],
+    ["research_participants", "a participant, by pseudonym"],
+    ["research_codes", "the codebook"],
+    ["research_codings", "a code on a span of a transcript"],
+    ["research_surveys", "a survey and its questions"],
     ["routines", "the shape of the week"],
     ["routine_entries", "every day marked on it"],
     ["routine_templates", "the templates this reader made"],

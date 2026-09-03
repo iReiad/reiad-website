@@ -7,7 +7,7 @@ There are three renderers of this site now: the Worker in
 Next.js route in `next/`. Anything all of them must say the same
 way lives here, and nowhere else.
 
-Today that is thirty files and two directories, and
+Today that is thirty-one files and two directories, and
 `check-types.ts` fails if one of them is not described below.
 That check exists because this line said six while nine were
 here: `nav.ts` and `routine.ts` arrived in two changes that had
@@ -155,6 +155,10 @@ this repository got written.
   know a DSE or an Alpha Vantage file by its columns, the four
   sanity checks, a fit as an APA table, and a chart as SVG text.
   RESEARCH.md section 14.
+- **`research-field.ts`** the field room's vocabulary and arithmetic:
+  a transcript's segments out of pasted text or the model's answer,
+  the code matrices derived from the codings, and a survey's
+  questions and answers as a table. RESEARCH.md section 15.
 - **`research-graph.ts`** the atlas's arithmetic: a deterministic
   force layout for the graph, the argument map and the gap matrix
   as cells, the literature timeline as dots. RESEARCH.md 8 and 18.

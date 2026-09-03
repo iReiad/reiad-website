@@ -57,6 +57,7 @@ import { onRequest as routine } from "./functions/api/routine/[[route]].ts";
 import { onRequest as diet } from "./functions/api/diet/[[route]].ts";
 import { onRequest as research } from "./functions/api/research/[[route]].ts";
 import { onRequest as engine } from "./functions/api/engine/[[route]].ts";
+import { onRequest as survey } from "./functions/api/survey/[[route]].ts";
 import { runAlerts } from "./functions/_lib/scholar-search.ts";
 import { onRequest as admin } from "./functions/api/admin/[[route]].ts";
 import { onRequest as insight } from "./functions/insights/[slug].ts";
@@ -97,6 +98,7 @@ const API_ROUTES = [
   ["/api/diet", diet, "route"],
   ["/api/research", research, "route"],
   ["/api/engine", engine, "route"],
+  ["/api/survey", survey, "route"],
   ["/api/admin", admin, "route"],
 ];
 

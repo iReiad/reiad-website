@@ -44,6 +44,7 @@ import { runtimeModule } from "../components/account/runtime";
 import type { EventBody, EventKind, PersonRole } from "@reiad/shared/research-plan";
 import type { Protocol, RecordStage, ReviewKind, ReviewState } from "@reiad/shared/research-review";
 import type { Column, RunKind } from "@reiad/shared/research-lab";
+import type { Answers, Consent, Segment, SurveyQuestion } from "@reiad/shared/research-field";
 
 type AccountModule = typeof import("/account.js");
 const accountModule = () => runtimeModule<AccountModule>("/account.js");
@@ -1293,5 +1294,94 @@ export async function marketSeries(w: Who, symbol: string, full = false): Promis
     if (!res.ok) return null;
     const data = await res.json() as { ok: boolean; series?: MarketSeries };
     return data.ok && data.series ? data.series : null;
+  } catch { return null; }
+}
+
+/* ============================================================
+   the field room: participants, the codebook, codings, surveys
+   ============================================================ */
+
+export interface Participant extends Row {
+  project_id: string | null;
+  pseudonym: string;
+  role: string;
+  consent: Consent;
+  sealed: string | null;
+  notes: string | null;
+}
+
+export interface Code extends Row { project_id: string | null; parent_id: string | null; name: string; definition: string; colour: Tone; position: number }
+
+export interface Coding extends Row {
+  code_id: string;
+  note_id: string;
+  source_id: string | null;
+  participant_id: string | null;
+  segment: number;
+  start_at: number;
+  end_at: number;
+  text: string;
+  translation: string | null;
+  memo: string | null;
+}
+
+export interface Survey extends Row { project_id: string | null; title: string; questions: SurveyQuestion[]; intro: string; token: string; open: boolean }
+
+export const listParticipants = (w: Who): Promise<Participant[]> => rows<Participant>(w, "research_participants", "order=pseudonym.asc&limit=500");
+export const addParticipant = (w: Who, p: Partial<Participant> & { pseudonym: string }): Promise<Participant | null> =>
+  insert<Participant>(w, "research_participants", { role: "", consent: {}, sealed: null, notes: null, ...p }, p.pseudonym);
+export const saveParticipant = (w: Who, p: Participant, part: Partial<Participant>): Promise<PatchAnswer<Participant>> =>
+  patch<Participant>(w, "research_participants", p.id, part, p.pseudonym);
+export const removeParticipant = (w: Who, p: Participant): Promise<boolean> => remove(w, "research_participants", p.id, p.pseudonym);
+
+export const listCodes = (w: Who): Promise<Code[]> => rows<Code>(w, "research_codes", "order=position.asc,name.asc&limit=1000");
+export const addCode = (w: Who, c: Partial<Code> & { name: string }): Promise<Code | null> =>
+  insert<Code>(w, "research_codes", { definition: "", colour: "green", position: 0, parent_id: null, ...c }, c.name);
+export const saveCode = (w: Who, c: Code, part: Partial<Code>): Promise<PatchAnswer<Code>> => patch<Code>(w, "research_codes", c.id, part, c.name);
+export const removeCode = (w: Who, c: Code): Promise<boolean> => remove(w, "research_codes", c.id, c.name);
+
+export const listCodings = (w: Who, note?: string): Promise<Coding[]> =>
+  rows<Coding>(w, "research_codings", `${note ? `note_id=eq.${enc(note)}&` : ""}order=created_at.asc&limit=5000`);
+export const addCoding = (w: Who, c: Omit<Coding, keyof Row | "translation" | "memo"> & { translation?: string | null; memo?: string | null }): Promise<Coding | null> =>
+  insert<Coding>(w, "research_codings", { translation: null, memo: null, ...c }, c.text.slice(0, 80));
+export const saveCoding = (w: Who, c: Coding, part: Partial<Coding>): Promise<PatchAnswer<Coding>> => patch<Coding>(w, "research_codings", c.id, part, c.text.slice(0, 80));
+export const removeCoding = (w: Who, c: Coding): Promise<boolean> => remove(w, "research_codings", c.id, c.text.slice(0, 80));
+
+export const listSurveys = (w: Who): Promise<Survey[]> => rows<Survey>(w, "research_surveys", "order=updated_at.desc&limit=200");
+export const addSurvey = (w: Who, s: { title: string; questions: SurveyQuestion[]; intro: string; token: string; project_id?: string | null }): Promise<Survey | null> =>
+  insert<Survey>(w, "research_surveys", { ...s, open: false, project_id: s.project_id ?? null }, s.title.slice(0, 80));
+export const saveSurvey = (w: Who, s: Survey, part: Partial<Survey>): Promise<PatchAnswer<Survey>> => patch<Survey>(w, "research_surveys", s.id, part, s.title.slice(0, 80));
+export const removeSurvey = (w: Who, s: Survey): Promise<boolean> => remove(w, "research_surveys", s.id, s.title.slice(0, 80));
+
+/** The transcript of one stored audio file, through the Worker's
+    model, or null where transcription is not connected. */
+export async function transcribeFile(w: Who, key: string, language: string | null): Promise<{ segments: Segment[]; text: string } | null> {
+  try {
+    const res = await fetch("/api/research/transcribe", {
+      method: "POST", headers: { ...bearer(w), "content-type": "application/json" }, body: JSON.stringify({ key, language }),
+    });
+    if (!res.ok) return null;
+    const data = await res.json() as { ok: boolean; segments?: Segment[]; text?: string };
+    return data.ok && data.segments ? { segments: data.segments, text: data.text ?? "" } : null;
+  } catch { return null; }
+}
+
+/** The survey copied to D1 so the public page can read it. */
+export async function publishSurveyForm(w: Who, s: Survey, open: boolean): Promise<boolean> {
+  try {
+    const res = await fetch("/api/research/survey", {
+      method: "PUT", headers: { ...bearer(w), "content-type": "application/json" },
+      body: JSON.stringify({ token: s.token, title: s.title, intro: s.intro, questions: s.questions, open }),
+    });
+    return res.ok;
+  } catch { return false; }
+}
+
+export async function surveyResponses(w: Who, token: string): Promise<{ answers: Answers; at: string }[] | null> {
+  try {
+    const res = await fetch(`/api/research/survey/${enc(token)}/responses`, { headers: bearer(w) });
+    if (!res.ok) return null;
+    const data = await res.json() as { ok: boolean; responses?: { answers: Answers; at: string }[] };
+    return data.ok && data.responses ? data.responses : null;
   } catch { return null; }
 }

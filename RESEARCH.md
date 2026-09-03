@@ -2486,6 +2486,37 @@ GitHub bridge. Where no R was to hand the arithmetic test's
 references are closed forms and hand computations rather than a
 number copied from a console, which is written into that file.
 
+**Stage 9 landed the same day, in its first form.** What it does:
+`/tools/research/field` holds participants as `research_participants`
+rows by pseudonym, with a consent record and a name sealed IN THE
+BROWSER (`next/lib/seal.ts`, AES-GCM under a passphrase the site
+never sees); an interview as a source of type interview with the
+audio as its file and the participant as its author, its transcript
+a note of kind transcript whose segments live in `meta.segments`,
+from the Worker's model (`POST /api/research/transcribe`, Workers
+AI's Whisper on the dashboard-bound `AI` binding, and the room says
+so where it is off) or from a paste read by its times and speakers,
+arriving as a draft and marked checked by a person, with `[` and
+`]` nudging the player; the codebook as a tree of
+`research_codes` with a definition each; coding as selecting words
+in a segment and pressing a code, a `research_codings` row of
+offsets shown as an underline in the code's colour, with a
+translation and a memo on any of them; retrieval across the project;
+the three matrices out of the rows as heat tables and CSV; surveys as
+`research_surveys` rows whose questions are typed as lines, published
+to D1 (`survey_forms`) for the public page at
+`/tools/research/survey/<token>`, answered by strangers through the
+throttled `/api/survey/<token>` into `survey_responses`, collected by
+the owner and saved as a lab dataset; and the interview guide as a
+note with a tick per question per interview.
+`scripts/research-field.test.ts` is the coding test's arithmetic and
+section 11 of the browser test is the coding itself. Not yet from
+section 15: audio recorded in the browser and transcoded, memos as
+notes of kind memo linked from a code or a coding (the coding's own
+memo field is the first form), the quote with its translation
+inserted into a draft, the consent form as a file on the row, and
+a second screener's column.
+
 **Stage 1 is a week of work and the studio is used from its end.**
 Stages 2 to 5 are the next month, and at the end of stage 5 the
 studio does everything the old desk did and everything a reference

@@ -61,6 +61,13 @@ const PUBLIC: Record<string, string> = {
     + "Worker's static asset may be 25 MiB at most and connect-src is 'self'. "
     + "No bearer because new Worker(url) cannot carry one; a path not on the "
     + "list is a 404, never a proxy.",
+  "survey/[[route]].ts":
+    "the public half of a field room survey (RESEARCH.md section 15): a "
+    + "stranger with the link reads the form and posts their answers. It "
+    + "takes no bearer because a stranger is who a survey is for; it reads "
+    + "one D1 row by an unguessable token, writes one row of answers checked "
+    + "against the questions, throttled per address, and knows nobody. The "
+    + "owner's half, under /api/research/survey, reads the reader first.",
   "news.ts":
     "the market board on the Insights hub. Public headlines, raced from two "
     + "public endpoints, cached at the edge.",

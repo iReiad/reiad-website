@@ -130,6 +130,7 @@ const RESEARCH_TABLES = [
     "research_activity", "research_highlights", "research_searches", "research_documents",
     "research_events", "research_sessions", "research_people", "research_reviews", "research_review_records",
     "research_datasets", "research_transforms", "research_runs",
+    "research_participants", "research_codes", "research_codings", "research_surveys",
 ];
 const MINE_TABLES = [
     ...RESEARCH_TABLES,

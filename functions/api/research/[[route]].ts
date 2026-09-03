@@ -24,6 +24,10 @@
    GET    /api/research/related/<doi>    OpenAlex's three lists
    GET    /api/research/oa/<doi>         a free copy, through Unpaywall
    GET    /api/research/market/<symbol>?full=1   a daily series, through Alpha Vantage (section 14)
+   POST   /api/research/transcribe      one stored audio file, through Workers AI (section 15)
+   PUT    /api/research/survey          a survey copied to D1 for its public page
+   GET    /api/research/survey/<token>/responses   what strangers answered, for the owner
+   POST   /api/research/survey/<token>  open or close it
    PUT    /api/research/alerts           a flagged search, copied to D1 for the cron
    DELETE /api/research/alerts/<id>      the flag taken off
    GET    /api/research/alerts/hits      what the cron found, collected and cleared
@@ -68,6 +72,8 @@ import { readerFrom } from "../../_lib/reader.ts";
 import type { ReaderEnv } from "../../_lib/reader.ts";
 import { byDoi, byIsbn, clip, status, zoteroPull } from "../../_lib/scholar.ts";
 import { canMarket, dailySeries } from "../../_lib/market.ts";
+import { canTranscribe, closeSurvey, publishSurvey, responsesOf, transcribe, TOKEN, type AiEnv } from "../../_lib/field.ts";
+import type { SurveyQuestion } from "../../../shared/research-field.ts";
 import type { ScholarEnv } from "../../_lib/scholar.ts";
 import { canTicket, checkTicket, mintTicket } from "../../_lib/ticket.ts";
 import {
@@ -81,7 +87,7 @@ import type { SearchQuery } from "../../_lib/scholar-search.ts";
 import { db } from "../../_lib/db.ts";
 import type { ResearchAlertHitRow, ResearchCalendarRow } from "../../../shared/rows.ts";
 
-interface ResearchEnv extends ScholarEnv, ReaderEnv, FilesEnv {}
+interface ResearchEnv extends ScholarEnv, ReaderEnv, FilesEnv, AiEnv {}
 
 /** A page a minute is a person reading; more is a crawler with a
     bearer, which is still somebody else's server being asked. */
@@ -107,7 +113,7 @@ export async function onRequest(
 
   if (head === "status") {
     return methods(request, {
-      GET: () => ok({ services: { ...status(env), files: env.MEDIA && canTicket(env) ? "on" : "off", market: canMarket(env) ? "on" : "off" } }),
+      GET: () => ok({ services: { ...status(env), files: env.MEDIA && canTicket(env) ? "on" : "off", market: canMarket(env) ? "on" : "off", transcribe: canTranscribe(env) ? "on" : "off" } }),
     });
   }
 
@@ -213,6 +219,67 @@ export async function onRequest(
         const found = await related(env, doi);
         if (!found) return fail("not-found", 404);
         return ok(found);
+      },
+    });
+  }
+
+  /* ---- the field room: transcription, and the owner's half of a survey ---- */
+  if (head === "transcribe") {
+    return methods(request, {
+      POST: async () => {
+        const reader = await whoAsks();
+        if (reader instanceof Response) return reader;
+        if (!env.MEDIA) return fail("not-configured", 503);
+        if (!canTranscribe(env)) return fail("no-ai", 503);
+        const sent = await body(request);
+        const key = str(sent.key);
+        if (!key || !keyIsMine(reader.id, key)) return fail("not-yours", 403);
+        const held = await env.MEDIA.get(key);
+        if (!held) return fail("not-found", 404);
+        const language = str(sent.language) || null;
+        const answer = await transcribe(env, await held.arrayBuffer(), language);
+        if (!answer) return fail("no-ai", 503);
+        return ok({ segments: answer.segments, text: answer.text });
+      },
+    });
+  }
+
+  if (head === "survey") {
+    const d1 = await db(env);
+    if (!d1) return fail("not-configured", 503);
+    const token = route[1] ?? "";
+    if (!token) {
+      return methods(request, {
+        PUT: async () => {
+          const reader = await whoAsks();
+          if (reader instanceof Response) return reader;
+          const sent = await body(request);
+          const t = str(sent.token);
+          if (!TOKEN.test(t)) return fail("bad-token", 400);
+          const questions = Array.isArray(sent.questions) ? (sent.questions as SurveyQuestion[]).slice(0, 100) : [];
+          await publishSurvey(d1, reader.id, { token: t, title: str(sent.title).slice(0, 200), intro: str(sent.intro).slice(0, 4000), questions, open: sent.open !== false });
+          return ok({ token: t, url: `/tools/research/survey/${t}` });
+        },
+      });
+    }
+    if (route[2] === "responses") {
+      return methods(request, {
+        GET: async () => {
+          const reader = await whoAsks();
+          if (reader instanceof Response) return reader;
+          const responses = await responsesOf(d1, reader.id, token);
+          if (!responses) return fail("not-found", 404);
+          return ok({ responses });
+        },
+      });
+    }
+    return methods(request, {
+      POST: async () => {
+        const reader = await whoAsks();
+        if (reader instanceof Response) return reader;
+        const sent = await body(request);
+        const done = await closeSurvey(d1, reader.id, token, sent.open === true);
+        return done ? ok({}) : fail("not-found", 404);
       },
     });
   }

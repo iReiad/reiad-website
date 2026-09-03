@@ -159,6 +159,10 @@ const seed = (): Record<string, Row[]> => ({
   research_datasets: [],
   research_transforms: [],
   research_runs: [],
+  research_participants: [],
+  research_codes: [],
+  research_codings: [],
+  research_surveys: [],
   research_projects: [],
   research_collections: [],
   research_lists: [],
@@ -217,7 +221,7 @@ const PDF_KEY = `research/${"reader-1"}/${"c".repeat(64)}.pdf`;
 interface Sent { method: string; path: string; body: unknown }
 
 async function open(path: string, { signedIn = true }: { signedIn?: boolean } = {}): Promise<{
-  page: Page; errors: string[]; sent: Sent[]; rows: Record<string, Row[]>; asked: string[];
+  page: Page; errors: string[]; sent: Sent[]; rows: Record<string, Row[]>; asked: string[]; published: { token: string }[];
 }> {
   const page = await browser.newPage();
   const errors: string[] = [];
@@ -299,7 +303,11 @@ async function open(path: string, { signedIn = true }: { signedIn?: boolean } = 
           : table === "research_review_records" ? { database: "", search_id: null, stage: "found", reason: null, decided_at: null, source_id: null, extraction: {}, appraisal: {} }
           : table === "research_datasets" ? { project_id: null, source_id: null, files: [], dictionary: [], provenance: {}, licence: null, notes: null, rows: null, columns: null, hash: "", raw: false }
           : table === "research_transforms" ? { position: 0 }
-          : table === "research_runs" ? { dataset_id: null, project_id: null, label: "", input: {}, code: "", data_hash: "", output: {}, figure: null, ms: null } : {};
+          : table === "research_runs" ? { dataset_id: null, project_id: null, label: "", input: {}, code: "", data_hash: "", output: {}, figure: null, ms: null }
+          : table === "research_participants" ? { project_id: null, role: "", consent: {}, sealed: null, notes: null }
+          : table === "research_codes" ? { project_id: null, parent_id: null, definition: "", colour: "green", position: 0 }
+          : table === "research_codings" ? { source_id: null, participant_id: null, segment: 0, start_at: 0, end_at: 0, text: "", translation: null, memo: null }
+          : table === "research_surveys" ? { project_id: null, questions: [], intro: "", open: false } : {};
         const row: Row = { ...defaults, ...p, id: `${table.replace("research_", "")}-${made}-new`, user_id: ME, created_at: now, updated_at: now };
         held.unshift(row);
         return row;
@@ -325,6 +333,7 @@ async function open(path: string, { signedIn = true }: { signedIn?: boolean } = 
   });
 
   const looked: string[] = [];
+  const published: { token: string }[] = [];
   const stored = new Map<string, { bytes: Buffer; type: string }>();
   const searched: string[] = [];
   const alerts: string[] = [];
@@ -362,6 +371,18 @@ async function open(path: string, { signedIn = true }: { signedIn?: boolean } = 
       if (held) return r.fulfill({ status: 200, contentType: held.type, body: held.bytes });
       return r.fulfill({ status: 200, contentType: "application/pdf", body: Buffer.from(PDF) });
     }
+    if (u.pathname === "/api/research/transcribe") {
+      return answer({ ok: true, text: "We lost the aman crop. And the bank said no.", segments: [{ start: 0, end: 4, speaker: "", text: "We lost the aman crop." }, { start: 4, end: 8, speaker: "", text: "And the bank said no." }] });
+    }
+    if (u.pathname === "/api/research/survey" && r.request().method() === "PUT") {
+      const sent2 = r.request().postDataJSON() as { token: string };
+      published.push(sent2);
+      return answer({ ok: true, token: sent2.token, url: `/tools/research/survey/${sent2.token}` });
+    }
+    if (/^\/api\/research\/survey\/[a-f0-9]+\/responses$/.test(u.pathname)) {
+      return answer({ ok: true, responses: [{ answers: { q1: 4, q2: "Sylhet" }, at: "2026-09-03T00:00:00.000Z" }, { answers: { q1: 2, q2: "Khulna" }, at: "2026-09-03T01:00:00.000Z" }] });
+    }
+    if (u.pathname.startsWith("/api/research/survey/")) return answer({ ok: true });
     if (u.pathname.startsWith("/api/research/market/")) {
       const symbol = decodeURIComponent(u.pathname.slice("/api/research/market/".length));
       const bars = [101, 102.5, 101.8, 103.2, 104, 103.1].map((close, i) => ({ date: `2024-02-0${i + 1}`, open: close - 0.5, high: close + 1, low: close - 1, close, volume: 1000 + i }));
@@ -404,7 +425,7 @@ async function open(path: string, { signedIn = true }: { signedIn?: boolean } = 
 
   await page.goto(`http://localhost:${PORT}${path}`, { waitUntil: "load" });
   await page.waitForTimeout(900);
-  return { page, errors, sent, rows, asked };
+  return { page, errors, sent, rows, asked, published };
 }
 
 const bodyText = (page: Page): Promise<string> =>
@@ -1063,6 +1084,118 @@ for (const path of ["/tools/research", "/tools/research/library", "/tools/resear
   await page.waitForTimeout(2000);
   const market = posts(sent, "research_datasets").map(firstOf).find((d) => (d.provenance as { kind?: string })?.kind === "market") as { provenance?: { symbol?: string; importer?: string }; rows?: number; dictionary?: { name: string }[] } | undefined;
   ok("and saved it is a dataset with its provenance, its rows and canonical columns", market?.provenance?.symbol === "AAPL" && market.rows === 6 && market.dictionary?.map((c) => c.name).join(",") === "date,open,high,low,close,volume", JSON.stringify(market ?? null).slice(0, 200));
+  ok("and none of it threw", errors.length === 0, errors.join(" | "));
+  await page.close();
+}
+
+/* ============================================================
+   11. the field room: a participant by pseudonym with a name sealed
+       in the browser, a codebook with definitions, an interview
+       whose pasted transcript becomes segments, a coding made by
+       selecting words, retrieval and the matrices out of the rows,
+       a survey published to D1 and its answers collected, and the
+       interview guide's ticks
+   ============================================================ */
+
+{
+  const { page, errors, sent, published } = await open("/tools/research/field");
+  await page.waitForTimeout(500);
+  await page.locator("#rs-fp-pseudonym").fill("P07");
+  await page.locator("#rs-fp-role").fill("farmer");
+  await page.locator("#rs-fp-pseudonym").press("Enter");
+  await page.waitForTimeout(600);
+  const part = firstOf(posts(sent, "research_participants")[0]) as { pseudonym?: string; role?: string; consent?: { status?: string } };
+  ok("a participant is a pseudonym, a role and a pending consent", part.pseudonym === "P07" && part.role === "farmer" && part.consent?.status === "pending", JSON.stringify(part));
+  await page.locator("#rs-fp-pass").fill("orchard-lantern");
+  await page.locator("#rs-fp-identity").fill("Rahim Uddin, 01711 000000");
+  await page.getByRole("button", { name: /^Seal\b|সিল করুন/ }).click();
+  await page.waitForTimeout(1500);
+  const sealed = sent.filter((x) => x.method === "PATCH" && x.path.includes("research_participants")).map((x) => (x.body as { sealed?: string }).sealed).find((v) => typeof v === "string") ?? "";
+  ok("the name is sealed in the browser before it is stored: ciphertext, never the name", sealed.startsWith("v1.") && !sealed.includes("Rahim") && sealed.length > 60, sealed.slice(0, 40));
+  await page.getByRole("button", { name: /^Open\b|^খুলুন/ }).click();
+  await page.waitForTimeout(1500);
+  ok("and the passphrase opens it again", ((await page.locator('[data-testid="rs-fp-opened"]').textContent()) ?? "").includes("Rahim Uddin"));
+  await page.getByRole("button", { name: /3 Codebook|3 কোডবই/ }).click();
+  await page.waitForTimeout(300);
+  await page.locator("#rs-fc-name").fill("loss");
+  await page.locator("#rs-fc-def").fill("a harvest lost to weather");
+  await page.locator("#rs-fc-name").press("Enter");
+  await page.waitForTimeout(600);
+  await page.locator("#rs-fc-name").fill("credit");
+  await page.locator("#rs-fc-def").fill("borrowing after a shock");
+  await page.locator("#rs-fc-colour").selectOption("blue");
+  await page.locator("#rs-fc-name").press("Enter");
+  await page.waitForTimeout(600);
+  const codes = posts(sent, "research_codes").map(firstOf) as { name?: string; definition?: string; colour?: string }[];
+  ok("a code is made with its definition and a colour", codes.length === 2 && codes[0].name === "loss" && codes[0].definition === "a harvest lost to weather" && codes[1].colour === "blue", JSON.stringify(codes));
+  ok("and the codebook lists both", await page.locator('[data-testid="rs-codebook"] li').count() === 2);
+  await page.getByRole("button", { name: /2 Interviews|2 সাক্ষাৎকার/ }).click();
+  await page.waitForTimeout(300);
+  await page.locator("#rs-fi-title").fill("Interview 1");
+  await page.locator("#rs-fi-participant").selectOption({ label: "P07" });
+  await page.getByRole("button", { name: /Add an interview|সাক্ষাৎকার যোগ করুন/ }).click();
+  await page.waitForTimeout(800);
+  const interview = firstOf(posts(sent, "research_sources")[0]) as { type?: string; authors?: string; identifiers?: { participant?: string } };
+  ok("an interview is a source of type interview with the pseudonym as its author and the participant on it", interview.type === "interview" && interview.authors === "P07" && typeof interview.identifiers?.participant === "string", JSON.stringify(interview).slice(0, 200));
+  await page.locator("#rs-fi-paste").fill("[00:12] P07: We lost the aman crop.\n\n01:05 Interviewer: And the bank?\n\nP07: They said no.");
+  await page.getByRole("button", { name: /Keep as the transcript|ট্রান্সক্রিপ্ট হিসেবে রাখুন/ }).click();
+  await page.waitForTimeout(800);
+  const note = firstOf(posts(sent, "research_notes")[0]) as { kind?: string; meta?: { segments?: { start: number; speaker: string }[]; state?: string } };
+  ok("a pasted transcript is a note of kind transcript whose segments carry their times and speakers", note.kind === "transcript" && note.meta?.segments?.length === 3 && note.meta.segments[0].start === 12 && note.meta.segments[1].speaker === "Interviewer" && note.meta.state === "draft", JSON.stringify(note.meta).slice(0, 200));
+  ok("and it is drawn a segment a paragraph", await page.locator('[data-testid="rs-transcript"] [data-seg]').count() === 3);
+  await page.evaluate(() => {
+    const p = document.querySelector('[data-seg="0"]');
+    const walker = document.createTreeWalker(p!, NodeFilter.SHOW_TEXT);
+    let node = walker.nextNode() as Text | null;
+    while (node && !node.data.includes("aman crop")) node = walker.nextNode() as Text | null;
+    const at = node!.data.indexOf("aman crop");
+    const range = document.createRange();
+    range.setStart(node!, at); range.setEnd(node!, at + "aman crop".length);
+    const sel = window.getSelection()!; sel.removeAllRanges(); sel.addRange(range);
+  });
+  await page.locator('[data-seg="0"]').dispatchEvent("mouseup");
+  await page.waitForTimeout(200);
+  ok("selecting words in a segment offers them for coding", ((await page.locator('[data-testid="rs-selection"]').textContent()) ?? "").includes("aman crop"));
+  await page.locator('[data-testid="rs-code-strip"] button', { hasText: /loss$/ }).click();
+  await page.waitForTimeout(800);
+  const coding = firstOf(posts(sent, "research_codings")[0]) as { text?: string; segment?: number; start_at?: number; end_at?: number; participant_id?: string; source_id?: string };
+  ok("pressing a code makes a coding: offsets into the segment, the text, the participant and the interview", coding.text === "aman crop" && coding.segment === 0 && coding.start_at === 12 && coding.end_at === 21 && typeof coding.participant_id === "string" && typeof coding.source_id === "string", JSON.stringify(coding));
+  ok("and the words are underlined in the code's colour", await page.locator('[data-testid="rs-transcript"] mark').count() === 1 && ((await page.locator('[data-testid="rs-transcript"] mark').textContent()) ?? "") === "aman crop");
+  await page.getByRole("button", { name: /4 Retrieval|4 খুঁজে আনা/ }).click();
+  await page.waitForTimeout(300);
+  const retrieved = (await page.locator('[data-testid="rs-retrieval"]').textContent()) ?? "";
+  ok("retrieval lists the coded segment with the participant, the interview, the time and the code", retrieved.includes("P07") && retrieved.includes("Interview 1") && retrieved.includes("00:12") && retrieved.includes("loss") && retrieved.includes("aman crop"), retrieved.slice(0, 200));
+  await page.getByRole("button", { name: /5 Matrices|5 ছক/ }).click();
+  await page.waitForTimeout(300);
+  ok("the three matrices are drawn from the codings", await page.locator('[data-testid="rs-matrices"] table').count() === 3 && ((await page.locator('[data-testid="rs-matrices"]').textContent()) ?? "").includes("P07"));
+  await page.getByRole("button", { name: /6 Surveys|6 জরিপ/ }).click();
+  await page.waitForTimeout(300);
+  await page.getByRole("button", { name: /New survey|নতুন জরিপ/ }).click();
+  await page.waitForTimeout(600);
+  const survey = firstOf(posts(sent, "research_surveys")[0]) as { token?: string; open?: boolean };
+  ok("a survey is a row with an unguessable token, closed until published", /^[a-f0-9]{22}$/.test(survey.token ?? "") && survey.open === false, JSON.stringify(survey));
+  await page.locator("#rs-fs-title").fill("Farm credit after the flood");
+  await page.locator("#rs-fs-questions").fill("likert | I trust the bank* | আমি ব্যাংকে বিশ্বাস করি\nchoice | District | জেলা | Sylhet / সিলেট, Khulna");
+  await page.getByRole("button", { name: /^Publish\b|প্রকাশ করুন/ }).click();
+  await page.waitForTimeout(1200);
+  ok("publishing copies the questions to D1 through the Worker and opens it", published.length === 1 && published[0].token === survey.token && (published[0] as { questions?: unknown[]; open?: boolean }).questions?.length === 2 && (published[0] as { open?: boolean }).open === true, JSON.stringify(published[0]).slice(0, 200));
+  const link = (await page.locator('[data-testid="rs-fs-link"]').getAttribute("href")) ?? "";
+  ok("and the public link is the token's page", link.endsWith(`/tools/research/survey/${survey.token}`), link);
+  await page.getByRole("button", { name: /Collect the answers|উত্তর সংগ্রহ করুন/ }).click();
+  await page.waitForTimeout(800);
+  ok("the answers collect into a table, one row a response", await page.locator('[data-testid="rs-fs-responses"] tbody tr').count() === 2 && ((await page.locator('[data-testid="rs-fs-responses"]').textContent()) ?? "").includes("Sylhet"));
+  await page.getByRole("button", { name: /7 Interview guide|7 সাক্ষাৎকারের নির্দেশিকা/ }).click();
+  await page.waitForTimeout(300);
+  await page.locator("#rs-fg-questions").fill("How did the flood affect the harvest?\nDid you borrow afterwards?");
+  await page.getByRole("button", { name: /Save the guide|নির্দেশিকা রাখুন/ }).click();
+  await page.waitForTimeout(800);
+  const guide = posts(sent, "research_notes").map(firstOf).find((n) => (n as { meta?: { guide?: boolean } }).meta?.guide === true) as { meta?: { questions?: string[] } } | undefined;
+  ok("the interview guide is a note with its questions", guide?.meta?.questions?.length === 2, JSON.stringify(guide?.meta ?? null));
+  ok("drawn as a question by interview grid", await page.locator('[data-testid="rs-guide"] tbody tr').count() === 2);
+  await page.locator('[data-testid="rs-guide"] input[type="checkbox"]').first().click();
+  await page.waitForTimeout(800);
+  const asked = sent.filter((x) => x.method === "PATCH" && x.path.includes("research_notes")).map((x) => (x.body as { meta?: { asked?: Record<string, number[]> } }).meta?.asked).find(Boolean);
+  ok("and a tick says this question was put in that interview", asked !== undefined && Object.values(asked).some((v) => v.includes(0)), JSON.stringify(asked ?? null));
   ok("and none of it threw", errors.length === 0, errors.join(" | "));
   await page.close();
 }

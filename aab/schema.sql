@@ -294,3 +294,25 @@ CREATE TABLE IF NOT EXISTS research_alert_hits (
   json      TEXT NOT NULL,
   found_at  TEXT NOT NULL
 );
+
+-- A survey the field room published (RESEARCH.md section 15): the
+-- form a stranger's browser reads with no bearer, and the answers
+-- the throttled public endpoint writes, because the Worker cannot
+-- insert into Supabase as nobody. The owner collects them through
+-- a gated endpoint that checks the owner id.
+CREATE TABLE IF NOT EXISTS survey_forms (
+  token      TEXT PRIMARY KEY,
+  owner      TEXT NOT NULL,
+  title      TEXT NOT NULL,
+  intro      TEXT NOT NULL DEFAULT '',
+  questions  TEXT NOT NULL DEFAULT '[]',
+  open       INTEGER NOT NULL DEFAULT 1,
+  created_at TEXT NOT NULL
+);
+
+CREATE TABLE IF NOT EXISTS survey_responses (
+  id         INTEGER PRIMARY KEY AUTOINCREMENT,
+  token      TEXT NOT NULL,
+  answers    TEXT NOT NULL,
+  created_at TEXT NOT NULL
+);
