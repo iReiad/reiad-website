@@ -2382,8 +2382,10 @@ node next/research-studio.test.ts  # the Research Studio: the capture box
                                    # the real parser, a key the library holds
                                    # drawn as a chip and one it lacks struck
                                    # through, the answer kept as a note with
-                                   # its cost, the index and the RPC
-                                   # (236 checks, needs the Next build and a
+                                   # its cost, the index and the RPC; and the
+                                   # methods room: twelve lessons by kind, a
+                                   # written one a link to its piece
+                                   # (246 checks, needs the Next build and a
                                    # browser, skips without)
 node next/progress.test.ts         # a page that costs a reader their ticks just
                                    # by being read, where in a piece they had

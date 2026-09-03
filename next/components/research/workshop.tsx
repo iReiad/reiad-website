@@ -31,8 +31,9 @@ import {
 } from "../../lib/research-api";
 import { makeEngine } from "../../lib/cite";
 import { RESEARCH_TOOLS, researchTool } from "../../lib/research-tools";
+import { methodsFor } from "../../lib/research-methods";
 import { Button, ButtonLink } from "../ui/button";
-import { Chip, ChipButton } from "../ui/chip";
+import { Chip, ChipButton, ChipLink } from "../ui/chip";
 import { Field, Select, TextArea } from "../ui/field";
 import { Surface } from "../ui/surface";
 import { cue } from "../../lib/sound";
@@ -76,6 +77,12 @@ function ToolPage({ slug }: { slug: string }) {
         <ButtonLink href="/tools/research/tools" kind="ghost" size="sm"><W k="rs.ws.all" /></ButtonLink>
       </div>
       <p className="text-t1 text-ink-soft">{t.dek[lang]}</p>
+      {methodsFor({ tool: slug }).length ? (
+        <p className="flex flex-wrap items-center gap-2 text-t1 text-ink-soft" data-testid="rs-tool-methods">
+          <W k="rs.me.howto" />
+          {methodsFor({ tool: slug }).map((m) => <ChipLink key={m.slug} href={`/tools/research/methods#${m.slug}`}>{m.title[lang]}</ChipLink>)}
+        </p>
+      ) : null}
       {Body ? (t.needsAccount ? <NeedsAccount><Body /></NeedsAccount> : <Body />) : <p className="text-t2 text-ink-soft"><W k="rs.ws.missing" /></p>}
     </div>
   );

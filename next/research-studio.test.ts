@@ -449,6 +449,15 @@ async function open(path: string, { signedIn = true }: { signedIn?: boolean } = 
     if (u.pathname.startsWith("/api/research/orcid/")) {
       return answer({ ok: true, works: [{ csl: { type: "article-journal", title: "Drought and credit", DOI: "10.1000/orcid.1", issued: { "date-parts": [[2024]] } }, doi: "10.1000/orcid.1", title: "Drought and credit", year: 2024, authors: "Carter", venue: "", type: "article-journal", abstract: "", url: null, oa: null, cited: 3, from: ["orcid"], openalex: null, hash: "h-orcid" }] });
     }
+    if (u.pathname === "/api/articles") {
+      /* The public list: one planned method written, one method
+         the table does not plan, and a piece that is not one. */
+      return answer({ ok: true, articles: [
+        { slug: "ols-and-robust-errors", title: "OLS and what the robust errors are for", dek: "A regression you can change.", tag: "method", topics: "quantitative|lab", lang: "en", minutes: 9, status: "live", section: "insights", cover: "", published_at: "2026-09-01", updated_at: "2026-09-01" },
+        { slug: "reading-a-regression-table", title: "Reading a regression table", dek: "Row by row.", tag: "Method", topics: "", lang: "en", minutes: 6, status: "live", section: "insights", cover: "", published_at: "2026-08-20", updated_at: "2026-08-20" },
+        { slug: "weather-and-farms", title: "Weather and farms", dek: "", tag: "Money", topics: "farm", lang: "en", minutes: 4, status: "live", section: "insights", cover: "", published_at: "2026-08-01", updated_at: "2026-08-01" },
+      ] });
+    }
     if (u.pathname === "/api/research/status") {
       return answer({ ok: true, services: { crossref: "on", openalex: "off", openlibrary: "on", assistant: "on", embed: "on" } });
     }
@@ -1403,6 +1412,40 @@ for (const path of ["/tools/research", "/tools/research/library", "/tools/resear
   ok("switched off, the room says so and the Ask button is gone", await page.locator('[data-testid="rs-ask-off"]').count() === 1 && await page.getByRole("button", { name: /^Ask\b|জিজ্ঞাসা করুন/ }).count() === 0);
   ok("and the choice is kept on the profile", sent.some((x) => x.method === "PATCH" && x.path.includes("profiles") && (x.body as { research_prefs?: { assistant?: boolean } })?.research_prefs?.assistant === false));
   ok("and none of it threw", errors.length === 0, errors.join(" | "));
+  await page.close();
+}
+
+/* ============================================================
+   14. the methods room: public, the twelve planned lessons by
+       kind, a written one a link to its piece and the rest
+       promised, a method the table does not plan listed too, and
+       the way to a method from a tool page and from a room's head
+   ============================================================ */
+
+{
+  const { page, errors } = await open("/tools/research/methods", { signedIn: false });
+  await page.waitForTimeout(500);
+  const room = page.locator('[data-testid="rs-methods"]');
+  ok("the methods room is public and lists the twelve planned lessons under six kinds", await room.locator("section .card").count() === 13 && await room.locator("h2").count() === 7 && await room.locator("#quantitative .card").count() === 4, `${await room.locator("section .card").count()} cards, ${await room.locator("h2").count()} headings`);
+  ok("a lesson written in the Studio with the tag method is a card that goes to the piece, anchored by its slug", await room.locator('a.card#ols-and-robust-errors[href="/insights/ols-and-robust-errors.html"]').count() === 1);
+  ok("and the eleven not yet written are promised rather than linked", await room.locator('.card[data-kind="soon"]').count() === 11 && await room.locator('.card[data-kind="soon"]#event-study-by-hand').count() === 1);
+  ok("a method piece the table does not plan is listed after them, and a piece that is not a method is not", await page.locator('[data-testid="rs-methods-more"] a.card[href="/insights/reading-a-regression-table.html"]').count() === 1 && await room.locator('a[href="/insights/weather-and-farms.html"]').count() === 0);
+  ok("and none of it threw", errors.length === 0, errors.join(" | "));
+  await page.close();
+}
+
+{
+  const { page, errors } = await open("/tools/research/tools/which-test", { signedIn: false });
+  ok("a tool page carries the way to its method", await page.locator('[data-testid="rs-tool-methods"] a[href="/tools/research/methods#ols-and-robust-errors"]').count() === 1);
+  ok("and threw nothing", errors.length === 0, errors.join(" | "));
+  await page.close();
+}
+
+{
+  const { page, errors } = await open("/tools/research/lab", { signedIn: false });
+  ok("a room's head carries its methods", await page.locator('[data-testid="rs-room-methods"] a[href="/tools/research/methods#event-study-by-hand"]').count() === 1 && await page.locator('[data-testid="rs-room-methods"] a').count() === 4);
+  ok("and a room with none carries no empty line", await page.locator('[data-testid="rs-room-methods"]').count() === 1);
+  ok("and threw nothing", errors.length === 0, errors.join(" | "));
   await page.close();
 }
 

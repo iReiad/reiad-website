@@ -56,6 +56,8 @@ type Common = {
   /** Anything under the blurb: a meter, a list, a set of facts. */
   children?: ReactNode;
   className?: string;
+  /** An anchor, for a card a page links to by name. */
+  id?: string;
 };
 
 const style = (accent?: string) =>
@@ -111,7 +113,7 @@ export function GoCard({
           the arrow already draw is drawn once more by the one
           thing a pointer can test without clicking. */
        data-glow="card"
-       href={href} lang={rest.lang} style={style(rest.accent)}>
+       id={rest.id} href={href} lang={rest.lang} style={style(rest.accent)}>
       {done ? <span className="card-tick" aria-label="পড়া হয়েছে">✓</span> : null}
       <Inside {...rest} />
       <span className="card-go">{go}</span>
@@ -133,7 +135,7 @@ export function InfoCard({ fill, ...props }: Common & { fill?: boolean }) {
     <div className={["card", (props.art || props.cover) ? "card-banded" : null, props.className]
            .filter(Boolean).join(" ")}
          data-kind="info" data-fill={fill ? "" : undefined}
-         lang={props.lang} style={style(props.accent)}>
+         id={props.id} lang={props.lang} style={style(props.accent)}>
       <Inside {...props} />
     </div>
   );
@@ -145,7 +147,7 @@ export function InfoCard({ fill, ...props }: Common & { fill?: boolean }) {
 export function SoonCard({ soon = "আসছে", ...props }: Common & { soon?: ReactNode }) {
   return (
     <div className={["card", props.className].filter(Boolean).join(" ")}
-         data-kind="soon" lang={props.lang} style={style(props.accent)}>
+         data-kind="soon" id={props.id} lang={props.lang} style={style(props.accent)}>
       <Inside {...props} chip={props.chip ?? soon} />
     </div>
   );

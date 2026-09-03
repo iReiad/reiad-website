@@ -17,6 +17,9 @@ import { toneVar } from "@reiad/shared/research";
 import { LangSwitch, T, TBlock } from "./lang";
 import { ResearchStrip } from "./strip";
 import { RESEARCH_TONE, researchPage } from "../../lib/research-pages";
+import { methodsFor } from "../../lib/research-methods";
+import { ChipLink } from "../ui/chip";
+import { W } from "./lang";
 
 export function ResearchFrame({ href, title, lede, children, wide }: {
   href?: string;
@@ -30,6 +33,7 @@ export function ResearchFrame({ href, title, lede, children, wide }: {
   const page = href ? researchPage(href) : undefined;
   const head = page ? page.title : title;
   const say = lede ?? page?.dek;
+  const methods = page ? methodsFor({ room: page.key }) : [];
   return (
     <main
       id="main"
@@ -46,6 +50,12 @@ export function ResearchFrame({ href, title, lede, children, wide }: {
             en={<p className="dt-lede">{say.en}</p>}
             bn={<p className="dt-lede">{say.bn}</p>}
           />
+        ) : null}
+        {methods.length ? (
+          <p className="flex flex-wrap items-center gap-2 text-t1 text-ink-soft" data-testid="rs-room-methods">
+            <W k="rs.me.howto" />
+            {methods.map((m) => <ChipLink key={m.slug} href={`/tools/research/methods#${m.slug}`}><T en={m.title.en} bn={m.title.bn} /></ChipLink>)}
+          </p>
         ) : null}
       </header>
       <ResearchStrip />

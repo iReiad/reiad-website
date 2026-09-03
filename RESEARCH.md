@@ -2589,6 +2589,24 @@ picked by task rather than one model with an effort knob, the
 reading room's own "ask about this source" door, and insert at
 the caret rather than copy.
 
+**Stage 12 landed the same day, in its first form.** What it does:
+`/tools/research/methods` is a public room over pieces: the
+twelve lessons section 20 names first are a table in
+`next/lib/research-methods.ts`, by kind, each naming the
+workshop tools and the rooms it is the "how to" for, and
+`next/components/research/methods.tsx` draws them as cards
+and asks the public articles list which have been written. A
+piece with the tag `method` (or the topic) whose slug matches is
+a card that goes to it, with its cover and its minutes; one not
+yet written is promised rather than linked; a method piece the
+table does not plan is listed after them. A tool page and a
+room's head link the methods behind them by slug, and every card
+carries its slug as an anchor. `check-research.ts` fails on a
+method naming a tool or a room that does not exist. Not yet from
+section 20: the twelve pieces themselves, which are written in
+the Article Studio like every other piece and appear here the
+moment they are live.
+
 **Stage 1 is a week of work and the studio is used from its end.**
 Stages 2 to 5 are the next month, and at the end of stage 5 the
 studio does everything the old desk did and everything a reference

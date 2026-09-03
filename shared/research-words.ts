@@ -944,6 +944,20 @@ export const RESEARCH_WORDS: Record<string, Phrase> = {
   "rs.set.assistant.hint": { en: "Off until switched on here. The Worker's key is what makes it possible at all, and every answer is a note with its cost on it.", bn: "এখানে চালু না করা পর্যন্ত বন্ধ। ওয়ার্কারের চাবিই এটা সম্ভব করে, আর প্রতিটি উত্তর একটা নোট, তার খরচসহ।" },
   "rs.set.assistant.month": { en: "Spent this month", bn: "এই মাসে খরচ" },
   "rs.board.passages": { en: "Nearest passages", bn: "কাছের অংশ" },
+
+  /* ---- the methods room (section 20) ---- */
+  "rs.me.hint": { en: "A method is a lesson: how to do a thing, with a worked example, written in the Studio with the tag method and listed here by kind. A card that is not yet a link is a lesson still to write.", bn: "পদ্ধতি মানে একটা পাঠ: কীভাবে একটা কাজ করতে হয়, উদাহরণসহ, স্টুডিওতে method ট্যাগ দিয়ে লেখা আর এখানে ধরন অনুযায়ী সাজানো। যে কার্ড এখনও লিংক নয়, সেটা এখনও লেখা বাকি পাঠ।" },
+  "rs.me.offline": { en: "The list of written methods could not be read; the planned ones are shown.", bn: "লেখা পদ্ধতির তালিকা পড়া যায়নি; পরিকল্পিতগুলো দেখানো হচ্ছে।" },
+  "rs.me.kind.finding": { en: "Finding", bn: "খোঁজা" },
+  "rs.me.kind.reading": { en: "Reading", bn: "পড়া" },
+  "rs.me.kind.quantitative": { en: "Quantitative", bn: "পরিমাণগত" },
+  "rs.me.kind.qualitative": { en: "Qualitative", bn: "গুণগত" },
+  "rs.me.kind.writing": { en: "Writing", bn: "লেখা" },
+  "rs.me.kind.citing": { en: "Citing", bn: "উদ্ধৃতি" },
+  "rs.me.planned": { en: "To write", bn: "লেখা বাকি" },
+  "rs.me.read": { en: "Read", bn: "পড়ুন" },
+  "rs.me.more": { en: "More methods", bn: "আরও পদ্ধতি" },
+  "rs.me.howto": { en: "How to:", bn: "কীভাবে:" },
 };
 
 /** One phrase, or a loud marker for a key nobody wrote. */

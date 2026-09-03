@@ -43,6 +43,8 @@ import { existsSync, readFileSync, readdirSync, statSync } from "node:fs";
 import { dirname, join, relative } from "node:path";
 import { fileURLToPath } from "node:url";
 import { RESEARCH_PAGES } from "../next/lib/research-pages.ts";
+import { RESEARCH_TOOLS } from "../next/lib/research-tools.ts";
+import { METHOD_KINDS, RESEARCH_METHODS } from "../next/lib/research-methods.ts";
 import {
   HIGHLIGHT_MEANINGS, NOTE_KINDS, PROJECT_KINDS, PROJECT_STATES, QUESTION_KINDS, QUESTION_STATES, SOURCE_STATUSES,
   SOURCE_TYPE_IDS, SOURCE_VIAS, TASK_LANES, TONES,
@@ -272,4 +274,20 @@ if (bad) {
   console.error(`\nresearch: ${bad} problem(s).`);
   process.exit(1);
 }
+/* ---- the methods table names real tools and rooms ---- */
+{
+  const tools = new Set(RESEARCH_TOOLS.map((t) => t.slug));
+  const keys = new Set(RESEARCH_PAGES.map((p) => p.key));
+  const seen = new Set<string>();
+  for (const m of RESEARCH_METHODS) {
+    if (seen.has(m.slug)) fail(`RESEARCH_METHODS lists ${m.slug} twice`, "One card a method.");
+    seen.add(m.slug);
+    if (!/^[a-z0-9-]+$/.test(m.slug)) fail(`method slug ${m.slug} cannot be a piece's slug`, "Lowercase letters, digits and hyphens.");
+    if (!METHOD_KINDS.includes(m.kind)) fail(`method ${m.slug} has the kind ${m.kind}, which is not one`, `One of ${METHOD_KINDS.join(", ")}.`);
+    for (const t of m.tools ?? []) if (!tools.has(t)) fail(`method ${m.slug} names the tool ${t}, which the workshop does not have`, "A slug from next/lib/research-tools.ts.");
+    for (const r of m.rooms ?? []) if (!keys.has(r)) fail(`method ${m.slug} names the room ${r}, which the pages table does not have`, "A key from next/lib/research-pages.ts.");
+    if (!m.title.en || !m.title.bn || !m.dek.en || !m.dek.bn) fail(`method ${m.slug} is missing a language`, "Both languages, always.");
+  }
+}
+
 console.log(`research: ${RESEARCH_PAGES.length} rooms routed, ${Object.keys(RESEARCH_WORDS).length} phrases in both languages, every vocabulary the migration's, the desk gone.`);
