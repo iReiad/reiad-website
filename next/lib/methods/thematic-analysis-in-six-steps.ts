@@ -24,8 +24,8 @@ export const LESSON: MethodLesson = {
 <li><strong>Generating initial codes.</strong> Work through the data, giving a short label to anything interesting or relevant. Code inclusively: a passage can carry more than one code, and a pattern never labelled cannot be found again.</li>
 <li><strong>Searching for themes.</strong> Gather the codes into candidate groups by sorting: lay them out and ask which point at the same underlying idea. A candidate theme here is a working hypothesis, and it is normal for half to fall apart at the next step.</li>
 <li><strong>Reviewing themes.</strong> Check each candidate two ways: against its own coded extracts, asking whether they cohere, and against the whole data set, asking whether the theme fits it as a whole or only the passages pulled out. A theme that survives both is kept, refined, split, or merged; one that survives neither is dropped.</li>
-<li><strong>Defining and naming themes.</strong> Write, for each surviving theme, what it is, what it is not, and how it relates to the others. A theme you cannot define in two or three sentences is still a bundle of codes waiting for the argument that ties them together.</li>
-<li><strong>Writing up.</strong> Choose extracts that carry the theme clearly, and write the analytic narrative around them rather than letting a wall of quotations stand in for it. Every extract should show the theme, not merely mention the topic.</li>
+<li><strong>Defining and naming themes.</strong> Write, for each surviving theme, what it is, what it is not, and how it relates to the others. A theme you cannot define in two or three sentences is still a bundle of codes waiting for its argument.</li>
+<li><strong>Writing up.</strong> Choose extracts that carry the theme clearly, and write the analytic narrative around them rather than letting quotations stand in for it. Every extract should show the theme, not merely mention the topic.</li>
 </ol>
 
 <h2>Inductive against deductive</h2>
@@ -80,7 +80,7 @@ export const LESSON: MethodLesson = {
 <li><strong>প্রথম দফায় কোড করা।</strong> তথ্যের ভেতর দিয়ে এগোন, যা কিছু আগ্রহের বা প্রাসঙ্গিক মনে হয় তাতে ছোট লেবেল দিন। খোলা মনে কোড করুন: একটা অংশে একাধিক কোড থাকতে পারে, আর লেবেল না দেওয়া ধরন পরে খুঁজে পাওয়া যাবে না।</li>
 <li><strong>বিষয় খোঁজা।</strong> কোডগুলোকে সম্ভাব্য দলে জড়ো করুন, সাজিয়ে: কোনগুলো একই অন্তর্নিহিত ভাবনার দিকে ইঙ্গিত করছে তা দেখুন। এই ধাপের প্রার্থী বিষয় একটা অনুমান, ফলাফল নয়, আর অর্ধেক পরের ধাপে ভেঙে পড়াটা স্বাভাবিক।</li>
 <li><strong>বিষয় যাচাই করা।</strong> প্রতিটা প্রার্থীকে দুইভাবে পরীক্ষা করুন: নিজের কোড করা অংশের বিপরীতে মিলে যায় কি না দেখে, আর পুরো তথ্যের বিপরীতে শুধু বেছে নেওয়া অংশ নয় পুরোটার সঙ্গে মিলছে কি না দেখে। দুই পরীক্ষাতেই টিকলে রাখা হয়, ধারালো বা ভাগ বা মেশানো হয়; না টিকলে বাদ যায়।</li>
-<li><strong>বিষয় সংজ্ঞায়িত করে নাম দেওয়া।</strong> টিকে থাকা প্রতিটার জন্য লিখুন এটা কী, কী নয়, আর অন্যগুলোর সঙ্গে সম্পর্ক কী। দুই-তিন বাক্যে সংজ্ঞায়িত করতে না পারলে এটা এখনো কোডের একটা গোছা, জোড়া দেওয়ার যুক্তির অপেক্ষায়।</li>
+<li><strong>বিষয় সংজ্ঞায়িত করে নাম দেওয়া।</strong> টিকে থাকা প্রতিটার জন্য লিখুন এটা কী, কী নয়, আর অন্যগুলোর সঙ্গে সম্পর্ক কী। দুই-তিন বাক্যে সংজ্ঞায়িত করতে না পারলে এটা এখনো কোডের একটা গোছা, নিজের যুক্তির অপেক্ষায়।</li>
 <li><strong>লিখে ফেলা।</strong> এমন অংশ বেছে নিন যা বিষয়টা স্পষ্ট বহন করে, আর তার চারপাশে বিশ্লেষণী বর্ণনা লিখুন, উদ্ধৃতির দেয়াল দিয়ে যুক্তির জায়গা পূরণ করবেন না। প্রতিটা অংশ বিষয়টা দেখাবে, শুধু প্রসঙ্গের উল্লেখ নয়।</li>
 </ol>
 
