@@ -4,7 +4,7 @@ export const LESSON: MethodLesson = {
   slug: "thematic-analysis-in-six-steps",
   minutes: 5,
   en: `<div class="at-a-glance"><p class="at-a-glance-label">At a glance</p><ul>
-<li>Braun and Clarke's six phases: familiarising, initial coding, searching for themes, reviewing themes, defining and naming themes, writing up.</li>
+<li>Braun and Clarke's six phases: familiarising, initial coding, searching for themes, reviewing, defining and naming themes, writing up.</li>
 <li>A code is a short label on a passage. A theme is a pattern of meaning across many codes, built by you, not sitting in the data waiting to be found.</li>
 <li>Inductive work lets codes come from what people said. Deductive work starts from a framework and looks for it. Say which one you did.</li>
 <li>Reflexive means the analysis is yours: another careful reader could code the same transcripts and reach a different, equally defensible set of themes.</li>
@@ -81,7 +81,7 @@ export const LESSON: MethodLesson = {
 <li><strong>বিষয় খোঁজা।</strong> কোডগুলোকে সম্ভাব্য দলে জড়ো করুন, সাজিয়ে: কোনগুলো একই অন্তর্নিহিত ভাবনার দিকে ইঙ্গিত করছে তা দেখুন। এই ধাপের প্রার্থী বিষয় একটা অনুমান, ফলাফল নয়, আর অর্ধেক পরের ধাপে ভেঙে পড়াটা স্বাভাবিক।</li>
 <li><strong>বিষয় যাচাই করা।</strong> প্রতিটা প্রার্থীকে দুইভাবে পরীক্ষা করুন: নিজের কোড করা অংশের বিপরীতে মিলে যায় কি না দেখে, আর পুরো তথ্যের বিপরীতে শুধু বেছে নেওয়া অংশ নয় পুরোটার সঙ্গে মিলছে কি না দেখে। দুই পরীক্ষাতেই টিকলে রাখা হয়, ধারালো বা ভাগ বা মেশানো হয়; না টিকলে বাদ যায়।</li>
 <li><strong>বিষয় সংজ্ঞায়িত করে নাম দেওয়া।</strong> টিকে থাকা প্রতিটার জন্য লিখুন এটা কী, কী নয়, আর অন্যগুলোর সঙ্গে সম্পর্ক কী। দুই-তিন বাক্যে সংজ্ঞায়িত করতে না পারলে এটা এখনো কোডের একটা গোছা, নিজের যুক্তির অপেক্ষায়।</li>
-<li><strong>লিখে ফেলা।</strong> এমন অংশ বেছে নিন যা বিষয়টা স্পষ্ট বহন করে, আর তার চারপাশে বিশ্লেষণী বর্ণনা লিখুন, উদ্ধৃতির দেয়াল দিয়ে যুক্তির জায়গা পূরণ করবেন না। প্রতিটা অংশ বিষয়টা দেখাবে, শুধু প্রসঙ্গের উল্লেখ নয়।</li>
+<li><strong>লিখে ফেলা।</strong> এমন অংশ বেছে নিন যা বিষয়টা স্পষ্ট বহন করে, আর তার চারপাশে বিশ্লেষণী বর্ণনা লিখুন, উদ্ধৃতির দেয়াল দিয়ে যুক্তির জায়গা পূরণ করবেন না। প্রতিটা অংশ বিষয়টা দেখাবে, প্রসঙ্গের উল্লেখ নয়।</li>
 </ol>
 
 <h2>ইনডাক্টিভ বনাম ডিডাক্টিভ</h2>
