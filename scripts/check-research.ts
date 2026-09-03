@@ -48,6 +48,8 @@ import {
   SOURCE_TYPE_IDS, SOURCE_VIAS, TASK_LANES, TONES,
 } from "../shared/research.ts";
 import { EVENT_KINDS } from "../shared/research-plan.ts";
+import { PEOPLE_ROLES } from "../shared/research-plan.ts";
+import { RECORD_STAGES, REVIEW_KINDS, REVIEW_STATES } from "../shared/research-review.ts";
 import { RESEARCH_WORDS } from "../shared/research-words.ts";
 
 const ROOT = join(dirname(fileURLToPath(import.meta.url)), "..");
@@ -201,6 +203,10 @@ for (const s of ["doi", "isbn", "url", "bib", "todo", "note", "dup", "fail"]) if
   same("PROJECT_KINDS", "research_projects", "kind", PROJECT_KINDS);
   same("HIGHLIGHT_MEANINGS", "research_highlights", "meaning", HIGHLIGHT_MEANINGS);
   same("EVENT_KINDS", "research_events", "kind", EVENT_KINDS);
+  same("PEOPLE_ROLES", "research_people", "role", PEOPLE_ROLES);
+  same("REVIEW_KINDS", "research_reviews", "kind", REVIEW_KINDS);
+  same("REVIEW_STATES", "research_reviews", "state", REVIEW_STATES);
+  same("RECORD_STAGES", "research_review_records", "stage", RECORD_STAGES);
   same("DOCUMENT_KINDS", "research_documents", "kind", ["chapter", "paper", "proposal", "abstract", "letter", "other"]);
   same("PROJECT_STATES", "research_projects", "state", PROJECT_STATES);
   same("TONES", "research_projects", "tone", TONES);

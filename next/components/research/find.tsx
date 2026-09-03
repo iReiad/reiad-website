@@ -30,8 +30,8 @@ import { SignedOut } from "./signed-out";
 import { useWho, when } from "./use-who";
 import { useKeys } from "./keys";
 
-const DATABASES = ["openalex", "crossref", "semanticscholar", "arxiv", "europepmc", "core", "doaj"] as const;
-const DB_NAMES: Record<string, string> = {
+export const DATABASES = ["openalex", "crossref", "semanticscholar", "arxiv", "europepmc", "core", "doaj"] as const;
+export const DB_NAMES: Record<string, string> = {
   openalex: "OpenAlex", crossref: "Crossref", semanticscholar: "Semantic Scholar", arxiv: "arXiv",
   europepmc: "Europe PMC", core: "CORE", doaj: "DOAJ",
 };

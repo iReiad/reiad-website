@@ -74,7 +74,7 @@ import {
 import type { FilesEnv } from "../../_lib/files.ts";
 import type { Reader } from "../../_lib/reader.ts";
 import { FILE_CAP, FILE_QUOTA, extOfName } from "../../../shared/research.ts";
-import { related, searchAll, unpaywall } from "../../_lib/scholar-search.ts";
+import { orcidWorks, related, searchAll, unpaywall } from "../../_lib/scholar-search.ts";
 import type { SearchQuery } from "../../_lib/scholar-search.ts";
 import { db } from "../../_lib/db.ts";
 import type { ResearchAlertHitRow, ResearchCalendarRow } from "../../../shared/rows.ts";
@@ -211,6 +211,19 @@ export async function onRequest(
         const found = await related(env, doi);
         if (!found) return fail("not-found", 404);
         return ok(found);
+      },
+    });
+  }
+
+  if (head === "orcid") {
+    const id = route[1] ?? "";
+    return methods(request, {
+      GET: async () => {
+        const reader = await whoAsks();
+        if (reader instanceof Response) return reader;
+        const works = await orcidWorks(env, id);
+        if (!works) return fail("not-found", 404);
+        return ok({ works });
       },
     });
   }

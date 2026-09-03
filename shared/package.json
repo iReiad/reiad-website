@@ -33,6 +33,8 @@
     "./research-words": "./research-words.ts",
     "./research-write": "./research-write.ts",
     "./research-plan": "./research-plan.ts",
+    "./research-graph": "./research-graph.ts",
+    "./research-review": "./research-review.ts",
     "./csl": "./csl/index.ts",
     "./csl/*": "./csl/*.ts"
   }

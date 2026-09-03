@@ -59,6 +59,20 @@ export interface EventBody {
   url?: string;
 }
 
+/** Who a person is to the project. A CHECK constraint on
+    research_people that scripts/check-research.ts holds this to. */
+export const PEOPLE_ROLES = ["supervisor", "author", "examiner", "gatekeeper", "colleague", "other"] as const;
+export type PersonRole = typeof PEOPLE_ROLES[number];
+
+export const PEOPLE_ROLE_NAMES: Record<PersonRole, Word> = {
+  supervisor: { en: "Supervisor", bn: "সুপারভাইজার" },
+  author: { en: "Author", bn: "লেখক" },
+  examiner: { en: "Examiner", bn: "পরীক্ষক" },
+  gatekeeper: { en: "Gatekeeper", bn: "দ্বাররক্ষী" },
+  colleague: { en: "Colleague", bn: "সহকর্মী" },
+  other: { en: "Other", bn: "অন্য" },
+};
+
 /** Twenty-five minutes, the default session, and the bell at its
     end is the `stage` cue at low gain. */
 export const SESSION_MINUTES = 25;

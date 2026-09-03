@@ -7,7 +7,7 @@ There are three renderers of this site now: the Worker in
 Next.js route in `next/`. Anything all of them must say the same
 way lives here, and nowhere else.
 
-Today that is twenty-six files and two directories, and
+Today that is twenty-eight files and two directories, and
 `check-types.ts` fails if one of them is not described below.
 That check exists because this line said six while nine were
 here: `nav.ts` and `routine.ts` arrived in two changes that had
@@ -141,6 +141,12 @@ this repository got written.
   counts in both scripts, Markdown and LaTeX out, the claims audit
   and the self-overlap check, every one pure so the research test
   holds it. RESEARCH.md section 16.
+- **`research-review.ts`** the review room's stages, frames and
+  appraisal templates, and PRISMA 2020 derived from the records by
+  stage and reason. RESEARCH.md section 13.
+- **`research-graph.ts`** the atlas's arithmetic: a deterministic
+  force layout for the graph, the argument map and the gap matrix
+  as cells, the literature timeline as dots. RESEARCH.md 8 and 18.
 - **`research-plan.ts`** the planner's kinds of event and states of
   a submission, the week's boundaries, and an iCalendar file written
   out of a list of events for a calendar that reads the studio's

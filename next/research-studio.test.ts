@@ -139,7 +139,10 @@ const seed = (): Record<string, Row[]> => ({
   ],
   research_notes: [],
   research_tasks: [],
-  research_questions: [],
+  research_questions: [
+    { id: "q-1", user_id: ME, project_id: null, parent_id: null, kind: "question", text: "Do weather shocks lower farm income?", state: "open", tags: [], position: 0,
+      body: { evidence: [{ source_id: "s-1", stance: "supports", page: "3" }, { source_id: "s-2", stance: "context" }] }, created_at: ago(4), updated_at: ago(4) },
+  ],
   research_activity: [],
   research_highlights: [],
   research_searches: [],
@@ -147,6 +150,9 @@ const seed = (): Record<string, Row[]> => ({
   research_versions: [],
   research_events: [],
   research_sessions: [],
+  research_people: [],
+  research_reviews: [],
+  research_review_records: [],
   research_projects: [],
   research_collections: [],
   research_lists: [],
@@ -256,7 +262,7 @@ async function open(path: string, { signedIn = true }: { signedIn?: boolean } = 
 
     if (method === "GET") {
       let out = held.filter((row) => row.user_id === ME);
-      for (const k of ["id", "doi", "isbn", "kind", "lane", "status", "type", "source_id", "day"]) {
+      for (const k of ["id", "doi", "isbn", "hash", "kind", "lane", "status", "type", "source_id", "review_id", "day"]) {
         const want = eq(k);
         if (want !== null) out = out.filter((row) => String(row[k]) === want);
       }
@@ -282,7 +288,9 @@ async function open(path: string, { signedIn = true }: { signedIn?: boolean } = 
         const now = new Date().toISOString();
         /* What Postgres fills in: the one default a page reads back. */
         const defaults = table === "research_sources" ? { status: "unread", priority: 0, files: [], tags: [], projects: [], collections: [] }
-          : table === "research_documents" ? { position: 0, outline: [], body: "<p></p>", text: "", budget: null, style: "apa", state: "outline", meta: {}, deleted_at: null } : {};
+          : table === "research_documents" ? { position: 0, outline: [], body: "<p></p>", text: "", budget: null, style: "apa", state: "outline", meta: {}, deleted_at: null }
+          : table === "research_reviews" ? { project_id: null, protocol: {}, state: "protocol" }
+          : table === "research_review_records" ? { database: "", search_id: null, stage: "found", reason: null, decided_at: null, source_id: null, extraction: {}, appraisal: {} } : {};
         const row: Row = { ...defaults, ...p, id: `${table.replace("research_", "")}-${made}-new`, user_id: ME, created_at: now, updated_at: now };
         held.unshift(row);
         return row;
@@ -350,6 +358,9 @@ async function open(path: string, { signedIn = true }: { signedIn?: boolean } = 
     if (u.pathname === "/api/research/alerts/hits") return answer({ ok: true, hits: [] });
     if (u.pathname === "/api/research/calendar") { calendar.push(r.request().postDataJSON() as { ics: string }); return answer({ ok: true, token: "t".repeat(48), url: `/api/research/ics/${"t".repeat(48)}` }); }
     if (u.pathname.startsWith("/api/research/alerts")) { alerts.push(`${r.request().method()} ${u.pathname}`); return answer({ ok: true, id: "x" }); }
+    if (u.pathname.startsWith("/api/research/orcid/")) {
+      return answer({ ok: true, works: [{ csl: { type: "article-journal", title: "Drought and credit", DOI: "10.1000/orcid.1", issued: { "date-parts": [[2024]] } }, doi: "10.1000/orcid.1", title: "Drought and credit", year: 2024, authors: "Carter", venue: "", type: "article-journal", abstract: "", url: null, oa: null, cited: 3, from: ["orcid"], openalex: null, hash: "h-orcid" }] });
+    }
     if (u.pathname === "/api/research/status") {
       return answer({ ok: true, services: { crossref: "on", openalex: "off", openlibrary: "on" } });
     }
@@ -378,7 +389,7 @@ const firstOf = (s: Sent | undefined): Record<string, unknown> =>
    1. signed out, a room invites rather than blanks
    ============================================================ */
 
-for (const path of ["/tools/research", "/tools/research/library", "/tools/research/read", "/tools/research/find", "/tools/research/write", "/tools/research/plan"]) {
+for (const path of ["/tools/research", "/tools/research/library", "/tools/research/read", "/tools/research/find", "/tools/research/write", "/tools/research/plan", "/tools/research/atlas"]) {
   const { page, errors } = await open(path, { signedIn: false });
   const words = await bodyText(page);
   ok(`${path} signed out says whose it is`, words.includes("This is yours"), words.slice(0, 200));
@@ -783,6 +794,147 @@ for (const path of ["/tools/research", "/tools/research/library", "/tools/resear
   ok("stopping ends the row with the note", sent.some((x) => x.method === "PATCH" && x.path.includes("research_sessions") && (x.body as { ended?: string; note?: string }).ended && (x.body as { note?: string }).note === "Reproduced table 3"));
   const day = firstOf(posts(sent, "research_notes").slice(-1)[0]) as { kind?: string; text?: string; day?: string };
   ok("and writes a line to today's daily note, made if there was none", day.kind === "daily" && /Reproduced table 3/.test(day.text ?? "") && day.day === new Date().toISOString().slice(0, 10), JSON.stringify(day));
+  ok("and none of it threw", errors.length === 0, errors.join(" | "));
+  await page.close();
+}
+
+/* ============================================================
+   8. questions and the atlas: the map, the gaps, a graph, a person
+   ============================================================ */
+
+{
+  const { page, errors, sent } = await open("/tools/research/questions");
+  await page.getByRole("button", { name: /Argument map|যুক্তির মানচিত্র/ }).click();
+  await page.waitForTimeout(300);
+  ok("the argument map is questions by sources with a mark for each stance",
+    await page.locator('[data-testid="rs-argmap"] tbody tr').count() === 1 && await page.locator('[data-testid="rs-argmap"] tbody .rs-row-dot').count() === 2,
+    `${await page.locator('[data-testid="rs-argmap"] tbody .rs-row-dot').count()} mark(s)`);
+  await page.getByRole("button", { name: /Gap matrix|ফাঁকের ছক/ }).click();
+  await page.waitForTimeout(300);
+  const gapsText = await page.locator(".rs-page").textContent() ?? "";
+  ok("the gap matrix is tags by sources and counts the empty cells", await page.locator('[data-testid="rs-gaps"] tbody tr').count() === 3 && /3 (gaps|ফাঁক)/.test(gapsText), gapsText.slice(0, 200));
+  await page.getByRole("button", { name: /Variables|চলক/ }).first().click();
+  await page.waitForTimeout(300);
+  await page.locator("#rs-v-name").fill("Herding");
+  await page.locator("#rs-v-measure").fill("CSAD");
+  await page.locator("#rs-v-name").press("Enter");
+  await page.waitForTimeout(600);
+  const v = firstOf(posts(sent, "research_questions")[0]);
+  ok("a variable is a question row of kind variable", v.kind === "variable" && v.text === "Herding", JSON.stringify(v));
+  ok("and its measure is written into the body", sent.some((x) => x.method === "PATCH" && x.path.includes("research_questions") && (x.body as { body?: { measure?: string } }).body?.measure === "CSAD"));
+  ok("and none of it threw", errors.length === 0, errors.join(" | "));
+  await page.close();
+}
+
+{
+  const { page, errors, sent } = await open("/tools/research/atlas");
+  await page.waitForTimeout(600);
+  const dots = await page.locator(".rs-graph circle").count();
+  ok("the graph draws a dot for every source and question and a line for each evidence row", dots === 3 && await page.locator(".rs-graph line").count() === 2, `${dots} dot(s), ${await page.locator(".rs-graph line").count()} line(s)`);
+  const first = await page.locator(".rs-graph a").first().getAttribute("href") ?? "";
+  ok("and a dot is a press away from its page", first.startsWith("/tools/research/"), first);
+  await page.getByRole("button", { name: /3 Literature timeline|3 সাহিত্যের সময়রেখা/ }).click();
+  await page.waitForTimeout(300);
+  ok("the literature timeline is one dot a dated source", await page.locator(".rs-graph circle").count() === 2);
+  await page.getByRole("button", { name: /4 People|4 মানুষ/ }).click();
+  await page.waitForTimeout(300);
+  await page.locator("#rs-pp-name").fill("Michael Carter");
+  await page.locator("#rs-pp-orcid").fill("0000-0001-2345-6789");
+  await page.locator("#rs-pp-inst").fill("UC Davis");
+  await page.locator("#rs-pp-name").press("Enter");
+  await page.waitForTimeout(500);
+  const p = firstOf(posts(sent, "research_people")[0]);
+  ok("a person is a row with a role, an ORCID and an institution", p.name === "Michael Carter" && p.role === "supervisor" && p.orcid === "0000-0001-2345-6789" && p.institution === "UC Davis", JSON.stringify(p));
+  await page.locator(".rs-row", { hasText: "Michael Carter" }).click();
+  await page.waitForTimeout(200);
+  await page.getByRole("button", { name: /Published, by ORCID|প্রকাশিত, ORCID/ }).click();
+  await page.waitForTimeout(500);
+  ok("an ORCID brings what they have published, through the Worker", (await page.locator(".rs-main").textContent() ?? "").includes("Drought and credit"));
+  ok("and none of it threw", errors.length === 0, errors.join(" | "));
+  await page.close();
+}
+
+/* ============================================================
+   9. the review room: a protocol with numbered criteria, a search
+      kept as the log and imported as records, screening by
+      keyboard, a record the library already holds linked rather
+      than added twice, and PRISMA out of the rows
+   ============================================================ */
+
+{
+  const { page, errors, sent } = await open("/tools/research/review");
+  await page.waitForTimeout(500);
+  ok("a signed-in reader with no review is invited to start one", ((await page.locator(".rs-list").textContent()) ?? "").includes("No review yet"));
+  await page.locator("#rs-rev-title").fill("Weather risk and farm credit");
+  await page.locator("#rs-rev-title").press("Enter");
+  await page.waitForTimeout(600);
+  const rv = firstOf(posts(sent, "research_reviews")[0]);
+  ok("a review is a row with a kind and an empty protocol", rv.title === "Weather risk and farm credit" && rv.kind === "systematic" && rv.state === "protocol", JSON.stringify(rv));
+  await page.locator("#rs-rev-criteria").fill("Empirical, farm-level data\n- Not about weather or climate risk\n- No English full text");
+  await page.getByRole("button", { name: /Save the protocol|প্রোটোকল রাখুন/ }).click();
+  await page.waitForTimeout(700);
+  const protoPatches = sent.filter((x) => x.method === "PATCH" && x.path.includes("research_reviews"));
+  const proto = (protoPatches[protoPatches.length - 1]?.body as { protocol?: { criteria?: { id: string; kind: string; text: string }[] } } | undefined)?.protocol;
+  ok("criteria get an id each and a line starting with minus is an exclusion",
+    proto?.criteria?.length === 3 && proto.criteria[0].id === "I1" && proto.criteria[1].id === "E1" && proto.criteria[1].kind === "exclude" && proto.criteria[2].id === "E2", JSON.stringify(proto));
+  await page.getByRole("button", { name: /2 Search log|2 খোঁজের লগ/ }).click();
+  await page.waitForTimeout(300);
+  await page.locator("#rs-rev-q").fill("weather shocks credit");
+  await page.locator("#rs-rev-q").press("Enter");
+  await page.waitForTimeout(1200);
+  const kept = firstOf(posts(sent, "research_searches")[0]);
+  ok("a search run here is kept with the review's id on it, which is the search log", typeof kept.review_id === "string" && String(kept.review_id).startsWith("reviews-") && kept.query === "weather shocks credit", JSON.stringify(kept));
+  const imported = posts(sent, "research_review_records").flatMap((x) => x.body as Record<string, unknown>[]);
+  ok("and its hits are records rather than sources, filed under the database that returned them",
+    imported.length === 2 && imported.every((r) => r.stage === "found" && r.database === "openalex") && posts(sent, "research_sources").length === 0,
+    `${imported.length} record(s): ${JSON.stringify(imported.map((r) => r.database))}`);
+  ok("the log lists the search with its date and hits", await page.locator('[data-testid="rs-rev-searches"] tbody tr').count() === 1 && ((await page.locator('[data-testid="rs-rev-searches"]').textContent()) ?? "").includes("weather shocks credit"));
+  await page.getByRole("button", { name: /3 Screen|3 যাচাই/ }).click();
+  await page.waitForTimeout(300);
+  ok("screening shows the first record with its abstract, or says there is none", ((await page.locator('[data-testid="rs-rev-record"]').textContent()) ?? "").includes("Weather shocks and farm incomes"));
+  await page.keyboard.press("y");
+  await page.waitForTimeout(500);
+  await page.keyboard.press("x");
+  await page.waitForTimeout(200);
+  ok("x opens the exclusion reasons, numbered", await page.locator('[data-testid="rs-rev-reasons"] li').count() === 2);
+  await page.keyboard.press("2");
+  await page.waitForTimeout(500);
+  const decided = sent.filter((x) => x.method === "PATCH" && x.path.includes("research_review_records")).map((x) => x.body as { stage?: string; reason?: string | null; decided_at?: string });
+  ok("y sends a record on to full text and x excludes one with the reason's id and a date",
+    decided.some((d) => d.stage === "fulltext" && d.decided_at) && decided.some((d) => d.stage === "excluded" && d.reason === "E2"), JSON.stringify(decided));
+  const meter = (await page.locator('[data-testid="rs-rev-meter"]').textContent()) ?? "";
+  ok("and the meter says two of two decided", /^2 \D+ 2 /.test(meter), meter);
+  await page.getByRole("button", { name: /Full text \/ পূর্ণ লেখা/ }).click();
+  await page.waitForTimeout(300);
+  ok("full text screening holds the record y sent on", ((await page.locator('[data-testid="rs-rev-record"]').textContent()) ?? "").includes("Weather shocks and farm incomes"));
+  await page.keyboard.press("y");
+  await page.waitForTimeout(1000);
+  const inc = sent.filter((x) => x.method === "PATCH" && x.path.includes("research_review_records")).map((x) => x.body as { stage?: string; source_id?: string | null; record?: { fullText?: boolean } }).find((d) => d.stage === "included");
+  ok("including at full text links the library's own row rather than adding the paper twice", inc?.source_id === "s-1" && inc.record?.fullText === true && posts(sent, "research_sources").length === 0, JSON.stringify(inc));
+  await page.getByRole("button", { name: /4 PRISMA/ }).click();
+  await page.waitForTimeout(300);
+  const prismaText = (await page.locator('[data-testid="rs-prisma"]').textContent()) ?? "";
+  ok("PRISMA is drawn from the rows: two identified, one excluded at title, one included",
+    /identified \(n = 2\)|চিহ্নিত রেকর্ড \(n = 2\)/.test(prismaText) && /Records excluded \(n = 1\)|বাদ দেওয়া রেকর্ড \(n = 1\)/.test(prismaText) && /Studies included \(n = 1\)|অন্তর্ভুক্ত গবেষণা \(n = 1\)/.test(prismaText),
+    prismaText.slice(0, 300));
+  await page.getByRole("button", { name: /5 Extraction|5 নিষ্কাশন/ }).click();
+  await page.waitForTimeout(300);
+  const cell = page.locator('[data-testid="rs-rev-extract"] input').first();
+  await cell.fill("120 farms");
+  await cell.press("Tab");
+  await page.waitForTimeout(600);
+  const ext = sent.filter((x) => x.method === "PATCH" && x.path.includes("research_review_records")).map((x) => x.body as { extraction?: Record<string, string> }).find((d) => d.extraction);
+  ok("an extraction cell is one column of the record's own row", ext?.extraction?.sample === "120 farms", JSON.stringify(ext));
+  await page.getByRole("button", { name: /6 Appraisal|6 মূল্যায়ন/ }).click();
+  await page.waitForTimeout(300);
+  await page.locator('[data-testid="rs-rev-appraisal"] button', { hasText: /^Yes/ }).first().click();
+  await page.waitForTimeout(600);
+  const app = sent.filter((x) => x.method === "PATCH" && x.path.includes("research_review_records")).map((x) => x.body as { appraisal?: Record<string, string> }).find((d) => d.appraisal);
+  const summary = (await page.locator('[data-testid="rs-rev-appraisal"] summary').first().textContent()) ?? "";
+  ok("an appraisal answer is kept and the score derived", app?.appraisal?.["0"] === "yes" && /1 \/ 6/.test(summary), `${JSON.stringify(app)} ${summary}`);
+  await page.getByRole("button", { name: /7 Synthesis|7 সংশ্লেষ/ }).click();
+  await page.waitForTimeout(300);
+  ok("synthesis is the gap matrix of the included sources' tags", await page.locator('[data-testid="rs-rev-gaps"] tbody tr').count() === 2);
   ok("and none of it threw", errors.length === 0, errors.join(" | "));
   await page.close();
 }

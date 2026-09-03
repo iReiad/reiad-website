@@ -316,6 +316,52 @@ eq("parseAny reads a single CSL object", parseAny('{"type":"book","title":"x"}')
   eq("minutes between two instants, never negative", [minutesBetween("2026-09-02T10:00:00Z", "2026-09-02T10:25:30Z"), minutesBetween("2026-09-02T10:00:00Z", "2026-09-02T09:00:00Z")], [26, 0]);
 }
 
+/* ---------- the atlas: a layout that is the same every time ---------- */
+
+{
+  const { layout, argumentMap, gapMatrix, timeline } = await import("../shared/research-graph.ts");
+  const nodes = [{ id: "s-1", kind: "source", label: "A" }, { id: "s-2", kind: "source", label: "B" }, { id: "q-1", kind: "question", label: "Q" }, { id: "n-1", kind: "note", label: "N" }];
+  const edges = [{ from: "q-1", to: "s-1" }, { from: "q-1", to: "s-2" }, { from: "n-1", to: "s-1" }];
+  const a = layout(nodes, edges);
+  const b = layout(nodes, edges);
+  eq("the same rows draw the same picture", a.map((p) => [p.x, p.y]), b.map((p) => [p.x, p.y]));
+  ok("every node is inside the box", a.every((p) => p.x >= 30 && p.x <= 970 && p.y >= 30 && p.y <= 670));
+  const d = (x: string, y: string) => { const p = a.find((n) => n.id === x)!; const q = a.find((n) => n.id === y)!; return Math.hypot(p.x - q.x, p.y - q.y); };
+  ok("a linked pair sits closer than an unlinked one", d("q-1", "s-1") < d("n-1", "s-2"), `${d("q-1", "s-1")} vs ${d("n-1", "s-2")}`);
+  eq("no nodes, no picture", layout([], []), []);
+  const cells = argumentMap([{ id: "q-1", body: { evidence: [{ source_id: "s-1", stance: "supports" }, { source_id: "s-1", stance: "method" }, { source_id: "gone", stance: "supports" }] } }], [{ id: "s-1" }, { id: "s-2" }]);
+  eq("the argument map marks where a source speaks to a question, and forgets a source that is gone", cells, [{ row: "q-1", col: "s-1", marks: ["supports", "method"] }]);
+  const gaps = gapMatrix([{ id: "s-1", tags: ["banks", "bd"] }, { id: "s-2", tags: ["banks"] }]);
+  eq("the gap matrix is tags by sources and counts the empty cells", [gaps.tags, gaps.gaps], [["banks", "bd"], 1]);
+  const tl = timeline([{ id: "s-1", year: 2019, type: "article-journal", tags: ["banks"], title: "A" }, { id: "s-2", year: 2021, type: "book", tags: [], title: "B" }, { id: "s-3", year: null, type: "book", tags: [], title: "C" }], ["banks"]);
+  eq("the timeline is one dot a dated source, in the lane of its tag", [tl.years, tl.dots.map((x) => x.lane), tl.lanes], [[2019, 2021], ["banks", "other"], ["banks", "other"]]);
+}
+
+/* ---------- the review room: PRISMA out of the rows ---------- */
+
+{
+  const { prisma, duplicatesOf, appraisalScore, APPRAISALS } = await import("../shared/research-review.ts");
+  const p = prisma([
+    { database: "openalex", stage: "deduplicated" },
+    { database: "openalex", stage: "excluded", reason: "E1" },
+    { database: "crossref", stage: "excluded", reason: "E2", record: { fullText: true } },
+    { database: "crossref", stage: "excluded", reason: "E2", record: { fullText: true } },
+    { database: "openalex", stage: "included" },
+    { database: "openalex", stage: "fulltext" },
+    { database: "arxiv", stage: "title" },
+  ]);
+  eq("PRISMA counts what was found, by database", [p.identified, p.byDatabase], [7, { openalex: 4, crossref: 2, arxiv: 1 }]);
+  eq("duplicates come off before screening", [p.duplicates, p.screened], [1, 6]);
+  eq("exclusions at title are one box and at full text another, by reason", [p.excludedAtTitle, p.excludedAtFullText, p.byReason], [1, 2, { E2: 2 }]);
+  eq("what reached full text is the sum of what was assessed there", [p.soughtFullText, p.included], [4, 1]);
+  eq("a record still waiting is pending, not anything else", p.pending, { title: 1, fulltext: 1 });
+  eq("a record found twice is one record, the later one the duplicate", duplicatesOf([
+    { id: "a", doi: "10.1/X", hash: "h1", created_at: "2026-09-01" }, { id: "b", doi: "10.1/x", hash: "h2", created_at: "2026-09-02" },
+    { id: "c", doi: null, hash: "h3", created_at: "2026-09-03" }, { id: "d", doi: null, hash: "h3", created_at: "2026-09-04" },
+  ]), ["b", "d"]);
+  eq("an appraisal's score counts yes as one and unclear as a half", appraisalScore({ "0": "yes", "1": "unclear", "2": "no" }, APPRAISALS.econ.questions), 1.5);
+}
+
 if (failures.length) {
   console.error(`research: ${failures.length} failed, ${passed} passed`);
   for (const f of failures) console.error(`  x ${f}`);

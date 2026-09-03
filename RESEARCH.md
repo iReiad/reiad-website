@@ -2412,6 +2412,47 @@ the weekly review. Not yet from section 17: drag between lanes, the
 Gantt view, the project page whole, and the reading queue's own
 lane.
 
+**Stage 6 landed the next day, in its first form.** What it does:
+the questions room has three views beside the tree, the argument
+map (questions by sources, a mark per stance), the gap matrix (tags
+by sources, the empty cells counted) and the variables registry
+(rows of kind `variable` with a measure), all drawn from rows the
+studio already keeps by `shared/research-graph.ts`, which also lays
+the atlas out: a deterministic force layout in SVG, no library,
+seeded from the ids so the same rows draw the same picture.
+`/tools/research/atlas` is the graph of sources, notes, questions,
+documents and people with every link, evidence row and citation as
+a line; the citation network two hops out from a source through
+OpenAlex with hollow dots for what is not in the library; the
+literature timeline in the reader's own lanes; and people as
+`research_people` rows, an ORCID bringing what they have published
+through `GET /api/research/orcid/<id>`. Not yet from section 18:
+the Excalidraw canvas, and the argument map dragging a highlight in
+as evidence.
+
+**Stage 7 landed the same day, in its first form.** What it does:
+`/tools/research/review` is a review as a `research_reviews` row
+holding the protocol (the question in a PICO, SPIDER or plain
+frame, the criteria one a line with a minus for an exclusion and a
+STABLE id each, the databases, the dates, the languages, the
+screeners, the extraction columns and the appraisal template); a
+search log that is the saved searches with the review's id on them,
+run from the room and imported as `research_review_records` in one
+POST per database, with duplicates folded by DOI then by hash;
+screening by keyboard, `y` `x` `m` `j` `k` and a reason picked
+by number, a record becoming a library source only when it is
+included at full text and LINKED rather than added where the library
+already has it; PRISMA 2020 drawn in SVG from
+`prisma()` in `shared/research-review.ts`, exported as SVG and
+PNG; extraction as a table of the reader's own columns exporting
+CSV; appraisal as a CASP, JBI or empirical-economics checklist with
+the score derived; and synthesis as the gap matrix scoped to the
+included sources. A narrative review is the same room with the
+screening views off. Not yet from section 13: the search log and
+the extraction sheet on the writing desk as Word tables, the reader
+open beside full-text screening, extraction prefilled from reading
+cards, and a second screener's column.
+
 **Stage 1 is a week of work and the studio is used from its end.**
 Stages 2 to 5 are the next month, and at the end of stage 5 the
 studio does everything the old desk did and everything a reference

@@ -41,7 +41,8 @@ import type {
   SourceVia, TaskLane, Tone,
 } from "@reiad/shared/research";
 import { runtimeModule } from "../components/account/runtime";
-import type { EventBody, EventKind } from "@reiad/shared/research-plan";
+import type { EventBody, EventKind, PersonRole } from "@reiad/shared/research-plan";
+import type { Protocol, RecordStage, ReviewKind, ReviewState } from "@reiad/shared/research-review";
 
 type AccountModule = typeof import("/account.js");
 const accountModule = () => runtimeModule<AccountModule>("/account.js");
@@ -942,10 +943,12 @@ export interface Search extends Row {
 export const listSearches = (w: Who): Promise<Search[]> =>
   rows<Search>(w, "research_searches", "order=updated_at.desc&limit=200");
 
-export const addSearch = (w: Who, q: SearchQuery, hits: number | null, project: string | null = null): Promise<Search | null> =>
+/** A search run from the review room carries the review's id, which
+    is what makes it a line of that review's search log. */
+export const addSearch = (w: Who, q: SearchQuery, hits: number | null, project: string | null = null, review: string | null = null): Promise<Search | null> =>
   insert<Search>(w, "research_searches", {
     query: q.q, fields: { author: q.author, from: q.from, to: q.to, oa: q.oa, type: q.type },
-    databases: q.databases ?? [], hits, alert: false, last_run: new Date().toISOString(), project_id: project,
+    databases: q.databases ?? [], hits, alert: false, last_run: new Date().toISOString(), project_id: project, review_id: review,
   }, q.q.slice(0, 80));
 
 export const saveSearch = (w: Who, s: Search, part: Partial<Search>): Promise<PatchAnswer<Search>> =>
@@ -1120,3 +1123,96 @@ export async function resetCalendar(w: Who): Promise<string | null> {
     return data.ok && data.url ? data.url : null;
   } catch { return null; }
 }
+
+/* ============================================================
+   the atlas: people, and an author's works by ORCID
+   ============================================================ */
+
+export interface Person extends Row {
+  name: string;
+  role: PersonRole;
+  orcid: string | null;
+  email: string | null;
+  institution: string;
+  note: string;
+  projects: string[];
+  sources: string[];
+  body: { fit?: string; [k: string]: unknown };
+}
+
+export const listPeople = (w: Who): Promise<Person[]> =>
+  rows<Person>(w, "research_people", "order=role.asc,name.asc&limit=500");
+
+export const addPerson = (w: Who, p: { name: string; role: PersonRole; orcid?: string; email?: string; institution?: string }): Promise<Person | null> =>
+  insert<Person>(w, "research_people", {
+    name: p.name, role: p.role, orcid: p.orcid || null, email: p.email || null, institution: p.institution ?? "", note: "", projects: [], sources: [], body: {},
+  }, p.name);
+
+export const savePerson = (w: Who, p: Person, part: Partial<Person>): Promise<PatchAnswer<Person>> =>
+  patch<Person>(w, "research_people", p.id, part, p.name);
+
+export const removePerson = (w: Who, p: Person): Promise<boolean> => remove(w, "research_people", p.id, p.name);
+
+export async function orcidWorksOf(w: Who, orcid: string): Promise<Hit[] | null> {
+  try {
+    const res = await fetch(`/api/research/orcid/${enc(orcid)}`, { headers: bearer(w) });
+    if (!res.ok) return null;
+    const data = await res.json() as { ok: boolean; works?: Hit[] };
+    return data.ok ? data.works ?? [] : null;
+  } catch { return null; }
+}
+
+/* ============================================================
+   the review room: reviews and their records
+   ============================================================ */
+
+export interface Review extends Row {
+  project_id: string | null;
+  title: string;
+  kind: ReviewKind;
+  protocol: Protocol;
+  state: ReviewState;
+}
+
+export interface ReviewRecord extends Row {
+  review_id: string;
+  database: string;
+  search_id: string | null;
+  record: Hit & { fullText?: boolean };
+  doi: string | null;
+  hash: string;
+  stage: RecordStage;
+  reason: string | null;
+  decided_at: string | null;
+  source_id: string | null;
+  extraction: Record<string, string>;
+  appraisal: Record<string, "yes" | "no" | "unclear" | undefined>;
+}
+
+export const listReviews = (w: Who): Promise<Review[]> => rows<Review>(w, "research_reviews", "order=updated_at.desc&limit=100");
+
+export const addReview = (w: Who, r: { title: string; kind: ReviewKind; project_id?: string | null }): Promise<Review | null> =>
+  insert<Review>(w, "research_reviews", { title: r.title, kind: r.kind, project_id: r.project_id ?? null, protocol: {}, state: "protocol" }, r.title.slice(0, 80));
+
+export const saveReview = (w: Who, r: Review, part: Partial<Review>): Promise<PatchAnswer<Review>> =>
+  patch<Review>(w, "research_reviews", r.id, part, r.title.slice(0, 80));
+
+export const listRecords = (w: Who, review: string): Promise<ReviewRecord[]> =>
+  rows<ReviewRecord>(w, "research_review_records", `review_id=eq.${enc(review)}&order=created_at.asc&limit=5000`);
+
+/** Hits imported as records, one POST for the lot. */
+export async function addRecords(w: Who, review: string, database: string, search: string | null, hits: Hit[]): Promise<ReviewRecord[]> {
+  if (!hits.length) return [];
+  const r = await call<ReviewRecord[]>("research_review_records", {
+    method: "POST", headers: { prefer: "return=representation" },
+    body: JSON.stringify(hits.map((h) => ({
+      user_id: w.id, review_id: review, database, search_id: search, record: h, doi: h.doi, hash: h.hash, stage: "found",
+    }))),
+  }, w);
+  const made = r.ok && r.data ? r.data : [];
+  if (made.length) void log(w, "research_review_records", null, "imported", `${made.length} records: ${database}`);
+  return made;
+}
+
+export const saveRecord = (w: Who, rec: ReviewRecord, part: Partial<ReviewRecord>): Promise<PatchAnswer<ReviewRecord>> =>
+  patch<ReviewRecord>(w, "research_review_records", rec.id, part, rec.record.title?.slice(0, 80) ?? "record");

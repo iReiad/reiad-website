@@ -374,6 +374,33 @@ export async function related(env: ScholarEnv, doi: string): Promise<Related | n
   });
 }
 
+/* ---------- an author, by ORCID ---------- */
+
+interface OrcidWorks { group?: { "work-summary"?: { title?: { title?: { value?: string } }; "publication-date"?: { year?: { value?: string } }; "external-ids"?: { "external-id"?: { "external-id-type"?: string; "external-id-value"?: string }[] }; type?: string; "journal-title"?: { value?: string } }[] }[] }
+
+/** What the public ORCID record lists for an author, newest first,
+    as hits the library can take. A week in the cache. */
+export async function orcidWorks(env: ScholarEnv, orcid: string): Promise<Hit[] | null> {
+  if (!/^\d{4}-\d{4}-\d{4}-\d{3}[\dX]$/.test(orcid)) return null;
+  return cached(env, `orcid:${orcid}`, WEEK, async () => {
+    const data = await getWithin(`https://pub.orcid.org/v3.0/${orcid}/works`, { accept: "application/json" }, 6000) as OrcidWorks;
+    const out: Hit[] = [];
+    for (const g of data.group ?? []) {
+      const s = g["work-summary"]?.[0];
+      if (!s?.title?.title?.value) continue;
+      const year = Number(s["publication-date"]?.year?.value) || null;
+      const doi = (s["external-ids"]?.["external-id"] ?? []).find((i) => i["external-id-type"] === "doi")?.["external-id-value"];
+      const csl: CslItem = {
+        type: s.type === "book" ? "book" : s.type === "book-chapter" ? "chapter" : "article-journal",
+        title: s.title.title.value, DOI: doi || undefined, "container-title": s["journal-title"]?.value || undefined,
+        issued: year ? { "date-parts": [[year]] } : undefined,
+      };
+      out.push(hit(csl, "orcid"));
+    }
+    return out.sort((a, b) => (b.year ?? 0) - (a.year ?? 0));
+  });
+}
+
 /* ---------- the Monday cron ---------- */
 
 export interface AlertRow { reader_id: string; id: string; query: string; fields: string; databases: string; seen: string; last_run: string | null; created_at: string }

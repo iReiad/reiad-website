@@ -5,7 +5,7 @@
 import type { Metadata } from "next";
 import { pageMeta } from "../../../../../lib/pageMeta";
 import { ResearchFrame } from "../../../../../components/research/frame";
-import { Soon } from "../../../../../components/research/soon";
+import { Atlas } from "../../../../../components/research/atlas";
 
 export const metadata: Metadata = pageMeta({
   path: "/tools/research/atlas",
@@ -19,7 +19,7 @@ export const metadata: Metadata = pageMeta({
 export default function Page() {
   return (
     <ResearchFrame href="/tools/research/atlas" wide>
-      <Soon href="/tools/research/atlas" />
+      <Atlas />
     </ResearchFrame>
   );
 }
