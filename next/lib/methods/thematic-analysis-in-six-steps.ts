@@ -4,11 +4,11 @@ export const LESSON: MethodLesson = {
   slug: "thematic-analysis-in-six-steps",
   minutes: 5,
   en: `<div class="at-a-glance"><p class="at-a-glance-label">At a glance</p><ul>
-<li>Braun and Clarke's six phases: familiarising, generating initial codes, searching for themes, reviewing themes, defining and naming themes, writing up.</li>
+<li>Braun and Clarke's six phases: familiarising, initial coding, searching for themes, reviewing themes, defining and naming themes, writing up.</li>
 <li>A code is a short label on a passage. A theme is a pattern of meaning across many codes, built by you, not sitting in the data waiting to be found.</li>
-<li>Inductive work lets the codes come from what people said. Deductive work starts from a framework and looks for it. Say which one you did.</li>
+<li>Inductive work lets codes come from what people said. Deductive work starts from a framework and looks for it. Say which one you did.</li>
 <li>Reflexive means the analysis is yours: another careful reader could code the same transcripts and reach a different, equally defensible set of themes.</li>
-<li>Saturation is a judgement about whether new transcripts are still changing your account, not a number of interviews you can state in advance.</li>
+<li>Saturation is a judgement about whether new transcripts are still changing your account, not a number of interviews stated in advance.</li>
 </ul></div>
 
 <h2>What thematic analysis is doing</h2>
@@ -45,7 +45,7 @@ export const LESSON: MethodLesson = {
 <tr><td>"My father always knew when to plant by watching the sky. That does not work any more."</td><td>Inherited knowledge of timing; loss of predictive value; a method that used to work</td></tr>
 <tr><td>"I borrowed for seed twice because the first planting failed. Now I owe more than the harvest will cover."</td><td>Repeat planting after failure; debt taken for seed; debt exceeding expected harvest value</td></tr>
 </tbody></table></div>
-<p>Two themes, built from those six codes rather than the three topics of rain, knowledge and debt. <strong>"The old timing has stopped working"</strong> gathers the first two lines: both describe a method for reading the season, one bound to the rain's timing and one inherited from a parent, that no longer delivers a reliable answer. It is a theme, not a topic, because it claims that both speakers describe the same failure of a once-reliable method, not merely that rain and knowledge came up. <strong>"A bad season is paid for twice"</strong> gathers the third line with the second half of the first: a late, over-long rain forces a second planting, bought with debt a normal harvest will not clear. The claim is that the cost of a bad season is not the lost crop alone but the debt taken to try again, a pattern the third line alone would only hint at.</p>
+<p>Two themes, built from those six codes rather than the three topics of rain, knowledge and debt. <strong>"The old timing has stopped working"</strong> gathers the first two lines: both describe a method for reading the season that no longer delivers a reliable answer. It is a theme, not a topic, because it claims a shared failure, not merely that rain and knowledge came up. <strong>"A bad season is paid for twice"</strong> gathers the third line with the second half of the first: a long rain forces a second planting, bought with debt a normal harvest will not clear. The claim is that the cost is not the lost crop alone but the debt taken to try again, a pattern the third line alone only hints at.</p>
 </div>
 
 <h2>Where it goes wrong</h2>
@@ -107,12 +107,12 @@ export const LESSON: MethodLesson = {
 <h2>কোথায় ভুল হয়</h2>
 <ul class="checklist">
 <li>বিষয় বলতে গিয়ে আসলে একটা প্রসঙ্গ। এমন বাক্যে লেখা না গেলে যাতে কেউ দ্বিমত করতে পারে, তাহলে এটা এখনো বিষয় নয়।</li>
-<li>বিষয়গুলো প্রশ্ন থেকে বের করা, উত্তর থেকে নয়। প্রতিটা বিষয়ের পথ কোড পর্যন্ত ফিরে যাওয়া উচিত, আর প্রতিটা কোডের পথ একটা অংশ পর্যন্ত।</li>
-<li>একবার কোড করে সেটাকেই চূড়ান্ত ধরা, প্রথমবার দলে সাজানোটা যাচাই করা রিভিউ বাদ দিয়ে।</li>
+<li>বিষয়গুলো প্রশ্ন থেকে বের করা, উত্তর থেকে নয়। প্রতিটা বিষয়ের পথ কোড পর্যন্ত, প্রতিটা কোডের পথ একটা অংশ পর্যন্ত ফিরে যাওয়া উচিত।</li>
+<li>একবার কোড করে সেটাকেই চূড়ান্ত ধরা, পুরো তথ্যের বিপরীতে যাচাই করা রিভিউ বাদ দিয়ে।</li>
 <li>স্যাচুরেশনকে মাঠকাজের আগে ঠিক করা সংখ্যা বলে দাবি করা, পরের ট্রান্সক্রিপ্ট কী যোগ করল তা দেখে করা বিচারের বদলে।</li>
-<li>লেখাটা বেশিরভাগ উদ্ধৃতি, জোড়া দেওয়ার যুক্তি নেই। অংশটা বিষয় দেখায়; নাম দেওয়া বাক্যের জায়গা নেয় না।</li>
-<li>কোনো রিফ্লেক্সিভ নোট নেই, ফলে পাঠকের বোঝার উপায় থাকে না বিষয়টার কতটা তথ্য থেকে আর কতটা পড়া মানুষটা থেকে এসেছে।</li>
+<li>লেখাটা বেশিরভাগ উদ্ধৃতি, জোড়া দেওয়ার যুক্তি নেই।</li>
+<li>কোনো রিফ্লেক্সিভ নোট নেই, ফলে বোঝার উপায় থাকে না বিষয়টার কতটা তথ্য থেকে আর কতটা পড়া মানুষটা থেকে এসেছে।</li>
 </ul>
-<p class="note">কোনো অংশ ফাইল ছেড়ে বেরোনোর আগে নাম মুছুন। কাজ করা একটা অংশ কোডবইয়ে, একটা পরিশিষ্টে, কখনো ছাপা একটা নিবন্ধে যায়, আর সেখানে কখনো এমন কোনো নাম বা বিবরণ থাকা উচিত নয় যা কে বলেছে তা চিনিয়ে দেয়।</p>
-<p>মাঠ ঘরের কোডবই আর কোডিং হলো যেখানে এটা আসল ট্রান্সক্রিপ্টে ঘটে: প্রথম দফার কোড এক ধাপে বসে, প্রার্থী বিষয়গুলো পরের ধাপে দলে সাজানো আর যাচাই করা হয়, আর লেখার আগে প্রতিটা বিষয় সংজ্ঞায়িত করে নাম দেওয়া হয়।</p>`,
+<p class="note">কোনো অংশ ফাইল ছেড়ে বেরোনোর আগে নাম মুছুন। এটা কোডবইয়ে, পরিশিষ্টে, কখনো ছাপা নিবন্ধে যায়, আর কখনো এমন নাম বা বিবরণ থাকা উচিত নয় যা কে বলেছে তা চিনিয়ে দেয়।</p>
+<p>মাঠ ঘরের কোডবই আর কোডিং হলো যেখানে এটা আসল ট্রান্সক্রিপ্টে ঘটে: প্রথম দফার কোড এক ধাপে বসে, প্রার্থী বিষয় পরের ধাপে দলে সাজানো আর যাচাই করা হয়, আর লেখার আগে প্রতিটা বিষয় সংজ্ঞায়িত করে নাম দেওয়া হয়।</p>`,
 };

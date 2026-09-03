@@ -40,12 +40,12 @@ export const LESSON: MethodLesson = {
 <div class="table-scroll"><table>
 <thead><tr><th>Sub-question</th><th>Evidence needed</th><th>Section heading</th><th>Words</th></tr></thead>
 <tbody>
-<tr><td>Introduction</td><td>the puzzle and the chapter's route through it</td><td>Falling premiums have not moved uptake, and the reason is not price alone</td><td>1,200</td></tr>
-<tr><td>Does "uptake" mean the same thing across studies?</td><td>a review of how the term is defined and measured</td><td>"Uptake" hides three different measures, and the difference matters</td><td>1,500</td></tr>
-<tr><td>What do farmers say is stopping them?</td><td>interview and survey material, coded and quoted</td><td>Farmers cite basis risk before they cite price</td><td>2,000</td></tr>
-<tr><td>What do price experiments show about demand?</td><td>experimental or survey evidence with a price manipulation</td><td>Willingness to pay rises with a rebate, not with a lower premium</td><td>2,000</td></tr>
-<tr><td>What has worked elsewhere?</td><td>comparison across programmes with different designs</td><td>Programmes that bundle insurance with credit see faster uptake, but the reason is not yet established</td><td>1,500</td></tr>
-<tr><td>Conclusion</td><td>what the four sections together say about the main question</td><td>closes by answering the chapter's own question</td><td>800</td></tr>
+<tr><td>Introduction</td><td>the puzzle, and the chapter's route through it</td><td>Falling premiums have not moved uptake, and the reason is not price alone</td><td>1,200</td></tr>
+<tr><td>Does "uptake" mean the same thing across studies?</td><td>a review of definitions</td><td>"Uptake" hides three different measures, and the difference matters</td><td>1,500</td></tr>
+<tr><td>What do farmers say is stopping them?</td><td>interview and survey material, coded</td><td>Farmers cite basis risk before they cite price</td><td>2,000</td></tr>
+<tr><td>What do price experiments show about demand?</td><td>experiments with a price manipulation</td><td>Willingness to pay rises with a rebate, not with a lower premium</td><td>2,000</td></tr>
+<tr><td>What has worked elsewhere?</td><td>comparison across programme designs</td><td>Programmes that bundle insurance with credit see faster uptake, but the reason is not yet established</td><td>1,500</td></tr>
+<tr><td>Conclusion</td><td>what the sections together answer</td><td>closes by answering the chapter's own question</td><td>800</td></tr>
 </tbody></table></div>
 <p>Notice the order: definitions first, since a reader who does not know "uptake" is measured three ways will misread what follows; farmer voice before the price experiments, because the numbers make more sense once the reader knows what is on farmers' minds; the comparison with other programmes last, where the chapter turns from diagnosis toward what might be done.</p>
 <div class="ex"><b>Worked example, continued.</b> The paragraph plan for the first paragraph of "Farmers cite basis risk before they cite price".
