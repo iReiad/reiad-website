@@ -57,8 +57,8 @@ export const LESSON: MethodLesson = {
 <li>A write up that is mostly quotations with no argument connecting them.</li>
 <li>No reflexive note, leaving a reader no way to weigh how much of the theme is the data and how much is the reader of it.</li>
 </ul>
-<p class="note">Anonymise before an extract leaves your files. It travels into a codebook, an appendix, sometimes a published article, and should never carry a name or a detail that identifies who said it.</p>
-<p>The field room's codebook and coding are where this happens on real transcripts: initial codes go in one pass, candidate themes are grouped and reviewed in the next, and each theme is defined and named before it is written up.</p>`,
+<p class="note">Anonymise before an extract leaves your files. It travels into a codebook, an appendix, sometimes a published article, and should never carry a name identifying who said it.</p>
+<p>The field room's codebook and coding are where this happens on real transcripts: initial codes go in one pass, candidate themes are grouped and reviewed in the next, and each is defined and named before it is written up.</p>`,
   bn: `<div class="at-a-glance"><p class="at-a-glance-label">এক নজরে</p><ul>
 <li>Braun আর Clarke-এর ছয় ধাপ: চেনাজানা হওয়া, প্রথম দফায় কোড করা, বিষয় খোঁজা, বিষয় যাচাই করা, বিষয় সংজ্ঞায়িত করে নাম দেওয়া, আর লিখে ফেলা।</li>
 <li>কোড হলো কোনো অংশের গায়ে বসানো ছোট একটা লেবেল। বিষয় হলো অনেক কোড জুড়ে অর্থের একটা ধরন, যা আপনি বানান, তথ্যের ভেতর বসে থাকা কোনো কিছু খুঁজে বের করেন না।</li>
@@ -78,8 +78,8 @@ export const LESSON: MethodLesson = {
 <ol class="step-list">
 <li><strong>তথ্যের সঙ্গে চেনাজানা হওয়া।</strong> একটা লাইনও কোড করার আগে পুরো ট্রান্সক্রিপ্ট পড়ুন, বা রেকর্ডিং শুনুন। যেতে যেতে প্রথম ধারণাগুলো লিখে রাখুন, এখনো কোড নয়, শুধু কী চোখে পড়ল।</li>
 <li><strong>প্রথম দফায় কোড করা।</strong> তথ্যের ভেতর দিয়ে গুছিয়ে এগোন, যা কিছু আগ্রহের বা প্রাসঙ্গিক মনে হয় তাতে ছোট লেবেল দিন। খোলা মনে কোড করুন: একটা অংশে একাধিক কোড থাকতে পারে, আর কখনো লেবেল না দেওয়া ধরন পরে আর খুঁজে পাওয়া যাবে না।</li>
-<li><strong>বিষয় খোঁজা।</strong> কোডগুলোকে সম্ভাব্য দলে জড়ো করুন, লিখে নয়, সাজিয়ে: কোনগুলো একই অন্তর্নিহিত ভাবনার দিকে ইঙ্গিত করছে তা দেখুন। এই ধাপের প্রার্থী বিষয় একটা অনুমান, ফলাফল নয়, আর অর্ধেক পরের ধাপে ভেঙে পড়াটা স্বাভাবিক।</li>
-<li><strong>বিষয় যাচাই করা।</strong> প্রতিটা প্রার্থীকে দুইভাবে পরীক্ষা করুন: তার নিজের কোড করা অংশের বিপরীতে, সেগুলো মিলে যায় কি না দেখে, আর পুরো তথ্যের বিপরীতে, বিষয়টা পুরো তথ্যের সঙ্গে মিলছে নাকি শুধু বেছে নেওয়া অংশের সঙ্গে তা দেখে। দুই পরীক্ষাতেই টিকলে রাখা হয়, ধারালো বা ভাগ বা মেশানো হয়; না টিকলে বাদ যায়।</li>
+<li><strong>বিষয় খোঁজা।</strong> কোডগুলোকে সম্ভাব্য দলে জড়ো করুন, সাজিয়ে: কোনগুলো একই অন্তর্নিহিত ভাবনার দিকে ইঙ্গিত করছে তা দেখুন। এই ধাপের প্রার্থী বিষয় একটা অনুমান, ফলাফল নয়, আর অর্ধেক পরের ধাপে ভেঙে পড়াটা স্বাভাবিক।</li>
+<li><strong>বিষয় যাচাই করা।</strong> প্রতিটা প্রার্থীকে দুইভাবে পরীক্ষা করুন: নিজের কোড করা অংশের বিপরীতে মিলে যায় কি না দেখে, আর পুরো তথ্যের বিপরীতে শুধু বেছে নেওয়া অংশ নয় পুরোটার সঙ্গে মিলছে কি না দেখে। দুই পরীক্ষাতেই টিকলে রাখা হয়, ধারালো বা ভাগ বা মেশানো হয়; না টিকলে বাদ যায়।</li>
 <li><strong>বিষয় সংজ্ঞায়িত করে নাম দেওয়া।</strong> টিকে থাকা প্রতিটার জন্য লিখুন এটা কী, কী নয়, আর অন্যগুলোর সঙ্গে সম্পর্ক কী। দুই-তিন বাক্যে সংজ্ঞায়িত করতে না পারলে এটা এখনো কোডের একটা গোছা, জোড়া দেওয়ার যুক্তির অপেক্ষায়।</li>
 <li><strong>লিখে ফেলা।</strong> এমন অংশ বেছে নিন যা বিষয়টা স্পষ্ট বহন করে, আর তার চারপাশে বিশ্লেষণী বর্ণনা লিখুন, উদ্ধৃতির দেয়াল দিয়ে যুক্তির জায়গা পূরণ করবেন না। প্রতিটা অংশ বিষয়টা দেখাবে, শুধু প্রসঙ্গের উল্লেখ নয়।</li>
 </ol>
@@ -113,6 +113,6 @@ export const LESSON: MethodLesson = {
 <li>লেখাটা বেশিরভাগ উদ্ধৃতি, জোড়া দেওয়ার যুক্তি নেই।</li>
 <li>কোনো রিফ্লেক্সিভ নোট নেই, ফলে বোঝার উপায় থাকে না বিষয়টার কতটা তথ্য থেকে আর কতটা পড়া মানুষটা থেকে এসেছে।</li>
 </ul>
-<p class="note">কোনো অংশ ফাইল ছেড়ে বেরোনোর আগে নাম মুছুন। এটা কোডবইয়ে, পরিশিষ্টে, কখনো ছাপা নিবন্ধে যায়, আর কখনো এমন নাম বা বিবরণ থাকা উচিত নয় যা কে বলেছে তা চিনিয়ে দেয়।</p>
+<p class="note">কোনো অংশ ফাইল ছেড়ে বেরোনোর আগে নাম মুছুন। এটা কোডবইয়ে, পরিশিষ্টে, কখনো ছাপা নিবন্ধে যায়, আর কখনো এমন নাম থাকা উচিত নয় যা কে বলেছে তা চিনিয়ে দেয়।</p>
 <p>মাঠ ঘরের কোডবই আর কোডিং হলো যেখানে এটা আসল ট্রান্সক্রিপ্টে ঘটে: প্রথম দফার কোড এক ধাপে বসে, প্রার্থী বিষয় পরের ধাপে দলে সাজানো আর যাচাই করা হয়, আর লেখার আগে প্রতিটা বিষয় সংজ্ঞায়িত করে নাম দেওয়া হয়।</p>`,
 };
