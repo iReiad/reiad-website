@@ -62,7 +62,7 @@
   # this site still refuses to BE framed.
   # The Supabase host must match SUPABASE_URL in aab/account.js.
   # If that project is ever recreated, this line changes with it.
-  Content-Security-Policy: default-src 'self'; script-src 'self' 'unsafe-inline'; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src 'self' https://fonts.gstatic.com; img-src 'self' data: https://lh3.googleusercontent.com; connect-src 'self' https://api.web3forms.com https://market-pulse.i-reiad.workers.dev https://wvjarqnnmkkuxyrndtya.supabase.co; media-src 'self'; form-action 'self' https://api.web3forms.com; frame-ancestors 'none'; base-uri 'self'; object-src 'none'
+  Content-Security-Policy: default-src 'self'; script-src 'self' 'unsafe-inline' 'wasm-unsafe-eval'; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src 'self' https://fonts.gstatic.com; img-src 'self' data: https://lh3.googleusercontent.com; connect-src 'self' https://api.web3forms.com https://market-pulse.i-reiad.workers.dev https://wvjarqnnmkkuxyrndtya.supabase.co; media-src 'self'; form-action 'self' https://api.web3forms.com; frame-ancestors 'none'; base-uri 'self'; object-src 'none'
 
 # Fingerprint-free assets change in place, so they must revalidate.
 # /styles.css was here until 19 August 2026 and nothing has been

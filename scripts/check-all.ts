@@ -191,7 +191,7 @@ const STAGES: Array<[stage: string, entries: Entry[]]> = [
     "scripts/snapshot.test.ts",
     "scripts/routine.test.ts",
     "scripts/diet.test.ts", "scripts/csv.test.ts",
-    "scripts/research.test.ts",
+    "scripts/research.test.ts", "scripts/research-stats.test.ts", "scripts/research-field.test.ts", "scripts/research-tools.test.ts", "scripts/research-assist.test.ts",
     "scripts/insights.test.ts", "scripts/activity.test.ts",
     "scripts/widgets.test.ts",
     /* `next/research.test.ts` is deliberately not here beside its

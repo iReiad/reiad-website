@@ -202,6 +202,166 @@ eq("parseAny reads a single CSL object", parseAny('{"type":"book","title":"x"}')
   eq("the container is the first title", csl["container-title"], "Journal of Banking & Finance");
 }
 
+/* ---------- the reading room: where a highlight is ---------- */
+
+{
+  const { anchorOf, findAnchor, ownsKey, extOfType, extOfName, fileKey, fileKind, FILE_TYPES, HIGHLIGHT_MEANINGS } =
+    await import("../shared/research.ts");
+  const page = "Weather shocks reduce farm income by 12 per cent\non average (Table 3). The effect is larger for\nrainfed plots. Weather shocks reduce farm income for tenants too.";
+  const a = anchorOf(page, page.indexOf("larger for"), page.indexOf("larger for") + "larger for\nrainfed plots".length);
+  eq("an anchor is the quote and thirty characters either side",
+    [a.quote, a.prefix.length <= 30, a.suffix.length <= 30], ["larger for\nrainfed plots", true, true]);
+  const back = findAnchor(page, a);
+  ok("and the quote finds itself", back !== null && page.slice(back.start, back.end) === a.quote,
+    JSON.stringify(back));
+  const twice = findAnchor(page, { quote: "Weather shocks reduce farm income", prefix: "rainfed plots. ", suffix: " for tenants" });
+  ok("a phrase a paper uses twice lands on the one that was marked, by its neighbours",
+    twice !== null && twice.start === page.lastIndexOf("Weather shocks reduce farm income"), JSON.stringify(twice));
+  const first = findAnchor(page, { quote: "Weather shocks reduce farm income", prefix: "", suffix: " by 12" });
+  ok("and on the first when the suffix says so", first !== null && first.start === 0, JSON.stringify(first));
+  const wrapped = findAnchor(page, { quote: "larger for rainfed plots", prefix: "", suffix: "" });
+  ok("a selection made across a line break finds text the layer broke differently",
+    wrapped !== null && page.slice(wrapped.start, wrapped.end) === "larger for\nrainfed plots", JSON.stringify(wrapped));
+  eq("a quote that is not on the page is null rather than a guess", findAnchor(page, { quote: "irrigation", prefix: "", suffix: "" }), null);
+  eq("an empty quote anchors nothing", findAnchor(page, { quote: "  ", prefix: "", suffix: "" }), null);
+
+  const me = "0b3f1d4e-8a7b-4c6d-9e2f-1a2b3c4d5e6f";
+  const hash = "a".repeat(64);
+  const key = fileKey(me, hash, "pdf");
+  eq("a file key is the reader's prefix, the hash and the extension", key, `research/${me}/${hash}.pdf`);
+  ok("and the reader owns it", ownsKey(me, key));
+  ok("and nobody else does", !ownsKey("1b3f1d4e-8a7b-4c6d-9e2f-1a2b3c4d5e6f", key));
+  ok("a key with a path in it is not a key", !ownsKey(me, `research/${me}/../other/${hash}.pdf`));
+  eq("the extension for a type the Worker accepts", [extOfType("application/pdf"), extOfType("image/jpeg; charset=binary"), extOfType("text/x-python")], ["pdf", "jpg", null]);
+  eq("and for a name, where the browser sent nothing useful", [extOfName("panel.parquet"), extOfName("talk.M4A"), extOfName("notes.docx")], ["parquet", "m4a", null]);
+  eq("what kind of thing each is", ["pdf", "html", "mp3", "csv", "png"].map(fileKind), ["pdf", "html", "audio", "data", "image"]);
+  ok("every accepted type has an extension and the other way round", Object.keys(FILE_TYPES).every((ext) => extOfType(FILE_TYPES[ext]) === ext));
+  eq("five meanings, in the order of the keys", [...HIGHLIGHT_MEANINGS], ["claim", "evidence", "method", "quote", "question"]);
+}
+
+
+/* ---------- finding: one list out of several ---------- */
+
+{
+  const { merge, openalexHit } = await import("../functions/_lib/scholar-search.ts");
+  const mk = (from: string, title: string, doi: string | null, extra: Record<string, unknown> = {}) => ({
+    csl: { type: "article-journal", title, DOI: doi ?? undefined }, doi, title, year: 2020, authors: "A", venue: "", type: "article-journal",
+    abstract: "", url: null, oa: null, cited: null, from: [from], openalex: null,
+    hash: title.toLowerCase().replace(/\W/g, "") + "2020", ...extra,
+  });
+  const merged = merge([
+    [mk("openalex", "Weather shocks", "10.1/a", { cited: 40 }), mk("openalex", "Only here", null, { year: 2024 })],
+    [mk("crossref", "Weather shocks", "10.1/A", { abstract: "Long." }), mk("crossref", "Cited more", "10.1/b", { cited: 400 })],
+    [mk("arxiv", "Only here", null, { year: 2024 })],
+  ]);
+  eq("the same DOI in two cases is one row", merged.filter((h) => h.doi?.toLowerCase() === "10.1/a").length, 1);
+  const ws = merged.find((h) => h.title === "Weather shocks");
+  ok("which says both indexes had it", ws?.from.join(",") === "openalex,crossref", ws?.from.join(","));
+  ok("and keeps the fuller record", ws?.abstract === "Long." && ws?.cited === 40);
+  const only = merged.find((h) => h.title === "Only here");
+  ok("a work with no DOI is merged by its hash", only?.from.length === 2, only?.from.join(","));
+  eq("ranked by how many indexes had it, then by citations", merged.map((h) => h.title), ["Weather shocks", "Only here", "Cited more"]);
+  const h = openalexHit({
+    id: "https://openalex.org/W1", doi: "https://doi.org/10.5/x", title: "T", publication_year: 2019, type: "article",
+    authorships: [{ author: { display_name: "Michael Carter" } }], cited_by_count: 7,
+    open_access: { is_oa: true, oa_url: "https://x/pdf" },
+    abstract_inverted_index: { The: [0], effect: [1], is: [2], large: [3] },
+  });
+  ok("an OpenAlex work becomes a hit with its abstract put back in order",
+    h.abstract === "The effect is large" && h.openalex === "W1" && h.oa?.url === "https://x/pdf" && h.cited === 7, JSON.stringify(h));
+}
+
+/* ---------- the writing desk's arithmetic ---------- */
+
+{
+  const W = await import("../shared/research-write.ts");
+  const chip = W.chipHtml({ key: "bashar2020bank", locator: "14" }, "(Bashar, 2020, p. 14)");
+  eq("a chip carries its key and locator in the href", W.chipOf("#cite=bashar2020bank&loc=14"), { key: "bashar2020bank", locator: "14", label: undefined, suppress: false });
+  const html = `<h2>Findings</h2><p>Provisions rose by 12% in Q2 ${chip}.</p><p>The effect is significant.</p><p>Banks lend.<sup><a class="fn-ref" href="#fn-2">2</a></sup> And borrow.<sup><a class="fn-ref" href="#fn-1">1</a></sup></p><h3>Method</h3><p>We use panel data.</p><ol class="fn"><li>First note ${W.chipHtml({ key: "rahman2021weather" }, "Rahman 2021")}</li><li>Second note</li></ol>`;
+  eq("every chip in order", W.keysCited(html), ["bashar2020bank", "rahman2021weather"]);
+  const outline = W.outlineOf(html);
+  eq("the outline is the headings with the words under each", outline.map((h) => [h.level, h.text, h.words > 0]), [[2, "Findings", true], [3, "Method", true]]);
+  eq("words in both scripts", [W.countWords("The rain in Spain"), W.countWords("আমি ভাত খাই। তুমি কি খাবে?"), W.countWords("Bank-level data, 2,400 households")], [4, 6, 5]);
+  const renumbered = W.renumber(html);
+  ok("footnote markers are renumbered by position and the notes follow", /href="#fn-1">1<\/a>.*href="#fn-2">2<\/a>/.test(renumbered) && /<ol class="fn"><li>Second note<\/li><li>First note/.test(renumbered), renumbered.slice(-160));
+  const md = W.toMarkdown(html, "Chapter 3");
+  ok("Markdown carries Pandoc citations and footnotes", md.includes("[@bashar2020bank, p. 14]") && md.includes("Banks lend.[^2]") && md.includes("[^1]: First note [@rahman2021weather]") && md.startsWith("# Chapter 3\n\n## Findings"), md);
+  const tex = W.toLatex(html);
+  ok("LaTeX carries \\cite with the page and a footnote", tex.includes("\\cite[p.~14]{bashar2020bank}") && tex.includes("\\footnote{Second note}") && tex.includes("\\section{Findings}") && tex.includes("12\\%"), tex);
+  const claims = W.claimsOf(html);
+  eq("the claims audit lists the numbers and the claim words, and whether a chip sits in the sentence",
+    claims.map((c) => [c.why, c.cited]), [["number", true], ["claim", false]]);
+  const over = W.overlapsOf("we estimate the effect of rainfall shocks on farm income using panel data from households and find a large fall",
+    [{ name: "Rahman 2021", text: "We estimate the effect of rainfall shocks on farm income using panel data from 2,400 households across four divisions." }]);
+  ok("an unquoted run of eight words shared with a source is found", over.length === 1 && over[0].words >= 12 && over[0].with === "Rahman 2021", JSON.stringify(over));
+  eq("and a short coincidence is not", W.overlapsOf("panel data from households", [{ name: "x", text: "panel data from households" }]), []);
+}
+
+/* ---------- the planner: a calendar out ---------- */
+
+{
+  const { toIcs, weekStart, minutesBetween } = await import("../shared/research-plan.ts");
+  const ics = toIcs([
+    { id: "e-1", title: "Proposal due", starts: "2026-10-01T00:00:00Z", all_day: true, kind: "deadline", updated_at: "2026-09-02T10:00:00Z" },
+    { id: "e-2", title: "Supervision; agenda: data, chapter 3", starts: "2026-09-08T09:30:00Z", ends: "2026-09-08T10:30:00Z", all_day: false, kind: "meeting", place: "Room 4.12, Lincoln" },
+  ]);
+  ok("a calendar file has the shape a subscriber reads", ics.startsWith("BEGIN:VCALENDAR\r\nVERSION:2.0") && ics.trimEnd().endsWith("END:VCALENDAR"), ics.slice(0, 80));
+  ok("an all-day event is a DATE that ends the day after", ics.includes("DTSTART;VALUE=DATE:20261001") && ics.includes("DTEND;VALUE=DATE:20261002"), ics);
+  ok("a timed one carries both instants in UTC", ics.includes("DTSTART:20260908T093000Z") && ics.includes("DTEND:20260908T103000Z"));
+  ok("a semicolon in a title is escaped, as the format asks", ics.includes("SUMMARY:Supervision\; agenda: data\\, chapter 3 (meeting)"), ics);
+  ok("and the kind is in the summary, the place in the location", ics.includes("(deadline)") && ics.includes("LOCATION:Room 4.12\\, Lincoln"));
+  ok("no line is over 75 octets", ics.split("\r\n").every((l) => Buffer.byteLength(l) <= 75));
+  eq("a week starts on Monday", weekStart(new Date(2026, 8, 2)), "2026-08-31");
+  eq("and Sunday belongs to the week before it", weekStart(new Date(2026, 8, 6)), "2026-08-31");
+  eq("minutes between two instants, never negative", [minutesBetween("2026-09-02T10:00:00Z", "2026-09-02T10:25:30Z"), minutesBetween("2026-09-02T10:00:00Z", "2026-09-02T09:00:00Z")], [26, 0]);
+}
+
+/* ---------- the atlas: a layout that is the same every time ---------- */
+
+{
+  const { layout, argumentMap, gapMatrix, timeline } = await import("../shared/research-graph.ts");
+  const nodes = [{ id: "s-1", kind: "source", label: "A" }, { id: "s-2", kind: "source", label: "B" }, { id: "q-1", kind: "question", label: "Q" }, { id: "n-1", kind: "note", label: "N" }];
+  const edges = [{ from: "q-1", to: "s-1" }, { from: "q-1", to: "s-2" }, { from: "n-1", to: "s-1" }];
+  const a = layout(nodes, edges);
+  const b = layout(nodes, edges);
+  eq("the same rows draw the same picture", a.map((p) => [p.x, p.y]), b.map((p) => [p.x, p.y]));
+  ok("every node is inside the box", a.every((p) => p.x >= 30 && p.x <= 970 && p.y >= 30 && p.y <= 670));
+  const d = (x: string, y: string) => { const p = a.find((n) => n.id === x)!; const q = a.find((n) => n.id === y)!; return Math.hypot(p.x - q.x, p.y - q.y); };
+  ok("a linked pair sits closer than an unlinked one", d("q-1", "s-1") < d("n-1", "s-2"), `${d("q-1", "s-1")} vs ${d("n-1", "s-2")}`);
+  eq("no nodes, no picture", layout([], []), []);
+  const cells = argumentMap([{ id: "q-1", body: { evidence: [{ source_id: "s-1", stance: "supports" }, { source_id: "s-1", stance: "method" }, { source_id: "gone", stance: "supports" }] } }], [{ id: "s-1" }, { id: "s-2" }]);
+  eq("the argument map marks where a source speaks to a question, and forgets a source that is gone", cells, [{ row: "q-1", col: "s-1", marks: ["supports", "method"] }]);
+  const gaps = gapMatrix([{ id: "s-1", tags: ["banks", "bd"] }, { id: "s-2", tags: ["banks"] }]);
+  eq("the gap matrix is tags by sources and counts the empty cells", [gaps.tags, gaps.gaps], [["banks", "bd"], 1]);
+  const tl = timeline([{ id: "s-1", year: 2019, type: "article-journal", tags: ["banks"], title: "A" }, { id: "s-2", year: 2021, type: "book", tags: [], title: "B" }, { id: "s-3", year: null, type: "book", tags: [], title: "C" }], ["banks"]);
+  eq("the timeline is one dot a dated source, in the lane of its tag", [tl.years, tl.dots.map((x) => x.lane), tl.lanes], [[2019, 2021], ["banks", "other"], ["banks", "other"]]);
+}
+
+/* ---------- the review room: PRISMA out of the rows ---------- */
+
+{
+  const { prisma, duplicatesOf, appraisalScore, APPRAISALS } = await import("../shared/research-review.ts");
+  const p = prisma([
+    { database: "openalex", stage: "deduplicated" },
+    { database: "openalex", stage: "excluded", reason: "E1" },
+    { database: "crossref", stage: "excluded", reason: "E2", record: { fullText: true } },
+    { database: "crossref", stage: "excluded", reason: "E2", record: { fullText: true } },
+    { database: "openalex", stage: "included" },
+    { database: "openalex", stage: "fulltext" },
+    { database: "arxiv", stage: "title" },
+  ]);
+  eq("PRISMA counts what was found, by database", [p.identified, p.byDatabase], [7, { openalex: 4, crossref: 2, arxiv: 1 }]);
+  eq("duplicates come off before screening", [p.duplicates, p.screened], [1, 6]);
+  eq("exclusions at title are one box and at full text another, by reason", [p.excludedAtTitle, p.excludedAtFullText, p.byReason], [1, 2, { E2: 2 }]);
+  eq("what reached full text is the sum of what was assessed there", [p.soughtFullText, p.included], [4, 1]);
+  eq("a record still waiting is pending, not anything else", p.pending, { title: 1, fulltext: 1 });
+  eq("a record found twice is one record, the later one the duplicate", duplicatesOf([
+    { id: "a", doi: "10.1/X", hash: "h1", created_at: "2026-09-01" }, { id: "b", doi: "10.1/x", hash: "h2", created_at: "2026-09-02" },
+    { id: "c", doi: null, hash: "h3", created_at: "2026-09-03" }, { id: "d", doi: null, hash: "h3", created_at: "2026-09-04" },
+  ]), ["b", "d"]);
+  eq("an appraisal's score counts yes as one and unclear as a half", appraisalScore({ "0": "yes", "1": "unclear", "2": "no" }, APPRAISALS.econ.questions), 1.5);
+}
+
 if (failures.length) {
   console.error(`research: ${failures.length} failed, ${passed} passed`);
   for (const f of failures) console.error(`  x ${f}`);

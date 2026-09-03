@@ -7,7 +7,7 @@ There are three renderers of this site now: the Worker in
 Next.js route in `next/`. Anything all of them must say the same
 way lives here, and nowhere else.
 
-Today that is twenty-four files and a directory of four, and
+Today that is thirty-three files and two directories, and
 `check-types.ts` fails if one of them is not described below.
 That check exists because this line said six while nine were
 here: `nav.ts` and `routine.ts` arrived in two changes that had
@@ -20,6 +20,10 @@ this repository got written.
   than typed into a sentence, which is the rule `check-content.ts`
   enforces. It has an output: see below.
 
+- **`csl/`** the citation styles the writing desk renders with, each
+  vendored as a string by `scripts/import-csl.ts` and loaded when a
+  document asks for it, plus the en-GB locale and the registry that
+  says which cite in footnotes. RESEARCH.md section 16.
 - **`curricula/`** the four schools' ladders, one file each:
   every stage, section and lesson of `/money/`, `/deutsch/`,
   `/quran/` and `/english/`, with the helpers each school spells
@@ -132,6 +136,47 @@ this repository got written.
   hash, and its authors in one line. `RESEARCH.md` is the plan
   and `scripts/research.test.ts` holds the arithmetic.
 
+- **`research-write.ts`** the writing desk's arithmetic over the
+  article HTML a document is: the citation chips, the outline, the
+  counts in both scripts, Markdown and LaTeX out, the claims audit
+  and the self-overlap check, every one pure so the research test
+  holds it. RESEARCH.md section 16.
+- **`research-review.ts`** the review room's stages, frames and
+  appraisal templates, and PRISMA 2020 derived from the records by
+  stage and reason. RESEARCH.md section 13.
+- **`research-stats.ts`** the lab's first tier of statistics in
+  TypeScript: descriptives, the tests, OLS with classical, HC and
+  clustered errors, logit and probit, panels, differences in
+  differences, instruments, survey means, the finance helpers and
+  the agricultural arithmetic, each held to a closed form by
+  scripts/research-stats.test.ts. RESEARCH.md sections 14 and 36.
+- **`research-lab.ts`** what the lab does that is not a statistic:
+  a delimited file read with its types inferred, the importers that
+  know a DSE or an Alpha Vantage file by its columns, the four
+  sanity checks, a fit as an APA table, and a chart as SVG text.
+  RESEARCH.md section 14.
+- **`research-field.ts`** the field room's vocabulary and arithmetic:
+  a transcript's segments out of pasted text or the model's answer,
+  the code matrices derived from the codings, and a survey's
+  questions and answers as a table. RESEARCH.md section 15.
+- **`research-tools.ts`** the workshop's arithmetic: sample sizes and
+  power, effect sizes, p and CI both ways, the which-test tree, dates
+  with the tabular Islamic calendar, words in both scripts,
+  abbreviations, readability as facts, a grid to four table
+  syntaxes, Boolean strings per database, a question from a frame,
+  spaced repetition and a seeded random. RESEARCH.md section 19.
+- **`research-assist.ts`** the assistant's tasks, its system
+  prompt, the grounding of an answer against the library's keys,
+  the chunking the semantic search indexes, the cost of a call at
+  the published prices, and the prompt library's placeholders.
+  RESEARCH.md sections 21 and 36.
+- **`research-graph.ts`** the atlas's arithmetic: a deterministic
+  force layout for the graph, the argument map and the gap matrix
+  as cells, the literature timeline as dots. RESEARCH.md 8 and 18.
+- **`research-plan.ts`** the planner's kinds of event and states of
+  a submission, the week's boundaries, and an iCalendar file written
+  out of a list of events for a calendar that reads the studio's
+  dates. RESEARCH.md section 17.
 - **`research-bib.ts`** BibTeX and RIS, read into CSL-JSON and
   written back out of it, so an export from any reference manager
   drops on the library and the library leaves as either. Written

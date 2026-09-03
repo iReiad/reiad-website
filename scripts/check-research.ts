@@ -43,10 +43,17 @@ import { existsSync, readFileSync, readdirSync, statSync } from "node:fs";
 import { dirname, join, relative } from "node:path";
 import { fileURLToPath } from "node:url";
 import { RESEARCH_PAGES } from "../next/lib/research-pages.ts";
+import { RESEARCH_TOOLS } from "../next/lib/research-tools.ts";
+import { METHOD_KINDS, RESEARCH_METHODS } from "../next/lib/research-methods.ts";
 import {
-  NOTE_KINDS, PROJECT_KINDS, PROJECT_STATES, QUESTION_KINDS, QUESTION_STATES, SOURCE_STATUSES,
+  HIGHLIGHT_MEANINGS, NOTE_KINDS, PROJECT_KINDS, PROJECT_STATES, QUESTION_KINDS, QUESTION_STATES, SOURCE_STATUSES,
   SOURCE_TYPE_IDS, SOURCE_VIAS, TASK_LANES, TONES,
 } from "../shared/research.ts";
+import { EVENT_KINDS } from "../shared/research-plan.ts";
+import { PEOPLE_ROLES } from "../shared/research-plan.ts";
+import { RECORD_STAGES, REVIEW_KINDS, REVIEW_STATES } from "../shared/research-review.ts";
+import { RUN_KINDS } from "../shared/research-lab.ts";
+import { CHUNK_KINDS } from "../shared/research-assist.ts";
 import { RESEARCH_WORDS } from "../shared/research-words.ts";
 
 const ROOT = join(dirname(fileURLToPath(import.meta.url)), "..");
@@ -66,6 +73,16 @@ const fail = (line: string, ...detail: string[]): void => {
 const NOT_A_ROOM: Record<string, string> = {
   clip: "the bookmarklet's landing: a press on a paper's page arrives here and "
     + "leaves for the source it filed. Not in the strip because nobody goes there on purpose.",
+  survey: "a field room survey as a stranger sees it (RESEARCH.md 15): a public form "
+    + "read from /api/survey/<token> with no bearer. Not in the strip because it is not the reader's page.",
+};
+
+/** A route that deliberately stands outside the studio's frame: a
+    page for somebody who is not the reader. Every other page under
+    tools/research wears the frame, and the walk below fails a page
+    that does not unless it is named here with the reason. */
+const NOT_FRAMED: Record<string, string> = {
+  "survey/[token]/page.tsx": "a stranger answering a survey should see the form and nothing of the studio.",
 };
 
 {
@@ -84,6 +101,9 @@ const NOT_A_ROOM: Record<string, string> = {
   }
   for (const name of Object.keys(NOT_A_ROOM)) {
     if (!existsSync(join(ROUTES, name))) fail(`NOT_A_ROOM names ${name}/, which is not there.`, "Remove the entry.");
+  }
+  for (const name of Object.keys(NOT_FRAMED)) {
+    if (!existsSync(join(ROUTES, name))) fail(`NOT_FRAMED names ${name}, which is not there.`, "Remove the entry.");
   }
   const seen = new Set<string>();
   for (const p of RESEARCH_PAGES) {
@@ -198,6 +218,16 @@ for (const s of ["doi", "isbn", "url", "bib", "todo", "note", "dup", "fail"]) if
   same("QUESTION_KINDS", "research_questions", "kind", QUESTION_KINDS);
   same("QUESTION_STATES", "research_questions", "state", QUESTION_STATES);
   same("PROJECT_KINDS", "research_projects", "kind", PROJECT_KINDS);
+  same("HIGHLIGHT_MEANINGS", "research_highlights", "meaning", HIGHLIGHT_MEANINGS);
+  same("EVENT_KINDS", "research_events", "kind", EVENT_KINDS);
+  same("PEOPLE_ROLES", "research_people", "role", PEOPLE_ROLES);
+  same("REVIEW_KINDS", "research_reviews", "kind", REVIEW_KINDS);
+  same("RUN_KINDS", "research_runs", "kind", RUN_KINDS);
+  same("TONES", "research_codes", "colour", TONES);
+  same("CHUNK_KINDS", "research_chunks", "kind", CHUNK_KINDS);
+  same("REVIEW_STATES", "research_reviews", "state", REVIEW_STATES);
+  same("RECORD_STAGES", "research_review_records", "stage", RECORD_STAGES);
+  same("DOCUMENT_KINDS", "research_documents", "kind", ["chapter", "paper", "proposal", "abstract", "letter", "other"]);
   same("PROJECT_STATES", "research_projects", "state", PROJECT_STATES);
   same("TONES", "research_projects", "tone", TONES);
 }
@@ -230,8 +260,10 @@ for (const s of ["doi", "isbn", "url", "bib", "todo", "note", "dup", "fail"]) if
       if (n !== "page.tsx") continue;
       const src = readFileSync(at, "utf8");
       const rel = relative(ROOT, at);
-      if (!/export const metadata/.test(src)) fail(`${rel} exports no metadata`);
-      if (!/<ResearchFrame/.test(src)) fail(`${rel} does not use the studio's frame`);
+      if (!/export const metadata|export async function generateMetadata/.test(src)) fail(`${rel} exports no metadata`);
+      const under = relative(ROUTES, at);
+      if (!/<ResearchFrame/.test(src) && !NOT_FRAMED[under]) fail(`${rel} does not use the studio's frame`);
+      if (NOT_FRAMED[under] && /<ResearchFrame/.test(src)) fail(`${rel} is in NOT_FRAMED and wears the frame`, "Take it out of the list.");
       if (!/card: "tools"/.test(src)) fail(`${rel} names no share card`);
     }
   };
@@ -242,4 +274,20 @@ if (bad) {
   console.error(`\nresearch: ${bad} problem(s).`);
   process.exit(1);
 }
+/* ---- the methods table names real tools and rooms ---- */
+{
+  const tools = new Set(RESEARCH_TOOLS.map((t) => t.slug));
+  const keys = new Set(RESEARCH_PAGES.map((p) => p.key));
+  const seen = new Set<string>();
+  for (const m of RESEARCH_METHODS) {
+    if (seen.has(m.slug)) fail(`RESEARCH_METHODS lists ${m.slug} twice`, "One card a method.");
+    seen.add(m.slug);
+    if (!/^[a-z0-9-]+$/.test(m.slug)) fail(`method slug ${m.slug} cannot be a piece's slug`, "Lowercase letters, digits and hyphens.");
+    if (!METHOD_KINDS.includes(m.kind)) fail(`method ${m.slug} has the kind ${m.kind}, which is not one`, `One of ${METHOD_KINDS.join(", ")}.`);
+    for (const t of m.tools ?? []) if (!tools.has(t)) fail(`method ${m.slug} names the tool ${t}, which the workshop does not have`, "A slug from next/lib/research-tools.ts.");
+    for (const r of m.rooms ?? []) if (!keys.has(r)) fail(`method ${m.slug} names the room ${r}, which the pages table does not have`, "A key from next/lib/research-pages.ts.");
+    if (!m.title.en || !m.title.bn || !m.dek.en || !m.dek.bn) fail(`method ${m.slug} is missing a language`, "Both languages, always.");
+  }
+}
+
 console.log(`research: ${RESEARCH_PAGES.length} rooms routed, ${Object.keys(RESEARCH_WORDS).length} phrases in both languages, every vocabulary the migration's, the desk gone.`);

@@ -36,6 +36,8 @@ import { Surface } from "../ui/surface";
 import { cue } from "../../lib/sound";
 import { T, W, both, useToolLang } from "./lang";
 import { SAID, SETTLE, when } from "./use-who";
+import { FileBox, readHref } from "./files";
+import { RelatedWorks } from "./find";
 
 export function SourceCard({ w, source, projects, collections, onChange, onGone }: {
   w: Who;
@@ -136,7 +138,11 @@ export function SourceCard({ w, source, projects, collections, onChange, onGone 
           {source.doi ? <ChipLink href={`https://doi.org/${source.doi}`} target="_blank" rel="noreferrer">doi.org</ChipLink> : null}
           {source.url && !source.doi ? <ChipLink href={source.url} target="_blank" rel="noreferrer"><W k="rs.lib.url" /></ChipLink> : null}
           {source.oa?.url ? <ChipLink href={source.oa.url} target="_blank" rel="noreferrer"><T en="Free copy" bn="বিনামূল্যের কপি" /></ChipLink> : null}
+          {readHref(source) ? <ChipLink href={readHref(source) as string}><W k="rs.lib.read" /></ChipLink> : null}
         </div>
+      </Surface>
+      <Surface material="sunk" className="px-4 py-3">
+        <FileBox w={w} source={source} onChange={(s) => { seen.current = s.updated_at; onChange(s); }} />
       </Surface>
 
       <div className="grid gap-4 md:grid-cols-2">
@@ -242,6 +248,7 @@ export function SourceCard({ w, source, projects, collections, onChange, onGone 
         </div>
       </Surface>
 
+      <RelatedWorks w={w} source={source} sources={[]} />
       <p className="text-t1 text-ink-soft mono">
         <W k="rs.lib.key" />: {source.key} · <W k="rs.lib.via" />: {source.added_via} · <W k="rs.updated" />: {when(source.updated_at)}
       </p>

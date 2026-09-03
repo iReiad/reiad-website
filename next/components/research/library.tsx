@@ -160,7 +160,7 @@ export function Library({ openId }: { openId?: string }) {
   return (
     <div className="grid gap-4">
       {/* ---- the add bar ---- */}
-      <Surface material="pane" className="px-5 py-4 grid gap-3">
+      <Surface material="pane" className="rs-tint px-5 py-4 grid gap-3">
         <form className="flex flex-wrap items-end gap-3" onSubmit={(e) => { e.preventDefault(); void add(); }}>
           <div className="grow min-w-[16rem]">
             <Field id="rs-add" label={<W k="rs.lib.add" />} hint={<W k="rs.lib.add.hint" />}

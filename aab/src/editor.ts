@@ -100,6 +100,9 @@ export const KEEP_CLASSES: Set<string> = new Set([
   "at-a-glance", "at-a-glance-label", "side-note", "side-note-label",
   "step-list", "checklist", "figures", "fig",
   "table-scroll", "term", "note", "ex",
+  /* The writing desk's: a citation chip, a footnote marker, the
+     notes at the foot and the bibliography block. RESEARCH.md 16. */
+  "cite", "fn-ref", "fn", "bib",
   /* Where an interactive block goes: an empty div the lesson
      route replaces with a quiz, a lab or a figure. MONEY.md. */
   "mount",

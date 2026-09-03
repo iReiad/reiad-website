@@ -30,6 +30,17 @@
     "./lesson-grids": "./lesson-grids.ts",
     "./research": "./research.ts",
     "./research-bib": "./research-bib.ts",
-    "./research-words": "./research-words.ts"
+    "./research-words": "./research-words.ts",
+    "./research-write": "./research-write.ts",
+    "./research-plan": "./research-plan.ts",
+    "./research-graph": "./research-graph.ts",
+    "./research-review": "./research-review.ts",
+    "./csl": "./csl/index.ts",
+    "./csl/*": "./csl/*.ts",
+    "./research-stats": "./research-stats.ts",
+    "./research-lab": "./research-lab.ts",
+    "./research-field": "./research-field.ts",
+    "./research-tools": "./research-tools.ts",
+    "./research-assist": "./research-assist.ts"
   }
 }

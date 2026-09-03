@@ -140,7 +140,11 @@ const DIET_TABLES = [
 const RESEARCH_TABLES = [
   "research_projects", "research_collections", "research_sources", "research_notes",
   "research_versions", "research_questions", "research_tasks", "research_lists",
-  "research_activity",
+  "research_activity", "research_highlights", "research_searches", "research_documents",
+  "research_events", "research_sessions", "research_people", "research_reviews", "research_review_records",
+  "research_datasets", "research_transforms", "research_runs",
+  "research_participants", "research_codes", "research_codings", "research_surveys",
+  "research_chunks",
 ] as const;
 
 const MINE_TABLES = [
@@ -362,7 +366,8 @@ $("#account-forget")?.addEventListener("click", async () => {
      holding a weight, a medicine or a cycle. */
   if (!confirm("Erase everything this account has saved?\n\n"
     + "Your position, your checkpoints, your reading list, your notes, your "
-    + "targets, your saved scenarios, your research threads, your routines "
+    + "targets, your saved scenarios, everything in your research studio "
+    + "(sources, files, highlights, notes, questions, tasks and lists), your routines "
     + "and every day you have marked on them, the templates you made, and "
     + "your broker key.\n\n"
     + "And everything in the diet tool: your daily log, everything you have "
@@ -411,6 +416,19 @@ $("#account-forget")?.addEventListener("click", async () => {
       gone = false;
     }
   }
+
+  /* The reading room's files are bytes in R2 rather than rows, so
+     no policy above reaches them: the Worker removes everything
+     under the reader's prefix. After the rows, so a reader who
+     interrupts this is left with rows pointing at files rather
+     than files nothing points at. */
+  try {
+    const access = await token();
+    const res = access
+      ? await fetch("/api/research/files", { method: "DELETE", headers: { Authorization: `Bearer ${access}` } })
+      : null;
+    if (!res || !(res.ok || res.status === 503)) { console.warn("account: could not erase the research files"); gone = false; }
+  } catch { gone = false; }
 
   say(note, gone
     ? "Erased. Nothing of yours is stored on this account or on this device."

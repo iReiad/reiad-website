@@ -90,6 +90,15 @@ const NOT_FETCHED = {
      left it when the Studio was archived, which is the entry above
      `NOT_FETCHED` saying they would come back the day something
      named them again. They did. */
+  /* The workshop's "Resolve an id" says where an identifier lives,
+     as a link the reader follows: a DOI at doi.org, a preprint at
+     arXiv, a PubMed id at PubMed. Followed, never fetched. */
+  "https://arxiv.org": "where an arXiv id lives, a link in the workshop's Resolve an id, never fetched",
+  "https://pubmed.ncbi.nlm.nih.gov": "where a PubMed id lives, a link in the workshop's Resolve an id, never fetched",
+  "https://papers.ssrn.com": "where an SSRN id lives, a link in the workshop's Resolve an id, never fetched",
+  "https://openalex.org": "where an OpenAlex work id lives, a link in the workshop's Resolve an id, never fetched (the API is api.openalex.org, asked by the Worker)",
+  "https://orcid.org": "where an ORCID lives, a link in the workshop's Resolve an id, never fetched (the Worker asks pub.orcid.org)",
+  "https://openlibrary.org": "where an ISBN lives, a link in the workshop's Resolve an id, never fetched (the Worker asks its API)",
   "https://fonts.googleapis.com": "the webfont stylesheet link and its preconnect",
   "https://fonts.gstatic.com": "the webfont files' preconnect",
   "https://www.tbsnews.net": "a source credited in an article",

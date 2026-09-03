@@ -24,9 +24,9 @@ import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { captureShape, toneVar } from "@reiad/shared/research";
 import { parseAny } from "@reiad/shared/research-bib";
 import {
-  addNote, addSource, addTask, findDuplicate, listActivity, listNotes, listQuestions,
-  listSources, listTasks, lookupDoi, lookupIsbn, lookupUrl, saveNote, saveTask,
-  type Activity, type Note, type Question, type Source, type Task,
+  addNote, addSource, addTask, chunkHref, embedTexts, findDuplicate, listActivity, listEvents, listNotes, listQuestions,
+  listSources, listTasks, lookupDoi, lookupIsbn, lookupUrl, matchChunks, saveNote, saveTask, serviceStatus,
+  type Activity, type Match, type Note, type Question, type Source, type Task,
 } from "../../lib/research-api";
 import { RESEARCH_PAGES, isOpen } from "../../lib/research-pages";
 import { GoCard } from "../deck";
@@ -52,16 +52,21 @@ export function Board() {
   const [tasks, setTasks] = useState<Task[]>([]);
   const [inbox, setInbox] = useState<Note[]>([]);
   const [recent, setRecent] = useState<Activity[]>([]);
+  const [dates, setDates] = useState<Awaited<ReturnType<typeof listEvents>>>([]);
   const [q, setQ] = useState("");
   const [hits, setHits] = useState<{ sources: Source[]; notes: Note[]; questions: Question[]; tasks: Task[] } | null>(null);
+  const [passages, setPassages] = useState<Match[] | null>(null);
+  const [embedOn, setEmbedOn] = useState(false);
   const box = useRef<HTMLInputElement>(null);
 
   const reload = useCallback(async () => {
     if (!w) return;
-    const [t, n, a] = await Promise.all([listTasks(w), listNotes(w, { inbox: true, limit: 20 }), listActivity(w, 12)]);
+    const since = new Date(Date.now() - 86400000).toISOString();
+    const [t, n, a, e] = await Promise.all([listTasks(w), listNotes(w, { inbox: true, limit: 20 }), listActivity(w, 12), listEvents(w, { from: since })]);
     setTasks(t);
     setInbox(n);
     setRecent(a);
+    setDates(e.filter((x) => !x.done).slice(0, 5));
   }, [w]);
 
   useEffect(() => { void reload(); }, [reload]);
@@ -130,9 +135,13 @@ export function Board() {
     } finally { setBusy(false); }
   }, [w, line, busy, reload]);
 
-  /* One search over everything, from two characters. */
+  useEffect(() => { void serviceStatus().then((s) => setEmbedOn(s?.embed === "on")); }, []);
+
+  /* One search over everything, from two characters; and, where
+     the embeddings are on, the nearest passages by meaning through
+     the RPC that runs as the reader. */
   useEffect(() => {
-    if (!w || q.trim().length < 2) { setHits(null); return; }
+    if (!w || q.trim().length < 2) { setHits(null); setPassages(null); return; }
     let alive = true;
     const t = setTimeout(() => {
       void Promise.all([
@@ -146,9 +155,12 @@ export function Board() {
           tasks: ts.filter((x) => x.title.toLowerCase().includes(needle)).slice(0, 20),
         });
       });
+      if (embedOn && q.trim().length >= 3) {
+        void embedTexts(w, [q.trim()]).then((v) => (v?.[0] ? matchChunks(w, v[0], 8) : [])).then((m) => { if (alive) setPassages(m); });
+      }
     }, 250);
     return () => { alive = false; clearTimeout(t); };
-  }, [w, q]);
+  }, [w, q, embedOn]);
 
   const today = tasks.filter((t) => t.lane === "today");
 
@@ -169,7 +181,7 @@ export function Board() {
   return (
     <div className="grid gap-6">
       {/* ---- the capture line ---- */}
-      <Surface material="pane" className="px-5 py-4 grid gap-3" accent={toneVar("gold")}>
+      <Surface material="pane" className="rs-tint px-5 py-4 grid gap-3" accent={toneVar("gold")}>
         <form
           className="flex flex-wrap items-end gap-3"
           onSubmit={(e) => { e.preventDefault(); void capture(); }}
@@ -200,7 +212,7 @@ export function Board() {
 
       <div className="grid gap-6 lg:grid-cols-2">
         {/* ---- today ---- */}
-        <Surface material="pane" className="px-5 py-4 grid gap-3" accent={toneVar("gold")}>
+        <Surface material="pane" className="rs-tint px-5 py-4 grid gap-3" accent={toneVar("gold")}>
           <h2 className="text-t3 font-medium flex items-center gap-2">
             <Icon name="calendar" size={18} /> <W k="rs.board.today" />
           </h2>
@@ -217,11 +229,21 @@ export function Board() {
               ))}
             </ul>
           ) : <p className="text-t2 text-ink-soft"><W k="rs.board.today.empty" /></p>}
+          {dates.length ? (
+            <ul className="grid gap-1 text-t2" aria-label={both("rs.plan.next")}>
+              {dates.map((e) => (
+                <li key={e.id} className="flex items-baseline gap-2">
+                  <span className="text-t1 text-ink-soft mono">{e.starts.slice(5, 10)}</span>
+                  <span>{e.title}</span>
+                </li>
+              ))}
+            </ul>
+          ) : null}
           <ChipLink href="/tools/research/plan"><T en="The planner" bn="পরিকল্পনা" /></ChipLink>
         </Surface>
 
         {/* ---- pick up where you left off ---- */}
-        <Surface material="pane" className="px-5 py-4 grid gap-3" accent={toneVar("blue")}>
+        <Surface material="pane" className="rs-tint px-5 py-4 grid gap-3" accent={toneVar("blue")}>
           <h2 className="text-t3 font-medium flex items-center gap-2">
             <Icon name="keep" size={18} /> <W k="rs.board.resume" />
           </h2>
@@ -238,7 +260,7 @@ export function Board() {
         </Surface>
 
         {/* ---- the inbox ---- */}
-        <Surface material="pane" className="px-5 py-4 grid gap-3" accent={toneVar("plum")}>
+        <Surface material="pane" className="rs-tint px-5 py-4 grid gap-3" accent={toneVar("plum")}>
           <h2 className="text-t3 font-medium flex items-center gap-2">
             <Icon name="note" size={18} /> <W k="rs.board.inbox" />
             {inbox.length ? <Chip>{inbox.length}</Chip> : null}
@@ -259,7 +281,7 @@ export function Board() {
         </Surface>
 
         {/* ---- one search over everything ---- */}
-        <Surface material="pane" className="px-5 py-4 grid gap-3" accent={toneVar("teal")}>
+        <Surface material="pane" className="rs-tint px-5 py-4 grid gap-3" accent={toneVar("teal")}>
           <h2 className="text-t3 font-medium flex items-center gap-2">
             <Icon name="search" size={18} /> <W k="rs.board.search" />
           </h2>
@@ -267,6 +289,17 @@ export function Board() {
                  value={q} onChange={(e) => setQ(e.target.value)} autoComplete="off"
                  placeholder={both("rs.board.search")} />
           {hits ? <Hits hits={hits} /> : <p className="text-t2 text-ink-soft"><W k="rs.board.search.empty" /></p>}
+          {passages?.length ? (
+            <div className="grid gap-1" data-testid="rs-board-passages">
+              <h3 className="text-t2 font-medium"><W k="rs.board.passages" /></h3>
+              {passages.map((m) => (
+                <Link key={m.id} href={chunkHref(m.kind, m.ref_id)} className="flex gap-2 items-baseline">
+                  <span className="grow">{m.title}</span>
+                  <span className="text-t1 text-ink-soft mono shrink-0">{Math.round(m.similarity * 100)}%</span>
+                </Link>
+              ))}
+            </div>
+          ) : null}
         </Surface>
       </div>
 

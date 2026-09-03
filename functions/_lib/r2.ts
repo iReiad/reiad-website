@@ -59,7 +59,13 @@ export interface R2Bucket {
       customMetadata?: Record<string, string>;
     },
   ): Promise<R2Object | null>;
-  get(key: string): Promise<R2ObjectBody | null>;
+  /** `range` answers a slice of the object: pdf.js reads a large
+      file a chunk at a time and a player seeks. Without it every
+      seek is the whole file again. */
+  get(
+    key: string,
+    options?: { range?: { offset: number; length?: number } | { suffix: number } },
+  ): Promise<R2ObjectBody | null>;
   head(key: string): Promise<R2Object | null>;
   /** `cursor` and `truncated` are how a listing longer than one
       page is read to the end. R2 answers at most 1000 keys, and the

@@ -1562,7 +1562,7 @@ at.
   the account holds in it. Leaving should be as easy as arriving.
 - **Erase everything**, which means the account and the mirror.
 
-`next/account.test.ts` is the guard: 157 checks in a real browser
+`next/account.test.ts` is the guard: 168 checks in a real browser
 against a routed Supabase.
 
 #### Those two buttons are lists, and a list goes stale
@@ -2334,7 +2334,7 @@ node next/account.test.ts        # the account's five features, the popover
                                   # menu, the Save under a byline, the panel
                                   # that says what this browser is holding, and
                                   # the picture a Google sign-in brings, under
-                                  # the real CSP (157 checks, needs the Next
+                                  # the real CSP (190 checks, needs the Next
                                   # build and a browser, skips without)
 node aab/sync.test.ts             # a browser's own progress getting into an
                                    # account, resetting, signing out, two
@@ -2362,10 +2362,31 @@ node next/routine-day.test.ts      # a day that renders and does not mark, an
 node next/research-studio.test.ts  # the Research Studio: the capture box
                                    # filing a DOI as a source, the library
                                    # listing it, a signed-out room that invites
-                                   # rather than blanks, and that `/` still
-                                   # belongs to the site's palette (47 checks,
-                                   # needs the Next build and a browser, skips
-                                   # without)
+                                   # rather than blanks, that `/` still
+                                   # belongs to the site's palette, and the
+                                   # reader: a PDF drawn from a worker on this
+                                   # origin, a highlight anchored to its words
+                                   # and found again with its rectangles gone,
+                                   # and the review room: a record screened by
+                                   # keyboard that becomes a source only when
+                                   # included, and PRISMA out of the rows;
+                                   # and the lab: a DSE export read by its
+                                   # headings into DuckDB in the browser, OLS
+                                   # with an APA table saved as a run; and the
+                                   # field room: a name sealed in the browser,
+                                   # a transcript coded by selecting words, and
+                                   # a survey published to D1; and the workshop:
+                                   # thirty tools a page each, a sample size to
+                                   # the textbook's number, a DOI cited in APA;
+                                   # and the assistant: a fake stream through
+                                   # the real parser, a key the library holds
+                                   # drawn as a chip and one it lacks struck
+                                   # through, the answer kept as a note with
+                                   # its cost, the index and the RPC; and the
+                                   # methods room: twelve lessons by kind, a
+                                   # written one a link to its piece
+                                   # (246 checks, needs the Next build and a
+                                   # browser, skips without)
 node next/progress.test.ts         # a page that costs a reader their ticks just
                                    # by being read, where in a piece they had
                                    # got to, and which tools they use

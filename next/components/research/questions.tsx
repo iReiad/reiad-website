@@ -34,10 +34,14 @@ import { cue } from "../../lib/sound";
 import { T, W, both, useToolLang } from "./lang";
 import { SignedOut } from "./signed-out";
 import { SAID, SETTLE, useWho, when } from "./use-who";
+import { argumentMap, gapMatrix } from "@reiad/shared/research-graph";
 import { useKeys } from "./keys";
+
+type QView = "tree" | "map" | "gaps" | "variables";
 
 export function Questions() {
   const { w, answered } = useWho();
+  const [view, setView] = useState<QView>("tree");
   const lang = useToolLang();
   const [rows, setRows] = useState<Question[] | null>(null);
   const [projects, setProjects] = useState<Project[]>([]);
@@ -108,7 +112,26 @@ export function Questions() {
 
   if (!w) return <SignedOut answered={answered} />;
 
+  const strip = (
+    <div className="flex flex-wrap gap-2">
+      {(["tree", "map", "gaps", "variables"] as const).map((v) => (
+        <ChipButton key={v} pressed={view === v} onClick={() => setView(v)}>{both(v === "tree" ? "rs.q.tree" : `rs.q.${v}`)}</ChipButton>
+      ))}
+    </div>
+  );
+  if (view !== "tree") {
+    return (
+      <div className="grid gap-4">
+        {strip}
+        <QuestionViews view={view} w={w} rows={rows ?? []} sources={sources} projects={projects}
+                       onMade={(q) => { setRows((was) => [...(was ?? []), q]); }} onChanged={(q) => { setRows((was) => (was ?? []).map((x) => x.id === q.id ? q : x)); }} />
+      </div>
+    );
+  }
+
   return (
+    <div className="grid gap-4">
+    {strip}
     <div className="rs-panes">
       <section className="rs-list grid gap-3 content-start" aria-label="Questions / প্রশ্ন">
         <div className="flex flex-wrap gap-2">
@@ -156,6 +179,7 @@ export function Questions() {
           </Surface>
         )}
       </section>
+    </div>
     </div>
   );
 }
@@ -300,5 +324,108 @@ function QuestionCard({ w, q, all, projects, sources, onChange, onChild, onOpen,
         <span className="text-t1 text-ink-soft mono"><W k="rs.updated" />: {when(q.updated_at)}</span>
       </div>
     </div>
+  );
+}
+
+
+/* ---------- the map, the gaps and the variables ---------- */
+
+function QuestionViews({ view, w, rows, sources, projects, onMade, onChanged }: {
+  view: QView; w: Who; rows: Question[]; sources: Source[]; projects: Project[];
+  onMade: (q: Question) => void; onChanged: (q: Question) => void;
+}) {
+  const [name, setName] = useState("");
+  const [measure, setMeasure] = useState("");
+  const questions = rows.filter((q) => q.kind !== "variable");
+  const variables = rows.filter((q) => q.kind === "variable");
+  const cited = sources.filter((s) => questions.some((q) => (q.body.evidence ?? []).some((e) => e.source_id === s.id)));
+  const map = argumentMap(questions, cited);
+  const gaps = gapMatrix(sources.filter((s) => s.tags.length));
+  const STANCE_TONES: Record<string, string> = { supports: "green", contradicts: "rose", method: "blue", context: "gold" };
+  const addVariable = async (): Promise<void> => {
+    if (!name.trim()) return;
+    const q = await addQuestion(w, name.trim(), "variable", null, null);
+    if (q) {
+      const r = await saveQuestion(w, q.id, { body: { measure: measure.trim() } }, name.trim());
+      onMade(r.ok ? r.row : q);
+      setName(""); setMeasure(""); cue("saved");
+    }
+  };
+  void projects;
+  if (view === "map") {
+    return (
+      <Surface material="pane" className="px-4 py-3 grid gap-2">
+        <p className="text-t1 text-ink-soft"><W k="rs.q.map.hint" /></p>
+        {!cited.length ? <p className="text-t2 text-ink-soft"><W k="rs.none" /></p> : (
+          <div className="overflow-x-auto">
+            <table className="text-t1" data-testid="rs-argmap">
+              <thead><tr><th></th>{cited.map((s) => <th key={s.id} className="font-normal text-left align-bottom" style={{ writingMode: "vertical-rl", transform: "rotate(180deg)", maxHeight: "12rem" }}>{s.key}</th>)}</tr></thead>
+              <tbody>
+                {questions.map((q) => (
+                  <tr key={q.id}>
+                    <th className="text-left font-normal pr-2 max-w-[24rem]">{q.text}</th>
+                    {cited.map((s) => {
+                      const cell = map.find((c) => c.row === q.id && c.col === s.id);
+                      return (
+                        <td key={s.id} className="text-center align-middle" style={{ minWidth: "1.6rem" }}>
+                          {cell ? cell.marks.map((m, i) => <span key={i} className="rs-row-dot inline-block mx-px" style={{ "--tone": toneVar(STANCE_TONES[m] as "green") } as React.CSSProperties} title={m} />) : null}
+                        </td>
+                      );
+                    })}
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+        )}
+      </Surface>
+    );
+  }
+  if (view === "gaps") {
+    const tagged = sources.filter((s) => s.tags.length);
+    return (
+      <Surface material="pane" className="px-4 py-3 grid gap-2">
+        <p className="text-t1 text-ink-soft"><W k="rs.q.gaps.hint" /> <Chip>{gaps.gaps} {both("rs.q.gaps.count")}</Chip></p>
+        {!gaps.tags.length ? <p className="text-t2 text-ink-soft"><W k="rs.none" /></p> : (
+          <div className="overflow-x-auto">
+            <table className="text-t1" data-testid="rs-gaps">
+              <thead><tr><th></th>{tagged.map((s) => <th key={s.id} className="font-normal text-left align-bottom" style={{ writingMode: "vertical-rl", transform: "rotate(180deg)", maxHeight: "12rem" }}>{s.key}</th>)}</tr></thead>
+              <tbody>
+                {gaps.tags.map((t) => (
+                  <tr key={t}>
+                    <th className="text-left font-normal pr-2">{t}</th>
+                    {tagged.map((s) => <td key={s.id} className="text-center" style={{ minWidth: "1.6rem" }}>{s.tags.includes(t) ? <span className="rs-row-dot inline-block" style={{ "--tone": toneVar("teal") } as React.CSSProperties} /> : <span className="text-ink-soft opacity-40">·</span>}</td>)}
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+        )}
+      </Surface>
+    );
+  }
+  return (
+    <Surface material="pane" className="px-4 py-3 grid gap-3">
+      <p className="text-t1 text-ink-soft"><W k="rs.q.variables.hint" /></p>
+      <form className="grid gap-2 md:grid-cols-[minmax(0,1fr)_minmax(0,1fr)_auto] items-end" onSubmit={(e) => { e.preventDefault(); void addVariable(); }}>
+        <Field id="rs-v-name" label={<W k="rs.q.variables.new" />} value={name} onChange={(e) => setName(e.target.value)} autoComplete="off" />
+        <Field id="rs-v-measure" label={<W k="rs.q.variables.measure" />} value={measure} onChange={(e) => setMeasure(e.target.value)} autoComplete="off" />
+        <Button type="submit" kind="solid" size="sm" disabled={!name.trim()}><W k="rs.q.variables.new" /></Button>
+      </form>
+      {variables.length ? (
+        <table className="text-t2" data-testid="rs-variables">
+          <thead><tr><th className="text-left font-normal text-ink-soft text-t1"><W k="rs.q.variables" /></th><th className="text-left font-normal text-ink-soft text-t1"><W k="rs.q.variables.measure" /></th><th className="text-left font-normal text-ink-soft text-t1"><W k="rs.evidence" /></th></tr></thead>
+          <tbody>
+            {variables.map((v) => (
+              <tr key={v.id}>
+                <td className="pr-3">{v.text}</td>
+                <td className="pr-3"><Field id={`rs-v-m-${v.id}`} label={both("rs.q.variables.measure")} hideLabel defaultValue={v.body.measure ?? ""} onBlur={(e) => { void saveQuestion(w, v.id, { body: { ...v.body, measure: e.target.value } }, v.text).then((r) => { if (r.ok) onChanged(r.row); }); }} /></td>
+                <td>{(v.body.evidence ?? []).map((e) => sources.find((s) => s.id === e.source_id)?.key).filter(Boolean).join(", ")}</td>
+              </tr>
+            ))}
+          </tbody>
+        </table>
+      ) : <p className="text-t2 text-ink-soft"><W k="rs.none" /></p>}
+    </Surface>
   );
 }
