@@ -2625,6 +2625,25 @@ room's head link the methods behind them by slug, and every card
 carries its slug as an anchor. `check-research.ts` fails on a
 method naming a tool or a room that does not exist.
 
+**AND THE TABLES DID NOT EXIST.** For a day the studio was
+seventeen rooms over an empty database: the Supabase branch went
+to MIGRATIONS_FAILED on 2 September and nothing after 30 August
+was ever applied. `research_sources` and `research_notes` built
+their search column with `array_to_string(tags, ' ')`, and that
+function is STABLE rather than immutable because it runs the
+element type's output function, so Postgres refused the generated
+column with `42P17` and the migration died on its first table.
+
+Nothing here could see it, and the reason is worth more than the
+fix: **every check in this repository reads the migration FILES.**
+`check-rls.ts` asks whether a table has its policies, and it is
+reading a file; the tests run against a fixture. A schema that
+cannot be created passed 88 checks, and the only symptom was one
+red tick belonging to somebody else's integration, next to two
+green ones. `public.words_to_text` is the immutable wrapper the
+two columns use now, and `scripts/check-migrations.ts` reads the
+SQL for what a runner will refuse rather than for what it says.
+
 **A WORKER IS 3 MiB AND THIS STAGE SPENT IT.** `reiad-next` was
 2946 KiB gzipped before it and 3294 after, so every deploy of the
 branch failed while `checks` stayed green: the only symptom was a
