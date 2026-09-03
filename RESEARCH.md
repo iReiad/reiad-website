@@ -2584,7 +2584,28 @@ until pressed) and the month's spend in pounds at the stated
 rate. Held by `scripts/research-assist.test.ts` (the grounding,
 the chunking, the cost, the placeholders) and section 13 of
 `next/research-studio.test.ts`, which streams a fake answer
-through the real parser. Not yet from section 21: the model
+through the real parser.
+
+**The three metered services are the OWNER'S, and that is the
+change of 3 September 2026.** The model key has a bill on it and
+Workers AI has one quota for the whole site, so the assistant,
+the embeddings and the field room's transcription spend
+something the SITE holds rather than something the reader does.
+Sign-up is open to anybody with a Google account, so "signed in"
+was not a gate at all: a stranger could have spent the key at the
+throttle's rate, thirty calls a quarter of an hour, at the
+highest effort, and the month's spend on the settings page would
+never have shown it, because that figure sums the reader's own
+notes. `isAdmin()` decides now, the one function the broker's
+levers already go through, and `/api/research/status` answers
+`owner` rather than `on` to anybody else: there, and not yours to
+spend. The room says so in a sentence instead of offering a
+button that would 403. Every other room in the studio is the
+reader's own and none of this touches them. A second reader ever
+getting the assistant is a per-reader key, sealed the way the
+broker's is, and not a wider gate here.
+
+Not yet from section 21: the model
 picked by task rather than one model with an effort knob, the
 reading room's own "ask about this source" door, and insert at
 the caret rather than copy.
