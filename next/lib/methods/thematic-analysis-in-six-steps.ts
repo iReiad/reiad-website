@@ -20,7 +20,7 @@ export const LESSON: MethodLesson = {
 
 <h2>The six phases</h2>
 <ol class="step-list">
-<li><strong>Familiarising yourself with the data.</strong> Read the whole transcript, or listen to the recording, before coding a single line. Note first impressions as you go, not codes yet, just what strikes you.</li>
+<li><strong>Familiarising yourself with the data.</strong> Read the whole transcript, or listen to the recording, before coding a single line. Note first impressions as you go, not codes yet.</li>
 <li><strong>Generating initial codes.</strong> Work through the data, giving a short label to anything interesting or relevant. Code inclusively: a passage can carry more than one code, and a pattern never labelled cannot be found again.</li>
 <li><strong>Searching for themes.</strong> Gather the codes into candidate groups by sorting: lay them out and ask which point at the same underlying idea. A candidate theme here is a working hypothesis, and it is normal for half to fall apart at the next step.</li>
 <li><strong>Reviewing themes.</strong> Check each candidate two ways: against its own coded extracts, asking whether they cohere, and against the whole data set, asking whether the theme fits it as a whole or only the passages pulled out. A theme that survives both is kept, refined, split, or merged; one that survives neither is dropped.</li>
@@ -76,7 +76,7 @@ export const LESSON: MethodLesson = {
 
 <h2>ছয়টা ধাপ</h2>
 <ol class="step-list">
-<li><strong>তথ্যের সঙ্গে চেনাজানা হওয়া।</strong> একটা লাইনও কোড করার আগে পুরো ট্রান্সক্রিপ্ট পড়ুন, বা রেকর্ডিং শুনুন। যেতে যেতে প্রথম ধারণাগুলো লিখে রাখুন, এখনো কোড নয়, শুধু কী চোখে পড়ল।</li>
+<li><strong>তথ্যের সঙ্গে চেনাজানা হওয়া।</strong> একটা লাইনও কোড করার আগে পুরো ট্রান্সক্রিপ্ট পড়ুন, বা রেকর্ডিং শুনুন। যেতে যেতে প্রথম ধারণাগুলো লিখে রাখুন, এখনো কোড নয়।</li>
 <li><strong>প্রথম দফায় কোড করা।</strong> তথ্যের ভেতর দিয়ে এগোন, যা কিছু আগ্রহের বা প্রাসঙ্গিক মনে হয় তাতে ছোট লেবেল দিন। খোলা মনে কোড করুন: একটা অংশে একাধিক কোড থাকতে পারে, আর লেবেল না দেওয়া ধরন পরে খুঁজে পাওয়া যাবে না।</li>
 <li><strong>বিষয় খোঁজা।</strong> কোডগুলোকে সম্ভাব্য দলে জড়ো করুন, সাজিয়ে: কোনগুলো একই অন্তর্নিহিত ভাবনার দিকে ইঙ্গিত করছে তা দেখুন। এই ধাপের প্রার্থী বিষয় একটা অনুমান, ফলাফল নয়, আর অর্ধেক পরের ধাপে ভেঙে পড়াটা স্বাভাবিক।</li>
 <li><strong>বিষয় যাচাই করা।</strong> প্রতিটা প্রার্থীকে দুইভাবে পরীক্ষা করুন: নিজের কোড করা অংশের বিপরীতে মিলে যায় কি না দেখে, আর পুরো তথ্যের বিপরীতে শুধু বেছে নেওয়া অংশ নয় পুরোটার সঙ্গে মিলছে কি না দেখে। দুই পরীক্ষাতেই টিকলে রাখা হয়, ধারালো বা ভাগ বা মেশানো হয়; না টিকলে বাদ যায়।</li>
@@ -114,5 +114,5 @@ export const LESSON: MethodLesson = {
 <li>কোনো রিফ্লেক্সিভ নোট নেই, ফলে বোঝার উপায় থাকে না বিষয়টার কতটা তথ্য থেকে আর কতটা পড়া মানুষটা থেকে এসেছে।</li>
 </ul>
 <p class="note">কোনো অংশ ফাইল ছেড়ে বেরোনোর আগে নাম মুছুন। এটা কোডবইয়ে, পরিশিষ্টে, কখনো ছাপা নিবন্ধে যায়, আর কখনো এমন নাম থাকা উচিত নয় যা কে বলেছে তা চিনিয়ে দেয়।</p>
-<p>মাঠ ঘরের কোডবই আর কোডিং হলো যেখানে এটা আসল ট্রান্সক্রিপ্টে ঘটে: প্রথম দফার কোড এক ধাপে বসে, প্রার্থী বিষয় পরের ধাপে দলে সাজানো আর যাচাই করা হয়, আর লেখার আগে প্রতিটা বিষয় সংজ্ঞায়িত করে নাম দেওয়া হয়।</p>`,
+<p>মাঠ ঘরের কোডবই আর কোডিং হলো এটা আসল ট্রান্সক্রিপ্টে যেখানে ঘটে: প্রথম দফার কোড এক ধাপে, প্রার্থী বিষয় পরের ধাপে দলে সাজানো আর যাচাই, আর লেখার আগে প্রতিটা বিষয় সংজ্ঞায়িত করে নাম দেওয়া।</p>`,
 };
