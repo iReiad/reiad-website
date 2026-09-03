@@ -70,7 +70,7 @@ export const LESSON: MethodLesson = {
 <li>At least one paragraph was planned as claim, evidence, so what, before the section was drafted in full.</li>
 </ul>
 
-<p>The questions room is where the tree gets built, sub-question under main question, with what the library already holds linked beside each one; the writing desk turns the outline into a draft with headings and a running word count against the budget, so a section that has grown past its target is visible before the chapter is finished rather than after.</p>`,
+<p>The questions room is where the tree gets built, sub-question under main question, linked to what the library already holds; the writing desk turns the outline into a draft with a running word count against the budget, so a section past its target is visible before the chapter is finished, not after.</p>`,
   bn: `<div class="at-a-glance"><p class="at-a-glance-label">এক নজরে</p><ul>
 <li>একটা মূল প্রশ্ন, তিন থেকে পাঁচটা উপ-প্রশ্নে ভাঙা, প্রতিটার নিজের ধরনের প্রমাণ দরকার।</li>
 <li>প্রতিটা উপ-প্রশ্ন একটা অংশ হয়ে যায়, আর অংশের শিরোনাম একটা দাবি বলে, বিষয় নয়।</li>
@@ -104,7 +104,7 @@ export const LESSON: MethodLesson = {
 <p class="note">প্রমাণে থেমে যাওয়া, মানে কখনো না বলা অনুচ্ছেদ কাজের তিন ভাগের দুই ভাগ করেছে। পাঠককে নিজে সিদ্ধান্তে পৌঁছাতে হয়, আর আপনি যা ভেবেছিলেন তার থেকে আলাদা সিদ্ধান্তে পৌঁছানো পাঠক, কারিগরিভাবে, অনুচ্ছেদটা ঠিকই পড়েছেন।</p>
 
 <h2>করে দেখানো: ইনডেক্স ইনস্যুরেন্স নেওয়ার হার</h2>
-<div class="ex"><b>করে দেখানো।</b> মূল প্রশ্ন: গত এক দশকে খাতজুড়ে প্রিমিয়াম কমার পরও ক্ষুদ্র চাষিদের মধ্যে ইনডেক্স ইনস্যুরেন্স নেওয়ার হার কেন কম থেকে যাচ্ছে। চারটা উপ-প্রশ্ন, প্রতিটার দরকারি প্রমাণসহ, একটা অধ্যায়ের রূপরেখায় বদলে গেল, প্রতিটা অংশের শিরোনাম আর শব্দের বাজেটসহ। বাজেটগুলো যোগ করলে ৯,০০০ শব্দ হয়।</div>
+<div class="ex"><b>করে দেখানো।</b> মূল প্রশ্ন: খাতজুড়ে প্রিমিয়াম কমার পরও ক্ষুদ্র চাষিদের মধ্যে ইনডেক্স ইনস্যুরেন্স নেওয়ার হার কেন কম থেকে যাচ্ছে। চারটা উপ-প্রশ্ন, প্রতিটার দরকারি প্রমাণসহ, রূপরেখায় বদলে গেল, শিরোনাম আর শব্দের বাজেটসহ, যোগফল ৯,০০০ শব্দ।</div>
 <div class="table-scroll"><table>
 <thead><tr><th>উপ-প্রশ্ন</th><th>দরকারি প্রমাণ</th><th>অংশের শিরোনাম</th><th>শব্দ</th></tr></thead>
 <tbody>
@@ -138,5 +138,5 @@ export const LESSON: MethodLesson = {
 <li>অন্তত একটা অনুচ্ছেদ দাবি, প্রমাণ, তাতে কী হিসেবে পরিকল্পনা করা হয়েছে, পুরো অংশ খসড়া করার আগেই।</li>
 </ul>
 
-<p>প্রশ্ন ঘরেই গাছটা বানানো হয়, উপ-প্রশ্ন মূল প্রশ্নের নিচে, লাইব্রেরিতে যা আছে তার সঙ্গে প্রতিটা জোড়া লাগানো; লেখার টেবিল রূপরেখাটাকে একটা খসড়ায় বদলায়, শিরোনামসহ আর বাজেটের বিপরীতে চলমান শব্দ গোনাসহ, তাই লক্ষ্যের চেয়ে বেড়ে যাওয়া কোনো অংশ অধ্যায় শেষ হওয়ার আগেই চোখে পড়ে, পরে নয়।</p>`,
+<p>প্রশ্ন ঘরেই গাছটা বানানো হয়, উপ-প্রশ্ন মূল প্রশ্নের নিচে, লাইব্রেরিতে যা আছে তার সঙ্গে জোড়া লাগানো; লেখার টেবিল রূপরেখাটা খসড়ায় বদলায়, বাজেটের বিপরীতে চলমান শব্দ গোনাসহ, তাই লক্ষ্যের চেয়ে বেড়ে যাওয়া অংশ অধ্যায় শেষ হওয়ার আগেই চোখে পড়ে, পরে নয়।</p>`,
 };
