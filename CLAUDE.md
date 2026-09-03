@@ -2203,7 +2203,9 @@ node scripts/check-routes.ts # redirect loops, dead links in routes as well
                             # URL, a check or a test published as a page, a
                             # redirect pointing at a practice book no stage
                             # declares, a page that was a directory losing its
-                            # directory address, and a page inside TWO shell
+                            # directory address, a route whose dynamicParams
+                            # is false, which answers 404 for every param on
+                            # this deployment, and a page inside TWO shell
                             # layouts, which draws the rail, the bar, the footer
                             # and the boot script twice and takes --rail-w off
                             # the width twice

@@ -2625,6 +2625,23 @@ room's head link the methods behind them by slug, and every card
 carries its slug as an anchor. `check-research.ts` fails on a
 method naming a tool or a room that does not exist.
 
+**AND THIRTY-ONE ADDRESSES ANSWERED 404.** The workshop's thirty
+tool pages and the twelve method lessons are dynamic segments
+that carried `export const dynamicParams = false`, which is
+Next's way of saying "only the params I named". On this
+deployment that answers 404 for EVERY param, its own prerendered
+ones included: the page is in `.open-next/cache` and the runtime
+refuses to render on demand, so it has nothing to serve.
+`/tools/research/tools/which-test` was dead from the day it
+shipped, and every card in the workshop pointed at it.
+
+It renders perfectly in `next build`, in `next dev` and in the
+browser test, which serves the prerendered files directly.
+Only workerd and the live site say otherwise, which is why
+`npm run preview` is worth more than another test. The flag is
+gone from both routes, an unknown param calls `notFound()`, and
+`check-routes.ts` fails on the flag coming back.
+
 **AND THE TABLES DID NOT EXIST.** For a day the studio was
 seventeen rooms over an empty database: the Supabase branch went
 to MIGRATIONS_FAILED on 2 September and nothing after 30 August
