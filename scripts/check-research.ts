@@ -207,6 +207,14 @@ for (const s of ["doi", "isbn", "url", "bib", "todo", "note", "dup", "fail"]) if
     .map((f) => readFileSync(join(dir, f), "utf8")).join("\n")
     .replace(/^\s*--.*$/gm, "");
   const constraint = (table: string, column: string): string[] => {
+    /* A constraint widened later, by name: `alter table <table>
+       drop constraint ... add constraint <table>_<column>_check
+       check (<column> in (...))`, the migration that joins a new
+       value on without touching the column's own definition. The
+       named constraint wins over the column's original one, which
+       is what "widened" means. */
+    const widened = new RegExp(`add constraint ${table}_${column}_check\\s+check \\(${column} in \\(([^)]*)\\)`).exec(sql);
+    if (widened) return widened[1].split(",").map((s) => s.trim().replace(/^'|'$/g, ""));
     const body = new RegExp(`create table if not exists public\\.${table} \\(([\\s\\S]*?)\\n\\);`).exec(sql)?.[1] ?? "";
     const col = new RegExp(`\\n\\s*${column}\\s+text[^\\n]*(?:\\n[^\\n]*)*?check \\(${column} in \\(([^)]*)\\)`).exec(body)
       /* A column added later: `alter table ... add column if not

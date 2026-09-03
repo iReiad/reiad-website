@@ -2,7 +2,7 @@ import type { MethodLesson } from "../research-methods";
 
 export const LESSON: MethodLesson = {
   slug: "csad-herding-step-by-step",
-  minutes: 5,
+  minutes: 7,
   en: `<div class="at-a-glance"><p class="at-a-glance-label">At a glance</p><ul>
 <li>CSAD measures how spread out stocks' daily returns are around the market's own return on that day.</li>
 <li>Regress CSAD on the absolute market return and its square; the shape of that curve is the test.</li>
