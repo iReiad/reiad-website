@@ -743,4 +743,30 @@ function QuotePicker({ w, sources, onPick }: { w: Who; sources: Source[]; onPick
   );
 }
 
+/** A run's own chart, or its fit as an APA table where it has
+    neither, over the reader's `research_runs`. RESEARCH.md 16 and
+    14. */
+function FigurePicker({ w, onPick }: { w: Who; onPick: (run: Run) => void }) {
+  const [runs, setRuns] = useState<Run[] | null>(null);
+  useEffect(() => { void listRuns(w).then(setRuns); }, [w]);
+  const usable = (runs ?? []).filter((r) => r.figure || modelOf(r));
+  return (
+    <Surface material="sunk" className="px-4 py-3 grid gap-2">
+      <h3 className="text-t2 font-medium"><W k="rs.write.figure.insert" /></h3>
+      {runs === null ? <p className="text-t2 text-ink-soft"><W k="rs.moment" /></p> : usable.length ? (
+        <ul className="grid gap-1 text-t2 max-h-64 overflow-auto">
+          {usable.map((r) => (
+            <li key={r.id}>
+              <button type="button" className="rs-row" onClick={() => onPick(r)}>
+                <span className="rs-row-dot" aria-hidden="true" />
+                <span className="rs-row-main"><span className="rs-row-title">{r.label}</span><span className="rs-row-sub">{r.figure ? "SVG" : "APA"}</span></span>
+              </button>
+            </li>
+          ))}
+        </ul>
+      ) : <p className="text-t2 text-ink-soft"><W k="rs.none" /></p>}
+    </Surface>
+  );
+}
+
 
