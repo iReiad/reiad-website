@@ -22,7 +22,7 @@ export const LESSON: MethodLesson = {
 </ol>
 
 <h2>A heading is a claim, not a topic</h2>
-<p>"Farmer attitudes to insurance" is a topic: it says what the section is about and nothing about what it argues, so the reader has to read the whole thing to find out whether it agrees with the last section or contradicts it. "Farmers cite basis risk before they cite price" is a claim, and a reader who reads only the headings of a chapter already has its argument, in miniature, before reading a single paragraph. A claim heading disciplines the writer too: a topic heading lets a section drift, since almost anything about farmer attitudes belongs under it, while a claim is a promise, and every paragraph beneath it either supports that promise or does not belong in the section.</p>
+<p>"Farmer attitudes to insurance" is a topic: it says what a section is about and nothing about what it argues, so the reader must read the whole thing to see whether it agrees with the last section or contradicts it. "Farmers cite basis risk before they cite price" is a claim, and a reader of only the headings already has the argument, in miniature. A claim heading disciplines the writer too: a topic lets a section drift, since almost anything about attitudes belongs under it, while a claim is a promise, and every paragraph beneath it supports that promise or does not belong.</p>
 
 <h2>Order by argument, not by chronology</h2>
 <p>The tree's sub-questions do not have to appear in the order you thought of them, and the sections built from them should not appear in the order the sources were published. A chapter is an argument, not a shelf of research summarised as it happened to be read, and the ordering question is always the same one: what does the reader need to believe before the next section makes sense. A definitional confusion is usually worth clearing up first, since a reader who does not know "uptake" is measured three different ways will misread every effect size that follows; evidence about what people actually say tends to come before evidence about what an experiment measured, because the numbers are easier to read once the reader knows what they are meant to explain; and a comparison with what has worked elsewhere usually comes last, where the chapter turns from describing a problem to pointing at what might fix it.</p>
@@ -48,8 +48,8 @@ export const LESSON: MethodLesson = {
 <tr><td>Conclusion</td><td>what the sections together answer</td><td>closes by answering the chapter's own question</td><td>800</td></tr>
 </tbody></table></div>
 <p>Notice the order: definitions first, since a reader who does not know "uptake" is measured three ways will misread what follows; farmer voice before the price experiments, because the numbers make more sense once the reader knows what is on farmers' minds; the comparison with other programmes last, where the chapter turns from diagnosis toward what might be done.</p>
-<div class="ex"><b>Worked example, continued.</b> The paragraph plan for the first paragraph of "Farmers cite basis risk before they cite price".
-<blockquote>Claim: When asked directly, farmers rank basis risk, the chance of a payout not matching an actual loss, above price as their reason for not buying index insurance. Evidence: across three surveys reviewed in this section, between 41 and 58 per cent of non-buyers named basis risk or a past experience of a missed payout as their main reason, against 22 to 34 per cent who named price. So what: this ordering matters for the rest of the chapter, because a policy response built only around subsidising the premium is addressing the second reason, not the first.</blockquote>
+<div class="ex"><b>Worked example, continued.</b> The paragraph plan for this section's first paragraph.
+<blockquote>Claim: asked directly, farmers rank basis risk, a payout not matching an actual loss, above price as their reason for not buying. Evidence: across three surveys, 41 to 58 per cent of non-buyers named basis risk or a missed payout as their main reason, against 22 to 34 per cent who named price. So what: a policy built only around subsidising the premium addresses the second reason, not the first.</blockquote>
 </div>
 
 <h2>Where it goes wrong</h2>
@@ -70,7 +70,7 @@ export const LESSON: MethodLesson = {
 <li>At least one paragraph was planned as claim, evidence, so what, before the section was drafted in full.</li>
 </ul>
 
-<p>The questions room is where the tree gets built, sub-question under main question, linked to what the library already holds; the writing desk turns the outline into a draft with a running word count against the budget, so a section past its target is visible before the chapter is finished, not after.</p>`,
+<p>The questions room builds the tree, sub-question under main question, linked to what the library holds; the writing desk turns the outline into a draft with a running word count against the budget, so a section past its target is visible before the chapter is finished, not after.</p>`,
   bn: `<div class="at-a-glance"><p class="at-a-glance-label">এক নজরে</p><ul>
 <li>একটা মূল প্রশ্ন, তিন থেকে পাঁচটা উপ-প্রশ্নে ভাঙা, প্রতিটার নিজের ধরনের প্রমাণ দরকার।</li>
 <li>প্রতিটা উপ-প্রশ্ন একটা অংশ হয়ে যায়, আর অংশের শিরোনাম একটা দাবি বলে, বিষয় নয়।</li>
@@ -90,7 +90,7 @@ export const LESSON: MethodLesson = {
 </ol>
 
 <h2>শিরোনাম একটা দাবি, বিষয় নয়</h2>
-<p>"ইনস্যুরেন্স নিয়ে চাষিদের মনোভাব" এটা একটা বিষয়: এটা বলে অংশটা কী নিয়ে, কী বলছে তা কিছুই বলে না, তাই পাঠককে পুরো অংশটা পড়তে হয় জানতে এটা আগের অংশের সঙ্গে একমত না বিপরীত। "চাষিরা দামের আগে বেসিস রিস্কের কথা বলেন" এটা একটা দাবি, আর শুধু শিরোনামগুলো পড়া পাঠকের কাছে একটা অনুচ্ছেদও না পড়ে অধ্যায়ের যুক্তিটা ছোট আকারে আগেই চলে আসে। দাবি হিসেবে শিরোনাম লেখককেও শৃঙ্খলায় রাখে: বিষয় হিসেবে শিরোনাম দিলে অংশটা এলোমেলো হতে পারে, কারণ চাষিদের মনোভাব নিয়ে প্রায় যেকোনো কিছুই তার নিচে বসে যায়, আর দাবি একটা প্রতিশ্রুতি, তার নিচের প্রতিটা অনুচ্ছেদ হয় সেই প্রতিশ্রুতি সমর্থন করে, নয়তো সেখানে তার থাকারই কথা না।</p>
+<p>"ইনস্যুরেন্স নিয়ে চাষিদের মনোভাব" এটা একটা বিষয়: এটা বলে অংশটা কী নিয়ে, কী বলছে তা বলে না, তাই পুরো অংশটা পড়েই জানতে হয় এটা আগের অংশের সঙ্গে একমত না বিপরীত। "চাষিরা দামের আগে বেসিস রিস্কের কথা বলেন" এটা একটা দাবি, আর শুধু শিরোনাম পড়া পাঠকের কাছে একটা অনুচ্ছেদ না পড়েই যুক্তিটা ছোট আকারে চলে আসে। দাবি হিসেবে শিরোনাম লেখককেও শৃঙ্খলায় রাখে: বিষয় হিসেবে শিরোনাম দিলে অংশটা এলোমেলো হয়, প্রায় যেকোনো কিছুই তার নিচে বসে যায় বলে, আর দাবি একটা প্রতিশ্রুতি, তার নিচের প্রতিটা অনুচ্ছেদ সেই প্রতিশ্রুতি সমর্থন করে, নয়তো সেখানে তার থাকার কথা না।</p>
 
 <h2>যুক্তির ক্রম, সময়ের ক্রম নয়</h2>
 <p>গাছের উপ-প্রশ্নগুলো যে ক্রমে মাথায় এসেছিল সেই ক্রমেই থাকতে হবে না, আর তা থেকে বানানো অংশগুলো উৎস প্রকাশের ক্রমেও থাকার কথা না। একটা অধ্যায় একটা যুক্তি, প্রকাশের ক্রমে সাজানো গবেষণার সারাংশের তাক নয়, আর ক্রম ঠিক করার প্রশ্নটা সবসময় একই: পরের অংশটা বোধগম্য হওয়ার আগে পাঠকের কী জানা দরকার। একটা সংজ্ঞাগত গোলমাল সাধারণত সবার আগে সাফ করা ভালো, কারণ "uptake" সাহিত্যে তিন রকম মাপা হয়েছে তা না জানা পাঠক পরের প্রতিটা প্রভাবের মাপ ভুল বুঝবেন; মানুষ আসলে কী বলছে তার প্রমাণ সাধারণত পরীক্ষার সংখ্যার আগে আসে, কারণ সংখ্যাগুলো কী বোঝানোর কথা তা জানা থাকলে সেগুলো পড়া সহজ হয়; আর অন্য কোথাও কী কাজ করেছে তার তুলনা সাধারণত সবার শেষে আসে, যেখানে অধ্যায়টা সমস্যা বর্ণনা থেকে সমাধানের দিকে ঘোরে।</p>
@@ -108,16 +108,16 @@ export const LESSON: MethodLesson = {
 <div class="table-scroll"><table>
 <thead><tr><th>উপ-প্রশ্ন</th><th>দরকারি প্রমাণ</th><th>অংশের শিরোনাম</th><th>শব্দ</th></tr></thead>
 <tbody>
-<tr><td>ভূমিকা</td><td>ধাঁধাটা আর এর ভেতর দিয়ে অধ্যায়ের পথ</td><td>প্রিমিয়াম কমলেও নেওয়ার হার বাড়েনি, আর কারণ শুধু দাম নয়</td><td>১,২০০</td></tr>
-<tr><td>"uptake" কি সব গবেষণায় একই মানে বহন করে?</td><td>শব্দটা কীভাবে সংজ্ঞায়িত ও মাপা হয়েছে তার পর্যালোচনা</td><td>"uptake" তিনটা আলাদা মাপ লুকিয়ে রাখে, আর সেই ফারাকটাই গুরুত্বপূর্ণ</td><td>১,৫০০</td></tr>
-<tr><td>চাষিরা কী বলছেন কেন তাঁরা নিচ্ছেন না?</td><td>সাক্ষাৎকার আর জরিপের উপাদান, কোডেড আর উদ্ধৃত</td><td>চাষিরা দামের আগে বেসিস রিস্কের কথা বলেন</td><td>২,০০০</td></tr>
-<tr><td>চাহিদা নিয়ে দামের পরীক্ষাগুলো কী দেখায়?</td><td>দামের হেরফের রাখা পরীক্ষা বা জরিপের প্রমাণ</td><td>রিবেট দিলে দাম দেওয়ার আগ্রহ বাড়ে, প্রিমিয়াম কমালে নয়</td><td>২,০০০</td></tr>
-<tr><td>অন্য কোথাও কী কাজ করেছে?</td><td>আলাদা নকশার কর্মসূচিগুলোর মধ্যে তুলনা</td><td>ঋণের সঙ্গে বান্ডিল করা কর্মসূচিতে দ্রুত নেওয়া হয়, তবে কারণটা এখনও প্রতিষ্ঠিত নয়</td><td>১,৫০০</td></tr>
-<tr><td>উপসংহার</td><td>চারটা অংশ একসঙ্গে মূল প্রশ্ন নিয়ে কী বলছে</td><td>অধ্যায়ের নিজের প্রশ্নের উত্তর দিয়ে শেষ হয়</td><td>৮০০</td></tr>
+<tr><td>ভূমিকা</td><td>ধাঁধাটা আর অধ্যায়ের পথ</td><td>প্রিমিয়াম কমলেও নেওয়ার হার বাড়েনি, আর কারণ শুধু দাম নয়</td><td>১,২০০</td></tr>
+<tr><td>"uptake" কি সব গবেষণায় একই মানে বহন করে?</td><td>সংজ্ঞার পর্যালোচনা</td><td>"uptake" তিনটা আলাদা মাপ লুকিয়ে রাখে, আর সেই ফারাকটাই গুরুত্বপূর্ণ</td><td>১,৫০০</td></tr>
+<tr><td>চাষিরা কী বলছেন কেন তাঁরা নিচ্ছেন না?</td><td>সাক্ষাৎকার আর জরিপের কোডেড উপাদান</td><td>চাষিরা দামের আগে বেসিস রিস্কের কথা বলেন</td><td>২,০০০</td></tr>
+<tr><td>চাহিদা নিয়ে দামের পরীক্ষাগুলো কী দেখায়?</td><td>দামের হেরফের রাখা পরীক্ষা</td><td>রিবেট দিলে দাম দেওয়ার আগ্রহ বাড়ে, প্রিমিয়াম কমালে নয়</td><td>২,০০০</td></tr>
+<tr><td>অন্য কোথাও কী কাজ করেছে?</td><td>কর্মসূচির নকশার তুলনা</td><td>ঋণের সঙ্গে বান্ডিল করা কর্মসূচিতে দ্রুত নেওয়া হয়, তবে কারণটা এখনও প্রতিষ্ঠিত নয়</td><td>১,৫০০</td></tr>
+<tr><td>উপসংহার</td><td>অংশগুলো একসঙ্গে যা বলছে</td><td>অধ্যায়ের নিজের প্রশ্নের উত্তর দিয়ে শেষ হয়</td><td>৮০০</td></tr>
 </tbody></table></div>
 <p>ক্রমটা লক্ষ করুন: প্রথমে সংজ্ঞা, কারণ "uptake" তিন রকম মাপা হয়েছে তা না জানা পাঠক পরের অংশগুলো ভুল বুঝবেন; দামের পরীক্ষার আগে চাষিদের কথা, কারণ চাষিদের মাথায় কী আছে তা জানার পর সংখ্যাগুলোর মানে বেশি বোঝা যায়; অন্য কর্মসূচির তুলনা সবার শেষে, কারণ সেখানেই অধ্যায়টা রোগনির্ণয় থেকে সমাধানের দিকে ঘোরে।</p>
-<div class="ex"><b>করে দেখানো, চালিয়ে যাওয়া।</b> "চাষিরা দামের আগে বেসিস রিস্কের কথা বলেন" অংশের প্রথম অনুচ্ছেদের পরিকল্পনা।
-<blockquote>দাবি: সরাসরি জিজ্ঞেস করলে, চাষিরা ইনডেক্স ইনস্যুরেন্স না কেনার কারণ হিসেবে বেসিস রিস্ক, মানে ক্ষতির সঙ্গে টাকা ফেরত না মেলার সম্ভাবনা, দামের ওপরে রাখেন। প্রমাণ: এই অংশে দেখা তিনটা জরিপে, যাঁরা কেনেননি তাঁদের ৪১ থেকে ৫৮ শতাংশ প্রধান কারণ হিসেবে বেসিস রিস্ক বা আগে টাকা না পাওয়ার অভিজ্ঞতার কথা বলেছেন, আর ২২ থেকে ৩৪ শতাংশ দামের কথা বলেছেন। তাতে কী: এই ক্রমটা অধ্যায়ের বাকি অংশের জন্য গুরুত্বপূর্ণ, কারণ শুধু প্রিমিয়াম ভর্তুকির ওপর গড়া একটা নীতি দ্বিতীয় কারণটা সামলাচ্ছে, প্রথমটা নয়।</blockquote>
+<div class="ex"><b>করে দেখানো, চালিয়ে যাওয়া।</b> এই অংশের প্রথম অনুচ্ছেদের পরিকল্পনা।
+<blockquote>দাবি: সরাসরি জিজ্ঞেস করলে, চাষিরা না কেনার কারণ হিসেবে বেসিস রিস্ক, মানে ক্ষতির সঙ্গে টাকা না মেলার সম্ভাবনা, দামের ওপরে রাখেন। প্রমাণ: তিনটা জরিপে যাঁরা কেনেননি তাঁদের ৪১ থেকে ৫৮ শতাংশ প্রধান কারণ হিসেবে বেসিস রিস্ক বা আগে টাকা না পাওয়ার কথা বলেছেন, ২২ থেকে ৩৪ শতাংশ দামের কথা বলেছেন। তাতে কী: শুধু প্রিমিয়াম ভর্তুকির ওপর গড়া নীতি দ্বিতীয় কারণটা সামলাচ্ছে, প্রথমটা নয়।</blockquote>
 </div>
 
 <h2>কোথায় ভুল হয়</h2>
@@ -138,5 +138,5 @@ export const LESSON: MethodLesson = {
 <li>অন্তত একটা অনুচ্ছেদ দাবি, প্রমাণ, তাতে কী হিসেবে পরিকল্পনা করা হয়েছে, পুরো অংশ খসড়া করার আগেই।</li>
 </ul>
 
-<p>প্রশ্ন ঘরেই গাছটা বানানো হয়, উপ-প্রশ্ন মূল প্রশ্নের নিচে, লাইব্রেরিতে যা আছে তার সঙ্গে জোড়া লাগানো; লেখার টেবিল রূপরেখাটা খসড়ায় বদলায়, বাজেটের বিপরীতে চলমান শব্দ গোনাসহ, তাই লক্ষ্যের চেয়ে বেড়ে যাওয়া অংশ অধ্যায় শেষ হওয়ার আগেই চোখে পড়ে, পরে নয়।</p>`,
+<p>প্রশ্ন ঘরেই গাছটা বানানো হয়, উপ-প্রশ্ন মূল প্রশ্নের নিচে, লাইব্রেরির সঙ্গে জোড়া লাগানো; লেখার টেবিল রূপরেখাটা খসড়ায় বদলায়, বাজেটের বিপরীতে চলমান শব্দ গোনাসহ, তাই বেড়ে যাওয়া অংশ অধ্যায় শেষ হওয়ার আগেই চোখে পড়ে, পরে নয়।</p>`,
 };
