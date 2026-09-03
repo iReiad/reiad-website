@@ -1070,6 +1070,28 @@ export const RESEARCH_WORDS: Record<string, Phrase> = {
   "rs.ws.word.failed": { en: "The Word file could not be built.", bn: "Word ফাইল বানানো যায়নি।" },
   "rs.ws.quiz.hint": { en: "Scheduled by FSRS: grade honestly, and the gap before the next review grows with what you remember.", bn: "FSRS দিয়ে সময় ঠিক হয়: সৎভাবে নম্বর দিন, যা মনে থাকে তার সাথে পরের পুনরাবৃত্তির ফাঁক বাড়ে।" },
   "rs.ws.quiz.next": { en: "Next review", bn: "পরের পুনরাবৃত্তি" },
+
+  /* ---- the review room's second screener, reader and Word tables ---- */
+  "rs.rev.second": { en: "Screener B", bn: "যাচাইকারী খ" },
+  "rs.rev.second.hint": { en: "On: y, x and m write to column B, blind to column A. Off: they write the review's own decision.", bn: "চালু: y, x আর m খ কলামে লেখে, ক কলাম না দেখে। বন্ধ: পর্যালোচনার নিজের সিদ্ধান্ত লেখে।" },
+  "rs.rev.second.on": { en: "Screening as B", bn: "খ হিসেবে যাচাই" },
+  "rs.rev.agreement": { en: "Agreement", bn: "মিল" },
+  "rs.rev.agreement.hint": { en: "Cohen's kappa per stage, over the records both screeners decided. PRISMA counts the review's own decision only.", bn: "প্রতি ধাপে কোহেনের কাপা, দুজনেই যেসব রেকর্ডে সিদ্ধান্ত দিয়েছেন। PRISMA শুধু পর্যালোচনার নিজের সিদ্ধান্ত গোনে।" },
+  "rs.rev.agreement.none": { en: "No record decided by both yet.", bn: "এখনো কোনো রেকর্ডে দুজনের সিদ্ধান্ত নেই।" },
+  "rs.rev.agreed": { en: "agreed", bn: "মিলেছে" },
+  "rs.rev.disagreements": { en: "Disagreements", bn: "অমিল" },
+  "rs.rev.disagreements.none": { en: "None. The two columns agree.", bn: "নেই। দুই কলাম মিলে গেছে।" },
+  "rs.rev.resolve": { en: "Resolve as", bn: "মীমাংসা" },
+  "rs.rev.colA": { en: "A", bn: "ক" },
+  "rs.rev.colB": { en: "B", bn: "খ" },
+  "rs.rev.reader.hint": { en: "The reader's keys are its own while it is open: j and k page, 1 to 5 mark. Decide with y, x and m.", bn: "পাঠক খোলা থাকলে তার চাবি তার নিজের: j আর k পাতা বদলায়, ১ থেকে ৫ দাগ দেয়। সিদ্ধান্ত y, x আর m দিয়ে।" },
+  "rs.rev.reader.none": { en: "No PDF in the library for this record. Attach one to its source and it opens here.", bn: "এই রেকর্ডের কোনো PDF লাইব্রেরিতে নেই। উৎসে একটা যোগ করুন, এখানে খুলবে।" },
+  "rs.rev.fill": { en: "Fill from reading", bn: "পড়া থেকে ভরুন" },
+  "rs.rev.fill.hint": { en: "Copies the extraction cards made while reading into empty cells. A cell you typed is left alone.", bn: "পড়ার সময়ের নিষ্কাশন কার্ড খালি ঘরে বসায়। আপনার টাইপ করা ঘর যেমন আছে থাকে।" },
+  "rs.rev.filled": { en: "cells filled", bn: "ঘর ভরা হলো" },
+  "rs.rev.word": { en: "Word table", bn: "Word ছক" },
+  "rs.rev.word.search": { en: "Search log", bn: "খোঁজের লগ" },
+  "rs.rev.word.extract": { en: "Extraction sheet", bn: "নিষ্কাশনের ছক" },
 };
 
 /** One phrase, or a loud marker for a key nobody wrote. */

@@ -60,6 +60,7 @@ export function Queue() {
   if (!w) return <SignedOut answered={answered} />;
 
   return (
+    <div className="grid gap-4">
     <Surface material="pane" className="rs-tint px-5 py-4 grid gap-3">
       <h2 className="text-t3 font-medium"><W k="rs.read.queue" /> {rows ? <Chip>{rows.length}</Chip> : null}</h2>
       <p className="text-t2 text-ink-soft"><W k="rs.read.queue.hint" /></p>
@@ -94,6 +95,41 @@ export function Queue() {
             })}
           </ul>
         )}
+    </Surface>
+    <Kept />
+    </div>
+  );
+}
+
+/** What this browser holds for reading with no signal: a settings
+    style meter, one row a file, each with a Remove. It is a fact
+    about this machine and nothing here reaches the account. */
+function Kept() {
+  const [files, setFiles] = useState<KeptFile[] | null>(null);
+  useEffect(() => {
+    const load = (): void => { void listKept().then(setFiles); };
+    load();
+    document.addEventListener(KEPT_EVENT, load);
+    return () => document.removeEventListener(KEPT_EVENT, load);
+  }, []);
+  if (files === null) return null;
+  const total = files.reduce((n, f) => n + f.size, 0);
+  return (
+    <Surface material="pane" className="px-5 py-4 grid gap-2" data-testid="rs-kept">
+      <h2 className="text-t3 font-medium"><W k="rs.read.kept" /> {files.length ? <Chip>{files.length}</Chip> : null}</h2>
+      <p className="text-t1 text-ink-soft"><W k="rs.read.kept.hint" /></p>
+      {!files.length ? <p className="text-t2 text-ink-soft"><W k="rs.read.kept.none" /></p> : (
+        <ul className="grid gap-1 text-t2">
+          {files.map((f) => (
+            <li key={f.key} className="flex flex-wrap items-center gap-2">
+              <span className="grow min-w-0 truncate">{f.name}</span>
+              <span className="text-t1 text-ink-soft mono">{fileSize(f.size)}</span>
+              <ChipButton onClick={() => { void forgetFile(f.key).then(() => document.dispatchEvent(new Event(KEPT_EVENT))); }}><W k="rs.delete" /></ChipButton>
+            </li>
+          ))}
+          <li className="text-t1 text-ink-soft mono">{fileSize(total)} <W k="rs.read.kept.total" /></li>
+        </ul>
+      )}
     </Surface>
   );
 }

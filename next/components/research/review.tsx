@@ -25,14 +25,17 @@ import type { CSSProperties } from "react";
 import { toneVar } from "@reiad/shared/research";
 import { word } from "@reiad/shared/research-words";
 import {
-  APPRAISALS, FRAMES, FRAME_SLOTS, REVIEW_KINDS, REVIEW_KIND_NAMES, REVIEW_STATES, REVIEW_STATE_NAMES, appraisalScore, duplicatesOf, prisma,
-  type Criterion, type Frame, type PrismaCounts, type Protocol, type ReviewKind, type ReviewState,
+  APPRAISALS, FRAMES, FRAME_SLOTS, REVIEW_KINDS, REVIEW_KIND_NAMES, REVIEW_STATES, REVIEW_STATE_NAMES, agreement, appraisalScore, duplicatesOf, fillFromCards, prisma, verdictA, verdictB,
+  type Criterion, type Frame, type PrismaCounts, type Protocol, type ReviewKind, type ReviewState, type Verdict,
 } from "@reiad/shared/research-review";
 import { gapMatrix } from "@reiad/shared/research-graph";
+import type { SourceFile } from "@reiad/shared/research";
 import {
-  addRecords, addReview, addSearch, addSource, findDuplicate, listRecords, listReviews, listSearches, listSources, saveRecord, saveReview, searchIndexes,
+  addRecords, addReview, addSearch, addSource, findDuplicate, listHighlights, listRecords, listReviews, listSearches, listSources, saveRecord, saveReview, searchIndexes,
   type Hit, type Review, type ReviewRecord, type Search, type Source, type Who,
 } from "../../lib/research-api";
+import type { DocTable } from "../../lib/export-docx-tables";
+import { Reader } from "./reader";
 import { Button } from "../ui/button";
 import { Chip, ChipButton } from "../ui/chip";
 import { Field, Select, TextArea } from "../ui/field";
@@ -78,6 +81,37 @@ function download(name: string, body: string | Blob, type: string): void {
   a.remove();
   setTimeout(() => URL.revokeObjectURL(url), 1000);
 }
+
+/** Tables as a Word file, the library loaded only now. */
+async function downloadDocx(name: string, title: string, tables: DocTable[], bangla: boolean): Promise<void> {
+  const { tablesDocx } = await import("../../lib/export-docx-tables");
+  download(name, await tablesDocx(title, tables, { bangla }), "application/vnd.openxmlformats-officedocument.wordprocessingml.document");
+}
+
+/** The one moment a record becomes a library source: linked if the
+    library already has it, added if not. Shared by an include at
+    full text and by a disagreement resolved as one. */
+async function becomeSource(w: Who, rec: ReviewRecord, onSource: (s: Source) => void): Promise<string | null> {
+  if (rec.source_id) return rec.source_id;
+  const dup = await findDuplicate(w, rec.record.csl);
+  if (dup?.sure) return dup.source.id;
+  const s = await addSource(w, rec.record.csl, {
+    via: "search", verified: true,
+    oa: rec.record.oa ? { isOa: rec.record.oa.isOa, url: rec.record.oa.url, at: new Date().toISOString() } : null,
+    identifiers: rec.record.openalex ? { openalex: rec.record.openalex } : {},
+  });
+  if (s) onSource(s);
+  return s?.id ?? null;
+}
+
+/** The library source a record stands for: the one it was linked
+    to, or the one with its DOI or its hash. */
+const sourceOf = (rec: ReviewRecord, sources: Source[]): Source | null =>
+  (rec.source_id ? sources.find((s) => s.id === rec.source_id) : null)
+  ?? sources.find((s) => (rec.doi && s.doi && s.doi.toLowerCase() === rec.doi.toLowerCase()) || s.hash === rec.hash)
+  ?? null;
+
+const pdfOf = (s: Source | null): SourceFile | null => (s?.files as SourceFile[] | undefined)?.find((f) => f.kind === "pdf") ?? null;
 
 /* ---------- criteria: one a line, minus for an exclusion ---------- */
 

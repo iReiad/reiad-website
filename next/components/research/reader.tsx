@@ -45,6 +45,7 @@ import {
   addHighlight, addNote, fileTicket, getSource, keepPlace, listHighlights, listNotes, removeHighlight,
   saveHighlight, saveSource, type Highlight, type Source, type Who,
 } from "../../lib/research-api";
+import { readKept } from "../../lib/offline-files";
 import { Button } from "../ui/button";
 import { Chip, ChipButton, ChipLink } from "../ui/chip";
 import { Field, Select, TextArea } from "../ui/field";
@@ -57,6 +58,51 @@ import { useKeys } from "./keys";
 import { FileBox } from "./files";
 
 type Pdfjs = typeof import("pdfjs-dist");
+
+/* ---------- where a file's bytes come from ---------- */
+
+type From = "device" | "network";
+
+/** The copy kept on this device first, then a ticket. A blob URL
+    is handed back for the device copy so `<audio>`, `<img>` and
+    the capture's fetch read it like any other address; the caller
+    revokes it when it is done. */
+async function fileSource(w: Who, key: string): Promise<{ url: string; from: From; blob: Blob | null } | null> {
+  const blob = await readKept(key);
+  if (blob) return { url: URL.createObjectURL(blob), from: "device", blob };
+  const url = await fileTicket(w, key);
+  return url ? { url, from: "network", blob: null } : null;
+}
+
+const letGo = (src: { url: string; from: From } | null): void => { if (src?.from === "device") URL.revokeObjectURL(src.url); };
+
+/* ---------- a swipe turns the page, and never while selecting ----------
+
+   Pointer events, touch only: a mouse has j and k. 60px mostly
+   across counts; anything with a live selection at either end is
+   the reader adjusting a highlight and is left alone. `pan-y` on
+   the box keeps the browser from taking a horizontal drag as a
+   scroll and cancelling the pointer before it is released. */
+
+const SWIPE = 60;
+
+function useSwipe(turn: (by: 1 | -1) => void, selecting: () => boolean) {
+  const start = useRef<{ x: number; y: number; id: number } | null>(null);
+  const onPointerDown = useCallback((e: React.PointerEvent) => {
+    if (e.pointerType !== "touch" || selecting()) { start.current = null; return; }
+    start.current = { x: e.clientX, y: e.clientY, id: e.pointerId };
+  }, [selecting]);
+  const onPointerUp = useCallback((e: React.PointerEvent) => {
+    const s = start.current;
+    start.current = null;
+    if (!s || s.id !== e.pointerId || selecting()) return;
+    const dx = e.clientX - s.x, dy = e.clientY - s.y;
+    if (Math.abs(dx) < SWIPE || Math.abs(dx) < Math.abs(dy) * 2) return;
+    turn(dx < 0 ? 1 : -1);
+  }, [selecting, turn]);
+  const onPointerCancel = useCallback(() => { start.current = null; }, []);
+  return { onPointerDown, onPointerUp, onPointerCancel, style: { touchAction: "pan-y pinch-zoom" } as React.CSSProperties };
+}
 
 /** The library, loaded once and only in a browser. The worker is
     a module chunk of this build, named by URL so the bundler
@@ -282,7 +328,7 @@ export function Reader({ id }: { id: string }) {
           <aside className="rs-side grid gap-3" aria-label={`${MEANING_NAMES.quote.en} / ${MEANING_NAMES.quote.bn}`}>
             <Surface material="pane" className="px-4 py-3 grid gap-3">
               <h2 className="text-t3 font-medium"><W k="rs.read.highlights" /> {marks.length ? <Chip>{marks.length}</Chip> : null}</h2>
-              <p className="text-t1 text-ink-soft"><W k="rs.read.keys" /></p>
+              <p className="text-t1 text-ink-soft"><W k="rs.read.keys" /> <W k="rs.read.swipe" /></p>
               <ul className="flex flex-wrap gap-1" aria-hidden="true">
                 {HIGHLIGHT_MEANINGS.map((m, i) => (
                   <li key={m} style={{ "--accent": toneVar(MEANING_TONES[m]) } as React.CSSProperties}><Chip tone="accent">{i + 1} {meaningWord(m)}</Chip></li>
@@ -482,6 +528,7 @@ function PdfSheet({ w, source, file, marks, current, onCurrent, onMade, onSource
   const [shown, setShown] = useState<Set<number>>(new Set([1, 2]));
   const [at, setAt] = useState(file.page ?? 1);
   const [textless, setTextless] = useState(false);
+  const [from, setFrom] = useState<From | null>(null);
   const roots = useRef(new Map<number, HTMLElement>());
   const placeTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
 
@@ -490,10 +537,15 @@ function PdfSheet({ w, source, file, marks, current, onCurrent, onMade, onSource
     let task: PDFDocumentLoadingTask | null = null;
     void (async () => {
       try {
-        const url = await fileTicket(w, file.key);
-        if (!url) { setState("failed"); return; }
+        const src = await fileSource(w, file.key);
+        if (!src) { setState("failed"); return; }
+        setFrom(src.from);
         const lib = await loadPdfjs();
-        task = lib.getDocument({ url });
+        /* The device copy goes in as bytes rather than through its
+           blob URL: pdf.js would fetch that with Range requests a
+           blob cannot answer. */
+        task = src.blob ? lib.getDocument({ data: new Uint8Array(await src.blob.arrayBuffer()) }) : lib.getDocument({ url: src.url });
+        letGo(src);
         const loaded = await task.promise;
         if (!alive) return;
         const dims: { w: number; h: number }[] = [];
@@ -568,6 +620,12 @@ function PdfSheet({ w, source, file, marks, current, onCurrent, onMade, onSource
   const go = (page: number): void => {
     box.current?.querySelector(`[data-page="${Math.max(1, Math.min(sizes.length, page))}"]`)?.scrollIntoView({ block: "start", behavior: "smooth" });
   };
+  const pickedRef = useRef(picked);
+  pickedRef.current = picked;
+  const swipe = useSwipe(
+    useCallback((by) => { setAt((n) => { go(n + by); return n; }); /* eslint-disable-line react-hooks/exhaustive-deps */ }, [sizes.length]),
+    useCallback(() => Boolean(pickedRef.current) || !(document.getSelection()?.isCollapsed ?? true), []),
+  );
   useKeys(useMemo(() => ({
     "1": () => { void mark("claim"); }, "2": () => { void mark("evidence"); }, "3": () => { void mark("method"); },
     "4": () => { void mark("quote"); }, "5": () => { void mark("question"); },
@@ -587,7 +645,7 @@ function PdfSheet({ w, source, file, marks, current, onCurrent, onMade, onSource
   const word = (m: HighlightMeaning): string => lang === "bn" ? MEANING_NAMES[m].bn : MEANING_NAMES[m].en;
 
   return (
-    <div className="grid gap-3">
+    <div className="grid gap-3" data-from={from ?? undefined}>
       <div className="flex flex-wrap items-center gap-2 text-t2">
         <ChipButton onClick={() => go(at - 1)} aria-label={both("rs.read.prev")}>‹</ChipButton>
         <span className="mono text-t1"><W k="rs.read.page" /> {at} <W k="rs.read.of" /> {sizes.length || file.pages || "?"}</span>
@@ -600,7 +658,7 @@ function PdfSheet({ w, source, file, marks, current, onCurrent, onMade, onSource
       {state === "loading" ? <p className="text-t2 text-ink-soft" role="status"><W k="rs.read.loading" /></p> : null}
       {state === "failed" ? <p className="text-t2 text-ink-soft" role="status"><W k="rs.read.failed" /></p> : null}
       {textless ? <p className="text-t2 text-ink-soft" role="status"><W k="rs.read.notext" /></p> : null}
-      <div ref={box} className="rs-pages relative">
+      <div ref={box} className="rs-pages relative" {...swipe}>
         {doc ? sizes.map((size, i) => (
           <PdfPage key={i + 1} doc={doc} n={i + 1} size={size} scale={scale} live={shown.has(i + 1)}
                    onRoot={(el) => { if (el) roots.current.set(i + 1, el); else roots.current.delete(i + 1); }}
@@ -683,13 +741,13 @@ function HtmlSheet({ w, source, file, marks, current, onCurrent, onMade }: {
   useEffect(() => {
     let alive = true;
     void (async () => {
-      const url = await fileTicket(w, file.key);
-      if (!url) { setFailed(true); return; }
+      const src = await fileSource(w, file.key);
+      if (!src) { setFailed(true); return; }
       try {
-        const res = await fetch(url);
-        const text = await res.text();
+        const text = src.blob ? await src.blob.text() : await (await fetch(src.url)).text();
         if (alive) setHtml(text);
       } catch { if (alive) setFailed(true); }
+      finally { letGo(src); }
     })();
     return () => { alive = false; };
   }, [w, file.key]);

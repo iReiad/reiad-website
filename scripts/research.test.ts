@@ -334,9 +334,10 @@ eq("parseAny reads a single CSL object", parseAny('{"type":"book","title":"x"}')
   eq("and every group knows how many bars it holds", g.groups.map((x) => x.count), [1, 2, 1]);
   eq("bars inside a group are in order of start", g.bars.filter((b) => b.group === "Thesis").map((b) => b.id), ["t-1", "e-1"]);
   ok("every bar runs left to right and sits inside the box", g.bars.every((b) => b.x2 > b.x1 && b.x1 >= 0 && b.x2 <= 1000 && b.y >= GANTT.top), JSON.stringify(g.bars.map((b) => [b.id, b.x1, b.x2])));
-  ok("an end before its start is a point rather than a bar running backwards", (() => { const b = g.bars.find((x) => x.id === "e-2")!; return b.x2 - b.x1 === 4; })());
+  const dayWidth = 1000 / 122;
+  ok("an end before its start is one day wide rather than a bar running backwards", (() => { const b = g.bars.find((x) => x.id === "e-2")!; return b.x2 > b.x1 && b.x2 - b.x1 <= dayWidth + 0.001; })());
   ok("the present is a line inside the box", g.nowX !== null && g.nowX > 0 && g.nowX < 1000, String(g.nowX));
-  ok("a bar before the present ends before the line", (() => { const b = g.bars.find((x) => x.id === "t-2")!; return b.x2 < (g.nowX ?? 0) + 60; })());
+  ok("a bar that began before the present starts left of the line", (() => { const b = g.bars.find((x) => x.id === "t-2")!; return b.x1 < (g.nowX ?? 0); })());
   eq("the rows stack: a heading a group and a row a bar", g.height, GANTT.top + 3 * GANTT.head + 4 * GANTT.row + 8);
   const same = ganttLayout(rows, { now, width: 1000 });
   eq("the same rows draw the same picture", same.bars.map((b) => [b.x1, b.x2, b.y]), g.bars.map((b) => [b.x1, b.x2, b.y]));

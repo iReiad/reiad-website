@@ -334,7 +334,12 @@ export function Lab({ openRun }: { openRun?: string } = {}) {
     void (async () => {
       const [d, r, q] = await Promise.all([listDatasets(w), listRuns(w), listQuestions(w)]);
       setDatasets(d); setRuns(r); setVariables(q.filter((x) => x.kind === "variable")); setReady(true);
-      if (d.length) setChosen((c) => c ?? d[0].id);
+      /* The workshop's Which test links here with ?method=&dataset=,
+         so a named dataset wins over the first and opens on stats. */
+      const url = new URLSearchParams(location.search);
+      const named = d.find((x) => x.id === url.get("dataset"))?.id ?? null;
+      if (d.length) setChosen((c) => named ?? c ?? d[0].id);
+      if (url.get("method")) setView("stats");
     })();
   }, [w]);
 
@@ -681,7 +686,7 @@ function Sql({ w, dataset, ensureLoaded, keepRun, setSaid }: {
 function Stats({ lang, dataset, ensureLoaded, keepRun, setSaid }: {
   lang: "en" | "bn"; dataset: Dataset; ensureLoaded: (d: Dataset) => Promise<string>; keepRun: (part: Partial<Run> & { kind: Run["kind"]; label: string }) => Promise<Run | null>; setSaid: (s: string) => void;
 }) {
-  const [methodId, setMethodId] = useState("describe");
+  const [methodId, setMethodId] = useState(() => { const m = new URLSearchParams(location.search).get("method"); return METHODS.some((x) => x.id === m) ? String(m) : "describe"; });
   const method = METHODS.find((m) => m.id === methodId) ?? METHODS[0];
   const [picks, setPicks] = useState<Record<string, string[]>>({});
   const [options, setOptions] = useState<Record<string, string>>({});

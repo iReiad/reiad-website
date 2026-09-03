@@ -11,24 +11,28 @@
    in the query string, so a result is a link.
    ============================================================ */
 
-import { createContext, useContext, useEffect, useMemo, useState } from "react";
+import { createContext, useContext, useEffect, useMemo, useRef, useState } from "react";
 import type { CSSProperties, ReactNode } from "react";
 import { toneVar, type CslItem } from "@reiad/shared/research";
 import { CSL_STYLES } from "@reiad/shared/csl";
 import {
   EMAILS, HIJRI_MONTHS, VIVA, abbreviations, booleanString, consentForm, cvFrom, dInterval, dToOR, dToR, dataStatement, daysBetween, dueCards, eta2ToF, fromHijri,
-  gridOf, idKind, intervalFromP, nCorrelation, nMean, nProportion, nRegression, nTwoMeans, nTwoProportions, newCard, orToD, pFromInterval, powerTwoMeans, questionFrom,
-  rInterval, rToD, randomInts, readability, review as reviewCard, sample, shiftDays, shuffle, toHijri, toHtml, toLatex, toMarkdown, whichTest, wordStats, workingDays,
-  type Card, type Clause, type Shape, type Syntax,
+  gridOf, idKind, intervalFromP, memoryOf, nCorrelation, nMean, nProportion, nRegression, nTwoMeans, nTwoProportions, newCard, orToD, pFromInterval, powerTwoMeans,
+  questionFrom, rInterval, rToD, randomInts, ratingOf, readability, sample, shiftDays, shuffle, toHijri, toHtml, toLatex, toMarkdown, whichTest, withMemory, wordStats,
+  workingDays, type Card, type Clause, type Shape, type Syntax,
 } from "@reiad/shared/research-tools";
 import { returns } from "@reiad/shared/research-stats";
 import { chartSvg } from "@reiad/shared/research-lab";
 import { overlapsOf } from "@reiad/shared/research-write";
 import type { PrismaCounts } from "@reiad/shared/research-review";
 import {
-  addNote, addReview, addSearch, addSource, checkJournal, findDuplicate, findJournals, freeCopy, getPrefs, listDocuments, listNotes, listSources, lookupDoi, lookupIsbn,
-  lookupUrl, parseReference, saveNote, saveReview, type Note, type Prefs, type Who,
+  addNote, addReview, addSearch, addSource, checkJournal, findDuplicate, findJournals, freeCopy, getPrefs, listDatasets, listDocuments, listNotes, listSources, lookupDoi,
+  lookupIsbn, lookupUrl, parseReference, saveNote, saveReview, type Dataset, type Note, type Prefs, type Who,
 } from "../../lib/research-api";
+/* KaTeX's stylesheet and the fonts it names come out of the bundle,
+   because the CSP allows no other origin; the renderer itself is a
+   dynamic import inside the one tool that draws an equation. */
+import "katex/dist/katex.min.css";
 import { makeEngine } from "../../lib/cite";
 import { RESEARCH_TOOLS, researchTool } from "../../lib/research-tools";
 import { methodsFor } from "../../lib/research-methods";
@@ -492,9 +496,16 @@ function PAndCi() {
 
 function WhichTest() {
   const lang = useToolLang();
+  const { w } = useWho();
   const [s, setS] = useState<Shape>({ outcome: "continuous", groups: "two", paired: false, normal: true, predictors: "none", panel: false, endogenous: false });
+  const [datasets, setDatasets] = useState<Dataset[]>([]);
+  const [dataset, setDataset] = useState("");
+  useEffect(() => { if (w) void listDatasets(w).then(setDatasets); }, [w]);
   const advice = whichTest(s);
   const set = <K extends keyof Shape>(k: K, v: Shape[K]): void => setS((was) => ({ ...was, [k]: v }));
+  /* The lab reads both from its URL and opens on the method with the
+     dataset chosen; without one it keeps its own first dataset. */
+  const labHref = (method: string): string => `/tools/research/lab?method=${encodeURIComponent(method)}${dataset ? `&dataset=${encodeURIComponent(dataset)}` : ""}`;
   return (
     <Surface material="pane" className="px-4 py-3 grid gap-3">
       <div className="grid gap-2 md:grid-cols-3">
@@ -508,8 +519,14 @@ function WhichTest() {
         <label className="flex items-center gap-2"><input type="checkbox" checked={s.panel} onChange={(e) => set("panel", e.target.checked)} /> <W k="rs.ws.wt.panel" /></label>
         <label className="flex items-center gap-2"><input type="checkbox" checked={s.endogenous} onChange={(e) => set("endogenous", e.target.checked)} /> <W k="rs.ws.wt.endogenous" /></label>
       </div>
+      {datasets.length ? (
+        <Select id="rs-ws-wt-dataset" label={<W k="rs.ws.wt.dataset" />} value={dataset} onChange={(e) => setDataset(e.target.value)}>
+          <option value="">{both("rs.ws.wt.nodataset")}</option>
+          {datasets.map((d) => <option key={d.id} value={d.id}>{d.name}</option>)}
+        </Select>
+      ) : null}
       <ul className="grid gap-2" data-testid="rs-ws-advice">
-        {advice.map((a, i) => <li key={i} className="grid gap-1"><p className="text-t2"><Chip tone="accent">{a.test[lang]}</Chip></p><p className="text-t1 text-ink-soft">{a.why[lang]}</p>{a.method ? <p className="text-t1"><a href={`/tools/research/lab?method=${a.method}`}><W k="rs.ws.wt.open" /></a></p> : null}</li>)}
+        {advice.map((a, i) => <li key={i} className="grid gap-1"><p className="text-t2"><Chip tone="accent">{a.test[lang]}</Chip></p><p className="text-t1 text-ink-soft">{a.why[lang]}</p>{a.method ? <p className="text-t1"><a href={labHref(a.method)}><W k="rs.ws.wt.open" /></a></p> : null}</li>)}
       </ul>
     </Surface>
   );
@@ -636,24 +653,61 @@ function SelfOverlap() {
 /* ---------- 22. table maker, 23. equation, 24. PRISMA drawer ---------- */
 
 function TableMaker() {
+  const lang = useToolLang();
   const [text, setText] = useState("name\tvalue\nrice\t10\ndal\t20");
+  const [said, setSaid] = useState("");
+  const [busy, setBusy] = useState(false);
   const g = gridOf(text);
+  /* Word is a file rather than text to copy, so it is a download:
+     the blob is built on the press and the link is pressed for the
+     reader, then revoked, so nothing is held between presses. */
+  const word = async (): Promise<void> => {
+    setSaid(""); setBusy(true);
+    try {
+      const { tableDocx } = await import("../../lib/export-docx-table");
+      const url = URL.createObjectURL(await tableDocx({ grid: g, bangla: lang === "bn" }));
+      const a = document.createElement("a");
+      a.href = url; a.download = "table.docx"; a.click();
+      setTimeout(() => URL.revokeObjectURL(url), 10_000);
+      cue("saved");
+    } catch { setSaid(both("rs.ws.word.failed")); } finally { setBusy(false); }
+  };
   return (
     <Surface material="pane" className="px-4 py-3 grid gap-3">
       <TextArea id="rs-ws-grid" label={<W k="rs.ws.grid" />} hint={<W k="rs.ws.grid.hint" />} value={text} onChange={(e) => setText(e.target.value)} rows={6} />
       <p className="text-t1 text-ink-soft">Markdown</p><Out text={toMarkdown(g)} id="rs-ws-md" />
       <p className="text-t1 text-ink-soft">HTML</p><Out text={toHtml(g)} />
       <p className="text-t1 text-ink-soft">LaTeX</p><Out text={toLatex(g)} />
+      <div className="flex flex-wrap items-center gap-2">
+        <Button type="button" kind="soft" size="sm" disabled={!g.length || busy} onClick={() => { void word(); }} data-testid="rs-ws-word"><W k="rs.ws.word" /></Button>
+        {said ? <span className="text-t1 text-ink-soft" role="status">{said}</span> : null}
+      </div>
     </Surface>
   );
 }
 
 function Equation() {
   const [tex, setTex] = useState("\\hat{\\beta} = (X'X)^{-1} X'y");
+  const box = useRef<HTMLDivElement>(null);
+  /* KaTeX's own markup goes in by innerHTML: it is the renderer's
+     output and not the reader's HTML, and `trust: false` keeps
+     \\href and \\url out of it all the same. `throwOnError: false`
+     draws a bad line in red rather than nothing, which is what a
+     reader typing wants to see. */
+  useEffect(() => {
+    let alive = true;
+    void import("katex").then((k) => {
+      if (!alive || !box.current) return;
+      box.current.innerHTML = k.default.renderToString(tex, { throwOnError: false, displayMode: true, trust: false, output: "htmlAndMathml" });
+    });
+    return () => { alive = false; };
+  }, [tex]);
   return (
     <Surface material="pane" className="px-4 py-3 grid gap-3">
       <p className="text-t1 text-ink-soft"><W k="rs.ws.equation.hint" /></p>
       <TextArea id="rs-ws-tex" label="LaTeX" value={tex} onChange={(e) => setTex(e.target.value)} rows={3} className="font-mono" />
+      <p className="text-t1 text-ink-soft"><W k="rs.ws.equation.preview" /></p>
+      <div ref={box} className="overflow-x-auto py-1 text-t3" data-testid="rs-ws-katex" aria-live="polite" />
       <Out text={`$$\n${tex}\n$$`} />
     </Surface>
   );
@@ -687,6 +741,7 @@ function QuizMe() {
   const [note, setNote] = useState<Note | null | undefined>(undefined);
   const [front, setFront] = useState(""); const [back, setBack] = useState("");
   const [show, setShow] = useState(false);
+  const [next, setNext] = useState("");
   const cards = useMemo(() => (Array.isArray(note?.meta.cards) ? (note.meta.cards as Card[]) : []), [note]);
   const due = dueCards(cards, today);
   const current = due[0];
@@ -696,14 +751,28 @@ function QuizMe() {
     else { const n = await addNote(w, { kind: "memo", title: both("rs.ws.quiz"), meta: { quiz: true, cards: next }, text: "", body: "" }); if (n) setNote(n); }
   };
   const add = async (): Promise<void> => { if (!front.trim() || !back.trim()) return; await keep([...cards, newCard(crypto.randomUUID(), front.trim(), back.trim(), today)]); setFront(""); setBack(""); cue("saved"); };
-  const grade = async (g: 0 | 1 | 2 | 3 | 4 | 5): Promise<void> => { if (!current) return; await keep(cards.map((c) => (c.id === current.id ? reviewCard(c, g, today) : c))); setShow(false); cue("tick"); };
+  /* ts-fsrs schedules; the card keeps the note's own shape and a
+     card from before FSRS is read through its SM-2 fields on this
+     first review. Short-term steps are off so every answer is a
+     day or more away, which is what a date-only `due` can hold,
+     and fuzz is off so the same answer is the same date. */
+  const grade = async (g: 0 | 1 | 2 | 3 | 4 | 5): Promise<void> => {
+    if (!current) return;
+    const { fsrs, Rating } = await import("ts-fsrs");
+    const rating = [Rating.Again, Rating.Hard, Rating.Good, Rating.Easy][ratingOf(g) - 1];
+    const scheduled = withMemory(current, fsrs({ enable_short_term: false, enable_fuzz: false }).next(memoryOf(current), new Date(), rating).card);
+    setNext(scheduled.due);
+    await keep(cards.map((c) => (c.id === current.id ? scheduled : c)));
+    setShow(false); cue("tick");
+  };
   return (
     <Surface material="pane" className="px-4 py-3 grid gap-3">
+      <p className="text-t1 text-ink-soft"><W k="rs.ws.quiz.hint" /></p>
       <form className="grid gap-2 md:grid-cols-[minmax(0,1fr)_minmax(0,1fr)_auto] items-end" onSubmit={(e) => { e.preventDefault(); void add(); }}>
         <Field id="rs-ws-front" label={<W k="rs.ws.front" />} value={front} onChange={(e) => setFront(e.target.value)} autoComplete="off" /><Field id="rs-ws-back" label={<W k="rs.ws.back" />} value={back} onChange={(e) => setBack(e.target.value)} autoComplete="off" />
         <Button type="submit" kind="solid" size="sm" disabled={!front.trim() || !back.trim()}><W k="rs.ws.card.add" /></Button>
       </form>
-      <p className="text-t1 text-ink-soft"><Chip>{cards.length} {both("rs.ws.cards")}</Chip> <Chip tone="accent">{due.length} {both("rs.ws.due")}</Chip></p>
+      <p className="text-t1 text-ink-soft"><Chip>{cards.length} {both("rs.ws.cards")}</Chip> <Chip tone="accent">{due.length} {both("rs.ws.due")}</Chip>{next ? <span role="status" data-testid="rs-ws-next"> {both("rs.ws.quiz.next")}: {next}</span> : null}</p>
       {current ? (
         <div className="grid gap-2" data-testid="rs-ws-card">
           <p className="text-t3">{current.front}</p>
