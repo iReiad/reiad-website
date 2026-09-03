@@ -11,9 +11,19 @@ import { ResearchFrame } from "../../../../../../components/research/frame";
 import { TBlock } from "../../../../../../components/research/lang";
 import { METHOD_LESSONS, methodLesson } from "../../../../../../lib/methods";
 import { researchMethod } from "../../../../../../lib/research-methods";
+import { notFound } from "next/navigation";
 import { MethodLessonFoot } from "../../../../../../components/research/method-lesson";
 
-export const dynamicParams = false;
+/* NO `dynamicParams = false` HERE, and that is not a style
+   choice. On this deployment a route with a dynamic segment and
+   that flag answers 404 for EVERY param, including the ones
+   `generateStaticParams` names: the prerendered page is in
+   `.open-next/cache` and the runtime will not render on demand,
+   so it has nothing to serve. Reproduced on workerd and on the
+   live site; `/tools/research/tools/which-test` was dead from the
+   day it shipped. The params below still prerender; an id the
+   list does not name renders on demand and `notFound()` is what
+   makes it a 404. */
 
 export function generateStaticParams(): { slug: string }[] {
   return METHOD_LESSONS.map((l) => ({ slug: l.slug }));
@@ -36,7 +46,7 @@ export default async function Page({ params }: { params: Promise<{ slug: string 
   const { slug } = await params;
   const lesson = methodLesson(slug);
   const m = researchMethod(slug);
-  if (!lesson || !m) return null;
+  if (!lesson || !m) notFound();
   return (
     <ResearchFrame title={{ en: m.title.en, bn: m.title.bn }} lede={{ en: m.dek.en, bn: m.dek.bn }}>
       <article className="article rs-lesson" data-testid="rs-method-lesson" data-minutes={lesson.minutes}>
