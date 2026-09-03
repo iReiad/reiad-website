@@ -301,8 +301,24 @@ ok("the share card is the drawn one, not a raw photo",
 
 /* ---------- 2. the headers a Worker response does not get free ---------- */
 
+/* A header that disagrees straight after a push is the same
+   rollout fact as the 5xx above, from the other side: the main
+   Worker is new and the Next Worker that renders this piece is
+   still the previous version, answering 200 with the previous
+   headers. The CSP gained 'wasm-unsafe-eval' and this went red on
+   a correct deploy. So a mismatch is asked again, four times over
+   about a minute, and only a header still wrong after that is
+   reported. A 200 is an answer, which is why this is not folded
+   into the 5xx retry. */
+let headed = article;
+for (const wait of [5000, 10000, 20000, 30000]) {
+  const wrong = Object.entries(SECURITY_HEADERS).some(([key, value]) => headed.headers.get(key) !== value);
+  if (!wrong) break;
+  await new Promise((go) => setTimeout(go, wait));
+  headed = await get(DB_PIECE);
+}
 for (const [key, value] of Object.entries(SECURITY_HEADERS)) {
-  deployed(`the ${key} header`, value, article.headers.get(key));
+  deployed(`the ${key} header`, value, headed.headers.get(key));
 }
 ok("the article is cacheable at the edge",
   (article.headers.get("Cache-Control") || "").includes("stale-while-revalidate"),

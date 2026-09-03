@@ -316,6 +316,37 @@ eq("parseAny reads a single CSL object", parseAny('{"type":"book","title":"x"}')
   eq("minutes between two instants, never negative", [minutesBetween("2026-09-02T10:00:00Z", "2026-09-02T10:25:30Z"), minutesBetween("2026-09-02T10:00:00Z", "2026-09-02T09:00:00Z")], [26, 0]);
 }
 
+/* ---------- the planner: the Gantt's layout ---------- */
+
+{
+  const { ganttLayout, GANTT } = await import("../shared/research-plan.ts");
+  const now = new Date("2026-09-03T12:00:00Z");
+  const rows = [
+    { id: "t-1", title: "Draft chapter 3", start: "2026-08-20T09:00:00Z", end: "2026-09-30", group: "Thesis", tone: "var(--blue)", kind: "task" as const },
+    { id: "t-2", title: "Clean the panel", start: "2026-09-01T09:00:00Z", end: "2026-09-10", group: "", tone: "var(--blue)", kind: "task" as const },
+    { id: "e-1", title: "Conference", start: "2026-11-02T00:00:00Z", end: "2026-11-04T00:00:00Z", group: "Thesis", tone: "var(--violet)", kind: "event" as const },
+    { id: "e-2", title: "Backwards", start: "2026-10-05T00:00:00Z", end: "2026-10-01T00:00:00Z", group: "Aside", tone: "var(--gold)", kind: "event" as const },
+  ];
+  const g = ganttLayout(rows, { now, width: 1000 });
+  eq("the axis runs from the first month touched to the month after the last", [g.from, g.to], ["2026-08-01", "2026-12-01"]);
+  eq("one label a month", g.months.map((m) => m.month), [7, 8, 9, 10]);
+  eq("named projects first in alphabetical order, the unnamed rows last", g.groups.map((x) => x.name), ["Aside", "Thesis", ""]);
+  eq("and every group knows how many bars it holds", g.groups.map((x) => x.count), [1, 2, 1]);
+  eq("bars inside a group are in order of start", g.bars.filter((b) => b.group === "Thesis").map((b) => b.id), ["t-1", "e-1"]);
+  ok("every bar runs left to right and sits inside the box", g.bars.every((b) => b.x2 > b.x1 && b.x1 >= 0 && b.x2 <= 1000 && b.y >= GANTT.top), JSON.stringify(g.bars.map((b) => [b.id, b.x1, b.x2])));
+  ok("an end before its start is a point rather than a bar running backwards", (() => { const b = g.bars.find((x) => x.id === "e-2")!; return b.x2 - b.x1 === 4; })());
+  ok("the present is a line inside the box", g.nowX !== null && g.nowX > 0 && g.nowX < 1000, String(g.nowX));
+  ok("a bar before the present ends before the line", (() => { const b = g.bars.find((x) => x.id === "t-2")!; return b.x2 < (g.nowX ?? 0) + 60; })());
+  eq("the rows stack: a heading a group and a row a bar", g.height, GANTT.top + 3 * GANTT.head + 4 * GANTT.row + 8);
+  const same = ganttLayout(rows, { now, width: 1000 });
+  eq("the same rows draw the same picture", same.bars.map((b) => [b.x1, b.x2, b.y]), g.bars.map((b) => [b.x1, b.x2, b.y]));
+  const empty = ganttLayout([], { now });
+  eq("no rows is no bars and the present month alone", [empty.bars.length, empty.groups.length, empty.months.length, empty.from], [0, 0, 1, "2026-09-01"]);
+  const past = ganttLayout([rows[1]], { now: new Date("2027-03-01T00:00:00Z") });
+  ok("a picture entirely in the past still has the present on it", past.nowX !== null && past.months.length === 7, `${past.nowX} ${past.months.length}`);
+  eq("a row whose date cannot be read is left out rather than drawn at nought", ganttLayout([{ ...rows[0], end: "soon" }], { now }).bars.length, 0);
+}
+
 /* ---------- the atlas: a layout that is the same every time ---------- */
 
 {

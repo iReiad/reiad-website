@@ -18,7 +18,7 @@ import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { SOURCE_TYPES, normaliseDoi, toneVar } from "@reiad/shared/research";
 import {
   addNote, addSearch, addSource, collectAlerts, dropAlert, listSearches, listSources, pushAlert, removeSearch,
-  saveSearch, searchIndexes, serviceStatus, type Hit, type Search, type SearchQuery, type Searched, type Source, type Who,
+  saveSearch, searchIndexes, serviceStatus, type ServiceState, type Hit, type Search, type SearchQuery, type Searched, type Source, type Who,
 } from "../../lib/research-api";
 import { Button } from "../ui/button";
 import { Chip, ChipButton, ChipLink } from "../ui/chip";
@@ -56,7 +56,7 @@ export function Find() {
   const [oa, setOa] = useState(false);
   const [type, setType] = useState("");
   const [dbs, setDbs] = useState<Set<string>>(new Set(DATABASES));
-  const [services, setServices] = useState<Record<string, "on" | "off"> | null>(null);
+  const [services, setServices] = useState<Record<string, ServiceState> | null>(null);
   const [busy, setBusy] = useState(false);
   const [found, setFound] = useState<Searched | null>(null);
   const [sources, setSources] = useState<Source[]>([]);

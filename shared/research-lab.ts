@@ -12,7 +12,8 @@
    it too, and held by scripts/research.test.ts.
    ============================================================ */
 
-import type { Fit } from "./research-stats.ts";
+import { normalCdf, tInv, type Fit } from "./research-stats.ts";
+import { toLatex, toMarkdown } from "./research-tools.ts";
 
 export const RUN_KINDS = ["sql", "stat", "chart", "python", "check"] as const;
 export type RunKind = typeof RUN_KINDS[number];
@@ -259,6 +260,133 @@ export function apaTable(fit: Fit & { pseudoR2?: number; link?: string }, o: Apa
   ].filter((l) => l !== undefined).join("\n");
   return { markdown: md, rows, notes };
 }
+
+/* ---------- several fits side by side ---------- */
+
+/** What a regression table needs of a fit and nothing more, so a
+    Fama-MacBeth answer (no residuals, no R squared) can stand in a
+    column beside an OLS one. */
+export interface ModelFit {
+  names: string[];
+  coef: number[];
+  se: number[];
+  p: number[];
+  n: number | null;
+  r2?: number;
+  adjR2?: number;
+  pseudoR2?: number;
+  robust?: string;
+  clusters?: number;
+}
+
+export interface Model { label: string; fit: ModelFit; depvar?: string }
+
+/** The shape of a run row this file reads: the label, what was
+    asked, and the answer whole. */
+export interface RunLike { label: string; input: Record<string, unknown>; output: Record<string, unknown> }
+
+/** A model out of a run's output, or null where the run is not a
+    regression. A fit is taken as stored; a Fama-MacBeth run keeps
+    no fit and is read out of its risk premia table, with a normal
+    p on the t and the periods as N. */
+export function modelOf(run: RunLike): Model | null {
+  const out = run.output;
+  const fit = out.fit as Partial<ModelFit> | undefined;
+  const roles = (run.input.roles ?? {}) as Record<string, string[] | undefined>;
+  const depvar = roles.y?.[0] ?? roles.r?.[0];
+  if (fit && Array.isArray(fit.names) && Array.isArray(fit.coef) && Array.isArray(fit.se) && Array.isArray(fit.p)) {
+    return {
+      label: run.label, depvar,
+      fit: { names: fit.names, coef: fit.coef, se: fit.se, p: fit.p, n: typeof fit.n === "number" ? fit.n : null, r2: fit.r2, adjR2: fit.adjR2, pseudoR2: fit.pseudoR2, robust: fit.robust, clusters: fit.clusters },
+    };
+  }
+  const tables = (out.tables ?? []) as { columns?: string[]; rows?: Cell[][] }[];
+  const premia = tables.find((t) => t.columns?.join(",") === "factor,lambda,se,t");
+  if (premia?.rows?.length) {
+    const rows = premia.rows;
+    const t = rows.map((r) => Number(r[3]));
+    const periods = /(\d+) periods/.exec(String(out.summary ?? ""));
+    return {
+      label: run.label, depvar,
+      fit: { names: rows.map((r) => String(r[0])), coef: rows.map((r) => Number(r[1])), se: rows.map((r) => Number(r[2])), p: t.map((v) => 2 * (1 - normalCdf(Math.abs(v)))), n: periods ? Number(periods[1]) : null, robust: "Fama-MacBeth" },
+    };
+  }
+  return null;
+}
+
+const seNote = (robust: string | undefined, clusters: number | undefined): string =>
+  robust === "cluster" ? `clustered by group (${clusters ?? "?"} clusters)` : robust === "classical" || !robust ? "classical" : robust === "Fama-MacBeth" ? "Fama-MacBeth" : `heteroskedasticity-robust (${robust})`;
+
+/** Several fits as one table: a column a model, every term the
+    models mention in order of first appearance, the coefficient
+    with stars and the standard error in brackets beneath, and N
+    and the fit's own measure in the foot, blank where a model has
+    no such number. The same shape as `apaTable`, as rows, as
+    Markdown and as LaTeX. */
+export function compareRuns(models: Model[], o: ApaOptions = {}): { rows: string[][]; markdown: string; latex: string; notes: string } {
+  const digits = o.digits ?? 3;
+  const starred = o.stars !== false;
+  const head = ["", ...models.map((m, i) => `(${i + 1}) ${m.depvar ?? m.label}`)];
+  const terms: string[] = [];
+  for (const m of models) for (const n of m.fit.names) if (!terms.includes(n)) terms.push(n);
+  const rows: string[][] = [head];
+  for (const term of terms) {
+    const coefs: string[] = [], ses: string[] = [];
+    for (const m of models) {
+      const i = m.fit.names.indexOf(term);
+      if (i < 0) { coefs.push(""); ses.push(""); continue; }
+      coefs.push(`${fmt(m.fit.coef[i], digits)}${starred ? stars(m.fit.p[i]) : ""}`);
+      ses.push(`(${fmt(m.fit.se[i], digits)})`);
+    }
+    rows.push([term, ...coefs], ["", ...ses]);
+  }
+  rows.push(["N", ...models.map((m) => (m.fit.n === null ? "" : String(m.fit.n)))]);
+  if (models.some((m) => m.fit.r2 !== undefined && m.fit.pseudoR2 === undefined)) rows.push(["R²", ...models.map((m) => (m.fit.pseudoR2 === undefined && m.fit.r2 !== undefined ? fmt(m.fit.r2, digits) : ""))]);
+  if (models.some((m) => m.fit.pseudoR2 !== undefined)) rows.push(["Pseudo R²", ...models.map((m) => (m.fit.pseudoR2 !== undefined ? fmt(m.fit.pseudoR2, digits) : ""))]);
+  const kinds = [...new Set(models.map((m) => seNote(m.fit.robust, m.fit.clusters)))];
+  const errors = kinds.length === 1 ? `Standard errors, ${kinds[0]}, in parentheses.`
+    : `Standard errors in parentheses: ${models.map((m, i) => `(${i + 1}) ${seNote(m.fit.robust, m.fit.clusters)}`).join("; ")}.`;
+  const notes = `${errors}${starred ? " * p < .05, ** p < .01, *** p < .001." : ""}`;
+  const title = o.title ? `**${o.title}**\n\n` : "";
+  return { rows, markdown: `${title}${toMarkdown(rows)}\n\n*Note.* ${notes}`, latex: `${toLatex(rows)}\n% ${notes}`, notes };
+}
+
+/* ---------- against the paper, and against the last run ---------- */
+
+export interface PaperGap {
+  /** this run's estimate less the paper's */
+  diff: number;
+  /** that difference in this run's standard errors */
+  inSe: number;
+  /** and in the paper's, where the paper gave one */
+  inPaperSe: number | null;
+  /** this run's 95% interval */
+  ci: [number, number];
+  /** whether the paper's estimate lies inside it */
+  inside: boolean;
+}
+
+/** The gap between one coefficient here and the paper's figure
+    for it. The interval is t on `df` where there is one and
+    normal otherwise, which is what the fit itself used. */
+export function paperGap(coef: number, se: number, paperCoef: number, paperSe: number | null, df?: number): PaperGap {
+  const crit = df !== undefined && Number.isFinite(df) && df > 0 ? tInv(0.975, df) : 1.959964;
+  const ci: [number, number] = [coef - crit * se, coef + crit * se];
+  const diff = coef - paperCoef;
+  return {
+    diff,
+    inSe: se > 0 ? diff / se : Infinity,
+    inPaperSe: paperSe !== null && paperSe > 0 ? diff / paperSe : null,
+    ci,
+    inside: paperCoef >= ci[0] && paperCoef <= ci[1],
+  };
+}
+
+/** Whether two numbers print the same at `digits` places, which is
+    the only sense in which a re-run "agrees": the arithmetic is
+    deterministic and the question is whether the table changed. */
+export const agreesToPrecision = (a: number, b: number, digits = 3): boolean =>
+  Number.isFinite(a) && Number.isFinite(b) && a.toFixed(digits) === b.toFixed(digits);
 
 /* ---------- charts, as SVG text ---------- */
 

@@ -13,15 +13,16 @@
 
 import { useRouter } from "next/navigation";
 import { useEffect, useMemo, useState } from "react";
-import { sourceType, toneVar, type SourceFile } from "@reiad/shared/research";
+import { fileSize, sourceType, toneVar, type SourceFile } from "@reiad/shared/research";
 import { listQueue, type Source } from "../../lib/research-api";
-import { Chip } from "../ui/chip";
+import { forgetFile, listKept, type KeptFile } from "../../lib/offline-files";
+import { Chip, ChipButton } from "../ui/chip";
 import { Surface } from "../ui/surface";
 import { W, both, useToolLang } from "./lang";
 import { SignedOut } from "./signed-out";
 import { useWho } from "./use-who";
 import { useKeys } from "./keys";
-import { readHref } from "./files";
+import { KEPT_EVENT, readHref } from "./files";
 import { Reader } from "./reader";
 
 /** The queue, or the reader: `?source=` decides, read after the

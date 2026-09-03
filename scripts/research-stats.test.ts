@@ -15,6 +15,7 @@ import {
   indexInsurance, inverse, mannWhitney, meanVariance, normalCdf, normalInv, ols, panelFE, rainfallShock, returns, sharpe, spearman, stochasticDominance,
   surveyMean, tCdf, tsls, tTest, quantile,
 } from "../shared/research-stats.ts";
+import { agreesToPrecision, compareRuns, modelOf, paperGap } from "../shared/research-lab.ts";
 
 let passed = 0;
 const failures: string[] = [];
@@ -146,6 +147,32 @@ const mv = meanVariance([{ name: "rice", outcomes: [10, 20, 30] }]);
 ok("mean-variance: mean 20, sd 10, cv 0.5", near(mv[0].mean, 20) && near(mv[0].sd, 10) && near(mv[0].cv, 0.5));
 ok("stochastic dominance: [1,2,3] dominates [0,1,2] at first order", stochasticDominance([1, 2, 3], [0, 1, 2]).first && !stochasticDominance([0, 1, 2], [1, 2, 3]).first);
 ok("and a mean-preserving spread is dominated at second order only", !stochasticDominance([2, 2, 2], [1, 2, 3]).first && stochasticDominance([2, 2, 2], [1, 2, 3]).second);
+
+/* ---- several fits side by side, and a run against the paper ---- */
+const fitA = { names: ["(Intercept)", "open"], coef: [1.23456, 0.5], se: [0.1, 0.02], p: [0.0001, 0.03], n: 12, r2: 0.5, adjR2: 0.4, robust: "HC1" };
+const fitB = { names: ["(Intercept)", "open", "volume"], coef: [2, 0.4, -0.001], se: [1, 0.05, 0.0004], p: [0.2, 0.001, 0.02], n: 12, r2: 0.6, adjR2: 0.5, robust: "cluster", clusters: 4 };
+const cmp = compareRuns([{ label: "one", depvar: "close", fit: fitA }, { label: "two", depvar: "close", fit: fitB }]);
+ok("compareRuns: a column a model and the terms in order of first appearance", cmp.rows[0].join("|") === "|(1) close|(2) close" && cmp.rows.map((r) => r[0]).filter(Boolean).join(",") === "(Intercept),open,volume,N,R²", cmp.rows.map((r) => r[0]).join(","));
+ok("compareRuns: the coefficient with its stars and the SE in brackets beneath", cmp.rows[1].join("|") === "(Intercept)|1.235***|2.000" && cmp.rows[2].join("|") === "|(0.100)|(1.000)", `${cmp.rows[1].join("|")} / ${cmp.rows[2].join("|")}`);
+ok("compareRuns: a term one model lacks is a blank cell in that column", cmp.rows[5].join("|") === "volume||-0.001*" && cmp.rows[6].join("|") === "||(0.000)", `${cmp.rows[5].join("|")} / ${cmp.rows[6].join("|")}`);
+ok("compareRuns: N and R squared in the foot", cmp.rows[7].join("|") === "N|12|12" && cmp.rows[8].join("|") === "R²|0.500|0.600");
+ok("compareRuns: the note names each column's errors where they differ", cmp.notes.includes("(1) heteroskedasticity-robust (HC1)") && cmp.notes.includes("(2) clustered by group (4 clusters)") && cmp.notes.includes("*** p < .001"), cmp.notes);
+ok("compareRuns: Markdown and LaTeX carry the same rows", cmp.markdown.includes("| open | 0.500* | 0.400** |") && cmp.latex.includes("open & 0.500* & 0.400** \\\\") && cmp.latex.startsWith("\\begin{tabular}{lll}"), cmp.latex.slice(0, 120));
+const noStars = compareRuns([{ label: "one", fit: fitA }], { stars: false });
+ok("compareRuns: with stars off nothing is starred and the note says nothing about p", !/\*/.test(noStars.rows.flat().join("")) && !noStars.notes.includes("p <"));
+const logitLike = { names: ["(Intercept)", "x"], coef: [0.1, 0.2], se: [0.1, 0.1], p: [0.3, 0.05], n: 40, r2: 0, adjR2: 0, pseudoR2: 0.12, robust: "classical" };
+const mixed = compareRuns([{ label: "ols", fit: fitA }, { label: "logit", fit: logitLike }]);
+ok("compareRuns: a pseudo R squared is its own row and a logit leaves the R squared cell blank", mixed.rows.some((r) => r.join("|") === "R²|0.500|") && mixed.rows.some((r) => r.join("|") === "Pseudo R²||0.120"), mixed.rows.slice(-2).map((r) => r.join("|")).join(" / "));
+const fromRun = modelOf({ label: "OLS: close, open", input: { method: "ols", roles: { y: ["close"], x: ["open"] } }, output: { fit: fitA } });
+ok("modelOf reads a stored fit and the outcome out of the run's roles", fromRun?.depvar === "close" && fromRun.fit.coef[1] === 0.5 && fromRun.fit.n === 12);
+const fmb = modelOf({ label: "Fama-MacBeth", input: { method: "famamacbeth", roles: {} }, output: { summary: "60 periods, 5 assets", tables: [{ title: "Risk premia", columns: ["factor", "lambda", "se", "t"], rows: [["(Intercept)", 0.01, 0.005, 2], ["mkt", 0.05, 0.01, 5]] }] } });
+ok("modelOf reads a Fama-MacBeth run out of its premia table with the periods as N", fmb?.fit.names.join(",") === "(Intercept),mkt" && fmb.fit.n === 60 && near(fmb.fit.p[0], 2 * (1 - normalCdf(2)), 8) && fmb.fit.robust === "Fama-MacBeth", JSON.stringify(fmb));
+ok("modelOf is null for a run that is not a regression", modelOf({ label: "sql", input: {}, output: { columns: ["a"], rows: [[1]] } }) === null);
+const gap = paperGap(0.5, 0.02, 0.52, 0.03, 10);
+ok("paperGap: the difference, in this run's SEs and in the paper's", near(gap.diff, -0.02) && near(gap.inSe, -1) && near(gap.inPaperSe ?? 0, -2 / 3), JSON.stringify(gap));
+ok("paperGap: a t interval on 10 df is ±2.228 SEs and the paper's figure is inside it", near(gap.ci[0], 0.5 - 2.2281 * 0.02, 4) && near(gap.ci[1], 0.5 + 2.2281 * 0.02, 4) && gap.inside, JSON.stringify(gap.ci));
+ok("paperGap: a normal interval with no df, and a figure outside it", (() => { const g = paperGap(0.5, 0.02, 0.6, null); return near(g.ci[1], 0.5 + 1.96 * 0.02, 4) && !g.inside && g.inPaperSe === null; })());
+ok("agreesToPrecision compares what the table prints, not the float", agreesToPrecision(0.12345, 0.12349) && !agreesToPrecision(0.1234, 0.1236) && !agreesToPrecision(NaN, 1));
 
 console.log(`research-stats: ${passed} checks passed${failures.length ? `, ${failures.length} failed` : ""}`);
 for (const f2 of failures) console.log(`  x ${f2}`);

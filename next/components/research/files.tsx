@@ -15,15 +15,20 @@
    ============================================================ */
 
 import Link from "next/link";
-import { useCallback, useRef, useState } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 import { FILE_TYPES, fileKind, fileSize, toneVar, type SourceFile } from "@reiad/shared/research";
-import { attachFile, captureUrl, saveSource, uploadFile, type Source, type Who } from "../../lib/research-api";
+import { attachFile, captureUrl, fileTicket, saveSource, uploadFile, type Source, type Who } from "../../lib/research-api";
+import { canKeep, forgetFile, keepFile, listKept } from "../../lib/offline-files";
 import { Button, ButtonLabel } from "../ui/button";
 import { Chip, ChipButton, ChipLink } from "../ui/chip";
 import { cue } from "../../lib/sound";
 import { W, both } from "./lang";
 
 const ACCEPT = Object.keys(FILE_TYPES).map((ext) => `.${ext}`).join(",") + ",.jpeg,.htm";
+
+/** Fired on the document when a file is kept on this device or
+    let go, so the queue's meter can redraw without a prop. */
+export const KEPT_EVENT = "reiad:kept";
 
 export function FileBox({ w, source, onChange }: {
   w: Who; source: Source; onChange: (s: Source) => void;
@@ -32,6 +37,36 @@ export function FileBox({ w, source, onChange }: {
   const [busy, setBusy] = useState(false);
   const [said, setSaid] = useState("");
   const files = source.files as SourceFile[];
+
+  /* Whether this browser can keep a file, and which it holds:
+     read in an effect, because the server has no IndexedDB and a
+     button drawn on one side only is a hydration mismatch. */
+  const [able, setAble] = useState(false);
+  const [kept, setKept] = useState<Set<string>>(new Set());
+  useEffect(() => {
+    setAble(canKeep());
+    void listKept().then((l) => setKept(new Set(l.map((f) => f.key))));
+  }, []);
+
+  const toggleKeep = useCallback(async (f: SourceFile) => {
+    setBusy(true);
+    try {
+      if (kept.has(f.key)) {
+        if (await forgetFile(f.key)) setKept((was) => { const next = new Set(was); next.delete(f.key); return next; });
+      } else {
+        const url = await fileTicket(w, f.key);
+        const res = url ? await fetch(url).catch(() => null) : null;
+        if (!res?.ok) { setSaid(both("rs.read.keep.failed")); return; }
+        const bytes = await res.arrayBuffer();
+        const ok = await keepFile({ key: f.key, name: f.name ?? f.key.split("/").pop() ?? f.key, type: res.headers.get("content-type") ?? FILE_TYPES[f.ext] ?? "" }, bytes);
+        if (!ok) { setSaid(both("rs.read.keep.failed")); return; }
+        setKept((was) => new Set(was).add(f.key));
+        setSaid("");
+        cue("saved");
+      }
+      document.dispatchEvent(new Event(KEPT_EVENT));
+    } finally { setBusy(false); }
+  }, [w, kept]);
 
   const put = useCallback(async (file: File) => {
     setBusy(true);
@@ -87,6 +122,11 @@ export function FileBox({ w, source, onChange }: {
               <span className="text-t1 text-ink-soft mono">{fileSize(f.size)}{f.pages ? ` · ${f.pages} ${both("rs.read.pages")}` : ""}</span>
               {f.kind === "pdf" || f.kind === "html" || f.kind === "audio" || f.kind === "image" ? (
                 <ChipLink href={`/tools/research/read?source=${source.id}&file=${encodeURIComponent(f.key)}`}><W k="rs.lib.read" /></ChipLink>
+              ) : null}
+              {able ? (
+                <ChipButton pressed={kept.has(f.key)} disabled={busy} data-testid="rs-keep" data-key={f.key} onClick={() => { void toggleKeep(f); }}>
+                  <W k={kept.has(f.key) ? "rs.read.keep.kept" : "rs.read.keep"} />
+                </ChipButton>
               ) : null}
               <ChipButton onClick={() => { void detach(f.key); }}><W k="rs.lib.file.remove" /></ChipButton>
             </li>

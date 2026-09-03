@@ -688,11 +688,18 @@ export const lookupIsbn = (isbn: string): Promise<Lookup | null> =>
 export const lookupUrl = (url: string): Promise<Lookup | null> =>
   lookup(`url?u=${encodeURIComponent(url)}`);
 
-export async function serviceStatus(): Promise<Record<string, "on" | "off"> | null> {
+/** A service is `on`, `off`, or `owner`: there, and the site's
+    own to spend rather than the reader's. The bearer goes along
+    when there is one, because that is how the Worker knows which
+    of the last two to answer. */
+export type ServiceState = "on" | "off" | "owner";
+
+export async function serviceStatus(): Promise<Record<string, ServiceState> | null> {
   try {
-    const res = await fetch("/api/research/status");
+    const w = await who();
+    const res = await fetch("/api/research/status", w ? { headers: { Authorization: `Bearer ${w.token}` } } : undefined);
     if (!res.ok) return null;
-    const data = await res.json() as { ok: boolean; services?: Record<string, "on" | "off"> };
+    const data = await res.json() as { ok: boolean; services?: Record<string, ServiceState> };
     return data.services ?? null;
   } catch { return null; }
 }
@@ -1181,12 +1188,19 @@ export interface ReviewRecord extends Row {
   review_id: string;
   database: string;
   search_id: string | null;
-  record: Hit & { fullText?: boolean };
+  /** `fullText` says A's exclusion was at full text; `fullText2`
+      says the same of B's. */
+  record: Hit & { fullText?: boolean; fullText2?: boolean };
   doi: string | null;
   hash: string;
   stage: RecordStage;
   reason: string | null;
   decided_at: string | null;
+  /** Screener B's column, in the stage vocabulary. */
+  decision2: RecordStage | null;
+  reason2: string | null;
+  decided2_at: string | null;
+  screener2: string | null;
   source_id: string | null;
   extraction: Record<string, string>;
   appraisal: Record<string, "yes" | "no" | "unclear" | undefined>;
@@ -1509,4 +1523,63 @@ export async function replaceChunks(w: Who, kind: ChunkKind, ref: string, chunks
     body: JSON.stringify(chunks.map((c) => ({ user_id: w.id, kind, ref_id: ref, part: c.part, title: c.title, text: c.text, embedding: c.embedding }))),
   }, w);
   return r.ok && r.data ? r.data.length : 0;
+}
+
+/* ============================================================
+   the field room, second form: a quote into a draft
+   ============================================================ */
+
+/** A block appended to a document's body. The row is read fresh
+    and patched against the `updated_at` it came with, so a draft
+    open on another device is answered with a conflict rather than
+    written over. `text` is what the block says as plain text, kept
+    beside the body the way the desk keeps it. */
+export async function quoteIntoDocument(w: Who, id: string, html: string, text: string): Promise<PatchAnswer<Document>> {
+  const doc = await getDocument(w, id);
+  if (!doc) return { ok: false, conflict: false, status: 404 };
+  const body = doc.body === "<p></p>" ? html : `${doc.body}${html}`;
+  return saveDocument(w, doc, { body, text: doc.text ? `${doc.text}\n${text}` : text }, doc.updated_at);
+}
+
+/* ============================================================
+   the lab, second form: a run re-run, compared to the paper,
+   and a climate series (RESEARCH.md section 36)
+   ============================================================ */
+
+export const getDataset = (w: Who, id: string): Promise<Dataset | null> => row<Dataset>(w, "research_datasets", id);
+
+/** A change to a run: the paper's figures under `output.paper`,
+    which PostgREST replaces whole, so the caller sends the output
+    entire. */
+export const saveRun = (w: Who, r: Run, part: Partial<Run>): Promise<PatchAnswer<Run>> =>
+  patch<Run>(w, "research_runs", r.id, part, r.label.slice(0, 80));
+
+export interface ClimateSeries {
+  lat: number; lon: number; from: string; to: string;
+  source: string; licence: string; fetched: string;
+  columns: string[]; units: Record<string, string>;
+  rows: (string | number | null)[][];
+}
+
+/** Daily temperature and rain at a point through the Worker, or
+    null where the service did not answer or the query was bad. */
+export async function climateSeries(w: Who, q: { lat: number; lon: number; from: string; to: string }): Promise<ClimateSeries | null> {
+  try {
+    const res = await fetch(`/api/research/climate?lat=${q.lat}&lon=${q.lon}&from=${enc(q.from)}&to=${enc(q.to)}`, { headers: bearer(w) });
+    if (!res.ok) return null;
+    const data = await res.json() as { ok: boolean; series?: ClimateSeries };
+    return data.ok && data.series ? data.series : null;
+  } catch { return null; }
+}
+
+export interface PlaceFound { id: string; name: string; where: string; lat: number; lon: number }
+
+/** A town by name, through the weather Worker's place index, which
+    already rounds to two places. */
+export async function findPlaces(q: string): Promise<PlaceFound[]> {
+  try {
+    const res = await fetch(`/api/weather/place?q=${enc(q)}`, { signal: AbortSignal.timeout(9000) });
+    const data = await res.json() as { ok?: boolean; places?: PlaceFound[] };
+    return data.ok ? (data.places ?? []) : [];
+  } catch { return []; }
 }

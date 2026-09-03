@@ -33,7 +33,7 @@ import {
 import { prisma } from "@reiad/shared/research-review";
 import {
   addNote, askAssistant, chunkHref, embedTexts, getDocument, getPrefs, listChunks, listCodes, listDocuments, listHighlights, listNotes, listProjects, listQuestions, listRecords,
-  listReviews, listRuns, listSources, matchChunks, replaceChunks, rows, savePrefs, serviceStatus,
+  listReviews, listRuns, listSources, matchChunks, replaceChunks, rows, savePrefs, serviceStatus, type ServiceState,
   type Code, type Document, type Highlight, type Match, type Note, type Project, type Question, type Review, type Run, type Source, type Who,
 } from "../../lib/research-api";
 import { Button } from "../ui/button";
@@ -59,7 +59,7 @@ export function Ask() {
   const { w, answered } = useWho();
   const lang = useToolLang();
   const [on, setOn] = useState<boolean | null>(null);
-  const [services, setServices] = useState<Record<string, "on" | "off"> | null>(null);
+  const [services, setServices] = useState<Record<string, ServiceState> | null>(null);
   const [mode, setMode] = useState<AssistantMode>("project");
   const [taskId, setTaskId] = useState("ask");
   const [project, setProject] = useState("");
@@ -104,7 +104,8 @@ export function Ask() {
   }, [w]);
 
   const keys = useMemo(() => sources.map((s) => s.key), [sources]);
-  const canAsk = services?.assistant !== "off";
+  const canAsk = services?.assistant !== "off" && services?.assistant !== "owner";
+  const ownersOnly = services?.assistant === "owner";
   const canEmbed = services?.embed === "on";
   const picked = {
     source: sources.find((s) => s.id === pick.source) ?? null,
@@ -311,7 +312,8 @@ export function Ask() {
         </label>
         <span className="text-t1 mono text-ink-soft" data-testid="rs-ask-cost"><W k="rs.ask.month" /> {pounds(month)}</span>
       </div>
-      {!canAsk ? <p className="text-t2 text-ink-soft" data-testid="rs-ask-notconnected"><W k="rs.ask.notconnected" /></p> : null}
+      {ownersOnly ? <p className="text-t2 text-ink-soft" data-testid="rs-ask-owner"><W k="rs.ask.owner" /></p>
+        : !canAsk ? <p className="text-t2 text-ink-soft" data-testid="rs-ask-notconnected"><W k="rs.ask.notconnected" /></p> : null}
       {on === false ? <p className="text-t2 text-ink-soft" data-testid="rs-ask-off"><W k="rs.ask.off" /> <Link href="/tools/research/settings"><W k="rs.ask.settings" /></Link></p> : null}
 
       <div className="grid gap-4 lg:grid-cols-[minmax(0,24rem)_minmax(0,1fr)] items-start">

@@ -29,6 +29,19 @@ export interface ResearchMethod {
   rooms?: string[];
 }
 
+/** A lesson written HERE, in the article vocabulary, for a method
+    no piece covers yet. `next/lib/methods/<slug>.ts` is one each and
+    `next/lib/methods/index.ts` is the list; a live piece with the
+    same slug wins over it, so the room never shows two. */
+export interface MethodLesson {
+  slug: string;
+  /** Reading time, whole minutes. */
+  minutes: number;
+  /** Article HTML: only classes `@layer article` styles. */
+  en: string;
+  bn: string;
+}
+
 export const RESEARCH_METHODS: ResearchMethod[] = [
   { slug: "reading-a-paper-in-an-hour", kind: "reading", title: { en: "Reading a paper in an hour", bn: "এক ঘণ্টায় একটা কাগজ পড়া" },
     dek: { en: "Three passes, what to write after each, and the one line that says whether it was worth the hour.", bn: "তিন বার পড়া, প্রতিবারের পরে কী লিখবেন, আর যে এক লাইন বলে ঘণ্টাটা সার্থক কি না।" }, rooms: ["read", "library"] },
@@ -57,6 +70,8 @@ export const RESEARCH_METHODS: ResearchMethod[] = [
 ];
 
 /** The methods behind a tool, or the ones a room's head links. */
+export const researchMethod = (slug: string): ResearchMethod | undefined => RESEARCH_METHODS.find((m) => m.slug === slug);
+
 export const methodsFor = (of: { tool?: string; room?: string }): ResearchMethod[] =>
   RESEARCH_METHODS.filter((m) => (of.tool ? m.tools?.includes(of.tool) : false) || (of.room ? m.rooms?.includes(of.room) : false));
 

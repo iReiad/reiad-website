@@ -14,10 +14,13 @@
     "@reiad/shared": "file:../shared",
     "citeproc": "^2.4.63",
     "docx": "^9.7.1",
+    "katex": "^0.18.5",
     "next": "^16.3.1",
     "pdfjs-dist": "^6.3.289",
+    "pptxgenjs": "^4.0.1",
     "react": "^19.2.8",
-    "react-dom": "^19.2.8"
+    "react-dom": "^19.2.8",
+    "ts-fsrs": "^5.4.2"
   },
   "devDependencies": {
     "@cloudflare/workers-types": "^5.20260816.1",
