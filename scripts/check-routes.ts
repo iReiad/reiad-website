@@ -653,6 +653,35 @@ for (const url of [...targets].sort()) {
   walkApp(app, 0, []);
 }
 
+/* ---- `dynamicParams = false` is a 404 on this deployment ----
+
+   A route with a dynamic segment and that flag answers 404 for
+   EVERY param on Cloudflare, including the ones its own
+   `generateStaticParams` names: the prerendered page sits in
+   `.open-next/cache` and the runtime refuses to render on demand,
+   so it has nothing to serve. `/tools/research/tools/which-test`
+   was dead from the day it shipped, and the workshop's thirty
+   cards all pointed at it.
+
+   It renders perfectly in `next build`, in `next dev` and in the
+   browser test, which serves the prerendered files directly. Only
+   workerd and the live site say otherwise. Prerendering still
+   happens without the flag; an unknown param renders on demand
+   and calls `notFound()`. */
+{
+  const walk = (dir: string): string[] =>
+    readdirSync(dir, { withFileTypes: true }).flatMap((e) =>
+      e.isDirectory() ? walk(join(dir, e.name)) : e.name === "page.tsx" ? [join(dir, e.name)] : []);
+  for (const file of walk(join(ROOT, "next", "app"))) {
+    if (!/export\s+const\s+dynamicParams\s*=\s*false/.test(readFileSync(file, "utf8"))) continue;
+    failures++;
+    console.error(`dynamic-params    ${relative(ROOT, file)}`);
+    console.error("        `dynamicParams = false` answers 404 for every param on this");
+    console.error("        deployment, its own prerendered ones included. Take it out and");
+    console.error("        call notFound() for a param the list does not name.");
+  }
+}
+
 console.log(
   failures
     ? `\n${failures} broken route(s): fix before deploying.`
