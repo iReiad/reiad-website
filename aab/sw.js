@@ -24,10 +24,15 @@
    the number moves. `node scripts/check-sw.ts --update` records the
    new hashes.
 
+   v250: the Research Studio's guide. The i in every room opens a
+        popover, so `/fallback.css` carries `.rs-guide` and the two
+        pages that link it would otherwise draw the panel as a
+        block of prose in the flow of the page.
+
    v249: comments. Every precached module lost the essay at the top
         of it and this file lost 2,167 lines of changelog, so the
         bytes moved without a line of behaviour changing. */
-const VERSION = "v249";
+const VERSION = "v250";
 const SHELL = `shell-${VERSION}`;
 const RUNTIME = `runtime-${VERSION}`;
 

@@ -116,6 +116,9 @@ const browser = await chromium.launch(browserPath ? { executablePath: browserPat
 interface Row { id: string; user_id: string; created_at: string; updated_at: string; [k: string]: unknown }
 
 const ME = "reader-1";
+/** Every room the guide describes, which `check-research.ts`
+    holds to the pages table: sixteen rooms and the board. */
+const GUIDE_ROOMS_N = 17;
 const ago = (days: number): string => new Date(Date.now() - days * 86400000).toISOString();
 
 const source = (
@@ -1381,8 +1384,12 @@ for (const path of ["/tools/research", "/tools/research/library", "/tools/resear
   ok("indexing embeds every source as passages and stores them as the reader, the vector on each", embedded[embedded.length - 1]?.length === 2 && chunks.length === 2 && chunks.every((c) => c.kind === "source" && c.part === 0 && Array.isArray(c.embedding) && c.embedding.length === 3) && chunks.map((c) => c.ref_id).sort().join() === "s-1,s-2" && (chunks.find((c) => c.ref_id === "s-1")?.text ?? "").includes("[@rahman2021weather]"), JSON.stringify(chunks).slice(0, 300));
   ok("and says how many", ((await page.locator('[data-testid="rs-ask-indexed"]').textContent()) ?? "").includes("2"), (await page.locator('[data-testid="rs-ask-indexed"]').textContent()) ?? "");
 
-  /* ---- the prompt library ---- */
-  await page.locator("details summary").first().click();
+  /* ---- the prompt library ----
+
+     Scoped to the room: the head of every room now carries the
+     guide, whose parts are `<details>` too, and they come first
+     in the document. */
+  await page.locator("details:has(#rs-ask-template) summary").click();
   await page.locator("#rs-ask-template").selectOption({ label: "Weekly review" });
   await page.waitForTimeout(200);
   ok("a template's marks become fields, in order", await page.locator('[data-testid="rs-ask-marks"] input').count() === 4 && await page.locator("#rs-ask-ph-PROJECT").count() === 1);
@@ -1610,6 +1617,48 @@ for (const path of ["/tools/research", "/tools/research/library", "/tools/resear
     && typeof (x.body as { body?: unknown }).body === "string" && (x.body as { body: string }).body.trim() === "");
   ok("switching documents never writes an empty body over the one being left",
     emptied.length === 0, emptied.map((x) => x.path).join(" | "));
+  ok("and none of it threw", errors.length === 0, errors.join(" | "));
+  await page.close();
+}
+
+/* ============================================================
+   the i in the head, and the guide it opens
+   ============================================================ */
+
+{
+  const { page, errors } = await open("/tools/research/library");
+  const panel = page.locator("#rs-guide");
+  ok("the guide is in the markup, shut", await panel.count() === 1
+    && !(await panel.evaluate((el) => (el as HTMLElement).matches(":popover-open"))));
+  ok("and nothing in it is on the screen until it is opened",
+    !(await panel.isVisible()));
+
+  await page.getByRole("button", { name: /Guide to this room|এই ঘরের গাইড/ }).click();
+  await page.waitForTimeout(200);
+  ok("pressing the i opens it", await panel.isVisible());
+
+  /* The room the reader is standing in, first and open: the
+     press is nearly always "what is THIS room for". */
+  const first = await panel.locator("[data-testid^='rs-guide-room-']").first().getAttribute("data-testid");
+  ok("this room's own guide is the first thing in it", first === "rs-guide-room-library", String(first));
+  const words = await panel.textContent() ?? "";
+  ok("and it says what the room is for", /Every source as one record/.test(words), words.slice(0, 200));
+  ok("in both languages, so the switch has something to show",
+    /প্রতিটা উৎসের একটা রেকর্ড/.test(words));
+  ok("the other rooms are in it too, behind a disclosure",
+    await panel.locator("[data-testid^='rs-guide-room-']").count() === GUIDE_ROOMS_N,
+    `${await panel.locator("[data-testid^='rs-guide-room-']").count()} of ${GUIDE_ROOMS_N}`);
+  ok("and the keyboard is written down", /Ctrl\+K/.test(words));
+
+  /* `keys.ts` refuses to act while a popover is open: j while
+     reading about j would move the list underneath. */
+  await page.keyboard.press("j");
+  await page.waitForTimeout(150);
+  ok("a single-letter shortcut does nothing while the guide is open", await panel.isVisible());
+
+  await page.keyboard.press("Escape");
+  await page.waitForTimeout(250);
+  ok("Escape closes it, because a popover is the browser's own", !(await panel.isVisible()));
   ok("and none of it threw", errors.length === 0, errors.join(" | "));
   await page.close();
 }

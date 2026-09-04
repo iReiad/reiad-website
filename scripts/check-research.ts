@@ -37,6 +37,11 @@
    5. EVERY ROUTE CARRIES METADATA and the studio's frame, so a
       room added by copying its neighbour cannot ship as bare
       HTML with no title.
+
+   6. THE GUIDE DESCRIBES EVERY ROOM AND NO OTHER. The "i" in
+      each room's head opens `lib/research-guide.ts`, and a room
+      it does not hold opens a panel that says nothing about the
+      page the reader is standing on.
    ============================================================ */
 
 import { existsSync, readFileSync, readdirSync, statSync } from "node:fs";
@@ -46,6 +51,7 @@ import { RESEARCH_PAGES } from "../next/lib/research-pages.ts";
 import { RESEARCH_TOOLS } from "../next/lib/research-tools.ts";
 import { METHOD_KINDS, RESEARCH_METHODS } from "../next/lib/research-methods.ts";
 import { METHOD_LESSONS } from "../next/lib/methods/index.ts";
+import { GUIDE_FLOWS, GUIDE_KEYS, GUIDE_LAWS, GUIDE_ROOMS, GUIDE_START } from "../next/lib/research-guide.ts";
 import { WRITTEN } from "../next/lib/methods/written.ts";
 
 /** The classes a lesson may wear: the article blocks the
@@ -351,6 +357,53 @@ if (bad) {
     }
   }
   if (!existsSync(join(ROUTES, "methods", "[slug]", "page.tsx"))) fail("the lesson route next/app/(site)/tools/research/methods/[slug]/page.tsx is gone");
+}
+
+/* ---------- 6. the guide covers the building ---------- */
+
+{
+  const rooms = new Set(RESEARCH_PAGES.map((p) => p.key));
+  /* The board is a room with no row in the pages table: it is
+     the front door, and the strip draws it from RESEARCH_HOME. */
+  rooms.add("board");
+  const guided = new Set(GUIDE_ROOMS.map((r) => r.key));
+  for (const key of rooms) {
+    if (!guided.has(key)) {
+      fail(`the guide says nothing about the room "${key}"`,
+        "next/lib/research-guide.ts is what the i in that room's head opens,",
+        "and a room it does not hold opens a panel about somewhere else.");
+    }
+  }
+  for (const r of GUIDE_ROOMS) {
+    if (!rooms.has(r.key)) fail(`the guide describes "${r.key}", which is not a room`, "A key from next/lib/research-pages.ts, or board.");
+    if (!r.steps.length) fail(`the guide gives the room "${r.key}" no steps`, "What a reader does there, in order.");
+  }
+
+  /* Both languages, everywhere, for the reason section 2 says. */
+  const halves: [string, { en: string; bn: string }][] = [
+    ...GUIDE_ROOMS.flatMap((r) => [
+      [`${r.key}.does`, r.does] as [string, { en: string; bn: string }],
+      ...r.steps.map((s, i) => [`${r.key}.step ${i + 1}`, s] as [string, { en: string; bn: string }]),
+      ...(r.keys ?? []).map((k) => [`${r.key}.key ${k.press}`, k.does] as [string, { en: string; bn: string }]),
+      ...(r.note ? [[`${r.key}.note`, r.note] as [string, { en: string; bn: string }]] : []),
+    ]),
+    ...GUIDE_LAWS.flatMap((l, i) => [[`law ${i + 1} title`, l.title], [`law ${i + 1} body`, l.body]] as [string, { en: string; bn: string }][]),
+    ...GUIDE_START.map((s, i) => [`start ${i + 1}`, s] as [string, { en: string; bn: string }]),
+    ...GUIDE_KEYS.flatMap((k) => [[`key ${k.press} where`, k.where], [`key ${k.press} does`, k.does]] as [string, { en: string; bn: string }][]),
+    ...GUIDE_FLOWS.flatMap((f, i) => [
+      [`flow ${i + 1} title`, f.title] as [string, { en: string; bn: string }],
+      ...f.steps.map((s, j) => [`flow ${i + 1} step ${j + 1}`, s] as [string, { en: string; bn: string }]),
+    ]),
+  ];
+  for (const [where, word] of halves) {
+    if (!word.en?.trim() || !word.bn?.trim()) fail(`the guide's ${where} is missing a language`);
+    else if (!BANGLA.test(word.bn)) fail(`the guide's ${where} has a bn half that is not Bangla: ${word.bn}`);
+  }
+
+  /* The i is in the frame, so it is in every room at once
+     rather than in sixteen pages that have to remember it. */
+  const frame = readFileSync(join(COMPONENTS, "frame.tsx"), "utf8");
+  if (!/<ResearchGuide/.test(frame)) fail("next/components/research/frame.tsx no longer draws the guide", "Every room's head carries the i, or only some rooms have one.");
 }
 
 console.log(`research: ${RESEARCH_PAGES.length} rooms routed, ${Object.keys(RESEARCH_WORDS).length} phrases in both languages, every vocabulary the migration's, the desk gone.`);

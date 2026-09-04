@@ -11983,6 +11983,36 @@
   }
   @media print { .rs-list { display: none; } }
 
+  .rs-guide {
+    position: fixed;
+    inset: auto var(--top-gap) var(--top-gap) auto;
+    inline-size: min(44rem, calc(100vw - 2 * var(--top-gap)));
+    max-block-size: min(80dvh, 46rem);
+    overflow-y: auto;
+    overscroll-behavior: contain;
+    margin: 0;
+    padding: clamp(14px, 2vw, 22px);
+    color: var(--ink);
+
+    transition: opacity var(--fast) var(--ease), translate var(--fast) var(--ease),
+                overlay var(--fast) allow-discrete, display var(--fast) allow-discrete;
+  }
+  .rs-guide:not(:popover-open) { opacity: 0; translate: 0 6px; }
+  @starting-style {
+    .rs-guide:popover-open { opacity: 0; translate: 0 6px; }
+  }
+  .rs-guide::backdrop { background: color-mix(in oklab, var(--ink) 22%, transparent); }
+
+  .rs-guide-part > summary { color: var(--accent); }
+  .rs-guide-part > summary::marker { color: var(--accent); }
+  .rs-guide kbd {
+    font-family: var(--font-mono);
+    font-size: 0.85em;
+    padding: 1px 5px;
+    border-radius: var(--radius-xs);
+    background: var(--paper-sunk);
+  }
+
   .rs-deck { display: grid; grid-template-columns: repeat(auto-fill, minmax(14rem, 1fr)); gap: var(--gap); }
   .rs-slide { aspect-ratio: 16 / 9; padding: var(--s-4); display: grid; gap: var(--s-2); align-content: start; overflow: auto; }
   .rs-slide h4 { margin: 0; }

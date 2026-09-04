@@ -439,6 +439,34 @@ second time. That row is the one thing in `aab/src/app.ts` this
 plan touches, and touching an existing module is allowed where a new
 one under `aab/src/` is not.
 
+### And the i beside the language switch
+
+Seventeen rooms, five keys and a vocabulary of its own is a building
+somebody has to be told about once. `next/components/research/guide.tsx`
+is that telling: an `i` in every room's head, opening this room's own
+entry first, then the three rules, the five first steps, every other
+room, the whole keyboard, and three ways through from a paper to a
+citation. `next/lib/research-guide.ts` is the content, keyed by the
+same `key` the pages table uses, and **`scripts/check-research.ts`
+fails on a room the guide does not describe and on one it describes
+that is not a room**, so the two cannot drift.
+
+**No client code in it.** `popover="auto"` is the top layer, light
+dismiss, Escape and the focus return, and `keys.ts` already stands
+down while a `[popover]` is open, so `j` does not turn a page under
+somebody reading about `j`.
+
+**Two things it may never do, both of which it did.** It may not set
+`display`, on the class or on `:popover-open`: the browser hides a
+shut popover with `[popover]:not(:popover-open) { display: none }`
+in its own sheet, any author rule beats that, and the minifier lifts
+a declaration off `:popover-open` on to the class. Either way the
+guide sits open in every room's head and eats the clicks meant for
+the page. And its blocks are `<div>`, never `<section>`: `main
+section` opens with `--step` of padding, which is 68px of nothing
+above every heading in a panel, exactly as the shell's own tree
+found.
+
 ---
 
 ## 7. The Board

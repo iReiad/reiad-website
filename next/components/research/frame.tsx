@@ -15,6 +15,7 @@
 import type { ReactNode } from "react";
 import { toneVar } from "@reiad/shared/research";
 import { LangSwitch, T, TBlock } from "./lang";
+import { ResearchGuide } from "./guide";
 import { ResearchStrip } from "./strip";
 import { RESEARCH_TONE, researchPage } from "../../lib/research-pages";
 import { methodsFor } from "../../lib/research-methods";
@@ -43,7 +44,13 @@ export function ResearchFrame({ href, title, lede, children, wide }: {
       <header className="dt-head">
         <div className="dt-head-row">
           <h1>{head ? <T en={head.en} bn={head.bn} /> : <T en="Research Studio" bn="গবেষণা স্টুডিও" />}</h1>
-          <LangSwitch />
+          {/* The switch and the guide are one group, so the head row
+              keeps two children and the button does not fly to the far
+              edge of a `space-between`. */}
+          <span className="flex items-center gap-2">
+            <LangSwitch />
+            <ResearchGuide roomKey={page?.key ?? "board"} />
+          </span>
         </div>
         {say ? (
           <TBlock
