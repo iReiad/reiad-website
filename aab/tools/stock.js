@@ -1,40 +1,18 @@
-/* ============================================================
-   stock.js: the page. All the DOM, none of the judgement.
+/* stock.js: the page. All the DOM, none of the judgement. Every
+   number comes out of stock.model.js and every word out of
+   stock.i18n.js; this puts them on screen and draws six charts
+   without a chart library.
 
-   Every number displayed here comes out of stock.model.js and
-   every word out of stock.i18n.js. This file's job is to put
-   them on screen, keep them in step with the inputs, and draw
-   six charts without a chart library.
+   THE LANGUAGE SWITCH re-renders the whole page, numerals
+   included, so no state can be left behind in the other
+   language. Static text carries `data-i18n`; generated text asks
+   `t()` for the same keys. The choice is in localStorage under
+   `tool-lang`, read before first paint.
 
-   THE LANGUAGE SWITCH
-
-   Static text carries data-i18n and is filled in on load and on
-   every switch. Generated text asks t() for the same keys. The
-   whole page, including the numerals, which become Bengali
-   digits through Intl, re-renders on a switch, so there is no
-   state that can be left behind in the other language.
-
-   The choice is written to localStorage and read by an inline
-   script in the page head before first paint, so a returning
-   reader never sees a flash of English before their Bangla
-   arrives.
-
-   SAVING A CHECK
-
-   Forty-odd inputs is enough work that doing it twice is a
-   reason not to do it once. The page has always encoded all of
-   them in its own query string, so a filled-in check has always
-   been shareable as a link; what it could not do was keep one.
-
-   It keeps them on the ACCOUNT and nowhere else. There is no
-   local list, no "saved on this device", and a signed-out reader
-   sees no panel at all rather than a panel that tells them to
-   sign in: what they had before this existed, the URL in the
-   address bar and the button that copies it, is untouched. The
-   stored row holds that same query string, so opening a saved
-   check is a link, and the format the page reads is the format
-   it writes, once.
-   ============================================================ */
+   A SAVED CHECK IS THE PAGE'S OWN QUERY STRING, on the ACCOUNT
+   and nowhere else: no local list, and a signed-out reader sees
+   no panel rather than one telling them to sign in. The format
+   the page reads is the format it writes, once. */
 
 import {
   DEFAULTS, SECTORS, INDICES, METRICS, PILLARS, WEIGHT_PRESETS, PRESETS,

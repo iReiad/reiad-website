@@ -1,15 +1,11 @@
 # The Android app, and how it gets built
 
-The site is already most of an app. Four runtimes read the same
-contracts today: the Worker, the browser, the Next routes and the
-node checks, and `shared/` is the treaty between them. A native
-Android app is a fifth runtime joining the same treaty, not a
-second product. This file is the plan for it. `ARCHITECTURE.md`
-says where the site's own pieces go, `DESIGN.md` says what they
-look like, `PLAN.md` says what the site does next; this says what
+Four runtimes read the same contracts today: the Worker, the
+browser, the Next routes and the node checks, and `shared/` is the
+treaty between them. **A native Android app is a fifth runtime
+joining the same treaty, not a second product.** This says what
 the app consumes, what the server has to grow (very little), and
-in what order the app gets built so that each phase makes the next
-one smaller.
+in what order the app gets built.
 
 Where this file and the code disagree, the code is right and this
 file gets corrected.
@@ -20,13 +16,12 @@ file gets corrected.
 display, maskable icons and three app shortcuts are in
 `aab/site.webmanifest`, and the service worker gives it offline
 hubs and cached lessons. A Trusted Web Activity would ship that
-same thing with a store listing around it. If the goal were an
-icon on a home screen, the manifest already is one. The reason to
-build native is everything a wrapped page cannot do well: instant
-cold start, offline as a designed state rather than a cache
-accident, a real video player for the courses, text that scrolls
-like the platform's own, widgets, share targets, and a UI thread
-that never pays for hydration.
+with a store listing around it. The reason to build native is
+everything a wrapped page cannot do well: instant cold start,
+offline as a designed state rather than a cache accident, a real
+video player for the courses, text that scrolls like the
+platform's own, widgets, share targets, and a UI thread that never
+pays for hydration.
 
 **Not React Native.** What looks most transferable is not: the
 React here is server components rendering database rows into HTML
@@ -132,7 +127,7 @@ touches.
 Identity is one mechanism everywhere: the Supabase access token as
 `Authorization: Bearer`, verified by the Worker against the
 project's JWKS in `functions/_lib/reader.ts`. Admin is `isAdmin()`
-against the same token. Nothing about that changes for a phone.
+against the same token.
 
 ## What the server grows, and it is small
 
@@ -146,18 +141,11 @@ plan touches the site.
    and `shared/nav.ts` at request time. It asks for half an hour
    of caching and does not get it: something at the edge answers
    `/api/*` with `no-store`, which the head of that file
-   measures. The app holds its own copy, so this costs one fetch
-   a launch. The browser gets the same tables as an ES
-   module at `/content.js` and does not call this, so it is in
-   `SERVER_ONLY` in `scripts/check-api.ts` and in `PUBLIC` in
-   `scripts/check-admin.ts`, each with the reason written out.
-   `scripts/site-api.test.ts` is the guard.
-
-   The nav table moved to `shared/nav.ts` to make it possible,
-   and the move was overdue rather than new: four checks already
-   imported it from node and a migration comment already quoted
-   its school ids. A file three runtimes read belongs in the
-   directory this repository keeps for exactly that.
+   measures, so this costs one fetch a launch. The browser gets
+   the same tables as an ES module at `/content.js` and does not
+   call this, so it is in `SERVER_ONLY` in `scripts/check-api.ts`
+   and in `PUBLIC` in `scripts/check-admin.ts`, each with the
+   reason written out. `scripts/site-api.test.ts` is the guard.
 2. **`/.well-known/assetlinks.json`. Written.**
    `aab/.well-known/assetlinks.json` names the package and carries
    the debug key's fingerprint. Nothing else claims the path:
@@ -245,13 +233,12 @@ account.
 Progress lives in a small key-value store (DataStore) whose keys
 are the site's storage keys, spelled identically, holding the same
 JSON shapes: sets as string arrays, bookmarks as `{id, title,
-stage, url?, ts}` objects, counts as strings. The temptation to
-"model this properly" in a relational schema is the temptation to
-rename a storage key, one level up: the strings and shapes are the
-sync contract with `public.progress`, where the row key IS the
-localStorage key. Room appears where there is genuinely relational
-local data: the content cache (lessons, articles, curricula), not
-the ticks.
+stage, url?, ts}` objects, counts as strings. **Modelling this
+"properly" in a relational schema is renaming a storage key, one
+level up:** the strings and shapes are the sync contract with
+`public.progress`, where the row key IS the localStorage key. Room
+appears where there is genuinely relational local data: the
+content cache, not the ticks.
 
 Device-only keys stay device-only: `theme`, `audience`,
 `tool-lang`, the workbook writings. The app keeps them under the
@@ -259,8 +246,7 @@ same names for its own sanity, not because anything syncs them.
 
 ### The sync engine, ported not reinterpreted
 
-`aab/src/sync.ts` is 500 lines that took three attempts on the
-web to get right, and the app ports its behaviour, not its
+The app ports `aab/src/sync.ts`'s behaviour, not its
 architecture. The contract, in the file's own terms: rules `set`,
 `mark` and `count` per key; adopt on sign-in (the account's rows
 overwrite the device, keys the account lacks are removed, nothing
@@ -282,10 +268,9 @@ sign-in. The push is the same PostgREST upsert with
 the column defaults to `auth.uid()` and the client cannot name
 whose rows it writes.
 
-The web's test for this engine covers signing in, resetting,
-signing out, two devices and the refresh regression; the app's
-sync tests reproduce that list case for case before the engine is
-called done.
+`aab/sync.test.ts` covers signing in, resetting, signing out, two
+devices and the refresh regression; the app's sync tests reproduce
+that list case for case before the engine is called done.
 
 ### Rendering a body: a closed vocabulary, so no WebView
 
@@ -309,16 +294,15 @@ one module, for the reason `aab/editor.js` is one module on the
 web: two renderers that disagree is the class of bug the
 three-place rule exists for.
 
-**The allowlist is a floor, not a promise, and that was measured
-rather than assumed.** `/money/basics-1/share` carries a `<b>` in
-its stored body, which the server's tag list does not include:
-the browser's sanitiser renames `B` to `STRONG` on the way in and
-some prose predates or bypassed that. So the renderer maps the
-synonyms the editor already maps (`b` to `strong`, `i` and `u` to
-`em`, a heading above `h3` down to one) and renders anything it
-still does not know as plain styled text, logged. A parser that
-trusted the documented list would have dropped a word's emphasis
-on day one and nothing would have said so.
+**The allowlist is a floor, not a promise.**
+`/money/basics-1/share` carries a `<b>` in its stored body, which
+the server's tag list does not include: the browser's sanitiser
+renames `B` to `STRONG` on the way in and some prose predates or
+bypassed that. So the renderer maps the synonyms the editor maps
+(`b` to `strong`, `i` and `u` to `em`, a heading above `h3` down
+to one) and renders anything it still does not know as plain
+styled text, logged. A parser trusting the documented list would
+have dropped a word's emphasis on day one, silently.
 
 ### Media, speech, and the platform's own things
 
@@ -385,16 +369,14 @@ Android app.
 ### Offline is a state, not a cache accident
 
 The service worker's offline story is "what you visited, plus the
-hubs". The app does better because it is allowed to want things:
-the content cache stores every curriculum and every lesson body of
-the schools a reader follows (a bounded, known corpus), the recent
-pieces list, and whatever was opened. Everything renders from the
-cache first and revalidates behind, ticks work offline exactly as
-they do on the web (they are local writes), and sync catches up
-when the network returns, which the engine above already knows how
-to do. The one deliberate refusal carries over: headlines are
-never served stale silently; the pulse board says when it is
-showing yesterday.
+hubs". The app is allowed to want things: the content cache stores
+every curriculum and every lesson body of the schools a reader
+follows (a bounded, known corpus), the recent pieces list, and
+whatever was opened. Everything renders from the cache first and
+revalidates behind, ticks work offline because they are local
+writes, and sync catches up when the network returns. **The one
+deliberate refusal carries over: headlines are never served stale
+silently**; the pulse board says when it is showing yesterday.
 
 ## The order
 
@@ -466,17 +448,14 @@ uses; nothing course-shaped ships in the binary, the catalogue
 arrives only over the authenticated API, which is the same rule
 `scripts/check-courses.ts` enforces on the web bundle.
 
-**How it is installed, which is a decision and not a formality.**
-An APK, signed by the author's own key, carried to the handset.
-That is the whole of it until the app is worth publishing, and it
-is the right order: a store listing is a promise to strangers,
-and the first reader is the person who wrote it. What it costs is
-what sideloading always costs, and each is worth knowing rather
-than discovering: the device has to be told to allow the install,
-nothing updates itself so every build is carried over by hand,
-and an https link will not open the app until that key's
-fingerprint is in the assetlinks array. None of the three touches
-sign-in, which is on a scheme the app declares.
+**How it is installed.** An APK, signed by the author's own key,
+carried to the handset, until the app is worth publishing. What
+sideloading costs, each worth knowing rather than discovering: the
+device has to be told to allow the install, nothing updates itself
+so every build is carried over by hand, and an https link will not
+open the app until that key's fingerprint is in the assetlinks
+array. None of the three touches sign-in, which is on a scheme the
+app declares.
 
 **Phase 6.5, when it is worth publishing.** Play: the same
 keystore if it is kept, the data-safety form (what the app holds
@@ -488,23 +467,17 @@ none), staged rollout.
 
 ## What deliberately does not move
 
-The writing side. The Studio, the editor, the desk, the share-card
-drawer, the Notion import, moderation queues, subscriber
-administration: the site's own rule is that the editor is one
-module precisely because a `contenteditable` cannot be safely
-duplicated, and an Android re-implementation would be a third
-sanitiser and a second editor. The app is the reader's (and, at
-phase 6, the admin-as-reader's). An admin who needs the desk on a
-phone has it: the site works there, and the app can hand off to it
-with one intent.
+**The writing side.** The Studio, the editor, the share-card
+drawer, the Notion import, the moderation queues, subscriber
+administration. The editor is one module precisely because a
+`contenteditable` cannot be safely duplicated, and an Android
+re-implementation would be a third sanitiser and a second editor.
+An admin who needs it on a phone has the site.
 
-The portfolio case studies also stay the web's. Each one is an
-interactive model built for a desk and a hiring audience: a DCF
-with sensitivity grids, a three-statement model that recomputes as
-assumptions move, a stress engine. Porting them would be a second
-product, and their audience is not holding a phone. The app's
-portfolio screen renders the cards natively and opens a model in
-the browser, which is one intent.
+**The portfolio case studies.** Each is an interactive model built
+for a desk and a hiring audience, and their audience is not
+holding a phone. The app's portfolio screen renders the cards
+natively and opens a model in the browser, which is one intent.
 
 Also not moving: the feeds (a feed reader already reads them), the
 break-glass article renderer, and the PWA itself, which keeps
@@ -514,7 +487,7 @@ working for everybody who is not on Android.
 
 The failure this repository is built around is the thing that
 renders and does not work, and a fresh codebase does not get a
-pass on that. Concretely:
+pass on it:
 
 - Every ported behaviour lands with the list of what the web
   version does written as tests first: the sync engine's case

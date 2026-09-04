@@ -1,6 +1,6 @@
 /* dsex.model.js: the statistics engine. No DOM, numbers in and
-   numbers out, checked by `dissertation.test.ts`'s sibling
-   fixtures and by the page's own CSV path.
+   numbers out, so every function is checkable against a
+   hand-computable case rather than against itself.
 
    THE SERIES SHIPPED WITH THIS PAGE IS SIMULATED and is nowhere
    presented as the Dhaka Stock Exchange's own history:

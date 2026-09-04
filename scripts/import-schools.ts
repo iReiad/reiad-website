@@ -248,7 +248,7 @@ export function toSql(all: Rows, now: string): string {
      neither is a thing to find out about afterwards. */
   const lines = [
     "-- Written by scripts/import-schools.ts. Do not edit by hand.",
-    "-- The four curricula, as rows. See archive/TRANSITION.md Stage 8.",
+    "-- The four curricula, as rows.",
     "-- Every statement is one line: D1's import reads them line by line.",
     /* Replaced wholesale rather than merged: a copy that
        half-updates is worse than one that is rewritten. */

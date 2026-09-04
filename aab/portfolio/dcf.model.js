@@ -1,5 +1,5 @@
 /* dcf.model.js: a discounted cash flow valuation. No DOM,
-   numbers in and numbers out, checked by `dcf.test.ts`.
+   numbers in and numbers out.
 
    The cash flows are DERIVED from `three-statement.model.js` in
    this folder, so switching the operating scenario changes the

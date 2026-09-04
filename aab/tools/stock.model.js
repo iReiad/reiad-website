@@ -1,45 +1,22 @@
-/* ============================================================
-   stock.model.js: the engine behind the stock check.
+/* stock.model.js: the engine behind the stock check. No DOM: a
+   pure function of a plain object of numbers, which is what made
+   stock.test.mjs runnable in node with no browser.
 
-   No DOM in this file. Everything here is a pure function of a
-   plain object of numbers, which is what makes it testable: the
-   whole of stock.test.mjs runs in Node with no browser.
+   It scores a company against forty-odd ratios in six pillars,
+   weights the pillars by the kind of investor the reader says
+   they are, applies vetoes no score can argue with, and reports
+   a band. It is NOT a signal and the page says so.
 
-   WHAT IT IS, AND WHAT IT ISN'T
+   UNITS: every money figure is in LAKH BDT and every share count
+   in LAKH SHARES, which is what DSE reports use and what makes
+   EPS fall out clean. Prices, EPS, BVPS and DPS are plain BDT
+   per share.
 
-   It scores a company against forty-odd ratios grouped into six
-   pillars, weights the pillars by the kind of investor you say
-   you are, applies a short list of vetoes that no score can
-   argue with, and reports a verdict band.
-
-   It is NOT a signal. It cannot see a fraud, a related-party
-   loan book, a factory fire, a change of management or next
-   week's news, and it says so on the page. What it does is make
-   the arithmetic explicit, so that a decision is taken with the
-   numbers in front of you rather than a tip from a Facebook
-   group.
-
-   UNITS
-
-   Every money figure is in LAKH BDT, the unit DSE annual reports
-   and price-sensitive statements actually use, and share counts
-   are in LAKH SHARES. That makes EPS fall out clean:
-
-       netIncome (lakh BDT) / shares (lakh) = BDT per share
-
-   Prices, EPS, BVPS and DPS are plain BDT per share.
-
-   THE ONE STRUCTURAL DECISION
-
-   Metrics are a registry, not a pile of if-statements. Each one
-   declares its pillar, its weight inside that pillar, how to
-   compute itself, when it doesn't apply, and the anchor points
-   that turn a raw number into a 0–100 score. Everything else,
-   the pillar scores, the scorecard table, the "what's dragging
-   this down" list, the CSV export, is a loop over that
-   registry. Adding a ratio is one entry, and it appears in all
-   six places at once.
-   ============================================================ */
+   METRICS ARE A REGISTRY, not a pile of if-statements. Each
+   declares its pillar, its weight, how to compute itself, when
+   it does not apply and its anchor points; the pillar scores,
+   the scorecard, the drag list and the CSV export are all loops
+   over it, so adding a ratio is one entry in six places. */
 
 /* ============================================================
    SCORING PRIMITIVE
