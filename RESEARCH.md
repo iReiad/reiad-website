@@ -65,12 +65,11 @@ browser except the in-flight copy of what they are typing, and
 section 23 says exactly which keys those are.
 
 **And a plan is a list of claims a check can hold.** `DIET.md` is
-held by `scripts/check-diet.ts`, `ADMIN.md` by `scripts/admin.test.ts`,
-and this file will be held by a check of its own under `scripts/`,
-named in section 30 without its extension for the reason the
-preamble gives. Every rule below that could be broken silently is
-listed there as a question, and the build is not finished until each
-question is asked by code rather than by prose.
+held by `scripts/check-diet.ts`, `ADMIN.md` by
+`scripts/admin.test.ts`, and this file by `scripts/check-research.ts`.
+Every rule below that could be broken silently is listed in section
+30 as a question, and nothing is finished until each question is
+asked by code rather than by prose.
 
 ---
 
@@ -2010,12 +2009,10 @@ above hold the detail.
 ## 30. What must be checked
 
 **Three guards, three halves**, the arrangement `DIET.md` section 33
-made: the arithmetic in a test under `scripts/`, the pages in a check
-under `scripts/`, and the built rooms in a browser test under
-`next/`. The three are named here without their extensions for the
-reason the preamble gives; the first stage creates all three, empty
-but running, so that every later stage adds a question rather than a
-file.
+made: the arithmetic in `scripts/research.test.ts` and its siblings,
+the pages in `scripts/check-research.ts`, and the built rooms in
+`next/research-studio.test.ts`. Every stage adds a question rather
+than a file.
 
 ### The studio check, and the questions it asks
 
