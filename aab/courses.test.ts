@@ -1,51 +1,26 @@
 #!/usr/bin/env node
-/* ============================================================
-   courses.test.ts: the third-party course player, driven.
+/* courses.test.ts: the third-party course player, driven.
 
        node aab/courses.test.ts
 
-   The house rule in CLAUDE.md: a thing is finished when it does
-   what it was asked to do, not when it renders, and those two
-   look identical from the outside. This section was asked for
-   seven things, and each one is a heading below:
+   Seven things the section was asked for, one heading each: the
+   shelf, a programme's courses, the sidebar, ticks, the current
+   lesson, a per-module bar, mark-complete-and-continue, and the
+   deep link to the first incomplete lesson.
 
-     · a shelf of programmes, and one programme listing its own
-       courses
-     · a sidebar with every module and lesson in it
-     · a tick on the ones that are done
-     · the current lesson marked
-     · a percentage bar per module
-     · "mark complete and continue", going to the next lesson,
-       and to the module summary at the end of a module
-     · the course index deep-linking to the first incomplete
-       lesson
+   Two things it must NOT do. A PROGRAMME MAY NOT APPEAR IN A
+   TICK: the address gained a segment and `courses-read` did not,
+   so every id asserted below is `<course>/<module>/<lesson>`.
+   And no timer, no postMessage listener and no play/pause
+   detection near the Drive player, which exposes none of that.
 
-   And the thing the programme must NOT do: appear in a tick.
-   The address gained a segment and `courses-read` did not,
-   because renaming a key does not move somebody's ticks, it
-   loses them. Every id asserted below is `<course>/<module>/
-   <lesson>`, the same string as before the programme existed.
-
-   And the one thing it must NOT do, which is the reason the
-   section exists in the shape it does: no timer, no postMessage
-   listener and no play/pause detection anywhere near the Drive
-   player, because the Drive player exposes none of that and
-   anything pretending otherwise would be marking lessons complete
-   on a guess.
-
-   No browser and no network. `linkedom` is a DOM, `/account.js`
+   No browser and no network: `linkedom` is the DOM, `/account.js`
    and `fetch` are stubbed, and the catalogue is a fixture built
-   the same way `forBrowser()` builds the real one. It runs in
-   about a second.
-
-   Without linkedom installed it says so and skips, which is not a
-   pass. `npm install` at the root is the whole of the fix.
-
+   the way `forBrowser()` builds the real one. Without linkedom it
+   says so and SKIPS, which is not a pass.
    The fixture's shape is read out of `aab/src/courses.ts` rather
    than written out again, so a field the module gains is a field
-   this file has to supply. `aab/tsconfig.test.json` is what
-   typechecks that, and `scripts/check-types.ts` runs it.
-   ============================================================ */
+   this file has to supply. */
 
 import { registerHooks } from "node:module";
 import { readFileSync } from "node:fs";

@@ -1,59 +1,29 @@
-/* ============================================================
-   editor.test.ts: `aab/editor.js`, driven in a real browser.
+/* editor.test.ts: `aab/editor.js`, driven in a real browser.
 
      node aab/editor.test.ts
 
    The editor is the one part of this site that cannot be checked
    by reading it: a contenteditable, a sanitiser, markdown input
-   rules, a slash menu and a figure toolbar, all of them working on
-   a selection the browser owns. Every bug found in it so far was
-   found here and by nothing else.
+   rules, a slash menu and a figure toolbar, all working on a
+   selection the browser owns.
 
-   ---- it mounts its own surface, and that is the point ----
+   IT MOUNTS ITS OWN SURFACE. The server below answers `/` with a
+   shell holding one `#editor` and the checks mount
+   `createEditor()` into it, so no address can go stale under it.
+   What is NOT here, deliberately: the Studio's chrome, which is
+   `app/src/studio/**` and `app/studio.test.ts`. Two files
+   asserting the same thing is how one asserts it wrongly.
 
-   This file was `studio.test.ts` and it drove a PAGE: `/studio.html`
-   first, then `/studio/index.html` when that was archived. The
-   second address stopped existing too, because the Studio's shell
-   is a Next route now, and 68 checks spent that time failing on a
-   404 rather than on the module they were written for.
-
-   So there is no page here. The server below answers `/` with a
-   shell holding one `#editor`, and the checks mount
-   `createEditor()` into it. An address can go stale; a shell this
-   file writes cannot.
-
-   What is NOT here, deliberately: the Studio's chrome. The fields,
-   pre-flight, the three previews, the drafts and the Open sheet
-   are `app/src/studio/**`, and `app/studio.test.ts` drives the
-   built bundle against them. Two files asserting the same thing is
-   how one of them ends up asserting it wrongly.
-
-   ---- what it has caught ----
-
-     · the browser's sanitiser was stricter than the server's, so a
-       note box became a plain paragraph and figure.wide lost its
-       class on the way out, which made the server's support for
-       those classes unreachable from the one tool that writes to it
-     · the markdown rules did nothing in an empty editor, because
-       the first characters typed have no block to belong to, which
-       is the first line of every new article
-     · formatBlock silently does nothing without a block to replace,
-       so "##" worked on the second line and not the first, while
-       the list rules worked on both and hid it
-
-   OPTIONAL: it needs Playwright and a browser, and nothing about
-   building or deploying the site depends on it. It skips when
-   either is missing and says which, because a skip is not a pass.
+   OPTIONAL: it needs Playwright and a browser, and it SKIPS when
+   either is missing, saying which, because a skip is not a pass.
 
        cd app && npm install
        CHROMIUM_PATH=/path/to/chrome node aab/editor.test.ts
 
-   `aab/tsconfig.test.json` is what typechecks the annotations
-   below, and `scripts/check-types.ts` runs it. A `!` inside a
-   `page.evaluate` callback is the repo's usual "this element is in
-   the markup": the callback runs in the browser and cannot reach a
-   helper out here.
-   ============================================================ */
+   `aab/tsconfig.test.json` typechecks the annotations below. A
+   `!` inside a `page.evaluate` callback is the repo's usual "this
+   element is in the markup": the callback runs in the browser and
+   cannot reach a helper out here. */
 
 import { createServer } from "node:http";
 import { readFile } from "node:fs/promises";

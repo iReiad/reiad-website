@@ -1,54 +1,27 @@
-/* ============================================================
-   sync.test.ts: progress belongs to the account.
+/* sync.test.ts: progress belongs to the account.
 
      node aab/sync.test.ts
 
-   THE SENTENCE THIS HOLDS `aab/src/sync.ts` TO:
+   THE SENTENCE THIS HOLDS `aab/src/sync.ts` TO: the account is
+   the record, and nothing is ever pulled out of the browser into
+   it. `CLAUDE.md` states it as four states and this is one
+   section per state, plus the three edges that turned out to
+   matter.
 
-     THE ACCOUNT IS THE RECORD, AND NOTHING IS EVER PULLED OUT OF
-     THE BROWSER INTO IT.
+   IT STARTS ITS OWN SERVER, and finds Playwright, which is a
+   devDependency of `app/` rather than of the root. A test that
+   needs a server somebody starts by hand is a test that does not
+   run, and this one missed a real regression that way. A skip
+   names which of the two ways it failed to start.
 
-   Everything below follows from it. `CLAUDE.md` states the same
-   thing as four states, and this file is one section per state
-   plus the three edges that turned out to matter.
+   The page is served with the Content-Security-Policy READ OUT OF
+   `aab/_headers`: a harness that drops the policy cannot tell you
+   whether a request was made or refused, and every exchange here
+   is a `fetch` to Supabase under `connect-src`.
 
-   ---- why it starts its own server ----
-
-   It did not. It asked for one on :8899, printed
-   `cd aab && python3 -m http.server 8899` and exited 0 when there
-   was none, which is every run nobody had read that line before.
-   A test that needs a server somebody starts by hand is a test
-   that does not run, and this one did not run for long enough to
-   miss a real regression: `refreshUser()` began writing a null
-   user over a live session on 19 August 2026, and the four
-   failures and the uncaught throw that followed sat unseen
-   because the file skipped.
-
-   The same went for Playwright. It asked for the bare specifier,
-   which resolves from the root, and Playwright is a devDependency
-   of `app/`. Both are found now, and a skip names which of the
-   two ways it failed to start.
-
-   ---- and why the policy is real ----
-
-   The page is served with the Content-Security-Policy read out of
-   `aab/_headers` rather than a copy of it. A harness that drops
-   the policy cannot tell you whether a request was made or
-   refused, and every exchange here is a `fetch` to Supabase under
-   `connect-src`.
-
-   ---- /404.html, and not the home page ----
-
-   The home page has not been a file in `aab/` since Stage 11.5, so
-   a static server over this directory answers it 404. `404.html`
-   is one of the two pages that are not routes and cannot be, it
-   loads `/app.js` like every other page, and `app.js` imports
-   `signin.js`, which imports `sync.js` and starts it. That is the
-   whole of what these checks need a page for.
-
-   `aab/tsconfig.test.json` typechecks the annotations below and
-   `scripts/check-types.ts` runs it.
-   ============================================================ */
+   It drives `/404.html`, not the home page, which is not a file
+   in `aab/`. `404.html` loads `/app.js`, which imports
+   `signin.js`, which imports `sync.js` and starts it. */
 
 import { createServer } from "node:http";
 import { readFile, stat } from "node:fs/promises";

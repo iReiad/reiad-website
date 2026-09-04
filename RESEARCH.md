@@ -139,43 +139,37 @@ The page is open to any signed-in reader from the first stage,
 because there is nothing in it to protect from a stranger: they
 would see their own empty studio.
 
-**Three projects on the day it opens**, out of the Notion home page,
-and they are three different KINDS of project, which is why a project
-carries a kind at all:
+**Three projects, and they are three different KINDS of project,
+which is why a project carries a kind at all:**
 
 | | kind | what the studio has to be good at |
 | --- | --- | --- |
-| a doctorate in banking and ethical finance, intake 2028 | `degree` | a literature that spans econometrics, Islamic jurisprudence and policy; a proposal that has to cite a prospective supervisor's own papers; data from the Dhaka Stock Exchange, Bangladesh Bank and audited annual reports; a supervisor shortlist with a spouse-visa filter that was never verified |
-| a book on halal micro-investing for Bangladesh | `book` | chapters with no structure yet, two drafts that need a place to sit, Bangla prose beside English sources, and a way out of the studio into the Article Studio so a chapter can become a piece on the site |
+| a doctorate in banking and ethical finance | `degree` | a literature spanning econometrics, Islamic jurisprudence and policy; a proposal citing a prospective supervisor's own papers; data from the Dhaka Stock Exchange, Bangladesh Bank and audited annual reports |
+| a book on halal micro-investing for Bangladesh | `book` | chapters with no structure yet, Bangla prose beside English sources, and a way out into the Article Studio so a chapter can become a piece on the site |
 | an application to a foundation | `application` | a positioning paragraph that is nearly a cover letter, a CV drawn from the same library, and a deadline |
 
-**All three share one thread, the investing platform**, which the
-home page calls the research basis for the doctorate, the companion
-to the book, and the strongest paragraph in the application. The
-studio has to let one source, one note and one dataset belong to
-three projects at once, which is why a row carries `projects` as an
-array rather than one foreign key.
+**One source, one note and one dataset can belong to all three at
+once**, which is why a row carries `projects` as an ARRAY rather
+than one foreign key.
 
-**And the fields it has to be honest about, because they are the
-fields the reader works in:**
+**The fields it has to be honest about**, because each one bends a
+design decision:
 
-- **Finance and economics**, where the literature is on SSRN, RePEc
-  and the big publishers as much as in open indexes, the data is
-  time series and panels, and the methods are the ones the Drive
-  document names: Fama-MacBeth, GARCH, ARDL, CSAD herding, panel
-  regressions, event studies. Section 14 has each.
+- **Finance and economics.** The literature is on SSRN, RePEc and
+  the big publishers as much as in open indexes, the data is time
+  series and panels, and the methods are Fama-MacBeth, GARCH, ARDL,
+  CSAD herding, panel regressions and event studies. Section 14 has
+  each.
 - **Islamic finance**, where a source can be a verse, a hadith, a
   fatwa, an AAOIFI standard or a Shariah board's ruling, none of
   which has a DOI and all of which have a citation form of their
   own. Section 9 gives them types.
-- **Law**, out of the LLB and LLM modules in Drive, where a source
-  is a case with a neutral citation or a statute with a section
-  number, and the style is OSCOLA, which is footnotes rather than
-  brackets and which most citation tools get wrong. Section 16 has
-  the footnote engine because of this.
-- **Qualitative work**, interviews with Shariah board members and
-  retail investors, in Bangla, transcribed, coded, and quoted in
-  English with the original kept. Section 15.
+- **Law**, where a source is a case with a neutral citation or a
+  statute with a section number, and the style is OSCOLA, which is
+  footnotes rather than brackets and which most citation tools get
+  wrong. **Section 16 has the footnote engine because of this.**
+- **Qualitative work**: interviews in Bangla, transcribed, coded,
+  and quoted in English with the original kept. Section 15.
 
 **Both languages, the site's way.** The chrome, the labels and every
 explanatory sentence are said twice and the stylesheet shows one,
@@ -279,12 +273,11 @@ and both tools use it. That is a conversion the diet tool gets for
 free and the third tool that wants a strip gets for one line.
 
 **The components** live in `next/components/research/`, one file per
-room and a `shared` subdirectory for the panes and pickers every room
-uses. `next/components/research.tsx` already exists and is the About
-page's three research cards; it keeps its name, the directory sits
-beside it, and the two are unrelated. The build should not rename
-the About page's file to tidy this: `scripts/check-pointers.ts` has
-an entry keyed on that name.
+room and a `shared` subdirectory for the panes and pickers every
+room uses. `next/components/research.tsx` is the About page's three
+research cards and is unrelated: **do not rename it to tidy this**,
+because `scripts/check-pointers.ts` has an entry keyed on that
+name.
 
 **The rows** live in Supabase under `research_` tables, section 23,
 read and written by the browser as the reader through PostgREST with
@@ -299,34 +292,21 @@ read through the Worker with a signed ticket, section 23.
 `functions/api/research/`, section 22. Nothing under `next/` names a
 host that is not this site's; `scripts/check-csp.ts` would fail it.
 
-### The research desk goes, and what it leaves behind
+### What the retired research desk left behind
 
-The desk under `/admin/research` is retired in the studio's first
-stage, and retired properly:
+The desk under `/admin/research` is gone. What survives it and must
+not be undone:
 
-- the desk's threads component goes, with the forty-five `.rd-`
-  rules in `@layer admin` of `next/styles/site.css` and the route
-  directory. `scripts/check-css.ts` would otherwise report
-  forty-five rules styling nothing.
-- `/admin/research` becomes a 301 to `/tools/research/questions` in
-  `aab/_redirects`, and the entry comes OUT of `run_worker_first` and
+- `/admin/research` is a 301 to `/tools/research/questions` in
+  `aab/_redirects`, and the entry is OUT of `run_worker_first` and
   out of `NEXT_ROUTES`, because a path a Worker answers first never
   reaches the rules file.
-- The `threads` rows are carried, not dropped. The first migration
-  creates `research_questions` and copies every thread into it in
-  the same file: `question` to `text`, `state` to `state`, the note
-  and the sources and the steps out of `body` into the shape section
-  8 gives, and the three link lists into evidence rows. Then it drops
-  `public.threads`. One migration, so there is no commit on which
-  both tables exist and neither is the record.
-- `"threads"` leaves `MINE_TABLES` in `aab/src/account-page.ts` in
-  the same commit and `"research_questions"` arrives, or
+- The `threads` rows were carried into `research_questions` and
+  `public.threads` dropped **in one migration**, so there is no
+  commit on which both tables exist and neither is the record.
+- `"research_questions"` is in `MINE_TABLES` in
+  `aab/src/account-page.ts` where `"threads"` was, or
   `scripts/check-account.ts` fails, which is what it is for.
-- its test goes with it. Its lesson about a controlled field is
-  section 12's, written into the studio's own test.
-- The `/admin` panel that linked to the desk links to the studio.
-- `ADMIN.md` section 7 gets one paragraph saying where the desk went
-  and why, and nothing else changes in that file.
 
 **The name.** `/studio` is the Article Studio and stays. "Research
 Studio" is what the page is called; the address is `/tools/research`
@@ -2485,24 +2465,14 @@ the studio shows them.
 
 ## 36. The campaign plan, and what it adds to every room
 
-Added on 2 September 2026, after the first draft, from two things:
-the New Zealand campaign plan (agricultural and climate risk
-economics; Lincoln, Massey, Otago and Motu; six months from an
-orientation to a posted working paper, by replicating a published
-paper and extending it to Bangladesh) and one brief for the studio
-itself: **never having to leave this page**. Spreadsheets,
-regressions and the rest of econometrics, citing out of Google
-Scholar, saving lists of papers and opening and highlighting them,
-graphs, Python built in or connected, everything saved and nothing
-lost, everything connected so it can be found, every rough and every
-history, and the whole document written, edited and presented, in
-one place. Then everything else a year of finance, agriculture and
-economics would ask for, added rather than left.
-
-Every item below is placed in a room and is in the stages table of
-section 31, which this section amends.
-
-### Never leaving the page, item by item
+This section amends section 31 and comes from one brief: **never
+having to leave this page.** Spreadsheets, econometrics, citing out
+of Google Scholar, saving lists of papers and opening and
+highlighting them, graphs, Python built in or connected, everything
+saved and nothing lost, everything connected so it can be found,
+every rough and every history, and the whole document written,
+edited and presented, in one place. Every item below is placed in a
+room.
 
 | the ask | where it is answered |
 | --- | --- |
@@ -2512,7 +2482,7 @@ section 31, which this section amends.
 | saving lists of papers | reading lists and collections, below |
 | opening and highlighting them | the reading room, section 11 |
 | making graphs | runs with figures, section 14, plus Python's own figures below; every figure is an SVG or PNG a document can hold |
-| Python built in or connected | Pyodide in the browser AND Colab through Drive, below; both are stage 8 now rather than stage 13 |
+| Python built in or connected | Pyodide in the browser AND Colab through Drive, below; both are stage 8 rather than stage 13 |
 | everything saved, nothing lost | every write immediate, versions, the thirty-day bin, the activity log below, and the backup of section 24 |
 | well connected, easy to find | links, backlinks, the Atlas, one search over everything, and collections |
 | all roughs and history | the `rough` state, the Roughs list and the activity log below |
@@ -2522,24 +2492,20 @@ section 31, which this section amends.
 
 `research_collections`: a tree with a name, a parent and an order,
 and `collections uuid[]` on sources, notes, documents and datasets.
-The campaign's `NZ-PhD` with `Ag-Econ`, `Climate-Risk`, `Insurance`,
-`Methods` and `Target-Supervisors` under it is five rows. A Zotero
-pull brings Zotero's collections across as these, so filing done
-there is filing done here. Tags stay what they were: flat words for
-the gap matrix; a collection is a folder somebody chose.
+A Zotero pull brings Zotero's collections across as these, so filing
+done there is filing done here. Tags stay what they were: flat words
+for the gap matrix; a collection is a folder somebody chose.
 
-### The Zotero rule becomes a rule of the desk
+### A citation exists only if the real paper is in the library
 
-The campaign's first non-negotiable is that a citation exists only
-if the real paper is in the library. The studio holds it in code: a
-source carries `verified`, set only when its record came from
-Crossref, OpenAlex, Open Library or a database export, or when a
-file is attached. A citation chip that holds an unverified source
-renders with a mark, the claims audit lists every such chip, and the
-assistant's suggestions never become sources at all: they become a
-search. A reading list item that could not be found is deleted from
-the list by a press that says so, which is the campaign's Day 2 rule
-done in one place.
+Held in code rather than in discipline: a source carries
+`verified`, set only when its record came from Crossref, OpenAlex,
+Open Library or a database export, or when a file is attached. A
+citation chip holding an unverified source renders with a mark, the
+claims audit lists every such chip, and **the assistant's
+suggestions never become sources at all: they become a search.** A
+reading list item that could not be found is deleted from the list
+by a press that says so.
 
 ### The clipper: Google Scholar without leaving
 
@@ -2557,9 +2523,9 @@ capture box, and its library's export dropped on the library.
 
 ### The Lab's Sheets: a real spreadsheet
 
-The reader is strong in Excel and financial modelling, and the sheet
-model in `shared/lesson-grids.ts` is a table with holes in it, not a
-spreadsheet. So the Lab gains `/tools/research/lab/sheets`: a grid
+The sheet model in `shared/lesson-grids.ts` is a table with holes in
+it, not a spreadsheet. So the Lab gains
+`/tools/research/lab/sheets`: a grid
 with formulas, a formula bar, fills, sorts and filters, from Univer
 (Apache 2.0, the successor to Luckysheet), with `.xlsx` in and out
 through ExcelJS (MIT), because the free Univer does not carry that.
@@ -2577,9 +2543,8 @@ with a provenance line.
 
 ### Python built in, and Colab connected
 
-Pyodide moves from stage 13 to stage 8, because Python is not a
-later luxury for this reader but the campaign's own instrument: the
-Lab's notebook has Python cells beside SQL cells, with pandas,
+Pyodide is stage 8 rather than stage 13: the Lab's notebook has
+Python cells beside SQL cells, with pandas,
 numpy, scipy, statsmodels and matplotlib loaded from the site's own
 copy, and further packages by `micropip` where a pure wheel exists
 (`linearmodels` for panels, `arch` for GARCH). A Python run stores
