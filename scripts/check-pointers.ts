@@ -66,12 +66,6 @@ const GONE: Gone[] = [
      which is the worse way to be wrong. */
   { file: "MIGRATION.md", name: "check-workbook.mjs",
     why: "the record of a name two comments carried and nothing answered to" },
-  { file: "next/lib/workbook.ts", name: "check-workbook.mjs",
-    why: "names the old pointer beside check-next.ts, which holds it now" },
-  { file: "next/components/workbook.tsx", name: "check-workbook.mjs",
-    why: "names the old pointer beside workbook.test.ts, which held it all along" },
-  { file: "scripts/check-next.ts", name: "check-workbook.mjs",
-    why: "the check itself, saying which name used to be given for it" },
 
   /* Deleted when Next took the Tailwind compiler over. All three
      name it as gone. */
@@ -112,8 +106,6 @@ const GONE: Gone[] = [
   /* A plan names what it planned to delete, and the deletion
      happened. Reading it for what the site looks like now is the
      mistake its own header warns against. */
-  { file: "CLAUDE.md", name: "aab/src/glow.ts",
-    why: "the module not built the old way; the name is the argument" },
   { file: "scripts/check-closed.ts", name: "aab/src/glow.ts",
     why: "the same, in the check that refused it" },
 

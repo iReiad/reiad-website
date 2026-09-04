@@ -244,7 +244,7 @@ const CLAIMS: Claim[] = [
   { file: "../next/app/(site)/tools/stock/page.tsx",
     text: "Forty-odd ratios across six pillars", key: "ratios", approx: true },
   { file: "tools/stock.i18n.js", text: "Forty-odd ratios, six pillars", key: "ratios", approx: true },
-  { file: "tools/stock.model.js", text: "forty-odd ratios grouped into six", key: "ratios", approx: true },
+  { file: "tools/stock.model.js", text: "forty-odd ratios in six", key: "ratios", approx: true },
 ];
 
 const WORDS: Record<string, number> = {
