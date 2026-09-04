@@ -31,6 +31,15 @@
    login could not have reached anyone either. Bump this whenever a
    precached file changes.
 
+   v248: /tilt.js. The card lean is a pointer effect and is now
+        only that. The device-orientation half that leaned every
+        card on screen towards wherever a handset was pointing is
+        gone: `.tilt-scene { perspective }` sits inside the hover
+        query, so a phone had no perspective and got an affine
+        squash of 1.4 degrees rather than a lean, and paid a
+        document-wide query plus a forced layout per card per
+        sensor frame for a picture nobody could see.
+
    v247: /fallback.css. Things arrive rather than being there: a
         deck fades up as it scrolls in, the door's five facts
         stagger, the reckoner's answer lands when a chip is
@@ -2176,7 +2185,7 @@
    imports (crumbs, audience, learn progress) and the hub is a
    different page. Without a bump, a returning reader would be
    served the v3 app.js forever and none of it would appear. */
-const VERSION = "v247";
+const VERSION = "v248";
 const SHELL = `shell-${VERSION}`;
 const RUNTIME = `runtime-${VERSION}`;
 

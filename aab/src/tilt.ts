@@ -35,7 +35,9 @@
 
    3. Nothing is touched unless the device actually hovers and
       the reader has not asked for less motion. On a phone this
-      module attaches no listeners at all.
+      module attaches no listeners at all, and the note above
+      `initTilt` is why that is the finished state rather than a
+      gap somebody should fill with the handset's own sensor.
 
    And one that was tried and dropped: a 2px lift to go with the
    lean. It could not be done from here. The cards in .cards and
@@ -206,148 +208,34 @@ function attach(scene: HTMLElement): void {
 }
 
 /* ============================================================
-   THE SAME GESTURE ON A PHONE
+   AND NOT ON A PHONE, WHICH IS A DECISION RATHER THAN A GAP
 
-   A phone has no pointer to lean towards, so the cards there
-   were flat. It does know which way it is being held, and a
-   reader tilting the handset is making the same gesture with
-   the whole device that a pointer makes across a card, so the
-   cards lean towards the same place: wherever the top of the
-   screen is pointing.
+   There was a second half here that read `deviceorientation` and
+   leaned every card on screen towards wherever the handset was
+   pointing. It was removed on 4 September 2026 and must not come
+   back in that shape, because it could not work and was not free.
 
-   WHY THIS IS SAFE TO SHIP, IN ORDER
+   It could not work: `.tilt-scene { perspective: 1100px }` is
+   declared inside `@media (hover: hover) and (pointer: fine)` in
+   `@layer components`, so on a phone there is no perspective
+   anywhere, and a 3D rotation with no perspective is an affine
+   squash. The cards sheared rather than leaned, by 1.4 degrees,
+   which is under what anybody can see on a handset in the hand.
 
-   1. It never asks for anything. iOS 13 and later require an
-      explicit DeviceOrientationEvent.requestPermission() from
-      inside a user gesture, and a site that opens with a
-      permission prompt for a decoration deserves the answer it
-      gets. So this listens, and on iOS it simply never hears
-      anything. That is the intended outcome, not a bug to fix
-      later.
+   It was not free: a sensor reporting at up to 60Hz, and every
+   frame of it a document-wide `querySelectorAll` plus a
+   `getBoundingClientRect` per card to decide which were on
+   screen. That is a forced layout per card per frame on the main
+   thread of the cheap Android most of this site's readers hold,
+   for a picture none of them could see.
 
-   2. It gives up if nothing arrives. Desktop browsers, locked
-      orientation, permission never granted, a device with no
-      accelerometer: if no event lands within three seconds the
-      listener is removed and the module is inert for the rest of
-      the page's life.
-
-   3. It costs one rAF per frame at most, and only while the
-      handset is actually moving. The sensor fires at up to 60Hz;
-      writing to the DOM on every one of those would be the whole
-      frame budget on a cheap Android, which is the phone most of
-      this site's readers have. The handler stores two numbers,
-      one rAF applies them, and the cards it touches are the ones
-      on screen.
-
-   4. It is deliberately smaller than the pointer version: 1.4
-      degrees against 2.6. A pointer tilt answers a deliberate
-      movement over one card. This answers the ordinary sway of
-      holding a phone, and the same angle that reads as a lean
-      under a cursor reads as a wobble in the hand.
-
-   5. Every guard the pointer version has, this has too:
-      prefers-reduced-motion, and never on a device that hovers.
+   A lean answers a pointer aimed at one card. The ordinary sway
+   of holding a phone is not that gesture, and matching it would
+   need the perspective moved out of the hover query, which is a
+   redesign rather than a fix.
    ============================================================ */
 
-/** Every card, expressed as a child of every scene.
-
-    `> :is(CARD)` rather than the `> *` this used to be, and the
-    change is what let the deck join SCENES: a deck holds info
-    cards and a front-door deck holds a wrapper column, and "any
-    child of a scene" would have leaned a paragraph card and a
-    layout `<aside>` along with the doors. Only the things a
-    pointer would tilt sway in the hand. */
-const CARDS_IN_SCENES = SCENES.map((sel) => `${sel} > :is(${CARD})`).join(",");
-
-const PHONE_DEG = 1.4;     // half the pointer tilt, and for a reason
-const PHONE_RANGE = 26;    // degrees of handset tilt for the full lean
-const GIVE_UP_MS = 3000;   // no event by then: this device cannot do it
-
-let phoneStarted = false;
-
-function initPhoneTilt(): void {
-  if (phoneStarted) return;
-  phoneStarted = true;
-
-  if (matchMedia("(hover: hover) and (pointer: fine)").matches) return;
-  if (matchMedia("(prefers-reduced-motion: reduce)").matches) return;
-  if (typeof DeviceOrientationEvent === "undefined") return;
-
-  let frame = 0;
-  let heard = false;
-  let beta: number | null = null;    // front-to-back, degrees
-  let gamma: number | null = null;   // left-to-right, degrees
-  /** How the handset was held when we started. */
-  let base: { beta: number; gamma: number } | null = null;
-
-  const apply = () => {
-    frame = 0;
-    /* Unreachable: nothing schedules this until onOrient has set
-       all three. Written out because the alternative is asserting
-       they are set, and an assertion stops being true the day
-       something else calls this. */
-    if (beta === null || gamma === null || base === null) return;
-    /* `SCENES.join(",") + " > *"` would have bound the child
-       combinator to the LAST selector in the list only, which is
-       how this shipped broken the first time: one scene tilted
-       and the other twelve did not. Build the descendant list
-       properly. */
-    const cards = document.querySelectorAll<HTMLElement>(CARDS_IN_SCENES);
-    if (!cards.length) return;
-
-    /* Normalised to -1…1 the same way the pointer version reads a
-       position across a card, so both ends of this module speak
-       the same language to axisFor. */
-    const nx = clamp((gamma - base.gamma) / PHONE_RANGE);
-    const ny = clamp((beta - base.beta) / PHONE_RANGE);
-    const a = axisFor(nx, ny);
-
-    for (const card of cards) {
-      /* Only what is on screen. A long page has forty of these
-         and thirty-eight of them are nowhere near the reader. */
-      const r = card.getBoundingClientRect();
-      if (r.bottom < 0 || r.top > innerHeight || !r.width) {
-        card.style.removeProperty("rotate");
-        continue;
-      }
-      if (!a) card.style.removeProperty("rotate");
-      else card.style.rotate =
-        `${a.x.toFixed(3)} ${a.y.toFixed(3)} 0 ${(a.deg * PHONE_DEG / MAX_DEG).toFixed(2)}deg`;
-    }
-  };
-
-  const onOrient = (e: DeviceOrientationEvent) => {
-    if (e.beta == null || e.gamma == null) return;
-    heard = true;
-    beta = e.beta;
-    gamma = e.gamma;
-    /* The first reading is the rest position. Someone reading in
-       bed holds a phone at sixty degrees and is not tilting it;
-       measuring from where they started means the cards are level
-       when the handset is still, whatever "still" happens to be. */
-    base ??= { beta, gamma };
-    if (!frame) frame = requestAnimationFrame(apply);
-  };
-
-  addEventListener("deviceorientation", onOrient, { passive: true });
-
-  setTimeout(() => {
-    if (heard) {
-      // Scenes need the perspective the pointer version's class carries.
-      document.querySelectorAll(SCENES.join(",")).forEach((s) => s.classList.add("tilt-scene"));
-      return;
-    }
-    removeEventListener("deviceorientation", onOrient);
-  }, GIVE_UP_MS);
-}
-
-const clamp = (n: number) => Math.max(-1, Math.min(1, n));
-
 export function initTilt(): void {
-  /* The phone half first, because it is the one that has to
-     decide whether this device can do it at all. */
-  initPhoneTilt();
-
   if (!matchMedia("(hover: hover) and (pointer: fine)").matches) return;
   if (matchMedia("(prefers-reduced-motion: reduce)").matches) return;
   document.querySelectorAll<HTMLElement>(SCENES.join(",")).forEach(attach);
