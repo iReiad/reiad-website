@@ -12,9 +12,14 @@ the clinic numbers and the explanation of every one of them, on
 one set of pages, with a switch at the top that turns the whole
 thing into Bangla.
 
-This file is the plan. It is prose, and a `check-diet` script under `scripts/`
-is what will hold the parts of it that can be broken silently,
-the way `scripts/admin.test.ts` holds `ADMIN.md`.
+This file is the plan, and `scripts/check-diet.ts` holds the parts
+of it that can be broken silently. It READS this file for three
+vocabularies: the glossary's terms in `§23`, the journal tags in
+`§11`, and the nouns in `§14`'s "Every ... entry in the library"
+sentence. `scripts/diet.test.ts`, `scripts/insights.test.ts` and
+`scripts/activity.test.ts` read it for the figures and the
+headings of `§16` to `§19`. **Those sentences are code: reword one
+and a test fails.**
 
 ---
 
@@ -2470,174 +2475,159 @@ the site already has.
 
 ## 32. Stages
 
-Each stage ships. None of them ships a placeholder: an empty
-panel that will one day hold something reads exactly like a
-broken one, which is the rule `/admin` already exists under.
+Each stage ships. **None of them ships a placeholder**: an empty
+panel that will one day hold something reads exactly like a broken
+one.
 
-**The order is chosen so the tool is usable at stage 6 and every
-stage after it adds a reason to come back**, rather than so that
-the architecture is tidy. A plan that puts every foundation
-first is a plan that has nothing to show for four weeks.
+The order is chosen so the tool is usable at stage 6 and every
+stage after it adds a reason to come back, rather than so that the
+architecture is tidy.
 
 | | | |
 | --- | --- | --- |
 | 1 | **the arithmetic** | `shared/`, a unit test per formula. BMI both ways, WHtR, Navy, Deurenberg, Mifflin, Katch, the time-weighted EMA and the learned maintenance. Nothing renders |
 | 2 | **the migration** | the six tables and their policies |
-| 3 | **the shell and the switch** | the routes, the tab panels, the language switch on `tool-lang`, and the glossary. `§23`. Everything after this is bilingual by construction rather than by retrofit |
+| 3 | **the shell and the switch** | the routes, the tab panels, the language switch on `tool-lang`, and the glossary. `§23` |
 | 4 | **`/tools/diet/you`** | measurements in, composition out. The first page that shows a number, and the first that shows a range |
 | 5 | **`/tools/diet`, first pass** | log a weight, log an intake by hand, draw the trend. The server-rendered chart from `§28` |
 | 6 | **`/tools/diet/goal`** | the engine, the floors, the waist-first goal, the projection with its interval. **The tool is worth using from here** |
-| 7 | **the food log** | `§12` and `§13`: search across the three sources, the source label on every result, snapshot on use, barcode, your usuals, copy yesterday |
+| 7 | **the food log** | `§12` and `§13` |
 | 8 | **`/tools/diet/trend`** | learned maintenance, the under-logging gap, stalls, the four kinds |
 | 9 | **`/tools/diet/expect`** | `§9`: the arc, the expectation before the week, the actual beside it afterwards, the unlock table |
-| 10 | **phases and settling** | `§10`: a slope that never crosses a boundary, the stacking arithmetic, and the sentence said before a fast rather than after it. The arithmetic landed with stage 1; this is the page half |
-| 11 | **the stage card and the journal** | `§11`: where you are, one next thing, the tags, hunger, and the symptom table |
+| 10 | **phases and settling** | `§10`. The arithmetic landed with stage 1; this is the page half |
+| 11 | **the stage card and the journal** | `§11` |
 | 12 | **the dashboard** | `§24`: the widgets, the arrangement, and the empty state of every one of them |
 | 13 | **the portion library** | both places, both languages, the reader's own items, recipes, meals, and the label reader |
-| 14 | **the log corrections** | `§14`: the oil calibration, the shared pot, cooked against raw, ranges for eating out, hand portions |
+| 14 | **the log corrections** | `§14` |
 | 15 | **nutrition and insights** | `§15` and `§16`, coverage first, and nothing drawn under half |
-| 16 | **cost** | `§17`: prices with dates, cost per gram of protein, the budget plot |
-| 17 | **the calendar** | `§18`: marks, the cycle, the seasons, Ramadan |
-| 18 | **movement** | `§19`: steps, and the recomposition reading that needs the tape |
-| 19 | **health** | `§20` and `§21`: the clinic numbers, the units question, the medicines list |
+| 16 | **cost** | `§17` |
+| 17 | **the calendar** | `§18` |
+| 18 | **movement** | `§19` |
+| 19 | **health** | `§20` and `§21` |
 | 20 | **the plan and the shopping list** | `§13`, which needs the library and the prices to exist first |
-| 21 | **getting in and out** | `§26`: onboarding, the CSV importer with its preview, the export wiring in `§30`, and the offline queue |
+| 21 | **getting in and out** | `§26`, and the export wiring in `§30` |
 | 22 | **maintenance and gaining** | `§6`, last only because it is the phase that comes after all of the above |
-| 23 | **the doctor's page** | `§25`, which is a print stylesheet over numbers that all already exist |
+| 23 | **the doctor's page** | `§25`, a print stylesheet over numbers that all already exist |
 
-**Two things are deliberately not staged at the end**: the
-language switch, because retrofitting a second language is twice
-the work and never finishes, and the empty states, because they
-are what every stage before the last one actually looks like.
+**Two things are deliberately NOT staged at the end**: the language
+switch, because retrofitting a second language is twice the work
+and never finishes, and the empty states, because they are what
+every stage before the last one actually looks like.
 
 ---
 
 ## 33. What must be checked
 
-A check for every place in this file where a rule could be
-quietly broken and the page would still render. That list is
-long because most of this file is about numbers that look fine
-when they are wrong.
+A check for every place in this file where a rule could be quietly
+broken and the page would still render. The list is long because
+most of this file is about numbers that look fine when they are
+wrong.
 
-**`scripts/diet.test.ts`**, the arithmetic, needing no browser
-and no database, so it runs in CI: every formula in
-`shared/diet.ts`, every floor in `§5` asserted from the wrong
-side including the gaining direction in `§6`, the sign of the
-learned burn from both directions, **no slope ever fitted across
-a phase boundary and a stacked protocol shedding less water than
-a fresh one** (`§10`, which a naive implementation gets wrong in
-the flattering direction), and the cut-off table read back out of
-this file so the prose and the code cannot drift.
+**`scripts/diet.test.ts`**, the arithmetic, needing no browser and
+no database, so it runs in CI: every formula in `shared/diet.ts`,
+every floor in `§5` asserted from the wrong side including the
+gaining direction in `§6`, the sign of the learned burn from both
+directions, **no slope ever fitted across a phase boundary and a
+stacked protocol shedding less water than a fresh one** (`§10`,
+which a naive implementation gets wrong in the flattering
+direction), and the cut-off table read back out of this file so the
+prose and the code cannot drift.
 
 **`scripts/check-diet.ts`**, for the rules that are about pages
-rather than about numbers. It is in `check-all.ts` beside every
-other check. Each line below carries its own mark, and the last
-two are ones this list did not ask for: a check that turns up a
-rule nobody had written down belongs beside the ones that were
-asked for.
+rather than about numbers, in `check-all.ts` beside every other
+check:
 
-- ✓ the floors are the ones `scripts/diet.test.ts` asserts, and
-  no route recomputes a formula rather than importing it. The
-  floors are read out of `target()`'s own body rather than
-  listed, so a sixth bound is asked about with nobody coming
-  here, and the formulas are compared by SHAPE, with the names
-  taken out and the numbers left in. It found three sentences on
-  the goal page writing a constant out as a number: the rate cap
-  as 1%, the absolute floor as 1200 and 1500, and the
-  underweight cut-off as 18.5. Those are the sentences whose
-  whole job is to say the tool changed your number, which makes
-  them the worst place in the tool for a figure that cannot
-  change with it.
-- ✓ the Asian cut-off table is used whenever ancestry says so.
-  Four shapes of not using it, and none of them looks wrong on
-  the page: a fixed ancestry handed to `bmiBand()`, `BMI_CUTS`
-  read by name, a body built with a literal ancestry, and a
-  cut-off written into a comparison, which is `bmiBand()`
-  retyped with one of the two tables missing. And `§2`'s other
-  half, that the page says which set it used: a band on its own
-  is one word for two readers who are owed different ones.
-- ✓ every food in both libraries carries a source and a price
-  date, and every rice, grain and pasta row names its state. The
-  nouns come out of `§14`'s own sentence, the price is three
-  columns that arrive together or not at all, a row in both
-  kitchens carries none of them because one number cannot be two
-  currencies, and the state has to be in the NAME in both
-  languages rather than only in the flag the arithmetic reads. A
-  row with no second weight to be confused with, `muri`, is
-  named in the check with the reason, and that exemption fails
-  when it goes stale.
-- ✓ the generated sentences in `§16` and the stage card in `§11`
+- **The floors are the ones `scripts/diet.test.ts` asserts, and no
+  route recomputes a formula rather than importing it.** The floors
+  are read out of `target()`'s own body rather than listed, so a
+  sixth bound is asked about with nobody coming here, and the
+  formulas are compared by SHAPE, with the names taken out and the
+  numbers left in. It found three sentences on the goal page
+  writing a constant out as a number: the rate cap as 1%, the
+  absolute floor as 1200 and 1500, and the underweight cut-off as
+  18.5. Those are the sentences whose whole job is to say the tool
+  changed your number, which makes them the worst place in the tool
+  for a figure that cannot change with it.
+- **The Asian cut-off table is used whenever ancestry says so.**
+  Four shapes of not using it, none of which looks wrong on the
+  page: a fixed ancestry handed to `bmiBand()`, `BMI_CUTS` read by
+  name, a body built with a literal ancestry, and a cut-off written
+  into a comparison, which is `bmiBand()` retyped with one of the
+  two tables missing. And `§2`'s other half, that the page says
+  which set it used: a band on its own is one word for two readers
+  who are owed different ones.
+- **Every food in both libraries carries a source and a price date,
+  and every rice, grain and pasta row names its state.** The nouns
+  come out of `§14`'s own sentence, the price is three columns that
+  arrive together or not at all, a row in both kitchens carries
+  none of them because one number cannot be two currencies, and the
+  state has to be in the NAME in both languages rather than only in
+  the flag the arithmetic reads. `muri` has no second weight to be
+  confused with and is named in the check with the reason; that
+  exemption fails when it goes stale.
+- **The generated sentences in `§16` and the stage card in `§11`
   come only from the listed templates, and the list contains no
-  second person judgement. **The list is derived, never kept.**
-  Hundreds of the tool's own sentences written out again inside
-  a check would be right on the day they were typed and wrong at
-  the next commit, so a template here is what the compiler calls
-  one: a template literal with an interpolation and prose in it,
-  plus a sentence a condition chooses between two written-out
-  ones. `node scripts/check-diet.ts --templates` prints the
-  list. What IS written down in the check is the vocabulary of
-  judgement, with the section naming each: that is a rule rather
-  than a copy of anything. The stage card is not built yet and
-  will need no second rule when it is, because the corpus is
-  every generated sentence in the tool.
-- ✓ the fixed journal tag set is the one in `§11` and has not
-  grown a forty-first tag, and the day marks are the ones the
+  second person judgement. The list is DERIVED, never kept.**
+  Hundreds of the tool's own sentences written out again inside a
+  check would be right on the day they were typed and wrong at the
+  next commit, so a template here is what the compiler calls one: a
+  template literal with an interpolation and prose in it, plus a
+  sentence a condition chooses between two written-out ones.
+  `node scripts/check-diet.ts --templates` prints the list. What IS
+  written down is the vocabulary of judgement, with the section
+  naming each: a rule rather than a copy.
+- **The fixed journal tag set is the one in `§11`** and has not
+  grown a thirteenth tag, and the day marks are the ones the
   migration names. Neither column has a CHECK constraint, so the
   check IS the constraint.
-- ✓ **no widget in `§24` is defined without an empty state.**
-- ✓ **no page prints a target without the disclaimer beside it**,
-  in both languages.
-- ✓ both language files cover the same keys, so a Bangla reader
-  never meets an English fallback string. `§23`. Every `<T>` has
-  both halves, and no `aria-label`, `title` or `placeholder` is
-  an English string literal.
-- ✓ the glossary defines every term the pages use, and every
+- **No widget in `§24` is defined without an empty state.**
+- **No page prints a target without the disclaimer beside it**, in
+  both languages.
+- **Both language files cover the same keys**, so a Bangla reader
+  never meets an English fallback string (`§23`). Every `<T>` has
+  both halves, and no `aria-label`, `title` or `placeholder` is an
+  English string literal.
+- **The glossary defines every term the pages use**, and every
   entry is linked to from somewhere.
-- ✓ and one the list did not ask for: every `diet_*` column in
-  `§27` is either filled by the tool or named as not built yet
-  with the section that will build it. A column nothing can fill
-  breaks nothing, which is why it needed a check rather than a
-  paragraph.
-- ✓ and a second the list did not ask for: what happens after a
-  goal is reached is said ONCE, on the goal page. `§6` puts it
-  there and only there, and it is the one sentence in the tool
-  that argues for the tool.
-- ✓ and a third: `shared/insights.ts` holds no prose. It opens
-  by saying that no function in it returns a verdict, which is
-  what makes every reading checkable: it hands back the figures
-  and a panel chooses the words, in both languages, where the
-  template check above can read them. A sentence built in the
-  arithmetic is a sentence in one language, on no list, that
-  neither the check nor the language switch can reach.
+- **Every `diet_*` column in `§27` is either filled by the tool or
+  named as not built yet** with the section that will build it. A
+  column nothing can fill breaks nothing, which is why it needed a
+  check rather than a paragraph.
+- **What happens after a goal is reached is said ONCE**, on the
+  goal page. `§6` puts it there and only there, and it is the one
+  sentence in the tool that argues for the tool.
+- **`shared/insights.ts` holds no prose.** No function in it
+  returns a verdict, which is what makes every reading checkable:
+  it hands back the figures and a panel chooses the words, in both
+  languages, where the template check above can read them. A
+  sentence built in the arithmetic is a sentence in one language,
+  on no list, that neither the check nor the language switch can
+  reach.
 
-**A `diet.test` under `next/`**, in a real browser, the way
-`next/admin.test.ts` drives `/admin`:
+**`next/diet.test.ts`**, in a real browser:
 
-- every page renders and every number is computed rather than
-  placeholder. A panel that renders and computes nothing looks
-  exactly like one that works, which is what
-  `next/interactive.test.ts` exists for and this tool is the
-  largest surface on the site for it.
-- **the language switch changes every string on the page**, not
-  the headings only. This is the check that catches the retrofit
-  the stage list is ordered to avoid.
-- the chart's table alternative and its `aria-describedby`,
-  because `§28` is only true if something says so.
+- every page renders and **every number is computed rather than
+  placeholder**. A panel that renders and computes nothing looks
+  exactly like one that works.
+- **the language switch changes every string on the page**, not the
+  headings only. This is the check that catches the retrofit the
+  stage list is ordered to avoid.
+- the chart's table alternative and its `aria-describedby`, because
+  `§28` is only true if something says so.
 - **the stopwatch from `§13`**: a repeat dinner in three
   interactions, a barcode in four, a new dish in under a minute.
 - a searched food is copied into the reader's own row rather than
-  referenced, and the row keeps its source and fetch date. `§12`.
-- the importer shows its preview before it writes anything, and
-  an import can be undone as one operation. `§26`.
-- the offline queue is never read back as data. `§26`.
+  referenced, and the row keeps its source and fetch date (`§12`).
+- the importer shows its preview before it writes anything, and an
+  import can be undone as one operation (`§26`).
+- the offline queue is never read back as data (`§26`).
 
 **And two that belong to the site rather than the tool:**
 
-- ✓ the export in `§30` contains all six tables and the erase
-  removes all six. `aab/src/account-page.ts` does both, and the
-  confirm text names the diet log, the medicines and the cycle
-  rather than folding them into "everything": a confirm that
-  lists five of six things is a reader agreeing to something
-  else.
+- the export in `§30` contains all six tables and the erase removes
+  all six. `aab/src/account-page.ts` does both, and **the confirm
+  text names the diet log, the medicines and the cycle** rather
+  than folding them into "everything": a confirm that lists five of
+  six things is a reader agreeing to something else.
 - `COUNTS` in `shared/content.ts` if any page says how many tools
   this site has, because a sentence that counts must count.

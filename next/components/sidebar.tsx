@@ -1,38 +1,20 @@
 "use client";
 
-/* ============================================================
-   sidebar.tsx: the menu, down the left, on every page.
+/* The menu, down the left, on every page.
 
-   ---- what it replaces ----
+   One list, rendered on the server, out of `shared/nav.ts`. It is in the
+   HTML before anything runs, which is the whole difference from a menu
+   built by a script: a reader with no JavaScript has one, and so does a
+   crawler.
 
-   Three things, and they were three because they grew one at a
-   time. A header nav that could hold seven links and had eleven
-   places to go. A full-screen overlay menu built in JavaScript by
-   `buildMenu()` in `aab/app.js`, which meant a reader with no
-   JavaScript had no menu at all and a crawler saw none of it. And
-   a hover panel under "Skills" that opened on a timer.
+   Two things are the browser's: whether the rail is open, and whether the
+   small-screen drawer is showing. Both are attributes on `<html>`, both
+   are restored before the first paint by the boot script in `shell.tsx`,
+   and both are written here.
 
-   One list, rendered on the server, in `shared/nav.ts`. It is in the
-   HTML before anything runs, which is the whole difference: the
-   menu is now a fact about the page rather than something built
-   on top of it.
-
-   ---- why this file is a client component and how little of it
-        actually is ----
-
-   The links, the labels, the groups and which one is current are
-   all decided on the server and rendered once. Two things are
-   the browser's: whether the rail is open, and whether the
-   small-screen drawer is showing. Both are attributes on
-   `<html>`, both are restored before the first paint by the boot
-   script in `shell.tsx`, and both are written here.
-
-   Reading them into React state is deliberately NOT how this
-   works. The attribute is the state; the buttons toggle it and
-   the stylesheet answers. State in React as well would be a
-   second copy of a thing the document already knows, and it is
-   the copy that arrives one paint late.
-   ============================================================ */
+   Reading them into React state is deliberately NOT how this works. The
+   attribute is the state; the buttons toggle it and the stylesheet
+   answers. A copy in React is the copy that arrives one paint late. */
 
 import { useEffect } from "react";
 import { NAV, ORDER, type NavGroup } from "@reiad/shared/nav";
@@ -149,17 +131,15 @@ export function Sidebar({ current }: { current: Current }) {
   return (
     <aside className="rail" id="rail" aria-label="Site menu">
       <div className="rail-head">
-        {/* The close button comes FIRST, and that is the whole
-            point of it: on a phone it is laid out to land on the
-            exact pixels the burger occupies in the top bar, so the
-            control that opened the menu and the control that
-            closes it are the same shape in the same place. It was
-            a 34px circle in the far corner, 233px away from the
-            thing the reader had just tapped.
+            {/* The close button comes FIRST, and that is the whole point:
+                on a phone it is laid out to land on the exact pixels the
+                burger occupies in the top bar, so the control that opened
+                the menu and the one that closes it are the same shape in
+                the same place.
 
-            It renders on every width and the stylesheet hides it
-            wherever the rail is a rail rather than a drawer, which
-            is the same query that shows the burger. */}
+                It renders at every width and the stylesheet hides it
+                wherever the rail is a rail rather than a drawer, which is
+                the same query that shows the burger. */}
         <DrawerClose />
         <a className="rail-mark" href="/" aria-label="Reiad's Library, home">
           <svg className="rail-mark-art" viewBox="0 0 100 100" fill="none" aria-hidden="true">
@@ -187,24 +167,16 @@ export function Sidebar({ current }: { current: Current }) {
         ))}
       </nav>
 
-      {/* The fold, and the audience switch.
+          {/* The fold, and the audience switch. The switch is in the top
+              bar on a laptop and in here on a phone, and the stylesheet
+              shows exactly one: two instances of one component rather than
+              two implementations of one idea, holding no state, because
+              the state is `data-audience` on the root.
 
-          The switch is in the top bar on a laptop and in here on
-          a phone, and the stylesheet shows exactly one of the
-          two. That is two instances of one component rather than
-          two implementations of one idea: it holds no state,
-          because the state is `data-audience` on the root, so
-          both copies write the same attribute and read back the
-          same answer from the same stylesheet. There is nothing
-          for them to drift about.
-
-          Why it moves at all: below 900px the bar has a burger,
-          two labels of the switch and three icon buttons on a
-          360px screen, and the switch is the widest of them and
-          the least urgent. It is a question a reader answers once
-          and never again, so it belongs in the menu, which is
-          where somebody goes when they are deciding rather than
-          reading. */}
+              Why it moves at all: below 900px the bar has a burger, two
+              labels and three icon buttons on a 360px screen, and the
+              switch is the widest of them and the least urgent. It is a
+              question a reader answers once, so it belongs in the menu. */}
       <div className="rail-foot">
         <div className="rail-audience">
           <span className="rail-label mono">What brings you here</span>

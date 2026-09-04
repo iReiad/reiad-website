@@ -1,45 +1,25 @@
-# ============================================================
 # Write the money school's rows into D1, from a browser.
 #
-#   GitHub → Actions → "Seed the money school into D1" → Run workflow
+#   GitHub -> Actions -> "Seed the money school into D1" -> Run workflow
 #
-# The sibling of import-schools.yml, and it exists for the same
-# reason: the alternative is two commands in a terminal, and that
-# has failed twice here for reasons that had nothing to do with
-# the SQL. Nobody types anything in this one either.
+# The sibling of import-schools.yml, and it needs the same
+# CLOUDFLARE_API_TOKEN secret; that file says how to make one.
 #
-# ---- why the money school has its own ----
+# WHY THE MONEY SCHOOL HAS ITS OWN: import-schools.yml fills all
+# four curricula from `import-schools.ts`, which knows the ladder
+# and no prose. The money school's prose lives in
+# `scripts/money/*.ts`, in two languages with interactive blocks
+# beside it, and `seed-money.ts` is what turns those into rows.
 #
-# import-schools.yml fills all four curricula from
-# `import-schools.ts`, which knows the ladder and no prose. The
-# money school's prose lives in `scripts/money/*.ts` now, in two
-# languages with interactive blocks beside it, and
-# `seed-money.ts` is what turns those into rows. Pointing the
-# older workflow at them would make it a second thing that knows
-# what a money lesson is.
+# IT UPSERTS, so a lesson the ladder marks `soon` keeps whatever
+# the database holds: INSERT OR REPLACE would have emptied
+# twenty-nine rows. Then it prunes, in three DELETEs at the end of
+# the file, so a lesson the ladder no longer names does not go on
+# drawing a rung. That order is deliberate and `seed-money.ts` says
+# why.
 #
-# ---- what it does to the rows it does not write ----
-#
-# It upserts, so a lesson the ladder marks `soon` keeps whatever
-# the database holds: the four stages above ভিত্তি are exactly
-# that, and INSERT OR REPLACE would have emptied twenty-nine
-# rows. Then it prunes, in three DELETEs at the end of the file,
-# so a lesson the ladder no longer names does not go on drawing a
-# rung. That order is deliberate and `seed-money.ts` says why.
-#
-# ---- the one thing it needs ----
-#
-# The CLOUDFLARE_API_TOKEN repository secret, the same one
-# import-schools.yml uses, and the note at the top of that file
-# says how to make one. Without it this stops before it touches
-# anything.
-#
-# ---- and one thing it deliberately does not do ----
-#
-# It does not run on a push or on a schedule. This rewrites every
-# lesson of one school, and a job that can do that must never be
-# able to start on its own.
-# ============================================================
+# IT DOES NOT RUN ON A PUSH OR A SCHEDULE. This rewrites every
+# lesson of one school.
 
 name: Seed the money school into D1
 
@@ -90,10 +70,9 @@ jobs:
       - name: Build the SQL
         run: node scripts/seed-money.ts --out money.sql
 
-      # The failure import-schools.yml was written for: an empty
-      # file that imports perfectly and writes nothing. 140
-      # upserts and 3 deletes is what the generator prints;
-      # anything under 100 means it did not do its job.
+      # An empty file imports perfectly and writes nothing. 140
+      # upserts and 3 deletes is what the generator prints; under
+      # 100 means it did not do its job.
       - name: Refuse to import an empty file
         run: |
           queries=$(grep -c '^\(INSERT\|DELETE\)' money.sql || true)
@@ -112,11 +91,10 @@ jobs:
           npx --yes wrangler@4 d1 execute reiad \
             --${{ inputs.target }} --file=money.sql --yes
 
-      # What the run is for. A tick on a job that wrote nothing is
-      # the thing that wasted two attempts on the older workflow,
-      # so the last thing it does is ask the database what is in
-      # it now. Eighty-one of the money school's lessons should
-      # come back written in both languages.
+      # A tick on a job that wrote nothing is what wasted two
+      # attempts on the older workflow, so the last thing it does is
+      # ask the database what is in it now. Eighty-one lessons
+      # should come back written in both languages.
       - name: Say what is in there now
         env:
           CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}

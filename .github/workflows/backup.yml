@@ -1,27 +1,19 @@
-# ============================================================
-# The nightly article backup.
-#
-# Until the Studio existed, this repository WAS the backup: every
-# article was a file in git with its whole history. Now that a
-# piece can live only in D1, this puts it back, once a night, in a
-# file nobody edits by hand.
+# The nightly article backup: live article bodies out of D1 and
+# into a file nobody edits by hand.
 #
 # It needs no secret. GITHUB_TOKEN is issued to the run by Actions
 # itself, and the endpoint it reads is public because live article
 # bodies are already served to anyone who asks for their URL.
 #
-# Drafts, reader questions, subscriber emails and the admin password
-# hash never come near this file. The repository is private as of
-# 15 August 2026 and that changes nothing: see the note in
-# functions/_lib/backup.ts for why the rule does not relax.
-#
-# The private half of the backup is a nightly snapshot into R2,
-# written by the Worker's own cron. See wrangler.toml.
+# DRAFTS, READER QUESTIONS, SUBSCRIBER EMAILS AND THE ADMIN
+# PASSWORD HASH NEVER COME NEAR THIS FILE, whatever the
+# repository's visibility setting says: functions/_lib/backup.ts is
+# where that rule is written out. The private half of the backup is
+# a nightly snapshot into R2, written by the Worker's own cron.
 #
 # To restore:
 #   node scripts/restore.ts content/articles.backup.json > restore.sql
 #   npx wrangler d1 execute reiad --remote --file=restore.sql
-# ============================================================
 
 name: Nightly article backup
 
@@ -57,8 +49,8 @@ jobs:
                https://reiad.co.uk/api/backup/articles
 
       # Four things have to be true before this replaces a good
-      # backup with a bad one. A backup job that cheerfully commits
-      # an error page is worse than no backup job, because it looks
+      # backup with a bad one: a job that cheerfully commits an
+      # error page is worse than no backup job, because it looks
       # like it is working.
       - name: Check it before trusting it
         run: |
@@ -97,14 +89,12 @@ jobs:
           rm -f content/articles.backup.raw.json
 
       # `taken_at` changes every night whether or not anything else
-      # did, so the diff is checked with that line ignored. Otherwise
-      # this commits 365 times a year to say nothing happened.
+      # did, so the diff is checked with that line ignored.
       #
-      # The first run is handled on its own, and that is not
-      # defensive tidiness: `git diff` only looks at tracked files,
-      # so on the run that CREATES this file it reports no change and
-      # a naive early exit means the backup never gets committed at
-      # all. That is exactly what the first run of this workflow did.
+      # The first run is handled on its own because `git diff` only
+      # looks at tracked files: on the run that CREATES this file it
+      # reports no change, and an early exit means the backup never
+      # gets committed at all.
       - name: Commit, if anything actually changed
         env:
           FILE: content/articles.backup.json
