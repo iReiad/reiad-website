@@ -187,21 +187,47 @@ export const NAV: NavGroup[] = [
       {
         label: "Calculators", sub: "ক্যালকুলেটর", href: "/tools",
         icon: "calculator", key: "tools", hub: true,
+        blurb: "চক্রবৃদ্ধি, সঞ্চয়পত্র বনাম এফডিআর, মূল্যস্ফীতি, কিস্তি আর "
+          + "পজিশন সাইজ।",
       },
-      { label: "Stock check", sub: "শেয়ার যাচাই", href: "/tools/stock", icon: "gauge", key: "stock", art: "gauge" },
-      { label: "Live portfolio", sub: "লাইভ পোর্টফোলিও", href: "/tools/live", icon: "wallet", key: "live", art: "chart" },
+      {
+        label: "Stock check", sub: "শেয়ার যাচাই", href: "/tools/stock",
+        icon: "gauge", key: "stock", art: "gauge",
+        /* No count in the sentence. The stock check scores a
+           number of ratios across a number of pillars, both of
+           them in `COUNTS`, and a figure typed into a blurb is
+           the drift `check-content.ts` exists to catch. */
+        blurb: "একটা টিকার লিখুন: অনুপাত ধরে ধরে যাচাই, আর একটা রায়, "
+          + "হিসাবটা দেখিয়ে।",
+      },
+      {
+        label: "Live portfolio", sub: "লাইভ পোর্টফোলিও", href: "/tools/live",
+        icon: "wallet", key: "live", art: "chart",
+        blurb: "এই সাইটের নিজের পোর্টফোলিও, ব্রোকার থেকে সরাসরি। নিজের "
+          + "অ্যাকাউন্টও যোগ করা যায়।",
+      },
       /* A day of somebody's own. Listed like everything else,
          because it explains itself signed out rather than
          answering 403 the way the course section does: an entry
          in the chrome to a page a reader cannot open is the
          promise `unlisted` exists to avoid, and this page keeps
          its promise to anybody. */
-      { label: "Routine", sub: "রুটিন", href: "/tools/routine", icon: "calendar", key: "routine", art: "calendar" },
+      {
+        label: "Routine", sub: "রুটিন", href: "/tools/routine",
+        icon: "calendar", key: "routine", art: "calendar",
+        blurb: "একদিন করে, আর পেছনে পুরো বছরটা আঁকা: অভ্যাসটা যা হয়েছে "
+          + "তা থেকেই পড়া যায়।",
+      },
       /* Listed for the same reason the routine is: it explains
          itself signed out and the body half needs no account at
          all, so the entry keeps its promise to anybody who
          presses it. */
-      { label: "Diet", sub: "খাদ্য ও ওজন", href: "/tools/diet", icon: "leaf", key: "diet", art: "plate" },
+      {
+        label: "Diet", sub: "খাদ্য ও ওজন", href: "/tools/diet",
+        icon: "leaf", key: "diet", art: "plate",
+        blurb: "কোমর, বিএমআই আর শরীরের চর্বি, আপনার জন্য যে মাপকাঠি সেটাতেই। "
+          + "সাথে টাকায় আর পাউন্ডে খাবারের হিসাব।",
+      },
       /* The Research Studio. RESEARCH.md is the plan. Listed for
          the reason the routine is: it explains itself signed out
          and keeps its promise to anybody who presses it. The
@@ -209,6 +235,8 @@ export const NAV: NavGroup[] = [
       {
         label: "Research", sub: "গবেষণা", href: "/tools/research",
         icon: "microscope", key: "research", art: "sheets", accent: "var(--gold)",
+        blurb: "সূত্র জমানো, পড়া, কোড করা আর লেখা: গবেষণার পুরো কাজটা "
+          + "এক জায়গায়।",
       },
     ],
   },

@@ -116,7 +116,19 @@ const caseFiles = readdirSync(join(ROOT, NEXT_PAGES, "portfolio"), { withFileTyp
 const listed = new Set(
   PAGES.flatMap((p) => (p.group === "case" && p.url ? [p.url] : []))
 );
-const portfolioHtml = read(`${NEXT_PAGES}/portfolio/(hub)/page.tsx`);
+/* The route AND the table it renders from. The seven cards were
+   seven blocks of markup in the route, each carrying its own
+   `href`, until the front page had to show them too and a second
+   copy of the list would have been the failure this file opens
+   with. `next/lib/work.ts` is the one list now, joined from
+   `PAGES`, and both pages map over it, so the href a reader
+   presses is in that file rather than in either page.
+
+   Reading both is what keeps this question honest rather than
+   answering it by construction: a study whose row is gone from
+   `work.ts` is still unreachable, and this still says so. */
+const portfolioHtml = read(`${NEXT_PAGES}/portfolio/(hub)/page.tsx`)
+  + read("../next/lib/work.ts");
 
 for (const url of caseFiles) {
   if (!listed.has(url)) {
@@ -125,7 +137,12 @@ for (const url of caseFiles) {
       "neither the menu, the Ctrl+K palette nor the sitemap.",
       'Add: { title: "…", url: "' + url + '", hint: "Case study", group: "case", blurb: "…" }');
   }
-  if (!portfolioHtml.includes(`href="${url}"`)) {
+  /* The url as a quoted string rather than as `href="..."`. The
+     route no longer writes an anchor per study: it maps over
+     `STUDIES`, where the address is the key of a row. Both shapes
+     are the same claim, which is that this study is named
+     somewhere the portfolio page renders from. */
+  if (!portfolioHtml.includes(`"${url}"`)) {
     fail(`unlinked  ${url}`,
       "the portfolio route does not link this case study, so the only way",
       "to reach it is to already know the URL. Add a card for it.");

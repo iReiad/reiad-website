@@ -29,9 +29,14 @@
    ============================================================ */
 
 import { useSyncExternalStore } from "react";
-import { LADDER_SCHOOLS } from "@reiad/shared/nav";
+import { LADDER_SCHOOLS, NAV } from "@reiad/shared/nav";
 import { readSet, subscribe } from "../../lib/progress";
 import { Icon } from "../icons";
+
+/** The school's own icon, out of the one table the rail, the
+    footer and every card already read. */
+const iconOf = (key: string): string =>
+  NAV.flatMap((g) => g.items).find((i) => i.key === key)?.icon ?? "skills";
 
 const bn = (n: number) => String(n).replace(/\d/g, (d) => "০১২৩৪৫৬৭৮৯"[Number(d)]);
 
@@ -68,21 +73,33 @@ export function SchoolMeters() {
           একটা পাঠ পড়া হলে টিক দিন, এখানে জমতে থাকবে।
         </p>
       )}
+      {/* ONLY THE SCHOOLS THIS READER IS IN. It listed all four
+          always, so somebody one lesson into German read one true
+          row and three noughts. The front page names every school
+          in its own band; this one is about progress, and a school
+          nobody has started has none.
+
+          THE ICON IS THE SCHOOL'S. All four drew `skills`, so four
+          identical glyphs in four accents were the only thing
+          telling money from Arabic, on rows whose whole job is to
+          be scanned. `shared/nav.ts` has held the right one all
+          along. */}
       <ul className="meters-list">
-        {LADDER_SCHOOLS.map((school) => {
-          const done = counts.get(school.key) ?? 0;
-          return (
-            <li key={school.key} style={{ ["--accent" as string]: school.accent }}>
-              <a href={school.href}>
-                <Icon name="skills" size={15} />
-                <span className="min-w-0 truncate" lang="bn">{school.bn}</span>
-                <b className="mono" data-done={done > 0 ? "yes" : "no"} lang="bn">
-                  {bn(done)}টা পাঠ
-                </b>
-              </a>
-            </li>
-          );
-        })}
+        {LADDER_SCHOOLS.filter((school) => (counts.get(school.key) ?? 0) > 0)
+          .map((school) => {
+            const done = counts.get(school.key) ?? 0;
+            return (
+              <li key={school.key} style={{ ["--accent" as string]: school.accent }}>
+                <a href={school.href}>
+                  <Icon name={iconOf(school.key)} size={15} />
+                  <span className="min-w-0 truncate" lang="bn">{school.bn}</span>
+                  <b className="mono" data-done="yes" lang="bn">
+                    {bn(done)}টা পাঠ
+                  </b>
+                </a>
+              </li>
+            );
+          })}
       </ul>
     </>
   );

@@ -72,7 +72,7 @@
    rule in `@layer components` names the same selectors this
    does, and the two lists have to agree. */
 const SCENES = [".cards", ".news-grid", ".grid-2", ".grid-3", ".path",
-  ".deck", ".gate-deck"];
+  ".deck"];
 
 const CARD = [".cell", ".news-card", ".card[data-kind=\"go\"]", ".gate-tile"].join(",");
 

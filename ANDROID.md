@@ -467,8 +467,12 @@ native body renderer, the content cache, local ticks with each
 school's own semantics, checkpoints, bookmarks, the money
 glossary (its term pages are basics-1 lessons and arrive through
 the same API; the in-prose term links open in place, as they do
-on the web), and the home screen's cards: continue, featured,
-pulse. No account yet: the site's own rule that everything
+on the web), and the home screen: the door's ledger and its pair
+of buttons per audience, both of which come down inside `DOOR` in
+`/api/site`, plus the board's own cards, continue and pulse. There
+is no featured card any more: it answered the audience switch with
+one tile two screens down, and the switch moves the door's buttons
+instead. No account yet: the site's own rule that everything
 works signed out makes phase 1 shippable alone, and it is the
 biggest phase because the renderer and the design system land
 here.

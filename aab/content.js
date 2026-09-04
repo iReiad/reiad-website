@@ -489,6 +489,17 @@ export const COUNTS = {
         stage is no longer `inline`, and the two numbers are the
         same number again. */
     lessons: allLessons().filter((l) => l.status === "live").length,
+    /* AND THE WHOLE LIBRARY'S, which is not the same number and was
+       told apart the hard way: the front door printed `lessons`
+       under the word "পাঠ" beside a link to `/skills`, which reads
+       as every lesson on the site and is the money school's alone.
+       It understated the library by 144.
+  
+       All four ladders, counted rather than added up by hand, so a
+       Stufe written next month moves it. */
+    libraryLessons: [
+        ...allLessons(), ...allTeile(), ...allDars(), ...allParts(),
+    ].filter((l) => l.status === "live").length,
     /** Terms in the A-Z glossary. */
     terms: TERM_GROUPS.reduce((n, g) => n + g.terms.length, 0),
     /** German Stufen. */
@@ -709,9 +720,43 @@ export const DOOR = {
             lang: "en",
         },
     },
+    /* Five rather than three, and each one a way in.
+  
+       They were three numerals in a row under the lede, on a first
+       screen whose right-hand half was empty. What a reader wants
+       to know about a library is how much is in it, so the two
+       largest true figures this site has, the lessons written and
+       the ratios the stock check scores, are the two that were
+       missing. */
     facts: [
-        { count: "courses", label: "ফ্রি কোর্স", en: "free courses" },
-        { count: "calculators", label: "ক্যালকুলেটর", en: "calculators" },
-        { count: "caseStudies", label: "কেস স্টাডি", en: "case studies" },
+        { count: "libraryLessons", label: "পাঠ", en: "lessons written", href: "/skills" },
+        /* NOT `courses`, which points at `/skills` and so does the row
+           above it: a list of five whose whole job is to be five ways
+           in had two of them going to one place. "ছয়টা কোর্স" is said
+           where it can be seen instead, by the six cards in the
+           library band. */
+        { count: "terms", label: "শব্দ", en: "terms, A to Z", href: "/money/contents" },
+        { count: "caseStudies", label: "কেস স্টাডি", en: "case studies you can drive",
+            href: "/portfolio" },
+        { count: "calculators", label: "ক্যালকুলেটর", en: "calculators", href: "/tools" },
+        { count: "ratios", label: "অনুপাত", en: "ratios in the stock check",
+            href: "/tools/stock" },
+    ],
+    ways: [
+        {
+            when: "open",
+            go: { label: "শেখা শুরু করুন", href: "/skills", lang: "bn" },
+            also: { label: "See the work", href: "/portfolio", lang: "en" },
+        },
+        {
+            when: "learn",
+            go: { label: "টাকা ও শেয়ার", href: "/money", lang: "bn" },
+            also: { label: "সব কোর্স", href: "/skills", lang: "bn" },
+        },
+        {
+            when: "work",
+            go: { label: "See the work", href: "/portfolio", lang: "en" },
+            also: { label: "Start a project", href: "/contact", lang: "en" },
+        },
     ],
 };

@@ -568,45 +568,44 @@ for (const [who, audience, track, expected] of READERS) {
     shown.length > 0 && new Set(shown).size === 1 && shown[0] === expected,
     `expected ${expected} only, got [${shown}]`);
 
-  /* Under the hero there is one card and then the board, and the
-     contract to hold is that the page says a thing ONCE.
+  /* Under the hero the page is four bands and then the board,
+     and the contract to hold is that it says a thing ONCE.
 
      It did not. There was a hand-written deck of eleven tiles
      above a board that draws the schools and the tools out of
      `shared/nav.ts`, and the two between them made 26 internal
-     links to 17 places: seven destinations in both, and `/money`,
-     `/deutsch`, `/quran` and `/tools/live` three times each in
-     two card languages within two screens. Nothing could see it,
-     because every tile was a correct link to a real page.
+     links to 17 places. That deck went; then the bands and the
+     board drew the schools and the tools twice over, which is the
+     same failure one rewrite later, and `DRAWABLE` in
+     `home/board.tsx` is what settles it now: a widget the PAGE
+     draws is not a widget this build renders.
 
-     Two links to one place are still allowed and are meant: the
-     progress meters name a school as a READING of how far you
-     are, and the schools band names it as a place to go. Three
-     was the menu written twice.
-
-     The featured card is left out of the count, because promoting
-     one thing out of a list IS a second mention of something that
-     is also in the list, and that is what featuring means. It
-     changes nothing about what this catches: the deck's own money
-     handle, the meters and the schools band were three mentions
-     with the featured card nowhere in them. */
-  /* `.card` AND `.gate-tile`, because the board's tiles became the
-     site's own card: a school was a `<GoCard>` on `/skills` and a
-     `.gate-tile` here, which is one thing in two shapes. Counting
-     only the old class made this read 1 on a page with a dozen
-     cards on it. The featured card is the last `.gate-tile` and it
-     is excluded below, as it always was. */
+     VISIBLE LINKS ONLY, and that is not a loosening. The door
+     server-renders a pair of buttons for each of the three
+     audiences and the stylesheet shows one, so counting the DOM
+     counted two doors nobody can press and reported every
+     destination three times on a page that shows it once. */
   const front = await page.evaluate(() => ({
-    tiles: [...document.querySelectorAll(".card[href], .gate-tile[href]")]
+    tiles: [...document.querySelectorAll(".card[href], .gate-tile[href], .work-card[href]")]
       .map((t) => t.getAttribute("href")).filter(Boolean),
     links: [...document.querySelectorAll<HTMLAnchorElement>("main a[href^='/']")]
-      .filter((a) => !a.classList.contains("gate-feat"))
+      .filter((a) => a.getClientRects().length > 0)
       .map((a) => a.getAttribute("href")!),
-    featured: document.querySelector(".gate-feat")?.getAttribute("href") ?? null,
-    /* The deck is the featured card's section and holds nothing
-       else: everything a catalogue can hold belongs to the board,
-       which is the half the Android app draws too. */
-    inDeck: document.querySelectorAll(".gate-deck .gate-tile, .gate-deck .card").length,
+    /* The door's own pair, in order, and only the pair this
+       reader can see. */
+    doors: [...document.querySelectorAll<HTMLElement>(".hero-actions")]
+      .filter((el) => getComputedStyle(el).display !== "none")
+      .flatMap((el) => [...el.querySelectorAll("a[href]")]
+        .map((a) => a.getAttribute("href")!)),
+    /* The ledger: a numeral, a word and a destination per row. */
+    ledger: [...document.querySelectorAll(".ledger li")].map((li) => ({
+      count: li.querySelector("[data-count]")?.getAttribute("data-count") ?? "",
+      numeral: (li.querySelector("[data-count]")?.textContent ?? "").trim(),
+      href: li.querySelector("a")?.getAttribute("href") ?? "",
+    })),
+    /* Every case study, on the front page, with its chart. */
+    studies: [...document.querySelectorAll(".work-card[href]")]
+      .map((a) => ({ href: a.getAttribute("href")!, chart: !!a.querySelector(".work-art") })),
   }));
 
   ok(`the front page still has cards for ${who}`, front.tiles.length >= 8,
@@ -618,55 +617,107 @@ for (const [who, audience, track, expected] of READERS) {
   ok(`and says no destination three times over for ${who}`, thrice.length === 0,
     thrice.map(([h, n]) => `${h} x${n}`).join(", "));
 
-  ok(`the deck holds the chosen card and nothing else for ${who}`,
-    front.inDeck === 1, `${front.inDeck} tiles in the deck`);
+  /* THE SWITCH MOVES A DOOR, not three sentences. It used to move
+     the headline, the lede and one card two screens down, so the
+     answer to "I am here to hire" was a paragraph. The pair of
+     buttons under the lede is the answer now, and there is one
+     pair on screen. */
+  const doors: Record<string, string[]> = {
+    open: ["/skills", "/portfolio"],
+    learn: ["/money", "/skills"],
+    work: ["/portfolio", "/contact"],
+  };
+  ok(`the door offers ${who} their own two ways in`,
+    front.doors.join(",") === doors[expected].join(","),
+    `got [${front.doors}], expected [${doors[expected]}]`);
 
-  /* The featured card answered THIS reader. The audience switch is
-     the only personalisation it reads, so learn features the money
-     school, work features the case studies, and a reader who has
-     said nothing gets the live portfolio. */
-  const featured: Record<string, string> = { open: "/tools/live",
-    learn: "/money", work: "/portfolio" };
-  const wantFeatured = featured[expected];
-  ok(`and the featured card answers ${who}`, front.featured === wantFeatured,
-    `featured ${front.featured}, expected ${wantFeatured}`);
+  /* THE LEDGER COUNTS. Every row names a key of `COUNTS` and
+     carries the number that key holds, so a course published
+     tomorrow moves it and nobody edits the page. The rows point
+     at five different places, because a list of five whose whole
+     job is to be five ways in had two rows going to /skills. */
+  ok(`the ledger states five counted facts for ${who}`,
+    front.ledger.length === 5 && front.ledger.every((r) => r.count && r.numeral),
+    JSON.stringify(front.ledger));
+  ok(`and each of them is a different way in for ${who}`,
+    new Set(front.ledger.map((r) => r.href)).size === front.ledger.length,
+    front.ledger.map((r) => r.href).join(", "));
+
+  /* THE WORK IS ON THE FRONT PAGE. Seven finished case studies
+     were two clicks behind a card that said "See the work", so
+     the strongest evidence this site has was invisible from the
+     page a stranger meets. */
+  ok(`the work is on the front page for ${who}`, front.studies.length === 7,
+    `${front.studies.length} case studies`);
+  ok(`and every one of them carries its chart for ${who}`,
+    front.studies.every((s) => s.chart),
+    front.studies.filter((s) => !s.chart).map((s) => s.href).join(", "));
 
   await page.close();
 }
 
 /* ============================================================
-   The board, and what a widget is called
+   The board, which is the reader's and nobody else's
 
-   Three of the six widgets drew their own heading, in three
-   different shapes, and three drew none: the market grid was
-   eight of somebody else's headlines under nothing at all, and
-   the only thing that ever said a widget's name was the strip
-   that appears while arranging. The catalogue in
-   `shared/widgets.ts` holds a name in both languages, the picker
-   offers it under that name, and it is DATA, so the app says the
-   same words. The board says it once, from there.
+   A stranger got a section headed "আপনার বোর্ড · Your board" with
+   an arrange button on it, and under it four rows reading ০টা
+   পাঠ, on the first visit anybody ever made. A dashboard of
+   somebody's progress shown to somebody who has none is worse
+   than no dashboard, so there are two states and both are checked
+   here: an invitation for a reader with nothing, and the board
+   itself for a reader with something.
 
-   And the arrange button was a lone control at the right of an
-   empty band with nothing saying what it arranged.
+   Three of the widgets drew their own heading, in three different
+   shapes, and three drew none: the market grid was eight of
+   somebody else's headlines under nothing at all. The catalogue
+   in `shared/widgets.ts` holds a name in both languages, the
+   picker offers it under that name, and it is DATA, so the app
+   says the same words. The board says it once, from there.
    ============================================================ */
 {
   const { page, errors } = await open("/");
 
+  const stranger = await page.evaluate(() => ({
+    board: !!document.querySelector(".board"),
+    arrange: !!document.querySelector(".board-bar button"),
+    invite: (document.querySelector("main")?.textContent ?? "")
+      .includes("এই পাতাটা আপনার হয়ে যাবে"),
+    zeroes: (document.querySelector("main")?.textContent ?? "").includes("০টা পাঠ"),
+  }));
+
+  ok("a stranger gets no board", stranger.board === false);
+  ok("and no button to arrange one", stranger.arrange === false);
+  ok("and is told what a board is instead", stranger.invite);
+  ok("and is never shown a row of noughts", stranger.zeroes === false);
+
+  ok("no page errors", errors.length === 0, errors[0]);
+  await page.close();
+}
+
+{
+  /* A reader who has read something. `learn-read` and `learn-last`
+     are the money school's keys, spelled the way they have been
+     spelled since before the school moved to `/money`: renaming
+     one does not move somebody's ticks, it loses them. */
+  const page = await browser.newPage();
+  const errors: string[] = [];
+  page.on("pageerror", (e: Error) => { errors.push(e.message); });
+  await page.route("https://fonts.googleapis.com/**", (r: Route) => r.abort());
+  await page.addInitScript(() => {
+    localStorage.setItem("learn-read", JSON.stringify(["basics-1/why-invest"]));
+    localStorage.setItem("learn-last", "/money/basics-1/why-invest");
+  });
+  await page.goto(`http://localhost:${PORT}/`, { waitUntil: "load" });
+  await page.waitForTimeout(1500);
+
   const board = await page.evaluate(() => {
-    const b = document.querySelector(".board");
     const items = [...document.querySelectorAll<HTMLElement>(".board-item")];
     return {
-      exists: !!b,
+      exists: !!document.querySelector(".board"),
       items: items.length,
-      /* A widget that draws nothing is not placed and not left as
-         an empty cell: the continue card has nothing to say until
-         there is a bookmark, and this page has none. */
       empty: items.filter((i) => !i.querySelector(".board-body")?.children.length).length,
-      /* Named, or self-titled. One widget is: the continue card
-         leads with a chip saying where you were. */
       named: items.filter((i) => (i.querySelector(".board-item-label")
         ?.textContent ?? "").trim().length > 3).length,
-      /* Its own head, with the label and the button on one line. */
       bar: (() => {
         const bar = document.querySelector<HTMLElement>(".board-bar");
         if (!bar) return null;
@@ -677,10 +728,14 @@ for (const [who, audience, track, expected] of READERS) {
         return { label: (label.textContent ?? "").trim().length,
                  sameLine: Math.abs((l.top + l.height / 2) - (t.top + t.height / 2)) < 30 };
       })(),
+      /* The meters name the schools this reader has started, and
+         not the three they have not: four rows of nought under an
+         apology is what the board used to open with. */
+      meters: document.querySelectorAll(".meters-list li").length,
     };
   });
 
-  ok("the front page has a board", board.exists);
+  ok("a reader who has read something gets a board", board.exists);
   ok("with every widget on it drawing something", board.empty === 0,
     `${board.empty} of ${board.items} empty`);
   ok("and every widget on it named", board.named === board.items,
@@ -688,8 +743,10 @@ for (const [who, audience, track, expected] of READERS) {
   ok("the board has a head of its own", board.bar !== null);
   ok("which says what it is", (board.bar?.label ?? 0) > 3);
   ok("with the arrange button on the same line", board.bar?.sameLine === true);
+  ok("and the meters name only the school they have started",
+    board.meters === 1, `${board.meters} rows`);
 
-  ok("no page errors", errors.length === 0, errors[0]);
+  ok("no page errors on a board", errors.length === 0, errors[0]);
   await page.close();
 }
 

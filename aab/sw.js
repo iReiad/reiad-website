@@ -31,6 +31,16 @@
    login could not have reached anyone either. Bump this whenever a
    precached file changes.
 
+   v236: /fallback.css, /content.js and /tilt.js. The front page
+        rebuilt: the door is two columns with a counted ledger in
+        the second, the schools, the work, the writing and the
+        tools are bands of the page rather than widgets of the
+        board, and the board itself draws only for a reader who
+        has one. `.gate-deck` went with the featured card, so
+        tilt.js no longer names it, and `COUNTS` gained
+        `libraryLessons`, which is all four ladders rather than
+        the money school's alone.
+
    v235: /fallback.css. The writing desk's deck: a document of kind
         slides is one 16:9 card per h2, and the print rules lay one
         out to a landscape page.
@@ -2087,7 +2097,7 @@
    imports (crumbs, audience, learn progress) and the hub is a
    different page. Without a bump, a returning reader would be
    served the v3 app.js forever and none of it would appear. */
-const VERSION = "v235";
+const VERSION = "v236";
 const SHELL = `shell-${VERSION}`;
 const RUNTIME = `runtime-${VERSION}`;
 

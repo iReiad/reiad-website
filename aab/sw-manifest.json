@@ -1,10 +1,10 @@
 {
-  "version": "v235",
+  "version": "v236",
   "hashes": {
     "/offline.html": "bd9144e7162be323",
-    "/fallback.css": "83b24092f47e4261",
+    "/fallback.css": "d703d9af6af1df02",
     "/app.js": "d0b5bf300691d393",
-    "/content.js": "024dccae1b55cc61",
+    "/content.js": "a05a2b3049ea381a",
     "/api.js": "a7bab41d860a4806",
     "/pieces.js": "abb6a19a6cc1ea76",
     "/signin.js": "39ed9349d0b5494d",
@@ -18,7 +18,7 @@
     "/checkpoints.js": "8903c0d041e563b3",
     "/audience.js": "1722399ba587b201",
     "/activation.js": "f3233d3de4e153e7",
-    "/tilt.js": "0156b7c4b3e82c08",
+    "/tilt.js": "cdfb22513fe618b9",
     "/money/reader.js": "4abf83585f45cfbb",
     "/money/curriculum.js": "666ea98df3b837b5",
     "/money/icons.js": "940d5354240e9745",
