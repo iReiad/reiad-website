@@ -104,14 +104,6 @@ export const metadata: Metadata = pageMeta({
 const SCHOOLS = NAV.find((g) => g.id === "learn")?.items
   .filter((i) => !i.hub && !i.unlisted && !i.soon) ?? [];
 
-/* The tools, and the calculators hub is one of them here.
-
-   It carries `hub: true`, which is the flag the rail uses to draw
-   the group's own head, and filtering on it took `/tools` off this
-   band: the note under it promised calculators that had no card,
-   and five cards with a two-wide lead is six cells in a four
-   column grid, which is two holes. Six tools is two clean rows of
-   three. */
 /** The first lesson of the money ladder, for the invitation the
     board draws when a reader has no board yet.
 
@@ -122,21 +114,30 @@ const SCHOOLS = NAV.find((g) => g.id === "learn")?.items
 const FIRST_LESSON = allLessons().find((l) => l.status === "live")?.url;
 
 /** How many lessons each ladder has, so the board's meters can
-    say "20 / 81" rather than "20".
+    say "২০ / ৮১" rather than "২০".
 
     Four integers, counted from the four curricula at build time
     and handed down. The meters read no ladder in the browser and
     must not: the reason they were a bare count was that reading
-    four on the one page whose job is to be instant is not worth
-    a denominator, and it is still not. Counting them here costs
-    nothing, because `COUNTS` has already imported all four. */
+    four on the one page whose job is to be instant is not worth a
+    denominator, and it is still not. Counting them here costs
+    nothing, because `COUNTS` has already imported all four, and
+    the money school's is `COUNTS.lessons` rather than a second
+    filter over the same rows. */
 const LADDER_TOTALS: Record<string, number> = {
-  money: allLessons().filter((l) => l.status === "live").length,
+  money: COUNTS.lessons,
   deutsch: allTeile().length,
   quran: allDars().length,
   english: allParts().length,
 };
 
+/* The tools, and the calculators hub is one of them here.
+
+   It carries `hub: true`, which is the flag the rail uses to draw
+   the group's own head, and filtering on it took `/tools` off this
+   band: the note under it promised calculators that had no card,
+   and five cards is two holes in a three column grid. Six is two
+   clean rows. */
 const TOOLBOX = NAV.find((g) => g.id === "make")?.items
   .filter((i) => !i.unlisted && !i.soon) ?? [];
 
