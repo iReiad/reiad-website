@@ -1,56 +1,38 @@
-/* ============================================================
-   check-csp.ts: can the browser actually reach what the code
-   asks for?
+/* check-csp.ts: can the browser actually reach what the code asks
+   for?
 
-   THE BUG THIS EXISTS FOR
+     node scripts/check-csp.ts
 
-   Reader sign-in shipped, worked in every test, and failed on the
-   live site with "Failed to fetch". Nothing was wrong with the
-   code, the keys, the CORS headers or the server: `connect-src` in
-   aab/_headers lists the hosts this site's JavaScript is allowed to
-   talk to, and Supabase was not on it, so the browser refused every
-   request before it left. Google sign-in still worked, because a
-   redirect is a navigation rather than a fetch, which made the
-   whole thing look like a Supabase outage rather than a policy this
-   repository sets on itself.
-
-   That is the worst shape a bug can have: invisible in review,
-   invisible in local testing, and it blames somebody else.
+   `connect-src` in `aab/_headers` lists the hosts this site's
+   JavaScript may talk to. Reader sign-in shipped with Supabase
+   missing from it: the browser refused every request before it
+   left, Google sign-in still worked because a redirect is a
+   navigation rather than a fetch, and the whole thing looked like
+   a Supabase outage rather than a policy this repository sets on
+   itself. Invisible in review, invisible locally, and it blames
+   somebody else.
 
    So: every host the browser-side code names in a fetch has to be
    in connect-src, or listed below as something deliberately not
-   fetched. Run it with the other checks.
-   ============================================================ */
+   fetched. */
 
 import { readFileSync, readdirSync, statSync } from "node:fs";
 import { join, dirname, relative, sep } from "node:path";
 import { fileURLToPath } from "node:url";
 
-/* `AAB` is the browser modules and `ROOT` is the repository. They
-   were the same directory until this file moved out of it. Every
-   file in `aab/` is uploaded and answers at a public URL, so a
-   check living there is a check published, kept private only by a
-   line in `.assetsignore` somebody has to remember to add. A check
-   outside the served directory cannot be served. */
+/* `AAB` is the browser modules and `ROOT` is the repository. Every
+   file in `aab/` answers at a public URL, so a check living there
+   is a check published. */
 const ROOT = join(dirname(fileURLToPath(import.meta.url)), "..");
 const AAB = join(ROOT, "aab");
 
 /* Hosts that appear in browser code and are never fetched from it.
-   Each one needs a reason, because "it is probably fine" is how the
+   Each needs a reason, because "it is probably fine" is how the
    list stops meaning anything.
 
    Only browser code is scanned, which is why nothing under
-   functions/ is here: a Worker calling Notion or the BBC is on the
-   server, where no page policy applies. The Studio never calls
-   Notion directly for exactly that reason. If it ever starts, this
-   check will say so. */
-/* `https://fonts.googleapis.com` was here until 16 August 2026, when
-   `studio.js` and `desk.js` were archived and took the last mention
-   of it in any scanned file with them. The webfont link lives in
-   HTML shells and in `shared/look.ts` now, and this check reads
-   neither: it is about what a browser is allowed to *fetch*, and a
-   stylesheet link is style-src's business. It comes back the day a
-   script names it again, which is the point of the list. */
+   `functions/` is here: a Worker calling Notion or the BBC is on
+   the server, where no page policy applies. */
 const NOT_FETCHED = {
   "https://reiad.co.uk": "canonical links, og:url and JSON-LD, never fetched",
   /* One link per file on /skills/courses/, to the original in
@@ -71,25 +53,18 @@ const NOT_FETCHED = {
   /* Links, never fetched: the anchors in `aab/editor.test.ts`'s
      sanitiser fixtures and the URL its Ctrl+K check is handed. The
      reserved documentation host, so it is the one entry here that
-     names nothing real on purpose.
-
-     It replaced `lh3.googleusercontent.com`, which used to sit
-     here as the off-site photo the Studio's pre-flight warns
-     about. That fixture is in `app/studio.test.ts` now, and this
-     check walks `app/src` rather than `app/`, which is where a
-     fetch this site is responsible for would be written. Why that
-     host is in `img-src` is written where the policy is, in
+     names nothing real on purpose. This check walks `app/src`
+     rather than `app/`, which is where a fetch this site is
+     responsible for would be written. Why an off-site photo host
+     is in `img-src` is written where the policy is, in
      `aab/_headers` and `shared/headers.ts`. */
   "https://example.com": "links in the editor test's fixtures, and the URL Ctrl+K is given",
-  /* The webfonts, and they are here rather than in connect-src
-     because a stylesheet link and a font file are `style-src` and
+  /* The webfonts, here rather than in connect-src because a
+     stylesheet link and a font file are `style-src` and
      `font-src`, which the policy already allows both of. A
      `<link rel="preconnect">` opens a socket and fetches nothing;
      if a script ever fetches from either, this list is what stops
-     it passing quietly. The same two were in this list once and
-     left it when the Studio was archived, which is the entry above
-     `NOT_FETCHED` saying they would come back the day something
-     named them again. They did. */
+     it passing quietly. */
   /* The workshop's "Resolve an id" says where an identifier lives,
      as a link the reader follows: a DOI at doi.org, a preprint at
      arXiv, a PubMed id at PubMed. Followed, never fetched. */
@@ -127,17 +102,13 @@ const connect = (csp.match(/connect-src([^;]*)/)?.[1] ?? "")
     Absolute paths; `relative(ROOT, path)` is what a message says. */
 const jsFiles: string[] = [];
 
-/* The generated bundle is skipped, and its SOURCE is read instead.
-
-   `aab/studio/app.js` is Vite's output: two hundred kilobytes of
-   React with this app's few hundred lines inside it. Scanning it
-   finds `https://react.dev`, which React puts in its error
-   messages and never fetches, and it would find a new false alarm
-   on every upgrade of somebody else's library.
-
-   Skipping it would lose the guarantee, so `app/src` is walked
-   instead. That is where a fetch this site is responsible for
-   would actually be written, and it is a hundredth of the size. */
+/* The generated bundle is skipped and its SOURCE read instead.
+   `aab/studio/app.js` is Vite's output, and scanning it finds
+   `https://react.dev`, which React puts in its error messages and
+   never fetches, plus a new false alarm on every upgrade of
+   somebody else's library. `app/src` is where a fetch this site is
+   responsible for would be written, and it is a hundredth of the
+   size. */
 const GENERATED = new Set(["studio"]);
 
 const walk = (dir: string, skip = new Set<string>()): void => {
@@ -160,37 +131,24 @@ walk(AAB, GENERATED);
 walk(join(ROOT, "app", "src"));
 walk(join(ROOT, "next", "lib"));
 
-/* And the routes, which is where the site is built now.
+/* And the routes, which is where the site is built now. Proved
+   before fixing: a `fetch()` to a host `connect-src` does not
+   allow, added to a Next component, passed.
 
-   This walked `aab/` and `app/src` and stopped, which was every
-   line of browser code when it was written. Proved before fixing:
-   a `fetch()` to a host `connect-src` does not allow, added to a
-   Next component, passed, and the same line in `aab/app.js`
-   failed. The bug at the top of this file is one a route can make
-   as easily as a module, and it is the same bug: invisible in
-   review, invisible locally, and it blames somebody else.
-
-   `next/lib` is walked too, and the sentence that used to be here
-   said it should not be: it is the database reads, which run on
-   the Worker. It is also where a string a component renders into
-   the page is BUILT. `lib/crumbs.ts` writes the JSON-LD trail and
-   names `https://schema.org` in it, and the check called that
-   host unused while it sat one directory outside the walk, which
-   is the check being wrong in the direction it exists to prevent.
-   A component that fetches something does it in the browser, and
-   a component that renders a `<script>` writes browser code as a
-   string,
-   which this reads as text like everything else. */
+   `next/lib` is walked too. It is the database reads, which run on
+   the Worker, and it is also where a string a component renders
+   into the page is BUILT: `lib/crumbs.ts` writes the JSON-LD trail
+   and names `https://schema.org` in it, and the check called that
+   host unused while it sat one directory outside the walk. */
 walk(join(ROOT, "next", "app"));
 walk(join(ROOT, "next", "components"));
 
-/* Not `functions/`, `shared/` or `next/lib`, on purpose. This
-   check is about what a BROWSER is allowed to reach: a
-   Content-Security-Policy governs the page, not the Worker that
-   built it, and the Worker talks to Notion and to R2 without a
-   browser being involved at all. Adding them would report every
-   one of those as a violation of a policy that does not apply to
-   them, and `shared/headers.ts` would report itself, because the
+/* Not `functions/`, `shared/` or `next/lib`, on purpose. This is
+   about what a BROWSER may reach: a Content-Security-Policy
+   governs the page, not the Worker that built it, and the Worker
+   talks to Notion and to R2 with no browser involved. Adding them
+   would report every one as a violation of a policy that does not
+   apply, and `shared/headers.ts` would report itself, because the
    policy is what it contains. */
 
 const wanted = new Map();      // origin → the files that name it

@@ -1,41 +1,29 @@
 #!/usr/bin/env node
-/* ============================================================
-   check-rows.ts: does `shared/rows.ts` still describe this
+/* check-rows.ts: does `shared/rows.ts` still describe this
    database, and do the handlers still agree with it?
 
        node scripts/check-rows.ts
 
-   archive/TRANSITION.md Stage 12, step 1. `shared/rows.ts` is the one
-   description of what a row of this database is, and a
-   description is worth exactly what checks it. Two ways it can
-   quietly stop being true, and this is both of them:
+   A description is worth exactly what checks it. Two ways it
+   quietly stops being true:
 
-   1. **A column is added, renamed or dropped in `schema.sql`**
-      and the interface in `rows.ts` still says what used to be
-      there. Nothing fails: a row is `any` on the way out of D1
-      today, and a type that lies is worse than no type, because
-      it is believed.
+   1. A column is added, renamed or dropped in `schema.sql` and the
+      interface still says what used to be there. Nothing fails: a
+      row is `any` on the way out of D1, and a type that lies is
+      worse than no type, because it is believed.
 
-   2. **A handler keeps its own copy of a vocabulary.** Four of
-      them did, which is why `rows.ts` exists: the comment states
-      are `pending`, `live` and `binned`, and the first draft of it
-      said `approved` and `spam`, which are what those words would
-      be if anybody had chosen them fresh and are not what the
-      column holds. That was caught by comparing the two.
-      The handlers import the vocabulary now, so the question
-      flipped: nothing under `functions/` may write out a list
-      `shared/rows.ts` already holds.
+   2. A handler keeps its own copy of a vocabulary. Four did, which
+      is why `rows.ts` exists: the comment states are `pending`,
+      `live` and `binned`, and a fresh draft said `approved` and
+      `spam`, which are not what the column holds. The handlers
+      import the vocabulary now, so nothing under `functions/` may
+      write out a list `shared/rows.ts` already holds.
 
-   ---- what it deliberately does not do ----
-
-   It does not parse TypeScript. It reads the interfaces as text
-   and compares the property names against the columns in
-   `aab/schema.sql`, which is enough to catch a column that moved
-   and cheap enough to run beside the other checks. Types are
-   checked by `tsc` in `next/`, and that is a different question:
-   `tsc` proves the code agrees with the description, this proves
-   the description agrees with the database.
-   ============================================================ */
+   It does not parse TypeScript: it reads the interfaces as text
+   and compares property names against the columns in
+   `aab/schema.sql`. `tsc` proves the code agrees with the
+   description; this proves the description agrees with the
+   database. */
 
 import { readdirSync, readFileSync } from "node:fs";
 import { dirname, join } from "node:path";
@@ -95,15 +83,9 @@ for (const table of Object.keys(TABLES)) {
    2. Every interface names the columns its table has
    ------------------------------------------------------------ */
 
-/* The interfaces and the constants are the same file now.
-
-   They were `rows.d.ts` and `rows.js`, which is the split
-   TypeScript forces on a JavaScript module that wants types, and
-   the reason this check read the `.d.ts` rather than the module it
-   describes. `shared/rows.ts` is TypeScript, so there is one file
-   and this reads it. The parsing below is unchanged: it still
-   matches `export interface <Name> {` as text, which that file
-   still writes one per line exactly as the declaration file did. */
+/* The interfaces and the constants are the same file. The parsing
+   below matches `export interface <Name> {` as text, which that
+   file writes one per line. */
 const types = read("shared/rows.ts");
 
 /** The property names of one interface, as written. */
@@ -167,32 +149,23 @@ for (const [table, iface] of Object.entries(DESCRIBES)) {
    3. No handler keeps its own copy of a vocabulary
    ------------------------------------------------------------ */
 
-/* This section used to do the opposite. Every handler had its own
-   inline array of allowed values, so the check compared the two
-   and reported a difference: that is how the comment states in
-   `rows.js` came to be `live` and `binned` rather than the
-   tidier words somebody would pick fresh.
+/* This section used to do the opposite: every handler had its own
+   inline array and the check compared the two, which is how the
+   comment states came to be `live` and `binned` rather than the
+   tidier words somebody would pick fresh. The arrays are gone and
+   the question flipped with them, because a second copy that
+   agrees today is the thing that drifts.
 
-   The arrays are gone, the handlers import the vocabulary, and
-   the question worth asking flipped with them. A second copy that
-   agrees today is the thing that drifts, and the four that were
-   here are the reason this file exists at all. So: nothing under
-   `functions/` may write out a list that `shared/rows.ts`
-   already holds.
+   Deliberately a text search. A handler that builds the same list
+   some other way will not be caught, and one that pastes it back
+   in will be, which is the way it actually happens. */
 
-   Deliberately a text search rather than anything cleverer. A
-   handler that builds the same list some other way will not be
-   caught, and a handler that pastes it back in will be, which is
-   the way it actually happens. */
-
-/* Walked, not listed. This was six paths written out here, and
-   every one of them carried a `.js` that stopped being true on 21
-   August 2026 when `functions/` converted: `read()` threw on the
-   first, so the check died before it asked its question of any of
-   them, and it had been silently covering nothing for as long as
-   it took somebody to notice. A hand-kept list of the files a
-   check reads is the same second copy this file exists to ban,
-   one level up. */
+/* Walked, not listed. This was six paths written out here, every
+   one carrying a `.js` that stopped being true when `functions/`
+   converted: `read()` threw on the first, so the check died before
+   it asked its question and had been covering nothing. A
+   hand-kept list of the files a check reads is the same second
+   copy this file exists to ban, one level up. */
 const HANDLERS = ((): string[] => {
   const out: string[] = [];
   const walk = (dir: string): void => {
@@ -231,32 +204,25 @@ for (const file of HANDLERS) {
   }
 }
 
-/* ------------------------------------------------------------
-   3. And a CHECK constraint holding a copy of a vocabulary
+/* ---- 3. And a CHECK constraint holding a copy of a vocabulary
 
-   Same rule as the handlers above, one database along.
-   `public.profiles.following` holds SCHOOL IDS, and Postgres
-   cannot import `shared/nav.ts`, so the list is written out in
-   a constraint and there is no way for it not to be.
+   Same rule as the handlers, one database along.
+   `public.profiles.following` holds SCHOOL IDS and Postgres cannot
+   import `shared/nav.ts`, so the list is written out in a
+   constraint and there is no way for it not to be.
 
-   THE BUG THIS EXISTS FOR. It said `learn`, and the money school
-   stopped being called that on 17 August 2026 when it moved to
-   /money/. The settings form sends the whole patch at once with
-   `following` in it, PostgREST refused the row, and every save on
-   /account answered "Could not save that (400)" for as long
-   as that was true. Nothing here noticed, because nothing here
-   had ever read a migration.
+   It said `learn` after the money school moved to /money/. The
+   settings form sends the whole patch at once with `following` in
+   it, PostgREST refused the row, and every save on /account
+   answered "Could not save that (400)". Worse than it sounds,
+   because the form ticks a school somebody has STARTED whether or
+   not they chose it: a reader who had read one money lesson could
+   not save their own name.
 
-   Worse than it sounds, because the form ticks a school somebody
-   has STARTED whether or not they chose it: a reader who had read
-   one money lesson could not save their own name.
-
-   Read out of the last migration that writes the constraint, so
-   that a new migration is what changes the answer. `learn-read`
-   and `learn-last` are storage keys and not school ids, and are
-   deliberately not this: the rule at the top of "What a reader
-   has read" in CLAUDE.md is why.
-   ------------------------------------------------------------ */
+   Read out of the last migration that writes the constraint, so a
+   new migration is what changes the answer. `learn-read` and
+   `learn-last` are storage keys and not school ids, and are
+   deliberately not this. ---- */
 
 const MIGRATIONS = join(ROOT, "supabase", "migrations");
 const CONSTRAINT = /following\s*<@\s*array\[([^\]]*)\]/;
@@ -291,20 +257,18 @@ if (!writes.length) {
   }
 }
 
-/* ------------------------------------------------------------
-   4. And the two vocabularies an ACCOUNT answers with
+/* ---- 4. And the two vocabularies an ACCOUNT answers with
 
    `profiles.pace` and `targets.kind` are both CHECK constraints
    and both were written out a second time in a React component,
    which is section 2's rule one table along. They are
-   `shared/profile.ts` now, which is what `/api/site` serves to
-   the Android app: three readers, one list.
+   `shared/profile.ts` now, which is what `/api/site` serves to the
+   Android app: three readers, one list.
 
-   Read out of the last migration that writes each constraint,
-   for the reason section 3 gives. `''` is allowed for `pace` and
-   is deliberately not in `PACES`: it means "not answered", which
-   is the absence of a choice rather than one of them.
-   ------------------------------------------------------------ */
+   Read out of the last migration that writes each constraint. `''`
+   is allowed for `pace` and is deliberately not in `PACES`: it
+   means "not answered", which is the absence of a choice rather
+   than one of them. ---- */
 
 const VOCABULARIES: Array<{
   what: string;

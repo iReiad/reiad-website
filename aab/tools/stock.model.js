@@ -18,22 +18,11 @@
    the scorecard, the drag list and the CSV export are all loops
    over it, so adding a ratio is one entry in six places. */
 
-/* ============================================================
-   SCORING PRIMITIVE
-
-   A metric's raw value becomes a 0–100 score by linear
-   interpolation between anchor points. Anchors are [value,
-   score] pairs sorted by value; outside the ends the score
-   clamps.
-
-   Anchors, rather than thresholds, because a P/E of 14.9 and a
-   P/E of 15.1 are the same company and should not fall into
-   different buckets. And they read like judgement written down:
-   [[0.4, 100], [1.0, 60], [2.0, 15]] on relative P/E says "40%
-   of the sector is as good as it gets, in line is a pass, double
-   is nearly a fail"– which is arguable, out loud, in a way a
-   black box isn't.
-   ============================================================ */
+/* SCORING PRIMITIVE. A raw value becomes a 0–100 score by
+   linear interpolation between [value, score] anchors sorted by
+   value, clamped outside the ends. Anchors rather than
+   thresholds, because a P/E of 14.9 and one of 15.1 are the same
+   company and must not fall into different buckets. */
 
 export function band(v, anchors) {
   if (!Number.isFinite(v)) return null;
@@ -74,18 +63,11 @@ export function cagr(now, then, years) {
   return ((now / then) ** (1 / years) - 1) * 100;
 }
 
-/* ============================================================
-   SECTORS
-
-   Medians are indicative: they move, and nobody publishes an
-   audited "DSE pharma median P/E". They are here so the tool can
-   say "expensive *relative to what*", and every one of them is
-   an editable input on the page. Override them with whatever
-   you can source; the scoring uses your number.
-
+/* SECTORS. Medians are INDICATIVE: nobody publishes an audited
+   "DSE pharma median P/E", and every one of them is an editable
+   input on the page, so the scoring uses the reader's number.
    `financial: true` changes the analysis rather than the
-   benchmarks. See FINANCIAL MODE below.
-   ============================================================ */
+   benchmarks. See FINANCIAL MODE below. */
 
 export const SECTORS = {
   pharma:      { pe: 16, pb: 2.6, roe: 15, netMargin: 13 },
@@ -115,37 +97,18 @@ export const INDICES = {
   dses: { pe: 13.5 },
 };
 
-/* ============================================================
-   DEFAULT INPUTS
-
-   The pharma archetype below. Every preset is a complete,
-   internally consistent set of statements: the balance sheet
-   balances, the cash flow is plausible against the income
-   statement, and paid-up capital equals shares × 10 BDT face
-   value, which is the DSE convention.
-
-   They are ARCHETYPES, not companies. Publishing invented
-   figures under a real listed company's name would be inventing
-   that company's accounts, and anyone who checked would find
-   they don't match. What is real is the method, type your own
-   numbers off the annual report and every figure on the page is
-   about your company.
-   ============================================================ */
+/* DEFAULT INPUTS. Every preset is a complete, internally
+   consistent set of statements: the balance sheet balances, the
+   cash flow is plausible against the income statement, and
+   paid-up capital equals shares × 10 BDT face value, the DSE
+   convention. They are ARCHETYPES, never real companies. */
 
 export const DEFAULTS = {
-  /* --- WHICH COMPANY THIS IS ---
-
-     Two strings and no arithmetic reads either of them, which is
-     the point: everything else here is a number the model uses,
-     and these are what let an analysis be ABOUT something. A
-     saved scenario carries them in its query like every other
-     field, so `/tools/live` can find the check somebody did on a
-     holding by its ticker, and the save box can offer the
-     company's own name instead of an empty box.
-
-     `analyse()` never sees them. They are here because `DEFAULTS`
-     is the list the URL encoder walks, and a field outside it is
-     a field a shared link drops. */
+  /* WHICH COMPANY THIS IS. Two strings no arithmetic reads.
+     They are in `DEFAULTS` because THAT IS THE LIST THE URL
+     ENCODER WALKS, and a field outside it is a field a shared
+     link drops: `/tools/live` finds a holding's check by its
+     ticker out of the saved query. */
   name: "", ticker: "",
 
   /* --- market --- */
@@ -307,21 +270,11 @@ export function ratios(d) {
   return r;
 }
 
-/* ============================================================
-   ALTMAN Z: the emerging-market variant
-
-   The original 1968 Z-score was fitted on US manufacturers and
-   leans on a market-value term that behaves badly on a thin
-   market. Altman's Z'' drops it for book values and adds a +3.25
-   constant so scores on emerging markets sit on the same scale
-   as a US rating. That is the version here, and its thresholds
-   are 5.85 (safe) and 4.35 (grey) rather than the 2.6/1.1 you
-   will find quoted for the original.
-
-   It does not apply to banks at all, a bank's balance sheet is
-   supposed to look like a distressed manufacturer's, so the
-   financial mode drops it and scores capital adequacy instead.
-   ============================================================ */
+/* ALTMAN Z, the EMERGING-MARKET variant. Z'' drops the original
+   1968 market-value term for book values and adds +3.25, so the
+   thresholds here are 5.85 (safe) and 4.35 (grey) rather than
+   the 2.6/1.1 quoted for the original. It does not apply to
+   banks at all: financial mode scores capital adequacy. */
 
 export function altman(d) {
   const ta = d.totalAssets;
@@ -335,20 +288,10 @@ export function altman(d) {
   return 3.25 + 6.56 * x1 + 3.26 * x2 + 6.72 * x3 + 1.05 * x4;
 }
 
-/* ============================================================
-   PIOTROSKI F-SCORE
-
-   Nine yes/no tests of whether the business got better or worse
-   over the year. Its value is that none of the nine is about the
-   price: it is a question about the company, asked nine times,
-   and a cheap stock that passes eight of them is a very
-   different proposition from a cheap stock that passes two.
-
-   Tests needing last year's figures are SKIPPED, not failed,
-   when those inputs are blank. A skipped test would otherwise
-   read as a failure, and the score would punish you for not
-   having typed something in.
-   ============================================================ */
+/* PIOTROSKI F-SCORE: nine yes/no tests, none of them about the
+   price. Tests needing last year's figures are SKIPPED, never
+   failed, when those inputs are blank, or the score punishes a
+   reader for not having typed something in. */
 
 export function piotroski(d, r) {
   const checks = [];
@@ -386,19 +329,13 @@ export function piotroski(d, r) {
   };
 }
 
-/* ============================================================
-   THE METRIC REGISTRY
-
-   `w` is the weight inside its own pillar, not across the page.
-   `na` returning true means "this ratio has no meaning here"–
-   the metric is dropped and its weight is redistributed across
-   the rest of the pillar, rather than scoring zero. A bank with
-   no current ratio must not be marked down for it.
-
-   `fmt` is a hint for the display layer: how to print the raw
-   number. `hi` says which direction is good, for the arrow
-   beside it.
-   ============================================================ */
+/* THE METRIC REGISTRY. `w` is the weight inside its own pillar,
+   not across the page. `na` returning true means the ratio has
+   no meaning here, so the metric is DROPPED and its weight
+   redistributed across the pillar rather than scoring zero: a
+   bank with no current ratio must not be marked down for it.
+   `fmt` is how to print the raw number and `hi` says which
+   direction is good. */
 
 export const METRICS = [
   /* ---------------- VALUATION ---------------- */
@@ -588,19 +525,11 @@ export const METRICS = [
     na: (r, d) => !r.isFinancial || !(d.adr > 0),
     anchors: [[65, 95], [75, 88], [82, 70], [87, 50], [92, 20], [100, 0]] },
 
-  /* ---------------- INCOME ----------------
-     The weights here were rebalanced after the pillar was caught
-     rewarding companies for barely paying. Cover ratios saturate:
-     a token 1% dividend is trivially covered and scored 100 on
-     both divCover and fcfCoverDiv, which between them outvoted
-     the yield itself, so a 0.95% yield scored 62 and a 2.14%
-     yield scored 65, which is nonsense on a pillar whose entire
-     question is "is this worth holding for the income".
-
-     Yield now carries the pillar and the cover ratios qualify it.
-     The shape that produces is the right one: raising a dividend
-     helps while it stays affordable, and stops helping at the
-     point it outruns free cash flow. */
+  /* INCOME. YIELD CARRIES THIS PILLAR and the cover ratios only
+     qualify it: cover ratios SATURATE, so a token 1% dividend
+     scores 100 on both and, weighted evenly, outvotes the yield
+     itself. Raising a dividend should help while it stays
+     affordable and stop helping once it outruns free cash. */
   { id: "yieldSpread", pillar: "income", w: 6, fmt: "pp", hi: true,
     get: (r) => r.yieldSpread,
     na: (r) => !Number.isFinite(r.yieldSpread),
@@ -725,20 +654,12 @@ export function composite(pillars, weights) {
   return den > 0 ? num / den : null;
 }
 
-/* ============================================================
-   VETOES AND FLAGS
-
-   A veto is a fact that no amount of cheapness redeems, and it
-   overrides the composite outright. There are only three,
-   deliberately: negative equity, Z category, and a company
-   losing money AND burning cash at the same time. Everything
-   else that looks bad is a flag, loud, listed, explained, but
-   left for you to weigh.
-
-   The reason for the short list is that vetoes are where a tool
-   like this does real damage if it is trigger-happy. Plenty of
-   good companies have one terrible ratio.
-   ============================================================ */
+/* VETOES AND FLAGS. A veto overrides the composite outright and
+   there are deliberately only THREE: negative equity, Z
+   category, and losing money while burning cash. Everything else
+   is a flag, listed and explained but left for the reader to
+   weigh, because plenty of good companies have one terrible
+   ratio and a trigger-happy veto does real damage. */
 
 export function checkFlags(d, r) {
   const flags = [];
@@ -843,18 +764,11 @@ export function signals(d, r, pillars) {
   return out;
 }
 
-/* ============================================================
-   FAIR VALUE, TRIANGULATED
-
-   Four anchors, none of them authoritative, deliberately shown
-   as a range rather than a single number. A DCF on this page
-   would be false precision: that lives in the portfolio, where
-   there is room to build the WACC properly. What is useful here
-   is the spread: when all four land above the price you have
-   something worth a second look, and when they scatter across a
-   4× range the honest answer is "this cannot be valued from
-   these inputs".
-   ============================================================ */
+/* FAIR VALUE, TRIANGULATED. Four anchors, none authoritative,
+   shown as a RANGE rather than a single number: a DCF here would
+   be false precision. The spread is the useful part, and four
+   anchors scattered across a 4× range is an honest "this cannot
+   be valued from these inputs". */
 
 export function fairValue(d, r) {
   const anchors = [];
@@ -905,16 +819,10 @@ export function fairValue(d, r) {
   };
 }
 
-/* ============================================================
-   SHARIAH SCREEN
-
-   The DSES exists and a large number of Bangladeshi investors
-   will only buy from it, so a tool that ignores the question is
-   ignoring them. These are the AAOIFI-style ratio screens as
-   commonly applied; the business-activity screen is a judgement
-   nobody's arithmetic can make, so it is stated as a question
-   rather than answered.
-   ============================================================ */
+/* SHARIAH SCREEN: the AAOIFI-style ratio screens as commonly
+   applied. The business-activity screen is a judgement no
+   arithmetic can make, so it is STATED AS A QUESTION rather than
+   answered. */
 
 export function shariahScreen(d, r) {
   const tests = [];
@@ -997,28 +905,13 @@ export function drags(scored, pillars, weights, limit = 6) {
    THE WHOLE THING
    ============================================================ */
 
-/* ============================================================
-   THE PRICE CEILING
-
-   A plain weighted mean cannot answer the question this page
-   asks. Valuation is one pillar of six, so on balanced weights
-   it controls about a fifth of the score, and tripling the
-   share price of the default company moved the total from 69 to
-   62 and left the verdict reading "worth accumulating". The
-   valuation pillar had collapsed from 46 to 15, exactly as it
-   should; it simply could not drag a mean far enough.
-
-   That is fatal for a tool whose entire question is whether to
-   buy AT THIS PRICE. Price is the one variable the reader
-   controls, and a tool insensitive to it is worse than no tool.
-
-   So the verdict is capped by the valuation pillar. Not a veto,
-   the score is still shown and still honest, but a good
-   business bought badly is a bad investment, and no quality
-   score should be able to argue otherwise. The cap is stated on
-   the page whenever it bites, so it is never a silent
-   correction.
-   ============================================================ */
+/* THE PRICE CEILING. A plain weighted mean cannot answer this
+   page's question: valuation is one pillar of six, so tripling
+   the price moved the total from 69 to 62 and left the verdict
+   at "worth accumulating". Price is the one variable the reader
+   controls. So the verdict is CAPPED by the valuation pillar,
+   and the cap is stated on the page whenever it bites, so it is
+   never a silent correction. */
 
 const CAP_HOLD = 30;
 const CAP_ACCUMULATE = 42;

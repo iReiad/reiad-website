@@ -78,17 +78,11 @@ let style = "balanced";
    report and type once.
    ============================================================ */
 
-/* `quick: true` is the shorter way in.
-
-   ELEVEN FIELDS, and they are not the eleven that are easiest to
-   type: they are the ones the six pillars are most sensitive to,
-   which is why value, profitability, balance, cash and dividend
-   are all represented. Everything left out keeps the sector's
-   typical figure, which is what the example presets load, so a
-   quick check is a real check against an assumed background
-   rather than a different model. `depth.quickNote` says exactly
-   that to the reader, because a score computed partly from
-   somebody else's numbers has to say so. */
+/* `quick: true` is the shorter way in: ELEVEN FIELDS, not the
+   eleven easiest to type but the ones the six pillars are most
+   sensitive to. Everything left out keeps the sector's typical
+   figure, so a quick check is the same model against an assumed
+   background, and `depth.quickNote` says so to the reader. */
 const FIELDS = [
   { g: "company", id: "name", text: true, quick: true },
   { g: "company", id: "ticker", text: true, quick: true, wide: false },
@@ -160,16 +154,12 @@ const FIELDS = [
 const GROUPS = ["company", "income", "balance", "cash", "dividend", "prior", "bank", "benchmarks"];
 const OPEN_BY_DEFAULT = new Set(["company", "income"]);
 
-/* HOW MUCH OF THE FORM TO SHOW, and it is a view setting rather
-   than an input: the model reads the same eighty-five values
-   either way, and what changes is how many of them a reader is
-   asked to type. So it is not in `DEFAULTS`, it is skipped by
-   `readUrl` alongside `lang` and `style`, and it lives in
-   `reader-prefs` where the rest of the reader's choices are.
-
-   `tool-depth` is the calculator's own spelling of that field,
-   written by `aab/src/prefs.ts` and read here, so this file needs
-   no JSON parse before its first render. */
+/* HOW MUCH OF THE FORM TO SHOW: a view setting, not an input.
+   The model reads the same eighty-five values either way, so it
+   is NOT in `DEFAULTS`, is skipped by `readUrl` beside `lang`
+   and `style`, and lives in `reader-prefs`. `tool-depth` is this
+   calculator's own spelling of it, written by `aab/src/prefs.ts`
+   and read here without a JSON parse. */
 let depth = "quick";
 try {
   const stored = localStorage.getItem("tool-depth");
@@ -546,17 +536,11 @@ function bar(score, gradeName) {
     <i style="width:${w.toFixed(1)}%"></i></span>`;
 }
 
-/** The fair-value range.
-
-    The first version labelled all five anchors on the track and
-    they piled on top of each other the moment two landed close
-    together, which they usually do, because that is what a
-    tight valuation range means. So only two things are labelled
-    here, and they sit on opposite sides of the bar so they can
-    never collide: the price above, the median below. The extremes
-    are named at the ends, outside the track entirely. Which tick
-    is which anchor is answered by the table underneath, where
-    there is room to say it properly. */
+/** The fair-value range. Only TWO things are labelled on the
+    track and they sit on opposite sides of the bar so they can
+    never collide: the price above, the median below. Labelling
+    all five anchors piles them on top of each other the moment
+    two land close together, which is what a tight range is. */
 function fairChart(fair, price) {
   const vals = fair.anchors.map((a) => a.value).filter(Number.isFinite);
   if (!vals.length) return `<p class="statement-note">${esc(t("fv.none", lang))}</p>`;
