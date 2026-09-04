@@ -31,6 +31,11 @@
    login could not have reached anyone either. Bump this whenever a
    precached file changes.
 
+   v242: /fallback.css. The door's ledger is capped when the door
+        stacks: at one column `auto 1fr auto` put six hundred
+        pixels between a Bangla label and its English gloss, so a
+        row read as two columns that had lost each other.
+
    v241: /fallback.css. The writing band is three across like the
         other three: at 260px a fourth column needed more room
         than the content column has, so four pieces laid out three
@@ -2134,7 +2139,7 @@
    imports (crumbs, audience, learn progress) and the hub is a
    different page. Without a bump, a returning reader would be
    served the v3 app.js forever and none of it would appear. */
-const VERSION = "v241";
+const VERSION = "v242";
 const SHELL = `shell-${VERSION}`;
 const RUNTIME = `runtime-${VERSION}`;
 

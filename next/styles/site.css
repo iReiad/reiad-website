@@ -11761,6 +11761,15 @@ German for day, and .tag is what the site has always called
   .door-say .gate-lede { margin-top: 4px; }
   .door-ledger { display: grid; gap: 14px; align-content: start; }
 
+  /* ONE COLUMN IS NOT A WIDE COLUMN. Stacked, the ledger takes
+     the whole measure, and `auto 1fr auto` then puts six hundred
+     pixels of nothing between a Bangla label and its English
+     gloss: one row reads as two columns that have lost each
+     other. The cap keeps the row a row. */
+  @media (width < 1000px) {
+    .door-ledger { max-width: 520px; }
+  }
+
   @media (width >= 1000px) {
     /* 1.2 / 0.8 rather than 1.35 / 0.65. `.gate-h1` is capped at
        18ch, which measures 490px at this size, so a wider left

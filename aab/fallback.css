@@ -7442,6 +7442,10 @@
   .door-say .gate-lede { margin-top: 4px; }
   .door-ledger { display: grid; gap: 14px; align-content: start; }
 
+  @media (width < 1000px) {
+    .door-ledger { max-width: 520px; }
+  }
+
   @media (width >= 1000px) {
 
     .door { grid-template-columns: minmax(0, 1.2fr) minmax(300px, 0.8fr); }
