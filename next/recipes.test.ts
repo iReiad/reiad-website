@@ -1,37 +1,20 @@
 #!/usr/bin/env node
-/* ============================================================
-   recipes.test.ts: a dish built once, and the three-tap log it
-   unlocks.
+/* A dish built once, and the three-tap log it unlocks.
+     node next/recipes.test.ts
+   No browser and no build: `next/lib/recipes.ts` is arithmetic over plain
+   objects, so this runs beside the other checks.
 
-       node next/recipes.test.ts
-
-   No browser and no build. `next/lib/recipes.ts` is arithmetic
-   over plain objects, so this asserts it beside the other checks
-   rather than in the list of things somebody has to remember to
-   run: `DIET.md` section 33 asks for exactly that split, the
-   numbers here and the pages in a browser.
-
-   ---- why it is bundled rather than imported ----
-
-   Node strips TypeScript with no build step, and refuses to do
-   it for anything under `node_modules`. `@reiad/shared` resolves
-   INTO `next/node_modules` by design, because Turbopack will not
-   resolve above its own root, so a plain import of the module
-   under test dies on `shared/foods.ts` rather than on anything
-   this file is about. esbuild resolves it from `next/` and
+   BUNDLED RATHER THAN IMPORTED. Node strips TypeScript with no build step
+   and refuses to under `node_modules`, and `@reiad/shared` resolves INTO
+   `next/node_modules` by design, so a plain import of the module under
+   test dies on `shared/foods.ts`. esbuild resolves it from `next/` and
    inlines it, and the result is imported as a `data:` URL.
-   `aab/schools/hub.test.ts` does the same thing for the same
-   reason and says so at more length.
 
-   ---- what it is really guarding ----
-
-   ONE THING ABOVE ALL: A TOTAL IS NEVER FLATTERING. A recipe is
-   somebody's real dinner, and a pot that quietly counts a
-   missing ingredient as nought is a day that reads better than
-   it was. So every assertion below about a missing figure is
-   written from the wrong side: what the arithmetic must REFUSE
-   to claim.
-   ============================================================ */
+   WHAT IT GUARDS ABOVE ALL: a total is never flattering. A pot that
+   quietly counts a missing ingredient as nought is a day that reads
+   better than it was, so every assertion about a missing figure is
+   written from the wrong side: what the arithmetic must REFUSE to
+   claim. */
 
 /* A module, said out loud, because the top-level `await` below
    is only legal in one and `next/package.json` has no
@@ -60,15 +43,13 @@ try {
    the way the food picker builds one, which is `loggedFrom()`
    over a real library row. A hand-written ingredient would prove
    the arithmetic against a shape nothing produces. */
-/* CI HAS NO `next/node_modules`, so `@reiad/shared` does not
-   resolve there and esbuild dies on the import rather than on
-   anything this file is about. That package IS a copy of
-   `shared/`, so the aliases point at the source instead: the
-   test runs everywhere, and it runs against the file somebody
-   edited rather than against a copy npm may have left stale.
-
-   Built out of the package's own `exports`, so a new module in
-   `shared/` needs no line here. */
+    /* CI HAS NO `next/node_modules`, so `@reiad/shared` does not resolve
+       there and esbuild dies on the import rather than on anything this
+       file is about. That package IS a copy of `shared/`, so the aliases
+       point at the source: the test runs everywhere, and against the file
+       somebody edited rather than a copy npm may have left stale. Built
+       out of the package's own `exports`, so a new module in `shared/`
+       needs no line here. */
 const { readFileSync } = await import("node:fs");
 const EXPORTS = JSON.parse(
   readFileSync(join(ROOT, "shared", "package.json"), "utf8"),
@@ -180,14 +161,10 @@ ok("the factor really is a quarter", one?.factor === 0.25, String(one?.factor));
 const two = M.servingsOf(khichuri, 2);
 ok("two portions are twice one", near(two?.kcal, 768.5), String(two?.kcal));
 
-/* ------------------------------------------------------------
-   2. What it refuses
-
-   `scaleTo()` returns null for an amount it cannot turn into a
-   factor honestly, and every caller here has to pass that
-   refusal on rather than softening it into the pot's own
-   figures.
-   ------------------------------------------------------------ */
+    /* ---- 2. what it refuses ----
+       `scaleTo()` returns null for an amount it cannot turn into a factor
+       honestly, and every caller has to pass that refusal on rather than
+       softening it into the pot's own figures. */
 
 console.log("\n-- what it refuses --");
 
@@ -199,14 +176,11 @@ ok("a negative amount logs nothing", M.logRecipe(khichuri, -2) === null);
 ok("an empty pot is not a recipe",
   M.pot({ ...khichuri, parts: [] }).food === null);
 
-/* ------------------------------------------------------------
-   3. A missing figure is a floor, never a nought
-
-   The one this file exists for. An ingredient that states no
-   energy contributes NOTHING, is named, and turns the total into
-   "at least". A macro one ingredient is silent about does the
-   same to that macro alone.
-   ------------------------------------------------------------ */
+    /* ---- 3. a missing figure is a floor, never a nought ----
+       The one this file exists for. An ingredient that states no energy
+       contributes NOTHING, is named, and turns the total into "at least".
+       A macro one ingredient is silent about does the same to that macro
+       alone. */
 
 console.log("\n-- a floor, never a figure --");
 
@@ -242,14 +216,11 @@ ok("the energy is NOT a floor, because every part stated one",
 ok("the protein figure itself is unchanged, so a floor is a claim about the WORD",
   near(partial.food?.protein, 103.2), String(partial.food?.protein));
 
-/* ------------------------------------------------------------
-   4. A micronutrient is all or nothing
-
-   `totalFor()` in `shared/diet.ts` counts an entry's WHOLE
-   energy as covered for any key it carries, so a pot claiming
-   iron that only two of three ingredients stated would buy the
-   day coverage it does not have.
-   ------------------------------------------------------------ */
+    /* ---- 4. a micronutrient is all or nothing ----
+       `totalFor()` in `shared/diet.ts` counts an entry's WHOLE energy as
+       covered for any key it carries, so a pot claiming iron that only two
+       of three ingredients stated would buy the day coverage it has
+       not. */
 
 console.log("\n-- all or nothing, for a micronutrient --");
 
@@ -408,16 +379,12 @@ ok("the numbers are copied rather than pointed at",
 ok("nothing carries yesterday's row id",
   copied.every((e) => !("id" in e && e.id)));
 
-/* HOW MUCH OF YESTERDAY WAS A GUESS COMES WITH IT.
-
-   `copyOf()` built its rows field by field and named twelve of
-   them; `estLow` and `estHigh` were not among the twelve, so
-   copying a day that knew its own width produced a day claiming
-   to be measured, and the "give or take" line simply stopped
-   being drawn. Nothing announced it: the copied row has a
-   plausible number in it. The error runs towards MORE certainty
-   than the tool has, which is the one direction this whole tool
-   is arranged against, so it is asserted from that side. */
+    /* HOW MUCH OF YESTERDAY WAS A GUESS COMES WITH IT. A `copyOf()` that
+       builds rows field by field and misses `estLow` and `estHigh`
+       produces a day claiming to be measured, and the "give or take" line
+       stops being drawn with nothing announcing it. The error runs towards
+       MORE certainty than the tool has, so it is asserted from that
+       side. */
 const banded = M.copyOf([
   { ...entry("a plate nobody weighed", "2026-08-21", "13:00", 900),
     id: "e9", estLow: 700, estHigh: 1100 },
@@ -463,16 +430,11 @@ ok("the same ingredient in two dishes is one line with twice the amount",
 ok("and it is priced off the total rather than added up twice",
   near(twice.lines.find((l) => l.key.includes("chicken"))?.cost, 420));
 
-/* ------------------------------------------------------------
-   9b. What a dish you cooked yourself cost
-
-   Section 17. The shopping list already prices the parts; what
-   is new is whether the answer may be STORED on the dish, and
-   the answer is only where every part carried a checked price.
-   A dish kept at a floor is cheaper than it was AND buys the
-   log the coverage it has not got, which is the flattering
-   error twice over.
-   ------------------------------------------------------------ */
+    /* ---- 9b. what a dish you cooked yourself cost ----
+       The shopping list already prices the parts; what is new is whether
+       the answer may be STORED on the dish, and it may only where every
+       part carried a checked price. A dish kept at a floor is cheaper than
+       it was AND buys the log coverage it has not got. */
 
 console.log("\n-- what the dish cost --");
 
@@ -524,14 +486,10 @@ ok("a pot priced in two currencies has no price, rather than a converted one",
 ok("and neither has a pot nothing in which carries one",
   M.dishPrice({ en: "guesswork", parts: [{ label: "a plate", kcal: 600 }] }) === null);
 
-/* ------------------------------------------------------------
-   9c. A logged portion of it reaches what the food cost
-
-   The wire, and the half of it that was broken: the picker
-   writes `library:<id>` and `byId()` is keyed by the bare id, so
-   a resolver that hands the id straight over prices nothing at
-   all on a log full of library food.
-   ------------------------------------------------------------ */
+    /* ---- 9c. a logged portion of it reaches what the food cost ----
+       The wire, and the half of it that breaks: the picker writes
+       `library:<id>` and `byId()` is keyed by the bare id, so a resolver
+       that hands the id straight over prices nothing at all. */
 
 console.log("\n-- and it reaches the bill --");
 
@@ -586,15 +544,11 @@ ok("with the dal's own 18 beside it, and the whole day priced",
 ok("and a quarter of the pot's protein counted against it",
   near(bill.proteinPriced, 25.45 + 8.5), String(bill.proteinPriced));
 
-/* ------------------------------------------------------------
-   10. The shared pot, and a share of it
-
-   `DIET.md` section 14. A pot of curry for five and "I had some"
-   is not a portion. The share is two whole numbers rather than a
-   fraction, and this section is mostly about why: a third stored
-   as 0.33 would log every pot one percent light, for ever, in
-   the flattering direction.
-   ------------------------------------------------------------ */
+    /* ---- 10. the shared pot, and a share of it ----
+       A pot of curry for five and "I had some" is not a portion. The share
+       is two whole numbers rather than a fraction, and this section is
+       mostly about why: a third stored as 0.33 logs every pot one per cent
+       light, for ever, in the flattering direction. */
 
 console.log("\n-- the pot, and a share of it --");
 
@@ -736,15 +690,10 @@ ok("and a yield of nought on one is dropped rather than kept as a divisor",
 ok("a real household count survives",
   M.toPot({ id: "p1", label: "curry", kind: "pot", serves: 5 })?.serves === 5);
 
-/* ------------------------------------------------------------
-   14. A plate nobody can weigh
-
-   Section 14: a restaurant plate is not knowable, so the
-   midpoint goes into the total and the width goes into the day's
-   confidence. `totalFor()` in `shared/diet.ts` is what adds the
-   widths up, and it has been able to since the day it was
-   written.
-   ------------------------------------------------------------ */
+    /* ---- 14. a plate nobody can weigh ----
+       A restaurant plate is not knowable, so the midpoint goes into the
+       total and the width into the day's confidence. `totalFor()` in
+       `shared/diet.ts` is what adds the widths up. */
 
 console.log("\n-- eating out is a range --");
 
@@ -777,14 +726,10 @@ ok("the small extras figure is the middle of its own range",
 ok("and it is modest rather than a number that would swallow a day",
   M.EXTRAS.high < 400 && M.EXTRAS.low > 0);
 
-/* ------------------------------------------------------------
-   15. The hand, which is not a fallback
-
-   Section 14: weighing is the most accurate method and it is the
-   method most people abandon. A hand is about 20 percent out and
-   20 percent out every day for a year beats 5 percent out for
-   eleven days.
-   ------------------------------------------------------------ */
+    /* ---- 15. the hand, which is not a fallback ----
+       Weighing is the most accurate method and the one most people
+       abandon. A hand is about 20 per cent out, and 20 per cent out every
+       day for a year beats 5 per cent out for eleven days. */
 
 console.log("\n-- a hand, rather than a scale --");
 

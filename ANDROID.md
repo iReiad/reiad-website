@@ -380,12 +380,11 @@ silently**; the pulse board says when it is showing yesterday.
 
 ## The order
 
-Same shape as `PLAN.md`: ordered, and each phase makes the next
-one smaller. A phase is done when its parity tests pass against
-fixtures pulled from the live public API, and, for anything with
-progress in it, when the storage keys it writes are asserted by
-name the way `aab/schools/progress.test.ts` asserts them on the
-web.
+Ordered, and each phase makes the next one smaller. **A phase is
+done when its parity tests pass against fixtures pulled from the
+live public API**, and, for anything with progress in it, when the
+storage keys it writes are asserted by name the way
+`aab/schools/progress.test.ts` asserts them on the web.
 
 **Phase 0. The contracts, on the server.** The manifest endpoint,
 the assetlinks file, the Supabase redirect entry. The only phase
@@ -397,18 +396,15 @@ live, sufficient API.
 audience orderings, theme), the four school hubs, ladders and
 lesson pages, the three reading hubs and the article page, the
 native body renderer, the content cache, local ticks with each
-school's own semantics, checkpoints, bookmarks, the money
-glossary (its term pages are basics-1 lessons and arrive through
-the same API; the in-prose term links open in place, as they do
-on the web), and the home screen: the door's ledger and its pair
-of buttons per audience, both of which come down inside `DOOR` in
-`/api/site`, plus the board's own cards, continue and pulse. There
-is no featured card any more: it answered the audience switch with
-one tile two screens down, and the switch moves the door's buttons
-instead. No account yet: the site's own rule that everything
-works signed out makes phase 1 shippable alone, and it is the
-biggest phase because the renderer and the design system land
-here.
+school's own semantics, checkpoints, bookmarks, the money glossary
+(its term pages are basics-1 lessons and arrive through the same
+API; the in-prose term links open in place), and the home screen:
+the door's ledger and its pair of buttons per audience, both of
+which come down inside `DOOR` in `/api/site`, plus the board's own
+cards, continue and pulse. **No featured card**: the audience
+switch moves the door's buttons instead. No account yet, because
+everything works signed out; the biggest phase, because the
+renderer and the design system land here.
 
 **Phase 2. The account.** Sign-in (Custom Tab, both providers),
 the session store, the sync engine and its test suite, the account
@@ -458,10 +454,9 @@ array. None of the three touches sign-in, which is on a scheme the
 app declares.
 
 **Phase 6.5, when it is worth publishing.** Play: the same
-keystore if it is kept, the data-safety form (what the app holds
-is the session, the ticks and, if saved, a sealed broker key
-reference; there is no analytics SDK, matching a site that has
-none), staged rollout.
+keystore if it is kept, the data-safety form (the app holds the
+session, the ticks and, if saved, a sealed broker key reference;
+no analytics SDK, matching a site that has none), staged rollout.
 
 **Phase 7, only if wanted. Notifications**, per the section above.
 
@@ -479,9 +474,9 @@ for a desk and a hiring audience, and their audience is not
 holding a phone. The app's portfolio screen renders the cards
 natively and opens a model in the browser, which is one intent.
 
-Also not moving: the feeds (a feed reader already reads them), the
-break-glass article renderer, and the PWA itself, which keeps
-working for everybody who is not on Android.
+Also not moving: the feeds, the break-glass article renderer, and
+the PWA itself, which keeps working for everybody who is not on
+Android.
 
 ## Tests, the same discipline
 
@@ -522,13 +517,12 @@ pass on it:
 allowlist entry. What is left of it is the release fingerprint,
 which gates nothing.
 
-**The app repository.** Suggested name `reiad-android`. Kotlin,
-one module. The dependency list, chosen to stay short: the
-Compose BOM with Material 3 and Navigation, Room, DataStore,
-Ktor client with kotlinx serialisation (one HTTP stack, not
-two), Coil for images, Media3 for the player, WorkManager for
-sync, Browser for the Custom Tab. Nothing else until a phase
-demands it.
+**The app repository** is `iReiad/reiad-android`. Kotlin, one
+module. The dependency list, chosen to stay short: the Compose BOM
+with Material 3 and Navigation, Room, DataStore, Ktor client with
+kotlinx serialisation (one HTTP stack, not two), Coil for images,
+Media3 for the player, WorkManager for sync, Browser for the
+Custom Tab. Nothing else until a phase demands it.
 
 **What the building session reads first, from this repository:**
 
@@ -547,14 +541,13 @@ demands it.
 
 **The first slice of phase 1, in order:** fetch
 `/api/schools/money` and render the ladder; fetch one lesson and
-render its body through the block parser; wire the tick (a
-button, `learn-read`); then the same for `deutsch`, where opening
-marks; then the pieces list and one piece. Each step lands with
-its parity test against the fixtures before the next starts. The
-design tokens arrive with the first screen rather than after it:
+render its body through the block parser; wire the tick (a button,
+`learn-read`); then the same for `deutsch`, where opening marks;
+then the pieces list and one piece. Each step lands with its
+parity test against the fixtures before the next starts. **The
+design tokens arrive with the first screen rather than after it:**
 a ladder drawn in framework defaults is a port that is also a
-redesign, which is the thing the site's own ports never allowed
-themselves.
+redesign.
 
 **What proves phase 1 done:** every hub, ladder, lesson and piece
 renders offline after one online visit; ticks and bookmarks
@@ -564,20 +557,15 @@ asserted by name in one test.
 
 ## What is not in here, deliberately
 
-**iOS.** Everything above is the Android plan; the contracts
-section is the part an iOS plan would share, and writing both at
-once would have made this one vaguer.
-
-**Kotlin Multiplatform.** Sharing logic between an app and a
-TypeScript site is not on offer; sharing it with a future iOS app
-is real but speculative, and the sync engine is the only piece
-worth it. Revisit if iOS becomes a plan.
+**iOS**, and **Kotlin Multiplatform** with it. Sharing logic with
+a TypeScript site is not on offer; sharing it with a future iOS
+app is speculative, and the sync engine is the only piece worth
+it. Revisit if iOS becomes a plan.
 
 **A local-first database of everything.** The app caches what a
 reader follows and opens. Mirroring the whole site would make the
 first sync a download nobody asked for and every schema change a
-migration; the corpus that must work offline (the followed
-schools) is bounded and small.
+migration; the corpus that must work offline is bounded and small.
 
 **Server-driven UI, feature flags, A/B anything.** The site does
 not experiment on its readers and the app does not start.
