@@ -921,10 +921,9 @@ footer.
 ### What is not here
 
 No "you are doing great". No encouragement written by a machine,
-no badges, no celebration of a number. The stage card is a
-status, and **a status that praises you is a status people stop
-reading**, which would take the four honest sentences above down
-with it.
+no badges, no celebration of a number. **A status that praises you
+is a status people stop reading**, which would take the four
+honest sentences above down with it.
 
 ---
 ## 12. Food found rather than typed
@@ -1293,9 +1292,9 @@ of something.
 
 ### The honesty problem, first
 
-Micronutrients cannot be estimated from a number of calories.
-They come from knowing what was actually eaten, and this tool has
-a curated portion library rather than a food database, `§22`. So:
+Micronutrients cannot be estimated from a number of calories: they
+come from knowing what was actually eaten, and this tool has a
+curated portion library rather than a food database (`§22`). So:
 
 **Every micronutrient figure is shown with its coverage.** "Iron:
 about 9 mg, from 62% of today's food." The other 38% was free
@@ -1309,9 +1308,9 @@ sparse to read rather than drawing a bar.
 
 ### What is worth tracking, and why each one is on the list
 
-Not everything. A list of forty nutrients is a list nobody reads.
-These earn their place because they are the ones that actually go
-wrong for this tool's two readerships, on the diets it supports.
+A list of forty nutrients is a list nobody reads. These are the
+ones that actually go wrong for this tool's two readerships, on
+the diets it supports.
 
 | | why it is here |
 | --- | --- |
@@ -1329,28 +1328,28 @@ wrong for this tool's two readerships, on the diets it supports.
 
 Keto raises saturated fat intake for most people who try it, and
 what that does to a lipid panel varies enormously between
-individuals. The tool does not tell anybody what to eat. It does
-two smaller things: it tracks saturated fat as a share of total
-fat where the portion library knows it, and it puts a lipid panel
-in `§20` so that the answer for **this** reader can be a
-measurement rather than an argument on the internet.
+individuals. The tool does not tell anybody what to eat: it tracks
+saturated fat as a share of total fat where the portion library
+knows it, and it puts a lipid panel in `§20` so that the answer
+for **this** reader is a measurement rather than an argument on
+the internet.
 
-That is the pattern for every contested nutrition question here.
-Where the evidence is genuinely split, the tool logs the thing
-that would settle it for this person and declines to settle it in
-general.
+**That is the pattern for every contested nutrition question
+here.** Where the evidence is genuinely split, the tool logs the
+thing that would settle it for this person and declines to settle
+it in general.
 
 ### What it will not do
 
 No RDA scoring out of 100, no letter grades, no green ticks for
-"complete". Those imply a precision the data does not have and
+"complete": those imply a precision the data does not have and
 turn eating into a test. Each nutrient shows a figure, a range to
 aim for, and its coverage.
 
-No supplement recommendations. It can say "this has been under
-the range most days for three weeks", which is a fact about the
-log. What to do about it is a conversation with a clinician, and
-the page says that.
+No supplement recommendations. It can say "this has been under the
+range most days for three weeks", which is a fact about the log.
+What to do about it is a conversation with a clinician, and the
+page says that.
 
 ---
 
@@ -1894,19 +1893,18 @@ explaining a chart.
 
 ## 22. Two countries, one tool
 
-**Units.** Kilograms and centimetres by default. The UK also uses
-stone and pounds, and feet and inches, so both are offered and
-the choice is stored. Stone is displayed as `12 st 4 lb`, never
-as a decimal, because `12.3 st` is a number no British person has
-ever said out loud.
+**Units.** Kilograms and centimetres by default, with stone,
+pounds, feet and inches offered and the choice stored. Stone is
+displayed as `12 st 4 lb`, **never as a decimal**: `12.3 st` is a
+number no British person has ever said out loud.
 
 **Energy** is kcal in both places, which is what everyone
 actually uses, with kJ available because UK labels carry it.
 
 **Food.** No database. A **portion library** instead: a short list
-per place of the things people actually eat, each with energy,
-macros, the micronutrients in `§15` where they are known, and a
-price with a date on it from `§17`.
+per place, each row with energy, macros, the micronutrients in
+`§15` where they are known, and a price with a date on it from
+`§17`.
 
 - Bangladesh: cooked rice by cup, roti, dal, hilsa and other
   small fish, chicken curry, egg, sugared tea, muri, khichuri,
@@ -1938,10 +1936,9 @@ requires no database at all. Bangladeshi packaging is less
 consistent and often absent, which is the reason the portion
 library leans local and the label reader leans British.
 
-**The reader's own foods outrank both.** Anything entered twice
-is offered as a saved item, with the reader's own numbers, and a
-reader's own item always sorts above the library's. After a
-month, most logging is three taps on things the reader defined.
+**The reader's own foods outrank both.** Anything entered twice is
+offered as a saved item, with the reader's own numbers, sorting
+above the library's.
 
 **Ramadan** changes the eating window rather than the arithmetic,
 and `§18` is where it is handled.
@@ -1951,9 +1948,9 @@ and `§18` is where it is handled.
 ## 23. Two languages, one switch
 
 The site's rule is that a Bangla reader should never have to read
-English to find out that something exists in their own language.
-This tool will be the largest body of explanatory prose on the
-site outside its schools, so the rule bites hardest here.
+English to find out that something exists in their own language,
+and this tool is the largest body of explanatory prose on the site
+outside its schools.
 
 **One switch, at the top of every page in the tool, and it
 changes everything on the page**: the labels, the food names, the
@@ -1992,10 +1989,9 @@ Any figure, on any page, opens a short panel: the formula, the
 inputs it was given, where those came from, and how wide its
 error is.
 
-That is the stock check's personality applied here, and it is the
-only honest way to show somebody a number about their own body
-that they did not compute. **The alternative is asking a reader
-to trust a website**, which is precisely what `§1` refuses to do
+That is the only honest way to show somebody a number about their
+own body that they did not compute. **The alternative is asking a
+reader to trust a website**, which is what `§1` refuses to do
 anywhere else in this file.
 
 ---

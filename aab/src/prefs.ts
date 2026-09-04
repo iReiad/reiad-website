@@ -293,24 +293,12 @@ export function savePrefs(patch: Partial<Prefs>): Prefs {
   return next;
 }
 
-/* ============================================================
-   Putting them on the page
-
-   Custom properties and attributes on <html>, and the stylesheet
-   answers. Nothing here touches an element: a preference that had
-   to walk the DOM would be a preference that is wrong on anything
-   rendered after it ran, and the boot script that runs before the
-   first paint could not walk one anyway.
-
-   `data-glass` is an attribute because it names a material and
-   the stylesheet has a block per material; the two numbers are
-   custom properties because every radius and every tint on the
-   site is derived from them by `calc()`. Both are read before the
-   first paint by the boot script in `next/components/shell.tsx`,
-   which carries the same three tables inline: a bar that arrived
-   at one thickness and thickened a frame later would be worse
-   than one that never blurred.
-   ============================================================ */
+/* Putting them on the page: custom properties and attributes on
+   <html>, and NOTHING HERE TOUCHES AN ELEMENT. A preference that
+   walked the DOM would be wrong on anything rendered after it
+   ran, and the boot script that runs before the first paint has
+   no DOM to walk. `next/components/shell.tsx` carries the same
+   three tables inline for that paint. */
 
 export function applyPrefs(prefs: Prefs = readPrefs()): void {
   const root = document.documentElement;

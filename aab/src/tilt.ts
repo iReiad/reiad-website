@@ -119,33 +119,17 @@ function attach(scene: HTMLElement): void {
   });
 }
 
-/* ============================================================
-   AND NOT ON A PHONE, WHICH IS A DECISION RATHER THAN A GAP
-
-   There was a second half here that read `deviceorientation` and
-   leaned every card on screen towards wherever the handset was
-   pointing. It was removed on 4 September 2026 and must not come
-   back in that shape, because it could not work and was not free.
-
-   It could not work: `.tilt-scene { perspective: 1100px }` is
-   declared inside `@media (hover: hover) and (pointer: fine)` in
-   `@layer components`, so on a phone there is no perspective
-   anywhere, and a 3D rotation with no perspective is an affine
-   squash. The cards sheared rather than leaned, by 1.4 degrees,
-   which is under what anybody can see on a handset in the hand.
-
-   It was not free: a sensor reporting at up to 60Hz, and every
-   frame of it a document-wide `querySelectorAll` plus a
-   `getBoundingClientRect` per card to decide which were on
-   screen. That is a forced layout per card per frame on the main
-   thread of the cheap Android most of this site's readers hold,
-   for a picture none of them could see.
-
-   A lean answers a pointer aimed at one card. The ordinary sway
-   of holding a phone is not that gesture, and matching it would
-   need the perspective moved out of the hover query, which is a
-   redesign rather than a fix.
-   ============================================================ */
+/* AND NOT ON A PHONE, WHICH IS A DECISION RATHER THAN A GAP. A
+   `deviceorientation` half must not come back in that shape.
+   It cannot work: `.tilt-scene { perspective: 1100px }` sits
+   inside `@media (hover: hover) and (pointer: fine)`, so on a
+   phone there is no perspective anywhere and a 3D rotation with
+   none is an affine squash. The cards sheared by 1.4 degrees.
+   And it is not free: a 60Hz sensor, with a document-wide
+   `querySelectorAll` and a `getBoundingClientRect` per card each
+   frame, on the cheap Android most of this site's readers hold.
+   Matching the sway of a held phone would need the perspective
+   moved out of the hover query, which is a redesign. */
 
 export function initTilt(): void {
   if (!matchMedia("(hover: hover) and (pointer: fine)").matches) return;

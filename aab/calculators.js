@@ -1,36 +1,20 @@
 /* ============================================================
-   calculators.ts: the five calculators' arithmetic.
+   calculators.ts: the five calculators' arithmetic. Three
+   runtimes agree about it: the browser draws it, `scripts/`
+   freezes it into a fixture, and the Android app's Kotlin port is
+   asserted against that fixture.
 
-   Compounding, sanchayapatra against FDR, inflation, loan EMI and
-   position sizing. It was inline in `aab/src/tools/tools.ts`,
-   tangled with the DOM that displayed it, and it is here for the
-   reason everything in `shared/` is here: three runtimes have to
-   agree about it now. The browser draws it, `scripts/` freezes it
-   into a fixture, and the Android app has a Kotlin port asserted
-   against that fixture.
+   NOTHING HERE IS PROSE AND NOTHING HERE IS A FORMAT. A
+   calculator returns NUMBERS BY NAME and the KEY of the sentence
+   to print; both sides look that up in `tool-strings.ts` and fill
+   its `{placeholders}` the way `FORMATS` below says. The
+   alternative is every sentence written twice, in TypeScript and
+   in Kotlin, with no check able to see them part company.
 
-   ---- the rule that makes the split work ----
-
-   **Nothing in this file is prose and nothing in it is a
-   format.** A calculator returns NUMBERS BY NAME and the key of
-   the sentence to print. Both sides look the sentence up in
-   `tool-strings.ts` and fill its `{placeholders}` from the same
-   numbers, printing each one the way `FORMATS` below says.
-
-   That is not tidiness either. The alternative is the sentences
-   existing twice, once in TypeScript and once in Kotlin, which is
-   the failure the top of CLAUDE.md opens with: they would agree
-   on the day they were written and part company at the first
-   edit, with no check able to see it.
-
-   ---- and what a calculator may not do ----
-
-   Throw, or return NaN without meaning it. Every input arrives as
-   a number that may be absent or nonsense, and the fallbacks
-   below are the browser's own `Number(v.x) || 0` semantics
+   A CALCULATOR MAY NOT THROW or return NaN without meaning it.
+   The fallbacks below are the browser's own `Number(v.x) || 0`
    written out: a missing amount is nought and a missing term is
-   ONE YEAR, because a term of nought divides by zero three lines
-   later.
+   ONE YEAR, because nought divides by zero three lines later.
    ============================================================ */
 export const FORMATS = {
     /* compounding */
@@ -57,11 +41,10 @@ export const FORMATS = {
 };
 /* ---------- the browser's own coercions, written out ----------
 
-   `Number(v.start) || 0` in JavaScript turns an absent field, an
-   empty box and a nonsense string all into nought, and it does
-   the same to a real nought. Both are wanted here. The `|| 1`
-   form matters more: a term of nought divides by zero three
-   lines later, so a missing one is a year. */
+   `Number(v.start) || 0` turns an absent field, an empty box and
+   a nonsense string all into nought, which is wanted. The `|| 1`
+   form matters more: a term of nought divides by zero three lines
+   later, so a missing one is a year. */
 const n = (v, key, fallback = 0) => {
     const x = v[key];
     return Number.isFinite(x) && x !== 0 ? x : fallback;
@@ -135,12 +118,9 @@ export const compounding = {
     },
 };
 /* ============================================================
-   2. SANCHAYAPATRA vs FDR
-
-   Two safe things side by side, and the difference is not the
-   headline rate: sanchayapatra pays its profit OUT, so nothing
-   compounds, while an FDR's interest rolls up. Over five years
-   that turns a rate gap into a smaller one, sometimes into none.
+   2. SANCHAYAPATRA vs FDR. The difference is not the headline
+   rate: sanchayapatra pays its profit OUT so nothing compounds,
+   while an FDR's interest rolls up.
    ============================================================ */
 export const sanchayapatra = {
     id: "sanchayapatra",
@@ -214,10 +194,8 @@ export const inflation = {
         const nominal = asRate(v, "nominal");
         const worth = amount / (1 + inf) ** years;
         const lost = amount - worth;
-        /* Fisher, done properly rather than by subtraction. Nine per
-           cent against nine per cent is not nought: it is zero here
-           only because the two happen to be equal, and at 15 against
-           10 the difference between the two methods is half a point. */
+        /* Fisher, rather than subtraction: at 15 against 10 the two
+           methods differ by half a point. */
         const real = (1 + nominal) / (1 + inf) - 1;
         const grown = amount * (1 + nominal) ** years;
         const grownReal = grown / (1 + inf) ** years;
@@ -291,11 +269,10 @@ export const emi = {
         const shorter = Math.max(1, years - 2);
         const shorterMonths = shorter * 12;
         const shorterEmi = instalment(principal, rate, shorterMonths);
-        /* `shorterEmi * shorterMonths`, and the pair of brackets is
-           load-bearing: `emi * shorter * 12` associates left and
-           lands one bit away on a ten-million-taka loan. The Kotlin
-           port is compared to this by value, so an association that
-           drifts is a test that fails for a reason nobody can see. */
+        /* THE BRACKETS ARE LOAD-BEARING: `emi * shorter * 12`
+           associates left and lands one bit away on a
+           ten-million-taka loan, and the Kotlin port is compared to
+           this by value. */
         const saved = total - shorterEmi * shorterMonths;
         return {
             values: {
@@ -316,10 +293,8 @@ export const emi = {
     },
 };
 /* ============================================================
-   5. POSITION SIZING
-
-   The only calculator here that can tell somebody not to take a
-   trade, and the one whose answer is most often unwelcome.
+   5. POSITION SIZING. The only one here that can tell somebody
+   not to take a trade.
    ============================================================ */
 export const position = {
     id: "position",

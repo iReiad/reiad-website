@@ -240,25 +240,14 @@ async function sendRows(head, rows) {
     if (!res.ok)
         throw new Error(`push ${res.status}`);
 }
-/* ============================================================
-   The mirror
-
-   `base` is the account as this page last saw it. It lived only
-   in memory first, on the argument that a fresh load has had no
-   conversation and should adopt, and the Android app shipped the
-   same argument and paid for it the same day: adopt REPLACES the
-   device's marks with the account's copy, so any change made
-   between a load and the first exchange, or after a failed one,
-   was quietly un-done. On the site the window is one page-load
-   race wide, which is why it was never reported here first; it
-   is the same eater.
-
-   So the base is STORED, keyed to the account's own id: a fresh
-   load resumes the conversation it recorded, and only an account
-   this browser has never recorded adopts. The stored key is not
-   in `KEYS`, so it can never be synced, and `clearMirror()`
-   removes it with everything else.
-   ============================================================ */
+/* The mirror. `base` is the account as this page last saw it,
+   and it is STORED rather than held in memory, keyed to the
+   account's own id: adopt REPLACES the device's marks with the
+   account's copy, so an in-memory base means every fresh load
+   quietly un-does anything changed before the first exchange.
+   Only an account this browser has never recorded adopts. The
+   stored key is not in `KEYS`, so it can never be synced, and
+   `clearMirror()` removes it with everything else. */
 let base = null; // null before the first exchange
 let who = null; // the account `base` belongs to
 const BASE_STORE = "sync-base";
