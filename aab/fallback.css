@@ -6,7 +6,7 @@
    a stylesheet whose name carries a hash. Edit the source and run
    the generator. */
 
-@layer tokens, base, layout, components, menu, tools, tw, article, studio, work, money, workbook, deutsch, quran, english, reads, check, about, shell, deck, board, courses, routine, diet, research, admin, lesson, glow, relief, weather, utilities;
+@layer tokens, base, layout, components, menu, tools, tw, article, studio, work, money, workbook, deutsch, quran, english, reads, check, about, shell, deck, board, courses, routine, diet, research, admin, lesson, glow, relief, meadow, weather, utilities;
 
 @layer tokens {
 
@@ -11926,5 +11926,140 @@
   @media print {
     [data-kind="slides"] :is(.rs-write-bar, .rs-write-prose, .rs-side) { display: none; }
     .rs-slide { page: rs-slide-page; break-after: page; aspect-ratio: auto; block-size: 100vh; }
+  }
+}
+
+@layer meadow {
+  .meadow {
+    position: fixed; inset: 0;
+
+    z-index: -1;
+    pointer-events: none;
+
+    contain: strict;
+
+    --mdw-a: 1;
+
+    --mdw-l: 76%;
+    --mdw-i: 0.42;
+    --mdw-lit-mix: 24%;
+
+    --mdw-c-green:  0.157;
+    --mdw-c-teal:   0.122;
+    --mdw-c-blue:   0.117;
+    --mdw-c-violet: 0.136;
+    --mdw-c-plum:   0.171;
+    --mdw-c-rose:   0.135;
+    --mdw-c-gold:   0.151;
+
+    --mdw-green:  oklch(var(--mdw-l) var(--mdw-c-green)  var(--h-green)  / var(--mdw-i));
+    --mdw-teal:   oklch(var(--mdw-l) var(--mdw-c-teal)   var(--h-teal)   / var(--mdw-i));
+    --mdw-blue:   oklch(var(--mdw-l) var(--mdw-c-blue)   var(--h-blue)   / var(--mdw-i));
+    --mdw-violet: oklch(var(--mdw-l) var(--mdw-c-violet) var(--h-violet) / var(--mdw-i));
+    --mdw-plum:   oklch(var(--mdw-l) var(--mdw-c-plum)   var(--h-plum)   / var(--mdw-i));
+    --mdw-rose:   oklch(var(--mdw-l) var(--mdw-c-rose)   var(--h-rose)   / var(--mdw-i));
+    --mdw-gold:   oklch(var(--mdw-l) var(--mdw-c-gold)   var(--h-gold)   / var(--mdw-i));
+
+    --mdw-glow: color-mix(in oklab, var(--accent) var(--mdw-lit-mix), transparent);
+  }
+
+  @media (prefers-color-scheme: dark) {
+    :root:not([data-theme="light"]) .meadow {
+      --mdw-l: 58%; --mdw-i: 0.25; --mdw-lit-mix: 14%;
+      --mdw-c-green: 0.120; --mdw-c-teal: 0.094; --mdw-c-gold: 0.115;
+    }
+  }
+  :root[data-theme="dark"] .meadow {
+    --mdw-l: 58%; --mdw-i: 0.25; --mdw-lit-mix: 14%;
+    --mdw-c-green: 0.120; --mdw-c-teal: 0.094; --mdw-c-gold: 0.115;
+  }
+
+  html[data-weather] .meadow { --mdw-a: 0.34; }
+
+  .meadow > * {
+    position: absolute; inset: 0;
+    display: block;
+    background-repeat: repeat;
+  }
+
+  .mdw-lit {
+    opacity: calc(0.28 * var(--mdw-a));
+    background-repeat: no-repeat;
+    background-image:
+      radial-gradient(38% 19% at 30% 74%, var(--mdw-glow) 0%, transparent 74%),
+      radial-gradient(27% 13% at 78% 81%, var(--mdw-glow) 0%, transparent 72%);
+    animation: mdw-breathe 27s ease-in-out infinite;
+  }
+
+  .mdw-far {
+    --mdw-w: 1487px;
+    right: calc(-1 * var(--mdw-w));
+    opacity: calc(0.26 * var(--mdw-a));
+    background-image:
+      radial-gradient(17% 44% at 0%   110%, var(--mdw-violet) 0 88%, transparent 100%),
+      radial-gradient(18% 50% at 25%  112%, var(--mdw-rose)   0 88%, transparent 100%),
+      radial-gradient(19% 40% at 50%  108%, var(--mdw-gold)   0 88%, transparent 100%),
+      radial-gradient(17% 47% at 75%  111%, var(--mdw-teal)   0 88%, transparent 100%),
+      radial-gradient(17% 44% at 100% 110%, var(--mdw-violet) 0 88%, transparent 100%);
+    background-size: var(--mdw-w) 100%;
+    animation: mdw-drift 260s linear infinite;
+  }
+
+  .mdw-mid {
+    --mdw-w: 1201px;
+    right: calc(-1 * var(--mdw-w));
+    opacity: calc(0.48 * var(--mdw-a));
+    background-image:
+      radial-gradient(19% 38% at 0%   116%, var(--mdw-green) 0 96%, transparent 100%),
+      radial-gradient(17% 44% at 25%  118%, var(--mdw-blue)  0 96%, transparent 100%),
+      radial-gradient(20% 34% at 50%  114%, var(--mdw-plum)  0 96%, transparent 100%),
+      radial-gradient(18% 41% at 75%  117%, var(--mdw-gold)  0 96%, transparent 100%),
+      radial-gradient(19% 38% at 100% 116%, var(--mdw-green) 0 96%, transparent 100%);
+    background-size: var(--mdw-w) 100%;
+    animation: mdw-drift 140s linear infinite;
+  }
+
+  .mdw-near {
+    --mdw-w: 887px;
+    --mdw-h: 1063px;
+    right: calc(-1 * var(--mdw-w));
+    bottom: calc(-1 * var(--mdw-h));
+    opacity: calc(0.16 * var(--mdw-a));
+    background-image:
+      radial-gradient(circle 17px at 11% 17%, var(--mdw-green)  0 68%, transparent 97%),
+      radial-gradient(circle 10px at 63% 9%,  var(--mdw-rose)   0 68%, transparent 97%),
+      radial-gradient(circle 24px at 34% 41%, var(--mdw-blue)   0 68%, transparent 97%),
+      radial-gradient(circle 13px at 86% 58%, var(--mdw-gold)   0 68%, transparent 97%),
+      radial-gradient(circle 29px at 19% 72%, var(--mdw-violet) 0 68%, transparent 97%),
+      radial-gradient(circle 15px at 71% 84%, var(--mdw-teal)   0 68%, transparent 97%),
+      radial-gradient(circle 21px at 47% 63%, var(--mdw-plum)   0 68%, transparent 97%);
+    background-size: var(--mdw-w) var(--mdw-h);
+    animation: mdw-carry 96s linear infinite;
+  }
+
+  @media (max-width: 700px) {
+    .mdw-far { --mdw-w: 523px; }
+    .mdw-mid { --mdw-w: 431px; }
+  }
+
+  @keyframes mdw-drift {
+    from { translate: 0 0; }
+    to   { translate: calc(-1 * var(--mdw-w)) 0; }
+  }
+  @keyframes mdw-carry {
+    from { translate: 0 0; }
+    to   { translate: calc(-1 * var(--mdw-w)) calc(-1 * var(--mdw-h)); }
+  }
+  @keyframes mdw-breathe {
+    0%, 100% { opacity: calc(0.22 * var(--mdw-a)); }
+    50%      { opacity: calc(0.38 * var(--mdw-a)); }
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    .meadow > * { animation: none !important; }
+  }
+
+  @media (prefers-contrast: more), (prefers-reduced-transparency: reduce) {
+    .meadow { display: none; }
   }
 }

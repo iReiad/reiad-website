@@ -17,7 +17,7 @@
    hide content on an older engine.
    ============================================================ */
 
-@layer tokens, base, layout, components, menu, tools, tw, article, studio, work, money, workbook, deutsch, quran, english, reads, check, about, shell, deck, board, courses, routine, diet, research, admin, lesson, glow, relief, weather, utilities;
+@layer tokens, base, layout, components, menu, tools, tw, article, studio, work, money, workbook, deutsch, quran, english, reads, check, about, shell, deck, board, courses, routine, diet, research, admin, lesson, glow, relief, meadow, weather, utilities;
 
 /* ============================================================
    TOKENS
@@ -19157,5 +19157,358 @@ German for day, and .tag is what the site has always called
   @media print {
     [data-kind="slides"] :is(.rs-write-bar, .rs-write-prose, .rs-side) { display: none; }
     .rs-slide { page: rs-slide-page; break-after: page; aspect-ratio: auto; block-size: 100vh; }
+  }
+}
+
+/* ============================================================
+   @layer meadow: the ground the front door stands in.
+
+   `next/components/meadow.tsx` renders four empty spans and this
+   is everything else: radial gradients and three keyframes, no
+   canvas, no rAF, nothing that runs in a browser.
+
+   ---- there was already a full-screen layer, so this is not one
+        more of the same ----
+
+   `@layer weather` is fixed, edge to edge, behind every page,
+   and two of those competing for the same pixels is worse than
+   one. Three things keep this out of its way, and all three are
+   deliberate:
+
+     A DIFFERENT DEPTH BAND. The weather is the SKY: its sun, its
+     moon, its cloud banks and its wash all live in the TOP of
+     the window, and rain falls through the whole of it. This is
+     the GROUND: two ridges of overlapping arcs whose highest
+     crest is at 58 per cent of the window, so the top of the
+     screen is left alone. They are the two halves of one view
+     rather than two pictures on one wall.
+
+     A DIFFERENT PAGE. Every other page here is a column of
+     prose, which is the one place `@layer weather` learned a
+     decoration cannot go: a reader cannot move it and cannot
+     turn it off without leaving the page they are on. The front
+     door is the page whose job is to say what this place is
+     before anybody reads a word, and it already carries a ground
+     of its own in `.home-aura`, which is the light at the top of
+     the same room.
+
+     AND ONE OF THEM YIELDS. `html[data-weather]` turns this
+     layer's knob down to a third, so a reader who has asked for
+     their own sky gets the sky and a reader who has not gets the
+     colour. They are never both at full strength.
+
+   ---- one knob ----
+
+   `--mdw-a` is the whole layer's strength and every opacity
+   below is a fraction of it, exactly as `--wx-a` is the
+   weather's. More colour or less colour is one edit rather than
+   fourteen.
+
+   ---- nothing here is a ground for text, and it is measured ----
+
+   The page scrolls under a fixed layer, so every paragraph
+   passes through the bottom of the window where all four layers
+   overlap. Measured off the RENDERED PIXELS at the worst point
+   there, on a laptop and a phone and in both themes,
+   `--ink-soft` keeps 5.1 to 5.2 and a heading 10.4 to 10.6,
+   against the 7.2 body text has on bare paper and the 4.5 that
+   is the line. `--mdw-l` and `--mdw-i` are the two numbers that
+   set it and the four layer opacities are the rest. Raise any of
+   them and MEASURE rather than look: the worst pixel is where
+   two arcs of the near ridge cross under the far one, which is
+   nowhere anybody would think to check.
+
+   ---- and the colour comes from the HUES ----
+
+   Every other rule on this site reads `var(--accent)` so that a
+   German page is blue, and `check-accents.ts` is right to fail a
+   rule naming one of the seven. This layer is the same exception
+   `@layer weather` is: a landscape is not about which section a
+   reader is standing in, so it is built out of `--h-green`
+   through `--h-gold` directly. All seven are on screen: four to
+   a ridge and every one of them on the motes, and the four are
+   spread ROUND THE WHEEL rather than picked, because two
+   translucent arcs that overlap mix, and two hues a half turn
+   apart mix to grey. Ordering them at roughly ninety degrees
+   took the muddiest crossing on the page from 4.79 to 5.01 and
+   is most of why it reads as colour rather than as haze. The
+   LIGHT is `var(--accent)`, so the one part that is about the
+   page still follows the page.
+   ============================================================ */
+@layer meadow {
+  .meadow {
+    position: fixed; inset: 0;
+    /* Behind the page, as the weather is. `main.home-aura` is
+       `isolation: isolate`, so this -1 is trapped inside that
+       element's stacking context: it paints under the page's own
+       content and over the paper, which is exactly where
+       `.home-aura::before` already sits. */
+    z-index: -1;
+    pointer-events: none;
+    /* Paints and does nothing else: no layout, no size and no
+       style escapes, which is what lets a full-screen animation
+       run without the rest of the page joining in on every
+       frame. It is also what clips the overscan every layer
+       below is drawn with. */
+    contain: strict;
+
+    /* THE ONE KNOB. Everything visible is a fraction of it. */
+    --mdw-a: 1;
+
+    /* ---- the palette: one lightness, one alpha, seven chromas
+       ----
+
+       ON PAPER A THING IS PRINTED AND AT NIGHT A THING IS LIT,
+       which is the card scenes' lesson and it is what decides
+       the two rows. Ink subtracts, and nothing on paper is
+       brighter than the paper, so light mode is a mid-light
+       colour at a real alpha. Light adds, and anything laid on a
+       dark ground raises it, so dark mode is a DARKER colour at
+       a lower alpha, which reads as a glow rather than as fog.
+       One row cannot be both.
+
+       CHROMA IS PER HUE AND IT HAS TO BE, for the reason the
+       accents give: the sRGB gamut is not a cylinder, so one
+       number seven times is one number levelled DOWN to whatever
+       teal can hold, and teal at this lightness holds less than
+       anything else. Each is 94 per cent of what its own hue can
+       carry at 76 per cent, which is the accents' own margin, so
+       nothing is clamped. Chroma is also the one axis that costs
+       the prose no contrast: it moves the colour and barely
+       moves the luminance, which is why this is where the
+       brightness comes from rather than from `--mdw-i`. */
+    --mdw-l: 76%;
+    --mdw-i: 0.42;
+    --mdw-lit-mix: 24%;
+
+    --mdw-c-green:  0.157;
+    --mdw-c-teal:   0.122;
+    --mdw-c-blue:   0.117;
+    --mdw-c-violet: 0.136;
+    --mdw-c-plum:   0.171;
+    --mdw-c-rose:   0.135;
+    --mdw-c-gold:   0.151;
+
+    --mdw-green:  oklch(var(--mdw-l) var(--mdw-c-green)  var(--h-green)  / var(--mdw-i));
+    --mdw-teal:   oklch(var(--mdw-l) var(--mdw-c-teal)   var(--h-teal)   / var(--mdw-i));
+    --mdw-blue:   oklch(var(--mdw-l) var(--mdw-c-blue)   var(--h-blue)   / var(--mdw-i));
+    --mdw-violet: oklch(var(--mdw-l) var(--mdw-c-violet) var(--h-violet) / var(--mdw-i));
+    --mdw-plum:   oklch(var(--mdw-l) var(--mdw-c-plum)   var(--h-plum)   / var(--mdw-i));
+    --mdw-rose:   oklch(var(--mdw-l) var(--mdw-c-rose)   var(--h-rose)   / var(--mdw-i));
+    --mdw-gold:   oklch(var(--mdw-l) var(--mdw-c-gold)   var(--h-gold)   / var(--mdw-i));
+
+    /* The one thing here that is about the PAGE rather than
+       about the view, so it is the page's own colour and a
+       section that ever mounts this recolours it by doing
+       nothing. The two modes declare their own mix rather than
+       putting a `light-dark()` in the percentage slot, which is
+       not a colour and is not legal there. */
+    --mdw-glow: color-mix(in oklab, var(--accent) var(--mdw-lit-mix), transparent);
+  }
+
+  /* Both spellings of dark, because an explicit choice and the
+     system's are two selectors and the default attribute is
+     neither. The seven colours above are declared on `.meadow`
+     and read these tokens, and a custom property is substituted
+     on the element it is declared on, so overriding one here
+     moves every colour that names it.
+
+     ONLY THREE CHROMAS ARE RESTATED, and which three is not a
+     taste: green, teal and gold are the hues whose sRGB ceiling
+     FALLS as lightness drops to 58 per cent, and the other four
+     open up, so their light values are already inside the gamut
+     here. Restating those four would mean two numbers per hue
+     kept in step by hand for no gain. */
+  @media (prefers-color-scheme: dark) {
+    :root:not([data-theme="light"]) .meadow {
+      --mdw-l: 58%; --mdw-i: 0.25; --mdw-lit-mix: 14%;
+      --mdw-c-green: 0.120; --mdw-c-teal: 0.094; --mdw-c-gold: 0.115;
+    }
+  }
+  :root[data-theme="dark"] .meadow {
+    --mdw-l: 58%; --mdw-i: 0.25; --mdw-lit-mix: 14%;
+    --mdw-c-green: 0.120; --mdw-c-teal: 0.094; --mdw-c-gold: 0.115;
+  }
+
+  /* A READER WITH THEIR OWN SKY GETS THE SKY. The weather is the
+     sitewide layer and this is one page's, so this is the one
+     that stands down. One declaration, because there is one
+     knob. */
+  html[data-weather] .meadow { --mdw-a: 0.34; }
+
+  /* Every layer is anchored to the window and overscanned on the
+     side it travels towards, by exactly one tile, so a drift of
+     one tile lands the pattern back on itself and the loop has
+     no join in it. That is why the movement is `translate` and
+     not `background-position`: a translate is the one transform
+     a compositor can do without repainting anything, and this is
+     a full-screen layer. */
+  .meadow > * {
+    position: absolute; inset: 0;
+    display: block;
+    background-repeat: repeat;
+  }
+
+  /* ============================================================
+     Three tilings whose periods share no factor.
+
+     One tiled shape is wallpaper: the eye finds the lattice in
+     about a second. 1487, 1201 and 887 are primes, so the three
+     come back into step only after their product, which is past
+     the far side of any screen.
+
+     AND THE TRAP IS THE VERTICAL RHYTHM, which is what square
+     grids at coprime widths still share. The two ridges do not
+     tile vertically AT ALL: their tile is `100%`, the height of
+     the layer, so a hill drawn in the bottom third of it is
+     drawn there once and never again under the reader's feet.
+     Only the motes tile in both axes, and they are the only
+     lattice on the layer.
+
+     AND EVERY ARC HAS TO FIT ITS OWN TILE. A gradient is painted
+     into its tile and clipped there, so a hill whose radius
+     reaches past an edge is cut off with a straight vertical
+     line down it, once per tile, for ever: two of them were, and
+     the seam is unmistakable once it is on screen. Every arc
+     below satisfies cx - rx >= 0 and cx + rx <= 100, and the
+     ridge is closed across the join by a MATCHING PAIR at 0 and
+     100 per cent: the half clipped off one tile's left edge and
+     the half clipped off the next tile's right edge meet and
+     read as one hill.
+     ============================================================ */
+
+  /* THE LIGHT, and it is first because it is BEHIND the ridges:
+     a glow at the horizon is the sun on the far side of the
+     hills, and painted last it would be haze in front of them.
+     It is also PLACED AGAINST THE WINDOW, which is why it is the
+     one layer with no overscan and the one that does not move: a
+     gradient is positioned inside its own element, so a bloom at
+     30 per cent of a layer a tile wider than the window is a
+     bloom somewhere else entirely. It breathes on a period long
+     enough that a reader never sees it start. */
+  .mdw-lit {
+    opacity: calc(0.28 * var(--mdw-a));
+    background-repeat: no-repeat;
+    background-image:
+      radial-gradient(38% 19% at 30% 74%, var(--mdw-glow) 0%, transparent 74%),
+      radial-gradient(27% 13% at 78% 81%, var(--mdw-glow) 0%, transparent 72%);
+    animation: mdw-breathe 27s ease-in-out infinite;
+  }
+
+  /* THE FAR RIDGE: the smaller arcs, the higher crests, the
+     slowest drift and the softest edge of the two. The depth of
+     field is said in the GRADIENT STOP and never in a `filter`:
+     a blur on a layer that moves is the whole window re-blurred
+     on every frame, for a softness a wider falloff gives away
+     free. */
+  .mdw-far {
+    --mdw-w: 1487px;
+    right: calc(-1 * var(--mdw-w));
+    opacity: calc(0.26 * var(--mdw-a));
+    background-image:
+      radial-gradient(17% 44% at 0%   110%, var(--mdw-violet) 0 88%, transparent 100%),
+      radial-gradient(18% 50% at 25%  112%, var(--mdw-rose)   0 88%, transparent 100%),
+      radial-gradient(19% 40% at 50%  108%, var(--mdw-gold)   0 88%, transparent 100%),
+      radial-gradient(17% 47% at 75%  111%, var(--mdw-teal)   0 88%, transparent 100%),
+      radial-gradient(17% 44% at 100% 110%, var(--mdw-violet) 0 88%, transparent 100%);
+    background-size: var(--mdw-w) 100%;
+    animation: mdw-drift 260s linear infinite;
+  }
+
+  /* THE NEAR RIDGE: wider arcs, crests a tenth of the window
+     lower, twice as fast, and the one plane that is in focus.
+     The other four hues, so nothing is only ever in the
+     distance, and again spread round the wheel. */
+  .mdw-mid {
+    --mdw-w: 1201px;
+    right: calc(-1 * var(--mdw-w));
+    opacity: calc(0.48 * var(--mdw-a));
+    background-image:
+      radial-gradient(19% 38% at 0%   116%, var(--mdw-green) 0 96%, transparent 100%),
+      radial-gradient(17% 44% at 25%  118%, var(--mdw-blue)  0 96%, transparent 100%),
+      radial-gradient(20% 34% at 50%  114%, var(--mdw-plum)  0 96%, transparent 100%),
+      radial-gradient(18% 41% at 75%  117%, var(--mdw-gold)  0 96%, transparent 100%),
+      radial-gradient(19% 38% at 100% 116%, var(--mdw-green) 0 96%, transparent 100%);
+    background-size: var(--mdw-w) 100%;
+    animation: mdw-drift 140s linear infinite;
+  }
+
+  /* THE MOTES, which are what is in the air between the reader
+     and the hills. Seven discs, one per hue, at sizes and
+     positions that share nothing, and the only part of the layer
+     that reaches the top of the window, which is why they are
+     the quietest thing on it. They carry BOTH directions in ONE
+     keyframe: the tile is overscanned right and down by its own
+     width and height, so a single diagonal drift of exactly one
+     tile loops with nothing to see at the join, and a second
+     animation on the same property would replace the first
+     rather than compose with it. */
+  .mdw-near {
+    --mdw-w: 887px;
+    --mdw-h: 1063px;
+    right: calc(-1 * var(--mdw-w));
+    bottom: calc(-1 * var(--mdw-h));
+    opacity: calc(0.16 * var(--mdw-a));
+    background-image:
+      radial-gradient(circle 17px at 11% 17%, var(--mdw-green)  0 68%, transparent 97%),
+      radial-gradient(circle 10px at 63% 9%,  var(--mdw-rose)   0 68%, transparent 97%),
+      radial-gradient(circle 24px at 34% 41%, var(--mdw-blue)   0 68%, transparent 97%),
+      radial-gradient(circle 13px at 86% 58%, var(--mdw-gold)   0 68%, transparent 97%),
+      radial-gradient(circle 29px at 19% 72%, var(--mdw-violet) 0 68%, transparent 97%),
+      radial-gradient(circle 15px at 71% 84%, var(--mdw-teal)   0 68%, transparent 97%),
+      radial-gradient(circle 21px at 47% 63%, var(--mdw-plum)   0 68%, transparent 97%);
+    background-size: var(--mdw-w) var(--mdw-h);
+    animation: mdw-carry 96s linear infinite;
+  }
+
+  /* A NARROW WINDOW NEEDS A SHORTER TILE. The three periods are
+     chosen so that three or four crests fit a laptop, and on a
+     phone a quarter of one tile fits: the ridge stops being a
+     run of hills and becomes the flank of a single arc. Shorter
+     primes fix it in one token each, because `--mdw-w` is the
+     tile, the overscan and the drift distance at once and the
+     three cannot come apart. Still pairwise coprime with the
+     motes' 887, for the reason above, and the MOTES keep their
+     tile: they are the one layer a narrow window gets more of
+     rather than less, and shrinking it put three of them behind
+     the headline. */
+  @media (max-width: 700px) {
+    .mdw-far { --mdw-w: 523px; }
+    .mdw-mid { --mdw-w: 431px; }
+  }
+
+  /* Both ends written out. A one-sided keyframe interpolates
+     from the element's own `translate`, which is `none` here,
+     and `none` against a pair of lengths is the shape of thing
+     that works in one engine and not the next. */
+  @keyframes mdw-drift {
+    from { translate: 0 0; }
+    to   { translate: calc(-1 * var(--mdw-w)) 0; }
+  }
+  @keyframes mdw-carry {
+    from { translate: 0 0; }
+    to   { translate: calc(-1 * var(--mdw-w)) calc(-1 * var(--mdw-h)); }
+  }
+  @keyframes mdw-breathe {
+    0%, 100% { opacity: calc(0.22 * var(--mdw-a)); }
+    50%      { opacity: calc(0.38 * var(--mdw-a)); }
+  }
+
+  /* A reader who asked for less motion keeps the landscape and
+     loses the drift, which is the same bargain the weather
+     makes: what this layer is FOR is the colour rather than the
+     travelling. */
+  @media (prefers-reduced-motion: reduce) {
+    .meadow > * { animation: none !important; }
+  }
+
+  /* AND A READER WHO ASKED FOR CONTRAST HAS ASKED FOR THE
+     OPPOSITE OF THIS. It sits between the paper and the prose,
+     so the honest answer to "give me more contrast" or "give me
+     less of the see-through" is no landscape at all. Same
+     specificity as the rule that draws it and after it, so
+     neither needs an `!important`. */
+  @media (prefers-contrast: more), (prefers-reduced-transparency: reduce) {
+    .meadow { display: none; }
   }
 }

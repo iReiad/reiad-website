@@ -65,6 +65,7 @@ import type { CSSProperties } from "react";
 import { Board } from "../../components/home/board";
 import { LatestWriting } from "../../components/home/writing";
 import { Reckoner } from "../../components/home/reckoner";
+import { Meadow } from "../../components/meadow";
 import { GoCard } from "../../components/deck";
 import { WorkCard } from "../../components/work-card";
 import { Icon } from "../../components/icons";
@@ -158,6 +159,16 @@ function bandAccent(key: string): CSSProperties | undefined {
 export default function HomePage() {
   return (
     <main id="main" className="home-aura">
+      {/* The ground this page stands in, and the front door's
+          alone: `@layer meadow` is the whole drawing. Inside
+          `.home-aura` on purpose, because that element's
+          `isolation: isolate` is what makes a `z-index: -1`
+          child paint behind the page's content instead of
+          behind the page. It stands down to a third under
+          `html[data-weather]`, so the reader's own sky and this
+          are never both at full strength. */}
+      <Meadow />
+
       <div className="home-wrap mx-auto w-full max-w-[1240px]
         px-[clamp(16px,3vw,44px)] pt-[clamp(18px,3.4vw,44px)] pb-[clamp(28px,4vw,56px)]
         grid gap-[clamp(34px,4.4vw,64px)]">

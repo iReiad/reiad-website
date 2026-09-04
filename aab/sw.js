@@ -31,6 +31,12 @@
    login could not have reached anyone either. Bump this whenever a
    precached file changes.
 
+   v246: /fallback.css. A geometric ground under the front page.
+        The weather owns the top of the window and this owns the
+        bottom, so the two are halves of one view rather than two
+        pictures on one wall; it stands down to a third of its
+        strength when a reader has their own sky showing.
+
    v245: /content.js. The front door describes the site instead of
         selling it: the three headlines were slogans playing on the
         word ভাষা, and a reader learnt nothing from them. The social
@@ -2163,7 +2169,7 @@
    imports (crumbs, audience, learn progress) and the hub is a
    different page. Without a bump, a returning reader would be
    served the v3 app.js forever and none of it would appear. */
-const VERSION = "v245";
+const VERSION = "v246";
 const SHELL = `shell-${VERSION}`;
 const RUNTIME = `runtime-${VERSION}`;
 
