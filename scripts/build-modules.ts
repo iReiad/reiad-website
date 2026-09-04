@@ -1,42 +1,26 @@
 #!/usr/bin/env node
-/* ============================================================
-   build-modules.ts: the site's own modules, from TypeScript.
+/* build-modules.ts: the site's own modules, from TypeScript.
 
        node scripts/build-modules.ts           # write them
        node scripts/build-modules.ts --check   # or compare
 
-   archive/TRANSITION.md Stage 13, and section 7 for why the output is
-   committed rather than built in CI: the site deploys by
-   uploading `aab/`, and adding a build step would put a build
-   command in a dashboard that cannot be seen from this
-   repository.
+   The output is COMMITTED, because the site deploys by uploading
+   `aab/` with no build step in CI. Edit the source, never the
+   output.
 
-   ---- one file in, one file out ----
+   ONE FILE IN, ONE FILE OUT. No bundling and no renaming:
+   `/share-card.js` is named in `sw.js`'s precache list, in
+   `vite.config.ts`'s runtime externals and in the imports of both
+   React apps, so the path is fixed and a hashed chunk would fight
+   all three. `tsc` alone does exactly this.
 
-   No bundling and no renaming. `/share-card.js` is named in
-   `sw.js`'s precache list, in `vite.config.ts`'s list of runtime
-   externals and in the imports of both React apps, so the path is
-   fixed and a hashed chunk would fight all three. `tsc` alone
-   does exactly this, which is why there is no bundler here.
+   A module that moves here EMITS its own declaration into
+   `app/src/types/`, and the hand-written one is deleted in the
+   same commit.
 
-   ---- and the declaration is emitted, not written ----
-
-   `app/src/types/` holds hand-written `.d.ts` files describing
-   these modules, because they were plain JavaScript and
-   TypeScript had nothing to go on. A module that moves here emits
-   its own, and the hand-written one is deleted in the same
-   commit. Stage 13 is done when that directory holds only its
-   README, because every module describes itself.
-
-   ---- and five that come from shared/ instead ----
-
-   The site's manifest and the four schools' ladders are read by
-   three runtimes each, so their source is `shared/content.ts` and
-   `shared/curricula/*.ts` and this writes the browser's copies.
-   Two things follow from the source living one directory along:
-   its own compile, and four specifiers rebased. `SHARED` and
-   `rebase` below are where each is stated.
-   ============================================================ */
+   The site's manifest and the four schools' ladders come from
+   `shared/` instead, which costs a compile of their own and four
+   specifiers rebased: `SHARED` and `rebase` below. */
 
 import { execFileSync } from "node:child_process";
 import { mkdirSync, mkdtempSync, readFileSync, readdirSync, rmSync, writeFileSync } from "node:fs";
@@ -53,57 +37,47 @@ const SRC = join(ROOT, "aab", "src");
 const SRC_UNDER_ROOT = "aab/src";
 
 /** Every module that has moved, by the name it is served under.
-
-    Listed rather than globbed, so that adding one is a line
-    somebody wrote and the check below knows what to compare
-    without guessing. */
+    Listed rather than globbed, so adding one is a line somebody
+    wrote and the check below knows what to compare. */
 export const MODULES = [
   "share-card", "api", "photo",
-  /* The account's own, moved 17 August 2026 with the work that
-     added them. They are the first modules here that import each
-     other, and `tsconfig.json` maps `/saved.js` at the SOURCE
+  /* The account's own. They are the first modules here that import
+     each other, and `tsconfig.json` maps `/saved.js` at the SOURCE
      rather than at a declaration, so there is one description of
-     that module and it is the module.
-
-     They emit declarations into `app/src/types/` like the three
-     above. Nothing in `app/` imports them today, which is not a
-     reason to throw the declarations away: the desk is the next
-     thing that will want to know what a saved scenario is. */
+     that module and it is the module. They emit declarations into
+     `app/src/types/` like the three above; nothing in `app/`
+     imports them today, which is not a reason to throw the
+     declarations away. */
   "prefs", "saved", "checkpoints", "sync", "signin", "account-page",
-  /* Who a reader is, converted 19 August 2026 with the change
-     that brought the picture Google sends through to the page.
-     It was described by TWO hand-written declarations, one for
-     `aab/src/` and one for `next/`, and they disagreed about
-     what `saveProfile` answers. Both are gone: this emits the
-     one in `app/src/types/` and `tsconfig.json` maps
-     `/account.js` at the source. */
+  /* Who a reader is. It was described by TWO hand-written
+     declarations, one for `aab/src/` and one for `next/`, and they
+     disagreed about what `saveProfile` answers. Both are gone:
+     this emits the one in `app/src/types/` and `tsconfig.json`
+     maps `/account.js` at the source. */
   "account",
-  /* The third-party course player, added with the section it
-     draws. It is a browser module rather than a React component
-     for the reason at the top of `aab/src/courses.ts`: the
-     catalogue is admin-only, so the server must not render it
-     into a page, and a `<SiteScripts>` module runs after
-     hydration where nothing React does can undo it. */
+  /* The third-party course player. A browser module rather than a
+     React component for the reason at the top of
+     `aab/src/courses.ts`: the catalogue is admin-only, so the
+     server must not render it into a page, and a `<SiteScripts>`
+     module runs after hydration where nothing React does can undo
+     it. */
   "courses",
-  /* The routine's wire, added with phase 2 of ROUTINE.md. A
-     browser module rather than a server read for the reason
-     every account-backed thing here is one: what it reads is one
-     reader's own session out of localStorage, and the server has
-     neither the token nor any business holding it. `saved.ts` is
-     the file it is shaped after. */
+  /* The routine's wire. A browser module rather than a server read
+     for the reason every account-backed thing here is one: what it
+     reads is one reader's own session out of localStorage, and the
+     server has neither the token nor any business holding it.
+     `saved.ts` is the file it is shaped after. */
   "routine",
-  /* The breadcrumb, converted with the fix to the bug it carried:
-     six call sites split the document title on U+2014, a
-     character this site's own rules guarantee never appears, so
-     the split did nothing and the whole title reached the crumb. */
+  /* The breadcrumb. Six call sites split the document title on
+     U+2014, a character this site's own rules guarantee never
+     appears, so the split did nothing and the whole title reached
+     the crumb. */
   /* The first module served from a subdirectory: the live
-     portfolio's page module, at /tools/live.js beside the plain
-     JavaScript calculators. The name here is the served path
-     minus its extension, and everything below joins paths, so a
-     slash in a name costs nothing. */
+     portfolio's page module, at /tools/live.js. The name here is
+     the served path minus its extension, and everything below
+     joins paths, so a slash in a name costs nothing. */
   "tools/live",
-  /* The five calculators, converted with the change that stopped
-     them naming a colour: every chart drew `--green` and `--gold`
+  /* The five calculators. Every chart drew `--green` and `--gold`
      regardless of the page, so a calculator on the tools page drew
      itself in Insights' colour. They read `--series-1` and
      `--series-2` now, and the legend beside them reads the same
@@ -128,46 +102,43 @@ export const MODULES = [
      that describe themselves now. */
   "streak",
   /* The learn/work switch. Typing its two vocabularies as unions
-     is what found three comparisons against "money", a word this
-     module has never stored: `data-track` was never set, the
-     footer's switcher could not take a recruiter back to the
-     library, and the track switcher was hidden everywhere. */
+     found three comparisons against "money", a word this module
+     has never stored: `data-track` was never set, the footer's
+     switcher could not take a recruiter back to the library, and
+     the track switcher was hidden everywhere. */
   "audience",
   /* The pointer effect on cards. */
   "tilt",
-  /* The shell's browser half: the theme, the palette, the
-     shortcut sheet, the counts, speculation rules and the service
-     worker registration. `noUnusedLocals` found six bindings it
-     imported from `/content.js` and never read. */
+  /* The shell's browser half: the theme, the palette, the shortcut
+     sheet, the counts, speculation rules and the service worker
+     registration. */
   "app",
-  /* The contenteditable, and the last of them. It stays a served
-     module permanently: CLAUDE.md says why a second copy inside a
-     component is the bug. `check-css.ts` reads `ATTRS` and
-     `KEEP_CLASSES` out of the OUTPUT by name, so neither may stop
-     being an object literal or a `new Set([...])`. */
+  /* The contenteditable. It stays a served module permanently:
+     CLAUDE.md says why a second copy inside a component is the
+     bug. `check-css.ts` reads `ATTRS` and `KEEP_CLASSES` out of
+     the OUTPUT by name, so neither may stop being an object
+     literal or a `new Set([...])`. */
   "editor",
 ];
 
 /** The eight served modules whose source is in `shared/` rather
     than in `aab/src/`: the site's manifest, the four schools'
     ladders, the stock check's words, the calculators' arithmetic
-    and the broker's derivations. The Worker, the checks under `scripts/`, the
-    Next.js routes and the browser read the same seven, and only
-    the last of them needs a file at a URL.
+    and the broker's derivations. The Worker, the checks, the
+    Next.js routes and the browser read the same ones, and only the
+    last needs a file at a URL.
 
-    They are compiled on their own, by
+    They are compiled on their own by
     `scripts/tsconfig.shared.json`, and that is the compile whose
-    output is read here even though `pieces.ts` now drags
-    `shared/content.ts` through the other one as well. Two reasons
-    it has to be this one: it is the only run whose `rootDir` puts
-    a ladder at the path `SHARED.files` names, and `rebase` below
-    is applied to its output alone.
+    output is read here: it is the only run whose `rootDir` puts a
+    ladder at the path `SHARED.files` names, and `rebase` below is
+    applied to its output alone.
 
     No declaration is emitted for any of them and none should be.
-    Anything that wants the types maps the served path on to the
-    source, which is what `app/tsconfig.json`,
-    `aab/src/tsconfig.json` and `next/tsconfig.json` do: one
-    description, and it is the module. */
+    Anything wanting the types maps the served path on to the
+    source, which is what `app/tsconfig.json`, `aab/src/tsconfig.json`
+    and `next/tsconfig.json` do: one description, and it is the
+    module. */
 export const SHARED = {
   config: "scripts/tsconfig.shared.json",
   /** Where that config's `rootDir` puts each output, against the
@@ -194,21 +165,18 @@ export const SHARED = {
   } as Record<string, string>,
 };
 
-/** The one thing here that is not tsc's output verbatim.
-
-    A ladder is `shared/curricula/money.ts` at the source and
+/** The one thing here that is not tsc's output verbatim. A ladder
+    is `shared/curricula/money.ts` at the source and
     `aab/money/curriculum.js` at the output, so the specifier
-    `content.ts` reaches it by has to be rebased. tsc never
-    rewrites a specifier beyond its extension, so nothing else was
-    going to do this. */
+    `content.ts` reaches it by has to be rebased: tsc never
+    rewrites a specifier beyond its extension. */
 const rebase = (js: string): string =>
   js.replace(/from "\.\/curricula\/(\w+)\.js"/g, 'from "./$1/curriculum.js"');
 
 /** Compile into a temporary directory and read the results back.
-
-    Not straight into `aab/`, because `--check` has to be able to
-    compare without writing: a check that fixed what it was asked
-    to find would always pass. */
+    Not straight into `aab/`, because `--check` has to compare
+    without writing: a check that fixed what it was asked to find
+    would always pass. */
 export function compile() {
   const out = mkdtempSync(join(tmpdir(), "reiad-modules-"));
   try {
@@ -218,13 +186,11 @@ export function compile() {
     ], { cwd: ROOT, stdio: "pipe" });
 
     /* Repo-relative path to the text that belongs at it.
-
        `aab/src/` is a PREFIX on everything this compile emits, and
        that is not cosmetic: `pieces.ts` imports `/content.js`, so
        `shared/content.ts` is an input, so that config's `rootDir`
-       is the repo root and every output carries its path from
-       there. Change `rootDir` and these three joins are what has
-       to change with it. */
+       is the repo root. Change `rootDir` and these three joins
+       change with it. */
     const built: Record<string, string> = {};
     for (const name of MODULES) {
       built[`aab/${name}.js`] = readFileSync(join(out, SRC_UNDER_ROOT, `${name}.js`), "utf8");
@@ -233,11 +199,10 @@ export function compile() {
     }
     /* Anything else tsc produced FROM THIS DIRECTORY. A module
        added to `aab/src/` and not to MODULES would otherwise be
-       compiled and silently thrown away. Recursive since
-       `tools/live` moved in: a stray in a subdirectory is still a
-       stray. `shared/` is emitted here too and is not a stray:
-       those five are read out of their own compile below, because
-       only that one applies `rebase`. */
+       compiled and silently thrown away. Recursive, so a stray in
+       a subdirectory is still a stray. `shared/` is emitted here
+       too and is not a stray: those are read out of their own
+       compile below, because only that one applies `rebase`. */
     const strays = readdirSync(out, { recursive: true })
       .map((f) => String(f).replaceAll("\\", "/"))
       .filter((f) => f.startsWith(`${SRC_UNDER_ROOT}/`))
@@ -245,11 +210,11 @@ export function compile() {
       .filter((f) => f.endsWith(".js"))
       .filter((f) => !MODULES.includes(f.replace(/\.js$/, "")));
 
-    /* And the manifest and the four ladders, out of `shared/`.
-       Their own directory, because that run's `rootDir` is
-       `shared/` and tsc refuses an input above it. Only the five
-       files named in SHARED.files are read back, which is why
-       nothing walks this output looking for strays. */
+    /* And the manifest and the four ladders, out of `shared/`:
+       their own directory, because that run's `rootDir` is
+       `shared/` and tsc refuses an input above it. Only the files
+       named in SHARED.files are read back, which is why nothing
+       walks this output looking for strays. */
     const sharedOut = mkdtempSync(join(tmpdir(), "reiad-shared-"));
     try {
       execFileSync("npx", [

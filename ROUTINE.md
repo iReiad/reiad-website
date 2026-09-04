@@ -5,14 +5,13 @@ private to them.
 
 **It is a gift.** That is not decoration on top of a tracker, it is
 the specification, and it decides things a productivity tool would
-decide the other way. The build spec's own sentence is the test:
+decide the other way. The test:
 
 > A handwritten daily list works, but only if it never becomes a
 > thing to feel guilty about.
 
-Where a feature and that sentence disagree, the sentence wins.
-Section 9 of the spec is not a preference list, it is the product,
-and it ships here as assertions rather than as prose.
+Where a feature and that sentence disagree, the sentence wins. §8
+is that list as assertions rather than as prose.
 
 ---
 
@@ -34,22 +33,18 @@ Every surprise in §7 obeys it. Check any new one against it first.
 
 ---
 
-## 1. What the spec assumed, and what is actually here
+## 1. What this is built on
 
-| the spec says | here | so |
-| --- | --- | --- |
-| Cloudflare Pages, deployed from GitHub | Cloudflare **Workers**: `worker.js` in front of a Next Worker | routes, not pages. Nothing new to set up |
-| "**DECIDE WITH ME** if the repo already has an auth solution" | **Supabase Auth, already**, with RLS carrying `progress`, `library`, `targets`, `scenarios`, `profiles` | nothing to decide and nothing to bolt on. The spec's own argument for Supabase over D1 is the argument this site already took |
-| React + Vite + TypeScript if greenfield | Next.js routes under `next/app/`, components under `next/components/` | a route and components, per the rule that nothing new is hand-written HTML |
-| plain CSS modules | `next/styles/site.css`, Tailwind, a glass material system, a component library | no second styling system |
-| `reference/sadias-day.html` as the visual reference | **it does not exist**, and the author has confirmed it never did | nothing is being ported. §6 of the spec describes the behaviour precisely and §11's look is superseded by §4 below |
-| its own palette, `Baloo Da 2` and `Caveat` self-hosted | a settled type scale, two Bangla faces, and a CSP | superseded, with **one exception**, and the exception is the point. See §4 |
-| `/settings/tools/routine` | there is no `/settings` tree; `/account` is the settings page | `/tools/routine/settings`. Two surfaces, as the spec insists, at addresses this site understands |
+Supabase Auth and row-level security, which already carry
+`progress`, `library`, `targets`, `scenarios` and `profiles`; a
+Next route under `next/app/` with components under
+`next/components/`; `next/styles/site.css`, Tailwind and the
+component library. **No second auth solution, no second styling
+system, and no palette of its own.**
 
-**The one thing marked DECIDE WITH ME is answered by the repository
-rather than by me.** `aab/src/account.ts` is Supabase Auth, five
-tables already sit behind row-level security, and `aab/sync.js`
-already treats the account as the record and the browser as a mirror.
+There is no `/settings` tree on this site, so the second surface is
+`/tools/routine/settings` and `/account` is where the site's own
+settings live.
 
 ---
 
@@ -144,11 +139,11 @@ line beside it turns one tick into a tiny diary, and it is the
 cheapest warmth in the whole schema.
 
 **`tasks` is jsonb and must stay jsonb.** Entries key marks by task
-id. If tasks were rows, deleting one would break history or cascade
-it away. **Deleting a task sets `archived: true`. Ids are never
-reused and never removed.** An archived task leaves today's list and
-still renders correctly on a day it was marked. Do not normalise
-this.
+id, so if tasks were rows, deleting one would break history or
+cascade it away. **Deleting a task sets `archived: true`. Ids are
+never reused and never removed.** An archived task leaves today's
+list and still renders correctly on a day it was marked. Do not
+normalise this.
 
 ```json
 { "id": "eng", "band": "learn", "en": "English + German",
@@ -173,12 +168,12 @@ above is owner-scoped, so an unfiltered read returns your own rows,
 and the filter goes in anyway for the reason `saveProfile` already
 gives at length.
 
-**No local mirror**, deliberately. `progress` has one because four
-schools have read localStorage since before there were accounts and a
-reader with no account still gets all of it. Nothing here has that
-history and nothing here works signed out, so a second copy would be
-a second record to keep in step for nobody. `scenarios` and `targets`
-already follow this.
+**No local mirror**, deliberately, the way `scenarios` and
+`targets` already work. `progress` has one because four schools
+have read localStorage since before there were accounts and a
+reader with no account still gets all of it. Nothing here works
+signed out, so a second copy would be a second record to keep in
+step for nobody.
 
 ---
 
@@ -186,26 +181,23 @@ already follow this.
 
 **The site's design system, and that is not a compromise.** A new
 tool arriving with its own palette is a redesign smuggled in as a
-feature: `/account` and the calculators would be two looks and this a
-third. `--accent` already does what the band colours are for. The
-site sets it per section from one table and every card, chip, meter,
-rule and focus ring derives from it, so **a band's colour becomes
-`--accent` inside that band**, exactly as a school's colour already
-does, and the six bands are six values in one place.
+feature. `--accent` already does what the band colours are for, so
+**a band's colour becomes `--accent` inside that band**, exactly as
+a school's colour does, and the six bands are six values in one
+place.
 
 ```
 learn #6E52A8   kitch #C4711F   home #2F8A64
 mine  #A2790B   rest  #4C61A8   kind #B45570
 ```
 
-**One exception, and it is the emotional centre of the tool.**
-`Caveat` is loaded for exactly one element: **what she wrote
-herself.** The note, the "something I chose" line, and nothing else.
-The CSP already allows `fonts.googleapis.com` and
-`fonts.gstatic.com`, so this costs no policy change and one
-stylesheet link. Handwriting everywhere is a theme; handwriting on
-the one handwritten thing is the difference between a page that looks
-like a notebook and a page that *has your handwriting in it*.
+**One exception.** `Caveat` is loaded for exactly one element:
+**what she wrote herself.** The note, the "something I chose" line,
+and nothing else. The CSP already allows `fonts.googleapis.com` and
+`fonts.gstatic.com`, so this costs no policy change. Handwriting
+everywhere is a theme; handwriting on the one handwritten thing is
+the difference between a page that looks like a notebook and a page
+that *has your handwriting in it*.
 
 `Baloo Da 2` is **not** loaded. `--font-bn` is already Noto Sans
 Bengali and carries the whole site's Bangla.
@@ -284,21 +276,16 @@ however charming it is.
 
 ### 7.1 The jar of good things · কাচের বয়াম
 
-Every "one good thing today" drops into a jar drawn on the year page.
-It fills as the year goes on. Press it and one line comes out at
-random, with its date.
-
-Over a year this is the best thing in the tool, and it is a `select`
-with an `order by random() limit 1`. It can only ever get fuller.
+Every "one good thing today" drops into a jar drawn on the year
+page. It fills as the year goes on. Press it and one line comes out
+at random, with its date: a `select` with an
+`order by random() limit 1`. It can only ever get fuller.
 
 ### 7.2 A year ago today · এক বছর আগে আজ
 
-Open a day, and if there is a note from that date a year ago, a month
-ago, or the same weekday last season, it appears quietly at the
-bottom in her own handwriting.
-
-Nothing else in the tool will be as good as reading *"the birds ate
-from my hand"* twelve months later on a Tuesday.
+Open a day, and if there is a note from that date a year ago, a
+month ago, or the same weekday last season, it appears quietly at
+the bottom in her own handwriting.
 
 ### 7.3 The birds · পাখিরা
 
@@ -498,17 +485,9 @@ be acquired by accident.
 
 ## 9. Build order
 
-Each phase ships working, is a pull request, and is merged before the
-next begins. Not all four and then integrate.
-
-| phase | what | done when |
-| --- | --- | --- |
-| **1** | migration, RLS, the isolation proof, `shared/routine.ts` and the three templates | A cannot read B's rows, proven against the real database; leisure cannot fail and nobody is shown a zero, proven by 50 checks |
-| **2** | the daily view: marks, note, autosave, language, the tick | the twenty-second path works one-handed on a phone |
-| **3** | settings: builder, templates, seeds, export and import | Sadia's day loads in one press; export, erase, re-import lands exactly where you were. **Done.** |
-| **4** | the year, the jar, the birds, the garden, the seasons | six panels drawn from the rows, and the page in বর্ষা does not look like the page in শীত. **Done**, print view included |
-
-**All four have shipped.** What is left is in §10, and it is left on purpose.
+**All four phases have shipped**: the migration and the isolation
+proof, the daily view, settings, and the year with the print view.
+What is left is in §10, and it is left on purpose.
 
 ---
 

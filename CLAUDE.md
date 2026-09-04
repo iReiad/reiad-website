@@ -4,14 +4,13 @@
 
 **Never use the em dash, U+2014, anywhere on this site.** It is not written
 out anywhere in this repo on purpose: the check below greps for it, and a
-rule that contains the character it bans always matches itself. Not in page copy,
-not in headings, not in meta descriptions, not in Bangla, not in strings a
-script writes into the DOM, not in commit messages or PR bodies.
+rule that contains the character it bans always matches itself. Not in page
+copy, not in headings, not in meta descriptions, not in Bangla, not in
+strings a script writes into the DOM, not in commit messages or PR bodies.
 
-This is not a preference about one character. A sentence that needs an em
-dash is usually a sentence holding two ideas that have not been separated
-properly, and the mark is doing the work that punctuation or a full stop
-should be doing. Take the extra second and write it out.
+A sentence that needs an em dash is usually a sentence holding two ideas
+that have not been separated properly, and the mark is doing the work that
+punctuation or a full stop should be doing. Write it out.
 
 What to use instead, in the order worth trying:
 
@@ -30,24 +29,14 @@ never one comma and one bracket.
 En dashes (U+2013) in number ranges are fine and are not affected by any of
 this: `2024–26`, `৳50–100`.
 
-The same rule applies to code comments in new work. The comments in this
-repo are long and explanatory on purpose, and they read better without the
-dash too.
-
-Quick check before committing, and it runs inside
-`check-all.ts` too:
+The same rule applies to code comments in new work.
 
 ```sh
 node scripts/check-dashes.ts
 ```
 
-That was a grep in `.github/workflows/checks.yml` and nowhere
-else, which made it the one rule in that file `check-all.ts` did
-not run: a laptop could not catch what CI would fail on. It duly
-failed on a test whose own assertion that no em dash exists was
-written with one in it, on a commit where every local check
-passed. It reads every tracked file now rather than six named
-directories, so this file and every migration are covered too.
+It reads every tracked file, so this file and every migration are covered,
+and `check-all.ts` runs it.
 
 ## React or a route. `aab/` is closed, and it is a check now.
 
@@ -65,7 +54,7 @@ What that rules out, concretely:
 - a new `.js` under `functions/`,
 - a second copy of chrome the shell already renders. The rail, the top
   bar and the footer are `next/components/`, and a page that draws its own
-  is a page that will drift from the other 250.
+  will drift from the other 250.
 
 **`scripts/check-closed.ts` holds it, because the prose did not.** The old
 system is recorded by name in `scripts/closed-set.json` and the list may
@@ -73,29 +62,15 @@ only get SHORTER: a conversion removes a name and `--update` records it, a
 new file is not in the list and the check fails naming what to build
 instead.
 
-It was written the morning `aab/src/glow.ts` was, which is the whole
-argument. The pointer glow needed one listener; `tilt.ts` was a served
-module, the neighbours are always the pattern, so the new one was too. It
-is `next/components/glow.tsx` instead, and nothing outside the Next shell
-ever needed it: building it the old way would have cost a module
-registration, a tsconfig path, a service-worker precache entry and a
-version bump to serve one listener to pages that are already React.
-
-That is `check-mjs.ts`'s lesson one level up. Somebody adds a thing beside
-the thing that is already there, and the pattern reproduces itself faster
-than the paragraph gets read.
-
 ```sh
 node scripts/check-closed.ts --list      # what is still on the old system
 node scripts/check-closed.ts --update    # after converting one, record it
 ```
 
 `MIGRATION.md` lists what is still on the old method. The four practice
-books were the last real pages and are routes as of #129:
-`next/app/[section]/[slug]/arbeitsbuch.html` and `workbook.html`, with
-`aab/schools/workbook.js` loaded by the route as the engine. The two
-builders that emitted them from a template literal are gone, not
-archived.
+books are routes: `next/app/[section]/[slug]/arbeitsbuch.html` and
+`workbook.html`, with `aab/schools/workbook.js` loaded by the route as the
+engine.
 
 The two exceptions are `404.html` and `offline.html`, and they are
 exceptions on purpose: they have to answer when the Worker, the route and
@@ -103,11 +78,8 @@ the network are all unavailable, which is exactly when a route cannot.
 
 ## An address has no `.html`, and the two files that do are not routes
 
-A page of this site is `/about`, `/skills`, `/money/basics-1`.
-Task #28 took the suffix off every route directory under
-`next/app/` that carried one, and every old spelling is a 301 in
-`aab/_redirects`. The suffix was never a fact about a route: it was
-a fact about a file, and there are two files left.
+A page of this site is `/about`, `/skills`, `/money/basics-1`, and every
+old spelling is a 301 in `aab/_redirects`.
 
 Three places have to agree or the address is dead, and each one
 fails differently:
@@ -137,20 +109,14 @@ neither.
 
 **A layout wraps everything under it, so a section whose own page
 needs one puts that page in a route group.** `/portfolio/(hub)/`
-and `/tools/(hub)/` are what that looks like, and until 30 August
-2026 the reason was not written down anywhere: `/admin/layout.tsx`
-plus `/admin/research/layout.tsx` is TWO shells on one page. Two
-rails, two top bars, two footers, two boot scripts writing the
-same three attributes on `<html>`, and `margin-left:
-var(--rail-w)` on two nested `.shell-col`s, which took 268px off
-the width of the one route that most needed the room.
-
-**It renders perfectly.** The rail and the bar are `position:
-fixed`, so the two copies sit exactly on top of each other and a
-screenshot shows one of each. It was found by measuring the
-element rather than by looking at it, which is why
-`check-routes.ts` asks now: it counted layouts already and failed
-only on zero.
+and `/tools/(hub)/` are what that looks like. `/admin/layout.tsx`
+plus `/admin/research/layout.tsx` is TWO shells on one page: two
+rails, two top bars, two footers, two boot scripts writing the same
+three attributes on `<html>`, and `margin-left: var(--rail-w)` on
+two nested `.shell-col`s, which takes 268px off the width. The rail
+and the bar are `position: fixed`, so the two copies sit exactly on
+top of each other and a screenshot shows one of each.
+`check-routes.ts` counts layouts and fails on two as well as on zero.
 
 ## Convert what you touch
 
@@ -168,21 +134,19 @@ Real types, not `any` and not `@ts-expect-error`: the latter silences the
 complaint without describing anything, and silences the next one too. A JS
 module that has to stay JS gets a declaration in `app/src/types/`.
 
-Update `MIGRATION.md` in the same commit. A tracker that is right on the day
-it was written is the failure this file opens with.
+Update `MIGRATION.md` in the same commit.
 
 **Never edit a built file.** `aab/*.js` that has a source in `aab/src/` is
-output. Editing it looks like it works, passes every check, and is discarded
-by the next build. That happened to `courses-answers` in `sync.js`: the key
-was added to the output, the next `build-modules` run dropped it, and quiz
-answers saved on one device and reached no other. `check-courses.ts` now
-fails if this section writes a storage key the account does not carry.
+output. Editing it looks like it works, passes every check, and is
+discarded by the next build. `check-courses.ts` fails if that section
+writes a storage key the account does not carry, which is what
+`courses-answers` cost when it was added to the output rather than the
+source.
 
 **A comment that names a file has to name one that exists.**
 `check-pointers.ts` reads every tracked file and fails on any
 `check-*`, `build-*`, `import-*`, `export-*` or `*.test.*` name
-that reaches nothing. A stale pointer costs nothing until somebody
-follows it, which is precisely why they survive.
+that reaches nothing.
 
 A name that is gone ON PURPOSE goes in `GONE` in that file, keyed
 by the file AND the name, with the reason. Keyed by both because
@@ -198,31 +162,18 @@ address the cache has never seen, and a served module is in
 `app/vite.config.ts` builds one file at a stable path so this
 worker and the route that loads it keep naming something real, and
 at 232 KB precaching it would cost every reader who never opens
-the Studio a quarter of a megabyte.
-
-That left it on stale-while-revalidate, where the cache answers
-and the network refreshes for next time, which for a file that
-never changes name means the Studio is ALWAYS ONE BUILD BEHIND:
-publish, open the page, get the previous build; reload, get the
-new one. Every check passed and the deploy was correct.
-`STABLE_BUNDLE` in `sw.js` is the pattern, `check-sw.ts` fails if
-it stops matching anything, and `aab/sw.test.ts` installs the real
-worker and changes a file underneath it.
+the Studio a quarter of a megabyte. On stale-while-revalidate the
+cache answers and the network refreshes for next time, which for a
+file that never changes name means the Studio is ALWAYS ONE BUILD
+BEHIND. `STABLE_BUNDLE` in `sw.js` is the pattern, `check-sw.ts`
+fails if it stops matching anything, and `aab/sw.test.ts` installs
+the real worker and changes a file underneath it.
 
 **Nothing here is `.mjs`, and it is a check now.**
-`scripts/check-mjs.ts` fails on any tracked `.mjs` or `.cjs`.
-
-It was a paragraph in this file first, saying nothing new should
-be one, and it was broken anyway: twenty-three of them were here
-on 19 August 2026, five in `next/` alone. That is what a rule
-enforced by whoever last read the prose looks like. Somebody
-adding a test opens the one beside it, sees `.mjs`, and writes
-another, and the pattern reproduces itself faster than the
-paragraph gets read.
-
-There is nothing to trade. A `.ts` runs under node with no build
-step, no loader and no configuration, because type stripping has
-been on by default since 22.18.
+`scripts/check-mjs.ts` fails on any tracked `.mjs` or `.cjs`. There
+is nothing to trade: a `.ts` runs under node with no build step, no
+loader and no configuration, because type stripping has been on by
+default since 22.18.
 
 **Renaming is half of it.** The other half is a config that
 typechecks the file, and `scripts/check-types.ts` is what says the
@@ -239,17 +190,7 @@ One exception, in `KEPT` in the check with its reason: Next loads
 no `.ts` form of that file to write. An entry there has to name a
 LOADER; "it would be work to convert" is debt, and debt goes in
 the same commit as the conversion. The check also fails on a
-STALE exception, for the reason `GONE` above is keyed by two
-things.
-
-The sweep that emptied it found three bugs in one generator that
-nothing could see while it was `.mjs`: a filter on `stage.inline`,
-a field removed two days earlier, so the condition read
-`undefined` on every lesson; a sitemap entry that would emit
-`<loc>https://reiad.co.uknull</loc>` for a page with no URL; and a
-practice-book condition written out a second time beside the
-function that already applied it. That is the argument for the
-rule in one file.
+STALE exception.
 
 ## Comments carry the constraint, not the story
 
@@ -274,23 +215,18 @@ node scripts/check-all.ts      # every check and fast test, about 18s
 ```
 
 **That file IS the list.** `.github/workflows/checks.yml` calls it, once
-per stage, rather than keeping a second copy: it kept one until 19
-August 2026 and the copy went stale the first time a generator was
-renamed, which is the failure at the top of this file happening to
-the thing that catches that failure.
+per stage, rather than keeping a second copy.
 
 ```sh
 node scripts/check-all.ts --stage=checks     # or generated, or tests
 ``` The browser and network tests are listed under
 "Before deploying" and still have to be run by hand.
 
-**`checks.yml` runs on `push`, and that is deliberate.** On 18 August 2026
-`pull_request` stopped firing it, for opens and for pushes alike, while
-`push` kept working: `live-check.yml` runs on push and never missed one. Two
-pull requests sat with three green checks and no `checks` run, which is the
-one that runs the tests. `pull_request` is still listed so the run attaches
-to the pull request when GitHub does deliver the event, and main is excluded
-because `deploy.yml` calls this workflow before it uploads.
+**`checks.yml` runs on `push`, and that is deliberate.** `pull_request` has
+stopped firing before, for opens and for pushes alike, while `push` kept
+working. `pull_request` is still listed so the run attaches to the pull
+request when GitHub does deliver the event, and main is excluded because
+`deploy.yml` calls this workflow before it uploads.
 
 **Three green checks is not green.** `checks` is the fourth and it is the one
 that matters. If a pull request is missing it, dispatch the workflow on the
@@ -324,16 +260,8 @@ The same rule covers lists. A list of things that exist elsewhere on the
 site (case studies, articles, tools) is built from `shared/content.ts` or
 `shared/nav.ts` by the route that draws it, and the markup in the page is
 a fallback, not the source. Adding a case study should require editing
-`shared/content.ts` and nothing else.
-
-This exists because it went wrong, twice in one file. The portfolio page
-listed four case studies while seven existed, and three finished pieces of
-work were reachable only by typing the URL. The home page listed three of
-the seven under a line naming two of the four it left out. The stock check
-was described as "thirty-eight ratios" on one page, "thirty-odd" on four
-others and "more than thirty-six" in Bangla, for a model that scores
-forty-four. Nobody typed a wrong number. Each was right on the day it was
-written, and then the thing it counted grew.
+`shared/content.ts` and nothing else. Nobody types a wrong number: each was
+right on the day it was written, and then the thing it counted grew.
 
 Two counts (`ratios`, `pillars`) are typed into `COUNTS` because they
 belong to `tools/stock.model.js`, which `shared/content.ts` deliberately
@@ -341,16 +269,15 @@ does not import. They are asserted against that model by the check below.
 
 A sentence that genuinely cannot hold a slot (a `<meta>` description, a
 blurb inside `shared/content.ts`) goes in the `CLAIMS` table in
-`scripts/check-content.ts`, so the next data change fails a check rather than a
-reader.
+`scripts/check-content.ts`, so the next data change fails a check rather
+than a reader.
 
 ## There is an app, and the data half reaches it on its own
 
 **Anything that is DATA reaches the Android app with no app
 release. Anything that is CODE needs one.** That is the whole
-contract, and it is worth knowing before adding anything, because
-which side a change lands on decides whether there is a second
-job.
+contract, and which side a change lands on decides whether there
+is a second job.
 
 | Added here | The app |
 | --- | --- |
@@ -365,16 +292,15 @@ job.
 The top four rows are true because the endpoints SPREAD the tables
 rather than mapping them field by field. Pick fields by hand and it
 looks identical on the day it is written, then silently drops
-whatever somebody adds a year later, which is this file's opening
-failure wearing a different hat.
+whatever somebody adds a year later.
 
 **Three endpoints answer the app**, and the split is about what a
-reader pays for rather than about tidiness. `/api/site` is the
-furniture and is fetched on every cold start. `/api/tools` is the
-calculators' 366 phrases. `/api/foods` is the portion library and
-the nutrient panel, 57 KB, and it has a route of its own because a
-reader who never opens the diet tool should not download the food
-library to see the front page.
+reader pays for. `/api/site` is the furniture and is fetched on
+every cold start. `/api/tools` is the calculators' 366 phrases.
+`/api/foods` is the portion library and the nutrient panel, 57 KB,
+and it has a route of its own because a reader who never opens the
+diet tool should not download the food library to see the front
+page.
 
 **A nutrient added to a food row reaches the app with nothing
 published, and that is a property of the app rather than of the
@@ -385,14 +311,11 @@ a scaled row (`COVERAGE_KEYS` and `MACRO_KEYS`) are sent rather
 than written down twice. A Kotlin class with nineteen fields on it
 would decode the new row perfectly and drop the new figure.
 
-**`check-app-surface.ts` is what holds it**, because the prose
-alone would not. A fifteenth table in `shared/content.ts` that
-nothing sends is invisible: the site is correct, every check
-passes, and the app is missing something nobody can see is
-missing. So every `export const SHOUTING_CASE` in `content.ts`
-and `nav.ts` is either imported by that endpoint or named in
-`NOT_FOR_APP` with the reason it stays behind, and an exemption
-that has gone stale fails too.
+**`check-app-surface.ts` is what holds it.** A fifteenth table in
+`shared/content.ts` that nothing sends is invisible. So every
+`export const SHOUTING_CASE` in `content.ts` and `nav.ts` is either
+imported by that endpoint or named in `NOT_FOR_APP` with the reason
+it stays behind, and an exemption that has gone stale fails too.
 
 ```sh
 node scripts/check-app-surface.ts --list   # what the app gets, and what it does not
@@ -407,15 +330,10 @@ Every page of this site is a rail down the left, a bar across the
 top and a footer. All three are rendered on the server by
 `next/components/`, and all three read **one** table:
 `shared/nav.ts`. Add a school there and it appears in the rail,
-in the footer and on `/skills` at once.
-
-That is not tidiness. The menu used to be said in four places: the
-seven links written into every page's header, `buildMenu()` in
-`aab/app.js` which drew the overlay at runtime, the `SKILLS` list
-in `content.ts`, and the footer. They agreed because somebody
-remembered, which is the failure this file opens with, one level up
-from counting. The overlay also did not exist for a reader with
-JavaScript off, or for a crawler.
+in the footer and on `/skills` at once. A menu said in more than
+one place agrees only because somebody remembers, and an overlay
+drawn at runtime does not exist for a reader with JavaScript off
+or for a crawler.
 
 Three attributes on `<html>` drive the chrome, and all three are
 restored **before the first paint** by the boot script in
@@ -434,25 +352,19 @@ is where the rules are.
 
 **The audience switch turns on its side when the rail folds.** A
 folded rail is 76px and the switch is two halves reading
-"Learning / শিখতে এসেছি" and
-"Hiring / কাজের খোঁজে", so it measured
-173px inside a 76px column and spilled across the page, on the one
-width where the reader had asked for less. Hiding it was not the
-answer: folding the rail is not giving up the question. It becomes
-one column and two rows with a drawing each, the lozenge sliding
-down instead of across, and the rules are inside a
-`min-width: 901px` query rather than stated and then taken back in
-a second block, which is how the five older folded rules are
-written and four chances to get it wrong.
+"Learning / শিখতে এসেছি" and "Hiring / কাজের খোঁজে", so it measured
+173px inside a 76px column. Folding the rail is not giving up the
+question, so it becomes one column and two rows with a drawing
+each, the lozenge sliding down instead of across, and the rules are
+inside a `min-width: 901px` query rather than stated and then taken
+back in a second block.
 
 **Two pages are not routes and cannot be:** `404.html` and
 `offline.html`, which have to answer when the Worker, the route and
-the network are all unavailable, which is exactly when a route
-cannot. They carry `.slimbar` instead, in the same layer, and they
-are the whole of `aab/*.html` now. It was six until #129 ported the
-four practice books. If you add a third, give it the slim bar too:
-`body > header` is gone from the stylesheet and nothing will style
-a header you write.
+the network are all unavailable. They carry `.slimbar` instead, in
+the same layer, and they are the whole of `aab/*.html`. If you add
+a third, give it the slim bar too: `body > header` is gone from the
+stylesheet and nothing will style a header you write.
 
 ## One design system, and six kinds of glass
 
@@ -489,23 +401,18 @@ face, then the seat and the catch light at the bottom. `--depth` is
 a length in pixels there, and it drives the BOTTOM band only,
 because what you see looking slightly down at a slab is the whole
 top face, the far edge foreshortened to a line, and the near edge
-showing its full thickness. It was `--depth` px at the top for one
-commit, which on a card is five pixels of grey bar.
+showing its full thickness.
 
 **The rim goes all the way round, and it splits.** A flat face and
 a bright bottom band still reads as a painted rectangle until the
-edge closes. And a cut edge of real glass disperses, which is most
-of why a bevel reads as glass rather than as an outline somebody
-drew, so `--polish` mixes the section's accent into it. The money
-school's edge splits green and Deutsch's splits blue, and neither
-is a colour anybody typed.
+edge closes, and a cut edge of real glass disperses, so `--polish`
+mixes the section's accent into it. The money school's edge splits
+green and Deutsch's splits blue, and neither is a colour anybody
+typed.
 
-**The edge is a SHADOW, because a gradient is straight.** It was
-two gradients for one commit and they were wrong on anything round:
-a gradient stop is a straight line across the whole box, so the top
-of the bottom band was a CHORD. On a card it read as a rule
-somebody had drawn under the content; on a pill it cut clean across
-the lower curve and stopped dead where the arc began. An inset
+**The edge is a SHADOW, because a gradient is straight.** A
+gradient stop is a straight line across the whole box, so on
+anything round the top of the bottom band is a CHORD. An inset
 shadow is bounded by the border radius, so offsetting it down with
 a negative spread makes the band a crescent that hugs the bottom
 arc, thickest in the middle and tapering into the corners. The rim
@@ -514,19 +421,18 @@ whole silhouette, corners included.
 
 **Which means the material owns `box-shadow`, and that is only safe
 because of `--surface-shadow`.** A later layer REPLACES box-shadow,
-so this would have taken every hover lift and every focus ring on
-the site with it: fourteen rings and thirteen lifts, and a focus
+so this would otherwise take every hover lift and every focus ring
+on the site with it: fourteen rings and thirteen lifts, and a focus
 ring that is gone is an accessibility failure nobody can see in a
 screenshot. 44 rules set the token instead, the material's list
-ends `var(--surface-shadow, 0 0 transparent)`, and a ring now sits
+ends `var(--surface-shadow, 0 0 transparent)`, and a ring sits
 BESIDE the edge rather than instead of it.
 
 **`0 0 transparent`, never `none`.** A `none` is legal only as the
 whole of box-shadow, so `var(--edge), none` is invalid at computed
 value time and falls back to the initial value, which IS `none`:
 the edge vanishes from every surface with no shadow of its own, on
-a page that renders perfectly. That shipped for about ten minutes
-and was caught by asserting the computed style rather than looking.
+a page that renders perfectly.
 
 **And the edge opens as the thing leans towards you.** A card in
 `.tilt-scene` leans on hover, and a slab leaning towards a reader
@@ -534,8 +440,8 @@ shows more of its near edge. `--glow-a` is already the "the pointer
 is on this" number, already registered so it animates, already on
 the 190-in/820-out curve, so `--depth-lit` rides it and there is no
 second piece of state: a card's edge goes from 5.7px to 9.2px as
-the light comes up, and closes slowly behind it. A plate and a
-groove never raise it, which is right, because neither leans.
+the light comes up. A plate and a groove never raise it, because
+neither leans.
 
 `box-shadow` is deliberately NOT in the material's transition list.
 The edge is computed from a registered property that already
@@ -544,14 +450,12 @@ transitioning it as well starts a fresh transition on each of those
 frames.
 
 **Three of the four describe the glass. `--standing` describes the
-situation**, and it is the difference between a design system and
-a coat of paint. A lone button has to look pressable because
-nothing else says it is; a row in a list does not, because there
-are twenty of them in a column and the LIST is the affordance.
-Every kind having the same rest state is what turned the rail into
-twenty boxes. The block naming those classes is in `@layer glow`
-and its test is one question: **would this ever be the only one of
-its kind on the page?**
+situation.** A lone button has to look pressable because nothing
+else says it is; a row in a list does not, because there are twenty
+of them in a column and the LIST is the affordance. The block
+naming those classes is in `@layer glow` and its test is one
+question: **would this ever be the only one of its kind on the
+page?**
 
 Standing also drives the lit top edge, so it is what "flat top"
 means here. Standing 0 is flat, a chip at 0.3 is a hint of a bevel
@@ -569,10 +473,9 @@ the still ones say so with `--follows: 0` **on their class
 block**. Not with `--glow-w: 0`, which the derived formula
 overrides at equal specificity, and not on `[data-glow="pane"]`,
 which reaches almost nothing because the material is applied by
-class. Both mistakes shipped: a `.stat` measured 156px of moving
-light, then `.rail` and `.topbar` measured 220px each through two
-more releases with the flare reported twice and declared fixed
-once. `check-material.ts`'s ninth question is what asks now.
+class. Both mistakes shipped, as 156px of moving light on a
+`.stat` and 220px each on `.rail` and `.topbar`.
+`check-material.ts`'s ninth question is what asks now.
 
 **INTERACTIVITY decides whether the light follows, not whether a
 thing is in the system.** Everything is in it, which is what makes
@@ -588,22 +491,15 @@ same physical fact from two directions: a small piece of glass
 carries a tight bright spot and a thick one diffuses it wide.
 
 **As a surface gets thicker it must get less polished and less
-clear**, because that is what more material does to a light.
-`check-material.ts` asserts that ordering and names both kinds
-when it breaks: a sixth kind that breaks it breaks the idea rather
-than one number, and every value is plausible on its own.
+clear.** `check-material.ts` asserts that ordering and names both
+kinds when it breaks.
 
 **A GROOVE is the sixth, and it is the inverse of the other
-five.** Eleven classes on this site were the same object described
-eleven times: a thin pill, four to twenty pixels tall, ground out
-of `--paper-sunk`, clipped, with an `<i>` inside it in the accent.
-`.track` alone was written three times under three different
-parents. A groove is not a thinner plate: it is a channel cut IN,
-so the light in it runs the other way up, the near wall in shadow
-and the far wall catching the light where a slab has a lit top and
-a seated bottom. `--standing: 0` says it in the system's own words,
-because a groove stands on nothing, it IS the absence of standing.
-A segmented control is one too: a sunk track with a thumb riding in
+five.** A groove is not a thinner plate: it is a channel cut IN, so
+the light in it runs the other way up, the near wall in shadow and
+the far wall catching the light where a slab has a lit top and a
+seated bottom. `--standing: 0` says it in the system's own words. A
+segmented control is one too: a sunk track with a thumb riding in
 it, so `.audience-switch` is the groove and `.audience-slider` is a
 `control`.
 
@@ -618,44 +514,38 @@ node scripts/check-material.ts          # every pressable class is placed
 node scripts/check-material.ts --list   # what is on the system
 ```
 
-It asks nine questions, and each one is a thing that shipped:
+It asks nine questions:
 
 - **Is anything pressable off the system?** The first material
   reached 1 of 203 surface-like classes, because it was scoped to
-  an attribute only components carry, and nothing failed.
-- **Is anything SURFACE-SHAPED off the system?** For a while
-  question one was the whole of it, and it only ever looked at
-  things a reader presses. `.progress-line .track` sat at
-  `--depth: 0` on four schools' pages, a bare grey bar in a page
-  of glass, because nobody presses a progress bar. A surface here
-  is a class whose own rule gives it a ground AND an edge. Nested
-  blocks are stripped first, innermost outwards: counting a
-  `& .track { background }` made every flex wrapper look like a
-  surface and reported 57 where there were 39.
+  an attribute only components carry.
+- **Is anything SURFACE-SHAPED off the system?** A progress bar is
+  nobody's to press and was a bare grey bar in a page of glass. A
+  surface here is a class whose own rule gives it a ground AND an
+  edge. Nested blocks are stripped first, innermost outwards:
+  counting a `& .track { background }` made every flex wrapper look
+  like a surface and reported 57 where there were 39.
 - **Would the material take a surface's own gradient away?** A
-  later layer REPLACES `background-image` rather than merging, so
-  a listed class that paints its own loses it silently.
+  later layer REPLACES `background-image` rather than merging.
   `--surface-image` is the way through and this fails on a class
   that does not use it.
 - **Is the ladder still a ladder?** Thicker must mean less
   polished and less clear. `plate` and `groove` are skipped
   because their spread is zero, so their depth describes a still
   light rather than a following one.
-- **Does a kind name a class that exists?** `.prog-track` was in
-  the groove's list for one commit and is a class this stylesheet
-  has never had. Nothing failed, and the kind read as though it
-  covered a surface nobody can see.
+- **Does a kind name a class that exists?** A kind can name a class
+  the stylesheet has never had and read as though it covered a
+  surface nobody can see.
 - **Is anything given a kind and never painted?** The taxonomy is
   three lists and they are genuinely different sets: the paint
   rule is everything, the hover rule is only what follows the
   pointer, and each kind block is one kind. A class can get four
-  numbers from its kind and be left out of the paint rule, which
-  is a surface with the numbers and none of the light.
+  numbers from its kind and be left out of the paint rule.
 - **Would the material take a surface's own SHADOW away?** The same
-  trap one property along, and worse: what a surface loses is not a
-  wash but its hover lift and its focus ring. `--surface-shadow` is
-  the way through and this fails on a listed class that sets the
-  shorthand instead.
+  trap one property along, and worse: what a surface loses is its
+  hover lift and its focus ring. `--surface-shadow` is the way
+  through and this fails on a listed class that sets the shorthand
+  instead.
 - **Is an exemption stale?** `NOT_A_SURFACE` holds the rows of
   controls and `NOT_GLASS` holds the marks, the grid cells, the
   fills and the text fields, both keyed by class with the reason,
@@ -664,9 +554,8 @@ It asks nine questions, and each one is a thing that shipped:
 **`NOT_GLASS` has four arguments in it and they are different.** A
 MARK is not a surface: a bevel on a nine pixel dot is detail nobody
 can resolve. A CELL IN A GRID belongs to the grid: a year of days
-is 365 of them and glass on each is the cage one order of magnitude
-worse. A FILL is what is IN a groove, so giving it its own cut edge
-draws a channel inside a channel. And a TEXT FIELD answers
+is 365 of them. A FILL is what is IN a groove, so giving it its own
+cut edge draws a channel inside a channel. And a TEXT FIELD answers
 differently: its affordance is the caret and the focus ring, and a
 lit resting rim on a box you type into is a box that looks like a
 button.
@@ -676,21 +565,18 @@ button.
 `@layer glow` names a hundred classes other layers define, and it
 has to: the material is a property of what a thing IS rather than
 of what it looks like, so it cuts across every layer the way a
-theme does. `check-css.ts` used to fail that and was right to.
+theme does.
 
 What makes it the exception is that it CANNOT do the damage the
 rule guards against, and `check-css.ts` proves that rather than
 trusting it: `MATERIAL_PROPS` is the list, and it is short.
 
 **`position` was on that list for one draft and that is why the
-list is worth having.** The material set `position: relative` for
-a pseudo-element it had stopped using, and a later layer saying
-`relative` overrides `fixed` on `.rail` and on `.topbar`: the rail
-and the bar dropped out of their fixed positions into the flow and
-pushed every page thirteen hundred pixels down. Both still
-rendered, both kept their colours, and every check passed. Position
-is geometry, so are `isolation`, `z-index` and `display`, and none
-of them is the light.
+list is worth having.** A later layer saying `relative` overrides
+`fixed` on `.rail` and on `.topbar`, which drops both out of their
+fixed positions into the flow and pushes every page thirteen
+hundred pixels down. Position is geometry, so are `isolation`,
+`z-index` and `display`, and none of them is the light.
 
 ### Eleven finishes, and a cast pattern is light and shadow
 
@@ -698,9 +584,7 @@ of them is the light.
 this is what it is MADE of, and the reader chooses it on
 `/account` with every one of them drawn beside its name.
 
-Nine are cast glass and the names are the trade's own. The
-distinction running through them is the one the taxonomy already
-makes between a plate and a groove, one order of magnitude down:
+Nine are cast glass and the names are the trade's own:
 **reeding is a run of convex ridges and fluting is a run of
 concave channels**, so a reed is lit on the flank NEAREST the
 light and a flute on the wall FURTHEST from it. Getting that
@@ -709,61 +593,48 @@ than as moulded glass.
 
 **Every one of them is two colours: a white at a low alpha and a
 black at a low alpha.** Nothing names a hue, which is what lets
-one definition serve both themes and all seven accents. It is
-also what the old weave got wrong: two hairlines of `--tex-ink`
-crossing at 45 degrees every five pixels is a colour laid over a
-colour in a lattice the eye finds in about a second, at an angle
-no paper-making process produces, and it had to be written TWICE
-because naming `--accent` freezes it at the declaration site. A
-bump on green glass is green because the ground is.
+one definition serve both themes and all seven accents. Naming
+`--accent` freezes it at the declaration site; a bump on green
+glass is green because the ground is.
 
 **How much of it a reader sees is a knob, and it had to be.** It
-rode on `--depth` for one draft, so a pane at 9 would carry more
-of its pattern than a chip at 1. It computed to the same number on
-every surface on the site: **a custom property's computed value is
+cannot ride on `--depth`: **a custom property's computed value is
 the specified value with `var()` ALREADY SUBSTITUTED, on the
 element the declaration is on**, and `--glass-grain` names
 `--tex-hi` names `--tex-k` names `--depth`, all four declared on
-`:root` where depth is 0. There is a way, declaring the chain on
-`*`, and it is three custom properties on every node with a
-nine-layer gradient among them, which is tens of thousands of
-`color-mix` calls on a long page to vary an alpha nobody asked
-about. `--tex-strength` is the reader's instead, which is what was
-actually wanted: the finishes already span an order between a thin
-reed and a deep flute, and what somebody wants to say is "less of
-that".
+`:root` where depth is 0, so it computes to the same number on
+every surface on the site. Declaring the chain on `*` is the way
+through and costs tens of thousands of `color-mix` calls on a long
+page. `--tex-strength` is the reader's knob instead.
 
-**The paper is paper now.** Three things at three scales: a wove
+**The paper is paper.** Three things at three scales: a wove
 TOOTH, which is amorphous, out of five stipples at pitches sharing
 no factor, which is the snow's trick in `@layer weather`; LAID
 LINES, fine and in one direction, at a tenth of the strength; and
 FORMATION, the cloudiness a sheet has from the way the pulp fell,
-at three hundred times the pitch of the tooth. Square tilings are
-not enough on their own, and that is the thing worth copying: five
-square grids at coprime WIDTHS still put every blob in a row,
-because the vertical rhythm is the same in all five.
+at three hundred times the pitch of the tooth. Five square grids
+at coprime WIDTHS still put every blob in a row, because the
+vertical rhythm is the same in all five.
 
 **A finish is three files and `check-glass.ts` holds them.**
 `GLASSES` in `aab/src/prefs.ts`, a `[data-glass="<id>"]` block in
-`site.css`, and the whitelist in the boot script. Each way of
-getting it wrong is silent in its own way, and the third is the
-worst: the panel offers it, the stylesheet draws it, and the
-choice survives exactly until the next page load, when the boot
-script writes `frost` over it.
+`site.css`, and the whitelist in the boot script. The third is the
+worst to get wrong: the panel offers it, the stylesheet draws it,
+and the choice survives exactly until the next page load, when the
+boot script writes `frost` over it.
 
 **The trailing `auto` in the material's `background-size` is the
 LIGHT.** A size list shorter than the image list repeats from the
-start, so a nine-layer texture with nine sizes left the glow with
-the first stipple's 7x11 tile and the whole light became a 7px dot
+start, so a nine-layer texture with nine sizes leaves the glow with
+the first stipple's 7x11 tile and the whole light becomes a 7px dot
 repeated across the surface.
 
 ## Two kinds of card, and a reader can tell them apart
 
-`.cell` was one card doing five jobs: a link to an article, a
-statistic, a paragraph about a service, a calculator, and a heading
-with bullets under it. All five looked the same, so the only way to
-find out which of them would take you somewhere was to move the
-mouse.
+One card doing five jobs (a link to an article, a statistic, a
+paragraph about a service, a calculator, a heading with bullets)
+means the only way to find out which of them takes you somewhere is
+to move the mouse.
 
 `@layer deck` has two, and `components/deck.tsx` is the markup:
 
@@ -790,10 +661,9 @@ each school, tool and desk wears, so the board, `/skills` and the
 tools hub draw the same picture for the same thing out of one
 table, and the Android app is sent it like every other field.
 
-**They were twenty-five committed WebP files and are markup now.**
-A raster cannot answer a theme: light and dark would have meant
-fifty, kept in step by hand. That also took a build step, a
-browser, a stamp file and 300 KB of binaries out of the repository.
+**They are markup, not rasters.** A raster cannot answer a theme:
+light and dark would mean two files each, kept in step by hand,
+plus a build step, a browser, a stamp file and 300 KB of binaries.
 
 ### A scene is a room, not a picture
 
@@ -824,9 +694,8 @@ more drawings to keep in step for a layer rendered at 62% opacity
 behind a 1.1px blur.
 
 **`<Scene>` takes a drawing rather than owning one.** The seven case
-studies each carry a sparkline describing that model, which is a
-better picture than any of the twelve, and it belongs in a room
-like everything else.
+studies each carry a sparkline describing that model, which belongs
+in a room like everything else.
 
 **Three sizes, and each changes ONE number.** `band`, `tile`,
 `panel`. The layers, the depths and the drawing are identical;
@@ -835,11 +704,10 @@ inside an 84px thumbnail slides off its own floor.
 
 ### At night a thing is lit; on paper a thing is printed
 
-Believing a palette was enough is what made the first light mode
-look bleached. Light ADDS: a glowing edge over black is brighter
-than the black. Ink SUBTRACTS: nothing on paper is brighter than
-the paper, so a bloom over white is invisible and the only way to
-say "this is in front" is a cast shadow.
+A palette is not enough. Light ADDS: a glowing edge over black is
+brighter than the black. Ink SUBTRACTS: nothing on paper is
+brighter than the paper, so a bloom over white is invisible and the
+only way to say "this is in front" is a cast shadow.
 
 | | |
 | --- | --- |
@@ -850,22 +718,18 @@ say "this is in front" is a cast shadow.
 
 **Which end a tone mixes towards is the rest of the trick.** A tone
 that has to be SEEN mixes towards `--ink`. A tone that has to
-RECEDE mixes towards `--art-haze`. `--art-lit` mixed the wrong way
-for one build and every drawing came out as pale as the paper.
+RECEDE mixes towards `--art-haze`. Mix the wrong way and every
+drawing comes out as pale as the paper.
 
 **It is `.artwork`, not `.art`.** `.art` has been the icon beside a
 step's name since the schools were written, at 1.6em square, in
-`@layer money`. Taking the name made every drawing on the front
+`@layer money`. Taking the name makes every drawing on the front
 page 27 pixels wide.
 
 **And a modifier handed to `<CardArt>` has to be two classes deep
-or declared after `.artwork`.** The featured card's own class was
-one class and came first, so `.artwork`'s `position: relative` and
-16:9 ratio won and the front page's biggest card carried a 540px
-stamp in its top left corner with two thirds of itself empty. It
-rendered perfectly wrong, which is why nothing failed. That card
-is gone; the rule is not, and `.learn-lead` broke it the same way
-the day it was written.
+or declared after `.artwork`.** One class declared first loses to
+`.artwork`'s `position: relative` and 16:9 ratio, which draws a
+540px stamp in the top left corner of a card two thirds empty.
 
 ### The light is instant and the glass has weight
 
@@ -879,10 +743,10 @@ a lamp over a table is over the table the instant you move it.
 towards the pointer through a critically damped spring, because a
 sheet of glass has weight. `DAMPING` is exactly `2 * sqrt(STIFFNESS)`,
 which is the one value at which it arrives as fast as it can
-without crossing: softer drags, stiffer wobbles, and a wobble reads
-as a bug rather than as weight. The loop cancels itself once the
-error and the velocity are both under a threshold nobody can see,
-so a still pointer over a settled card costs no frames.
+without crossing: softer drags, stiffer wobbles. The loop cancels
+itself once the error and the velocity are both under a threshold
+nobody can see, so a still pointer over a settled card costs no
+frames.
 
 `--gvx`/`--gvy` comes free out of that, and the specular stretches
 along it, which is what a real highlight does when the light
@@ -893,27 +757,21 @@ crosses a surface faster than the surface can answer.
 0 from it for ever. Only the strength animates, never `translate`
 itself, or the picture lags the hand.
 
-**The event records and the frame writes, and `tilt.js` did not.**
-`glow.tsx` says why at length in its own header: `pointermove`
-fires as fast as the pointer reports, a 1000Hz mouse reports
-sixteen times per frame, and a screen draws once. `aab/src/tilt.ts`
-predates that file and read the card's box out of the layout and
-wrote a rotation back into it once per EVENT, which is sixteen
-forced layouts and sixteen style writes per frame for one picture.
-The rectangle is read inside the frame rather than cached, because
-a cached box has to be invalidated by scrolling, resizing, a font
-arriving and anything that reflows a grid, and one read per frame
-is cheaper than getting that list wrong.
+**The event records and the frame writes.** `pointermove` fires as
+fast as the pointer reports, a 1000Hz mouse reports sixteen times
+per frame, and a screen draws once, so reading a box out of the
+layout and writing a rotation back per EVENT is sixteen forced
+layouts and sixteen style writes per frame for one picture. The
+rectangle is read inside the frame rather than cached, because a
+cached box has to be invalidated by scrolling, resizing, a font
+arriving and anything that reflows a grid.
 
 **And both stand down while the page is scrolling.**
 `data-scrolling` on the root, published by `glow.tsx` and read by
 `tilt.js`, which cannot import across the wall. A reader scrolling
-with the pointer over the cards is making ONE gesture: every lean
-computed then comes from a position that changed because the page
-moved, and it is asked for at the one moment a reader can feel
-every dropped frame. Not a cheaper frame, no frame. Measured over
-a 3150px scroll with the pointer moving, through the two files'
-own logic:
+with the pointer over the cards is making ONE gesture, and it is
+asked for at the one moment a reader can feel every dropped frame.
+Measured over a 3150px scroll with the pointer moving:
 
 | | before | after |
 | --- | --- | --- |
@@ -928,57 +786,41 @@ was fixed rather than turned off.
 
 ## A photograph stands in a room too
 
-Every card on this site is ten layers with a subject standing in
-one of them. A photograph in an article was an `<img>` with a
-hairline round it, on the one page where the picture is the
-biggest thing on screen.
-
-**And it had to be done with no markup.** A figure comes out of
+**A photograph gets a room with no markup.** A figure comes out of
 the database as `<figure class="..."><img><figcaption>`, through
 two sanitisers, in three hundred stored bodies. There is nowhere
 to put a layer. So the room is the two pseudo-elements a figure
 already has: `::before` is the ground it stands on, `::after` is
 the glass in front, and the photo is the stage between them.
-Three layers rather than ten, and three is what a photograph
-needs: it is already a picture, and the room's job is to PLACE it
-rather than to be looked at.
+Three layers rather than ten, because a photograph is already a
+picture and the room's job is to PLACE it.
 
 **A figure is a GRID and all three are in cell one.** The ground
 and the glass have to cover the photograph and not the caption,
-and a figure holds both; positioning them against the figure puts
-the words on a green plate. A pseudo-element is a grid item, so
-the picture, the ground and the glass share row one and the
-caption is row two. That is the one arrangement needing no
-number: the row is exactly as tall as the picture, whatever shape
-the camera made it. `figure.duo` opts out, because two
-photographs side by side are a comparison rather than a thing on
-a plinth.
+and positioning them against the figure puts the words on a green
+plate. A pseudo-element is a grid item, so the picture, the ground
+and the glass share row one and the caption is row two: the row is
+exactly as tall as the picture, whatever shape the camera made it.
+`figure.duo` opts out, because two photographs side by side are a
+comparison rather than a thing on a plinth.
 
-**The depth comes from the READER, not the pointer.** `@layer
-relief` leans a thing towards a pointer, and a photograph is the
-one surface where that is wrong twice over: it is read rather
-than pressed, which in this design system means a `plate` and a
-still light, and half the readers of a long piece are on a phone,
-where the biggest picture on the page would be the one thing with
-no depth in it. So the three layers move at three speeds as the
+**The depth comes from the READER, not the pointer.** A photograph
+is read rather than pressed, which in this design system means a
+`plate` and a still light, and half the readers of a long piece
+are on a phone. So the three layers move at three speeds as the
 reader scrolls past, which is `animation-timeline: view()`, runs
 on the compositor and needs no JavaScript.
 
-**`check-relief.ts` asks a fourth question now**: every
-scroll-driven animation has to sit inside a
-`prefers-reduced-motion: no-preference` block, or be named in
-`TIED_TO_SCROLL` with the reason it IS the scroll rather than a
-decoration of it. Two are: a bar that fills as the page moves is
-a scrollbar, and a fade at the end of an overflowing row is an
-affordance saying there is more.
+**`check-relief.ts` asks a fourth question**: every scroll-driven
+animation has to sit inside a `prefers-reduced-motion:
+no-preference` block, or be named in `TIED_TO_SCROLL` with the
+reason it IS the scroll rather than a decoration of it. Two are: a
+bar that fills as the page moves is a scrollbar, and a fade at the
+end of an overflowing row is an affordance saying there is more.
 
-It walks the stylesheet FORWARDS keeping a stack of what is open,
-and the first draft looked backwards for the nearest guard and
-counted braces from it. That is wrong in a way worth writing
-down: a guard that has already closed is still the nearest one
-behind, and whether its braces balance to something positive
-depends on how many rules sit between. It passed a rule whose
-guard had been deleted.
+It walks the stylesheet FORWARDS keeping a stack of what is open.
+Looking backwards for the nearest guard is wrong: a guard that has
+already closed is still the nearest one behind.
 
 ## Everything drawn ON a surface stands off it
 
@@ -987,21 +829,20 @@ card's scene throws 26 pixels; a search button's icon throws two.
 Same light, same pointer, same curve, because the difference
 between a card and a button is size and nothing else.
 
-**`--lift` is not `--glow-a`**, for the reason above: it is a plain
-custom property set on any hovered ancestor, so it inherits, and
-the figure multiplies the pointer by it. Nothing transitions on the
-ancestor: a `transition` in a later layer REPLACES the list
-underneath rather than merging with it, so one on
-`:where(a, button)` would take the hover colour off every link on
-the site. The figure owns its own transition.
+**`--lift` is not `--glow-a`**: it is a plain custom property set
+on any hovered ancestor, so it inherits, and the figure multiplies
+the pointer by it. Nothing transitions on the ancestor: a
+`transition` in a later layer REPLACES the list underneath rather
+than merging with it, so one on `:where(a, button)` would take the
+hover colour off every link on the site. The figure owns its own
+transition.
 
 **A relief layer may move a thing and may never lay it out**, which
 is how it earns the right to name classes other layers define. The
-material earns the same exception by setting nothing but the light;
-a relief cannot promise that, because moving is what it does. So
-`check-css.ts` knows about both kinds, and the one word this layer
-may never say is `transform`: `translate`, `rotate` and `scale`
-COMPOSE with whatever transform the owning layer set, and
+material earns the same exception by setting nothing but the light.
+So `check-css.ts` knows about both kinds, and the one word this
+layer may never say is `transform`: `translate`, `rotate` and
+`scale` COMPOSE with whatever transform the owning layer set, and
 `transform` replaces it. One line of it naming `.art-floor` would
 stand every floor on this site back up with every rule still
 reading correctly.
@@ -1009,22 +850,19 @@ reading correctly.
 **The sign is what makes it one system.** `--gpx` is a VIEW
 direction, so a scene slides each layer by MINUS its depth, and a
 figure standing off a surface is a layer with a small depth and
-obeys the same arithmetic. It did not for one build: the relief
-moved its figures the other way, so a card with a scene and an icon
-had the two sliding apart under one pointer. The shadow then goes
-the other way from the figure, because `drop-shadow` offsets from
-the ELEMENT and the gap opening up between a thing and its shadow
-is the only cue saying it is above the page.
+obeys the same arithmetic. The shadow then goes the other way from
+the figure, because `drop-shadow` offsets from the ELEMENT and the
+gap opening up between a thing and its shadow is the only cue
+saying it is above the page.
 
 ```sh
 node scripts/check-relief.ts --list   # what lifts
 ```
 
-Three questions, and each is a way of shipping something that looks
-correct: does every name in the list reach a class; does everything
-that lifts also STOP for a reader who asked for no motion; and is
-anything in both the scene and the relief, which would move it
-twice against one pointer.
+Three questions: does every name in the list reach a class; does
+everything that lifts also STOP for a reader who asked for no
+motion; and is anything in both the scene and the relief, which
+would move it twice against one pointer.
 
 ## The front page is five bands, and the last one is the reader's
 
@@ -1044,56 +882,43 @@ good, where do I start.
 | the tools | six things a reader can use today |
 | the board | the reader's own, and only when they have one |
 
-**It was a board and two copies of the rail.** Measured off the
-built page, the board was 73 per cent of the laptop page and the
-two bands inside it listing the schools and the tools were 61 per
-cent of the phone page, which is the rail drawn a second time on
-a page that already has one. Seven finished case studies, 225
-written lessons and five calculators were invisible from it. And
-the first thing under the hero, for somebody who had never been
-here, was `আপনার বোর্ড · Your board` with an arrange button over
-four rows reading `০টা পাঠ`.
-
 **A BOARD IS A READER'S, SO A STRANGER HAS NONE.** Three things
 make it theirs and any one is enough: a lesson opened, a lesson
 ticked, or a board they arranged. Until then the section is an
-invitation saying what the thing is rather than an empty one.
+invitation saying what the thing is rather than an empty one. A
+board drawn for everybody was 73 per cent of the laptop page, and
+its lists of schools and tools 61 per cent of the phone page, which
+is the rail drawn a second time on a page that already has one.
 
 **`DRAWABLE` in `home/board.tsx` is four of the catalogue's
 twelve, and what went is what the PAGE draws better.** They stay
 in `shared/widgets.ts`, so the Android app keeps them: that split
 is the whole reason `layoutOf` takes the drawable list as an
 argument. **A build that cannot draw a kind must not delete it**,
-which is what `keepUndrawn` is for and what `save()` was doing
-without it.
+which is what `keepUndrawn` is for.
 
-**The audience switch moves a DOOR.** It moved the headline, the
-lede and one card two screens down, so the answer to "I am here to
-hire" was a paragraph. `DOOR.ways` is a pair of buttons per
-audience, all three server-rendered and chosen by `data-hl` before
-the first paint, exactly as the headline is.
+**The audience switch moves a DOOR.** `DOOR.ways` is a pair of
+buttons per audience, all three server-rendered and chosen by
+`data-hl` before the first paint, exactly as the headline is.
 
 **`DOOR.facts` is the ledger, and its five rows go to five
-different places.** Two of them pointed at `/skills`, in a list of
-exactly five whose whole job is to be five ways in.
+different places.** A list of exactly five whose whole job is to be
+five ways in cannot spend two of them on `/skills`.
 
 **`COUNTS.lessons` is the money school's and `COUNTS.libraryLessons`
-is all four ladders.** The door printed the first under the word
-পাঠ beside a link to `/skills`, which understated the library by
-144 and which no check could see: the check verifies that a slot
-carries the number its key holds, never that the key means what
-the label says.
+is all four ladders.** Printing the first under the word পাঠ
+understates the library by 144, and no check can see it: the check
+verifies that a slot carries the number its key holds, never that
+the key means what the label says.
 
-**`/` is a prerendered file and must stay one.** It was
-`force-dynamic` for an hour so the writing band could read D1 on
-the server, which made every visit to the most-hit page a Worker
-render and a query for four card titles, and took
+**`/` is a prerendered file and must stay one.** `force-dynamic`
+makes every visit to the most-hit page a Worker render, and takes
 `next/interactive.test.ts` down with it silently: that harness
 serves `.next/server/app/index.html` from disk and SKIPS when the
-file is not there, so 217 checks covering every calculator here
-reported nothing at all. A test that skips is not a pass. The
-writing band fetches, and what it draws first is a real door to
-`/insights` rather than a skeleton.
+file is not there, so 217 checks covering every calculator report
+nothing at all. A test that skips is not a pass. The writing band
+fetches, and what it draws first is a real door to `/insights`
+rather than a skeleton.
 
 ### The reckoner, and why it has no JavaScript in it
 
@@ -1105,24 +930,20 @@ an interactive that is dead for the length of the hydration.
 
 **Nothing in it is typed.** The five answers are
 `compounding.run()` called on the server, which is the same model
-`/tools` runs and the same rule the counts follow: a wrong number
-under a heading about money is the one mistake this site cannot
-make. The rate and the horizon are on screen and the line under
-them says, in the reader's own language, that it is a calculation
-rather than a guarantee.
+`/tools` runs: a wrong number under a heading about money is the
+one mistake this site cannot make. The rate and the horizon are on
+screen and the line under them says, in the reader's own language,
+that it is a calculation rather than a guarantee.
 
 It also has no storage key, so there is no row for
 `shared/storage.ts` and nothing for `sync.ts` to carry: what a
 reader tapped there is not something they MADE.
 
-
 ## One thing is one card
 
-A school was a `<GoCard>` on `/skills` and a `.gate-tile` on the
-front page. A piece of writing was a `<GoCard>` on the board, a
-`.sample-card` on Insights and a `.read-card` on the two Bangla
-desks: the same row, three shapes, depending on which page a reader
-was standing on. All of them are `<GoCard>`.
+A school, a piece of writing, a lesson: one row must not be three
+shapes depending on which page a reader is standing on. All of them
+are `<GoCard>`.
 
 The rule is the one at the top of this file wearing another hat: a
 list of things that exist elsewhere is built from the shared table,
@@ -1137,23 +958,22 @@ two pictures on one card is two answers to the same question.
 relief.** A lesson card, a ladder row and a market headline are
 rows of a list, and thirty 16:9 scenes down a stage page is the
 cage the plate was invented to stop. They get the light and the
-depth on their own icon instead, which is the same treatment at the
-size the thing actually is.
+depth on their own icon instead.
 
 ## A row that is not in the rail still gets a picture
 
 `shared/nav.ts` names a subject for the twenty things the rail
 lists. It cannot answer for the two hundred that are rows: a piece
-written next month, a headline off the market feed. Somebody would
-have to choose one for each, which means the newest thing on the
-site is always the one without a picture.
+written next month, a headline off the market feed. Choosing one
+each by hand means the newest thing on the site is always the one
+without a picture.
 
 `shared/art.ts` DERIVES one, out of the tag, the topics and the
 section a row already carries, plus a hash of its id. In order: a
 tag that names a subject wins outright, then the desk's own POOL,
 then prose. A pool rather than the desk's subject flat, because
-falling straight through made a hub of twenty pieces twenty copies
-of one drawing, which is worse than no drawing.
+falling straight through makes a hub of twenty pieces twenty copies
+of one drawing.
 
 The colour is the section's own two times in three, and one of six
 others otherwise. High on purpose: a hub whose cards are eight
@@ -1162,21 +982,19 @@ a spreadsheet.
 
 **The hash needs its finaliser and the reads need the top bits.**
 FNV-1a avalanches badly in its LOW bits and every use here is a
-`% n` against a small n. Fourteen consecutive slugs picked index 0
-or 5 out of a pool of six, so a hub drew fourteen copies of one
-picture and the POOL looked wrong. The xorshift-multiply finaliser
-spreads entropy downwards; `frac()` then reads the top bits rather
-than the low ones, which moved "two in three" from a measured 72
-per cent to 66.
+`% n` against a small n: fourteen consecutive slugs picked index 0
+or 5 out of a pool of six. The xorshift-multiply finaliser spreads
+entropy downwards; `frac()` then reads the top bits rather than the
+low ones, which moved "two in three" from a measured 72 per cent to
+66.
 
 ## The site says a few things out loud
 
 `next/lib/sound.ts`, and there is no audio file in this repository.
 Every cue is synthesised: a few oscillators, an envelope and a
-low-pass, which is the same argument the card scenes make one floor
-up. A committed `.mp3` cannot be diffed, has to be fetched, has to
-be licensed, and would be the second binary asset on a site that
-deliberately has none.
+low-pass. A committed `.mp3` cannot be diffed, has to be fetched,
+has to be licensed, and would be the second binary asset on a site
+that deliberately has none.
 
 **Every note is a degree of a D major pentatonic**, which is the
 whole reason two cues firing at once cannot sound wrong: there is
@@ -1197,8 +1015,7 @@ outside it.
 Three things keep it from being annoying, and all three are
 load-bearing: the master gain is low and a press is a tenth of a
 finish; every cue is under 400ms; and the attack is 6ms with a long
-release, because a square edge on either end is a click and a click
-is what makes synthesised audio sound cheap.
+release, because a square edge on either end is a click.
 
 **The context is built inside the first cue and never before.** An
 AudioContext made at import time starts suspended under every
@@ -1224,9 +1041,7 @@ goes with it.
 
 ## The reader's own sky, behind the page
 
-`next/components/weather.tsx` and `functions/api/weather.ts`. The
-site is made of glass lit from behind a window; this is what is on
-the other side of that window.
+`next/components/weather.tsx` and `functions/api/weather.ts`.
 
 **The browser never talks to the weather service.** The same rule
 the broker follows and for the same two reasons: `connect-src` is
@@ -1241,16 +1056,13 @@ house. Doing it in the browser AND in the Worker is one place too
 few doing it, given that a coordinate is the most personal thing
 this site ever handles. It is also what makes the edge cache work.
 
-**`Permissions-Policy: geolocation` must be `(self)`, and it was
-`()` for the whole life of this feature.** An empty allowlist is
-not "ask the reader": it is the page telling the browser not to
-have the API. No prompt ever appeared, `getCurrentPosition` failed
-at once with PERMISSION_DENIED, and a reader who went into their
-browser's own site settings and granted location was told on
-reload that their browser had said no. The page rendered
-perfectly, the panel's copy was honest, and the answer was one
-pair of brackets in two header lists that `check-headers.ts` keeps
-in step.
+**`Permissions-Policy: geolocation` must be `(self)`, never `()`.**
+An empty allowlist is not "ask the reader": it is the page telling
+the browser not to have the API. No prompt appears,
+`getCurrentPosition` fails at once with PERMISSION_DENIED, and a
+reader who grants location in their own browser settings is told on
+reload that their browser said no. It is in two header lists that
+`check-headers.ts` keeps in step.
 
 **Two ways in, and the second is not a fallback.** A browser can
 refuse, a desktop can have no radio, a work laptop can have it off
@@ -1258,15 +1070,13 @@ three levels up, and a reader can simply prefer to say where they
 are. `/api/weather/place?q=` searches Open-Meteo's place index
 through the same Worker for the same two reasons, and a chosen
 town is kept under the same key with a name on it. `askForPlace()`
-answers with four states rather than a boolean, because "no" was
-the whole vocabulary while the bug above was live, and it made a
-policy failure indistinguishable from a person saying no.
+answers with four states rather than a boolean, so a policy failure
+is distinguishable from a person saying no.
 
 **`weather-place` is deliberately not synced.** Every other key
 `aab/sync.js` carries is something the reader MADE: a tick, a note,
-a preference. Where somebody is standing is not that, it is
-different on every device by definition, and a phone in Dhaka and a
-laptop in Brighton are two places.
+a preference. Where somebody is standing is not that, and a phone
+in Dhaka and a laptop in Brighton are two places.
 
 Seven skies, because seven is what can be told apart behind a page
 of prose, and the Worker does that reduction from the WMO codes so
@@ -1275,81 +1085,69 @@ the drawing: gradients and keyframes, no canvas, no loop, and
 `display: none` when there is no weather.
 
 **It is BEHIND the page, at `z-index: -1`, and two facts elsewhere
-hold that up.** It was at 300, over the rail and over the bar, on
-the argument that rain belongs on the near side of a window. The
-argument is nice and the result was streaks across somebody's
-reading, which is the one place a decoration cannot go. What makes
-the -1 visible rather than invisible is that nothing gives `<html>`
-a background, so body's `--paper` propagates to the canvas and body
-paints no box of its own; and nothing gives body a stacking
-context. Give it either and the weather VANISHES on a page that
-renders perfectly. `.home-aura` is the same arrangement one element
-down.
+hold that up.** Nothing gives `<html>` a background, so body's
+`--paper` propagates to the canvas and body paints no box of its
+own; and nothing gives body a stacking context. Give it either and
+the weather VANISHES on a page that renders perfectly. `.home-aura`
+is the same arrangement one element down.
 
-**Five layers: the wash, three depths, and the light.** It was two
-and a light, and two of anything is a sheet rather than a sky.
-`wx-far`, `wx-mid` and `wx-near` are the same weather at three
-distances, and the near one is always larger, faster and softer at
-the edges. THE SOFTNESS IS IN THE GRADIENT STOP AND NEVER IN A
-`filter`: everything that moves here moves a background, so a blur
-on one of those layers is a whole window re-blurred every frame for
-something a wider falloff gives away free. `fog` is the exception
-and keeps its blurs, because a fog bank slides on `translate` and a
+**Five layers: the wash, three depths, and the light.** Two of
+anything is a sheet rather than a sky. `wx-far`, `wx-mid` and
+`wx-near` are the same weather at three distances, and the near one
+is always larger, faster and softer at the edges. THE SOFTNESS IS
+IN THE GRADIENT STOP AND NEVER IN A `filter`: everything that moves
+here moves a background, so a blur on one of those layers is a
+whole window re-blurred every frame. `fog` is the exception and
+keeps its blurs, because a fog bank slides on `translate` and a
 translated raster is not redrawn.
 
-**A drop is an ellipse and the slant is on the layer.** Rain was a
-repeating stripe under a mask cut ACROSS it, and the stripes moved
-while the mask did not, so a drop appeared and disappeared at the
-same place on the screen for ever: hatching that flickers. It is a
-tiled radial gradient now, with a head and a tail, on a layer that
-carries the wind angle as its own `rotate`. That is why the fall is
-`background-position` rather than `translate`: a background is
-positioned in the element's OWN rotated space, so moving it down by
-exactly one tile height is a drop falling along its own line and a
-loop with nothing to see at the join.
+**A drop is an ellipse and the slant is on the layer.** A repeating
+stripe under a mask cut ACROSS it moves while the mask does not, so
+a drop appears and disappears at the same place on the screen for
+ever. It is a tiled radial gradient, with a head and a tail, on a
+layer that carries the wind angle as its own `rotate`. That is why
+the fall is `background-position` rather than `translate`: a
+background is positioned in the element's OWN rotated space, so
+moving it down by exactly one tile height is a drop falling along
+its own line.
 
 **A cloud tile is as tall as the layer.** Only the width tiles. A
 tile 620px tall repeats DOWN the page, so a bank drawn in the top
-quarter of it is drawn again under the reader's feet, and it was:
-the `100%` in each cloud's `background-size` is what fixes that. A
-cloud is also a cluster of puffs rather than one wide ellipse,
-because a 220 by 44 gradient is a smear whatever its falloff.
+quarter of it is drawn again under the reader's feet: the `100%` in
+each cloud's `background-size` is what fixes that. A cloud is also
+a cluster of puffs rather than one wide ellipse, because a 220 by
+44 gradient is a smear whatever its falloff.
 
 **The wash and the light are placed against the WINDOW; the three
 depths are 24 per cent bigger than it.** The depths need the
 overscan because they rotate and slide. The other two must not have
 it: a gradient is positioned inside its own element, so a sun at
-`87% 4%` of an oversized layer is a sun off the top right corner,
-and for a while the moon was one.
+`87% 4%` of an oversized layer is a sun off the top right corner.
 
 **Nothing flashes.** `storm` would ordinarily be lightning and
 deliberately is not: a bright frame on a dark page is a seizure
-risk and there is no version of it worth the risk. It is heavier,
-steeper rain and a slow eight-second bloom.
+risk. It is heavier, steeper rain and a slow eight-second bloom.
 
 **Three tilings at coprime sizes is what makes snow snow**, and
-they are the three depths now rather than three images on one
-layer. One tiled dot is wallpaper: the eye finds the lattice in
-about a second, and periods that share no factor line up again
-only past the far side of any screen.
+they are the three depths rather than three images on one layer.
+One tiled dot is wallpaper: the eye finds the lattice in about a
+second, and periods that share no factor line up again only past
+the far side of any screen.
 
 **Stars are drawn where they can be seen**, which is `--wx-star`
 and a dark page: there is no colour that reads as a star against
 paper, so a light theme at midnight gets the blue wash and no dots.
-The rule said that in a comment and turned off the twinkle only,
-so the dots were there the whole time.
+Turning off the twinkle alone leaves the dots there.
 
 **A reader who asked for contrast has asked for the opposite of
-this**, and now that it is between the paper and the prose the
-honest answer to `prefers-contrast: more` or
+this**, so the honest answer to `prefers-contrast: more` or
 `prefers-reduced-transparency: reduce` is no sky at all.
-`prefers-reduced-motion` keeps the sky and stops the movement,
-which is the same bargain as everywhere else here: what the layer
-is for is knowing that it is raining rather than watching rain.
+`prefers-reduced-motion` keeps the sky and stops the movement:
+what the layer is for is knowing that it is raining rather than
+watching rain.
 
 **`--wx-a` on `.weather` is the one knob.** Every opacity in the
-layer is a fraction of it, so more sky or less sky is one edit
-rather than twenty.
+layer is a fraction of it.
 
 ## What a reader has read
 
@@ -1360,19 +1158,14 @@ bookmark each, and a `-checks` set each since checkpoints. **Do
 not rename one.** `aab/sync.js` maps the same names, and changing
 a key does not move somebody's ticks, it loses them.
 
-The rule the rewrite turned on: **the ladder is the server's and
-the ticks are the browser's.** Every id, title and URL a progress
-component works with comes down as a prop from the route that read
-the rows. It decides one thing per lesson, whether there is a tick,
-and it renders nothing at all on the server, because what a reader
-has read is not a fact the server has.
-
-Three things were wrong with the money school's old module and are
-worth not repeating: a lesson that was not a page could never be
-ticked, so the percentage was wrong for anybody who had read one;
-the "is this id real" filter needed `curriculum.js` in the browser,
-and the module was loaded because of the filter; and the bookmark
-stored a URL, so a lesson that moved took the bookmark with it.
+**The ladder is the server's and the ticks are the browser's.**
+Every id, title and URL a progress component works with comes down
+as a prop from the route that read the rows. It decides one thing
+per lesson, whether there is a tick, and it renders nothing at all
+on the server, because what a reader has read is not a fact the
+server has. A lesson that is not a page must still be tickable, and
+a bookmark stores an id rather than a URL, so a lesson that moves
+does not take the bookmark with it.
 
 Opening is not finishing. A visit moves the bookmark; the tick is a
 button the reader presses.
@@ -1385,73 +1178,46 @@ signed-in reader: `aab/sync.js` writes the account's rows straight
 into localStorage, which fires neither of the other two, because
 `storage` only fires in OTHER tabs. Without it every meter on the
 page is drawn against what storage held BEFORE the exchange, and
-stays there.
-
-That is invisible almost always, because the exchange usually
-finishes before the first paint. It showed up on the one page that
-fetches something of its own first: `/account` drew a course
-target at "0 of 60" beside a bar of the same school reading
-"9 of 60". A component that reads one of these keys ONCE, on mount,
-has the same bug whether or not it also redraws.
+stays there. A component that reads one of these keys ONCE, on
+mount, has the same bug whether or not it also redraws.
 
 ### The money school's ticks were written and never drawn
 
-`components/progress.tsx` kept its own copy of "which key does
-this school use", and it was the one place a copy could not be
-got right. It read `${school}-read`, so on the money school it
-asked for `money-read`, and there has never been such a key: the
-school moved from `/learn/` to `/money/` and its key deliberately
-did not move with it.
-
-The ticks were written correctly under `learn-read` the whole
-time and every component that DREW one read an empty string. The
-tick button never lit up. Every meter on every money page read
-nought per cent. No lesson card carried a tick. "Where you left
-off" always offered lesson one. A reader ticked a lesson, watched
-nothing happen, reloaded, and got the same nothing.
-
-Nothing could see it. `next/progress.test.ts` covers the store
-and the store was right; the money school is the one of the four
-whose tick is React rather than a served module, which is exactly
-why `aab/schools/progress.test.ts` reached the other three and not
-this one, and **nothing had ever pressed the button**.
-`next/tracking.test.ts` does now.
-
 `readKeyOf` and `lastKeyOf` are exported from `next/lib/progress.ts`
-and there is one copy of the mapping. That is `check-rows.ts`'s
-rule about a handler keeping its own copy of a vocabulary, one
-floor down, and it cost the same thing it always costs.
+and there is one copy of the mapping. A component that keeps its
+own copy and asks for `${school}-read` asks for `money-read` on the
+money school, and there has never been such a key: the school moved
+from `/learn/` to `/money/` and its key deliberately did not.
+
+The ticks were written correctly under `learn-read` the whole time
+and every component that DREW one read an empty string: no tick
+button lit up, every meter read nought per cent, "where you left
+off" always offered lesson one. `next/progress.test.ts` covers the
+store and the store was right; `aab/schools/progress.test.ts`
+reaches the three schools whose tick is a served module, not this
+one. `next/tracking.test.ts` presses the button.
 
 ### One table says what a browser is holding
 
 `shared/storage.ts`, and `scripts/check-storage.ts` is what stops
-it rotting. Forty keys had accumulated across fourteen files and
-the only way to find out what this site keeps was to grep for
-`localStorage`, which is archaeology rather than a description.
+it rotting. Grepping for `localStorage` is archaeology rather than
+a description.
 
 Every row says what the thing is in a sentence a reader could
 read, which of seven kinds it is, and whether it leaves the
-machine. The kinds are about the READER and not about us: whether
-a thing is something they DID, something they MADE, something
-they CHOSE, a fact about this machine, a credential, a cache, or
-something left over. Those answers are what decide whether it
-should sync, whether erasing an account should take it, and
-whether it is worth keeping at all.
+machine. The kinds are about the READER: whether a thing is
+something they DID, something they MADE, something they CHOSE, a
+fact about this machine, a credential, a cache, or something left
+over. Those answers decide whether it should sync, whether erasing
+an account should take it, and whether it is worth keeping at all.
 
 The check asks four questions, and the third is the expensive
 one: **a row that says it syncs and is not in `KEYS` in
 `aab/src/sync.ts` is a promise the account page makes and the
 account does not keep.** The reader finds out on their second
-device, and nothing anywhere says so.
-
-**The first thing it found was two of them**, and they were the
-worst two it could have found: `deutsch-schrift` and
-`english-write`, which hold the sentences a learner types into
-the practice books. The one thing anybody AUTHORS in the four
-schools was the one thing the account did not carry. A learner
-wrote eight German sentences on a laptop, opened the book on a
-phone and found every box empty; "take a copy of everything" left
-them out and "erase everything" left them behind.
+device, and nothing anywhere says so. The first two it found were
+`deutsch-schrift` and `english-write`, which hold the sentences a
+learner types into the practice books.
 
 ```sh
 node scripts/check-storage.ts --list   # what is held, and what travels
@@ -1462,9 +1228,7 @@ node scripts/check-storage.ts --list   # what is held, and what travels
 `where-read`, `tools-used` and the two practice books are maps of
 entries rather than one value. A `mark` takes the newer WHOLE
 object, so a phone that read one article would throw away every
-position a laptop had recorded. Nothing would look broken: a
-reader would simply find themselves back at the top of pieces
-they were half way through, on whichever device they used second.
+position a laptop had recorded.
 
 `merge` reconciles entry by entry, which is what a `mark` is one
 level down. An entry that carries its own `ts` answers for
@@ -1504,16 +1268,16 @@ Three ways of getting it wrong all render a button, which is why
   block is above the line" is not the test for finishing**: at
   maximum scroll the last paragraph sits near the bottom of the
   window and can never rise to a line a third of the way down, so
-  a reader who read to the end kept a position at about ninety
+  a reader who read to the end keeps a position at about ninety
   per cent. The bottom of the document is the test,
 - a way back to the wrong paragraph.
 
 **Forwards-only belongs to the component, not to the store.** Only
-something that knows what a visit is can tell scrolling back up
-to check a figure from opening the page again tomorrow to reread
-it. A guard in the store compared the signature as well as the
-index, and the signature is of the block AT that index, so it
-changed on every step and never fired.
+something that knows what a visit is can tell scrolling back up to
+check a figure from opening the page again tomorrow to reread it. A
+guard in the store that compares the signature as well as the index
+never fires, because the signature is of the block AT that index
+and changes on every step.
 
 ### Which tools, and never how many times
 
@@ -1525,15 +1289,14 @@ to that table.
 **A timestamp and not a count.** A count cannot be reconciled
 between two devices without a per-device log: a phone that says
 five and a laptop that says five are either ten openings or the
-same five seen twice, and nothing in the value can tell them
-apart. The site knows when you last opened the diet tool and does
-not pretend to know how often.
+same five seen twice. The site knows when you last opened the diet
+tool and does not pretend to know how often.
 
 ### Progress belongs to the account, and the browser is a mirror
 
-`aab/sync.js`, rewritten 17 August 2026, and the whole of it is
-one sentence: **the account is the record, and nothing is ever
-pulled out of the browser into it.**
+`aab/sync.js`, and the whole of it is one sentence: **the account
+is the record, and nothing is ever pulled out of the browser into
+it.**
 
 | | |
 | --- | --- |
@@ -1544,9 +1307,8 @@ pulled out of the browser into it.**
 
 A browser is not a copy of an account: it may be a library machine
 or a phone that was handed over for five minutes, and the site
-cannot tell. Merging the two, which is what the version before this
-did, forces a dialog asking once per account per browser what
-should happen to what was already there.
+cannot tell. Merging the two forces a dialog asking once per
+account per browser what should happen to what was already there.
 
 Two signed-in devices still need reconciling and that is the one
 merge left. `base` is what the account said at the last exchange,
@@ -1555,22 +1317,19 @@ what they undid, and the value written back is
 `(remote ∪ added) \ removed`. There is no special case for a
 reset: every school's `resetAll()` REMOVES a key rather than
 emptying it, an absent key is an empty set, and subtraction takes
-the account down with it. The old file needed a timestamp per key
-to get that right and got it wrong for a year.
+the account down with it.
 
 `aab/sync.test.ts` is the guard, 36 checks in a real browser
 against a routed Supabase, and it drives `/404.html` because that
 is one of the two pages still served as a file.
 
 **It starts its own server, and that is the whole reason it is
-worth anything.** It asked for one on :8899 and exited 0 when
-there was none, so it skipped on every machine where nobody had
-read that line, which is every machine. It skipped through a real
-regression: `refreshUser()` began writing a null user over a live
-session, which takes `current()` to null, makes `saveProfile`
-throw and stops sync pushing ticks, and four of its sections went
-red at once without anybody seeing it. A test that needs a server
-started by hand is a test that does not run.
+worth anything.** A test that asks for a server on :8899 and exits
+0 when there is none skips on every machine where nobody read that
+line, and it skipped through a real regression: `refreshUser()`
+writing a null user over a live session takes `current()` to null,
+makes `saveProfile` throw and stops sync pushing ticks. A test that
+needs a server started by hand is a test that does not run.
 
 ### One table is readable by anyone, so its read names the reader
 
@@ -1582,32 +1341,22 @@ the whole of what the table holds. Every other table is
 rows and nothing else.
 
 **That makes `profiles` the one read where the filter is load
-bearing rather than a second lock**, and it was the one read that
-did not have it. `getProfile()` asked for
-`profiles?select=...&limit=1`, so PostgREST answered with
-whichever row the planner reached first out of the whole table.
-With one account that was always the right one. With two it was
-worse than a coin toss: a non-HOT update moves a row to the end of
-the heap, so SAVING your profile is what made the next read return
-somebody else's. The account page drew a stranger's name, courses
-and pace, `setup_at` came back null so the setup form reappeared,
-and pressing Save again wrote the right row and guaranteed the same
-wrong read. "It saves and goes back to how it was", for ever, by
-construction.
+bearing rather than a second lock.** `getProfile()` asking for
+`profiles?select=...&limit=1` gets whichever row the planner
+reached first out of the whole table. With one account that is
+always the right one. With two it is worse than a coin toss: a
+non-HOT update moves a row to the end of the heap, so SAVING your
+profile is what makes the next read return somebody else's, and
+`setup_at` coming back null puts the setup form back. `saveProfile`
+carries `id=eq.<me>` even though the policy already makes it
+impossible to touch anyone else's row: two locks on the door that
+is never meant to open, and none on the one that is.
 
-The reverse is written out beside `saveProfile`, which carries
-`id=eq.<me>` and explains that it does so even though the policy
-already makes it impossible to touch anyone else's row. Two locks
-on the door that is never meant to open, and none on the one that
-is.
-
-`next/account.test.ts` is the guard, and the reason it was not is
-worth more than the fix. Its fake answered every GET on `profiles`
-with the reader's own row, which is kinder than Postgres, so 117
-checks passed against a page that was drawing the wrong person.
-A fixture that is more forgiving than the thing it stands in for
-is not a test. It holds a second row now, returns it first when
-the filter is missing, and says so.
+`next/account.test.ts` is the guard. **A fixture that is more
+forgiving than the thing it stands in for is not a test**: a fake
+that answers every GET on `profiles` with the reader's own row
+passes 117 checks against a page drawing the wrong person. It holds
+a second row now and returns it first when the filter is missing.
 
 ### The two things an account holds that are not a tick
 
@@ -1627,12 +1376,11 @@ behind the same row-level security `progress` has.
   test**: if the site cannot measure it out of something it
   already holds, the bar would be a decoration.
 
-Neither has a local copy, and that is deliberate rather than an
-omission. Progress has one because four schools have read
-localStorage since before there were accounts and a reader with
-no account still gets all of it. Nothing here has that history
-and nothing here works signed out, so a second copy would be a
-second record to keep in step for nobody's benefit.
+Neither has a local copy. Progress has one because four schools
+have read localStorage since before there were accounts and a
+reader with no account still gets all of it. Nothing here works
+signed out, so a second copy would be a second record to keep in
+step for nobody's benefit.
 
 ### The Research Studio, which replaced the desk
 
@@ -1640,11 +1388,9 @@ second record to keep in step for nobody's benefit.
 rooms in one pages table, `research_*` tables in Supabase under
 the same row-level security everything above has, the outside
 world reached only through `functions/api/research/`, and a
-check of its own. The desk that was under `/admin` went into it
-on 2 September 2026 and its two lessons are that plan's rules: a
-save is one write and cannot half-succeed, and nothing is typed
-that could have been picked. Three things are worth knowing from
-here.
+check of its own. Two of that plan's rules: a save is one write
+and cannot half-succeed, and nothing is typed that could have been
+picked. Three things are worth knowing from here.
 
 **Every row is the reader's own and the browser is the caller.**
 `next/lib/research-api.ts` reads and writes PostgREST with the
@@ -1673,9 +1419,8 @@ at.
 
 - **A reading list and notes.** `next/components/keep.tsx` puts a
   Save and an Add a note under the byline of every piece and every
-  lesson,
-  and `public.library` is **one row per person per page**, with
-  `saved` and `note` as two columns of it. They are two facts
+  lesson, and `public.library` is **one row per person per page**,
+  with `saved` and `note` as two columns of it. They are two facts
   about one thing rather than two things, and a trigger removes
   the row once both have gone, so the list can be counted rather
   than filtered.
@@ -1694,14 +1439,13 @@ at.
   is only visible on an edge.
   **`@layer glow` sets `--glass-grain: none` on every descendant
   of a surface**, so a chip is a surface and eleven swatches
-  inside eleven chips were eleven identical rectangles.
+  inside eleven chips are eleven identical rectangles.
   `:not([data-finish])` is the one exception and it is this
   panel's.
-  **`savePrefs` SPREADS, and named eight fields by hand until
-  22 August 2026.** `texture` arrived, applied to the page, and
-  was gone on the next load: the panel said Strong, the site was
-  Strong, and `readPrefs` came back with Normal because nothing
-  had ever written it. Same rule as `/api/site` one floor up.
+  **`savePrefs` SPREADS.** Naming fields by hand drops whatever
+  arrives later: `texture` applied to the page and was gone on the
+  next load, with the panel saying Strong and `readPrefs` coming
+  back with Normal. Same rule as `/api/site` one floor up.
   Applied before the first paint by the boot script in
   `next/components/shell.tsx`, carried between devices by
   `sync.ts` under `reader-prefs`, and the language one writes
@@ -1719,9 +1463,9 @@ against a routed Supabase.
 #### Those two buttons are lists, and a list goes stale
 
 **Every table a reader owns goes into BOTH halves in the commit
-that creates it.** `DIET.md` section 30 said that in prose, and
-the prose was there and it was broken anyway. On 30 August 2026
-four of the reader's own tables were in neither button:
+that creates it.** `DIET.md` section 30 said that in prose, and the
+prose was there and it was broken anyway. Four of the reader's own
+tables were in neither button:
 
 | | |
 | --- | --- |
@@ -1730,10 +1474,10 @@ four of the reader's own tables were in neither button:
 | `routine_templates` | the ones they made, as against the ones the site ships |
 | `broker_tokens` | their broker key |
 
-Nothing looked wrong. Both buttons worked, the copy downloaded,
-the erase reported success, and what came back was five sixths of
-an account. **An export that is silently short and a complete one
-look identical**, which is why this is a check now:
+Both buttons worked, the copy downloaded, the erase reported
+success, and what came back was five sixths of an account. **An
+export that is silently short and a complete one look identical**,
+which is why this is a check now:
 
 ```sh
 node scripts/check-account.ts --list   # what leaving carries, and what it does not
@@ -1744,8 +1488,8 @@ told, taking `user_id` OR `owner_id` referencing `auth.users`,
 because the same fact spelled differently is how the templates
 table slipped out. It reads the two halves of
 `aab/src/account-page.ts` **separately**: `"broker_tokens"` is
-named in both, so grepping the whole file said nothing on the
-commit that took it out of one. And where a carrier is a list, it
+named in both, so grepping the whole file says nothing on the
+commit that takes it out of one. And where a carrier is a list, it
 reads what is IN the list, because `PAGE.includes("MINE_TABLES")`
 is true whatever that list holds.
 
@@ -1763,14 +1507,12 @@ sentence does not mention.
 
 ### One section on screen
 
-`/account` was one long page with a strip of links down it, and
-reaching the last section was a screen of scrolling per section.
-There were eight when that was written and there are nine, which
-is why neither this paragraph nor `next/account.test.ts` counts
-them any more: the test names them and asserts the strip and the
-panels are the same set. `next/components/ui/tab-panels.tsx` is the
-calculators' arrangement in React, and the four decisions in
-it are the four that make a `role="tablist"` honest:
+`/account` is one section on screen at a time rather than one long
+page. Neither this paragraph nor `next/account.test.ts` counts the
+sections: the test names them and asserts the strip and the panels
+are the same set. `next/components/ui/tab-panels.tsx` is the
+calculators' arrangement in React, and the four decisions in it are
+the four that make a `role="tablist"` honest:
 
 | | |
 | --- | --- |
@@ -1781,9 +1523,7 @@ it are the four that make a `role="tablist"` honest:
 
 The strip is `.topbar` again: the same pill, the same glass,
 the same edge and shadow, one `--top-gap` below it and inside
-the page's own column. A reader who has learnt that the thing
-floating at the top is the site's controls reads a second
-floating thing as this page's.
+the page's own column.
 
 `[data-panels="on"]` is how the stylesheet knows a section is
 the only one on screen, so it drops the `--step` leading that
@@ -1798,10 +1538,9 @@ browser's job.
 
 ### The account menu is a popover, not a dialog
 
-`aab/src/signin.ts`. It was `showModal()`, which dimmed the site
-and took the focus for "which account am I on" and "go to my
-reading list", neither of which is a decision the page cannot
-continue without.
+`aab/src/signin.ts`. `showModal()` dims the site and takes the
+focus for "which account am I on" and "go to my reading list",
+neither of which is a decision the page cannot continue without.
 
 `popover="auto"` brings the top layer, light dismiss, Escape and
 the focus return, so this file implements none of the four. CSS
@@ -1814,8 +1553,7 @@ a sheet against the bottom edge, decided by a media query.
 
 `aab/checkpoints.js`. A lesson's own tick is about the whole page
 and is the right unit for a ladder; a checklist inside the prose
-is five things a reader does over a fortnight, and the page could
-not remember which three were done.
+is five things a reader does over a fortnight.
 
 It **invents no markup**. `.checklist` is an article block that
 has been in `@layer article` and in both sanitisers since the
@@ -1834,15 +1572,7 @@ not a lesson.
 
 `aab/schools/progress.js` is the browser's half of that, and
 `aab/schools/hub.js` is the drawing around it. Both are shared by
-the German, English and Quranic Arabic schools, which is a change
-from three copies of each.
-
-The copies were not a variant of one another. `deutsch/progress.js`
-and `english/progress.js` were 316 and 318 lines whose diff was
-nouns, `stufe` against `term`, and `quran/progress.js` was the same
-program minus the practice book. Three hubs drew the same progress
-ring from three copies of the same twelve lines. A fix to one was a
-fix somebody had to remember to make twice more.
+the German, English and Quranic Arabic schools.
 
 What a school still owns is its ladder, its words and its ladder
 row: a Stufe shows sections and a book, a ধাপ shows days, a term
@@ -1853,55 +1583,46 @@ school; everything around it is shared.
 Two tests cover it, and they cover different halves.
 `aab/schools/progress.test.ts` is the arithmetic and the keys;
 `aab/schools/hub.test.ts` is the drawing, and it builds all three
-hubs in a real DOM against the markup out of `next/lib/school-hubs.ts`,
-because a hub that renders and is not finished looks exactly like
-one that is.
+hubs in a real DOM against the markup out of
+`next/lib/school-hubs.ts`, because a hub that renders and is not
+finished looks exactly like one that is.
 
 **The practice books are the same arrangement.**
-`aab/schools/workbook.js` is one engine where there were two
-388-line modules whose diff was nouns, and both of them were
-broken: the English one keyed on `.wb-day` and `[data-wb-write]`
-where the component renders `.buch-tag` and `data-schrift`, so
-nothing saved and nothing ticked, and the German one dereferenced
-`document.getElementById("tage")` at its top level on a route that
-had no such element, so it threw before its first function ran.
-Both pages rendered perfectly. `aab/schools/workbook.test.ts` is
-what says they do not any more.
+`aab/schools/workbook.js` is one engine, and
+`aab/schools/workbook.test.ts` is what says it works: a book that
+keys on `.wb-day` and `[data-wb-write]` where the component renders
+`.buch-tag` and `data-schrift` saves nothing and ticks nothing, and
+a top-level `document.getElementById("tage")` on a route with no
+such element throws before the first function runs. Both render
+perfectly.
 
 **Every storage key is passed in by the school, spelled the way it
-has always been spelled.** That is not decoration, it is the whole
-reason the engine takes them as an argument rather than deriving
-them from the school's name: `english-day` is not `english-tag`,
-and the rule at the top of this section is why. `aab/schools/progress.test.ts`
-asserts all ten of them by name.
+has always been spelled.** That is the whole reason the engine
+takes them as an argument rather than deriving them from the
+school's name: `english-day` is not `english-tag`.
+`aab/schools/progress.test.ts` asserts all ten of them by name.
 
-That covers the ID SHAPES too, and it had to. A day's tick is
-`term-1/day-3` in English and `stufe-1/tag-3` in German, both from
-the school's own `curriculum.js`, and the shared book engine built
-the German shape for both when it was first written. `toggleDay`
-wrote the English ticks correctly and the tracker looked for them
-under a name nothing had ever used, so a day could be ticked and
-came back unticked. `dayId` is an argument now, like every other
-key.
+That covers the ID SHAPES too. A day's tick is `term-1/day-3` in
+English and `stufe-1/tag-3` in German, both from the school's own
+`curriculum.js`, so `dayId` is an argument like every other key:
+build one shape for both and a day can be ticked and come back
+unticked.
 
-The money school is not a caller. Its ticks are `next/lib/progress.ts`,
-because its pages are routes. These three still need a browser module
-for a different reason: a practice book is a page a learner TYPES INTO,
-and what they type is theirs and the browser's, which is the same rule
-the ladder and the ticks follow. The book is a route now and
-`workbook-body.tsx` loads the engine through `SiteScripts`.
+The money school is not a caller. Its ticks are
+`next/lib/progress.ts`, because its pages are routes. These three
+still need a browser module for a different reason: a practice book
+is a page a learner TYPES INTO, and what they type is theirs and
+the browser's. The book is a route and `workbook-body.tsx` loads
+the engine through `SiteScripts`.
 
 ## A piece is a page, not a console
 
-**The measure is a LENGTH and the setting counts WORDS.** It was
-`66ch` from the first version of this site and the settings panel
-said "about 66 characters" beside it. `ch` is the advance width of
-the "0" glyph, which is a fact about a font rather than about a
-script, and this site is written in two. Measured in a browser
-against the site's own rows, `66ch` is 671px, and 671px holds a
-median of 116 Bengali characters and 18 words where the English
-half of the same site got 78 characters and 13. One token, two
-answers, and the panel stating a third.
+**The measure is a LENGTH and the setting counts WORDS.** `ch` is
+the advance width of the "0" glyph, which is a fact about a font
+rather than about a script, and this site is written in two.
+Measured in a browser against the site's own rows, `66ch` is 671px,
+and 671px holds a median of 116 Bengali characters and 18 words
+where the English half of the same site got 78 characters and 13.
 
 So `--measure-base` is a length, `html[lang="bn"]` carries its own,
 and the reader's three steps are a MULTIPLIER (`--read-wide`) so
@@ -1923,33 +1644,27 @@ set larger: at one size it already carries more ink than Latin
 lowercase.
 
 **`next/reading.test.ts` measures all six combinations against real
-rows**, in a real browser, off the line boxes themselves. Nothing
-else could see any of this: every check passed, the page rendered
-perfectly, and the only symptom was that reading a Bangla piece on
-a laptop was tiring in a way nobody could point at.
+rows**, in a real browser, off the line boxes themselves.
 
-**The column is centred, and it is the WRAP that is capped.** The
-measure used to cap the paragraphs inside a 1080px box, so every
-line sat hard against the left of four hundred empty pixels.
-`:has()` rather than a class on the two routes, so a third page
-that renders a column of prose is a page without anybody coming
-here.
+**The column is centred, and it is the WRAP that is capped.**
+Capping the paragraphs inside a 1080px box sits every line hard
+against the left of four hundred empty pixels. `:has()` rather
+than a class on the two routes, so a third page that renders a
+column of prose is a page without anybody coming here.
 
 **A table and a photograph are not prose and leave the column.**
 `--read-out` for a wide figure and a table, capped at 1080; the
 uncapped `--read-edge` for a full-bleed photograph, which means
 edge to edge.
 
-**`100vw` is the WINDOW and the page is not.** `figure.full` was
-`width: 100vw` with a `50% - 50vw` margin, so on a desktop it ran
-131px under the rail and put 143px of horizontal scroll on every
-article that had one. It rendered perfectly and nothing failed,
-because nothing on this site measured a photograph. Both tokens
-subtract `--rail-w`, and `:root { --rail-w: 0px }` inside the phone
-media query is part of that fix: the rail is a drawer below 900px
-and the token went on reading 268px, which nothing had noticed
-because `.shell-col` and `.topbar` each overrode their own use of
-it.
+**`100vw` is the WINDOW and the page is not.** `figure.full` at
+`width: 100vw` with a `50% - 50vw` margin runs 131px under the rail
+on a desktop and puts 143px of horizontal scroll on every article
+that has one. Both tokens subtract `--rail-w`, and
+`:root { --rail-w: 0px }` inside the phone media query is part of
+that fix: the rail is a drawer below 900px and the token otherwise
+goes on reading 268px, which `.shell-col` and `.topbar` each hide
+by overriding their own use of it.
 
 `100vw` still includes a scrollbar that the page does not, so
 `main:has(:is(.article, .term-article))` carries `overflow-x: clip`
@@ -1961,9 +1676,8 @@ inside it.
 ### The reading hush
 
 A hub is a place to choose and its fourteen destinations are the
-point. A piece is one column of prose with a control room built
-round it: measured, fourteen focusable things sat between the top
-of an article and its first sentence.
+point. A piece is one column of prose: measured, fourteen focusable
+things sat between the top of an article and its first sentence.
 
 So the furniture goes quiet once the reader is past the heading and
 comes back the moment they reach for it. Nothing moves, nothing is
@@ -1992,27 +1706,21 @@ label, an even fade reaches 4.82:1 in light at 0.35 and 3.82:1 at
 
 **`:focus-within` is not optional.** Nothing in a rail can be
 reached by hovering a pointer that is not there, and a rail that
-stayed dim under a focus ring is unreadable to anybody tabbing
+stays dim under a focus ring is unreadable to anybody tabbing
 through the site. `prefers-contrast: more` and
-`prefers-reduced-transparency: reduce` switch the whole thing off,
-because a reader who asked for either has asked for the opposite of
-this.
+`prefers-reduced-transparency: reduce` switch the whole thing off.
 
 ### And the small things that were wrong
 
 - **The separator belongs to the thing in front of it.** A byline
   of `<span>` items with `<span class="dot">` between them wraps as
   "Rony Reiad · 9 August, 2026 ·" with a dot hanging off the end.
-  It is an `::after` on every child but the last now, so it wraps
-  as one piece by construction and there is no markup to keep in
-  step.
-- **One row of tools, not two bands.** `<Keep>` drew its own block
-  and `<ReadAloud>` drew another, both between the byline and the
-  first sentence. `.piece-tools` holds them on the byline's own
-  line.
+  It is an `::after` on every child but the last, so it wraps as
+  one piece by construction and there is no markup to keep in step.
+- **One row of tools, not two bands.** `.piece-tools` holds
+  `<Keep>` and `<ReadAloud>` on the byline's own line.
 - **The speed slider only exists while it is speaking.** Nobody
-  knows a voice is too fast until they have heard it, and it was a
-  slider on the way into every piece.
+  knows a voice is too fast until they have heard it.
 - **A paragraph gap of 15px under a Bangla line-height of 1.9 is
   0.49lh**, which is LESS space than there is between two lines of
   the same paragraph. It is `0.78lh`, said in `lh` so it stays
@@ -2039,9 +1747,7 @@ That is what let the three language schools have an interactive at
 all. Measured before this: 81 of the money school's 110 lessons
 carry a block, and **deutsch, english and quran carry nought
 between them**, because a multiple-choice question was the only
-thing a language lesson could hold. A German verb's six forms, an
-English verb's five and an Arabic root's derived words are each a
-table with holes in it.
+thing a language lesson could hold.
 
 **A `calc` names cells and one operation out of six.** Not an
 expression string, and the difference is the whole safety
@@ -2050,15 +1756,14 @@ arithmetic out of a database row is an evaluator with a database
 in front of it.
 
 **Two passes rather than a toposort**, and the second one is
-tested even though all six sheets would answer without it: they
-all list their rows in the order their formulas need, and a model
+tested even though all six sheets would answer without it: a model
 is a table somebody writes, so a total ABOVE the things it totals
 is a thing somebody will write.
 
 **`fmt` is per cell as well as per sheet.** A profit and loss
 account is in taka down to its last row, which is a margin in per
-cent. One format for the whole table wrote that row as `15` and
-left a reader to work out whether that was fifteen taka.
+cent. One format for the whole table writes that row as `15` and
+leaves a reader to work out whether that is fifteen taka.
 
 **A cell is named by its row header**, not by a label of its own.
 `<Field>` is this site's answer to an unlabelled box and it is the
@@ -2066,20 +1771,19 @@ wrong answer inside a table: `aria-labelledby` at the
 `<th scope="row">` is a stronger association than a `<label>`
 beside the box, and a hidden label as well would announce the same
 words twice. `check-components.ts` skips an input carrying that
-attribute, which is a claim somebody can check.
+attribute.
 
 **And `@layer lesson` resets the header casing.** `@layer article`
 sets every `th` in a table to uppercase mono, which is right for a
 column of figures in prose and wrong for a row label that is a
-word in another language: it rendered the German present tense as
+word in another language: it renders the German present tense as
 ICH, DU, ER, and `ich` is lowercase in German.
 
 **A table inside a block does not break the column.** The
-full-width rule added for a table in prose reached this one too,
-so a sheet painted three hundred pixels past its own card on both
-sides. `:not(.ls-block *)` is the exclusion, and the reason is
-that a block is a card and a table inside one that leaves the
-column leaves the card.
+full-width rule added for a table in prose reaches this one too and
+paints a sheet three hundred pixels past its own card on both
+sides. `:not(.ls-block *)` is the exclusion: a block is a card, and
+a table inside one that leaves the column leaves the card.
 
 ### Two curves that cross
 
@@ -2097,9 +1801,8 @@ never seen one reads a chart left to right.
 the price axis and interpolates where the gap changes sign, so the
 number under the drawing is the answer TO the drawing rather than
 a second calculation that could disagree with it. And **no market
-is a quantity of nought, not a price of nought**: the first test
-asked whether the crossing price was zero, and the case it was
-written for reports a price of 40 with nothing changing hands.
+is a quantity of nought, not a price of nought**: a market can
+report a price of 40 with nothing changing hands.
 
 ## The blocks an article is made of
 
@@ -2114,9 +1817,9 @@ has to be in three places or it does not survive the trip:
 
 `check-css.ts` fails if the two allowlists disagree, if a class is allowed
 into an article and styled nowhere, or if two cascade layers both define
-one. The last of those is not hypothetical twice over: `.glance` was
-already the About page's, `.steps` already the Learn hub's, and a later
-layer wins on every page, not only its own.
+one. The last is not hypothetical: `.glance` was already the About page's,
+`.steps` already the Learn hub's, and a later layer wins on every page,
+not only its own.
 
 The same three-place rule covers the photo classes: `wide`, `full`,
 `frame-wide`, `frame-square`, `frame-tall`, `focus-top`, `focus-bottom`,
@@ -2128,28 +1831,23 @@ The picture a pasted link shows is drawn, not borrowed. `aab/share-card.js`
 makes a 1200×630 JPEG and that is what `cover` holds and `og:image` points
 at.
 
-**It is drawn as this site rather than as a photograph.** A cropped
-photo with nothing on it is somebody's photograph; a card arriving
-in a chat should look like the place it came from before anybody
-reads the title.
+**It is drawn as this site rather than as a photograph.** A card arriving
+in a chat should look like the place it came from before anybody reads the
+title.
 
 **So it is THE ROOM**, the same ten layers `card-art.tsx` puts
-behind every card here, in the same order and for the same
-reasons: the sky, the weave, the halo the subject throws, rays
-from the top left, the wall behind it, the floor, the subject and
-its reflection, motes in front, the specular, the corners going
-down. Then the card's own furniture on top: the scrim that seats
-the words, the accent rail every `<GoCard>` carries, the hairline
-rim, the kicker in the mono face and the title in the serif. It
-was a two-stop gradient, one ring and a floor, which read as a
-template rather than as this place.
+behind every card here, in the same order: the sky, the weave, the
+halo the subject throws, rays from the top left, the wall behind
+it, the floor, the subject and its reflection, motes in front, the
+specular, the corners going down. Then the card's own furniture on
+top: the scrim that seats the words, the accent rail every
+`<GoCard>` carries, the hairline rim, the kicker in the mono face
+and the title in the serif.
 
-**The twelve drawings are `shared/art-svg.ts` and are strings.**
-They were 747 lines of JSX inside `card-art.tsx` and the share
-card could not reach them, so a card pasted into a chat carried a
-room with nothing standing in it. Same reason
-`next/lib/school-icons.ts` holds strings: markup that something
-other than React has to read.
+**The twelve drawings are `shared/art-svg.ts` and are strings**,
+because the share card cannot reach JSX inside `card-art.tsx`. Same
+reason `next/lib/school-icons.ts` holds strings: markup that
+something other than React has to read.
 
 **They are NOT compiled into `aab/`.** 34 KB, and nobody needs
 them but whoever is publishing. `GET /api/admin/art` hands them
@@ -2159,64 +1857,53 @@ same answer when the caller says what the piece is, because
 cannot import it.
 
 **A drawing is rasterised through an `<img>`, never
-`createImageBitmap` on the blob.** That is the obvious way and
-Chrome answers `InvalidStateError: The source image could not be
-decoded`: an SVG is a document rather than a bitmap format. The
-nine `--art-*` tokens are SUBSTITUTED into the string before it is
-parsed rather than declared in a `<style>` inside it, so nothing
-has to resolve a custom property inside a blob, and
-`check-art.ts` fails on a tenth token: unresolved, it is left as
-literal text and an SVG rasteriser paints it BLACK.
+`createImageBitmap` on the blob.** Chrome answers
+`InvalidStateError: The source image could not be decoded`: an SVG
+is a document rather than a bitmap format. The nine `--art-*`
+tokens are SUBSTITUTED into the string before it is parsed rather
+than declared in a `<style>` inside it, so nothing has to resolve a
+custom property inside a blob, and `check-art.ts` fails on a tenth
+token: unresolved, it is left as literal text and an SVG rasteriser
+paints it BLACK.
 
 The piece's own photo, where there is one, is what all of that
-stands on.
+stands on, so every piece can have a card rather than falling back
+to the section's standing one.
 
-**Which means every piece can have one now.** It used to be the
-section's standing card for anything unillustrated.
-
-**And every lesson, which never had one at all.** All 251 fell
-back to their stage's standing card, so three lessons of one
-stage pasted into a chat were the same picture three times. A
-lesson's is `meta.card`, written by
-`PUT /api/schools/<school>/<stage>/<lesson>`, which MERGES that
-one key rather than replacing the object: the Studio's lesson
-editor sends no meta at all, so a replacement would be `{}` and
-would take the English title, the blurb, the icon and the day
-range with it.
+**And every lesson.** All 251 otherwise fall back to their stage's
+standing card, so three lessons of one stage pasted into a chat are
+the same picture three times. A lesson's is `meta.card`, written by
+`PUT /api/schools/<school>/<stage>/<lesson>`, which MERGES that one
+key rather than replacing the object: the Studio's lesson editor
+sends no meta at all, so a replacement would be `{}` and would take
+the English title, the blurb, the icon and the day range with it.
 
 **No two cards are the same, and it is not a random number.**
 Eleven numbers come out of the piece's own id, through the hash
 `shared/art.ts` picks the subject and the colour with: where the
 light falls, how high the horizon is, how hard the floor
 converges, where the halo sits, how the wall behind is offset and
-scaled, where the motes are. Derived rather than random for the
-same reason the subject is: a card has to be the same card every
-time it is drawn, or republishing a piece moves the picture under
-a link somebody has already shared. None of them changes what the
-card IS, which is why they are safe to move: a card with its
-horizon 40px higher is the same card from a slightly different
-chair.
+scaled, where the motes are. Derived rather than random because a
+card has to be the same card every time it is drawn, or
+republishing a piece moves the picture under a link somebody has
+already shared. None of them changes what the card IS.
 
 **The Pictures panel on `/admin` is the queue.** Nothing can draw
 a card on the server: a card is a canvas, a canvas is a browser,
 and both Workers here have neither. So `GET /api/admin/cards`
 answers with what has none, oldest first, and the desk draws them
-one at a time in the tab and sends each back. Left open it works
-through everything; closed it stops where it was, and the next
-visit carries on, because the queue is whatever the database
-still answers with. That it needs the tab open is said in the
-panel's own copy, because a queue that claims to run in the
-background and stops when a tab closes is worse than one that
-says so.
+one at a time in the tab and sends each back. Closed it stops where
+it was, and the next visit carries on, because the queue is
+whatever the database still answers with. That it needs the tab
+open is said in the panel's own copy.
 
-**It is always the dark one, and that is not a shortcut.** Every
-other picture on this site answers the theme; a JPEG in somebody's
-chat window cannot, because it is drawn once at publish and looked
-at by people whose settings this site will never see. The palette
-is READ with `<html>` held at dark for the length of one
-synchronous style read, so the cards follow the tokens and a change
-to the site's greens reaches them without anybody remembering that
-file.
+**It is always the dark one, and that is not a shortcut.** A JPEG
+in somebody's chat window cannot answer the theme: it is drawn once
+at publish and looked at by people whose settings this site will
+never see. The palette is READ with `<html>` held at dark for the
+length of one synchronous style read, so the cards follow the
+tokens and a change to the site's greens reaches them without
+anybody remembering that file.
 
 **The accent comes out of the rail.** `shared/nav.ts` is the one
 place a section's colour is written down, the rail renders every
@@ -2225,6 +1912,7 @@ publishing has a rail on it. A copy of six colours in that file
 would be the failure this document opens with, and putting `nav.ts`
 on the wire to carry a hue would cost a served module, a precache
 entry and a service worker bump.
+
 It is a JPEG because the scrapers behind WhatsApp, Facebook and LinkedIn
 will not read the WebP every photo here is stored as: pointing them at the
 photo itself is how a piece with a picture ends up sharing as the default
@@ -2233,27 +1921,23 @@ still a raw photo and can draw the missing card in place.
 
 **A photo is read out of the editor by decoding, never by fetching.**
 `fetch()` on a `data:` URL is governed by `connect-src`, not `img-src`,
-and this site's policy allows `data:` under `img-src` only. So a pasted
-photo displays perfectly and every attempt to upload one was blocked
-before it left the browser, silently, for weeks: R2 stayed empty, every
-`cover` stayed empty, and every shared link showed the default card.
-`aab/photo.js` decodes instead, and `aab/studio-publish.test.ts` drives
-a real publish under the policy read out of `_headers` and fails if that
-regresses. Do not "simplify" it back to a fetch.
+and this site's policy allows `data:` under `img-src` only, so every
+upload is blocked before it leaves the browser, silently: R2 stays
+empty, every `cover` stays empty, and every shared link shows the
+default card. `aab/photo.js` decodes instead, and
+`aab/studio-publish.test.ts` drives a real publish under the policy read
+out of `_headers`. Do not "simplify" it back to a fetch.
 
 ## What is served, and what is only in the clone
 
 `[assets] directory = "./aab"` means every file in `aab/` is
-uploaded and answers at its own public URL. Every file: the five
-`check-*.mjs`, the seven `*.test.mjs`, both school builders, the
-TypeScript that four served modules are compiled from and
-`schema.sql` were all live, about 300 KB of them, at addresses
+uploaded and answers at its own public URL: checks, tests, both
+school builders, the TypeScript served modules are compiled from
+and `schema.sql` were all live, about 300 KB of them, at addresses
 like `/check-routes.ts`.
 
-`aab/.assetsignore` is what stops that. Nothing in them was secret
-and none of it was reachable from a link, which is exactly why it
-sat there: a file nobody meant to publish is a file nobody thinks
-about before changing.
+`aab/.assetsignore` is what stops that. A file nobody meant to
+publish is a file nobody thinks about before changing.
 
 Add a check or a test beside the others and it starts being
 published the moment it is committed, so `scripts/check-routes.ts` reads
@@ -2287,8 +1971,7 @@ the module's name and its own surface.
 
 ## An address that was live stays live, and a directory is an address
 
-A page that moves leaves a rule in `_redirects` behind it. That was
-already the rule here and it was still not enough, because it
+A page that moves leaves a rule in `_redirects` behind it. That
 covers the spelling somebody typed into a link and not the spelling
 Cloudflare served.
 
@@ -2296,21 +1979,20 @@ Cloudflare served.
 the slash. So the directory form was the canonical address of every
 page that was an `index.html`: it is what the old sitemap resolved
 to, what a crawler indexed, and what a reader who bookmarked one
-has. Task #28 dropped `.html` from every address, wrote a 301 for
-`/deutsch/index.html`, and left `/deutsch/` matching no route
-pattern at all. Twenty-one addresses 404ed: four school hubs and
-seventeen stage ladders. Every check passed and every internal link
-worked, because nothing on this site links the directory form. The
-readers who had it were the ones who had been here longest.
+has. Dropping `.html` from every address and writing a 301 for
+`/deutsch/index.html` left `/deutsch/` matching no route pattern at
+all: twenty-one addresses 404ed, four school hubs and seventeen
+stage ladders, while every internal link worked, because nothing on
+this site links the directory form.
 
 Two things hold it now, and they are deliberately not a list of
 twenty-one paths:
 
 - **`bare()` in `worker.js`**, which takes one trailing slash off
   the path before the route table is consulted. A route added next
-  week gets this without knowing about it, which is the difference
-  between a rule and a habit; the request is forwarded unchanged,
-  so Next answers with its own 308 to the canonical form.
+  week gets this without knowing about it; the request is forwarded
+  unchanged, so Next answers with its own 308 to the canonical
+  form.
 - **`check-routes.ts`**, which reads `_redirects` for the answer
   rather than being told it. A rule whose source ends
   `/index.html` IS the statement that the page was a directory, so
@@ -2318,11 +2000,10 @@ twenty-one paths:
   remembering to come here.
 
 **`nextOwns()` is exported from `worker.js` for the same reason.**
-Four checks each asked "does a Next route render this" with their
-own copy of `NEXT_ROUTES.some(...)`, and two wrote a redundant
-`ARTICLE.test()` in front of it. A copy is fine while the answer is
-one line and stops being fine the moment the line grows a `bare()`:
-the Worker starts forwarding `/deutsch/` and four checks go on
+Four checks each asking "does a Next route render this" with their
+own copy of `NEXT_ROUTES.some(...)` is fine while the answer is one
+line and stops being fine the moment the line grows a `bare()`: the
+Worker starts forwarding `/deutsch/` and four checks go on
 reporting on a site that does not exist.
 
 ## Before deploying
@@ -2332,12 +2013,7 @@ shipped broken once.
 
 **CI runs them too, on the pull request.** `.github/workflows/checks.yml`
 is the list, and `deploy.yml` calls it rather than keeping a second
-copy, so the upload happens only if it passed. That is a change: the
-checks used to live inside `deploy.yml` alone, which fires on a push
-to main, so they ran AFTER the merge. A pull request that broke one
-showed a green tick, because the only thing answering on a branch was
-`live-check.yml`, and on a branch that asks the live site how the LAST
-deploy is doing.
+copy, so the upload happens only if it passed.
 
 Running them here first is still worth it. CI tells you on a pull
 request; a laptop tells you before you have written the commit
@@ -2351,11 +2027,7 @@ node scripts/check-routes.ts # redirect loops, dead links in routes as well
                             # redirect pointing at a practice book no stage
                             # declares, a page that was a directory losing its
                             # directory address, a route whose dynamicParams
-                            # is false, which answers 404 for every param on
-                            # this deployment, and a page inside TWO shell
-                            # layouts, which draws the rail, the bar, the footer
-                            # and the boot script twice and takes --rail-w off
-                            # the width twice
+                            # is false, and a page inside TWO shell layouts
 node scripts/check-css.ts   # a school's layer styling the whole site, a block
                             # class that means two things at once, and a rule
                             # that styles nothing on the site at all
@@ -2386,8 +2058,8 @@ node scripts/check-relief.ts # a figure that lifts and never stops for a reader
                             # layer defines, and a scene layer moved twice
 node scripts/check-admin.ts # an endpoint under functions/api/ gated by neither
                             # requireAdmin nor isAdmin, and not named as public,
-                            # or a file that is open in part and gated in part
-                            # whose gate has quietly gone
+                            # or a file open in part and gated in part whose
+                            # gate has quietly gone
 node scripts/check-mjs.ts   # a .mjs, which is a file nothing typechecks and the
                             # reason the next one gets written
 node scripts/check-dashes.ts # the one character this file opens by banning,
@@ -2447,9 +2119,8 @@ node scripts/check-storage.ts # a key kept in a browser that nothing
                             # reader did, made or chose that quietly does not
                             # travel between their devices
 node scripts/check-app-surface.ts # a table this site holds that the Android
-                            # app never hears about, which breaks nothing
-                            # either and leaves a feature missing where
-                            # nobody can see it is missing
+                            # app never hears about, which leaves a feature
+                            # missing where nobody can see it is missing
 node scripts/build-modules.ts --check # a served module edited in its built
                                        # form rather than in aab/src/
 node scripts/build-fallback.ts --check # /fallback.css, which the two pages that
@@ -2673,12 +2344,11 @@ node next/interactive.test.ts     # a calculator that renders and computes
                                    # browser, skips without)
 ```
 
-It really does run in a container, as of 16 August 2026, and the
-reason it looked as though it did not is worth knowing: it gave up
-on any line matching `Error: `, and `wrangler dev` prints exactly
-that, harmlessly, wherever there is no outbound network. It then
-started forty seconds later. A skip now says which of the three
-ways it failed to start happened, and a skip is never silent.
+It really does run in a container: it gave up on any line matching
+`Error: `, and `wrangler dev` prints exactly that, harmlessly,
+wherever there is no outbound network, then starts forty seconds
+later. A skip now says which of the three ways it failed to start
+happened, and a skip is never silent.
 
 ## After deploying
 
@@ -2694,21 +2364,20 @@ node scripts/check-preview.ts --preview <branch-preview-url>
                                    # render what the live site renders
 ```
 
-`check-preview.ts` is how a Stage 11 route gets verified before
-anything forwards a reader to it. The two Workers deploy
-separately and Cloudflare gives `reiad-next` a branch preview URL
-on every push, with the real database binding, so a route can be
-written, pushed and asked real questions while `NEXT_ROUTES` in
-`worker.js` still sends nobody there. The URL is in the Cloudflare
-bot's comment on the pull request.
+`check-preview.ts` is how a route gets verified before anything
+forwards a reader to it. The two Workers deploy separately and
+Cloudflare gives `reiad-next` a branch preview URL on every push,
+with the real database binding, so a route can be written, pushed
+and asked real questions while `NEXT_ROUTES` in `worker.js` still
+sends nobody there. The URL is in the Cloudflare bot's comment on
+the pull request.
 
 It exists because `next/parity.test.ts` is the better test and
-does not run everywhere: it needs `wrangler dev` on workerd, and
-somewhere without it this is the only thing holding a route to
-anything. Reach for the parity test first; reach for this when
-that is not available, and always to catch a deployed regression
-a local test cannot see, because it asks the live site and the
-live database rather than a fixture.
+does not run everywhere: it needs `wrangler dev` on workerd. Reach
+for the parity test first; reach for this when that is not
+available, and always to catch a deployed regression a local test
+cannot see, because it asks the live site and the live database
+rather than a fixture.
 
 It runs itself on every push, in `.github/workflows/live-check.yml`,
 because the two things it is really watching are settings on a
@@ -2735,25 +2404,19 @@ applied out of band, through the dashboard or through the Supabase
 MCP, the version it was stamped with is the version the file must
 carry, however ugly.
 
-That is not hypothetical. Two migrations were applied that way and
-then written into the repository under hand-rounded names:
+Two migrations were applied that way and then written into the
+repository under hand-rounded names:
 
 | the file said | the database recorded |
 | --- | --- |
 | `20260817180000_lock_trigger_functions.sql` | `20260817181442` |
 | `20260818090000_broker_admins.sql` | `20260818030907` |
 
-The integration saw two migrations it had not applied, and one of
-them sorted BEFORE the last one it had, which is an out-of-order
-insert and something it refuses outright. The Supabase branch went
-to `MIGRATIONS_FAILED` and stayed there, red on every commit to
-main from 15 August onwards.
-
-Nothing was broken by it and that is the point: the project stayed
-`ACTIVE_HEALTHY`, every table was correct, the site never noticed,
-and the only symptom was a red tick next to a check most people
-would read as somebody else's. The SQL was fine. The filenames
-were the bug.
+One of them sorted BEFORE the last migration the integration had
+applied, which is an out-of-order insert and something it refuses
+outright: the Supabase branch went to `MIGRATIONS_FAILED` and
+stayed there while the project stayed `ACTIVE_HEALTHY` and every
+table was correct. The SQL was fine. The filenames were the bug.
 
 Both files now carry the versions the database recorded. To check
 that the two still agree:
@@ -2769,12 +2432,11 @@ ls supabase/migrations/
 The database has two, and the split between them is about who can read
 the result, not about size.
 
-The repository is private as of 15 August 2026, and **that changes
-nothing about what may go in git.** Visibility is one click and
-retroactive in neither direction: going private unpublishes nothing
-already fetched or forked, and going public later publishes the whole
-history at once. A rule that holds only while a checkbox holds is not a
-rule.
+The repository is private, and **that changes nothing about what may go
+in git.** Visibility is one click and retroactive in neither direction:
+going private unpublishes nothing already fetched or forked, and going
+public later publishes the whole history at once. A rule that holds only
+while a checkbox holds is not a rule.
 
 `content/articles.backup.json` is committed nightly by
 `.github/workflows/backup.yml` and holds **live articles only**. Every
@@ -2799,16 +2461,12 @@ npx wrangler d1 execute reiad --remote --file=restore.sql
 
 ## Where a lesson's words live
 
-In D1, and in one committed export of it. The
-`aab/<school>/content/<stage>.js` modules are gone: they were
-being uploaded and served at addresses nobody had asked for.
+In D1, and in one committed export of it.
 
 A lesson is written at `/studio/?lessons`, which saves one row
-through `PUT /api/schools/<school>/<stage>/<lesson>`. **As of
-Stage 11.7 that is the whole of it**: the route reads the row, so
-saving in the Studio changes the page. There is nothing to
-rebuild and nothing to commit, which is what the whole stage was
-for.
+through `PUT /api/schools/<school>/<stage>/<lesson>`, and the route
+reads the row, so saving in the Studio changes the page. There is
+nothing to rebuild and nothing to commit.
 
 The snapshot is still worth refreshing, because two checks and
 every test read it and it is the schools' committed backup:
@@ -2819,14 +2477,12 @@ node scripts/export-schools.ts --db schools.db   # content/schools.backup.json
 ```
 
 **Why there is a file at all, now that no page is built from it.**
-Three reasons, and none of them is the pages any more. It is the
-schools' half of the nightly backup, on the same footing as
-`content/articles.backup.json`. It is what `check-schools.ts`
-compares the four ladders against. And it is the
-only copy of the lesson prose that a check running on a laptop
-with no network can read, which is how `check-css.ts` knows that
-`.shobdo-list` and thirty-one other rules are styling something
-real.
+It is the schools' half of the nightly backup, on the same footing
+as `content/articles.backup.json`. It is what `check-schools.ts`
+compares the four ladders against. And it is the only copy of the
+lesson prose that a check running on a laptop with no network can
+read, which is how `check-css.ts` knows that `.shobdo-list` and
+thirty-one other rules are styling something real.
 
 It is safe on the same grounds as ever: every byte of it is
 already served at a public URL. It carries no timestamp,
@@ -2844,43 +2500,31 @@ snapshot, and it computes every lesson's URL, progress id and
 label both through `shared/schools.ts` and through the school's
 own file, and fails on any pair that disagree.
 
-**The ladder is `shared/curricula/<school>.ts`,** as of 19 August
-2026, and the browser still reads it: eleven modules import
-`/deutsch/curriculum.js` or one of its three siblings, which
-`scripts/build-modules.ts` writes from those four sources the same
-way it writes `/content.js`. So two files describe the same four
-schools, and `check-schools.ts` fails if they stop agreeing about
-which lessons exist, in what order, in which section. Titles and
-prose are not compared: those are the Studio's now.
+**The ladder is `shared/curricula/<school>.ts`,** and the browser
+still reads it: eleven modules import `/deutsch/curriculum.js` or
+one of its three siblings, which `scripts/build-modules.ts` writes
+from those four sources the same way it writes `/content.js`. So
+two files describe the same four schools, and `check-schools.ts`
+fails if they stop agreeing about which lessons exist, in what
+order, in which section. Titles and prose are not compared: those
+are the Studio's.
 
 **A stage's `base` says where its pages go, not whether anybody
 can write them.** `basics-1` carries a `base` of `/money/terms/`
-because its eighteen term pages were the glossary for a year
-before this school had a builder, and they keep the terms shape
-of address (it was `/learn/terms/` until the whole school moved).
+because its eighteen term pages were the glossary before this
+school had a builder, and they keep the terms shape of address.
 They are written from the rows like everything else; the builder
 just writes them to that address.
 
-**Every stage is editable, as of 17 August 2026.** `start` was
-`inline` until then: its eight steps were accordion sections of
-the hand-written hub at `/learn/`, and they were not article prose
-either. Each carried a two-column "what you do / what others do"
-split, a risk badge and a call-to-action, using the classes
-`split`, `do`, `others`, `warn`, `bn-h` and `btn`, none of which is
-in the article allowlist, and widening the allowlist would not have
-fixed it: those classes belonged to the starter guide's own layer
-and `check-css.ts` fails a class two layers both define.
-
-They were rewritten into the article's own vocabulary instead. The
-split became a `checklist` and a `side-note`, the warnings became
-`note` boxes, the risk badge moved into the lesson's `meta` where
-the card draws it, and the call-to-action went because the page
-already has a prev/next pair. Eight rows that had sat with empty
-bodies since Stage 8 have prose in them, and `/learn/start/` is
-eight pages like every other stage.
-
-No stage on this site is `inline` now, and the branch is gone from
-both ladders, `shared/schools.ts` and `shared/curricula/money.ts`.
+**Every stage is editable.** No stage on this site is `inline`, and
+the branch is gone from both ladders, `shared/schools.ts` and
+`shared/curricula/money.ts`. A lesson is written in the article's
+own vocabulary: a `checklist`, a `side-note`, a `note` box, the
+lesson's `meta`. Classes belonging to a section's own layer are not
+an option, because `check-css.ts` fails a class two layers both
+define, and widening the article allowlist to admit them would take
+`split`, `do`, `others`, `warn`, `bn-h` and `btn` into every
+article on the site.
 
 Generated pages are generated. Edit the source, never the output:
 
@@ -2907,41 +2551,28 @@ same reason every generated page here is: the site deploys by uploading
 command in a dashboard that cannot be seen from the repository. So the
 rule is the rule: edit `app/src/**`, run the build, commit both.
 
-**Nothing held anybody to the second half of that until 19 August
-2026.** The two bundles it built then were last built at #105 while
-`app/src/**` changed in #143, #147 and #149, so the desk and the Studio
-served a build from before `accentStyle` existed, for four pull
-requests, and every check passed: a stale generated file looks exactly
-like a correct one. `scripts/build-stamp.ts` hashes the
-sources and `npm run build` writes the hash, so the day they part
-company a check fails. It hashes the SOURCES rather than the output,
-because Vite's output is not reproducible across versions and the
-thing that actually goes wrong is that nobody re-ran the build.
+**A stale generated file looks exactly like a correct one**, which is
+what `scripts/build-stamp.ts` is for: it hashes the sources and
+`npm run build` writes the hash, so the day they part company a check
+fails. It hashes the SOURCES rather than the output, because Vite's
+output is not reproducible across versions and the thing that actually
+goes wrong is that nobody re-ran the build.
 
-The stylesheet was not part of it, and now partly is. `next/styles/site.css`
-is still the design system: the rule that a port must not also be a
-redesign held for every page ported in stages 9 to 12, which is what
-made those ports judgeable.
-
-**The stylesheet is `next/styles/` as of 18 August 2026.**
-`site.css` is the design system, `tailwind.css` is the theme and
-the utilities, and `globals.css` imports them in that order, which
-is where the cascade order lives: it was two `<link>` tags in
-`shell.tsx` whose sequence was the whole of it. `shell.tsx`
-imports the one file and Next emits a hashed stylesheet, so
-nothing is served at `/styles.css` any more.
+**The stylesheet is `next/styles/`.** `site.css` is the design system,
+`tailwind.css` is the theme and the utilities, and `globals.css` imports
+them in that order, which is where the cascade order lives. `shell.tsx`
+imports the one file and Next emits a hashed stylesheet, so nothing is
+served at `/styles.css` any more. A port must not also be a redesign.
 
 `aab/fallback.css` is that stylesheet with its comments removed,
 for `404.html` and `offline.html`, which cannot link a name that
 carries a content hash. `scripts/build-fallback.ts` writes it and
 `check-next.ts` fails if it has drifted.
 
-**Tailwind is live as of 17 August 2026, on one page.** Stage 14 set
-the arrangement up and deliberately left it unused so the first
-conversion would be a change to one component. `/account` is
-that component, because its markup is almost entirely layout.
-`@theme` in `next/styles/tailwind.css` names the site's own
-tokens, so `bg-panel` means `var(--panel)` in both themes.
+**Tailwind is live, on one page.** `/account`, because its markup is
+almost entirely layout. `@theme` in `next/styles/tailwind.css` names
+the site's own tokens, so `bg-panel` means `var(--panel)` in both
+themes.
 
 Three things stay in the stylesheet and the split is the point:
 
@@ -2961,16 +2592,14 @@ can drift. Most are plain JavaScript, so each is described by a
 declaration in `app/src/types/` that `tsconfig.json` maps the runtime
 path to; `/content.js` is TypeScript, so the mapping points at
 `shared/content.ts` itself and there is no declaration to keep in
-step. Do not answer an untyped import with a `@ts-expect-error`:
-that silences the complaint without describing anything, and it
-silences the next complaint too.
+step. Do not answer an untyped import with a `@ts-expect-error`.
 
 ## What more than one runtime has to agree on
 
 `shared/` is for anything the Worker, the browser and the Next.js
 route must all say the same way. Twenty files and a directory, and
 `check-types.ts` fails on one that `shared/README.md` does not
-describe, because that file said six while nine were there:
+describe:
 `content.ts`, the site's own manifest and every number the site
 states about itself; `curricula/`, the four schools' ladders, one
 file each; `look.ts`, the per-section table and the head facts
@@ -2994,15 +2623,11 @@ key already in somebody's log, and every rice, dal and pasta row
 says in its name whether the figure is for the raw food or the
 cooked.
 
-**`nav.ts` moved here on 22 August 2026, and the move is the rule
-working rather than a tidy-up.** It sat in `next/lib/` because
-the rail, the footer and the drawer were the only readers. They
-had stopped being: four checks import it from node, a migration
-comment quotes its school ids because Postgres cannot import it,
-and `/api/site` serves it to the Android app. A file three
-runtimes read is what this section is for, and the count above
-had already gone stale once, `routine.ts` having arrived without
-being written down.
+**`nav.ts` lives here because three runtimes read it**: four checks
+import it from node, a migration comment quotes its school ids
+because Postgres cannot import it, and `/api/site` serves it to the
+Android app. A file three runtimes read is what this section is
+for, and the count above has gone stale before.
 
 **Five of them have an output, and it is one argument.** The
 browser reads the manifest at `/content.js` and a ladder at
@@ -3029,13 +2654,6 @@ esbuild, which needs no configuration at all. Plain `node` reads
 them too, which is what the checks under `scripts/` rely on: type
 stripping has been on by default since Node 22.18.
 
-It was briefly the other way round and that is worth not repeating.
-The four were compiled to committed `.js` and `.d.ts` beside their
-own source, which is twelve files where there are four, plus a
-build script, plus a check to catch somebody editing the output
-instead of the input, all of it serving a compile step that no
-runtime here needed.
-
 It is an npm package (`@reiad/shared`) because `next/` cannot import
 by relative path out of its own directory: Turbopack refuses to
 resolve above its root, and moving the root moves Next's file-tracing
@@ -3053,35 +2671,30 @@ compiles the old code without a word. Delete it first:
 rm -rf next/node_modules/@reiad/shared && (cd next && npm install)
 ```
 
-A typo in `bnNum` put every Bangla numeral into Devanagari, `০১২৩`
-becoming `०१२३`. It was fixed, the build was re-run, and the route
-went on serving the wrong digits from the copy. `next/parity.test.ts`
-is what caught it. `shared/README.md` says all of this again where
-somebody editing those files will see it.
+A fix that is re-run against the stale copy is not a fix: a typo in
+`bnNum` put every Bangla numeral into Devanagari, `০১২৩` becoming
+`०१२३`, and the route went on serving the wrong digits after the
+fix and the rebuild. `next/parity.test.ts` is what caught it.
+`shared/README.md` says all of this again where somebody editing
+those files will see it.
 
 **A response a Worker builds is not a static asset**, so `aab/_headers`
-does not apply to it. Every article rendered from the database was
-served with no Content-Security-Policy, no HSTS and no
-`X-Frame-Options` for as long as that route existed, beside
-file-based articles that had all three, and the page renders the
-same either way. Anything that returns HTML from a Worker goes
-through `htmlResponse()` in `shared/headers.ts`, and
-`check-headers.ts` fails if that list and `_headers` drift.
+does not apply to it: a page rendered from the database is served with
+no Content-Security-Policy, no HSTS and no `X-Frame-Options` beside
+file-based pages that have all three, and renders the same either way.
+Anything that returns HTML from a Worker goes through `htmlResponse()`
+in `shared/headers.ts`, and `check-headers.ts` fails if that list and
+`_headers` drift.
 
 **It also fails on a handler that does not call it**, which the
-list comparison alone could never see. The subscription confirm
-page built its own `new Response` with a Content-Type and nothing
-else, so a reader arriving from their email got none of the six,
-while the check reported the two lists in perfect agreement.
+list comparison alone could never see: a `new Response` built with
+a Content-Type and nothing else carries none of the six while the
+two lists are in perfect agreement.
 
 **And a Worker-built page links `/fallback.css`, never
-`/styles.css`.** Nothing has been served at the second since
-Stage A: the stylesheet is Next's and carries a content hash,
-which a response a Worker builds cannot know. Both pages that
-link one by name were still asking for the old address, so both
-were unstyled, and the only thing in the repository that knew was
-one check in `next/parity.test.ts` that had been failing for so
-long it read as furniture.
+`/styles.css`.** Nothing is served at the second: the stylesheet is
+Next's and carries a content hash, which a response a Worker builds
+cannot know.
 
 ## The writing surface is one module
 
@@ -3099,11 +2712,9 @@ it. Two sanitisers that disagree is the bug the three-place rule above
 already exists for, and a second copy of this file is how you get one.
 
 **A port is finished when it does what the thing it replaced did, not
-when it renders.** Those two look identical from the outside, which is
-how the first React desk shipped as three thin panels missing the
-search boxes, the filter counts and most of the actions. So the list of
-what the old page did is written down as a test: the desk's 76 checks
-are in `next/admin.test.ts` now, every one of them a feature the page
+when it renders.** Those two look identical from the outside. So the
+list of what the old page did is written down as a test: the desk's 76
+checks are in `next/admin.test.ts`, every one of them a feature the page
 it replaced had. Anything ported out of `aab/*.js` gets the same
 treatment before it is called done.
 
@@ -3114,19 +2725,14 @@ two schools drift away from the rest of the site one deploy at a time.
 ## A page rendered by Next loads its modules through one component
 
 **Never write `<script type="module" src="...">` into a Next route.**
-`next/components/scripts.tsx` is how a page loads one, and the reason
-is not tidiness. A module script in the body is deferred, so it runs
-after the document is parsed and BEFORE React hydrates; hydration is
-React adopting the server's HTML, and it undoes anything the module
-wrote into it. The module runs, the page goes back to how it shipped,
-and the console says `Minified React error #418`.
-
-That is not a hypothetical either. Every calculator on this site was
-blank for a day: the compounding tool computed the right number, wrote
-it in, and had it replaced with the placeholder dash, and the same
-happened to the stock check's verdict and to five of the seven case
-studies. Nothing here could see it, because every other check reads
-HTML and the HTML was correct.
+`next/components/scripts.tsx` is how a page loads one. A module script
+in the body is deferred, so it runs after the document is parsed and
+BEFORE React hydrates; hydration is React adopting the server's HTML,
+and it undoes anything the module wrote into it. The module runs, the
+page goes back to how it shipped, and the console says
+`Minified React error #418`. Every calculator on this site was blank
+for a day that way, and every other check reads HTML, which was
+correct.
 
 The same rule catches two smaller shapes of it:
 
@@ -3146,26 +2752,20 @@ and fails if any of this comes back.
 
 ## The money school lives at /money/
 
-It was `/learn/` from the day it existed, because it *was* the
-learning half of the site: one school, and "learn" named the idea
-rather than the subject. There are six schools now and it is one of
-them, so it sits at `/money/` beside `/deutsch/`, `/quran/` and
-`/english/`, under the name it teaches: টাকা ও শেয়ার.
-
-Moved on 17 August 2026, and moved properly: the school id in D1,
-the folder `aab/money/`, the cascade layer `@layer money`, the
-route patterns in `worker.js`, `run_worker_first` in
+It sits at `/money/` beside `/deutsch/`, `/quran/` and `/english/`,
+under the name it teaches: টাকা ও শেয়ার. The move took the school
+id in D1, the folder `aab/money/`, the cascade layer `@layer money`,
+the route patterns in `worker.js`, `run_worker_first` in
 `wrangler.toml`, and every link in every lesson body. **No
 redirect.** The old addresses are gone, which is what a move is.
 
 **One thing did not move, and it must not.** The storage keys.
 Progress is still filed under `learn-read` and `learn-last`, and
 `aab/sync.js` still maps them to `learn:progress`. Those strings
-are in real browsers and in real accounts, and the rule at the top
-of "What a reader has read" is the whole reason: renaming a key
-does not move somebody's ticks, it loses them. `next/lib/progress.ts`
-maps the school `money` on to the key `learn-read` deliberately,
-and says so where it does it.
+are in real browsers and in real accounts: renaming a key does not
+move somebody's ticks, it loses them. `next/lib/progress.ts` maps
+the school `money` on to the key `learn-read` deliberately, and
+says so where it does it.
 
 ## Third-party courses, which are nobody's to publish
 
@@ -3186,11 +2786,9 @@ the catalogue is behind `isAdmin()`.
 
 ## A programme is a folder, and the eight were never eight courses
 
-`/skills/courses/` listed eight courses. They are the eight of
-the **Google Data Analytics certificate**, and listing them flat
-is the same mistake as listing eight lessons of one module as
-eight modules: a second certificate would have sat beside them
-with nothing saying which belonged to which.
+The eight courses listed flat are the eight of the **Google Data
+Analytics certificate**, and a second certificate would have sat
+beside them with nothing saying which belonged to which.
 
 So there is a level above a course. A programme is a Drive folder
 holding a run of courses meant to be taken in order, it holds no
@@ -3209,12 +2807,9 @@ child folders are modules and a module is `NN_something`; a
 programme's child folders are courses and a course is
 `N. Something`. Both conventions are Coursera's own. Where the
 Drive root holds courses directly, which is what it holds today,
-**the root itself is the programme**: that is not a special case
-invented to avoid work, it is what the folder already was.
-Somebody's "Google Data Analytics" folder full of eight numbered
-courses is a certificate whether or not anybody has drawn a box
-around it. A part-moved Drive works too, so a new certificate can
-be added by making a folder and dragging things into it.
+**the root itself is the programme**. A part-moved Drive works too,
+so a new certificate can be added by making a folder and dragging
+things into it.
 
 **The crawl records the root folder's own name**, in a row of
 `tree.tsv` with an empty parent. Listing a folder's children never
@@ -3260,10 +2855,9 @@ catalogue into a JavaScript bundle anybody can fetch, and the page
 would look identical. `import type` is fine and is erased before
 bundling. `check-courses.ts` fails on the other kind.
 
-**The catalogue is generated and must stay generated.** It is a
-list of things that exist elsewhere, which is the rule at the top
-of this file: a hand-edited copy is right on the day it is typed
-and wrong the first time the Drive folder changes.
+**The catalogue is generated and must stay generated.** A
+hand-edited copy is right on the day it is typed and wrong the
+first time the Drive folder changes.
 
 Refreshing it needs a Drive OAuth **access token**. A private file
 will not open for an API key, and not for a service account
@@ -3297,17 +2891,13 @@ token that expires halfway leaves the committed catalogue alone.
 The head of `import-courses.ts` says all of this again where
 somebody running it will see it.
 
-**The browser never talks to Drive. The Worker does.** That is
-the second version of this section and the first one was wrong in
-a way worth writing down, because it looked right and shipped.
-
-It handed Drive file ids to the page: a `/preview` iframe for a
-video, a link for a reading. Neither can work for a PRIVATE file.
-Drive has to know who is asking, and inside a cross-site iframe it
+**The browser never talks to Drive. The Worker does.** Handing
+Drive file ids to the page cannot work for a PRIVATE file: Drive
+has to know who is asking, and inside a cross-site iframe it
 cannot, because browsers block or partition third-party cookies
 now. Drive sees an anonymous request for something that is not
 public and answers "Unable to load video". Nothing is broken: not
-the embed, not the file, not the CSP. The mechanism only ever
+the embed, not the file, not the CSP. That mechanism only ever
 worked for files shared by a link, and these deliberately are not.
 
 So `functions/_lib/drive.ts` holds one credential and serves the
@@ -3351,12 +2941,9 @@ video in this catalogue ships with a `.en.txt` and a `.en.srt`
 beside it. The first is prose and is offered as a link, for
 reading instead of watching. The second is the same words with
 timings on them, which is the only thing a `<track>` can use.
-
 `coursera.mjs` classified both correctly from the first import and
-`import-courses.ts` carried only the transcript, so for a while
-every lesson had a player with a captions button that turned
-nothing on. The lesson looked finished, which is the failure mode
-this whole file keeps returning to.
+carrying only the transcript leaves every lesson with a captions
+button that turns nothing on.
 
 No browser reads SubRip in a `<track>`, so the Worker converts:
 `toVTT()` in the endpoint adds the `WEBVTT` header and moves the
@@ -3373,8 +2960,8 @@ change.
 **A quiz is parsed, never sanitised into shape.** Every option in
 a Coursera quiz lives inside a `<form>`, and `sanitiseHTML()` drops
 `form` WHOLE, contents and all. That is right for an article and it
-deleted every answer here: the page showed "Question 2", a rule,
-"Question 3", a rule, and looked finished.
+deletes every answer here, leaving a page of prompts and rules that
+looks finished.
 
 The fix was not to widen the allowlist, which would let a form into
 every article on the site to serve one page that is not an article.
@@ -3407,10 +2994,10 @@ button, exactly as it is for a video.
 
 **`ID_FIELDS` in `shared/courses.ts` is the list of lesson fields
 holding a Drive id**, and it is exported because more than one
-thing walks it. `check-courses.ts` kept its own copy, and the day
-`captions` was added it went on reporting every id well formed
-while never looking at 298 of them. One vocabulary, one place: the
-rule `check-rows.ts` already enforces for the database.
+thing walks it. A second copy in `check-courses.ts` went on
+reporting every id well formed while never looking at the 298 that
+`captions` added. One vocabulary, one place: the rule
+`check-rows.ts` already enforces for the database.
 
 **The credential is a SERVICE ACCOUNT, and that is not a
 convenience.** Two wrangler secrets, and the site works without
@@ -3427,19 +3014,15 @@ same way you would share it with a person. That sharing IS the
 grant: a service account owns no files, so it can see exactly what
 has been shared with it and nothing else.
 
-This was a user OAuth refresh token first and that was wrong twice
-over. It could not be obtained: `drive.readonly` is a RESTRICTED
-scope, so an app using it needs a security assessment before
-Google lets it out of "Testing", and refresh tokens issued in
-Testing expire after seven days. The section would have worked for
-a week and then quietly stopped. And it was far too much power: a
-user refresh token with that scope reads the WHOLE of a person's
-Drive, every document and every photo, where this needs one
+A user OAuth refresh token is wrong twice over. It cannot be
+obtained: `drive.readonly` is a RESTRICTED scope, so an app using
+it needs a security assessment before Google lets it out of
+"Testing", and refresh tokens issued in Testing expire after seven
+days. And it is far too much power: a user refresh token with that
+scope reads the WHOLE of a person's Drive, where this needs one
 folder. If the service account's key leaks, what leaks is a folder
-of somebody else's course.
-
-That is also what makes `isCourseFile()` a second lock rather than
-the only real one.
+of somebody else's course. That is also what makes `isCourseFile()`
+a second lock rather than the only real one.
 
 The scope is still `drive.readonly`: read, never write.
 `drive.metadata.readonly`, which `import-courses.ts` uses, is not
@@ -3465,9 +3048,7 @@ drive.google.com the next time a video looks broken.
 bookmark, in `aab/sync.js` beside the six schools' keys and
 carried to `public.progress` in Supabase under the same row-level
 security. The section needs an account anyway, which is the
-argument FOR putting the keys in that table rather than against
-it: one person with an admin account has more devices than
-anybody.
+argument FOR putting the keys in that table.
 
 **Nothing in the rail or the footer links to it.** `unlisted` in
 `shared/nav.ts` is that flag, and it exists so the menu can
@@ -3487,8 +3068,8 @@ for somebody holding one share and one question.
 model does not change: the same eighty-five values are read
 either way, and what changes is how many of them a reader is
 asked to type. `quick: true` on thirteen entries in `FIELDS` is
-the whole of it, and they are not the thirteen easiest to type,
-they are the ones the six pillars are most sensitive to.
+the whole of it, and they are the ones the six pillars are most
+sensitive to.
 
 **The page says which half of the answer is theirs.** Everything
 left out keeps the sector's typical figure, which is what the
@@ -3498,12 +3079,12 @@ against an assumed background rather than a different model.
 partly from somebody else's numbers has to say so.
 
 It lives in `reader-prefs` rather than in the calculator's own
-storage because it is a choice about how the site behaves, which
-is what that file is for, and because that makes it travel with
-the account. `tool-depth` is the calculator's own spelling of it,
-written by `prefs.ts` alone, so `stock.js` needs a string
-comparison rather than a JSON parse before its first render:
-exactly the arrangement `tool-lang` already has.
+storage because it is a choice about how the site behaves, and
+because that makes it travel with the account. `tool-depth` is the
+calculator's own spelling of it, written by `prefs.ts` alone, so
+`stock.js` needs a string comparison rather than a JSON parse
+before its first render: exactly the arrangement `tool-lang`
+already has.
 
 ### An analysis is about a company, and the URL is what says so
 
@@ -3519,8 +3100,8 @@ holding by its ticker.
 
 ### A holding is a question, and the check is where it is answered
 
-Every row of the live portfolio used to be a dead end. It is a
-link now, carrying the name, the ticker and the price.
+Every row of the live portfolio is a link, carrying the name, the
+ticker and the price.
 
 **Not the quantity.** `shares` in the stock check is the
 company's shares OUTSTANDING and a reader's holding is not that,
@@ -3586,9 +3167,8 @@ tokens can mint an admin. `functions/_lib/admins.ts` asks both and
 is the ONLY place that asks: anything that wants to know goes
 through `isAdmin()`. What an admin currently gets: the dashboard's
 admin panel, the full site account, and their comments go live
-without the moderation queue (their name is on the site; approving
-themselves was a button with one possible answer). A new privilege
-belongs behind the same function, not behind a second list.
+without the moderation queue. A new privilege belongs behind the
+same function, not behind a second list.
 
 ## Publishing a new case study
 
@@ -3622,13 +3202,11 @@ merge. Look at the open PRs, not just `main`.
 Finished work ships without a second conversation. Open the pull
 request, wait for the checks, and merge it as soon as they are green.
 Squash merge, so `main` keeps one commit per change with the pull
-request number on the end, the way every entry in the log already
-reads. There is no need to come back and ask whether it should go in:
-the decision that mattered was made when the work was asked for.
+request number on the end. There is no need to come back and ask
+whether it should go in: the decision that mattered was made when the
+work was asked for.
 
-This rule leans on the section above rather than replacing it, and the
-lean is the whole point. Merging without asking is only safe while
-every check still runs first:
+Merging without asking is only safe while every check still runs first:
 
 - all four checks in **Before deploying** pass,
 - anything that touched a precached file bumped `VERSION` in

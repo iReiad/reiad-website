@@ -155,15 +155,11 @@ export const BOOK = {
 };
 
 /**
- * The segments. `kind` picks the Basel correlation function, and
+ * The segments. `kind` picks the Basel correlation function and
  * with it the whole capital treatment, so it is not cosmetic.
- *
- * `betas` are the weights that turn standardised macro shocks
- * into one systematic factor for the segment. They sum to one,
- * which fixes the scale: a scenario in which every macro
- * variable is two standard deviations bad produces Z = −2, in
- * any segment, whatever its mix. Segments differ in WHICH
- * variables hurt them, not in how loudly a given shock speaks.
+ * `betas` MUST SUM TO ONE: that is what fixes the scale, so a
+ * scenario two standard deviations bad produces Z = −2 in any
+ * segment whatever its mix.
  */
 export const SEGMENTS = [
   {
@@ -327,17 +323,10 @@ export const MACRO = [
 
 export const MACRO_BY_KEY = Object.fromEntries(MACRO.map((m) => [m.key, m]));
 
-/* ------------------------------------------------------------
-   4 · Scenarios
-
-   A scenario is six peak shocks and a shape. The shape is a ramp
-   to the peak and then a decay back towards the starting point,
-   which is what a supervisory scenario looks like and, more
-   importantly, is why the worst quarter for capital is not the
-   worst quarter for the economy: provisions are taken on the
-   forward view, so they peak early, while the capital ratio
-   troughs later, once they have been paid for.
-   ------------------------------------------------------------ */
+/* 4 · Scenarios: six peak shocks and a shape, a ramp then a
+   decay. That shape is why the worst quarter for capital is not
+   the worst quarter for the economy: provisions are taken on the
+   forward view and peak early, and the ratio troughs later. */
 export const SCENARIOS = {
   base: {
     id: "base", label: "Base",
@@ -487,10 +476,8 @@ export function maturityAdjustment(pd, maturity) {
  *
  * K = LGD · Φ[(Φ⁻¹(PD) + √ρ · Φ⁻¹(0.999)) / √(1 − ρ)] − PD · LGD
  *
- * The first term is the conditional expected loss in a 1-in-1000
- * year economy; the second is the expected loss that provisions
- * are already supposed to cover. Capital is for the difference,
- * which is the whole idea and is worth reading twice.
+ * The second term is the expected loss provisions already cover:
+ * capital is for the DIFFERENCE.
  */
 export function capitalRequirement({ pd, lgd, kind, maturity = 2.5, sizeAdjustment = 0, scale = 1 }) {
   const floored = Math.max(pd, 0.0003);   // the Basel PD floor of 3bp
@@ -540,28 +527,16 @@ function threshold(pd) {
 }
 
 /**
- * The value of the systematic factor at which the conditional
- * default rate equals the long-run average one.
- *
- * This is not zero, and the reason is worth a paragraph because
- * getting it wrong quietly moves every number on the page.
- *
- * PD(Z) is the default rate in a year whose economy was Z. The
- * through-the-cycle PD a bank quotes is the AVERAGE of that over
- * the cycle, and the average of a convex function is not the
- * function of the average. Default rates are right-skewed: a
- * handful of terrible years pull the mean up above the typical
- * year. So the year that actually produces the long-run average
- * default rate is already a mildly bad one:
+ * The systematic factor at which the conditional default rate
+ * equals the long-run average one. IT IS NOT ZERO, because the
+ * average of a convex function is not the function of the
+ * average:
  *
  *     Z₀ = Φ⁻¹(PD) · (1 − √(1 − ρ)) / √ρ
  *
- * which for these segments lands between −0.3 and −0.6. Set the
- * starting point at Z = 0 instead and the base scenario shows
- * the book running well below its own long-run default rate,
- * releasing provisions in a year where nothing has happened.
- * That was the first version of this model, and the base case
- * printing a profit release is what gave it away.
+ * which lands between −0.3 and −0.6 here. Start at Z = 0 and the
+ * base scenario releases provisions in a year where nothing has
+ * happened.
  */
 export function anchorZ(pd, rho) {
   const r = clamp(rho, 1e-9, 0.9999);
@@ -619,18 +594,12 @@ export function macroPath(a, horizon = BOOK.horizonQuarters) {
   return out;
 }
 
-/* ------------------------------------------------------------
-   9 · The vintage engine
-
-   lifecycle(age) is a hump: quiet at first, worst at peakMonth,
-   tailing off after. Written so that its value AT the peak is
-   exactly 1, which makes the curve readable, and normalised
-   against the book's own age mix so that with no shock at all
-   the segment reproduces its through-the-cycle default rate.
-   Without that normalisation the vintage engine would answer a
-   different question from the Merton one at quarter zero, and
-   the comparison between them would be meaningless.
-   ------------------------------------------------------------ */
+/* 9 · The vintage engine. `lifecycle(age)` is a hump whose value
+   AT the peak is exactly 1, NORMALISED against the book's own age
+   mix so that with no shock the segment reproduces its
+   through-the-cycle default rate. Without that normalisation the
+   two engines answer different questions at quarter zero and the
+   comparison between them means nothing. */
 
 export function lifecycle(ageMonths, { peakMonth, hazardSharpness }) {
   if (ageMonths <= 0) return 0;
@@ -658,41 +627,19 @@ export function hazardGamma(pd, rho) {
    ------------------------------------------------------------ */
 
 /**
- * Loss given default on a secured book is a put option.
- *
- * A lender that can seize collateral worth C against an exposure
- * of 1 loses max(0, 1 − C·(1 − selling costs)). That is the
- * payoff of a put struck at the exposure, and the loss given
- * default of the segment is its expected value across borrowers
- * whose collateral coverage varies. Take that coverage as
- * lognormal, with mean the segment's average coverage, and the
- * expectation is Black's formula:
+ * Loss given default on a secured book is a put option, valued
+ * with Black's formula over a lognormal collateral coverage:
  *
  *     LGD = Φ(−d₂) − F · Φ(−d₁)
  *     d₁  = (ln F + σ²/2) / σ,   d₂ = d₁ − σ
  *
- * with F the mean net collateral coverage and σ the dispersion
- * of it across the segment.
- *
- * This is the part of the model most stress tests do not have,
- * and the reason to have it is the shape rather than the level.
- * A well-secured book has a low delta: the first few per cent
- * off collateral prices cost almost nothing, because the cushion
- * absorbs them. Keep going and the delta rises, and the loss
- * given default accelerates into exactly the quarter the default
- * rate is peaking. Holding loss given default constant through a
- * stress test is holding an option's value fixed while its
- * underlying moves, and it understates the tail every time.
- *
- * σ is not a free parameter: it is solved, once per segment, so
- * that the formula reproduces that segment's stated loss given
- * default when collateral prices have not moved at all. The
- * shipped LGD is therefore preserved exactly, and only the
- * response to the scenario comes out of the option.
- *
- * Unsecured segments have nothing to sell. Theirs moves with the
- * shock through cure rates, which is a smaller effect and a
- * simpler one.
+ * F is the mean net collateral coverage and σ its dispersion.
+ * σ IS NOT A FREE PARAMETER: it is solved once per segment so
+ * the formula reproduces that segment's stated LGD when
+ * collateral prices have not moved, which preserves the shipped
+ * number exactly and leaves only the response to the scenario.
+ * Unsecured segments have nothing to sell and move through cure
+ * rates instead.
  */
 export function lgdFromCollateral(coverage, costs, sigma, priceShock = 0) {
   const f = coverage * (1 - costs) * (1 + priceShock);
@@ -769,22 +716,14 @@ export function stressedEad(seg, drawn, { s, ccfStress = 0.25 }) {
   return drawn + ccf * seg.undrawn * scale;
 }
 
-/* ------------------------------------------------------------
-   11 · IFRS 9 staging
-
-   The share of a segment in stage 2 is not assumed, it is
-   derived. Individual loans deteriorate by different amounts
-   around the segment average; take the spread as lognormal and
-   the share that has crossed a "PD has risen k times" trigger
-   is one evaluation of Φ:
+/* 11 · IFRS 9 staging. The stage 2 share is DERIVED rather than
+   assumed, from a lognormal spread of deterioration around the
+   segment average:
 
        stage 2 share = Φ[(ln R − ln k) / σ]
 
-   with R the segment's average PD deterioration. At R = 1 that
-   gives the quiet-times stage 2 population; at R = k, half the
-   book is in stage 2 at once. That is the provision cliff, and
-   it falls out of the arithmetic rather than being asserted.
-   ------------------------------------------------------------ */
+   with R the segment's average PD deterioration. At R = k half
+   the book is in stage 2 at once, which is the provision cliff. */
 export function stage2Share(ratio, threshold, dispersion) {
   if (!(ratio > 0) || !(dispersion > 0)) return 0;
   return clamp(normCdf((Math.log(ratio) - Math.log(threshold)) / dispersion), 0, 1);
@@ -795,22 +734,12 @@ export const lifetimePd = (annualPd, years) =>
   1 - (1 - clamp(annualPd, 0, 0.9999)) ** Math.max(0, years);
 
 /**
- * Lifetime PD along the scenario, which is what IFRS 9 actually
- * asks for: the probability of default over the remaining life,
- * given today's view of the future.
- *
- * Two conventions are stated rather than buried. The scenario is
- * used for as far as it runs, which is the "reasonable and
- * supportable" period the standard talks about. Beyond it the
- * rate reverts to the through-the-cycle one rather than staying
- * at its stressed level, because assuming a recession lasts
- * forever is not prudence, it is a different forecast.
- *
- * The alternative, holding today's stressed rate flat for five
- * years, was what this did first. It roughly doubled the peak
- * provision charge, which is worth knowing: most of what looks
- * like a stress result in an IFRS 9 model is really an artefact
- * of how the lifetime PD is extended.
+ * Lifetime PD along the scenario. The scenario is used as far as
+ * it runs (the standard's "reasonable and supportable" period)
+ * and BEYOND IT THE RATE REVERTS to the through-the-cycle one.
+ * Holding today's stressed rate flat instead roughly doubles the
+ * peak provision charge, so most of what looks like a stress
+ * result is really how the lifetime PD was extended.
  */
 function lifetimePdForward(seg, path, a, t, ctx) {
   const horizon = path.length - 1;
@@ -959,17 +888,11 @@ export function runSegment(seg, path, a) {
       stage3 = Math.max(0, stage3 - writeOff);
     }
 
-    /* ---- static balance sheet ----
-       What amortised and what left the book as a write-off is
-       re-lent, at the underwriting standard the scenario has
-       pushed the bank to. Defaults are NOT replaced: a defaulted
-       loan is still on the balance sheet, in stage 3, until it is
-       written off. So performing plus stage 3 is constant, which
-       is what "static balance sheet" means and why a stress test
-       is a test of the book rather than a forecast of the
-       business. Only the vintage engine can see the underwriting
-       response, which is one of the honest arguments for keeping
-       a second engine at all. */
+    /* Static balance sheet: what amortised and what was written
+       off is re-lent at the underwriting standard the scenario
+       forced. DEFAULTS ARE NOT REPLACED, because a defaulted
+       loan is still on the balance sheet in stage 3, so
+       performing plus stage 3 is constant. */
     let amortised = 0;
     ledger.forEach((c) => {
       const a0 = c.balance * seg.amortQuarterly;
@@ -1004,26 +927,13 @@ export function runSegment(seg, path, a) {
     const charge = ecl - prevEcl + writeOff * lgd;
     prevEcl = ecl;
 
-    /* ---- capital ----
-       Which PD goes into the risk weight is a real argument, not
-       a detail, and it decides most of the answer.
-
-       Basel's IRB probabilities of default are meant to be
-       long-run averages, so on a strict reading the risk weight
-       should not move with the cycle at all: only the downturn
-       loss given default should. Run it that way ("ttc") and the
-       capital ratio falls purely because of losses.
-
-       In practice ratings migrate, so measured PDs do rise in a
-       downturn, and risk weights with them. Run it fully point
-       in time ("pit") and the same loans, unchanged, consume
-       half as much capital again, which is the procyclicality
-       supervisors have been arguing about since 2009.
-
-       The default sits between the two, which is roughly where
-       a real rating system lands, and the page offers all three
-       because the gap between them is a result rather than an
-       assumption. */
+    /* Which PD goes into the risk weight decides most of the
+       answer. "ttc" reads Basel strictly, so the ratio falls
+       purely because of losses; "pit" lets measured PDs rise
+       with the cycle, and the same loans consume half as much
+       capital again. The default sits between them, and the page
+       offers all three because the GAP is a result rather than
+       an assumption. */
     const rwaPd = a.rwaBasis === "ttc" ? seg.pdTtc
       : a.rwaBasis === "pit" ? pd
         : Math.sqrt(seg.pdTtc * pd);
@@ -1045,21 +955,12 @@ export function runSegment(seg, path, a) {
   return { seg, rho, gamma, z0, openingEcl, quarters, ledger };
 }
 
-/* ------------------------------------------------------------
-   12b · The vintage curves themselves
-
-   The chart every credit analyst asks for first: cumulative
-   default rate against months on book, one line per origination
-   cohort. Solid to today, dashed after, so the projection is
-   never mistaken for the record.
-
-   The historical half is not a second data source. It is the
-   same seasoning curve and the same cohort quality the engine
-   uses, integrated over the months the cohort has already lived
-   through, which is the only internally consistent thing to draw:
-   a page that showed one curve for history and a different model
-   for the projection would have a join in it that means nothing.
-   ------------------------------------------------------------ */
+/* 12b · The vintage curves: cumulative default rate against
+   months on book, one line per cohort, solid to today and dashed
+   after so the projection is never mistaken for the record. The
+   historical half is the SAME seasoning curve and cohort quality
+   the engine uses, integrated over the months already lived: two
+   models either side of the join would mean nothing. */
 export function vintageCurves(seg, path, a) {
   const rho = correlation(seg.kind, seg.pdTtc, {
     sizeAdjustment: seg.sizeAdjustment ?? 0, scale: a.correlationScale,
@@ -1261,15 +1162,11 @@ function gapAtWorst(quarters) {
 }
 
 /**
- * Why the capital ratio moved: losses, or the same loans being
- * measured as riskier.
- *
- * A ratio is a fraction, so the two effects multiply rather than
- * add and cannot be split by subtraction without an arbitrary
- * interaction term left over. In logs they are exactly additive,
- * so the split is done there and then converted back to the
- * basis points the ratio actually moved. It adds up by
- * construction, which a subtraction-based attribution does not.
+ * Why the capital ratio moved: losses, or the same loans
+ * measured as riskier. The two effects MULTIPLY, so the split is
+ * done in logs, where they are exactly additive, and converted
+ * back to basis points. It adds up by construction, which a
+ * subtraction-based attribution does not.
  */
 export function attribution(openingRatio, openingCet1, openingRwa, q) {
   const totalBps = (q.ratio - openingRatio) * 10000;
@@ -1286,16 +1183,10 @@ export function attribution(openingRatio, openingCet1, openingRwa, q) {
   };
 }
 
-/* ------------------------------------------------------------
-   14 · Reverse stress testing
-
-   The regulator's question is not "what happens in this
-   scenario". It is "what scenario breaks us". Bisect on a
-   multiplier applied to every peak shock until the capital ratio
-   sits exactly on the requirement, then report that multiple in
-   the units someone can argue with: percentage points of
-   unemployment, and how often an economy that bad turns up.
-   ------------------------------------------------------------ */
+/* 14 · Reverse stress testing: bisect on a multiplier applied to
+   every peak shock until the capital ratio sits exactly on the
+   requirement, then report that multiple in units somebody can
+   argue with. */
 export function reverseStress(a, segments = SEGMENTS, book = BOOK, { max = 6, iterations = 40 } = {}) {
   const at = (mult) => {
     const scaled = { ...a };
