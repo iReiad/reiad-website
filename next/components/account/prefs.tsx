@@ -1,47 +1,25 @@
 "use client";
 
-/* ============================================================
-   account/prefs.tsx: the seven reading preferences, as a
-   component rather than as DOM built in a loop.
+/* The seven reading preferences, as a component rather than DOM built in
+   a loop: pressed here, applied on every page immediately, carried
+   between devices by `sync.ts` under `reader-prefs`.
 
-   The type size, the measure, the theme, which language the
-   calculators open in, and what the site's translucent surfaces
-   are made of. Pressed here, applied on every page immediately,
-   carried between devices by `sync.ts` under `reader-prefs`.
-
-   ---- the tables are not written out here ----
-
-   Every option, label, note and value comes from `/prefs.js`,
-   which is also what the boot script and the stylesheet answer
-   to. A second copy of the three glass tables in this file would
+   THE TABLES ARE NOT WRITTEN OUT HERE. Every option, label, note and
+   value comes from `/prefs.js`, which is also what the boot script and
+   the stylesheet answer to: a second copy of the three glass tables would
    be a panel that offers a finish the site cannot draw.
 
-   ---- why this imports a path rather than a package ----
+   `/prefs.js` is served by the other Worker at that address and is
+   precached, and this reads it at RUN time through `runtimeModule()`,
+   whose header says why it has to hide the specifier from two bundlers.
+   The types come from `app/src/types/prefs.d.ts`, mapped in
+   `next/tsconfig.json`. Do not answer an untyped import here with a
+   `@ts-expect-error`: it silences the complaint without describing
+   anything, and it silences the next one too.
 
-   `/prefs.js` is served by the other Worker at that address and
-   is precached, and this reads it at RUN time through
-   `runtimeModule()`, whose header says how and why it has to hide
-   the specifier from two bundlers rather than one.
-
-   It is the same arrangement the Studio and the desk already use:
-   `vite.config.ts` leaves `/app.js`, `/api.js` and five others
-   external so every page shares one copy of each rather than
-   carrying a second that can drift.
-
-   The types come from `app/src/types/prefs.d.ts`, which those
-   two apps already had, mapped in `next/tsconfig.json`. Do not
-   answer an untyped import here with a `@ts-expect-error`: it
-   silences the complaint without describing anything, and it
-   silences the next one too.
-
-   ---- and why it is a client component ----
-
-   Preferences are one reader's, kept in their own browser. The
-   server has no session and no localStorage, so there is nothing
-   for it to render: this draws nothing until it has read them,
-   which is the same rule `next/lib/progress.ts` states for what
-   a reader has read.
-   ============================================================ */
+   A client component, because preferences are one reader's and kept in
+   their own browser: the server has no session and no localStorage, so
+   this draws nothing until it has read them. */
 
 import { cue } from "../../lib/sound";
 import { Field } from "../ui/field";
@@ -95,18 +73,15 @@ interface Found {
   lon: number;
 }
 
-/** Where you are, asked once, or typed.
+    /** Where you are, asked once, or typed. Its own component because it
+        holds the one piece of state on this panel that is not a
+        preference: whether this browser has a place at all, and how it got
+        one.
 
-    Its own component because it holds the one piece of state on
-    this panel that is not a preference: whether this browser has
-    a place at all, and how it got one.
-
-    TWO WAYS IN, and the second is not a fallback. A browser can
-    refuse, a desktop can have no radio, a work laptop can have
-    the permission turned off three levels up, and a reader can
-    simply prefer to say where they are rather than be found. Any
-    of those used to end at a sentence saying the browser had said
-    no, with nothing to press next. */
+        TWO WAYS IN, and the second is not a fallback: a browser can
+        refuse, a desktop can have no radio, a work laptop can have the
+        permission turned off three levels up, and a reader can simply
+        prefer to say where they are. */
 function PlaceRow() {
   const [has, setHas] = useState(false);
   const [named, setNamed] = useState("");

@@ -1,30 +1,19 @@
 /* ============================================================
    research.ts: what the Research Studio's rows are made of.
+   `RESEARCH.md` is the plan; this is the half more than one
+   runtime has to say the same way.
 
-   `RESEARCH.md` is the plan. This is the half of it that more
-   than one runtime has to say the same way: the vocabularies a
-   row may hold (which are CHECK constraints in the migration),
-   the shape of a source record, and the four pieces of
-   arithmetic every importer and every page needs: which columns
-   a CSL record fills, what its citation key is, what its
-   duplicate hash is, and how its authors are said in one line.
+   CSL-JSON IS THE RECORD. A source is stored as the Citation
+   Style Language's JSON, whole, so every citation style is a
+   rendering rather than a migration. The columns beside it
+   (`title`, `year`, `authors`, `doi`) are COPIES for listing and
+   searching, filled by `fieldsOf()` on every write and never
+   edited on their own.
 
-   ---- CSL-JSON is the record ----
-
-   A source is stored as the Citation Style Language's JSON,
-   whole, because that is what every citation processor reads,
-   what Zotero exports, and what Crossref maps to in twenty
-   lines. The columns beside it (`title`, `year`, `authors`,
-   `doi`) are COPIES for listing and searching, filled from the
-   record on every write by `fieldsOf()` below, and never edited
-   on their own.
-
-   ---- every vocabulary is written once ----
-
-   `SOURCE_TYPES`, `NOTE_KINDS`, `TASK_LANES` and the rest are
-   the constraints the migration carries, and the type of each is
-   derived from the constant so a value added here is in the
-   union by construction. `check-rows.ts`'s rule, one table along.
+   `SOURCE_TYPES`, `NOTE_KINDS`, `TASK_LANES` and the rest ARE the
+   CHECK constraints the migration carries, and each type is
+   derived from its constant so a value added here is in the union
+   by construction.
    ============================================================ */
 
 import type { ArtSubject } from "./art.ts";
@@ -34,11 +23,10 @@ import type { ArtSubject } from "./art.ts";
     of these. */
 export interface Word { en: string; bn: string }
 
-/** The seven colours the rail already themes six schools with,
-    by token name. A room, a source type and a project each wear
-    one. Never a value: `check-accents.ts` fails on a rule naming
-    a colour, and a token is what lets the same word be right in
-    both themes. */
+/** The seven colours the rail already themes six schools with, by
+    TOKEN NAME and never a value: `check-accents.ts` fails on a
+    rule naming a colour, and a token is what lets the same word
+    be right in both themes. */
 export const TONES = ["green", "teal", "blue", "violet", "plum", "rose", "gold"] as const;
 export type Tone = typeof TONES[number];
 export const toneVar = (tone: Tone): string => `var(--${tone})`;
@@ -59,11 +47,8 @@ export interface SourceType {
 }
 
 /** Nineteen kinds of source, because a source is not always a
-    paper. A case has a neutral citation, a verse has a surah and
-    an ayah, a fatwa has a board and a date, and a dataset has a
-    version and an access date. Each has a CSL type so a style can
-    render it, and its own colour so a list reads as the kinds of
-    thing it holds. */
+    paper. Each has a CSL type so a style can render it, and its
+    own colour so a list reads as the kinds of thing it holds. */
 export const SOURCE_TYPES: SourceType[] = [
   { id: "article", csl: "article-journal", tone: "green", art: "book",
     name: { en: "Journal article", bn: "জার্নাল আর্টিকেল" } },
@@ -113,11 +98,9 @@ export type SourceTypeId = typeof SOURCE_TYPES[number]["id"];
 export const sourceType = (id: string): SourceType =>
   SOURCE_TYPES.find((t) => t.id === id) ?? SOURCE_TYPES[0];
 
-/** What a CSL type is filed as here. Two CSL types map to one
-    id where the distinction is the style's rather than the
-    reader's, and anything unknown is a `document`, which is what
-    `fatwa` renders as and the honest answer for a shape nobody
-    has named yet. */
+/** What a CSL type is filed as here. Two CSL types may map to
+    one id where the distinction is the style's rather than the
+    reader's, and anything unknown is a `document`. */
 export function typeOfCsl(csl: string | undefined): string {
   const exact = SOURCE_TYPES.find((t) => t.csl === csl && t.id !== "quran" && t.id !== "hadith");
   if (exact) return exact.id;
@@ -237,10 +220,10 @@ export interface CslDate {
   literal?: string;
 }
 
-/** A record. The index signature is for the fields a style may
-    read and this site does not (`original-date`, `event`,
-    `jurisdiction`): they are kept, never dropped, and `unknown`
-    rather than `any` so a page has to look before it reads one. */
+/** A record. The index signature is for the fields a style reads
+    and this site does not (`original-date`, `event`,
+    `jurisdiction`): KEPT, never dropped, and `unknown` rather
+    than `any` so a page has to look before it reads one. */
 export interface CslItem {
   id?: string;
   type: string;
@@ -327,7 +310,7 @@ export function normaliseIsbn(text: string | null | undefined): string | null {
 
 /** A title reduced to what two records of the same paper would
     share: lowercased, punctuation and stop words gone, plus the
-    year. Two records with one hash are offered as a merge; two
+    year. Two records with one hash are OFFERED as a merge; two
     with one DOI are refused outright. */
 export function hashOf(title: string | undefined, year: number | null): string {
   const STOP = new Set(["a", "an", "the", "of", "in", "on", "and", "or", "for", "to",
@@ -342,11 +325,10 @@ export function hashOf(title: string | undefined, year: number | null): string {
   return `${words.join("-")}|${year ?? ""}`;
 }
 
-/** `authorYEARword`: the first author's family name, the year,
-    and the first real word of the title, lowercased and ASCII.
-    Made once when a row is created and never regenerated:
-    `RESEARCH.md` section 9 says why a key that moved is a
-    citation that broke. `taken` is what makes it unique, by a
+/** `authorYEARword`: the first author's family name, the year and
+    the first real word of the title, lowercased and ASCII. MADE
+    ONCE when a row is created and NEVER REGENERATED: a key that
+    moved is a citation that broke. `taken` makes it unique by a
     letter. */
 export function citeKey(csl: CslItem, taken: Set<string> = new Set()): string {
   const ascii = (s: string): string =>
@@ -436,11 +418,10 @@ export function referenceLine(csl: CslItem): string {
 
 export type CaptureShape = "doi" | "isbn" | "url" | "bibtex" | "ris" | "csl" | "todo" | "note";
 
-/** By shape, before anything is saved, so the box can say what
-    it decided. A line starting `todo` is a task; a DOI anywhere
-    in the line is a source; an ISBN needs the word or the shape
-    alone; a URL is a capture of a page; `@` opens BibTeX and
-    `TY  -` opens RIS. */
+/** By shape, before anything is saved, so the box can say what it
+    decided. `todo` is a task; a DOI anywhere is a source; an ISBN
+    needs the word or the shape alone; a URL is a capture; `@`
+    opens BibTeX and `TY  -` opens RIS. */
 export function captureShape(text: string): CaptureShape {
   const t = text.trim();
   if (/^todo\b/i.test(t)) return "todo";
@@ -477,8 +458,7 @@ export const MEANING_TONES: Record<HighlightMeaning, Tone> = {
 
 /** What a file in the reading room may be, by the extension its
     R2 key ends in, and the one MIME type the Worker accepts for
-    it. Short on purpose: a type not here is refused before the
-    bucket is asked. */
+    it. A type not here is refused before the bucket is asked. */
 export const FILE_TYPES: Record<string, string> = {
   pdf: "application/pdf",
   html: "text/html",
@@ -559,14 +539,13 @@ export const fileSize = (bytes: number): string =>
 
 /* ---------- where a highlight is ----------
 
-   A highlight is anchored to TEXT, not to pixels: the quote, and
-   thirty characters either side of it, which is the W3C Web
-   Annotation model's TextQuoteSelector. The rectangles beside it
-   in the row are a cache for drawing; when they are missing or
-   wrong (a re-OCRed file, another edition), the quote finds
-   itself. `findAnchor` is that search, and it is written against
-   whitespace-normalised text because a PDF's text layer breaks
-   lines where the page does and a browser's selection does not. */
+   ANCHORED TO TEXT, NOT TO PIXELS: the quote plus thirty
+   characters either side, which is the W3C Web Annotation model's
+   TextQuoteSelector. The rectangles in the row are a cache for
+   drawing, and where they are missing or wrong the quote finds
+   itself. `findAnchor` normalises whitespace, because a PDF's
+   text layer breaks lines where the page does and a browser's
+   selection does not. */
 
 export interface TextAnchor { quote: string; prefix: string; suffix: string }
 
@@ -601,10 +580,10 @@ function squash(text: string): { flat: string; at: number[] } {
   return { flat, at };
 }
 
-/** Where the anchor's quote is in `text`, as offsets into `text`,
-    or null when it is not there. Every occurrence of the quote is
-    scored by how much of the prefix and the suffix agree, so a
-    phrase a paper uses twice lands on the one that was marked. */
+/** Where the anchor's quote is in `text`, as offsets, or null. Every
+    occurrence is scored by how much of the prefix and suffix
+    agree, so a phrase a paper uses twice lands on the one that
+    was marked. */
 export function findAnchor(text: string, a: TextAnchor): { start: number; end: number } | null {
   const quote = squash(a.quote).flat.trim();
   if (!quote) return null;

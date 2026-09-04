@@ -79,11 +79,10 @@ sentence applied to one thing at a time.
 
 BMI is mass over height squared. It cannot tell muscle from fat,
 it reads a lean 180cm rower as overweight, and it says nothing
-about where the fat is, which is the part that matters.
-
-It is in the tool for one reason: everybody has been given one by
-a doctor and will look for it. So it is shown, and shown with its
-limits next to it rather than in a footnote.
+about where the fat is, which is the part that matters. It is in
+the tool because everybody has been given one by a doctor and will
+look for it, and it is shown with its limits next to it rather
+than in a footnote.
 
 ### The cut-offs are not the same for everyone, and this matters here
 
@@ -99,17 +98,15 @@ recommends lower action points for Asian populations:
 
 A tool serving Bangladesh that quietly used 25 would tell a large
 number of its readers they are fine when their own health service
-would not. **The threshold follows the `place` in the profile,
-and the page says which set it is using and why.** This is the
-single most important honest detail in the whole tool and it
-costs one table.
+would not. **The threshold follows the `place` in the profile, and
+the page says which set it is using and why.**
 
-The NHS says the same thing for the same reason, in its own
-words, for people of South Asian, Chinese, Black African and
-African-Caribbean background. So the setting is not "which
-country are you in", it is asked as ancestry with the country as
-the default, because a Bangladeshi reader in Manchester needs the
-lower cut-off and the UK default would give them the higher one.
+The NHS says the same for people of South Asian, Chinese, Black
+African and African-Caribbean background, so the setting is not
+"which country are you in": **it is asked as ancestry** with the
+country as the default, because a Bangladeshi reader in Manchester
+needs the lower cut-off and the UK default would give them the
+higher one.
 
 ### Waist to height is the better single number
 
@@ -754,14 +751,12 @@ date it will arrive, so a reader can see it coming.
 ## 10. Changing what you are doing, and what that does to the forecast
 
 `§9` is the arc of ONE protocol held steadily, and almost nobody
-does that. People start keto, add a fast three days in, stop for
-a wedding, come back, add training, take a week off ill. Every
-one of those is a step in body water, and a tool that fits a line
-straight through them reports a rate nobody is running.
+does that. People start keto, add a fast three days in, stop for a
+wedding, come back, add training, take a week off ill. Every one
+of those is a step in body water, and **a tool that fits a line
+straight through them reports a rate nobody is running.**
 
-**This is the section that stops the tool lying encouragingly.**
-
-### The worked example, because it is the one people actually do
+### The worked example
 
 Three days of keto, then two days of a complete fast. An 80 kg
 reader whose maintenance is about 2,500.
@@ -792,14 +787,11 @@ and sodium water instead, which is a different quantity with a
 different rebound.
 
 So stacking two water-losing protocols produces a bigger apparent
-loss ONCE and then one rebound, not two of either. The fat loss
+loss ONCE and then one rebound, not two of either. **The fat loss
 is exactly the deficit and is entirely unaffected by the
-stacking, which is the sentence the whole section exists to be
-able to say.
-
-`forecastChange()` in `shared/diet.ts` takes the previous
-protocol and its days for that reason, and leaving it out is the
-difference between a forecast and an encouragement.
+stacking.** `forecastChange()` in `shared/diet.ts` takes the
+previous protocol and its days for that reason, and leaving it out
+is the difference between a forecast and an encouragement.
 
 ### What the tool does about it
 
@@ -840,8 +832,7 @@ afterwards.
 
 Four facts and no advice. It does not say the fast is a good idea
 or a bad one: it says what the number on the scale will do and
-which part of it is real, which is the only thing this tool can
-honestly know and exactly the thing nobody is told.
+which part of it is real.
 
 ### And afterwards, the reconciliation
 
@@ -939,9 +930,8 @@ with it.
 ## 12. Food found rather than typed
 
 `§1` says this tool does not build a food database, and that
-stays true: this repository will not hold one and this site will
-not maintain one. But a tool that makes somebody type "chicken
-curry, 380" from memory is a tool they use for four days.
+stays true. But a tool that makes somebody type "chicken curry,
+380" from memory is a tool they use for four days.
 
 **So food is searched, and the search reaches three places.**
 
@@ -951,20 +941,17 @@ curry, 380" from memory is a tool they use for four days.
 | **Open Food Facts** | an open, crowdsourced database of packaged food with a public API and barcodes | UK supermarket products, packaged food in both countries, and the barcode path | crowdsourced, so an entry can be wrong, incomplete or duplicated. Bangladeshi coverage is thin |
 | **USDA FoodData Central** | the US government's food composition database, public domain, free API | raw and generic foods, which is what home cooking is made of, and the only one of the three with dependable micronutrients | American names and American portions |
 
-Ranked in that order, always, and **the source is printed on
-every result**. A reader has to be able to tell a figure this
-site checked from a figure a stranger typed into a public
-database from a figure out of a government laboratory. Almost no
-app shows this, and it is the difference between a number and a
-rumour.
+Ranked in that order, always, and **the source is printed on every
+result**: a reader has to be able to tell a figure this site
+checked from one a stranger typed into a public database from one
+out of a government laboratory.
 
 ### Barcodes
 
-A packaged product in Britain has one and Open Food Facts is
-keyed on it. The browser's own `BarcodeDetector` reads it from
-the camera where the browser has it, and where it does not, the
-number is typed in, which is thirteen digits and still faster
-than searching.
+Open Food Facts is keyed on the barcode. The browser's own
+`BarcodeDetector` reads it from the camera where the browser has
+it, and where it does not the number is typed in: thirteen digits,
+still faster than searching.
 
 **No image leaves the device.** The frame is decoded in the
 browser and only the digits are sent. There is no library, no
@@ -998,12 +985,11 @@ The moment a result is used, its numbers are written into the
 reader's own row, and a food used twice becomes their own item.
 
 **The log must not depend on a third party still being there next
-year.** A diet history that changed silently because somebody
-edited a public database entry would be worse than one that went
-missing, because nothing would announce it. The row keeps the
-source, the upstream id and the date it was fetched, so a stale
-figure can be found and refreshed deliberately rather than
-drifting.
+year.** A history that changed silently because somebody edited a
+public database entry would be worse than one that went missing,
+because nothing would announce it. The row keeps the source, the
+upstream id and the date it was fetched, so a stale figure can be
+found and refreshed deliberately rather than drifting.
 
 ### Everything is editable, and free entry never goes away
 
@@ -1026,7 +1012,7 @@ anonymously, by the Worker, on this site's behalf.
 ## 13. Three taps, or it does not get logged
 
 Everything above is worth nothing if logging dinner takes ninety
-seconds. **The reason food diaries get abandoned is friction, not
+seconds. **Food diaries get abandoned through friction, not lost
 motivation**, and the fix is that most people eat the same forty
 things.
 
@@ -2100,10 +2086,8 @@ arrives with a memory and leaves with a guess.
   calculator from self-reported data, so that nobody reads it as
   a clinical record.
 
-It is the least glamorous feature in this file and it is
-plausibly the most useful one. It is also nearly free: every
-number on it already exists, and the whole page is a print
-stylesheet and a layout.
+Nearly free: every number on it already exists, and the whole page
+is a print stylesheet and a layout.
 
 **It never leaves the reader's control.** No email, no share
 link, no upload. A print dialogue and a page, and if they want a
@@ -2115,9 +2099,8 @@ file, the export in `§30` already exists.
 
 ### The first ninety seconds
 
-A first screen of thirty fields is a tool nobody finishes setting
-up. **Four questions, and then a number**: height, weight, age
-and which formula to use. That is enough for a BMI, a BMR, an
+**Four questions, and then a number**: height, weight, age and
+which formula to use. That is enough for a BMI, a BMR, an
 estimated maintenance and a first target, and the reader has
 something true before they have decided to trust anything.
 
@@ -2145,8 +2128,8 @@ arriving at all**: a reader with three years of data elsewhere is
 being asked to abandon it.
 
 A CSV importer with column mapping, which is all this needs.
-MyFitnessPal, Cronometer and LoseIt all export CSV; Apple Health
-and Google Fit export weight; a Withings, Renpho or Xiaomi scale
+MyFitnessPal, Cronometer and LoseIt export CSV; Apple Health and
+Google Fit export weight; a Withings, Renpho or Xiaomi scale
 exports a file of readings. Anything else is a file, a preview of
 the first rows, and a screen that maps columns to fields.
 
@@ -2165,14 +2148,11 @@ erase that removes all of it. `§30`. **The importer reads the
 exporter's format**, so this tool can be left and returned to,
 which is the only real test of whether an export is honest.
 
-**Built, and the test had been failing quietly.**
-`aab/src/account-page.ts` has written all six diet tables into
-that file since the day those tables existed, and the importer
-read CSV and nothing else, so a reader could take their whole
-account away and bring none of it back. Both halves worked
+`aab/src/account-page.ts` writes all six diet tables into that
+file, `shared/bundle.ts` reads it back, and `/tools/diet/import`
+takes a `.json` beside a `.csv`. For a while the exporter wrote
+six and the importer read CSV and nothing else: both halves worked
 perfectly on their own, which is exactly why nothing said so.
-`shared/bundle.ts` reads it now and `/tools/diet/import` takes a
-`.json` beside a `.csv`.
 
 **Two of the six come back, and the schema is what decides
 which.** `diet_days` and `diet_entries` are the tables carrying
@@ -2277,11 +2257,11 @@ public.diet_labs      -- the clinic numbers, and their units
   user_id, taken_on, marker, value, unit, ref_low, ref_high
 ```
 
-Six tables and every one of them earns it: a day is a day, a
-meal is a list, a food is reusable, a phase is a span, a lab
-result has a unit and a reference range, and a profile is one
-row. Folding any pair together would mean nulls in most columns
-of most rows, which is the shape that makes a query lie.
+Six tables: a day is a day, a meal is a list, a food is reusable,
+a phase is a span, a lab result has a unit and a reference range,
+and a profile is one row. Folding any pair together would mean
+nulls in most columns of most rows, which is the shape that makes
+a query lie.
 
 **A plan is not a seventh table.** A planned meal is an entry
 with a future date and `planned` set, which means the week's plan,
@@ -2307,10 +2287,9 @@ somebody else's database is the Worker's.**
 thing in a route and another in a check. The portion library is
 data beside it, one file per place.
 
-**Sex** is stored because the equations need it and there is no
-honest way around that. It is asked for as "which formula should
-this use", with both answers explained, and it is not used for
-anything else.
+**Sex** is stored because the equations need it. It is asked for
+as "which formula should this use", with both answers explained,
+and it is not used for anything else.
 
 **`meds` and the cycle field are the most sensitive rows in this
 database.** They are optional, they are never required to use the
@@ -2322,9 +2301,8 @@ person leaving should take all of it.
 
 ## 28. How a number is written, and how a chart is read
 
-The site already has rules about counting things. This tool
-generates more numbers per screen than anything else on it, so
-the rules need saying once here.
+This tool generates more numbers per screen than anything else on
+the site, so the rules need saying once here.
 
 **Precision follows the measurement, never the float.** Weight to
 0.1 kg, because that is what a scale reads. Calories to the

@@ -1,39 +1,19 @@
 "use client";
 
-/* ============================================================
-   research.tsx: the three research cards on the About page, and
-   the window one of them opens.
+/* The three research cards on the About page, and the window one of them
+   opens. Each is a case study you can open and drive, so a card opens the
+   same kind of mini window the market-pulse cards open, growing out of
+   the card that was pressed.
 
-   `archive/modules/about.js` was 107 lines over `el` and `flip` imported
-   from `/news.js`, and it was the last importer of that module.
+   PROGRESSIVE ENHANCEMENT, IN THAT ORDER. The cards ship as cards, each
+   with a plain link to its case study under it, so the research leads
+   somewhere with no JavaScript. `live` is false until an effect has run,
+   and only then does a card become a button and its plain link go: a
+   pointer cursor over a card that does nothing is worse than no cursor.
 
-   Each of these three became a case study you can open and
-   drive. For a while the cards did not say so: they described
-   the work in the past tense and led nowhere, while the
-   interactive version of the same work sat two clicks away in
-   the portfolio. So a card opens the same kind of mini window
-   the market-pulse cards open on the Insights hub, growing out
-   of the card that was pressed, and the window carries what the
-   card had no room for plus the way into the case study.
-
-   ---- progressive enhancement, in that order ----
-
-   The cards ship as cards, each with a plain link to its case
-   study under it, so the research leads somewhere with no
-   JavaScript at all. The window is an upgrade on that and never
-   a replacement for it: `live` is false until an effect has run,
-   which is the same rule `ui/tab-panels.tsx` follows, and only
-   then does a card become a button and its plain link go. A
-   pointer cursor over a card that does nothing is worse than no
-   cursor at all.
-
-   ---- the words are the page's ----
-
-   Every string comes down as a prop from the route. The detail a
-   window shows is page copy that happens to be shown in a
-   window, not a second copy of the page kept in a script, which
-   is what the `<template data-detail>` in the old markup was for.
-   ============================================================ */
+   Every string comes down as a prop from the route. The detail a window
+   shows is page copy that happens to be shown in a window, not a second
+   copy of the page kept in a script. */
 
 import { useEffect, useRef, useState } from "react";
 import { flip } from "../lib/flip";
@@ -127,21 +107,17 @@ function ResearchWindow({ opened, onClose }:
   );
 }
 
-/* ------------------------------------------------------------
-   the card
+    /* ---- the card ----
+       `role` and `tabindex` rather than a real `<button>`, because the
+       card holds an `<h3>` and a button may not contain a heading. The
+       card becomes the control rather than growing one: a button inside a
+       card leaves most of the card unclickable, which on a phone is most
+       of the target.
 
-   `role` and `tabindex` rather than a real `<button>`, because
-   the card holds an `<h3>` and a button may not contain a
-   heading. The card becomes the control rather than growing one:
-   a button inside a card leaves most of the card unclickable,
-   which on a phone is most of the target.
-
-   `preventDefault` is load-bearing on BOTH keys, for different
-   reasons. Space scrolls a page that can scroll. Enter carries
-   on to the Close button that `showModal()` has just focused, so
-   without it the window opens and shuts again inside one
-   keystroke, which looks exactly like a card that does nothing.
-   ------------------------------------------------------------ */
+       `preventDefault` is load-bearing on BOTH keys, for different
+       reasons. Space scrolls a page that can scroll. Enter carries on to
+       the Close button that `showModal()` has just focused, so without it
+       the window opens and shuts inside one keystroke. */
 
 function ResearchCard({ item, live, onOpen }: {
   item: ResearchItem;

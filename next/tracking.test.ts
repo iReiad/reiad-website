@@ -1,36 +1,19 @@
-/* ============================================================
-   tracking.test.ts: what this site records about a reader, in a
-   browser.
-
+/* What this site records about a reader, in a browser.
      node next/tracking.test.ts
+   Needs Playwright and a browser; without either it says which and SKIPS,
+   and a skip is not a pass.
 
-   Needs Playwright and a browser. Without either it says which
-   and skips, and a skip is not a pass.
+   Every way of getting this wrong LOOKS like it works: a control offering
+   a way back to somewhere the reader has already passed, one offering a
+   way back to the end of a piece they finished, and one sending them to
+   the wrong paragraph because the prose was edited under the index all
+   render a button and all scroll somewhere. So each is a block below,
+   written as the thing a reader would notice.
 
-   ---- what is worth checking, and it is not "does it record" ----
-
-   Every way of getting this wrong LOOKS like it works. A control
-   that offers a way back to somewhere the reader has already
-   passed, one that offers a way back to the end of a piece they
-   finished, and one that sends them to the wrong paragraph
-   because the prose was edited under the index: all three render
-   a button, all three scroll somewhere, and only a reader can
-   tell that the answer is wrong.
-
-   So each of those is a block below, and each is written as the
-   thing a reader would notice rather than as the field that is
-   wrong.
-
-   ---- and the money school's tick ----
-
-   The last block is the button that marks a money lesson read.
-   `next/progress.test.ts` covers the store it writes to, and
-   nothing anywhere had ever PRESSED it: the money school is the
-   one of the four whose tick is React rather than a served
-   module, so it is the one no browser test reached. A button that
-   renders and writes nothing looks exactly like one that works,
-   which is the failure this repository keeps returning to.
-   ============================================================ */
+   The last block is the button that marks a money lesson read. The money
+   school is the one of the four whose tick is React rather than a served
+   module, so it is the one no browser test reached, and a button that
+   renders and writes nothing looks exactly like one that works. */
 
 import { load, open, type Fixture } from "./hydrate-fixture.ts";
 import type { ConsoleMessage, Page } from "playwright";
@@ -351,21 +334,16 @@ console.log("what this site records about a reader");
   await p.close();
 }
 
-/* ============================================================
-   6. THE MONEY SCHOOL'S TICK
+    /* ---- 6. the money school's tick ----
+       Three of the four schools tick through `aab/schools/progress.js` and
+       `aab/schools/progress.test.ts` drives all three. The money school's
+       is `components/progress.tsx`, because its lessons are routes.
 
-   Three of the four schools tick through `aab/schools/progress.js`
-   and `aab/schools/progress.test.ts` drives all three. The money
-   school's is `components/progress.tsx`, because its lessons are
-   routes, and nothing had ever pressed it.
-
-   The key it writes is `learn-read` and not `money-read`, and
-   that is deliberate: the school moved from /learn/ to /money/ on
-   17 August 2026 and the key did not move with it, because
-   renaming one does not move somebody's ticks, it loses them.
-   Asserting the string here is asserting the thing that must
-   never change.
-   ============================================================ */
+       The key it writes is `learn-read` and not `money-read`, and that is
+       deliberate: the school moved to /money/ and the key did not move
+       with it, because renaming one does not move somebody's ticks, it
+       loses them. Asserting the string here is asserting the thing that
+       must never change. */
 {
   const p = await fixture.browser.newPage({ viewport: { width: 900, height: 700 } });
   const errors: string[] = [];

@@ -1,34 +1,19 @@
 #!/usr/bin/env node
-/* ============================================================
-   book-api.test.ts: the practice book, without its answer key.
+/* The practice book, without its answer key.
+     node next/book-api.test.ts
+   No browser and no build: the two route handlers are functions over data
+   already in the repository.
 
-       node next/book-api.test.ts
+   WHAT IT GUARDS: that no answer leaves in the book. Every prompt has its
+   answer beside it, so a book sent whole hands a reader the lot whether
+   or not they pressed the button, and the whole correctness of
+   `/api/book/<stage>` is that `say[].a` is gone.
 
-   No browser and no build. The two route handlers are functions
-   over data that is already in the repository, so they can be
-   called directly and this runs beside the other checks.
-
-   ---- what it is really guarding ----
-
-   ONE THING: that no answer leaves in the book.
-
-   `lib/workbook.ts` says at the top why the books are read on the
-   server and never sent to a browser as data, and the reason is
-   the key: every prompt has its answer beside it, so a book sent
-   whole hands a reader the lot whether or not they pressed the
-   button. `/api/book/<stage>` exists so the Android app can have
-   the book, and the whole of its correctness is that `say[].a`
-   is gone.
-
-   That is not a thing a reader would notice going wrong. The book
-   renders identically with the answers present in the payload,
-   every other check passes, and the only symptom is that pressing
-   Show does nothing a reader could not already have seen. So it
-   is asserted on the SERIALISED bytes rather than on the shape:
-   a check that walked the object could be fooled by an answer
-   somewhere the walk did not go, and JSON.stringify goes
-   everywhere.
-   ============================================================ */
+   Not a thing a reader would notice going wrong: the book renders
+   identically with the answers present in the payload. So it is asserted
+   on the SERIALISED bytes rather than on the shape, because a check that
+   walked the object could be fooled by an answer somewhere the walk did
+   not go and JSON.stringify goes everywhere. */
 
 export {};
 
@@ -74,17 +59,13 @@ for (const slug of Object.keys(BOOKS)) {
       d.say.every((p) => !("a" in p))),
     "a prompt still carries its answer");
 
-  /* And no field called `a` survives anywhere in the bytes. A
-     prompt renamed from `a` to something else, or an answer
-     tucked into a field added next year, passes the shape check
-     above and fails this one.
+      /* And no field called `a` survives anywhere in the bytes: a prompt
+         renamed from `a`, or an answer tucked into a field added next
+         year, passes the shape check above and fails this one.
 
-     Asserted on the FIELD and not on the answers' text, which is
-     what this tried first and it was wrong: an answer's words
-     legitimately appear elsewhere in the same book. "Ich sehe den
-     Mann." is both the answer to a prompt and one of the model
-     lines a reader is meant to read aloud, so a text search
-     reports the book working as designed as a leak. */
+         Asserted on the FIELD and not on the answers' text: an answer's
+         words legitimately appear elsewhere in the same book, so a text
+         search reports the book working as designed as a leak. */
   ok(`${slug}: no field called "a" is left in the bytes`,
     !text.includes('"a":'),
     "something is still carrying an answer");
@@ -129,19 +110,15 @@ for (const bad of ["0", "-1", "999", "", "3x", "1e1", "0x2", "+3", " 4 ", "Infin
   ok(`a day of "${bad}" is refused`, answer.status === 404, `status ${answer.status}`);
 }
 
-/* ---------- 4. the caching is the route's, not the middleware's ----------
+    /* ---------- 4. the caching is the route's, not the middleware's ----------
+       `middleware.ts` sets the security headers on everything this Worker
+       sends, which is why the routes do not: a second copy of that list is
+       the drift `check-headers.ts` exists to catch.
 
-   `middleware.ts` sets the security headers on everything this
-   Worker sends, which is why the routes do not set them
-   themselves: a second copy of that list is the drift
-   `check-headers.ts` exists to catch.
-
-   It also USED to overwrite Cache-Control on everything except
-   `/_next/`, and that was latent rather than harmless: nothing
-   under `/api/` existed here until these two routes, and the
-   first handler to want `no-store` would have had it quietly
-   turned into a minute of public caching on a response that
-   looked exactly right. */
+       A middleware that overwrote Cache-Control on everything except
+       `/_next/` would quietly turn the first handler's `no-store` into a
+       minute of public caching on a response that looked exactly
+       right. */
 
 {
   const answer = await get("stufe-1");

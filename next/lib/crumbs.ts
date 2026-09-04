@@ -1,30 +1,16 @@
-/* ============================================================
-   crumbs.ts: where you are standing, out of the one table.
+/* Where you are standing, out of the one table. A route knows its own
+   section, its own parents and its own name without reading
+   `location.pathname` or importing four curricula, and `shared/nav.ts` is
+   already what the rail, the footer and `/skills/` are drawn from.
 
-   The trail used to be `archive/modules/crumbs.ts`: 402 lines in
-   the browser that read `location.pathname` and `document.title`,
-   imported all four curricula to do it, and had to GUESS three
-   things. It is archived. A route knows its own section, its own
-   parents and its own name without guessing, and `shared/nav.ts` is
-   already the one table the rail, the footer and `/skills/` are
-   all drawn from.
-
-   ---- it lives in the bar now ----
-
-   It was a row of its own under the bar, which is a second thing
-   at the top of every page saying where you are while the bar
-   said the site's name. One line: the mark is the first crumb and
-   the trail continues out of it.
-
-   ---- what a route adds ----
+   It lives in the BAR: a row of its own under the bar is a second thing
+   at the top of every page saying where you are while the bar says the
+   site's name. One line, with the mark as the first crumb.
 
    Everything above the page is free: `trailFor("quran")` is
-   Home > Skills > Qur'anic Arabic, because the table says the
-   Qur'an school is in the learning group and that group's index
-   is /skills/. A route that is DEEPER than its section passes the
-   rest, because a stage and a lesson are rows rather than table
-   entries.
-   ============================================================ */
+   Home > Skills > Qur'anic Arabic, because the table says which group the
+   school is in. A route DEEPER than its section passes the rest, because
+   a stage and a lesson are rows rather than table entries. */
 
 import { stageUrl, type SchoolStage } from "@reiad/shared/schools";
 import type { Crumb, CrumbLink } from "../components/ui/crumbs";
@@ -87,19 +73,18 @@ const ladderOf = (school: string, on?: string): CrumbLink[] =>
     here: stage.slug === on,
   }));
 
-/**
- * The trail down to a page, from the section it is in.
- *
- * `current` is the same value the rail and the shell already
- * take, so a page that marks its place in the rail gets a trail
- * for nothing. `tail` is for the levels below a section: a
- * stage, a lesson, a case study.
- *
- * `stage` is the slug of the stage a school page is inside, and
- * it is what makes a lesson's trail complete: without it the row
- * said Home > Skills > German on a page three levels down, and
- * the ladder the reader had walked was not in it.
- */
+    /**
+     * The trail down to a page, from the section it is in.
+     *
+     * `current` is the same value the rail and the shell already take, so
+     * a page that marks its place in the rail gets a trail for nothing.
+     * `tail` is for the levels below a section: a stage, a lesson, a case
+     * study.
+     *
+     * `stage` is the slug of the stage a school page is inside, and it is
+     * what makes a lesson's trail complete: without it the row says
+     * Home > Skills > German on a page three levels down.
+     */
 export function trailFor(
   current: string | null | undefined,
   tail: Crumb[] = [],
@@ -165,16 +150,12 @@ export function trailFor(
   return tail.length ? [home, ...tail] : [];
 }
 
-/**
- * The same trail as `application/ld+json`, which is what puts it
- * in a search result instead of a bare URL.
- *
- * `archive/modules/crumbs.js` emitted this and is archived; it is
- * the one thing that file did which the row on the page did not,
- * so it moves here rather than being lost. Absolute URLs, because
- * `BreadcrumbList` items are compared by identity and a relative
- * one is not one.
- */
+    /**
+     * The same trail as `application/ld+json`, which is what puts it in a
+     * search result instead of a bare URL. Absolute URLs, because
+     * `BreadcrumbList` items are compared by identity and a relative one
+     * is not one.
+     */
 export function trailJsonLd(trail: Crumb[], origin: string): string | null {
   const items = trail
     .filter((c) => typeof c.label === "string" && c.label !== PENDING);

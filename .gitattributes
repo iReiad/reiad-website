@@ -1,51 +1,18 @@
-# ============================================================
-# .gitattributes: which files are written and which are output.
-#
-# GitHub counts every committed byte when it draws the language
-# bar, and this repository commits its build output on purpose:
-# the site deploys by uploading `aab/`, with no build step in CI,
-# so a generated page has to be in git to be on the site. See
-# CLAUDE.md. The result is a bar that reads 61% HTML, 33%
-# JavaScript, and it is measuring the compiler's output rather
-# than anything anybody wrote.
-#
-# The entries below say which files are generated and which are
-# kept for reference. That is what the attributes are for, and it
-# is true of every path listed: each one has a source elsewhere in
-# this repository and a command in CLAUDE.md that rebuilds it.
-#
-# It changes what the bar reports. It does not change what the
-# repository is, and no line here is a substitute for the
-# transition itself: TRANSITION.md Stage 11 deletes the 251
-# generated HTML pages by moving what is in them into a database
-# and a React route, and that is the change that actually moves
-# the number.
-#
-# `linguist-generated` also collapses these files in a diff, which
-# is right for all of them: reviewing a 228 KB bundle is not
-# reviewing anything. Read the source and the build command.
-# ============================================================
+# Generated output, committed on purpose: the site deploys by
+# uploading `aab/` with no build step in CI, so a generated file
+# has to be in git to be on the site. Every path below has a source
+# elsewhere in this repository and a build command in CLAUDE.md.
+# Edit the source, never the output. `linguist-generated` keeps
+# them out of the language bar and collapses them in a diff.
 
 # ---------- the React build ----------
 # Vite's output, from app/src/**. `npm run build` in app/.
-# There were two until the desk retired to archive/desk-react/ on
-# 21 August 2026 and /desk/app.js left aab/ with it.
 aab/studio/app.js     linguist-generated=true
 
 # ---------- the four schools ----------
-# One file each, and it is the LADDER: node scripts/build-modules.ts
-# writes these four from shared/curricula/*.ts.
-#
-# It was the whole of each directory, with a comment about 251
-# pages written by a builder in it. There are no pages there and
-# there are no builders: Stage 11.7 made all 251 routes and the
-# builders are in archive/schools-builders/. What is left beside
-# these four is hand-written source, progress.js and hub.js and
-# each school's icons.js, and marking those generated collapsed
-# them in every diff, so a change to one showed as nothing.
-#
-# aab/learn/** was here too and reached nothing: the money school
-# moved to /money/ on 17 August 2026.
+# The LADDER, one file each: node scripts/build-modules.ts writes
+# these from shared/curricula/*.ts. Nothing else in those
+# directories is generated, so nothing else is marked.
 aab/deutsch/curriculum.js   linguist-generated=true
 aab/english/curriculum.js   linguist-generated=true
 aab/money/curriculum.js     linguist-generated=true
@@ -65,7 +32,3 @@ aab/og/**             linguist-generated=true
 # ---------- the nightly backup ----------
 # .github/workflows/backup.yml writes this, nobody edits it.
 content/articles.backup.json linguist-generated=true
-
-# ---------- what the site used to be ----------
-# Not deployed and not imported. See archive/README.md.
-archive/**            linguist-vendored=true
