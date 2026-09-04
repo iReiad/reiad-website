@@ -1,60 +1,37 @@
-/* ============================================================
-   functions/api/site.ts, served at /api/site.
+/* functions/api/site.ts, served at /api/site.
 
    What this site contains, as JSON, for a client that cannot
-   evaluate JavaScript.
-
-   ---- why it exists ----
-
-   The browser learns the site's own furniture by importing
-   `/content.js`, which `scripts/build-modules.ts` compiles out of
-   `shared/content.ts`. That works because the reader of it is a
-   browser. The Android app is not, and an app that had to run an
-   ES module to find out how many schools there are would be
-   parsing JavaScript to read a table.
+   evaluate JavaScript. A browser imports `/content.js`; the
+   Android app is not a browser, and an app that had to run an ES
+   module to find out how many schools there are would be parsing
+   JavaScript to read a table.
 
    So this is a second SERIALISATION of tables that already exist,
-   and never a second copy of them. Every value here is read out
-   of `shared/content.ts` and `shared/nav.ts` at request time. If
-   you find yourself typing a number or a label into this file,
-   that is the bug this endpoint was written to avoid.
+   never a second copy. Typing a number or a label into this file
+   is the bug it was written to avoid.
 
-   ---- the rule that makes new work reach the app on its own ----
-
-   **Objects are spread, not mapped field by field.** A school
-   gaining a field, a nav item gaining a flag, a new key in
-   `COUNTS`: all of it reaches the app the next time it asks,
-   with no app release and no edit here. Hand-picking fields
-   would look identical today and would silently drop the field
-   somebody adds next year, which is the failure this repository
-   keeps returning to.
+   OBJECTS ARE SPREAD, NOT MAPPED FIELD BY FIELD, so a school
+   gaining a field or a new key in `COUNTS` reaches the app the
+   next time it asks, with no app release and no edit here.
+   Hand-picking fields looks identical today and silently drops
+   what somebody adds next year.
 
    What that costs is one obligation: anything added to those
    tables IS published here the moment it is added. Three things
-   are therefore taken out on the way, and each is taken out
-   because it must never be public rather than because it is
-   untidy:
+   are taken out on the way, each because it must never be public:
 
-     - a `Page` marked `private`, which is the Studio. The same
-       flag keeps it out of the sitemap, the menu and the palette.
-     - a `NavItem` marked `unlisted`, which is the course section
-       and `/admin`. The rail and the footer skip them for the
-       same reason.
+     - a `Page` marked `private`, which is the Studio;
+     - a `NavItem` marked `unlisted`, the course section and
+       `/admin`;
      - the third-party course catalogue, which is not this site's
-       to publish and is never named in this file at all. It is
-       served by `functions/api/courses/[[route]].ts`, behind an
-       admin reader, and `scripts/check-courses.ts` is what stops
-       it reaching a public bundle.
+       to publish and is never named in this file at all.
 
-   `pieces` on a section is a FUNCTION, and it is stripped by
-   name below rather than left to `JSON.stringify` dropping it
-   quietly. A reader of this file should be able to see what
-   crosses the wire without knowing that rule.
+   `pieces` on a section is a FUNCTION, stripped by name below
+   rather than left to `JSON.stringify` dropping it quietly.
 
    Written pieces and school lessons are deliberately NOT here:
    they are rows, they change hourly, and `/api/articles` and
-   `/api/schools` already answer for them. This is the furniture.
-   ============================================================ */
+   `/api/schools` answer for them. This is the furniture. */
 
 import { methods, ok, type RouteContext } from "../_lib/http.ts";
 import {
@@ -81,20 +58,15 @@ import { RESEARCH_WORDS } from "../../shared/research-words.ts";
     furniture changes when somebody deploys, so a stale answer is
     at worst one deploy behind.
 
-    **What the reader actually gets today is `no-store`, and that
-    is not this handler.** Something at the edge rewrites
-    Cache-Control on `/api/*`, outside this repository: measured
-    22 August 2026, `/api/site` and `/api/backup/articles` both
-    answer `no-store` live while setting a public max-age here,
-    and `/api/news`, which returns a `caches.default` hit rather
-    than a fresh Response, keeps its own. `worker.js` returns a
-    handler's Response verbatim, so nothing in the tree does it.
-
-    The header is set anyway, because it is the true statement
-    about this answer and the day that rule changes it starts
-    working. Do not read the test's assertion as proof the edge
-    caches: it asserts what this file SETS. An app holds its own
-    copy regardless, which is why this is a note and not a bug. */
+    WHAT THE READER GETS TODAY IS `no-store`, AND THAT IS NOT THIS
+    HANDLER. Something at the edge rewrites Cache-Control on
+    `/api/*`, outside this repository: `/api/site` and
+    `/api/backup/articles` both answer `no-store` live while
+    setting a public max-age here, and `worker.js` returns a
+    handler's Response verbatim. The header is set anyway, because
+    it is the true statement about this answer. Do not read the
+    test's assertion as proof the edge caches: it asserts what this
+    file SETS. */
 const CACHE_SECONDS = 1800;
 
 /** A section without its `pieces()` reader. The function cannot
@@ -129,27 +101,21 @@ export function onRequest(context: RouteContext): Response | Promise<Response> {
         pages: PAGES.filter((page) => !page.private).map((page) => ({ ...page })),
         counts: { ...COUNTS },
 
-        /* The routine tool's own vocabulary.
+        /* The routine tool's own vocabulary: four moods, six
+           seasons, five plants and the two task ids the drawings
+           hang on, each an id, a name in each language and a
+           colour, which is data by this file's own rule and was a
+           second copy in Kotlin.
 
-           Four moods, six seasons, five plants and the two task
-           ids the drawings hang on: every one of them an id, a
-           name in each language and a colour, which is data by
-           this file's own rule and was a second copy in Kotlin.
-           A fifth mood or a sixth plant reaches a phone on the
-           next fetch now.
-
-           `PRIVATE_TEMPLATES` is NOT here and never will be: it
-           is one person's real day, and `check-courses.ts`
-           already refuses it in a public bundle for the same
-           reason it refuses the course catalogue.
+           `PRIVATE_TEMPLATES` is NOT here and never will be: it is
+           one person's real day, and `check-courses.ts` already
+           refuses it in a public bundle.
 
            `TEMPLATES`, `FIRST_RUN` and `SCHEMA` are not here
-           either, and that is a smaller decision that will
-           change: the app cannot CREATE a routine yet, it sends
-           the reader to the site for that, and a field carried
-           and never drawn is a field somebody later mistakes for
-           a feature. `ManifestSurfaceTest` in the app fails on
-           one, which is how this was noticed. */
+           either, and that will change: the app cannot CREATE a
+           routine yet, and a field carried and never drawn is a
+           field somebody later mistakes for a feature.
+           `ManifestSurfaceTest` in the app fails on one. */
         routine: {
           moods: MOODS.map((mood) => ({ ...mood })),
           seasons: SEASONS.map((season) => ({ ...season })),
@@ -159,25 +125,23 @@ export function onRequest(context: RouteContext): Response | Promise<Response> {
         /* The front door's own words, with the counts already
            resolved: `DOOR.facts` names a key of `COUNTS` so that
            nobody can type a number into a sentence, and a client
-           should not have to know that indirection to draw a
-           strip of three figures. The KEY is sent as well, so an
-           app that wants to redraw a count on its own can. */
+           should not have to know that indirection. The KEY is
+           sent as well, so an app that wants to redraw a count on
+           its own can. */
         door: {
           ...DOOR,
           facts: DOOR.facts.map((fact) => ({ ...fact, n: bnNum(COUNTS[fact.count]) })),
         },
-        /* The two vocabularies an account answers with. Both are
-           a CHECK constraint in Postgres, so a value the app
-           offers that this list has not got is a 400 on the whole
-           write: sending them is what stops the app spelling them
-           a third time. `check-rows.ts` holds all three to the
+        /* The two vocabularies an account answers with. Both are a
+           CHECK constraint in Postgres, so a value the app offers
+           that this list has not got is a 400 on the whole write:
+           sending them is what stops the app spelling them a third
+           time. `check-rows.ts` holds all three to the
            migration. */
-        /* The Research Studio's vocabularies and words, spread
-           for the reason everything above is: a source type or a
-           lane added in shared/research.ts reaches a phone at the
-           next fetch. Every one is a CHECK constraint in the
-           migration and check-research.ts holds the two to each
-           other. */
+        /* The Research Studio's vocabularies and words, spread for
+           the reason everything above is. Every one is a CHECK
+           constraint in the migration and check-research.ts holds
+           the two to each other. */
         research: {
           tones: [...TONES],
           sourceTypes: SOURCE_TYPES.map((t) => ({ ...t })),
@@ -232,14 +196,11 @@ export function onRequest(context: RouteContext): Response | Promise<Response> {
           cutSets: { ...CUT_SETS },
         },
         /* What the front page can be made of, and what a reader
-           who has arranged nothing gets.
-
-           The CATALOGUE is data and the DRAWING is code, which is
-           the whole contract: a widget renamed here is renamed on
+           who has arranged nothing gets. The CATALOGUE is data and
+           the DRAWING is code: a widget renamed here is renamed on
            a phone at the next fetch, and one this build cannot
            draw is skipped rather than left as a blank rectangle
-           with a title on it. Spread rather than mapped, for the
-           reason at the top of this file. */
+           with a title on it. */
         widgets: {
           kinds: WIDGETS.map((kind) => ({ ...kind })),
           home: [...HOME_DEFAULT],
@@ -248,14 +209,10 @@ export function onRequest(context: RouteContext): Response | Promise<Response> {
           Object.entries(HEADS).map(([key, { count, ...head }]) => [key, {
             ...head,
             /* Resolved, and the KEY is dropped rather than sent
-               beside it. `DOOR.facts` sends both because there
-               the number is its own field and a client can
-               redraw it; here it is baked into a sentence, so a
-               client could only use the key by re-implementing
-               the slot. A field carried and never drawn is a
-               field somebody later mistakes for a feature, which
-               is what the app's own `ManifestSurfaceTest` fails
-               on and is how this was noticed. */
+               beside it. `DOOR.facts` sends both because there the
+               number is its own field and a client can redraw it;
+               here it is baked into a sentence, so a client could
+               only use the key by re-implementing the slot. */
             lede: count ? head.lede.replace("{n}", bnNum(COUNTS[count])) : head.lede,
           }]),
         ),
