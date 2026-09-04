@@ -22,8 +22,12 @@
    saying what changed: this file is the only thing that retires a
    cache, so a returning reader keeps the old copy for ever until
    the number moves. `node scripts/check-sw.ts --update` records the
-   new hashes. */
-const VERSION = "v248";
+   new hashes.
+
+   v249: comments. Every precached module lost the essay at the top
+        of it and this file lost 2,167 lines of changelog, so the
+        bytes moved without a line of behaviour changing. */
+const VERSION = "v249";
 const SHELL = `shell-${VERSION}`;
 const RUNTIME = `runtime-${VERSION}`;
 
