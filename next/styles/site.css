@@ -5106,6 +5106,19 @@ it collapsed to the width of the word "Bangladesh". */
      the material this wears. */
   .where { display: contents; }
   .where-btn { color: var(--accent); border-color: var(--accent); }
+  /* AND IT ARRIVES, because it is the one control here that was
+     not there a moment ago: the store answers after hydration,
+     and a button appearing at full weight in a row that had
+     settled reads as the row jumping rather than as an offer.
+     `backwards` so the animation holds nothing once it is done
+     and the button is the button. */
+  @media (prefers-reduced-motion: no-preference) {
+    .where-btn { animation: where-in 300ms var(--ease) backwards; }
+  }
+  @keyframes where-in {
+    from { opacity: 0; translate: 0 4px; }
+    to   { opacity: 1; translate: 0 0; }
+  }
 }
 
 /* ============================================================
@@ -5747,12 +5760,21 @@ it collapsed to the width of the word "Bangladesh". */
       cursor: pointer;
 
       &:hover { border-color: var(--accent); color: var(--accent); }
+      /* AND IT SETTLES, which is `.btn`'s own press one size
+         down. A chip that only changes colour under a finger is
+         the one control on this site that did not answer the
+         press itself, and there are more of them than there are
+         buttons. */
+      &:active { translate: 0 1px; }
     }
     /* aria-pressed is the toggle-button state, aria-selected the tab
        one. The dashboard uses real tabs now and both appear here. */
     &[aria-pressed="true"], &[aria-selected="true"] {
       border-color: var(--accent); color: var(--accent); background: var(--accent-soft);
     }
+  }
+  @media (prefers-reduced-motion: reduce) {
+    .chip:is(button, a):active { translate: none; }
   }
 
   /* ---- three tones, and the fourth is the chip itself ----
@@ -11175,6 +11197,35 @@ German for day, and .tag is what the site has always called
   .deck-2 { grid-template-columns: repeat(auto-fill, minmax(min(100%, 400px), 1fr)); }
   .deck-wide { grid-template-columns: repeat(auto-fill, minmax(min(100%, 340px), 1fr)); }
 
+  /* ---- a deck arrives ----
+
+     `reveal-up` in `@layer components` rather than a keyframe of
+     this layer's own: `.cards > .cell` has faded up on scroll
+     since the site was written, and a deck arriving a second way
+     would be two entrances to keep in step.
+
+     `both` is load-bearing. A view timeline is only running
+     inside its range, so without a fill the card is simply
+     visible until it enters, which is the effect backwards. The
+     `@supports` is what keeps an engine with no timeline from
+     hiding anything at all.
+
+     A DIRECT CHILD, so the card is the unit. Everything inside
+     one already answers the pointer: the scene's ten layers
+     parallax, the relief lifts the icon, and a second mover in
+     there would be the thing `check-relief.ts`'s third question
+     is about. */
+  @supports (animation-timeline: view()) {
+    @media (prefers-reduced-motion: no-preference) {
+      .deck > *,
+      .home-wrap .hub-section-head {
+        animation: reveal-up linear both;
+        animation-timeline: view();
+        animation-range: entry 0% cover 20%;
+      }
+    }
+  }
+
   .card {
     --accent: var(--green);
     position: relative;
@@ -11413,6 +11464,22 @@ German for day, and .tag is what the site has always called
     background: linear-gradient(90deg, var(--accent), var(--accent));
     transition: width var(--slow) var(--ease);
   }
+  /* AND IT FILLS RATHER THAN BEING FULL. Every meter on this site
+     is drawn in the browser out of the reader's own ticks, so the
+     first paint is the whole of somebody's progress appearing at
+     once. `scale` rather than `width`, because the transition
+     above is what carries a tick pressed later and an animation
+     on the same property would fight it every time; the scale
+     runs on the compositor and is gone by the time anything else
+     moves. Both ends written out: a one-sided keyframe would
+     interpolate from `none`, which is not a pair of numbers. */
+  @media (prefers-reduced-motion: no-preference) {
+    .meter > i {
+      transform-origin: left center;
+      animation: meter-fill var(--slow) var(--ease);
+    }
+  }
+  @keyframes meter-fill { from { scale: 0 1; } to { scale: 1 1; } }
   .meter-line {
     display: flex; align-items: center; gap: var(--s-5);
     font-family: var(--font-mono); font-size: var(--t-1);
@@ -11608,6 +11675,42 @@ German for day, and .tag is what the site has always called
   .tick-btn:hover { border-color: var(--accent); color: var(--accent); }
   .tick-btn[data-done] {
     background: var(--accent); border-color: var(--accent); color: var(--accent-ink);
+  }
+  /* THE PRESS, which is the site's own: `.btn` settles a pixel
+     and this had nothing at all. */
+  .tick-btn:active { translate: 0 1px; }
+
+  /* ---- and the tick lands ----
+
+     Finishing a lesson already makes a sound and did nothing a
+     reader could see. `cue()` and this fire on the same press.
+
+     `data-just` IS THE POINT and not a spare attribute:
+     `progress.tsx` writes it in the click handler and clears it
+     on `animationend`, so this runs on the press and never on a
+     page load. Keying it on `[data-done]` instead would pop the
+     button every time a reader opened a lesson they finished
+     last week, and the tick is drawn in the browser after
+     hydration, so it would pop late as well.
+
+     It is written only on the way ON. A tick coming off is a
+     correction, and a flourish on it would be the page
+     congratulating somebody for undoing something. */
+  .tick-btn[data-just] { animation: tick-land 380ms var(--ease); }
+  .tick-btn[data-just] > svg { animation: tick-mark 380ms var(--ease); }
+  @keyframes tick-land {
+    0%   { scale: 1; }
+    36%  { scale: 1.055; }
+    100% { scale: 1; }
+  }
+  @keyframes tick-mark {
+    0%   { scale: 0.45; rotate: -22deg; }
+    52%  { scale: 1.22; rotate: 0deg; }
+    100% { scale: 1; rotate: 0deg; }
+  }
+  @media (prefers-reduced-motion: reduce) {
+    .tick-btn:active { translate: none; }
+    .tick-btn[data-just], .tick-btn[data-just] > svg { animation: none; }
   }
 
   .resume { margin-top: 6px; max-width: 480px; }
@@ -11865,6 +11968,7 @@ German for day, and .tag is what the site has always called
       padding: 9px 0;
       min-height: var(--tap);
       text-decoration: none; color: inherit;
+      transition: translate var(--fast) var(--ease);
     }
     & b {
       font-family: var(--font-bn-serif); font-size: var(--t-8);
@@ -11880,9 +11984,44 @@ German for day, and .tag is what the site has always called
   }
   .ledger a:hover .ledger-bn,
   .ledger a:focus-visible .ledger-bn { color: var(--accent); }
+  /* A COLOUR WAS THE WHOLE ANSWER, on five rows whose job is to
+     be five ways in. The row steps forward instead, and the
+     colour stays: a pointer is a finger, and a row that moves
+     under one says "this is a door" a beat before the reader has
+     read the word. Four pixels rather than more, because the
+     gloss is at the row's right edge and the page's gutter is
+     what it steps into. */
+  .ledger a:hover, .ledger a:focus-visible { translate: 4px 0; }
   .ledger a:focus-visible {
     outline: 2px solid var(--accent); outline-offset: 3px;
     border-radius: var(--radius-xs);
+  }
+
+  /* ---- and the five arrive ----
+
+     The one entrance on this site that is not the scroll's: the
+     ledger is on the first screen, so a view timeline would hold
+     its end state and there would be nothing to see. It is the
+     rows and not the headline on purpose, because a headline
+     that fades in is the largest thing on the page arriving late.
+
+     The delay is `nth-child` because the position IS the order
+     they arrive in. `DOOR.facts` is five and a sixth would simply
+     arrive with the fifth, which is the right way for this to
+     degrade. */
+  @media (prefers-reduced-motion: no-preference) {
+    .ledger li { animation: ledger-in 420ms var(--ease) backwards; }
+    .ledger li:nth-child(2) { animation-delay: 55ms; }
+    .ledger li:nth-child(3) { animation-delay: 110ms; }
+    .ledger li:nth-child(4) { animation-delay: 165ms; }
+    .ledger li:nth-child(5) { animation-delay: 220ms; }
+  }
+  @keyframes ledger-in {
+    from { opacity: 0; translate: 0 10px; }
+    to   { opacity: 1; translate: 0 0; }
+  }
+  @media (prefers-reduced-motion: reduce) {
+    .ledger a:hover, .ledger a:focus-visible { translate: none; }
   }
   /* The English gloss is the first thing to go when there is no
      room for it: the number and the Bangla word are the row. It
@@ -11935,6 +12074,13 @@ German for day, and .tag is what the site has always called
   }
   .rk-chips { display: flex; flex-wrap: wrap; gap: 8px; }
   .rk-chips .chip { cursor: pointer; font-family: var(--font-bn); }
+  /* These five are `<label>`s rather than buttons, so the press
+     `@layer components` gives every pressable chip does not reach
+     them, and this is the one control on the front page. */
+  .rk-chips .chip:active { translate: 0 1px; }
+  @media (prefers-reduced-motion: reduce) {
+    .rk-chips .chip:active { translate: none; }
+  }
 
   .rk-out { min-height: 1px; }
   .rk-a { display: none; margin: 0; align-items: baseline; flex-wrap: wrap; gap: 4px 12px; }
@@ -11960,6 +12106,34 @@ German for day, and .tag is what the site has always called
   #rk-5000:checked ~ .rk-out [data-rk="5000"],
   #rk-10000:checked ~ .rk-out [data-rk="10000"],
   #rk-20000:checked ~ .rk-out [data-rk="20000"] { display: flex; }
+
+  /* ---- and the answer lands ----
+
+     `display: none` is what makes this exact, and it is why the
+     animation sits on `.rk-a` rather than on the five checked
+     selectors above: an element that is not displayed runs no
+     animation, so only the answer being shown plays one, and it
+     plays again from the start every time a reader taps a
+     different chip. That is the whole interaction on this strip,
+     and it was a figure replacing a figure with nothing between
+     them.
+
+     The figure is a second, slower keyframe on the same press:
+     the line arrives and the number settles into it. Neither
+     touches `display`, so a reader with no CSS animation still
+     gets the five answers the sibling combinator chooses. */
+  @media (prefers-reduced-motion: no-preference) {
+    .rk-a { animation: rk-land 300ms var(--ease); }
+    .rk-fig { animation: rk-figure 420ms var(--ease); }
+  }
+  @keyframes rk-land {
+    from { opacity: 0; translate: 0 8px; }
+    to   { opacity: 1; translate: 0 0; }
+  }
+  @keyframes rk-figure {
+    from { scale: 0.92; }
+    to   { scale: 1; }
+  }
 
   /* Which chip is pressed, and which one the keyboard is on. The
      input carries the state for anything that reads the page; this

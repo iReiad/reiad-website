@@ -24,7 +24,7 @@
    tick.
    ============================================================ */
 
-import { useCallback, useEffect, useSyncExternalStore } from "react";
+import { useCallback, useEffect, useState, useSyncExternalStore } from "react";
 import {
   getLast, lastKeyOf, markRead, readKeyOf, readSet, setLast, subscribe,
   toggleRead, type Bookmark,
@@ -117,12 +117,21 @@ export function LessonTick({
 
   const read = useRead(school);
   const done = read.has(id);
+  /* THE PRESS, not the state. `@layer deck` draws the landing off
+     `[data-just]` rather than off `[data-done]` because the tick
+     is read out of storage after hydration: keyed on the state,
+     the button would pop a moment after every load of a lesson
+     the reader finished last week. Cleared on `animationend`, so
+     the attribute lives exactly as long as the animation does. */
+  const [just, setJust] = useState(false);
   const onClick = useCallback(() => {
     /* Worked out BEFORE the toggle, because after it the answer
        is already true and every tick would sound like the end of
-       a stage. Ticking OFF never celebrates either way. */
+       a stage. Ticking OFF never celebrates either way, and nor
+       does it land: a tick coming off is a correction. */
     const finishes = !done && !!of?.length
       && of.every((other) => other === id || read.has(other));
+    if (!done) setJust(true);
     toggleRead(school, id, finishes ? "stage" : "lesson");
   }, [school, id, of, read, done]);
 
@@ -134,7 +143,16 @@ export function LessonTick({
        of line with the button beside it. */
     <div className="mt-7 mb-1.5">
       <button className="tick-btn" type="button" onClick={onClick}
-              data-done={done ? "" : undefined} aria-pressed={done}>
+              data-done={done ? "" : undefined} aria-pressed={done}
+              data-just={just ? "" : undefined}
+              /* The BUTTON's own animation, not the check mark's.
+                 `animationend` bubbles, and both run at 380ms, so
+                 either would clear the flag today and the pair
+                 would silently truncate each other the day one
+                 duration changes. */
+              onAnimationEnd={(e) => {
+                if (e.target === e.currentTarget) setJust(false);
+              }}>
         <Icon name="check" size={16} />
         {done ? words.done : words.notDone}
       </button>

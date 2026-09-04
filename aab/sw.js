@@ -31,6 +31,13 @@
    login could not have reached anyone either. Bump this whenever a
    precached file changes.
 
+   v247: /fallback.css. Things arrive rather than being there: a
+        deck fades up as it scrolls in, the door's five facts
+        stagger, the reckoner's answer lands when a chip is
+        pressed, a meter fills from nought, and a lesson tick pops
+        on the PRESS rather than on the state, so it never fires
+        on a page load.
+
    v246: /fallback.css. A geometric ground under the front page.
         The weather owns the top of the window and this owns the
         bottom, so the two are halves of one view rather than two
@@ -2169,7 +2176,7 @@
    imports (crumbs, audience, learn progress) and the hub is a
    different page. Without a bump, a returning reader would be
    served the v3 app.js forever and none of it would appear. */
-const VERSION = "v246";
+const VERSION = "v247";
 const SHELL = `shell-${VERSION}`;
 const RUNTIME = `runtime-${VERSION}`;
 
