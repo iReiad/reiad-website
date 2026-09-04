@@ -1,17 +1,8 @@
-/* ============================================================
-   frontier.model.js, described.
-
-   Hand-written, and it covers ONLY what `frontier.test.ts`
-   imports, which includes the eleven names the model re-exports
-   out of `frontier.data.js`. The module is plain JavaScript the
-   page loads at runtime and nothing compiles it, so every
-   signature below was read off that file, which is the source of
-   truth; a field this does not name may still exist there.
-
-   `app/src/types/README.md` is the same practice one directory
-   along and says why it is preferred to silencing an untyped
-   import.
-   ============================================================ */
+/* frontier.model.js, described. Hand-written, and it covers ONLY
+   what `frontier.test.ts` imports, including the eleven names the
+   model re-exports out of `frontier.data.js`. Nothing compiles
+   the module, so that file is the source of truth and a field
+   this does not name may still exist there. */
 
 /* ---------- the shipped data, re-exported by the model ---------- */
 

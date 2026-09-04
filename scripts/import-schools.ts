@@ -1,58 +1,26 @@
-/* ============================================================
-   import-schools.ts: the four curricula, as SQL.
+/* import-schools.ts: the four curricula, as SQL.
 
      node scripts/import-schools.ts --out schools.sql
      npx wrangler d1 execute reiad --local  --file=schools.sql
      npx wrangler d1 execute reiad --remote --file=schools.sql
 
-   ---- use --out, not a `>` redirect ----
+   USE `--out`, NOT A `>` REDIRECT. The shell creates the file
+   BEFORE node runs, so a run from the wrong directory leaves an
+   empty `schools.sql` that `wrangler d1 execute --file` imports
+   perfectly: "Processed 0 queries", a success table, and a
+   database nobody touched. With `--out` the file is written after
+   the work is done, or not at all.
 
-   `node scripts/import-schools.ts > schools.sql` looks like the
-   same thing and has one bad property: the shell creates the file
-   BEFORE node runs. Run it from the wrong directory and node
-   exits with "Cannot find module", the shell has already left an
-   empty `schools.sql` behind, and `wrangler d1 execute --file`
-   then imports it perfectly: "Processed 0 queries", a success
-   table, and a database nobody touched. That happened twice.
+   THE FOUR SCHOOLS ARE NOT ONE SCHOOL. /money/ has stages and
+   sections, /deutsch/ Stufen and Teile, /quran/ makes the day the
+   lesson, /english/ has terms and parts. So this has a small
+   adapter per school rather than one clever generic reader: four
+   objects, each naming its export and where its prose lives.
 
-   With `--out` the file is written by this script, after the work
-   is done, or not at all.
-
-   archive/TRANSITION.md Stage 8, step 2. It reads the files that are the
-   source of truth today and writes the rows that will be the
-   source of truth later. It changes nothing: the files stay, the
-   builders still read them, and the only thing that exists
-   afterwards is a copy in a database nothing queries yet.
-
-   That order is the whole point. The dangerous version of this
-   migration is the one where the importer, the schema and the
-   readers all land together and the first thing anybody sees is a
-   lesson page that lost a paragraph. So: import, prove the round
-   trip (`scripts/schools.test.ts`), and only then let a builder
-   read from the database.
-
-   ---- the four schools are not one school ----
-
-   /money/ has stages and sections. /deutsch/ has Stufen, Teile
-   and a thirty day Arbeitsbuch. /quran/ makes the day itself the
-   lesson and carries Arabic beside every Bangla line. /english/
-   has terms and parts and a workbook of its own. They were
-   written separately on purpose, and each one says so at the top
-   of its own file in `shared/curricula/`.
-
-   So this file has a small adapter per school rather than one
-   clever generic reader. Four objects, each naming its export and
-   where its prose lives, is honest about the differences and is
-   the thing somebody can correct when a fifth school arrives.
-
-   ---- what goes in `meta`, and why nothing is dropped ----
-
-   Everything the file said that is not one of the columns. It is
-   round-tripped exactly, and `schools.test.ts` compares what
-   comes back out against the file field by field, so a lost
-   `can:` or a dropped Arabic title fails a check rather than a
-   reader.
-   ============================================================ */
+   `meta` carries everything the file said that is not a column,
+   round-tripped exactly, and `scripts/schools.test.ts` compares
+   what comes back out field by field, so a lost `can:` or a
+   dropped Arabic title fails a check rather than a reader. */
 
 import type { Rows as SnapshotRows, Row } from "./schools-snapshot.ts";
 import { existsSync, writeFileSync } from "node:fs";
@@ -61,19 +29,11 @@ import { fileURLToPath, pathToFileURL } from "node:url";
 
 const ROOT = join(dirname(fileURLToPath(import.meta.url)), "..");
 
-/* The prose these read is in `archive/schools/` as of
-   archive/TRANSITION.md Stage 8 step 4. It left `aab/`, which is what
-   taking it off the site means: those modules were being uploaded
-   and served at `/quran/content/dhap-1.js` and nothing had asked
-   for one in months. The database is where a lesson's words live
-   now, and `content/schools.backup.json` is what the builders
-   read.
-
-   These files stay readable rather than deleted for the reason
-   `archive/README.md` gives for everything in there: whoever has
-   to check that the replacement really does what the thing it
-   replaced did needs to be able to read both. `schools.test.ts`
-   is that check, and it still runs against these. */
+/* The prose these read left `aab/`, which is what taking it off
+   the site means: those modules were being uploaded and served at
+   `/quran/content/dhap-1.js` and nothing had asked for one in
+   months. The database is where a lesson's words live now, and
+   `content/schools.backup.json` is what the builders read. */
 const ARCHIVE = join(ROOT, "archive", "schools");
 const CURRICULA = join(ROOT, "shared", "curricula");
 
@@ -119,17 +79,14 @@ export const SCHOOLS: School[] = [
     stages: (m) => m.STAGES as Node[],
     /* What a section calls its children. Four schools, three
        words: /money/ and /quran/ say `lessons`, /deutsch/ says
-       `teile` and /english/ says `parts`, because each one is
-       written in the vocabulary of the thing it teaches. The
-       first version of this file assumed `lessons` everywhere and
-       quietly imported two schools with no lessons in them, which
-       is the failure this whole stage is arranged to avoid. */
+       `teile` and /english/ says `parts`, each in the vocabulary
+       of the thing it teaches. Assuming `lessons` everywhere
+       quietly imported two schools with no lessons in them. */
     within: "lessons",
     /* Its prose was under lessons/<stage>.js, not
        content/<stage>.js. The other three agreed on `content/`
-       later; this one was first and nobody went back to rename
-       it, which is a good reason to read it from a table rather
-       than to guess. */
+       later; this one was first, which is a good reason to read it
+       from a table rather than to guess. */
     bodies: (stage) => join(ARCHIVE, "money", `${String(stage.slug)}.js`),
   },
   {
@@ -264,25 +221,16 @@ export async function readAll(): Promise<Rows> {
 
 /** Text, as a hex literal SQLite decodes back to the same string.
 
-    THE BUG THIS EXISTS FOR
-
-    The first version quoted these as ordinary SQL strings, which
-    is correct SQL and was silently useless. A lesson body is HTML
-    with newlines in it, so a single INSERT ran to hundreds of
-    lines: 311 statements over 10,002 lines. `wrangler d1 execute
-    --file` hands the file to D1's import, which reads statements
-    line by line, and a statement that does not end on its own
-    line is not a statement it can see. It uploaded the whole 914
-    KB, reported **"Processed 0 queries"** and "Executed 0 queries
-    in 2.01ms", and returned success. Nothing was written and
-    nothing said so.
+    Quoting these as ordinary SQL strings is correct SQL and is
+    silently useless: a lesson body is HTML with newlines in it, so
+    one INSERT ran to hundreds of lines, and `wrangler d1 execute
+    --file` reads statements line by line. It uploaded the whole
+    914 KB, reported "Processed 0 queries", and returned success.
 
     `x'...'` cannot contain a quote, a newline or a semicolon,
-    because it is only ever hex digits. So every statement below
-    is exactly one line of ASCII whatever the Bangla, the Arabic
-    or the HTML inside it happens to be. It costs twice the bytes
-    and that is the cheapest possible price for the file being
-    readable by the thing that has to read it.
+    because it is only ever hex digits, so every statement below is
+    exactly one line of ASCII whatever the Bangla, the Arabic or
+    the HTML inside it. It costs twice the bytes.
 
     `CAST(... AS TEXT)` because a bare `x'...'` is a BLOB, and a
     BLOB in a TEXT column comes back as bytes rather than as the
@@ -302,11 +250,8 @@ export function toSql(all: Rows, now: string): string {
     "-- Written by scripts/import-schools.ts. Do not edit by hand.",
     "-- The four curricula, as rows. See archive/TRANSITION.md Stage 8.",
     "-- Every statement is one line: D1's import reads them line by line.",
-    /* Replaced wholesale rather than merged. While the files are
-       still the source of truth this table is a copy, and a copy
-       that half-updates is worse than one that is rewritten. The
-       day the database becomes the source, this script stops
-       being the way rows change and the Studio becomes it. */
+    /* Replaced wholesale rather than merged: a copy that
+       half-updates is worse than one that is rewritten. */
     "DELETE FROM school_lessons;",
     "DELETE FROM school_sections;",
     "DELETE FROM school_stages;",
@@ -385,9 +330,9 @@ if (import.meta.url === pathToFileURL(process.argv[1] ?? "").href) {
   }
   /* The number to check the upload against. `wrangler d1 execute
      --file` prints "Processed N queries", and the failure this
-     script has already had once is a run that prints 0 and
-     reports success. If the two numbers do not match, nothing
-     was written, whatever the tick says. */
+     script has already had once is a run that prints 0 and reports
+     success. If the two numbers do not match, nothing was written,
+     whatever the tick says. */
   const count = sql.split("\n").filter((line) => line.trim() && !line.startsWith("--")).length;
   if (out) {
     console.error(`\n  written: ${resolve(out)}`);

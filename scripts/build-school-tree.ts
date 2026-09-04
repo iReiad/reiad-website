@@ -1,63 +1,32 @@
 #!/usr/bin/env node
-/* ============================================================
-   build-school-tree.ts: the four ladders, for the two places
-   that need them and cannot ask the database.
+/* build-school-tree.ts: the four ladders, for the two places that
+   need them and cannot ask the database.
 
        node scripts/build-school-tree.ts           # write both
        node scripts/build-school-tree.ts --check   # or compare
 
-   Two files out, one level deep each:
-
      next/lib/school-stages.ts    the stages, for the header tree
      next/lib/school-ladders.ts   the live lessons, for /account
 
-   The header's tree shows every school's stages under the school
-   (`next/components/nav-tree.tsx`). That list belongs to the
-   database, and the first version of this read it: one query in
-   the shell, four schools, seventeen stages.
-
-   ---- why it is a file instead ----
-
-   Chrome renders on every page, and half this site's routes are
-   prerendered at build time, where there is no D1 binding. So the
+   A FILE RATHER THAN A QUERY, because half this site's routes are
+   prerendered at build time where there is no D1 binding: the
    query answered on the school pages and answered nothing on
-   `/about`, `/tools/stock` and thirteen others: the
-   same menu, two levels deep on some pages and one on the rest.
-   A component that renders differently depending on which Worker
-   phase drew it is the drift this repository keeps returning to,
-   and it is invisible, because both versions look finished.
+   fifteen others, so the same menu was two levels deep on some
+   pages and one on the rest, and both versions look finished.
 
    `content/schools.backup.json` is the committed export of those
-   rows and is already read by two checks for exactly this reason:
-   it is the only copy of the ladder that a build with no network
-   can see. Refreshed by `scripts/export-schools.ts`, which is in
-   `CLAUDE.md` under "Where a lesson's words live".
-
-   Titles and prose are the Studio's and change often; a STAGE
-   list changes when a school gains a stage, which has happened
-   four times in a year. That is what makes this safe to commit
-   and `check-next.ts` is what keeps it honest.
-
-   ---- and why the account page is here too ----
-
-   `/account` draws a bar per school, and a bar needs a
-   denominator: how many lessons that school actually holds. It
-   used to import all four `curriculum.js` modules in the browser
-   to find out, 150 KB of them, which is the exact shape
-   `next/lib/progress.ts` is written against: **the ladder is the
-   server's and the ticks are the browser's.**
-
-   That route is prerendered, so the server here is this script.
-   The lesson list is 20 KB of ids, addresses and titles, which is
-   an eighth of what the four modules cost and arrives with the
-   page instead of after it.
-
-   A lesson TITLE can be edited in the Studio between refreshes,
-   and that is the one thing this file carries that changes often.
-   It is worth it and the failure is small: a renamed lesson shows
-   its old name on one card on one page until the snapshot is
+   rows, refreshed by `scripts/export-schools.ts`, and
+   `check-next.ts` is what keeps this in step with it. A STAGE
+   list changes when a school gains a stage, which is rare; a
+   lesson TITLE is the Studio's and changes often, and the failure
+   is small, one card showing an old name until the snapshot is
    refreshed. Nothing is counted from a title.
-   ============================================================ */
+
+   `/account` is here because a bar needs a denominator, and it
+   used to import all four `curriculum.js` modules in the browser,
+   150 KB, to find out. That is the shape `next/lib/progress.ts` is
+   written against: the ladder is the server's and the ticks are
+   the browser's. */
 
 import { readFileSync, writeFileSync } from "node:fs";
 import { dirname, join, resolve } from "node:path";
@@ -71,10 +40,9 @@ const SNAPSHOT = join(ROOT, "content", "schools.backup.json");
 const SCHOOLS = ["money", "deutsch", "quran", "english"] as const;
 
 /* The snapshot's rows, as `scripts/schools-snapshot.ts` writes
-   them: every column a string except `position` and `minutes`,
-   and `meta` a JSON string rather than an object. Typed here as
-   what the FILE holds, not as what the site works with, because
-   that is what this reads. */
+   them: every column a string except `position` and `minutes`, and
+   `meta` a JSON string rather than an object. Typed as what the
+   FILE holds, not as what the site works with. */
 interface StageRow {
   school: string;
   slug: string;
@@ -166,12 +134,10 @@ ${lines.join("\n")}
 /** Every live lesson of every school, in ladder order.
 
     Read back out through `shared/schools.ts` rather than reshaped
-    from the JSON here, which is the whole reason
-    `d1FromSnapshot` exists: the grouping of lessons into
-    sections, the ordering and the spreading of `meta` are decided
-    in one place, and this build runs the same code a build
-    against the live database would. A second implementation of
-    that grouping is how the two quietly stop agreeing. */
+    here, which is the whole reason `d1FromSnapshot` exists: the
+    grouping into sections, the ordering and the spreading of
+    `meta` are decided in one place, and this build runs the same
+    code a build against the live database would. */
 export async function generateLadders(): Promise<string> {
   const { d1FromSnapshot, readSnapshot } = await import("./schools-snapshot.ts");
   const { stagesOf, laddered } = await import("../shared/schools.ts");

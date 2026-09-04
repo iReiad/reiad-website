@@ -1,16 +1,7 @@
-/* ============================================================
-   dissertation.model.js, described.
-
-   Hand-written, and it covers ONLY what `dissertation.test.ts`
-   imports: the module is plain JavaScript the page loads at
-   runtime, and nothing compiles it. Every signature below was
-   read off that file, which is the source of truth; this is a
-   claim about it, so a change there is a change here.
-
-   `app/src/types/README.md` is the same practice one directory
-   along and says why it is preferred to silencing an untyped
-   import.
-   ============================================================ */
+/* dissertation.model.js, described. Hand-written, and it covers
+   ONLY what `dissertation.test.ts` imports: nothing compiles the
+   module, so that file is the source of truth and a change there
+   is a change here. */
 
 export declare function lgamma(x: number): number;
 export declare function incBeta(x: number, a: number, b: number): number;

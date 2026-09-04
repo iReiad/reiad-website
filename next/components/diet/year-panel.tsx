@@ -1,51 +1,24 @@
 "use client";
 
-/* ============================================================
-   diet/year-panel.tsx: a year in one page.
+/* A year in one page. `DIET.md` sections 10, 16 and 18.
 
-   `DIET.md` sections 10, 16 and 18: twelve months of trend, the
-   phases marked, the seasons visible, the weight at each end and
-   the total logged days.
+   THE CHART IS THE TREND PAGE'S CHART and none of its decisions is
+   retaken: the y axis does not start at zero and says so, the scale
+   readings are drawn behind the trend, nothing is encoded in colour
+   alone, and there is a table underneath named by `aria-describedby`. It
+   borrows that chart's classes rather than growing its own set.
 
-   ---- THE CHART IS THE TREND PAGE'S CHART ----
+   What a year adds is the frame: the phases banded across the BODY of the
+   plot, the seasons along its FOOT, and the marked days as rings.
+   Position is what separates the two kinds of band.
 
-   Every decision in `trend-panel.tsx` holds here and none of
-   them is retaken. The y axis does not start at zero and says
-   so. The scale readings are drawn behind the trend, because
-   hiding them would make the tool look like it was flattering
-   the reader. Nothing is encoded in colour alone. There is a
-   table underneath, in a `<details>`, named by
-   `aria-describedby`. A second chart on this site that reads
-   differently from the first is worse than no second chart, so
-   this one borrows that chart's classes rather than growing its
-   own set.
+   THE AXIS IS ALWAYS A YEAR, WHATEVER THE LOG HOLDS. Until the log
+   reaches back a year the axis starts at the first weighing and runs a
+   year forward, with the unlived part shaded; after that it is the last
+   365 days. One expression, no threshold.
 
-   What a year adds is the frame around the line: the phases from
-   section 10 banded across the BODY of the plot, the seasons
-   from section 18 along its FOOT, and the marked days as rings.
-   Position is what separates the two kinds of band, and the two
-   tables name every one of them.
-
-   ---- THE AXIS IS ALWAYS A YEAR, WHATEVER THE LOG HOLDS ----
-
-   That is the empty state, and it is the design rather than a
-   fallback. Until the log reaches back a year the axis starts at
-   the first weighing and runs a year forward, so a reader three
-   months in sees three months of line, nine months of empty year
-   shaded to the right of today, and the seasons already drawn
-   across the part they have not lived. Once the log is a year
-   old the axis becomes the last 365 days and the shading is
-   gone. One expression, no threshold.
-
-   ---- WHAT IS NOT ON IT ----
-
-   Intake, steps, sleep, hunger and ketones are all real columns
-   and every one of them would need a second y axis, which is the
-   lie the axis rule exists to stop. The learned burn and the
-   stall reading are the long view's and are about now rather
-   than about a year. Section 24's rule holds one level up: the
-   page that says a thing properly owns it.
-   ============================================================ */
+   Intake, steps, sleep, hunger and ketones are not on it: every one would
+   need a second y axis, which is the lie the axis rule exists to stop. */
 
 import { useEffect, useMemo, useState } from "react";
 import {
@@ -165,14 +138,11 @@ export function YearPanel() {
     [days, phases, end],
   );
 
-  /* THE AXIS: 365 days INCLUSIVE, ending today once the log is a
-     year old and starting at the first weighing until then.
-
-     Both endpoints are drawn, so the axis is a year of DAYS and
-     364 day-steps WIDE, and `px` divides by `x1 - x0` rather than
-     by the constant so the two cannot come apart. Off by one here
-     is a page that reads "366 / 365" on the day the year
-     completes. */
+      /* THE AXIS: 365 days INCLUSIVE, ending today once the log is a year
+         old and starting at the first weighing until then. Both endpoints
+         are drawn, so the axis is a year of DAYS and 364 day-steps wide,
+         and `px` divides by `x1 - x0` rather than by the constant so the
+         two cannot come apart. */
   const x0 = useMemo(() => {
     const first = all.length ? all[0].day : end;
     return first + YEAR - 1 <= end ? end - YEAR + 1 : first;
@@ -733,23 +703,17 @@ export function YearPanel() {
   );
 }
 
-/** THE STRETCHES, AND WHY A YEAR HAS NO SINGLE RATE.
+    /** THE STRETCHES, AND WHY A YEAR HAS NO SINGLE RATE. A regression
+        across a change of protocol is a regression across a step in body
+        water: three days of keto followed by two of fasting looks like
+        0.8 kg a day, which projects a goal weight inside a month and is a
+        lie about somebody's body. So a year gets one rate per stretch.
 
-    `DIET.md` section 10. A regression across a change of
-    protocol is a regression across a step in body water: three
-    days of keto followed by two of fasting looks like 0.8 kg a
-    day, which projects a goal weight inside a month and is a lie
-    about somebody's body. So a year gets one rate per stretch
-    and never one across the lot.
-
-    Where no protocol has ever been declared there is no boundary
-    to cross, the whole year is one window, and one rate over it
-    is the honest answer rather than a missing one. Where one HAS
-    been declared and none of it falls inside this year, there is
-    no window at all, which is a different sentence: `declared` is
-    what tells the two apart, and without it the page would tell a
-    reader who ran keto two years ago that they had never declared
-    anything. */
+        Where no protocol has ever been declared there is no boundary to
+        cross and one rate over the year is the honest answer. Where one
+        HAS been declared and none of it falls inside this year, there is
+        no window at all, which is a different sentence: `declared` is what
+        tells the two apart. */
 function Stretches({ spans, declared, fittable, points, today, end }: {
   spans: Stretch[];
   declared: boolean;
@@ -854,16 +818,12 @@ function Stretches({ spans, declared, fittable, points, today, end }: {
   );
 }
 
-/** THE SEASONS THIS YEAR CROSSES.
-
-    `DIET.md` section 18. A faint band with no name on it is
-    decoration, so every band the chart draws is named here with
-    what it does to the reading. None of them changes the
-    arithmetic: what they change is what a flat month means.
-
-    The moving four are a table and it runs out on purpose, so
-    where the year reaches past it this says so rather than
-    drawing a fast in the wrong fortnight. */
+    /** THE SEASONS THIS YEAR CROSSES. A faint band with no name on it is
+        decoration, so every band is named here with what it does to the
+        reading. None of them changes the arithmetic: what they change is
+        what a flat month means. The moving four are a table and it runs
+        out on purpose, so a year reaching past it says so rather than
+        drawing a fast in the wrong fortnight. */
 function Seasons({ runs, today, end, knownTo, past }: {
   runs: SeasonRun[];
   today: string;

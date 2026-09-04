@@ -1,19 +1,13 @@
 #!/usr/bin/env node
-/* ============================================================
-   dissertation.test.ts, checks on the statistics engine.
+/* dissertation.test.ts: checks on the statistics engine.
 
        node aab/portfolio/dissertation.test.ts
 
-   The engine on the dissertation case-study page does real
-   inference: Welch t-tests, and power calculations through the
-   noncentral t distribution. Those are easy to get subtly wrong
-   and impossible to eyeball, so every routine is checked here
-   against a value some other authority already agrees on,
-   textbook t-tables, Cohen's sample-size tables, and the
-   arithmetic identities the functions have to satisfy.
-
-   None of these tests check a function against itself.
-   ============================================================ */
+   Welch t-tests and power through the noncentral t are easy to
+   get subtly wrong and impossible to eyeball, so every routine
+   is checked against an outside authority (textbook t-tables,
+   Cohen's sample-size tables) or an identity it has to satisfy.
+   NOTHING HERE CHECKS A FUNCTION AGAINST ITSELF. */
 
 import {
   lgamma, incBeta, normCdf, tCdf, tTwoTail, tQuantile, nctCdf,

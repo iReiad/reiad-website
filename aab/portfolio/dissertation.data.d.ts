@@ -1,15 +1,7 @@
-/* ============================================================
-   dissertation.data.js, described.
-
-   Hand-written, and it covers ONLY what `dissertation.test.ts`
-   imports: the module is plain JavaScript the page loads at
-   runtime, and nothing compiles it. Every shape below was read
-   off that file, which is the source of truth.
-
-   `app/src/types/README.md` is the same practice one directory
-   along and says why it is preferred to silencing an untyped
-   import.
-   ============================================================ */
+/* dissertation.data.js, described. Hand-written, and it covers
+   ONLY what `dissertation.test.ts` imports: nothing compiles the
+   module, so that file is the source of truth and a change there
+   is a change here. */
 
 /** FTSE 100 monthly close, 91 months from `UKX_FROM`. */
 export declare const UKX: number[];
