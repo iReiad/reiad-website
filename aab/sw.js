@@ -31,6 +31,18 @@
    login could not have reached anyone either. Bump this whenever a
    precached file changes.
 
+   v244: /fallback.css. The palette got loud. Light mode's accents
+        were pinned at 44% lightness, where the sRGB gamut caps
+        green at 0.097 and gold at 0.093, so the "restrained"
+        0.090 cap was the ceiling rather than a choice and teal
+        was 0.001 outside it. They sit at 50% now, where each hue
+        takes 94% of its own ceiling, dark mode keeps 72% and
+        gains the chroma it always had room for, a section's colour
+        moved off the page and into its cards, the material's
+        light is 44% of
+        clarity rather than 32%, the corners are rounder and
+        there is more sky.
+
    v243: /fallback.css. The reader's own sky moved out from over the
         page and behind it, and is drawn at three depths rather
         than two: rain was a stripe under a static mask, so a drop
@@ -2145,7 +2157,7 @@
    imports (crumbs, audience, learn progress) and the hub is a
    different page. Without a bump, a returning reader would be
    served the v3 app.js forever and none of it would appear. */
-const VERSION = "v243";
+const VERSION = "v244";
 const SHELL = `shell-${VERSION}`;
 const RUNTIME = `runtime-${VERSION}`;
 
