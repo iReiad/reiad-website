@@ -39,16 +39,10 @@ const esc = (s) =>
  * @param {object} school.progress    the school's `progress.js`.
  * @param {(stage: object, n: number) => string} school.dayId  what a
  *   day's tick is FILED UNDER, from the school's own
- *   `curriculum.js`. Not built here, and that is the whole reason
- *   it is an argument: English files a day as `term-1/day-3` and
- *   German as `stufe-1/tag-3`, both are in real browsers, and
- *   this file built the German shape for both. The English ticks
- *   were written correctly by `toggleDay` and then looked for
- *   under a name nothing had ever used, so a day could be ticked
- *   and came back unticked. `workbook.test.ts` is what found
- *   that, and it is the rule at the top of "Three schools, one
- *   engine": every key is passed in by the school, spelled the
- *   way it has always been spelled.
+ *   `curriculum.js` and never built here: English files a day as
+ *   `term-1/day-3` and German as `stufe-1/tag-3`, both are in
+ *   real browsers, and building one shape for both means a day
+ *   can be ticked and come back unticked.
  * @param {(schrift: object) => object} [school.migrate]  a one-off
  *   rename of storage keys. The German school has one; a school
  *   that shipped namespaced from the start does not.
@@ -94,17 +88,12 @@ export function initWorkbook(school) {
     clearTimeout(writeTimer);
     writeTimer = setTimeout(() => {
       try {
-        /* `ts` is the map's own stamp and is what `aab/sync.js`
+        /* `ts` is the MAP's own stamp and is what `aab/sync.js`
            dates these entries by: see `stamp()` there. It cannot
-           collide with a day, because a day is `stufe-1/tag-3` or
-           `term-1/day-3` and never a bare word, and nothing in
-           this module ever looks a day up by a name it was not
-           given by the page.
-
-           Stamping the map rather than each entry is deliberate:
-           these keys hold sentences somebody wrote, and changing
-           the shape of a value that is already in real browsers
-           is the edit CLAUDE.md opens by warning about. */
+           collide with a day, which is always `stufe-1/tag-3` or
+           `term-1/day-3`. Stamping the map rather than each entry
+           keeps the stored shape, which holds sentences somebody
+           wrote, exactly as it is in real browsers. */
         localStorage.setItem(writeKey, JSON.stringify({ ...written, ts: Date.now() }));
       } catch {
         /* Quota, or private mode. The text is still on screen and
@@ -176,17 +165,12 @@ export function initWorkbook(school) {
     setLastDay(current);
     paintNav();
     paintTracker();
-    /* replaceState rather than location.hash, so walking through
-       the book does not fill the back button with thirty entries
-       the learner has to press their way out of.
-
-       `writeHash` is false for the very first paint, and that is
-       not a detail: changing the fragment, even through
-       replaceState, makes the browser run its scroll-to-fragment
-       step, and with this site's `scroll-behavior: smooth` that
-       showed up as the page sliding 1,800px down on its own the
-       moment it loaded. The hash starts being written the moment
-       they actually turn a page. */
+    /* `replaceState` rather than `location.hash`, so walking the
+       book does not fill the back button with thirty entries.
+       `writeHash` IS FALSE FOR THE FIRST PAINT: changing the
+       fragment, even through replaceState, runs the browser's
+       scroll-to-fragment step, and under `scroll-behavior:
+       smooth` that slides the page 1,800px down on load. */
     if (writeHash) history.replaceState(null, "", `#tag-${current}`);
     if (scroll) {
       document.getElementById(`tag-${current}`)

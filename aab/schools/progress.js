@@ -85,15 +85,9 @@ export function createProgress(config) {
     saveSet(keys.read, set);
   }
 
-  /* ----------------------------------------------------------
-     the practice book's days
-
-     Ticked by hand, never by arriving: a day is done when you
-     have actually spoken it out loud, and that is the one
-     promise a practice book makes, so the page cannot make it
-     for you. Schools with no book pass no `days` key and every
-     function here answers an empty book.
-     ---------------------------------------------------------- */
+  /* The practice book's days, ticked BY HAND and never by
+     arriving. Schools with no book pass no `days` key and every
+     function here answers an empty book. */
 
   const isDayDone = (stage, n) => daySet().has(dayId(stage, n));
 
@@ -193,15 +187,10 @@ export function createProgress(config) {
     }
   }
 
-  /* ----------------------------------------------------------
-     sums the hub asks for
-
-     `weighted` is the count in whatever unit the school counts
-     in. Three of the four count pages and weigh every lesson 1,
-     so it equals `done`; the Quranic Arabic school counts days
-     and two of its lessons cover two, which is why the number
-     exists at all rather than being assumed.
-     ---------------------------------------------------------- */
+  /* Sums the hub asks for. `weighted` is the count in whatever
+     unit the school counts in: three of the four weigh every
+     lesson 1, and the Quranic Arabic school counts days, two of
+     its lessons covering two. */
 
   const sum = (lessons, f) => lessons.reduce((n, l) => n + f(l), 0);
 
@@ -291,18 +280,11 @@ export function createProgress(config) {
     addEventListener("pageshow", (e) => { if (e.persisted) fn(); });
   }
 
-  /* ----------------------------------------------------------
-     the lesson page's side of the deal
-
-     Opening a lesson counts as reading it. A lesson marked
-     data-soon is not ticked off: you have not read what has not
-     been written.
-
-     And it waits for activation. Hovering a link prerenders the
-     page it points at, scripts and all, so without whenActivated
-     this ticked lessons off as the pointer swept across a list.
-     See /activation.js for the full story.
-     ---------------------------------------------------------- */
+  /* Opening a lesson counts as reading it, except one marked
+     `data-soon`. IT WAITS FOR ACTIVATION: hovering a link
+     prerenders the page and its scripts, so without
+     `whenActivated` this ticks lessons off as the pointer sweeps
+     across a list. See /activation.js. */
 
   function recordVisit(root = document) {
     const article = root.querySelector(`article[${attr.id}]`);

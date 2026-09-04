@@ -22,26 +22,15 @@ export const el = (tag, props = {}, ...kids) => {
   return node;
 };
 
-/** The little ring showing a stage's progress. One drawing for
-    four schools, deliberately: one visual language.
-
-    The DOM here is `<Ring>` in `next/components/deck.tsx`, node
-    for node, and that is the point of it rather than a
-    coincidence. There were two rings: this one put `.ring` on
-    the SVG and turned it with a `transform` attribute, deck's
-    wraps the SVG in a span and turns it with a `rotate` in the
-    stylesheet. Both were styled by rules called `.ring`, in two
-    layers, and deck's came later and won. What kept this one
-    looking right was that `.ring svg` did not match an SVG that
-    was itself the `.ring`, so it never got a second rotation.
-
-    Relying on a selector not matching is not a design. One
-    shape, one rule, and the rotation is the stylesheet's in both
-    places now.
+/** The little ring showing a stage's progress. THE DOM HERE IS
+    `<Ring>` IN `next/components/deck.tsx`, NODE FOR NODE: two
+    shapes both styled by rules called `.ring` in two layers is a
+    design that depends on a selector not matching. The rotation
+    is the stylesheet's in both places.
 
     The class is `progress-ring`, not `ring`: `ring` is a Tailwind
     utility and this file is one of the sources its scanner reads,
-    so the name drew a 1px square around every ring on the site. */
+    so that name drew a 1px square around every ring on the site. */
 export function ring(pct) {
   const r = 19;
   const c = 2 * Math.PI * r;
