@@ -116,6 +116,23 @@ const PAIRS: Pair[] = [
   /* The danger red, which only ever labels something. */
   ["--danger", "--paper", 4.5, "a warning on the page"],
   ["--danger", "--panel", 4.5, "a warning on a card"],
+
+  /* The soft ground, which 80 rules paint and nothing measured.
+
+     It is the biggest area of colour on the site: a selected
+     range, a chip that has latched, a lit row, the ground under
+     a figure. Three things are set on it and all three are here,
+     because the accent on its own 11% tint is the tightest pair
+     in this file by construction and the one a person is least
+     likely to doubt. */
+  ...ACCENTS.flatMap((accent): Pair[] => [
+    ["--ink", "--accent-soft", 4.5,
+      `body text on a soft ${accent.replace("--", "")} ground`, accent],
+    ["--ink-soft", "--accent-soft", 4.5,
+      `secondary text on a soft ${accent.replace("--", "")} ground`, accent],
+    [accent, "--accent-soft", 4.5,
+      `${accent.replace("--", "")} on its own soft ground`, accent],
+  ]),
 ];
 
 /* Text ON an accent fill, which nothing measured until a reader

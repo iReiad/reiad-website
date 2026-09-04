@@ -81,15 +81,16 @@
 
     --relief-cast: light-dark(oklch(22% 0.02 var(--h-green) / 0.3),
                               oklch(0% 0 0 / 0.42));
-    --accent-soft:   color-mix(in oklab, var(--accent) 11%, var(--paper));
+
+    --accent-soft:   color-mix(in oklab, var(--accent) 10%, var(--paper-base));
     --accent-line:   color-mix(in oklab, var(--accent) 28%, transparent);
     --accent-ring:   color-mix(in oklab, var(--accent) 30%, transparent);
     --accent-strong: color-mix(in oklab, var(--accent) 88%, var(--accent-mate));
 
-    --paper:        color-mix(in oklab, var(--accent) 4%, var(--paper-base));
-    --paper-sunk:   color-mix(in oklab, var(--accent) 6%, var(--paper-sunk-base));
-    --panel:        color-mix(in oklab, var(--accent) 2%, var(--panel-base));
-    --panel-hover:  color-mix(in oklab, var(--accent) 3.5%, var(--panel-base));
+    --paper:        color-mix(in oklab, var(--accent) 5%, var(--paper-base));
+    --paper-sunk:   color-mix(in oklab, var(--accent) 7%, var(--paper-sunk-base));
+    --panel:        color-mix(in oklab, var(--accent) 7%, var(--panel-base));
+    --panel-hover:  color-mix(in oklab, var(--accent) 8%, var(--panel-base));
     --hairline:     color-mix(in oklab, var(--accent) 12%, var(--hairline-base));
     --pane-edge:    color-mix(in oklab, var(--accent) 34%, var(--hairline-base));
     --glass-bg:     color-mix(in oklab, var(--accent) 4%, var(--glass-base));
@@ -105,13 +106,13 @@
     --ink:          light-dark(oklch(24%   0.012 var(--h-green)), oklch(93.5% 0.008 var(--h-green)));
     --ink-soft:     light-dark(oklch(43%   0.012 var(--h-green)), oklch(72%   0.020 var(--h-green)));
 
-    --green:        light-dark(oklch(44% 0.090 var(--h-green)),  oklch(72% 0.105 var(--h-green)));
-    --teal:         light-dark(oklch(44% 0.076 var(--h-teal)),   oklch(72% 0.105 var(--h-teal)));
-    --blue:         light-dark(oklch(44% 0.090 var(--h-blue)),   oklch(72% 0.105 var(--h-blue)));
-    --violet:       light-dark(oklch(44% 0.090 var(--h-violet)), oklch(72% 0.105 var(--h-violet)));
-    --plum:         light-dark(oklch(44% 0.090 var(--h-plum)),   oklch(72% 0.105 var(--h-plum)));
-    --rose:         light-dark(oklch(44% 0.090 var(--h-rose)),   oklch(72% 0.105 var(--h-rose)));
-    --gold:         light-dark(oklch(44% 0.090 var(--h-gold)),   oklch(72% 0.105 var(--h-gold)));
+    --green:        light-dark(oklch(50% 0.103 var(--h-green)),  oklch(72% 0.145 var(--h-green)));
+    --teal:         light-dark(oklch(50% 0.080 var(--h-teal)),   oklch(72% 0.113 var(--h-teal)));
+    --blue:         light-dark(oklch(50% 0.154 var(--h-blue)),   oklch(72% 0.136 var(--h-blue)));
+    --violet:       light-dark(oklch(50% 0.251 var(--h-violet)), oklch(72% 0.158 var(--h-violet)));
+    --plum:         light-dark(oklch(50% 0.200 var(--h-plum)),   oklch(72% 0.204 var(--h-plum)));
+    --rose:         light-dark(oklch(50% 0.188 var(--h-rose)),   oklch(72% 0.160 var(--h-rose)));
+    --gold:         light-dark(oklch(50% 0.099 var(--h-gold)),   oklch(72% 0.139 var(--h-gold)));
     --danger:       light-dark(oklch(52%   0.150 28),             oklch(70%   0.140 28));
 
     --accent: var(--green);
@@ -244,10 +245,10 @@
 
     --read-edge: calc(100vw - var(--rail-w, 0px));
 
-    --radius-xs: 5px;
-    --radius-sm: 12px;
-    --radius: 18px;
-    --radius-lg: 24px;
+    --radius-xs: 7px;
+    --radius-sm: 16px;
+    --radius: 22px;
+    --radius-lg: 30px;
     --radius-pill: 999px;
 
     --tap: 44px;
@@ -270,15 +271,15 @@
   html[lang="bn"] { --measure-base: 26rem; }
 
   [style*="--accent"], [data-section] {
-    --accent-soft:   color-mix(in oklab, var(--accent) 11%, var(--paper));
+    --accent-soft:   color-mix(in oklab, var(--accent) 10%, var(--paper-base));
     --accent-line:   color-mix(in oklab, var(--accent) 28%, transparent);
     --accent-ring:   color-mix(in oklab, var(--accent) 30%, transparent);
     --accent-strong: color-mix(in oklab, var(--accent) 88%, var(--accent-mate));
 
-    --paper:        color-mix(in oklab, var(--accent) 4%, var(--paper-base));
-    --paper-sunk:   color-mix(in oklab, var(--accent) 6%, var(--paper-sunk-base));
-    --panel:        color-mix(in oklab, var(--accent) 2%, var(--panel-base));
-    --panel-hover:  color-mix(in oklab, var(--accent) 3.5%, var(--panel-base));
+    --paper:        color-mix(in oklab, var(--accent) 5%, var(--paper-base));
+    --paper-sunk:   color-mix(in oklab, var(--accent) 7%, var(--paper-sunk-base));
+    --panel:        color-mix(in oklab, var(--accent) 7%, var(--panel-base));
+    --panel-hover:  color-mix(in oklab, var(--accent) 8%, var(--panel-base));
     --hairline:     color-mix(in oklab, var(--accent) 12%, var(--hairline-base));
     --pane-edge:    color-mix(in oklab, var(--accent) 34%, var(--hairline-base));
     --glass-bg:     color-mix(in oklab, var(--accent) 4%, var(--glass-base));
@@ -10117,7 +10118,7 @@
     & *:not([data-finish]) { --glass-grain: none; }
     --glow-h: var(--glow-w);
 
-    --glow-i: calc(var(--clarity) * 32%);
+    --glow-i: calc(var(--clarity) * 44%);
     --glow-stop: calc(52% + (1 - var(--polish)) * 46%);
 
     --glow-fade: 820ms;
@@ -11427,7 +11428,7 @@
 
     contain: strict;
 
-    --wx-a: 1;
+    --wx-a: 1.2;
 
     --wx-ink:  color-mix(in oklab, var(--ink) 56%, transparent);
     --wx-soft: color-mix(in oklab, var(--ink) 30%, transparent);

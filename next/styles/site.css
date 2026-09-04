@@ -408,15 +408,22 @@
        printed on it. `@layer relief` is the only reader. */
     --relief-cast: light-dark(oklch(22% 0.02 var(--h-green) / 0.3),
                               oklch(0% 0 0 / 0.42));
-    --accent-soft:   color-mix(in oklab, var(--accent) 11%, var(--paper));
+    /* Against `--paper-base` and not `--paper`, because `--paper`
+       already carries 5% of the same accent: mixing into it
+       stacks the tint twice and the ground creeps towards the
+       colour of the text standing on it. At 11% over the tinted
+       paper the accent measured 4.15 on its own soft ground, and
+       nothing could see it until those pairs went into
+       `check-contrast.ts`. 80 rules paint this. */
+    --accent-soft:   color-mix(in oklab, var(--accent) 10%, var(--paper-base));
     --accent-line:   color-mix(in oklab, var(--accent) 28%, transparent);
     --accent-ring:   color-mix(in oklab, var(--accent) 30%, transparent);
     --accent-strong: color-mix(in oklab, var(--accent) 88%, var(--accent-mate));
 
-    --paper:        color-mix(in oklab, var(--accent) 4%, var(--paper-base));
-    --paper-sunk:   color-mix(in oklab, var(--accent) 6%, var(--paper-sunk-base));
-    --panel:        color-mix(in oklab, var(--accent) 2%, var(--panel-base));
-    --panel-hover:  color-mix(in oklab, var(--accent) 3.5%, var(--panel-base));
+    --paper:        color-mix(in oklab, var(--accent) 5%, var(--paper-base));
+    --paper-sunk:   color-mix(in oklab, var(--accent) 7%, var(--paper-sunk-base));
+    --panel:        color-mix(in oklab, var(--accent) 7%, var(--panel-base));
+    --panel-hover:  color-mix(in oklab, var(--accent) 8%, var(--panel-base));
     --hairline:     color-mix(in oklab, var(--accent) 12%, var(--hairline-base));
     --pane-edge:    color-mix(in oklab, var(--accent) 34%, var(--hairline-base));
     --glass-bg:     color-mix(in oklab, var(--accent) 4%, var(--glass-base));
@@ -468,12 +475,11 @@
     /* --- the seven accents ---
 
        ONE LIGHTNESS EACH SIDE, and it is the only rule here that
-       matters. 44% in light, 72% in dark, for all seven, with the
-       chroma being whatever that hue can carry at that lightness
-       up to a cap. OKLCH's L is perceptual, so seven colours at
-       one L are seven colours of one weight: none shouts, none
-       whispers, and a label does not become harder to read
-       because the page it is on happens to be the German one.
+       matters. 50% in light, 72% in dark, for all seven. OKLCH's
+       L is perceptual, so seven colours at one L are seven
+       colours of one weight: none shouts, none whispers, and a
+       label does not become harder to read because the page it
+       is on happens to be the German one.
 
        That was not true before. Green sat at 41% and gold at
        54%, because yellow at 41% is olive, and the two measured
@@ -482,21 +488,70 @@
        The comment that used to live here recorded gold slipping
        to 4.45 when the paper turned warm, and it was caught by
        somebody looking. Moving the hue from 85 to 75 lets gold
-       sit at 44% with the rest, and `scripts/check-contrast.ts`
-       is what looks now: it measures all seven against all three
-       grounds in both themes, and fails the build under 4.5.
+       sit with the rest, and `scripts/check-contrast.ts` is what
+       looks now: it measures all seven against all three grounds
+       in both themes, and fails the build under 4.5.
 
-       The chroma cap is 0.090 light and 0.105 dark, which is
-       deliberately restrained. These are accents on a reading
-       site, not a brand palette; the job is to say which place
-       you are in, quietly. */
-    --green:        light-dark(oklch(44% 0.090 var(--h-green)),  oklch(72% 0.105 var(--h-green)));
-    --teal:         light-dark(oklch(44% 0.076 var(--h-teal)),   oklch(72% 0.105 var(--h-teal)));
-    --blue:         light-dark(oklch(44% 0.090 var(--h-blue)),   oklch(72% 0.105 var(--h-blue)));
-    --violet:       light-dark(oklch(44% 0.090 var(--h-violet)), oklch(72% 0.105 var(--h-violet)));
-    --plum:         light-dark(oklch(44% 0.090 var(--h-plum)),   oklch(72% 0.105 var(--h-plum)));
-    --rose:         light-dark(oklch(44% 0.090 var(--h-rose)),   oklch(72% 0.105 var(--h-rose)));
-    --gold:         light-dark(oklch(44% 0.090 var(--h-gold)),   oklch(72% 0.105 var(--h-gold)));
+       ---- why light mode moved from 44% and dark mode did not ----
+
+       There is no chroma cap any more, because for four years
+       there did not need to be one: THE GAMUT WAS THE CAP AND
+       NOBODY HAD MEASURED IT. At 44% the most chromatic green
+       sRGB holds is 0.097 and the most chromatic gold is 0.093,
+       so the "restrained" 0.090 was within a rounding error of
+       the loudest those two hues can be, and teal's 0.076 was
+       0.001 ABOVE its own 0.075 ceiling: an out-of-gamut value
+       the browser was quietly clamping, which is a token saying
+       one thing and a screen showing another.
+
+       So raising a cap would have changed nothing visible in
+       light mode. Lightness is what holds the chroma down: the
+       gamut is a cone, and 44% is near its point. 50% is where
+       green reaches 0.110 and violet 0.267, and it is chosen
+       because it is the last step before contrast rather than
+       gamut becomes the binding constraint.
+
+       THE BINDING GROUND IS THE SUNK ONE, not the white card,
+       and 52% shipped for about a minute on the assumption that
+       it was the card. `--paper-sunk` is both darker than a
+       panel AND carries 6% of the accent, so an accent on it is
+       a colour against a tint of itself: green measured 5.20 on
+       a card and 4.35 on the sunk ground, and the second is a
+       fail. That is what the check reads and this file cannot.
+
+       DARK MODE KEEPS 72%, and gets the same punch for nothing.
+       A dark ground has the contrast the other way up, so the
+       ceiling there was never contrast and never the gamut
+       either: 0.105 was simply a number, and green holds 0.158
+       at that lightness. The worst dark pair measures 6.51.
+
+       Each value below is 94% of what its own hue can carry at
+       50%, and 92% at 72%, so nothing is clamped and the margin
+       absorbs a browser rounding differently from this file.
+       They are not one number seven times because the sRGB gamut
+       is not a cylinder: a vivid teal is less chromatic than a
+       vivid violet at any lightness, in any colour space, and
+       forcing them level would mean levelling DOWN to teal,
+       which is the restraint this change exists to undo.
+
+       The ceilings, so the next person to raise these knows what
+       stops them:
+
+                 50%     72%
+         green   0.110   0.158
+         teal    0.085   0.123
+         blue    0.165   0.148
+         violet  0.267   0.172
+         plum    0.213   0.223
+         rose    0.201   0.175
+         gold    0.106   0.152 */
+    --green:        light-dark(oklch(50% 0.103 var(--h-green)),  oklch(72% 0.145 var(--h-green)));
+    --teal:         light-dark(oklch(50% 0.080 var(--h-teal)),   oklch(72% 0.113 var(--h-teal)));
+    --blue:         light-dark(oklch(50% 0.154 var(--h-blue)),   oklch(72% 0.136 var(--h-blue)));
+    --violet:       light-dark(oklch(50% 0.251 var(--h-violet)), oklch(72% 0.158 var(--h-violet)));
+    --plum:         light-dark(oklch(50% 0.200 var(--h-plum)),   oklch(72% 0.204 var(--h-plum)));
+    --rose:         light-dark(oklch(50% 0.188 var(--h-rose)),   oklch(72% 0.160 var(--h-rose)));
+    --gold:         light-dark(oklch(50% 0.099 var(--h-gold)),   oklch(72% 0.139 var(--h-gold)));
     --danger:       light-dark(oklch(52%   0.150 28),             oklch(70%   0.140 28));
 
     /* --- the one every component actually reads ---
@@ -984,10 +1039,10 @@
        before somebody writes a literal instead. It is gone: a
        tile that small takes `--radius-sm`, and the rail's own
        discs are pills. */
-    --radius-xs: 5px;
-    --radius-sm: 12px;
-    --radius: 18px;
-    --radius-lg: 24px;
+    --radius-xs: 7px;
+    --radius-sm: 16px;
+    --radius: 22px;
+    --radius-lg: 30px;
     --radius-pill: 999px;
 
     /* --- controls ---
@@ -1105,15 +1160,15 @@
      ============================================================ */
 
   [style*="--accent"], [data-section] {
-    --accent-soft:   color-mix(in oklab, var(--accent) 11%, var(--paper));
+    --accent-soft:   color-mix(in oklab, var(--accent) 10%, var(--paper-base));
     --accent-line:   color-mix(in oklab, var(--accent) 28%, transparent);
     --accent-ring:   color-mix(in oklab, var(--accent) 30%, transparent);
     --accent-strong: color-mix(in oklab, var(--accent) 88%, var(--accent-mate));
 
-    --paper:        color-mix(in oklab, var(--accent) 4%, var(--paper-base));
-    --paper-sunk:   color-mix(in oklab, var(--accent) 6%, var(--paper-sunk-base));
-    --panel:        color-mix(in oklab, var(--accent) 2%, var(--panel-base));
-    --panel-hover:  color-mix(in oklab, var(--accent) 3.5%, var(--panel-base));
+    --paper:        color-mix(in oklab, var(--accent) 5%, var(--paper-base));
+    --paper-sunk:   color-mix(in oklab, var(--accent) 7%, var(--paper-sunk-base));
+    --panel:        color-mix(in oklab, var(--accent) 7%, var(--panel-base));
+    --panel-hover:  color-mix(in oklab, var(--accent) 8%, var(--panel-base));
     --hairline:     color-mix(in oklab, var(--accent) 12%, var(--hairline-base));
     --pane-edge:    color-mix(in oklab, var(--accent) 34%, var(--hairline-base));
     --glass-bg:     color-mix(in oklab, var(--accent) 4%, var(--glass-base));
@@ -16074,11 +16129,18 @@ German for day, and .tag is what the site has always called
        and this rule reaches every descendant of one. */
     & *:not([data-finish]) { --glass-grain: none; }
     --glow-h: var(--glow-w);
-    /* 32% and not 44%. A material that is on every surface of a
-       site has to be quiet or it is noise everywhere, and the
-       ladder between the kinds is what carries the meaning rather
-       than the absolute brightness. */
-    --glow-i: calc(var(--clarity) * 32%);
+    /* 44%, and it was 32% while this site was written for
+       somebody reading at a desk. The ladder between the kinds is
+       still what carries the meaning, and raising the multiplier
+       moves all six together rather than pulling one out of line,
+       which is the whole reason the brightness is derived from
+       `--clarity` instead of typed six times.
+
+       There is a ceiling and it is not this: past about 60% the
+       light stops reading as a sheen on glass and starts reading
+       as a coloured wash, which is the point at which the
+       material describes nothing. */
+    --glow-i: calc(var(--clarity) * 44%);
     --glow-stop: calc(52% + (1 - var(--polish)) * 46%);
 
     /* ---- it comes up quickly and goes out slowly ----
@@ -18365,8 +18427,15 @@ German for day, and .tag is what the site has always called
        `--wx-a` is how much sky there is, and it is the only
        number to reach for when this is too much or too little.
        Every opacity below is a fraction of it, so turning the
-       whole layer down is one edit rather than twenty. */
-    --wx-a: 1;
+       whole layer down is one edit rather than twenty.
+
+       1.2 rather than 1, because at 1 a reader could not tell
+       whether it was raining without going to a window, which is
+       the one thing this layer is for. It is a MULTIPLIER on
+       fractions that top out at 0.72, so the brightest thing on
+       it still lands under 0.87 and the prose in front keeps its
+       measured contrast: nothing here is a ground for text. */
+    --wx-a: 1.2;
 
     /* The three weights anything drawn here is allowed to be. A
        drop and a flake are INK, a cloud and a fog bank are HAZE,
