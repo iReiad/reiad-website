@@ -31,6 +31,12 @@
    login could not have reached anyone either. Bump this whenever a
    precached file changes.
 
+   v243: /fallback.css. The reader's own sky moved out from over the
+        page and behind it, and is drawn at three depths rather
+        than two: rain was a stripe under a static mask, so a drop
+        blinked at a fixed spot on the screen instead of falling,
+        and a cloud tile as tall as a card repeated down the page.
+
    v242: /fallback.css. The door's ledger is capped when the door
         stacks: at one column `auto 1fr auto` put six hundred
         pixels between a Bangla label and its English gloss, so a
@@ -2139,7 +2145,7 @@
    imports (crumbs, audience, learn progress) and the hub is a
    different page. Without a bump, a returning reader would be
    served the v3 app.js forever and none of it would appear. */
-const VERSION = "v242";
+const VERSION = "v243";
 const SHELL = `shell-${VERSION}`;
 const RUNTIME = `runtime-${VERSION}`;
 

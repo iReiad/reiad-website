@@ -18286,256 +18286,227 @@ German for day, and .tag is what the site has always called
    runs a loop, and a page with no weather on it costs one
    `display: none`.
 
-   ---- it is on the OUTSIDE of the glass ----
+   ---- it is BEHIND the page, and that is a load-bearing -1 ----
 
-   The whole site is lit from behind a window. Rain belongs on the
-   near side of that window, so this sits above the page, above
-   the rail and above the bar, at 300, with `pointer-events:
-   none`. Under the top layer, which is where a dialog and the
-   account popover go, because weather over a decision is weather
-   in the way.
+   It sat at `z-index: 300`, over the page, over the rail and over
+   the bar, on the argument that the site is glass lit from behind
+   a window and rain belongs on the near side of it. The argument
+   is nice and the result was rain across somebody's reading:
+   streaks over a paragraph are the one place a decoration cannot
+   go, because the reader cannot move them and cannot turn them
+   off without leaving the page they are on.
+
+   So it is under everything now, painting on the paper rather
+   than on the glass, and TWO FACTS HOLD THAT UP:
+
+     nothing gives `<html>` a background, so body's `--paper`
+     propagates to the canvas and body paints no background box
+     of its own. A negative z-index child of body is drawn above
+     the canvas and below every word on the page.
+
+     nothing gives body a stacking context. No transform, no
+     filter, no `isolation`, no positioned z-index. Give it one
+     and the -1 is trapped inside it, behind body's own paint.
+
+   Break either and the weather does not misdraw: it VANISHES,
+   on a page that renders perfectly, which is the shape of bug
+   this repository keeps meeting. `.home-aura` is the same
+   arrangement one element down and says the same thing.
+
+   ---- three depths, and that is what makes it weather ----
+
+   It was two layers and one light. Rain was a repeating stripe
+   with a static mask cut across it, so the streaks slid and the
+   holes did not: a drop appeared and disappeared at the same
+   place on the screen for ever, which is hatching that flickers
+   rather than rain. Snow was one dot at two scales.
+
+   Every sky is drawn at three depths now, `wx-far`, `wx-mid` and
+   `wx-near`, on tilings whose periods share no factor, and the
+   near one is always bigger, faster and slightly out of focus.
+   That is the whole of the quality: a parallax with a depth of
+   field in it reads as weather, and one flat sheet of anything
+   reads as a pattern. `wx-sky` is the wash under all three and
+   `wx-light` is where the light comes from.
 
    ---- and both themes are the same weather ----
 
    Every colour is a mix of `--ink`, which flips: rain is a dark
    streak on paper and a bright one at night, from one
    declaration, which is the same argument the card scenes make.
+   The two exceptions name a HUE rather than a colour, because a
+   sky is the one thing on the page that is not about which
+   section a reader is in.
 
    ---- nothing flashes ----
 
    `storm` is the one that would ordinarily be a lightning flash
    and deliberately is not: a bright frame on a dark page is a
    seizure risk and there is no version of it that is worth the
-   risk. It is heavier rain and a slow eight-second bloom, which
-   reads as weather rather than as a strobe.
+   risk. It is heavier, steeper rain and a slow eight-second
+   bloom, which reads as weather rather than as a strobe.
    ============================================================ */
 @layer weather {
   .weather {
-    position: fixed; inset: 0; z-index: 300;
+    position: fixed; inset: 0;
+    /* See the header: this is the whole of "in the background",
+       and two facts elsewhere in the stylesheet hold it up. */
+    z-index: -1;
     pointer-events: none; display: none;
     /* The layer paints and does nothing else: no layout, no size
        and no style can escape it, which is what lets a full
        screen animation run without the rest of the page joining
-       in on every frame. */
+       in on every frame. It is also what clips the overscan
+       every layer below is drawn with. */
     contain: strict;
+
+    /* ---- one knob, and everything visible derived off it ----
+
+       `--wx-a` is how much sky there is, and it is the only
+       number to reach for when this is too much or too little.
+       Every opacity below is a fraction of it, so turning the
+       whole layer down is one edit rather than twenty. */
+    --wx-a: 1;
+
+    /* The three weights anything drawn here is allowed to be. A
+       drop and a flake are INK, a cloud and a fog bank are HAZE,
+       and `--wx-lit` is the light itself, which is white in both
+       themes because a highlight is not a colour. */
+    --wx-ink:  color-mix(in oklab, var(--ink) 56%, transparent);
+    --wx-soft: color-mix(in oklab, var(--ink) 30%, transparent);
+    --wx-haze: color-mix(in oklab, var(--ink) 20%, transparent);
+    --wx-lit:  oklch(100% 0 0 / 0.26);
+    /* THE ONE THING THE SUN TOUCHES, and it is warm rather than
+       white because white is what a light theme is already made
+       of: a highlight at 20 per cent white over 98 per cent paper
+       is nothing at all, and the motes in a shaft of light were
+       invisible on exactly the sky that has a shaft in it. A hue
+       reads on both grounds, which is the same reason the night
+       sky names one. */
+    --wx-warm: oklch(82% 0.12 var(--h-gold) / 0.5);
+
+    /* Per sky, and defaulted here so a rule below sets only what
+       it changes: how fast the weather falls, how hard it blows,
+       and how much of it there is. */
+    --wx-slow: 1;
+    --wx-wind: 1;
+    --wx-wet:  1;
+
+    /* STARS ARE DRAWN WHERE THEY CAN BE SEEN, which is a dark
+       page and nowhere else: there is no colour that reads as a
+       star against paper, so on a light theme a clear night is a
+       still blue wash and no dots. Two selectors below, because
+       "dark" here is an explicit choice OR the system's, and the
+       default attribute is neither. */
+    --wx-star: 0;
   }
+  @media (prefers-color-scheme: dark) {
+    :root:not([data-theme="light"]) .weather { --wx-star: 1; }
+  }
+  :root[data-theme="dark"] .weather { --wx-star: 1; }
+
   html[data-weather] .weather { display: block; }
+
+  /* Every layer is bigger than the window it is clipped to. The
+     precipitation layers are ROTATED into their own slant and
+     the soft ones slide, and both would show a corner at inset
+     0: 24 per cent covers a ten degree tilt and a six per cent
+     roll on any shape of window. */
   .weather > * {
-    position: absolute; inset: -8%;
+    position: absolute; inset: -24%;
     display: block; opacity: 0;
-    transition: opacity 1200ms var(--ease);
+    background-repeat: repeat;
+    background-position: 0 0;
+    transition: opacity 1400ms var(--ease);
   }
+  /* THE WASH AND THE LIGHT ARE PLACED AGAINST THE WINDOW, and
+     they are the two that do not move, which is why they can be.
+     A gradient is positioned inside its own element, so a sun at
+     `87% 4%` of a layer that is 24 per cent bigger than the
+     window on every side is a sun 20 pixels off the right edge
+     and 90 above the top. The moon was there for a while and the
+     screenshot of a clear night showed no moon in it. */
+  :is(.wx-sky, .wx-light) { inset: 0; }
 
-  /* ---- rain, and the drizzle that is the same thing quieter ----
+  /* ============================================================
+     Rain, the drizzle that is the same rain quieter, and the
+     storm that is the same rain harder.
 
-     A repeating gradient tilted off vertical, moved by
-     `background-position` rather than by `translate`, so the
-     streaks cycle seamlessly instead of a sheet sliding past. Two
-     of them at different speeds and sizes is the whole of the
-     depth: the near one is faster, brighter and steeper. */
-  html:is([data-weather="rain"], [data-weather="storm"], [data-weather="drizzle"])
-  :is(.wx-far, .wx-near) {
+     A DROP IS AN ELLIPSE, not a stripe. An explicit-size radial
+     gradient with a soft end gives every drop a head and a tail,
+     tiles exactly, and cannot produce the seam a repeating
+     gradient scaled into a tile produces on every edge.
+
+     THE SLANT IS ON THE LAYER, which is why the fall is
+     `background-position` and not `translate`: a background is
+     positioned in the element's OWN rotated space, so moving it
+     down by exactly one tile height is a drop falling along its
+     own line and a loop with nothing to see at the join.
+     `translate` would move it in the page's space instead, and
+     the tiles would not meet.
+     ============================================================ */
+
+  html:is([data-weather="rain"], [data-weather="drizzle"],
+          [data-weather="storm"]) :is(.wx-far, .wx-mid, .wx-near) {
+    rotate: calc(var(--wx-tilt) * var(--wx-wind));
+    animation: wx-fall calc(var(--wx-rate) * var(--wx-slow)) linear infinite;
+  }
+  html:is([data-weather="rain"], [data-weather="drizzle"],
+          [data-weather="storm"]) .wx-far {
+    --wx-tilt: 5deg; --wx-rate: 1.55s; --wx-fall: 149px;
+    opacity: calc(0.26 * var(--wx-a) * var(--wx-wet));
     background-image:
-      repeating-linear-gradient(99deg,
-        transparent 0 6px,
-        color-mix(in oklab, var(--ink) 62%, transparent) 6px 7px,
-        transparent 7px 19px);
-    background-size: 190px 190px;
+      radial-gradient(0.6px 9px at 38% 26%, var(--wx-soft) 0 34%, transparent 100%);
+    background-size: 53px 149px;
   }
-  /* CUT INTO DROPS, and the two layers are cut on different
-     periods so they never line up. An unmasked repeating gradient
-     is a set of parallel lines running edge to edge, which is
-     hatching rather than rain: what makes it read as falling
-     water is that each streak has a start and an end, and that
-     the ones behind are not the same length as the ones in
-     front. The mask runs ACROSS the streaks, at ninety degrees to
-     them, which is what cuts them rather than fading them. */
-  html:is([data-weather="rain"], [data-weather="storm"], [data-weather="drizzle"])
-  .wx-far {
-    mask-image: repeating-linear-gradient(189deg,
-      #000 0 22px, transparent 27px 58px);
+  html:is([data-weather="rain"], [data-weather="drizzle"],
+          [data-weather="storm"]) .wx-mid {
+    --wx-tilt: 7deg; --wx-rate: 1.1s; --wx-fall: 181px;
+    opacity: calc(0.34 * var(--wx-a) * var(--wx-wet));
+    background-image:
+      radial-gradient(0.8px 13px at 24% 61%, var(--wx-ink) 0 32%, transparent 100%),
+      radial-gradient(0.7px 10px at 73% 18%, var(--wx-soft) 0 34%, transparent 100%);
+    background-size: 71px 181px;
   }
-  html:is([data-weather="rain"], [data-weather="storm"], [data-weather="drizzle"])
-  .wx-near {
-    mask-image: repeating-linear-gradient(189deg,
-      #000 0 34px, transparent 41px 93px);
+  html:is([data-weather="rain"], [data-weather="drizzle"],
+          [data-weather="storm"]) .wx-near {
+    --wx-tilt: 9deg; --wx-rate: 0.82s; --wx-fall: 233px;
+    opacity: calc(0.4 * var(--wx-a) * var(--wx-wet));
+    background-image:
+      radial-gradient(1.6px 19px at 57% 44%, var(--wx-ink) 0 14%, transparent 100%);
+    background-size: 97px 233px;
   }
-  html:is([data-weather="rain"], [data-weather="storm"]) .wx-far {
-    opacity: 0.34; animation: wx-fall 1.05s linear infinite;
-  }
-  html:is([data-weather="rain"], [data-weather="storm"]) .wx-near {
-    opacity: 0.42; animation: wx-fall 0.62s linear infinite;
-    background-size: 260px 260px;
-  }
-  html[data-weather="drizzle"] .wx-far {
-    opacity: 0.17; animation: wx-fall 1.9s linear infinite;
-  }
-  html[data-weather="drizzle"] .wx-near {
-    opacity: 0.24; animation: wx-fall 1.3s linear infinite;
-    background-size: 240px 240px;
-  }
-  html[data-weather="storm"] .wx-near { animation-duration: 0.44s; }
 
-  /* The offset is the gradient's own angle: 99 degrees is nine
-     off vertical, so moving one tile down and a sixth of a tile
-     left is rain falling rather than a pattern scrolling. */
+  /* THE NEAREST OF ANYTHING IS OUT OF FOCUS, and that is half of
+     what makes three layers read as depth rather than as three
+     layers. It is said in the GRADIENT STOP and never in a
+     `filter`: everything here that moves does it by moving a
+     background, so a blur on one of those layers is a full
+     window re-blurred on every frame for a softness a wider
+     falloff gives away for nothing. `fog` is the exception and
+     is allowed its blurs, because a fog bank slides on
+     `translate` and a translated raster is not redrawn. */
+  /* One keyframe for all three, because they differ only in how
+     far they fall: the distance is the layer's own tile height,
+     so the loop is exact whatever the depth. */
   @keyframes wx-fall {
-    to { background-position: -32px 190px; }
+    to { background-position: 0 var(--wx-fall); }
   }
 
-  /* ---- snow, which sways ----
-
-     Two tilings of one dot at different scales. The sway is a
-     second animation on `translate` rather than a second
-     keyframe on the fall, because they have different periods and
-     a snowflake that swayed exactly once per fall would be a
-     wallpaper. */
-  /* THREE TILINGS AT COPRIME SIZES, which is the whole of what
-     makes this snow rather than a dot grid.
-
-     One tiled dot is wallpaper: the eye finds the lattice in
-     about a second and what it is looking at is a pattern. Three
-     tilings whose periods share no factor only line up again
-     after their least common multiple, which at 71, 97 and 113
-     pixels is about three quarters of a million: further than any
-     screen, so there is no lattice to find. The offsets stop the
-     three sitting on top of each other at the origin. */
-  html[data-weather="snow"] :is(.wx-far, .wx-near) {
-    background-image:
-      radial-gradient(circle at 50% 50%,
-        color-mix(in oklab, var(--ink) 78%, transparent) 0 1.6px, transparent 2.6px),
-      radial-gradient(circle at 50% 50%,
-        color-mix(in oklab, var(--ink) 62%, transparent) 0 1.2px, transparent 2px),
-      radial-gradient(circle at 50% 50%,
-        color-mix(in oklab, var(--ink) 88%, transparent) 0 2.1px, transparent 3.2px);
-    background-position: 0 0, 37px 19px, 61px 43px;
-  }
-  html[data-weather="snow"] .wx-far {
-    opacity: 0.38;
-    background-size: 71px 71px, 97px 97px, 113px 113px;
-    animation: wx-drift 13s linear infinite, wx-sway 7s ease-in-out infinite;
-  }
-  html[data-weather="snow"] .wx-near {
-    opacity: 0.5;
-    background-size: 131px 131px, 167px 167px, 193px 193px;
-    animation: wx-drift 8s linear infinite, wx-sway 5s ease-in-out infinite reverse;
-  }
-  /* Every layer of the tiling moves by the SAME distance, so
-     they stay coprime while falling: three different distances
-     would be three different snows. */
-  @keyframes wx-drift {
-    to { background-position: 24px 355px, 61px 374px, 85px 398px; }
-  }
-  @keyframes wx-sway {
-    0%, 100% { translate: -14px 0; }
-    50% { translate: 14px 0; }
+  html[data-weather="drizzle"] .weather { --wx-slow: 2.2; --wx-wet: 0.5; }
+  html[data-weather="storm"] .weather {
+    --wx-slow: 0.6; --wx-wet: 1.25; --wx-wind: 1.9;
   }
 
-  /* ---- fog, which is two slow clouds and no edges ---- */
-  html[data-weather="fog"] .wx-far {
-    opacity: 0.5;
+  /* The room gets darker under rain and darker again under a
+     storm, from the top, which is where the light was coming
+     from. */
+  html:is([data-weather="rain"], [data-weather="drizzle"],
+          [data-weather="storm"]) .wx-sky {
+    opacity: calc(0.55 * var(--wx-a) * var(--wx-wet));
     background-image:
-      radial-gradient(62% 44% at 22% 62%,
-        color-mix(in oklab, var(--ink) 12%, transparent) 0%, transparent 72%),
-      radial-gradient(54% 38% at 78% 34%,
-        color-mix(in oklab, var(--ink) 9%, transparent) 0%, transparent 70%);
-    filter: blur(22px);
-    animation: wx-roll 44s ease-in-out infinite;
-  }
-  html[data-weather="fog"] .wx-near {
-    opacity: 0.34;
-    background-image:
-      radial-gradient(70% 40% at 60% 82%,
-        color-mix(in oklab, var(--ink) 11%, transparent) 0%, transparent 74%);
-    filter: blur(30px);
-    animation: wx-roll 62s ease-in-out infinite reverse;
-  }
-  @keyframes wx-roll {
-    0%, 100% { translate: -5% 0; }
-    50% { translate: 5% 1%; }
-  }
-
-  /* ---- overcast: the light going out of the room ---- */
-  html[data-weather="cloud"] .wx-far {
-    opacity: 0.62;
-    background-image:
-      radial-gradient(90% 60% at 26% -14%,
-        color-mix(in oklab, var(--ink) 15%, transparent) 0%, transparent 78%),
-      radial-gradient(70% 46% at 82% -8%,
-        color-mix(in oklab, var(--ink) 11%, transparent) 0%, transparent 76%);
-    filter: blur(26px);
-    animation: wx-roll 58s ease-in-out infinite;
-  }
-
-  /* ---- a clear day: one shaft, breathing ---- */
-  html[data-weather="clear"] .wx-light {
-    opacity: 0.5;
-    background-image:
-      linear-gradient(196deg, transparent 34%,
-        oklch(100% 0 0 / 0.1) 46%, transparent 60%),
-      radial-gradient(46% 34% at 88% 4%,
-        color-mix(in oklab, var(--gold) 26%, transparent) 0%, transparent 72%);
-    animation: wx-breathe 17s ease-in-out infinite;
-  }
-  @keyframes wx-breathe {
-    0%, 100% { opacity: 0.34; }
-    50% { opacity: 0.62; }
-  }
-
-  /* ---- a clear night: stars, and only where they can be seen ----
-
-     Under a light theme this draws nothing, on purpose. Stars on
-     white paper are dirt: there is no colour that reads as a star
-     against a page, so the honest answer is that a reader on a
-     light theme at night gets a still, dark-blue wash and no
-     dots. */
-  /* The same three-tiling trick as the snow, and it matters more
-     here: a constellation is the one thing an eye is best in the
-     world at spotting a lattice in. */
-  html[data-weather="night"] .wx-far {
-    opacity: 0.7;
-    background-image:
-      radial-gradient(circle at 50% 50%,
-        color-mix(in oklab, var(--ink) 74%, transparent) 0 1.2px, transparent 2px),
-      radial-gradient(circle at 50% 50%,
-        color-mix(in oklab, var(--ink) 52%, transparent) 0 0.9px, transparent 1.6px),
-      radial-gradient(circle at 50% 50%,
-        color-mix(in oklab, var(--ink) 92%, transparent) 0 1.7px, transparent 2.8px);
-    background-size: 89px 89px, 127px 127px, 199px 199px;
-    background-position: 0 0, 41px 23px, 97px 61px;
-    animation: wx-twinkle 9s ease-in-out infinite;
-  }
-  html[data-weather="night"] .wx-near {
-    opacity: 0.42;
-    background-image:
-      radial-gradient(circle at 50% 50%,
-        color-mix(in oklab, var(--ink) 58%, transparent) 0 1px, transparent 1.8px),
-      radial-gradient(circle at 50% 50%,
-        color-mix(in oklab, var(--ink) 40%, transparent) 0 0.8px, transparent 1.4px);
-    background-size: 149px 149px, 211px 211px;
-    background-position: 29px 71px, 113px 17px;
-    animation: wx-twinkle 13s ease-in-out infinite reverse;
-  }
-  html[data-weather="night"] .wx-light {
-    opacity: 0.5;
-    background-image:
-      radial-gradient(70% 50% at 50% -14%,
-        /* THE SKY IS NOT THE PAGE'S ACCENT. Every other colour on
-           this site reads `var(--accent)` so that a German page is
-           blue and a kitchen page is rose, and `check-accents.ts`
-           is right to fail a rule naming one of the seven. A night
-           sky is the one thing on the page that is not about which
-           section you are in: it is blue over the money school and
-           blue over the kitchen. So it is built from the hue
-           directly, which is what `--h-blue` is for. */
-        oklch(58% 0.07 var(--h-blue) / 0.16) 0%, transparent 76%);
-  }
-  html:not([data-theme="dark"]) [data-weather="night"] :is(.wx-far, .wx-near) {
-    animation: none;
-  }
-  @keyframes wx-twinkle {
-    0%, 100% { opacity: 0.22; }
-    50% { opacity: 0.6; }
+      linear-gradient(180deg, var(--wx-haze) 0%, transparent 44%),
+      radial-gradient(120% 62% at 62% -6%, var(--wx-haze) 0%, transparent 72%);
   }
 
   /* ---- the storm's bloom, which is not a flash ---- */
@@ -18543,13 +18514,370 @@ German for day, and .tag is what the site has always called
     opacity: 1;
     background-image:
       radial-gradient(64% 44% at 70% -6%,
-        color-mix(in oklab, var(--ink) 14%, transparent) 0%, transparent 74%);
+        color-mix(in oklab, var(--ink) 16%, transparent) 0%, transparent 74%);
     animation: wx-bloom 8s ease-in-out infinite;
   }
   @keyframes wx-bloom {
     0%, 72%, 100% { opacity: 0.06; }
-    80% { opacity: 0.4; }
-    88% { opacity: 0.12; }
+    80% { opacity: 0.34; }
+    88% { opacity: 0.1; }
+  }
+
+  /* ============================================================
+     Snow, at three depths, which is the one weather where the
+     depth of field does most of the work.
+
+     TILINGS WHOSE PERIODS SHARE NO FACTOR. One tiled dot is
+     wallpaper: the eye finds the lattice in about a second and
+     what it is looking at is a pattern. Three of them line up
+     again only after their least common multiple, which here is
+     further than any screen, and two flakes per tile at
+     unrelated places inside it break the grid a reader would
+     otherwise still find in one layer on its own.
+
+     The sway is a second animation on `translate` rather than a
+     second keyframe on the fall, because they have different
+     periods: a flake that swayed exactly once per fall would be
+     wallpaper again.
+     ============================================================ */
+  html[data-weather="snow"] .wx-far {
+    --wx-fall: 173px;
+    opacity: calc(0.44 * var(--wx-a));
+    background-image:
+      radial-gradient(circle 1.1px at 31% 22%, var(--wx-soft) 0 42%, transparent 100%),
+      radial-gradient(circle 0.9px at 74% 67%, var(--wx-soft) 0 40%, transparent 100%),
+      radial-gradient(circle 1.3px at 12% 81%, var(--wx-soft) 0 38%, transparent 100%),
+      radial-gradient(circle 0.8px at 58% 39%, var(--wx-soft) 0 42%, transparent 100%);
+    background-size: 127px 173px;
+    animation: wx-fall 9.5s linear infinite, wx-sway 11s ease-in-out infinite;
+  }
+  html[data-weather="snow"] .wx-mid {
+    --wx-fall: 211px;
+    opacity: calc(0.5 * var(--wx-a));
+    background-image:
+      radial-gradient(circle 1.9px at 58% 34%, var(--wx-soft) 0 26%, transparent 100%),
+      radial-gradient(circle 1.5px at 17% 78%, var(--wx-soft) 0 26%, transparent 100%),
+      radial-gradient(circle 2.2px at 83% 12%, var(--wx-soft) 0 22%, transparent 100%);
+    background-size: 163px 211px;
+    animation: wx-fall 6.6s linear infinite, wx-sway 7.5s ease-in-out infinite reverse;
+  }
+  html[data-weather="snow"] .wx-near {
+    --wx-fall: 251px;
+    opacity: calc(0.46 * var(--wx-a));
+    background-image:
+      radial-gradient(circle 3.2px at 44% 63%, var(--wx-ink) 0 12%, transparent 100%),
+      radial-gradient(circle 2.6px at 86% 19%, var(--wx-ink) 0 12%, transparent 100%),
+      radial-gradient(circle 3.8px at 21% 8%, var(--wx-ink) 0 10%, transparent 100%);
+    background-size: 199px 251px;
+    animation: wx-fall 4.4s linear infinite, wx-sway 5.2s ease-in-out infinite;
+  }
+  @keyframes wx-sway {
+    0%, 100% { translate: -16px 0; }
+    50% { translate: 16px 0; }
+  }
+  /* Snow light is cold and comes off the ground as much as out of
+     the sky, so the wash is bottom-up as well as top-down. */
+  html[data-weather="snow"] .wx-sky {
+    opacity: calc(0.72 * var(--wx-a));
+    background-image:
+      radial-gradient(120% 60% at 50% 108%,
+        oklch(72% 0.06 var(--h-teal) / 0.17) 0%, transparent 72%),
+      radial-gradient(130% 50% at 50% -12%,
+        oklch(70% 0.05 var(--h-teal) / 0.15) 0%, transparent 74%);
+  }
+
+  /* ============================================================
+     Fog, which is three banks and no edges.
+
+     They ROLL rather than fall, on `translate`, which is the one
+     transform a compositor can do without repainting anything:
+     a 30px blur across the whole window on every frame would be
+     the most expensive thing on the page, and it is the one
+     effect that does not need a repaint to move.
+     ============================================================ */
+  html[data-weather="fog"] :is(.wx-far, .wx-mid, .wx-near) {
+    animation: wx-roll var(--wx-rate) ease-in-out infinite;
+  }
+  html[data-weather="fog"] .wx-far {
+    --wx-rate: 47s; --wx-roll: 5%; --wx-rise: 0;
+    opacity: calc(0.72 * var(--wx-a));
+    background-image:
+      radial-gradient(52% 34% at 19% 58%, var(--wx-haze) 0%, transparent 72%),
+      radial-gradient(46% 28% at 71% 33%, var(--wx-haze) 0%, transparent 70%),
+      radial-gradient(38% 24% at 46% 81%, var(--wx-haze) 0%, transparent 70%);
+    filter: blur(22px);
+  }
+  html[data-weather="fog"] .wx-mid {
+    --wx-rate: 63s; --wx-roll: 7%; --wx-rise: -2%;
+    opacity: calc(0.56 * var(--wx-a));
+    background-image:
+      radial-gradient(64% 30% at 62% 74%, var(--wx-haze) 0%, transparent 74%),
+      radial-gradient(44% 22% at 12% 26%, var(--wx-haze) 0%, transparent 72%);
+    filter: blur(30px);
+    animation-direction: reverse;
+  }
+  html[data-weather="fog"] .wx-near {
+    --wx-rate: 38s; --wx-roll: 9%; --wx-rise: 3%;
+    opacity: calc(0.44 * var(--wx-a));
+    background-image:
+      radial-gradient(78% 26% at 44% 96%, var(--wx-haze) 0%, transparent 76%);
+    filter: blur(38px);
+  }
+  @keyframes wx-roll {
+    0%, 100% { translate: calc(-1 * var(--wx-roll)) 0; }
+    50% { translate: var(--wx-roll) var(--wx-rise); }
+  }
+  html[data-weather="fog"] .wx-sky {
+    opacity: calc(0.6 * var(--wx-a));
+    background-image: linear-gradient(180deg,
+      var(--wx-haze) 0%, transparent 34%, transparent 76%, var(--wx-haze) 100%);
+  }
+
+  /* ============================================================
+     Overcast: the light going out of the room, and two banks of
+     cloud crossing it.
+
+     A CLOUD IS FOUR ELLIPSES WITH A FLAT BOTTOM, tiled, which is
+     what a cumulus actually is and what a single soft blob is
+     not. Two tiles at unrelated widths, each holding two clouds,
+     is a sky whose repeat is off the side of any window.
+
+     They blow sideways by exactly one tile width, so the loop
+     has no join in it, and the two widths mean the pair never
+     comes back to the same arrangement.
+     ============================================================ */
+  html:is([data-weather="cloud"], [data-weather="clear"])
+  :is(.wx-far, .wx-mid) {
+    animation: wx-blow calc(var(--wx-rate) * var(--wx-slow)) linear infinite;
+  }
+  @keyframes wx-blow {
+    to { background-position: var(--wx-blow) 0; }
+  }
+  /* EVERY CLOUD TILE IS AS TALL AS THE LAYER, which is what the
+     `100%` in each `background-size` below is doing and the one
+     thing to get right here. A tile 620px tall REPEATS DOWN THE
+     PAGE, so a bank of cloud drawn in the top quarter of it is
+     drawn again under the reader's feet and again below that. A
+     sky has one of everything. Only the width tiles, and the blow
+     is exactly one width, so the loop has no join in it. */
+
+  html[data-weather="cloud"] .wx-far {
+    --wx-rate: 260s; --wx-blow: 1870px;
+    opacity: calc(0.62 * var(--wx-a));
+    background-image:
+      radial-gradient(122px 68px at 6% 24%, var(--wx-haze) 0 10%, transparent 100%),
+      radial-gradient(158px 86px at 13% 20%, var(--wx-haze) 0 9%, transparent 100%),
+      radial-gradient(104px 60px at 20% 25%, var(--wx-haze) 0 11%, transparent 100%),
+      radial-gradient(116px 62px at 41% 19%, var(--wx-haze) 0 10%, transparent 100%),
+      radial-gradient(150px 80px at 48% 22%, var(--wx-haze) 0 9%, transparent 100%),
+      radial-gradient(98px 56px at 55% 20%, var(--wx-haze) 0 11%, transparent 100%),
+      radial-gradient(130px 72px at 76% 27%, var(--wx-haze) 0 10%, transparent 100%),
+      radial-gradient(102px 58px at 83% 24%, var(--wx-haze) 0 11%, transparent 100%),
+      radial-gradient(146px 78px at 70% 25%, var(--wx-haze) 0 9%, transparent 100%);
+    background-size: 1870px 100%;
+  }
+  html[data-weather="cloud"] .wx-mid {
+    --wx-rate: 150s; --wx-blow: 1450px;
+    opacity: calc(0.46 * var(--wx-a));
+    background-image:
+      radial-gradient(154px 82px at 25% 35%, var(--wx-haze) 0 9%, transparent 100%),
+      radial-gradient(114px 62px at 33% 38%, var(--wx-haze) 0 11%, transparent 100%),
+      radial-gradient(126px 68px at 17% 37%, var(--wx-haze) 0 10%, transparent 100%),
+      radial-gradient(140px 74px at 69% 32%, var(--wx-haze) 0 10%, transparent 100%),
+      radial-gradient(106px 58px at 61% 34%, var(--wx-haze) 0 11%, transparent 100%),
+      radial-gradient(162px 86px at 76% 33%, var(--wx-haze) 0 9%, transparent 100%);
+    background-size: 1450px 100%;
+  }
+  html[data-weather="cloud"] .wx-sky {
+    opacity: calc(0.7 * var(--wx-a));
+    background-image:
+      linear-gradient(180deg, var(--wx-haze) 0%, transparent 52%);
+  }
+  /* The break in it, which is the only thing that says the sun is
+     still up there. */
+  html[data-weather="cloud"] .wx-light {
+    opacity: calc(0.5 * var(--wx-a));
+    background-image:
+      radial-gradient(44% 30% at 74% 8%, var(--wx-lit) 0%, transparent 74%);
+    animation: wx-breathe 23s ease-in-out infinite;
+  }
+
+  /* ============================================================
+     A clear day, which is the one sky that is allowed to be
+     cheerful: the sun in the corner, two banks of cloud crossing
+     under it, and the motes a shaft of light picks up.
+
+     THE SKY NAMES A HUE, NEVER A COLOUR. Every other rule on
+     this site reads `var(--accent)` so that a German page is
+     blue and a kitchen page is rose, and `check-accents.ts` is
+     right to fail a rule naming one of the seven. A sky is the
+     one thing on the page that is not about which section a
+     reader is in: it is blue over the money school and blue over
+     the kitchen, so it is built from `--h-blue` and `--h-gold`
+     directly.
+     ============================================================ */
+  html[data-weather="clear"] .wx-sky {
+    opacity: calc(0.85 * var(--wx-a));
+    background-image:
+      radial-gradient(130% 62% at 82% -16%,
+        oklch(78% 0.14 var(--h-gold) / 0.26) 0%, transparent 58%),
+      radial-gradient(160% 62% at 26% -12%,
+        oklch(62% 0.12 var(--h-blue) / 0.3) 0%, transparent 66%);
+  }
+  /* A CLOUD ON A CLEAR DAY IS WHITE, and it is the wash under it
+     that makes that possible. Painted in `--wx-haze` they were
+     grey smudges on cream: a cloud is only white if there is a
+     sky behind it, so the blue above is what these are drawn
+     against and both are the top of the window rather than all
+     of it. Overcast is the other way round and rightly so:
+     there is no sky in it, so its banks are haze.
+
+     A CLOUD IS A CLUSTER OF PUFFS and never one wide ellipse: a
+     220 by 44 gradient is a smear across the page whatever its
+     falloff, and the first draft of this was three of them.
+     Cirrus is the one cloud that really is a streak, which is
+     why these are and the cumulus under them are not. */
+  html[data-weather="clear"] .wx-far {
+    --wx-rate: 290s; --wx-blow: 1790px;
+    opacity: calc(0.6 * var(--wx-a));
+    background-image:
+      radial-gradient(230px 20px at 18% 21%, var(--wx-lit) 0 8%, transparent 100%),
+      radial-gradient(176px 16px at 57% 26%, var(--wx-lit) 0 9%, transparent 100%),
+      radial-gradient(206px 18px at 84% 18%, var(--wx-lit) 0 9%, transparent 100%);
+    background-size: 1790px 100%;
+  }
+  html[data-weather="clear"] .wx-mid {
+    --wx-rate: 180s; --wx-blow: 1390px;
+    opacity: calc(0.8 * var(--wx-a));
+    background-image:
+      radial-gradient(120px 66px at 18% 27%, var(--wx-lit) 0 10%, transparent 100%),
+      radial-gradient(156px 84px at 25% 24%, var(--wx-lit) 0 9%, transparent 100%),
+      radial-gradient(100px 56px at 32% 28%, var(--wx-lit) 0 11%, transparent 100%),
+      radial-gradient(112px 62px at 66% 21%, var(--wx-lit) 0 10%, transparent 100%),
+      radial-gradient(142px 76px at 73% 23%, var(--wx-lit) 0 9%, transparent 100%),
+      radial-gradient(96px 54px at 80% 26%, var(--wx-lit) 0 11%, transparent 100%);
+    background-size: 1390px 100%;
+  }
+  /* THE MOTES, and they are the fun of it: what a shaft of light
+     picks up in a room. They RISE, slowly, because warm air does
+     and because everything else on this layer falls. */
+  html[data-weather="clear"] .wx-near {
+    --wx-fall: -362px;
+    opacity: calc(0.42 * var(--wx-a));
+    background-image:
+      radial-gradient(circle 2px at 13% 21%, var(--wx-warm) 0 16%, transparent 100%),
+      radial-gradient(circle 1.4px at 61% 8%, var(--wx-warm) 0 18%, transparent 100%),
+      radial-gradient(circle 2.6px at 38% 47%, var(--wx-warm) 0 12%, transparent 100%),
+      radial-gradient(circle 1.7px at 84% 63%, var(--wx-warm) 0 16%, transparent 100%),
+      radial-gradient(circle 2.2px at 7% 79%, var(--wx-warm) 0 14%, transparent 100%),
+      radial-gradient(circle 1.2px at 52% 88%, var(--wx-warm) 0 18%, transparent 100%);
+    background-size: 431px 362px;
+    animation: wx-fall 26s linear infinite, wx-sway 13s ease-in-out infinite;
+  }
+  /* The sun: a bloom in the corner and one shaft leaning off it,
+     breathing on a period long enough that a reader never sees it
+     start. */
+  html[data-weather="clear"] .wx-light {
+    opacity: calc(0.6 * var(--wx-a));
+    background-image:
+      linear-gradient(196deg, transparent 30%,
+        oklch(88% 0.08 var(--h-gold) / 0.12) 46%, transparent 62%),
+      radial-gradient(circle 48px at 87% 4%,
+        oklch(88% 0.16 var(--h-gold) / 0.55) 0 34%, transparent 100%),
+      radial-gradient(52% 40% at 87% 4%,
+        oklch(84% 0.12 var(--h-gold) / 0.16) 0%, transparent 74%);
+    animation: wx-breathe 17s ease-in-out infinite;
+  }
+  @keyframes wx-breathe {
+    0%, 100% { opacity: calc(0.36 * var(--wx-a)); }
+    50% { opacity: calc(0.66 * var(--wx-a)); }
+  }
+
+  /* ============================================================
+     A clear night: the wash, the stars, the moon, and one thing
+     that happens.
+
+     Everything but the wash is multiplied by `--wx-star`, which
+     is nought on a light theme: see the token's own note. A
+     reader reading white paper at midnight gets the blue and
+     nothing else, because dots on paper are dirt.
+     ============================================================ */
+  html[data-weather="night"] .wx-sky {
+    opacity: calc(0.85 * var(--wx-a));
+    background-image:
+      radial-gradient(120% 78% at 50% -18%,
+        oklch(54% 0.1 var(--h-blue) / 0.42) 0%, transparent 82%);
+  }
+  html[data-weather="night"] .wx-far {
+    opacity: calc(0.6 * var(--wx-a) * var(--wx-star));
+    background-image:
+      radial-gradient(circle 1.1px at 23% 31%, var(--wx-ink) 0 40%, transparent 100%),
+      radial-gradient(circle 0.8px at 67% 12%, var(--wx-soft) 0 42%, transparent 100%),
+      radial-gradient(circle 0.9px at 84% 73%, var(--wx-soft) 0 40%, transparent 100%);
+    background-size: 89px 127px;
+    animation: wx-twinkle 9s ease-in-out infinite;
+  }
+  html[data-weather="night"] .wx-mid {
+    opacity: calc(0.5 * var(--wx-a) * var(--wx-star));
+    background-image:
+      radial-gradient(circle 1.4px at 41% 62%, var(--wx-ink) 0 38%, transparent 100%),
+      radial-gradient(circle 1px at 88% 27%, var(--wx-soft) 0 40%, transparent 100%);
+    background-size: 149px 211px;
+    animation: wx-twinkle 13s ease-in-out infinite reverse;
+  }
+  /* The few bright ones, which do not twinkle at the same rate as
+     everything behind them and are a shade out of focus. */
+  html[data-weather="night"] .wx-near {
+    opacity: calc(0.44 * var(--wx-a) * var(--wx-star));
+    background-image:
+      radial-gradient(circle 2.6px at 58% 44%, var(--wx-ink) 0 16%, transparent 100%);
+    background-size: 271px 313px;
+    animation: wx-twinkle 21s ease-in-out infinite;
+  }
+  @keyframes wx-twinkle {
+    0%, 100% { opacity: calc(0.24 * var(--wx-a) * var(--wx-star)); }
+    50% { opacity: calc(0.62 * var(--wx-a) * var(--wx-star)); }
+  }
+  /* The moon, which does not move, and the one thing on this
+     whole layer that HAPPENS rather than repeats.
+
+     The shooting star is a pseudo-element rather than a fourth
+     background on this one, because it has to fade in and out
+     and the moon must not: opacity belongs to an element, and a
+     background layer cannot have its own. It crosses for a
+     second and a half out of every twenty-three, on `translate`
+     and `opacity`, which are the two a compositor animates for
+     nothing. */
+  html[data-weather="night"] .wx-light {
+    opacity: calc(0.7 * var(--wx-a) * var(--wx-star));
+    background-image:
+      radial-gradient(circle 21px at 85% 8%,
+        oklch(97% 0.02 var(--h-blue) / 0.62) 0 74%, transparent 100%),
+      radial-gradient(circle 66px at 85% 8%,
+        oklch(92% 0.05 var(--h-blue) / 0.16) 0 10%, transparent 100%),
+      radial-gradient(46% 34% at 85% 8%,
+        oklch(84% 0.06 var(--h-blue) / 0.1) 0%, transparent 76%);
+  }
+  html[data-weather="night"] .wx-light::after {
+    content: ""; position: absolute; inset: 0;
+    opacity: 0;
+    background-repeat: no-repeat;
+    background-position: 7% 5%;
+    background-size: 200px 5px;
+    background-image: radial-gradient(96px 1.1px at 62% 50%,
+      oklch(100% 0 0 / 0.55) 0 24%, transparent 100%);
+    rotate: 21deg;
+    animation: wx-shoot 23s linear infinite;
+  }
+  @keyframes wx-shoot {
+    0%, 92% { opacity: 0; translate: 0 0; }
+    93% { opacity: 0.9; }
+    99% { opacity: 0; }
+    /* The slant of the streak and the line it travels have to be
+       the same angle on every shape of window, so both halves of
+       the distance are in `vw`: 0.384 is the tangent of the 21
+       degrees it is rotated by. */
+    100% { opacity: 0; translate: 46vw 17.7vw; }
   }
 
   /* A reader who asked for less motion keeps the sky and loses
@@ -18557,7 +18885,18 @@ German for day, and .tag is what the site has always called
      the right one, because what the layer is FOR is knowing it is
      raining rather than watching rain. */
   @media (prefers-reduced-motion: reduce) {
-    .weather > * { animation: none !important; transition: none; }
+    .weather > *, .wx-light::after { animation: none !important; transition: none; }
+  }
+
+  /* AND A READER WHO ASKED FOR CONTRAST HAS ASKED FOR THE
+     OPPOSITE OF THIS. It is behind the words now, so anything
+     drawn here is between the paper and the prose: the honest
+     answer to "give me more contrast" or "give me less of the
+     see-through" is no sky at all. Same specificity as the rule
+     that turns it on, and after it, so neither needs an
+     `!important`. */
+  @media (prefers-contrast: more), (prefers-reduced-transparency: reduce) {
+    html[data-weather] .weather { display: none; }
   }
 }
 
