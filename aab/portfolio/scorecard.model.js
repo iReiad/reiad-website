@@ -89,23 +89,12 @@ export function shuffle(xs, rand) {
   return xs;
 }
 
-/* ------------------------------------------------------------
-   2 · Features
-
-   Every categorical level becomes a binary column, except the
-   levels that never occur: the documentation lists a purpose of
-   "vacation" and a personal status of "female, single", and the
-   data contains neither. A column of zeros is a parameter with
-   no evidence behind it, so they are dropped, and the page says
-   which ones and why.
-
-   The logistic model additionally drops one level per attribute
-   as its reference, because with every level present the design
-   matrix is singular: the dummies of an attribute sum to one,
-   which is the intercept. Trees have no such problem and are
-   given the full set. Same information to both models, coded the
-   way each of them needs it, which is what an encoder is for.
-   ------------------------------------------------------------ */
+/* 2 · Features. Every categorical level becomes a binary column
+   except the levels that never occur, which are a parameter with
+   no evidence behind them. The logistic model ALSO drops one
+   level per attribute as its reference: with every level present
+   the dummies sum to one, which is the intercept, and the design
+   matrix is singular. Trees are given the full set. */
 
 export const TARGET = SCHEMA.length;
 
@@ -213,26 +202,14 @@ export function fitScaler(X) {
 export const applyScaler = (X, { mu, sd }) =>
   X.map((row) => row.map((v, j) => (v - mu[j]) / sd[j]));
 
-/* ------------------------------------------------------------
-   5 · Weight of evidence and information value
-
-   The two statistics a credit analyst reaches for before any
-   model is fitted. For a group of applicants,
+/* 5 · Weight of evidence and information value.
 
        WOE = ln( share of goods / share of bads )
        IV  = Σ (share of goods − share of bads) · WOE
 
-   Information value is what gets an attribute into a scorecard
-   or thrown out of it, and the industry's rule of thumb has been
-   quoted the same way for thirty years: under 0.02 is useless,
-   0.1 is weak, 0.3 is medium, above 0.5 is strong and worth
-   checking for leakage, because an attribute that good usually
-   turns out to contain the answer.
-
-   Both are computed on the TRAINING rows only. An information
-   value computed on everything is a small leak, and it is the
-   leak that decides which attributes go into the model.
-   ------------------------------------------------------------ */
+   Both are computed on the TRAINING rows only: an information
+   value computed on everything is the leak that decides which
+   attributes go into the model. */
 
 /** Quantile cut points for a numeric column, from the training rows. */
 export function binEdges(values, bins = 5) {
@@ -253,13 +230,9 @@ export const binOf = (v, edges) => {
 
 /**
  * Weight of evidence per group of one attribute, plus its
- * information value. `groups` is an array of row arrays.
- *
- * The 0.5 in the numerator is the Haldane-Anscombe correction: a
- * group with no defaults at all has an infinite weight of
- * evidence, which is not a finding, it is a small sample. Adding
- * a half to each cell is the standard fix and it is what stops
- * one empty cell taking the information value to infinity.
+ * information value. The 0.5 is the Haldane-Anscombe correction:
+ * without it one empty cell takes the information value to
+ * infinity.
  */
 export function woeTable(groups, { correction = 0.5 } = {}) {
   const totalBad = sum(groups.map((g) => g.filter((r) => r[TARGET] === 1).length));
@@ -311,24 +284,14 @@ export function informationValues(trainRows, { bins = 5, schema = SCHEMA } = {})
 export const ivBand = (iv) =>
   iv < 0.02 ? "no use" : iv < 0.1 ? "weak" : iv < 0.3 ? "medium" : iv < 0.5 ? "strong" : "suspiciously strong";
 
-/* ------------------------------------------------------------
-   6 · Logistic regression, by iteratively reweighted least
-       squares
-
-   Newton's method on the penalised log-likelihood. Each step
-   solves (XᵀWX + 2λI) β = XᵀW z for the working response z, by
-   Gaussian elimination with partial pivoting, which at fifty
-   columns is instant and exact enough to be worth preferring to
-   anything iterative.
-
-   The ridge penalty is not decoration. With 700 training rows
-   and a categorical level that happens to contain four
-   applicants who all defaulted, the unpenalised likelihood is
-   maximised by sending that coefficient to infinity: complete
-   separation. The fit does not fail, it just returns a number
-   with no meaning and an enormous standard error. A small ridge
-   makes the problem strictly convex and the answer finite.
-   ------------------------------------------------------------ */
+/* 6 · Logistic regression by IRLS: Newton's method on the
+   penalised log-likelihood, each step solving
+   (XᵀWX + 2λI) β = XᵀW z by Gaussian elimination with partial
+   pivoting.
+   THE RIDGE PENALTY IS NOT DECORATION: under complete separation
+   the unpenalised likelihood is maximised by sending a
+   coefficient to infinity, and the fit does not fail, it returns
+   a meaningless number with an enormous standard error. */
 
 /** Solve A x = b by Gaussian elimination with partial pivoting. */
 export function solve(A, b) {
@@ -450,18 +413,10 @@ export function fitLogistic(X, y, { ridge = 1, maxIter = 40, tol = 1e-9 } = {}) 
   };
 }
 
-/* ------------------------------------------------------------
-   7 · Gradient boosting
-
-   Second-order boosting on the logistic loss, on pre-binned
-   features. The objective at each step is the quadratic
-   approximation to the loss plus an L2 penalty on the leaf
-   values, whose exact minimiser over a leaf is −G/(H+λ) and
-   whose value is −½G²/(H+λ). Subtracting the parent's value
-   from the children's gives the split gain used below. That is
-   the whole of XGBoost's split rule, and it is where the
-   library's speed comes from rather than any of its statistics.
-   ------------------------------------------------------------ */
+/* 7 · Gradient boosting: second-order boosting on the logistic
+   loss over pre-binned features. The exact minimiser over a leaf
+   is −G/(H+λ) with value −½G²/(H+λ), and subtracting the
+   parent's from the children's gives the split gain below. */
 
 /** Pre-bin every column, on the training rows, exactly once. */
 export function fitBinner(X, maxBins = 32) {
@@ -484,19 +439,13 @@ export const applyBinner = (X, edges) =>
   X.map((row) => row.map((v, j) => binOf(v, edges[j])));
 
 /**
- * One regression tree on the gradients and hessians.
+ * One regression tree on the gradients and hessians, grown
+ * depth-wise.
  *
- * Depth-wise growth, which is XGBoost's default and the easier
- * of the two to reason about while a reader watches the depth
- * slider move.
- *
- * Written on flat typed arrays rather than arrays of objects,
- * because this is the only hot loop on the page: two hundred
- * trees over seven hundred applicants and sixty columns, refitted
- * on every slider move, and again five times over for the
- * cross-validation. The readable version with map and filter in
- * the inner loop was forty times slower, which is the difference
- * between a page that responds and one that does not.
+ * FLAT TYPED ARRAYS rather than arrays of objects: this is the
+ * only hot loop on the page, refitted on every slider move and
+ * five times over for the cross-validation, and the readable
+ * version with map and filter inside was forty times slower.
  */
 function growTree(binned, nBinsPer, n, p, grad, hess, rowIdx, {
   maxDepth, minChildWeight, lambda, gamma, colsample, rand,
@@ -602,10 +551,10 @@ export const GBM_DEFAULTS = {
  * @param {number[]}   y 0/1
  * @param {object} opts  GBM_DEFAULTS shape
  * @param {object} watch optional {X, y} to score each iteration,
- *        which is how the learning curve is drawn. It must be a
- *        validation slice of the TRAINING data: scoring the test
- *        set every iteration and then choosing the number of
- *        trees from it is how a test set stops being one.
+ *        which draws the learning curve. It MUST be a validation
+ *        slice of the TRAINING data: scoring the test set every
+ *        iteration and choosing the tree count from it is how a
+ *        test set stops being one.
  */
 export function fitGbm(X, y, opts = {}, watch = null) {
   const o = { ...GBM_DEFAULTS, ...opts };
@@ -749,14 +698,10 @@ export const logLoss = (y, p) =>
 export const brier = (y, p) => mean(y.map((yi, i) => (p[i] - yi) ** 2));
 
 /**
- * The ROC curve, and the area under it.
- *
- * The area is computed two ways on purpose. The trapezoid rule
- * over the curve is what gets drawn; the Mann-Whitney statistic,
- * the share of (bad, good) pairs the model ranks correctly with
- * ties counted as half, is what gets reported. They are the same
- * number, and the test file checks that they agree, which is a
- * real check on the curve rather than a restatement of it.
+ * The ROC curve and the area under it, computed TWO ways on
+ * purpose: the trapezoid rule is drawn, the Mann-Whitney
+ * statistic is reported, and the test file checks they agree,
+ * which is a real check on the curve.
  */
 export function roc(y, score) {
   const pairs = y.map((yi, i) => ({ y: yi, s: score[i] })).sort((a, b) => b.s - a.s);
@@ -826,18 +771,11 @@ export function aucStandardError(auc, nPos, nNeg) {
 
 /**
  * DeLong's test for two AUCs measured on the SAME applicants.
- *
- * Two models scored on one test set are not two independent
- * measurements: they agree about the easy cases and differ on
- * the hard ones, so the difference between their AUCs is much
- * better determined than either AUC is. Comparing them with
- * independent standard errors throws that away and finds
- * nothing significant, ever.
- *
- * Implemented the direct way, over all (bad, good) pairs, rather
- * than through the rank-based shortcut: a test set of a few
- * hundred rows makes that a few tens of thousands of operations,
- * and the direct form is the one a reader can check.
+ * Two models scored on one test set are not independent
+ * measurements, so comparing them with independent standard
+ * errors finds nothing significant, ever. Implemented over all
+ * (bad, good) pairs rather than through the rank shortcut,
+ * because at this size the direct form is checkable.
  */
 export function delong(y, scoreA, scoreB) {
   const posIdx = y.map((v, i) => [v, i]).filter(([v]) => v === 1).map(([, i]) => i);
@@ -1000,23 +938,16 @@ export function liftTable(y, p, bands = 10) {
   });
 }
 
-/* ------------------------------------------------------------
-   9 · Scorecard points
-
-   A fitted logistic model is not yet a scorecard. Lenders quote
-   scores on a scale where the odds double every so many points,
-   because it makes a cut-off something a credit committee can
-   argue about:
+/* 9 · Scorecard points, on a scale where the odds double every
+   PDO points:
 
        factor = PDO / ln 2
        offset = target − factor · ln(target odds)
        score  = offset + factor · ln(odds of being good)
 
-   with the score split across attributes so each one can be
-   given its own points row. The test file checks the two
-   properties that matter: the parts add to the total, and
-   doubling the odds moves the score by exactly the PDO.
-   ------------------------------------------------------------ */
+   The test file checks the two properties that matter: the parts
+   add to the total, and doubling the odds moves the score by
+   exactly the PDO. */
 export const POINTS = { target: 600, targetOdds: 50, pdo: 20 };
 
 export function pointsScaling({ target, targetOdds, pdo } = POINTS) {
@@ -1175,17 +1106,11 @@ export function run(a = DEFAULTS, rows = ROWS) {
   const gbmTestRaw = gbmFull.raw(Xtest);
   let gbmTest = gbmTestRaw.map(sigmoid);
 
-  /* ---- calibration, on scores from a model that never saw
-     these rows ----
-
-     The first version of this fitted the mapping on
-     gbmFull.raw(Xval), and gbmFull was trained on those very
-     rows. In-sample the boosted scores are almost separable, so
-     the mapping learned a slope suited to a model that already
-     knows the answer, and applying it to genuinely unseen
-     applicants made the Brier score worse than doing nothing.
-     A calibration fitted on in-sample scores is a miscalibration,
-     and the only sign of it is that the number gets worse. */
+  /* CALIBRATION ON SCORES FROM A MODEL THAT NEVER SAW THESE
+     ROWS. In-sample boosted scores are almost separable, so a
+     mapping fitted on them learns a slope suited to a model that
+     already knows the answer, and the only sign of it is that
+     the Brier score gets worse. */
   const platt = fitPlatt(gbm.raw(Xval), yVal);
   const gbmTestCalibrated = platt.apply(gbmTestRaw);
   const uncalibrated = gbmTest;
@@ -1296,17 +1221,11 @@ export function crossValidate(a = DEFAULTS, rows = ROWS, { k = 5, repeats = 2 } 
   };
 }
 
-/* ------------------------------------------------------------
-   13 · Fair lending
-
-   The dataset ships sex, age and foreign-worker status, all of
-   which are protected or close to it wherever credit is
-   regulated. Dropping them is necessary and nothing like
-   sufficient, because a model with fifty other columns will
-   rebuild what it can from the ones it kept. The page measures
-   both halves of that: what accuracy costs, and what disparity
-   survives.
-   ------------------------------------------------------------ */
+/* 13 · Fair lending. The dataset ships sex, age and
+   foreign-worker status. Dropping them is necessary and nothing
+   like sufficient, because a model with fifty other columns
+   rebuilds what it can, so the page measures both halves: what
+   accuracy costs, and what disparity survives. */
 export const GROUPS = {
   sex: {
     name: "Sex, as the dataset records it",

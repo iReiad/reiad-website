@@ -161,12 +161,11 @@ arithmetic. **Leisure must never be able to fail.**
 `owner_id is null or owner_id = auth.uid() or is_public`; insert,
 update and delete only where `owner_id = auth.uid()`.
 
-**The lesson from #159 applies to every read written here.**
-`profiles` is the one table on this project whose select policy is
-`using (true)`, so any read of it carries `id=eq.<me>`. Every table
-above is owner-scoped, so an unfiltered read returns your own rows,
-and the filter goes in anyway for the reason `saveProfile` already
-gives at length.
+**Every read written here carries its filter.** `profiles` is the
+one table on this project whose select policy is `using (true)`, so
+any read of it carries `id=eq.<me>`. Every table above is
+owner-scoped, so an unfiltered read returns your own rows, and the
+filter goes in anyway for the reason `saveProfile` gives at length.
 
 **No local mirror**, deliberately, the way `scenarios` and
 `targets` already work. `progress` has one because four schools
@@ -291,9 +290,8 @@ the bottom in her own handwriting.
 
 `brd`, Feed the birds, is a task. Every time it is marked ever, the
 flock grows: one bird, then two, then a row along the header. **They
-never leave.** Not a reward and not a target, a *presence*. No number
-is shown, no next milestone is named, and skipping a month changes
-nothing at all.
+never leave.** No number is shown, no next milestone is named, and
+skipping a month changes nothing at all.
 
 ### 7.4 The garden · বাগান
 
@@ -303,13 +301,10 @@ wilts.** A plant that could die would be a streak with leaves on.
 
 ### 7.5 Six seasons · ষড়ঋতু
 
-Bangladesh has six, not four, and almost no software knows it. The
-page's ground, its illustration and one line of the header follow the
-real calendar: গ্রীষ্ম, বর্ষা, শরৎ, হেমন্ত, শীত, বসন্ত.
-
-Computed from the date, no data needed, and it means the page in
-বর্ষা does not look like the page in শীত. Nobody expects a routine
-tracker to know this.
+Bangladesh has six, not four. The page's ground, its illustration
+and one line of the header follow the real calendar: গ্রীষ্ম, বর্ষা,
+শরৎ, হেমন্ত, শীত, বসন্ত. Computed from the date, no data needed, so
+the page in বর্ষা does not look like the page in শীত.
 
 ### 7.6 It says her name, and it knows the hour
 
@@ -333,11 +328,10 @@ than guessing.
 
 ### 7.9 The day it already knows
 
-A weekday has a shape and the tool has the history. Opening a Saturday
-shows what Saturdays usually hold, as a ghost behind the empty ticks,
-and one press fills it in to be edited. It exists for the person
-backfilling four days at once, which is the exact moment a tracker
-starts to feel like a chore. Pressing nothing leaves nothing marked.
+Opening a Saturday shows what Saturdays usually hold, as a ghost
+behind the empty ticks, and one press fills it in to be edited. It
+is for the person backfilling four days at once. **Pressing nothing
+leaves nothing marked.**
 
 ### 7.10 What has changed, factually
 
@@ -347,17 +341,15 @@ verdict. The honest version of what streaks are reaching for.
 
 ### 7.11 Tasks you have never marked
 
-Listed plainly on the consistency panel, with an Archive beside each.
-**The most important feature in the tool.** A routine full of
-aspirational tasks is what makes a tracker feel bad, and the fix is
-taking them out, not trying harder. Nothing nags; the list is simply
-there.
+Listed plainly on the consistency panel, with an Archive beside
+each. A routine full of aspirational tasks is what makes a tracker
+feel bad, and the fix is taking them out, not trying harder.
+Nothing nags; the list is simply there.
 
 ### 7.12 Hours that are real, live in the builder
 
-*"Planned to 19.5 hours of 24. 4.5 free."* Almost no routine builder
-says this, and it is the most useful thing one can say while somebody
-is adding a seventh task.
+*"Planned to 19.5 hours of 24. 4.5 free."* Said while somebody is
+adding a seventh task.
 
 ### 7.13 A routine is a fourth kind of target
 
@@ -370,8 +362,8 @@ the first thing tying this tool to the rest of the site.
 ### 7.14 A starter built from what she already does
 
 `profiles.following` says which schools somebody follows. "Build me
-one" seeds a routine from that, so the first run is not a wall of
-somebody else's life.
+one" seeds a routine from that, so the first run is not somebody
+else's life.
 
 ### 7.15 Her year, as a thing to keep
 
@@ -387,10 +379,9 @@ entry. Twenty seconds becomes five.
 
 ### 7.17 The welcome
 
-The first open shows a short note in Bangla, written by the person
-who made it, stored in `routine_templates` beside Sadia's day so it
-travels with the seed. Shown once, and findable again from settings.
-It is a gift and it should say so, once, and then get out of the way.
+The first open shows a short note in Bangla, stored in
+`routine_templates` beside Sadia's day so it travels with the seed.
+Shown once, and findable again from settings.
 
 ### 7.18 Erasing offers the copy first
 
@@ -402,9 +393,9 @@ time. Nothing is ever lost by pressing the wrong thing quickly.
 ## 8. The hard constraints, as tests
 
 `scripts/routine.test.ts`, and these are assertions rather than
-intentions. In `scripts/` and not in `next/` because it needs neither
-the Next build nor a browser: it is the arithmetic, the templates and
-a grep, which is what makes it run in CI.
+intentions. In `scripts/` and not in `next/` because it needs
+neither the Next build nor a browser, which is what makes it run in
+CI.
 
 - **No streaks.** The test greps the built markup and the modules for
   `streak`, `chain`, `consecutive` and the flame emoji, and fails on
@@ -425,9 +416,8 @@ a grep, which is what makes it run in CI.
   any arithmetic, asserted directly.
 - **Copy stays plain and kind.** A fourteen-year-old reads this.
 
-Four of these are already true and tested, before there is anything
-to look at, because they are properties of `done()` in
-`shared/routine.ts` rather than of a page:
+Four are properties of `done()` in `shared/routine.ts` rather than
+of a page, and are tested there:
 
 | | |
 | --- | --- |
@@ -436,19 +426,18 @@ to look at, because they are properties of `done()` in
 | tidying does not rewrite the past | archiving a task takes it off today's list, leaves it in the routine, and does not move yesterday's figure |
 | the ratchet | a counter is fed forty days with a dead fortnight in the middle and asserted never to fall. Coming back after two weeks away costs nothing |
 
-The grep strips comments first, and that is not a loophole: the ban is
-on the tool having a streak, not on the code explaining why it does
-not. `shared/routine.ts` opens with the sentence the whole thing rests
-on and would otherwise fail its own test, which is the trap `CLAUDE.md`
-names for the em dash rule. Every string a reader can see still gets
-scanned.
+The grep strips comments first, and that is not a loophole: the ban
+is on the tool having a streak, not on the code explaining why it
+does not, and `shared/routine.ts` opens with the sentence the whole
+thing rests on. That is the trap `CLAUDE.md` names for the em dash
+rule. Every string a reader can see still gets scanned.
 
 ### Isolation, which gates everything
 
-Proved against the real database with real JWT claims before a line
-of interface was written. Two accounts, one routine and one entry
-each, then read with **no filter in the query at all**, so the policy
-is the only thing standing there:
+Proved against the real database with real JWT claims. Two
+accounts, one routine and one entry each, then read with **no
+filter in the query at all**, so the policy is the only thing
+standing there:
 
 | asked | answered |
 | --- | --- |
@@ -458,8 +447,7 @@ is the only thing standing there:
 | anon reads `routines`, `routine_entries` | 0 and 0 |
 | B inserts a row owned by A | `ERROR 42501: new row violates row-level security policy` |
 
-Reproduce it in the SQL editor, and the shape is worth keeping
-because it is the honest one:
+Reproduce it in the SQL editor:
 
 ```sql
 set local role authenticated;
@@ -476,10 +464,9 @@ fails on three things: a `create table` with no
 with no policy, and a **second** table whose select policy is
 `using (true)`.
 
-That third one is #159 turned into a check. `profiles` is the one
-table that is public on purpose and it is named in the file with its
-reason; the property that made a missing filter dangerous cannot now
-be acquired by accident.
+`profiles` is the one table that is public on purpose and it is
+named in that check with its reason, so the property that made a
+missing filter dangerous cannot be acquired by accident.
 
 ---
 
