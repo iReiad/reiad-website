@@ -30,7 +30,9 @@
    thing.
    ============================================================ */
 
-import { keepUndrawn, layoutOf, storedOf, type Placed } from "@reiad/shared/widgets";
+import {
+  HOME_DEFAULT, keepUndrawn, layoutOf, storedOf, type Placed,
+} from "@reiad/shared/widgets";
 
 export const BOARD_KEY = "home-board";
 
@@ -81,9 +83,18 @@ export function save(placed: readonly Placed[], drawable?: Iterable<string>): vo
   try {
     /* `keepUndrawn` is `shared/widgets.ts`'s, because both
        renderers can make this mistake and only one of them is in
-       this repository. */
+       this repository.
+
+       AND `HOME_DEFAULT` WHERE NOTHING IS STORED, which is the
+       same bug one step along. A reader who has never arranged a
+       board has no stored list, and the board they were looking
+       at on their phone was the default: writing back only what
+       this build can draw would take the three widgets the
+       default holds and this build does not off their account on
+       the first press of সাজান, having never shown them. What
+       they had is what has to survive, stored or not. */
     const board = drawable
-      ? keepUndrawn(stored(), storedOf(placed), drawable)
+      ? keepUndrawn(stored() ?? HOME_DEFAULT, storedOf(placed), drawable)
       : storedOf(placed);
     const value: Record_ = { board, ts: Date.now() };
     localStorage.setItem(BOARD_KEY, JSON.stringify(value));

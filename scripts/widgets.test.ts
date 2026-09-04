@@ -200,6 +200,16 @@ is("a board nobody had arranged is written as it stands",
   keepUndrawn(null, ["continue:wide"], DRAWS),
   ["continue:wide"]);
 
+/* AND THE DEFAULT COUNTS AS "WHAT THEY HAD". A reader who has
+   never arranged one has no stored list, and the board they were
+   looking at on their phone was `HOME_DEFAULT`. `next/lib/board.ts`
+   passes it in for that reason: the first press of সাজান would
+   otherwise take the three kinds the default holds and the site
+   does not draw off their account, having never shown them. */
+is("the default's own widgets survive a first arrange",
+  keepUndrawn(HOME_DEFAULT, storedOf(layoutOf(null, DRAWS)), DRAWS),
+  [...HOME_DEFAULT]);
+
 /* ------------------------------------------------------------ */
 const total = passed + failures.length;
 if (failures.length) {
