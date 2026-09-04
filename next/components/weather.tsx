@@ -1,12 +1,12 @@
 "use client";
 
 /* ============================================================
-   weather.tsx: a little of the reader's own sky, on the glass.
+   weather.tsx: a little of the reader's own sky, behind the page.
 
    The site is made of glass and every surface on it is lit from
-   the top left by a light that follows a pointer. This is the
-   other side of that window: if it is raining where the reader
-   is, it rains on the page.
+   the top left by a light that follows a pointer. This is what is
+   on the other side of that window: if it is raining where the
+   reader is, it rains behind the page.
 
    ---- asked once, and only once ----
 
@@ -45,14 +45,24 @@
    ---- what it draws ----
 
    Seven skies and no more, because seven is what can be told
-   apart at forty per cent opacity. `functions/api/weather.ts`
-   does that reduction from the WMO codes; this file never sees a
+   apart behind a page of prose. `functions/api/weather.ts` does
+   that reduction from the WMO codes; this file never sees a
    number.
 
    The whole layer is one attribute on `<html>` and a block of CSS
    in `@layer weather`. Nothing here animates anything: a
    component driving rain from JavaScript would be a rAF loop
    running on every page for as long as the tab is open.
+
+   ---- and it is BEHIND the page ----
+
+   It was over it, at `z-index: 300`, above the rail and the bar,
+   because the site is glass lit from behind a window and rain
+   belongs on the near side of one. That is a good sentence and
+   it put streaks across somebody's reading. The layer sits under
+   everything now, on the paper rather than on the glass, and
+   `@layer weather` says which two facts about `<html>` and
+   `body` hold that up.
    ============================================================ */
 
 import { useEffect } from "react";
@@ -224,14 +234,23 @@ export function Weather() {
     return () => { alive = false; };
   }, []);
 
-  /* Three layers, always rendered and always empty. The
-     stylesheet decides what each one is for a given sky, which
-     is what keeps seven weathers out of this file: `display:
-     none` until `<html>` carries an attribute, so a page with no
-     weather on it pays for nothing. */
+  /* Five layers, always rendered and always empty: the wash, three
+     depths of weather and the light. The stylesheet decides what
+     each one is for a given sky, which is what keeps seven
+     weathers out of this file: `display: none` until `<html>`
+     carries an attribute, so a page with no weather on it pays
+     for nothing.
+
+     THREE DEPTHS RATHER THAN TWO is what makes it read as
+     weather instead of as a pattern: `@layer weather` puts them
+     on tilings that share no factor and makes the near one
+     bigger, faster and softer. Adding one here is a span; the
+     drawing is entirely over there. */
   return (
     <div className="weather" aria-hidden="true">
+      <span className="wx-sky" />
       <span className="wx-far" />
+      <span className="wx-mid" />
       <span className="wx-near" />
       <span className="wx-light" />
     </div>

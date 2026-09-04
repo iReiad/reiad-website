@@ -1226,11 +1226,11 @@ server-rendered prev/next link asks for one without a handler.
 link navigates, the document is torn down, and every scheduled note
 goes with it.
 
-## The reader's own sky, on the glass
+## The reader's own sky, behind the page
 
 `next/components/weather.tsx` and `functions/api/weather.ts`. The
-site is made of glass lit from behind a window; this is the other
-side of that window.
+site is made of glass lit from behind a window; this is what is on
+the other side of that window.
 
 **The browser never talks to the weather service.** The same rule
 the broker follows and for the same two reasons: `connect-src` is
@@ -1272,24 +1272,88 @@ a preference. Where somebody is standing is not that, it is
 different on every device by definition, and a phone in Dhaka and a
 laptop in Brighton are two places.
 
-Seven skies, because seven is what can be told apart at forty per
-cent opacity, and the Worker does that reduction from the WMO codes
-so the drawing never sees a number. `@layer weather` is the whole
-of the drawing: gradients and keyframes, no canvas, no loop, and
+Seven skies, because seven is what can be told apart behind a page
+of prose, and the Worker does that reduction from the WMO codes so
+the drawing never sees a number. `@layer weather` is the whole of
+the drawing: gradients and keyframes, no canvas, no loop, and
 `display: none` when there is no weather.
+
+**It is BEHIND the page, at `z-index: -1`, and two facts elsewhere
+hold that up.** It was at 300, over the rail and over the bar, on
+the argument that rain belongs on the near side of a window. The
+argument is nice and the result was streaks across somebody's
+reading, which is the one place a decoration cannot go. What makes
+the -1 visible rather than invisible is that nothing gives `<html>`
+a background, so body's `--paper` propagates to the canvas and body
+paints no box of its own; and nothing gives body a stacking
+context. Give it either and the weather VANISHES on a page that
+renders perfectly. `.home-aura` is the same arrangement one element
+down.
+
+**Five layers: the wash, three depths, and the light.** It was two
+and a light, and two of anything is a sheet rather than a sky.
+`wx-far`, `wx-mid` and `wx-near` are the same weather at three
+distances, and the near one is always larger, faster and softer at
+the edges. THE SOFTNESS IS IN THE GRADIENT STOP AND NEVER IN A
+`filter`: everything that moves here moves a background, so a blur
+on one of those layers is a whole window re-blurred every frame for
+something a wider falloff gives away free. `fog` is the exception
+and keeps its blurs, because a fog bank slides on `translate` and a
+translated raster is not redrawn.
+
+**A drop is an ellipse and the slant is on the layer.** Rain was a
+repeating stripe under a mask cut ACROSS it, and the stripes moved
+while the mask did not, so a drop appeared and disappeared at the
+same place on the screen for ever: hatching that flickers. It is a
+tiled radial gradient now, with a head and a tail, on a layer that
+carries the wind angle as its own `rotate`. That is why the fall is
+`background-position` rather than `translate`: a background is
+positioned in the element's OWN rotated space, so moving it down by
+exactly one tile height is a drop falling along its own line and a
+loop with nothing to see at the join.
+
+**A cloud tile is as tall as the layer.** Only the width tiles. A
+tile 620px tall repeats DOWN the page, so a bank drawn in the top
+quarter of it is drawn again under the reader's feet, and it was:
+the `100%` in each cloud's `background-size` is what fixes that. A
+cloud is also a cluster of puffs rather than one wide ellipse,
+because a 220 by 44 gradient is a smear whatever its falloff.
+
+**The wash and the light are placed against the WINDOW; the three
+depths are 24 per cent bigger than it.** The depths need the
+overscan because they rotate and slide. The other two must not have
+it: a gradient is positioned inside its own element, so a sun at
+`87% 4%` of an oversized layer is a sun off the top right corner,
+and for a while the moon was one.
 
 **Nothing flashes.** `storm` would ordinarily be lightning and
 deliberately is not: a bright frame on a dark page is a seizure
-risk and there is no version of it worth the risk. It is heavier
-rain and a slow eight-second bloom.
+risk and there is no version of it worth the risk. It is heavier,
+steeper rain and a slow eight-second bloom.
 
-**Three tilings at coprime sizes is what makes snow snow.** One
-tiled dot is wallpaper: the eye finds the lattice in about a second.
-Periods of 71, 97 and 113 line up again only after their least
-common multiple, which is further than any screen. The rain gets
-the same treatment from the other end, a mask ACROSS the streaks
-that cuts them into drops, because an unmasked repeating gradient
-is hatching rather than rain.
+**Three tilings at coprime sizes is what makes snow snow**, and
+they are the three depths now rather than three images on one
+layer. One tiled dot is wallpaper: the eye finds the lattice in
+about a second, and periods that share no factor line up again
+only past the far side of any screen.
+
+**Stars are drawn where they can be seen**, which is `--wx-star`
+and a dark page: there is no colour that reads as a star against
+paper, so a light theme at midnight gets the blue wash and no dots.
+The rule said that in a comment and turned off the twinkle only,
+so the dots were there the whole time.
+
+**A reader who asked for contrast has asked for the opposite of
+this**, and now that it is between the paper and the prose the
+honest answer to `prefers-contrast: more` or
+`prefers-reduced-transparency: reduce` is no sky at all.
+`prefers-reduced-motion` keeps the sky and stops the movement,
+which is the same bargain as everywhere else here: what the layer
+is for is knowing that it is raining rather than watching rain.
+
+**`--wx-a` on `.weather` is the one knob.** Every opacity in the
+layer is a fraction of it, so more sky or less sky is one edit
+rather than twenty.
 
 ## What a reader has read
 
