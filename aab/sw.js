@@ -31,6 +31,11 @@
    login could not have reached anyone either. Bump this whenever a
    precached file changes.
 
+   v241: /fallback.css. The writing band is three across like the
+        other three: at 260px a fourth column needed more room
+        than the content column has, so four pieces laid out three
+        and one.
+
    v240: /fallback.css. The front page's decks stretch again now
         that every card in each of them has the same anatomy, so a
         row's actions line up, and the byline is a link to /about:
@@ -2129,7 +2134,7 @@
    imports (crumbs, audience, learn progress) and the hub is a
    different page. Without a bump, a returning reader would be
    served the v3 app.js forever and none of it would appear. */
-const VERSION = "v240";
+const VERSION = "v241";
 const SHELL = `shell-${VERSION}`;
 const RUNTIME = `runtime-${VERSION}`;
 

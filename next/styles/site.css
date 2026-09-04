@@ -11997,7 +11997,12 @@ German for day, and .tag is what the site has always called
   .learn-deck,
   .make-deck,
   .read-deck { align-items: stretch; }
-  .read-deck { grid-template-columns: repeat(auto-fill, minmax(min(100%, 260px), 1fr)); }
+  /* THREE, LIKE EVERY OTHER BAND. At 260px a fourth column needs
+     1,094px and the content column is 1,070, so four pieces laid
+     out three and one, and the page's other three decks are three
+     across. One rhythm down the page rather than a deck that is
+     nearly but not quite the others. */
+  .read-deck { grid-template-columns: repeat(auto-fill, minmax(min(100%, 300px), 1fr)); }
   /* ONE CARD IS NOT A ROW OF FOUR. The band draws a door to
      `/insights` when the database did not answer, and in a
      four-column grid that is one card beside three columns of

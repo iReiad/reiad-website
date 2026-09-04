@@ -386,10 +386,10 @@ export default function HomePage() {
             </SectionLabel>
             <h2 className="band-h" id="read-h" lang="bn">সবচেয়ে নতুন যা লেখা হয়েছে</h2>
           </div>
-          {/* Four, because the band is a row of four on a laptop
-              and a column of four on a phone, and a fifth would be
-              an orphan in both. */}
-          <LatestWriting limit={4} />
+          {/* Three, which is the row every other band on this page
+              is, so the page has one rhythm rather than a deck that
+              is nearly the others. A fourth laid out three and one. */}
+          <LatestWriting limit={3} />
         </section>
 
         {/* ============ the tools ============

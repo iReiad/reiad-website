@@ -7583,7 +7583,8 @@
   .learn-deck,
   .make-deck,
   .read-deck { align-items: stretch; }
-  .read-deck { grid-template-columns: repeat(auto-fill, minmax(min(100%, 260px), 1fr)); }
+
+  .read-deck { grid-template-columns: repeat(auto-fill, minmax(min(100%, 300px), 1fr)); }
 
   .read-deck-one { grid-template-columns: minmax(0, 460px); }
 
