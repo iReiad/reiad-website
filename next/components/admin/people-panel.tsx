@@ -1,53 +1,32 @@
 "use client";
 
-/* ============================================================
-   admin/people-panel.tsx: the one panel that needs both.
+/* The one panel that needs both credentials. ADMIN.md §3 D.
 
-   ADMIN.md §3 D. A person on this site is two records that do not
-   know about each other: a Supabase account, and a set of rows in
-   D1 written under their name. `profiles` is answered by row-level
-   security to a reader's own bearer; `comments` is answered by the
-   Studio passphrase over D1. A cookie is not a JWT and D1 has no
-   notion of a Supabase reader, so the join can only happen HERE,
-   in a browser holding both, and that is the whole reason this
-   panel is last and the reason §1's "together" has a real answer.
+   A person here is two records that do not know about each other: a
+   Supabase account, and rows in D1 written under their name. `profiles`
+   is answered by row-level security to a reader's own bearer; `comments`
+   is answered by the Studio passphrase over D1. A cookie is not a JWT and
+   D1 has no notion of a Supabase reader, so the join can only happen
+   HERE, in a browser holding both.
 
-   ---- what the join key actually is ----
+   THE JOIN KEY IS `comments.author_id` and it is the only one this
+   database offers: it is written from a verified access token, so it
+   names an account rather than a typed string. Questions and enquiries
+   are NOT joinable and the page says so: both carry a name and an email
+   typed into a form by anybody, and matching on a string anybody can type
+   is a worse answer than no answer.
 
-   `comments.author_id`, and it is the ONLY one this database
-   offers. It is written from a verified access token, so it names
-   an account rather than a typed string. `author_name` beside it
-   is a COPY of the display name at the time of writing, which is
-   `shared/rows.ts` doing its job: D1 holds what a signed-out
-   reader needs to draw the page and Supabase holds who people
-   are.
+   AND THE ABSENCE IS THE DESIGN. `progress` and `library` are
+   `auth.uid() = user_id`, so they answer the reader's own token and
+   nothing else, and the only key that would open them is a service-role
+   key this project does not hold. So this panel says what it cannot show
+   rather than drawing an empty column.
 
-   Questions and enquiries are NOT joinable, and saying so on the
-   page matters more than showing them. Both carry a name and an
-   email typed into a form by anybody, signed in or not, and
-   neither carries an id. Matching them by name would be matching
-   on a string anybody can type, which is a worse answer than no
-   answer on a page where a wrong one is expensive.
-
-   ---- and the absence is the design ----
-
-   ADMIN.md §3 D asks for `days-active` and for what somebody has
-   saved. Neither is readable from here and neither should be:
-   `progress` and `library` are `auth.uid() = user_id`, so they
-   answer the reader's own token and nothing else, and the only
-   key that would open them is a service-role key this project
-   does not hold. So this panel says what it cannot show rather
-   than drawing an empty column, which is the same rule as never
-   drawing a locked panel as an empty one.
-
-   `profiles` is the one table whose select policy is `using
-   (true)`, and that is why the account half needs a BEARER rather
-   than an admin: what the account opens here is row-level
-   security's answer, not a privilege. `admins` is the other half
-   of §3 D's question and it answers only about YOU, by policy,
-   which is exactly what stops an admin being minted from a
-   browser and exactly why this cannot list the others.
-   ============================================================ */
+   `profiles` is the one table whose select policy is `using (true)`,
+   which is why the account half needs a BEARER rather than an admin.
+   `admins` answers only about YOU, by policy, which is what stops an
+   admin being minted from a browser and why this cannot list the
+   others. */
 
 import { useEffect, useState } from "react";
 import { Surface } from "../ui/surface";

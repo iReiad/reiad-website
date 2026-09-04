@@ -1,40 +1,20 @@
-/* ============================================================
-   dev-worker.ts: the built Worker, on workerd, with a database
-   in it.
-
-   Not a test. `parity.test.ts` and `article.test.ts` both need
-   the same three things before they can ask anything at all: a
-   temporary D1 with rows in it, `wrangler dev` running the
-   OpenNext build against it, and an honest answer about whether
-   that worked. This is those three things, once.
+/* The built Worker, on workerd, with a database in it. Not a test:
+   `parity.test.ts` and `article.test.ts` both need a temporary D1 with
+   rows in it, `wrangler dev` running the OpenNext build against it, and
+   an honest answer about whether that worked.
 
    ```js
-   const worker = await startWorker({ port: 8787, seed: (db) => {
-     db.exec(`CREATE TABLE ...`);
-     db.exec(`INSERT ...`);
-   }});
+   const worker = await startWorker({ port: 8787, seed: (db) => { ... } });
    if (!worker.ok) { console.log(worker.reason); process.exit(0); }
-   await fetch(`${worker.origin}/insights/x.html`);
    ```
 
-   ---- why a callback rather than a fixture ----
+   A callback rather than a fixture because the two callers want different
+   rows and every row is a second of seeding. What they share is the boot.
 
-   The two callers want different rows and it is not a difference
-   worth flattening: parity seeds seventy school rows because it
-   compares a lesson page against the page it replaced, and a
-   browser test wants one article and nothing else, because every
-   row is a second of seeding and it is asking about a component.
-   What they share is the boot, and the boot is the part that took
-   three attempts to get right.
-
-   ---- and why `exec` batches ----
-
-   `wrangler d1 execute --command` is a whole node process per
-   call. Seventy rows that way is four minutes of seeding for a
-   test that runs in forty seconds, which is how parity's first
-   version behaved. `db.exec()` collects statements and one
-   `--file` run applies them.
-   ============================================================ */
+   `exec` BATCHES because `wrangler d1 execute --command` is a whole node
+   process per call: seventy rows that way is four minutes of seeding for
+   a test that runs in forty seconds. `db.exec()` collects statements and
+   one `--file` run applies them. */
 
 import { execFileSync, spawn } from "node:child_process";
 import { existsSync, mkdtempSync, rmSync, writeFileSync } from "node:fs";
@@ -116,21 +96,15 @@ export async function startWorker(
   process.on("exit", stop);
   const log = () => out;
 
-  /* Ready, or one of three ways of not being ready, told apart.
+      /* Ready, or one of three ways of not being ready. Do NOT give up on
+         a line matching `Error: `: `wrangler dev` prints exactly that,
+         harmlessly, wherever there is no outbound network, and then starts
+         perfectly forty seconds later. In a container that makes the test
+         print "did not start", exit 0, and look from the outside exactly
+         like a full run of passing checks.
 
-     THE BUG THIS SHAPE FIXES, and it is worse than the one it
-     replaces because it was quiet. The old loop gave up on any
-     line matching `Error: `, and `wrangler dev` prints exactly
-     that, harmlessly, wherever there is no outbound network: it
-     cannot fetch the `Request.cf` object, says so with a stack,
-     and then starts perfectly forty seconds later. So in a
-     container, and in any sandbox like one, the test printed "did
-     not start", exited 0, and looked from the outside exactly
-     like a full run of passing checks.
-
-     A real failure is the process being gone, or wrangler's own
-     `[ERROR]` marker, which it brackets and a thrown stack does
-     not. Everything else is waited out. */
+         A real failure is the process being gone, or wrangler's own
+         bracketed `[ERROR]` marker, which a thrown stack does not have. */
   for (let i = 0; i < 180; i++) {
     if (/Ready on http/.test(out)) {
       // The first request compiles the route; give it a moment.

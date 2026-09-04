@@ -1,42 +1,28 @@
 "use client";
 
-/* ============================================================
-   news.tsx: the headline card and the mini window.
+/* The headline card and the mini window.
 
-   Headlines are external text. Every value below is a child of a
-   JSX element, so React escapes all of it; nothing from the feed
-   is ever handed to `dangerouslySetInnerHTML`.
+   Headlines are external text. Every value below is a child of a JSX
+   element, so React escapes all of it; nothing from the feed is ever
+   handed to `dangerouslySetInnerHTML`.
 
-   Three things, which is what `archive/modules/news.js` held:
+   FETCHING: two endpoints, raced, first usable answer wins, so the page
+   does not care which one is currently deployed and does not wait out a
+   timeout on the one that is not. Degrades to the last successful fetch
+   kept on the device, labelled with when it was.
 
-     1. FETCHING. Two endpoints, raced, first usable answer wins:
-        `/api/news` and the same job running as a standalone
-        Worker. Racing them means the page does not care which one
-        is currently deployed and does not wait out a timeout on
-        the one that is not. Degrades to the last successful fetch
-        kept on the device, labelled with when it was.
+   THE CARD is a `<button>`, not an `<a>`: it opens the window rather than
+   navigating. A grid of squares reads as a board of stories where a list
+   reads as a table of contents.
 
-     2. THE CARD. A square, because a grid of squares reads as a
-        board of stories where a list reads as a table of
-        contents, and because the thing being scanned is the
-        headline. It is a `<button>`, not an `<a>`: it opens the
-        window rather than navigating.
+   THE MINI WINDOW grows out of the card it came from, a real FLIP
+   measured from that card's own rectangle, so it is obvious which of
+   twelve squares was opened. Under prefers-reduced-motion it appears.
 
-     3. THE MINI WINDOW. A card opens into a `<dialog>` rather
-        than straight out to the publisher, so a reader can see
-        the standfirst, the source and the time and then decide.
-        It grows out of the card it came from, a real FLIP
-        measured from that card's own rectangle, so it is obvious
-        which of twelve squares was opened. Under
-        prefers-reduced-motion it simply appears.
-
-   `pulse-cache` is a key in real browsers. Renaming it does not
-   move somebody's cached headlines, it loses them, which is the
-   rule `next/lib/progress.ts` follows for ticks.
-
-   The link out is `rel="noopener"` and `data-no-prerender`:
-   prerendering someone else's site on hover is not ours to do.
-   ============================================================ */
+   `pulse-cache` is a key in real browsers: renaming it does not move
+   somebody's cached headlines, it loses them. The link out is
+   `rel="noopener"` and `data-no-prerender`: prerendering someone else's
+   site on hover is not ours to do. */
 
 import { useEffect, useRef } from "react";
 import { flip } from "../lib/flip";
@@ -225,20 +211,15 @@ const BN_NOTE = "শিরোনামের বাংলা রূপ স্ব
 const EN_NOTE = "Selected automatically, and summarised from the publisher's own "
   + "standfirst. The full story is at the source.";
 
-/**
- * One story, in a modal window.
- *
- * Rendered only while a story is open, which is how there is
- * never more than one dialog in the document: the module this
- * replaces built one and reused it for the same reason, and
- * mounting is React's version of that.
- *
- * `showModal()` brings the focus trap, the backdrop and Escape,
- * so none of the four is implemented here. Escape and the
- * backdrop both end in the dialog's own `close` event, which is
- * the one place this tells the page above it that the window has
- * gone.
- */
+    /**
+     * One story, in a modal window. Rendered only while a story is open,
+     * which is how there is never more than one dialog in the document.
+     *
+     * `showModal()` brings the focus trap, the backdrop and Escape, so
+     * none of the four is implemented here. Escape and the backdrop both
+     * end in the dialog's own `close` event, which is the one place this
+     * tells the page above it that the window has gone.
+     */
 export function NewsWindow({ story, onClose }: { story: Story; onClose: () => void }) {
   const ref = useRef<HTMLDialogElement | null>(null);
 

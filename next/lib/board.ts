@@ -1,34 +1,19 @@
-/* ============================================================
-   The board a reader arranged, in the browser.
-
-   `shared/widgets.ts` is the catalogue and the parse; this is the
-   half that touches a real device. Kept apart for the same reason
-   progress is: `shared/` is read by node, by a Worker and by the
+/* The board a reader arranged, in the browser. `shared/widgets.ts` is the
+   catalogue and the parse; this is the half that touches a real device,
+   kept apart because `shared/` is read by node, by a Worker and by the
    Android app, and none of them has a `localStorage`.
 
-   ---- the key ----
+   The key is `home-board`, and `aab/src/sync.ts` carries it as a `mark`.
+   A `mark`, NOT a `set`, and the wrong rule here would be silent: a board
+   is REPLACED, not accumulated, so a union of two devices' boards holds
+   everything either ever had and a widget taken off on a phone comes back
+   off the laptop. The value is `{ board: string[], ts: number }`, because
+   `mark` reconciles on a `ts` inside the value.
 
-   `home-board`, and `aab/src/sync.ts` carries it as a `mark`
-   beside `reader-prefs`. **A `mark`, not a `set`, and the wrong
-   rule here would be silent**: a board is REPLACED, not
-   accumulated, so the union of two devices' boards holds
-   everything either of them ever had. A widget taken off on a
-   phone would come back off the laptop, and again, and again,
-   and nothing would look broken.
-
-   The value is `{ board: string[], ts: number }`, because `mark`
-   reconciles on a `ts` inside the value. A record written without
-   a fresh one loses the exchange.
-
-   ---- and null is not empty ----
-
-   No key at all means the reader has never arranged anything, and
-   they get the site's own default. An EMPTY list means they took
-   everything off, and filling that back in would be the page
-   overruling them. `layoutOf` in `shared/widgets.ts` is where
-   that distinction lives, and both callers hand it the same
-   thing.
-   ============================================================ */
+   AND NULL IS NOT EMPTY: no key at all means the reader has never
+   arranged anything and gets the default; an EMPTY list means they took
+   everything off, and filling it back in would be the page overruling
+   them. `layoutOf` in `shared/widgets.ts` is where that lives. */
 
 import {
   HOME_DEFAULT, keepUndrawn, layoutOf, storedOf, type Placed,
@@ -81,18 +66,14 @@ export function board(drawable: Iterable<string>, fallback?: readonly string[]):
 export function save(placed: readonly Placed[], drawable?: Iterable<string>): void {
   if (typeof localStorage === "undefined") return;
   try {
-    /* `keepUndrawn` is `shared/widgets.ts`'s, because both
-       renderers can make this mistake and only one of them is in
-       this repository.
+        /* `keepUndrawn` is `shared/widgets.ts`'s, because both renderers
+           can make this mistake and only one is in this repository.
 
-       AND `HOME_DEFAULT` WHERE NOTHING IS STORED, which is the
-       same bug one step along. A reader who has never arranged a
-       board has no stored list, and the board they were looking
-       at on their phone was the default: writing back only what
-       this build can draw would take the three widgets the
-       default holds and this build does not off their account on
-       the first press of সাজান, having never shown them. What
-       they had is what has to survive, stored or not. */
+           AND `HOME_DEFAULT` WHERE NOTHING IS STORED, which is the same
+           bug one step along: a reader who has never arranged a board has
+           no stored list, so writing back only what this build can draw
+           takes the widgets the default holds and this build does not off
+           their account on the first press, having never shown them. */
     const board = drawable
       ? keepUndrawn(stored() ?? HOME_DEFAULT, storedOf(placed), drawable)
       : storedOf(placed);

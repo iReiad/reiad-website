@@ -1,41 +1,22 @@
-/* ============================================================
-   /api/admin/*
+/* /api/admin/*
 
-   ONE ROUTE so far, `health`, and it answers TWO different things
-   depending on whether the caller has a credential.
+   `health` answers TWO different things depending on whether the
+   caller has a credential, because the panel has to be useful on
+   the day the credential is the thing that is broken: a page that
+   can only tell you the site is healthy once you have proved who
+   you are cannot tell you that the sign-in is what is down.
 
-   ---- why it answers a stranger at all ----
+   THAT ARGUMENT JUSTIFIES EXACTLY ONE FACT. A stranger gets
+   `{ worker: true }`: this Worker answered. Everything after that
+   needs the passphrase session or an admin reader. It used to give
+   away six, every one of them a thing nobody could infer from
+   outside and together a map of what to attack.
 
-   Because the panel has to be useful on the day the credential is
-   the thing that is broken. A page that can only tell you the
-   site is healthy once you have proved who you are cannot tell
-   you that the sign-in is what is down, which is the one moment
-   somebody opens it in a hurry.
-
-   That argument justifies exactly ONE fact, and this used to give
-   away six. A stranger gets `{ worker: true }`: this Worker
-   answered. Everything after that needs the passphrase session or
-   an admin reader.
-
-   ---- what it was leaking, and the rule that should have caught it ----
-
-   The rule was already written here: could somebody work this out
-   by using the site for a minute? Every field failed it. That D1
-   answers in 66ms, that Supabase is unreachable, that a Drive
-   credential and a broker seal are configured, that there is
-   exactly ONE admin reader. None of that is inferable from
-   outside, all of it was served to anybody who opened /admin
-   signed out, and together it is a map of what to attack and
-   which parts are already weak.
-
-   A rule enforced by whoever last read the prose is the failure
-   this repository opens with, and this route was IN the `PUBLIC`
-   list in `scripts/check-admin.ts` with that reasoning written
-   beside it. The list was right about what it was told. It is
-   `scripts/admin.test.ts` that asks now, by CALLING this with no
-   credential and reading what comes back.
-
-   ============================================================ */
+   The test is: could somebody work this out by using the site for
+   a minute? That rule was written here and this route was still in
+   the `PUBLIC` list in `scripts/check-admin.ts` with it beside
+   them. `scripts/admin.test.ts` is what asks now, by CALLING this
+   with no credential and reading what comes back. */
 
 import { fail, methods, notConfigured, ok } from "../../_lib/http.ts";
 import { readSession } from "../../_lib/auth.ts";
@@ -49,11 +30,8 @@ import { subjectOf } from "../../../shared/art-of.ts";
 
 export interface AdminEnv {
   /* `D1Database` out of `_lib/db.ts`, which is where the rest of
-     `functions/` gets it. This declared its own one-method shape
-     so as not to depend on the package, and that stopped being
-     possible the moment the route had to read a session: two
-     descriptions of one binding is the second copy `check-rows.ts`
-     exists to ban, one level down. */
+     `functions/` gets it. Two descriptions of one binding is the
+     second copy `check-rows.ts` exists to ban, one level down. */
   DB?: D1Database;
   SUPABASE_URL?: string;
   SUPABASE_KEY?: string;
@@ -88,15 +66,15 @@ async function reach(run: () => Promise<unknown>): Promise<{ ok: boolean; ms: nu
 
 /** Is this caller an admin?
 
-    Either credential opens it, because either one means the
-    caller is already trusted with more than what is behind it.
-    The passphrase is a cookie the Worker can read on its own; the
+    Either credential opens it, because either one means the caller
+    is already trusted with more than what is behind it. The
+    passphrase is a cookie the Worker can read on its own; the
     account half goes through `isAdmin()`, which is the ONE place
     that answers that question.
 
     A function rather than eight lines inside the health handler,
-    because there are two routes here now and a second copy of a
-    gate is how one of them ends up ungated. */
+    because there are two routes here and a second copy of a gate
+    is how one of them ends up ungated. */
 async function allowed(context: AdminContext): Promise<boolean> {
   const { request, env } = context;
   if (await readSession(context)) return true;
@@ -110,30 +88,26 @@ export async function onRequest(context: AdminContext): Promise<Response> {
 
   /* ---------- the drawings, for whoever is drawing a card ----------
 
-     `shared/art-svg.ts` holds the twelve subjects and the six
-     walls as the inside of an `<svg>`, and it is 34 KB. The eight
-     shared files that ARE compiled into `aab/` are there because
-     every reader needs them; nobody needs these except whoever is
-     publishing, which is one admin. So they are fetched rather
-     than served, behind the same gate as everything else here.
+     `shared/art-svg.ts` is 34 KB. The shared files that ARE
+     compiled into `aab/` are there because every reader needs
+     them; nobody needs these except whoever is publishing, which
+     is one admin. So they are fetched rather than served, behind
+     the same gate as everything else here.
 
      Both callers use this one path rather than one of them
      importing the table: the Studio is a Vite bundle that cannot
-     reach `shared/` except through a served address, and two ways
-     in is two things to keep in step. */
+     reach `shared/` except through a served address. */
   if (route === "art") {
     return methods(request, {
       GET: async () => {
         if (!await allowed(context)) return fail("forbidden", 403);
 
         /* AND WHICH ONE THIS PIECE WEARS, when the caller says
-           what the piece is. `subjectFor` is `shared/art.ts` and
-           is the one place that decides; the Studio is a Vite
-           bundle that cannot import it, and a second copy of the
-           rule in the browser is the failure CLAUDE.md opens
-           with. So it is answered here, in the same request that
-           carries the drawings, rather than in a route of its
-           own: one round trip either way. */
+           what the piece is. `subjectFor` in `shared/art.ts` is
+           the one place that decides, and the Studio is a Vite
+           bundle that cannot import it. Answered in the same
+           request that carries the drawings rather than in a route
+           of its own: one round trip either way. */
         const url = new URL(request.url);
         const id = url.searchParams.get("id");
         const pick = id || url.searchParams.get("title")
@@ -155,25 +129,18 @@ export async function onRequest(context: AdminContext): Promise<Response> {
 
   /* ---------- what has no picture yet ----------
 
-     THE QUEUE, and it is one list rather than two.
+     THE QUEUE, and it is one list rather than two. A drawn card is
+     `/media/<slug>-card/<hash>.jpg`, and anything else in a
+     `cover` is a raw photograph, which half the scrapers refuse to
+     read. A lesson's is in its `meta`, and a lesson with none
+     falls back to its STAGE's standing card, so three lessons of
+     one stage pasted into a chat are the same image three times.
 
-     A drawn card is `/media/<slug>-card/<hash>.jpg`, and anything
-     else in a `cover` is a raw photograph, which half the
-     scrapers refuse to read. A lesson's is in its `meta`, and a
-     lesson with none falls back to its STAGE's standing card, so
-     every lesson in a stage shares one picture: three lessons
-     pasted into a chat are the same image three times.
-
-     Both are read here rather than in the browser because both
-     are one SQL query and neither is a thing the desk should be
-     assembling out of four ladder fetches. Nothing is drawn here:
-     a card is a canvas and this is a Worker. The browser draws
-     and PATCHes back, one at a time, which is what makes it a
-     queue rather than a job.
-
-     Answered oldest first, so the run always makes progress on
-     the things that have been waiting longest, and a run that is
-     interrupted has done the most useful half. */
+     Nothing is drawn here: a card is a canvas and this is a
+     Worker. The browser draws and PATCHes back, one at a time,
+     which is what makes it a queue rather than a job. Answered
+     oldest first, so an interrupted run has done the most useful
+     half. */
   if (route === "cards") {
     return methods(request, {
       GET: async () => {
@@ -185,10 +152,9 @@ export async function onRequest(context: AdminContext): Promise<Response> {
 
         /* `LIKE` rather than the regexp `isDrawnCard` uses,
            because SQLite has no regexp and the two agree on the
-           part that matters: a drawn card is under
-           `/media/<something>-card/`. A cover that passes here
-           and fails the browser's stricter test is drawn again,
-           which costs one card and is the safe direction. */
+           part that matters. A cover that passes here and fails
+           the browser's stricter test is drawn again, which costs
+           one card and is the safe direction. */
         const pieces = await env.DB.prepare(
           `SELECT slug, title, tag, section, cover, published_at
              FROM articles
@@ -242,24 +208,20 @@ export async function onRequest(context: AdminContext): Promise<Response> {
         ? await reach(() => env.DB!.prepare("select 1").first())
         : { ok: false, ms: 0 };
 
-      /* A REAL resource, and the reason is that this reported a
-         healthy project as unreachable for as long as the row
-         existed. It asked for `/rest/v1/`, which is PostgREST's
-         OpenAPI root, and Supabase does not serve that to a
-         publishable key: it answers 401, the probe read any
-         non-2xx as down, and /admin drew a red dot beside a
-         project that was ACTIVE_HEALTHY and answering every
-         query the site made.
+      /* A REAL resource. This asked for `/rest/v1/`, PostgREST's
+         OpenAPI root, which Supabase does not serve to a
+         publishable key: it answers 401, the probe read any non-2xx
+         as down, and /admin drew a red dot beside a project that
+         was ACTIVE_HEALTHY.
 
          PostgREST rather than `/auth/v1/health`, which would also
-         have answered 200: what this site needs Supabase FOR is
-         rows. A sign-in service that is up while PostgREST is
-         down is exactly the state a green dot must not describe.
+         answer 200: what this site needs Supabase FOR is rows, and
+         a sign-in service that is up while PostgREST is down is
+         exactly the state a green dot must not describe.
 
          `limit=0` so no row is read and row-level security has
          nothing to decide. Asked without a reader's bearer, so
-         what it establishes is that the service answers, not what
-         any one reader can see. */
+         what it establishes is that the service answers. */
       const supa = env.SUPABASE_URL && env.SUPABASE_KEY
         ? await reach(async () => {
           const res = await fetch(

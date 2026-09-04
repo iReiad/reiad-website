@@ -1,24 +1,13 @@
 "use client";
 
-/* ============================================================
-   routine/dashboard.tsx: the routine, as a tool.
+/* The routine, as a tool: a hero that states the answer, dense panels of
+   real numbers, charts drawn from the reader's own data, and the data
+   downloadable.
 
-   This replaced a checklist. The first version of `/tools/routine`
-   was two tabs over a list of tickable rows, and beside the stock
-   check and the scorecard it read as a note-taking app that had
-   wandered into a toolbox. What a tool on this site looks like is
-   settled: a hero that states the answer, dense panels of real
-   numbers under it, charts drawn from the reader's own data, and
-   the data downloadable.
-
-   ---- what it draws, and where each number comes from ----
-
-   Everything here is computed in `shared/routine.ts`, which is
-   the same module the print sheet and the year view read, and
-   which the Worker could read too. Nothing is computed in this
-   file: a component that does its own arithmetic is a second
-   answer to a question the engine already answers, and the two
-   drift.
+   Everything is computed in `shared/routine.ts`, which the print sheet
+   and the year view read too. Nothing is computed in this file: a
+   component that does its own arithmetic is a second answer to a question
+   the engine already answers, and the two drift.
 
    | the ring        | done()      | today, out of the day's tasks |
    | the hours       | hoursDone() | a tick is not an hour         |
@@ -33,22 +22,13 @@
    | the jar         | written()   | what was written in them      |
    | birds, plants   | flock(), garden() | the two that only grow  |
 
-   ---- the one rule every chart here obeys ----
+   THE ONE RULE EVERY CHART OBEYS: an unmarked day is not a zero.
+   `done()` returns null for a day nobody touched and every mean skips it,
+   because a chart that drew it as zero would tell somebody who took a
+   week off that they failed for a week.
 
-   AN UNMARKED DAY IS NOT A ZERO. `done()` returns null for a day
-   nobody touched, and every mean in the engine skips it. A chart
-   that drew it as zero would tell somebody who took a week off
-   that they failed for a week, which is the opposite of what this
-   is for. The sparkline draws a gap, the heatmap draws the empty
-   cell, and neither is counted.
-
-   ---- and it can be ticked from here ----
-
-   The day is on the dashboard, not behind a tab, because the
-   whole brief is that somebody can open this, mark three things
-   and close it. A dashboard you have to navigate out of to use is
-   a dashboard nobody opens twice.
-   ============================================================ */
+   The day is on the dashboard rather than behind a tab: a dashboard you
+   have to navigate out of to use is one nobody opens twice. */
 
 import { useCallback, useEffect, useMemo, useState, type CSSProperties } from "react";
 import {

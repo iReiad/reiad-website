@@ -1,5 +1,4 @@
-/* ============================================================
-   /api/schools, the four curricula out of the database.
+/* /api/schools, the four curricula out of the database.
 
    GET  /api/schools/audit                        admin: what is
                                                   unwritten, undeclared
@@ -13,42 +12,17 @@
    PUT  /api/schools/<school>/<stage>/<lesson>    admin: write one
                                                   lesson's prose
 
-   archive/TRANSITION.md Stage 8. The rows exist and this is the door they
-   are read through. Nothing on the site reads it yet: the pages
-   are still generated from `curriculum.js` and the committed HTML
-   is still what a reader gets. This is the half that has to exist
-   and be right before any of that changes.
+   THE WHOLE-SCHOOL PUT REPLACES ROWS rather than merging them: a
+   copy that half-updates is worse than one that is rewritten, and
+   the lesson that quietly kept its old text is the failure this
+   arrangement is built around.
 
-   ---- why the write side is a PUT of whole rows ----
-
-   The importer is a browser away from the files, not a server
-   with a copy of them. `scripts/import-schools.ts` reads the
-   four curricula and writes SQL, which is one `wrangler d1
-   execute` and is the fastest way in; this endpoint is the other
-   way, and the one that survives the files being deleted. It
-   takes the same rows as JSON and upserts them, so the desk can
-   fill the tables without anybody having a terminal, and so a
-   lesson editor has something to save into later.
-
-   It replaces rows rather than merging them. While the files are
-   still the source of truth these tables are a copy, and a copy
-   that half-updates is worse than one that is rewritten: the
-   lesson that quietly kept its old text is the failure this
-   whole stage is arranged around.
-
-   ---- and why one lesson is a different route ----
-
-   The whole-school PUT replaces a ladder. Saving a paragraph
-   through it would mean sending every lesson of that school back,
-   most of a megabyte for the money school, and any bug in the
-   round trip would rewrite 89 rows instead of one.
-
-   So the lesson editor has its own address, and it can only
-   UPDATE. The ladder is `curriculum.js` and the builders that
-   read it; the prose is these rows. A slug that is not already a
-   row is a 404 rather than an insert, because a lesson invented
-   at the editor is a lesson no page links to.
-   ============================================================ */
+   ONE LESSON IS A DIFFERENT ROUTE because saving a paragraph
+   through the whole-school PUT would mean sending every lesson of
+   that school back, and any bug in the round trip would rewrite 89
+   rows instead of one. That route can only UPDATE: a slug that is
+   not already a row is a 404 rather than an insert, because a
+   lesson invented at the editor is a lesson no page links to. */
 
 import { db } from "../../_lib/db.ts";
 import type { DbEnv } from "../../_lib/db.ts";
@@ -142,33 +116,26 @@ export async function onRequest(
 
       /* ---- the prose, as opposed to the ladder ----
 
-         ADMIN.md §3 B 7. `check-schools.ts` compares the two
+         ADMIN.md 3 B 7. `check-schools.ts` compares the two
          ladders and runs on a laptop; this is the half that can
          only be asked of the database: which lessons have no words
-         in them yet, which rows the ladder does not declare, and
-         which links inside a lesson body go nowhere.
+         in them, which rows the ladder does not declare, and which
+         links inside a lesson body go nowhere.
 
-         Behind the passphrase like the rest of §3 B. Nothing here
+         Behind the passphrase like the rest of 3 B. Nothing here
          is a secret, but a list of what is unwritten is the site
          talking about itself rather than to a reader.
 
-         ---- what it will and will not adjudicate ----
-
          A link is decided against the rows, so it is decided
-         COMPLETELY inside the space those rows describe: the four
-         schools and every stage's own base. Within that, "no such
-         address" is a fact. A link to `/tools` or to a piece is
-         not decided here at all and is returned as such, because
-         the route table is not in this database and a check that
-         guessed would cry wolf until nobody read it.
-         `check-routes.ts` is what walks the rest.
+         COMPLETELY inside the space those rows describe. A link to
+         `/tools` or to a piece is not decided here at all and is
+         returned as such, because the route table is not in this
+         database and a check that guessed would cry wolf until
+         nobody read it. `check-routes.ts` walks the rest.
 
-         The three answers are three, and not two, for the same
-         reason the health dot has three states. An old spelling
-         (`/money/index.html`, `/deutsch/stufe-1/arbeitsbuch.html`)
-         still answers, through a 301 in `aab/_redirects`, so
-         calling it dead would be a wrong word for a real thing:
-         it is worth fixing and it is not broken. */
+         Three answers and not two, because an old spelling still
+         answers through a 301 in `aab/_redirects`: calling it dead
+         would be a wrong word for a real thing. */
       if (school === "audit") {
         const denied = await requireAdmin(context);
         if (denied) return denied;
@@ -325,21 +292,15 @@ export async function onRequest(
       const admin = await requireAdmin(context);
       if (admin) return admin;
 
-      /* One lesson, which is what the Studio's lesson editor
-         saves. It is a separate path from the whole-school write
-         below rather than a special case of it, because the two
-         are answering different questions. The whole-school write
-         is the importer's door: it replaces a ladder. This one
-         changes the prose of a lesson that already exists, and
-         must not be able to change anything else.
+      /* One lesson, which is what the Studio's lesson editor saves.
+         A separate path from the whole-school write rather than a
+         special case of it, because the two answer different
+         questions: that one replaces a ladder, this one changes
+         the prose of a lesson that already exists and must not be
+         able to change anything else.
 
-         So it UPDATEs and never inserts. Which lessons exist,
-         what order they come in and which section they sit in are
-         decided by `curriculum.js` and the builders that read it,
-         and a lesson invented here would be a row no page links
-         to: a written lesson nobody can reach, which is the
-         failure the publishing checklist in CLAUDE.md exists for.
-         A slug that is not already there is a 404, not an insert. */
+         So it UPDATEs and never inserts. A lesson invented here
+         would be a row no page links to. */
       if (lesson) {
         if (!isSchool(school)) return fail("no-such-school", 404);
 
@@ -375,12 +336,12 @@ export async function onRequest(
            replaced the object would take all of them off the day
            somebody drew a picture, and the Studio's lesson editor
            does not send meta at all, so the replacement would be
-           `{}`. One key in, everything else untouched.
+           `{}`.
 
-           Narrow on purpose: this accepts `card` and nothing
-           else. A general meta merge would let any caller write
-           any field of a school's vocabulary through the one
-           endpoint that is meant for prose. */
+           Narrow on purpose: this accepts `card` and nothing else.
+           A general meta merge would let any caller write any
+           field of a school's vocabulary through the one endpoint
+           that is meant for prose. */
         let meta = existing.meta;
         if (patch.card !== undefined) {
           let held: Record<string, unknown> = {};

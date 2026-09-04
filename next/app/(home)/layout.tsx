@@ -1,39 +1,19 @@
-/* The home page's own root layout. A route group can carry one,
-   which is what lets `/` have a shell of its own beside the one
-   every other page in `(site)` builds for itself.
+/* The home page's own root layout. Two things are this page's alone.
 
-   Two things are this page's alone.
+   IT SCROLLS, on purpose: the front page is a deck built to grow
+   downwards as the site does, so it is an ordinary scrolling page with
+   the footer back on.
 
-   **It scrolls again, on purpose.** The door was one fixed
-   screen for a day; the front page is a deck now, built to grow
-   downwards as the site does, so it is an ordinary scrolling
-   page with the footer back on. See the note at the top of
-   `page.tsx` for what the first screen still promises.
+   IT PICKS WHICH INTRODUCTION TO SHOW, BEFORE THE FIRST PAINT. The rule
+   ships inside the document rather than in the stylesheet because `sw.js`
+   serves HTML network-first and everything else cache-first, so the first
+   load after any deploy pairs new markup with the previous stylesheet: a
+   page whose introduction is only legible when the two are in step is
+   illegible once per deploy. It is rendered rather than appended, because
+   a node a script adds before React hydrates is a node React removes.
 
-   **It picks which introduction to show, before the first
-   paint.** Three, and only one of them is the reader's. The rule
-   ships inside the document rather than in `styles.css`, which is
-   the original's argument and is kept: `sw.js` serves HTML
-   network-first and everything else cache-first, so the first
-   load after any deploy pairs new markup with the previous
-   stylesheet, and a page whose introduction is only legible when
-   the two are in step is a page that is illegible once per
-   deploy. A rule that ships inside the document cannot be out of
-   step with it.
-
-   It is rendered rather than appended, because a node a script
-   adds before React hydrates is a node React removes.
-   `components/scripts.tsx` is the whole story.
-
-   ---- what went, and it is most of this file ----
-
-   The `track` half. A learner used to be "finance" or "skills",
-   because the learning side had two front doors: money at
-   `/money/` and everything else at `/skills/`. The money school
-   is an entry in the skills list now, so there is one door and
-   the refinement has nothing left to refine. Anything a browser
-   still has stored under `track` is ignored here and cleared the
-   next time the audience switch is pressed. */
+   Anything a browser still has stored under `track` is ignored here and
+   cleared the next time the audience switch is pressed. */
 
 import { siteLayout } from "../../components/page";
 
@@ -46,20 +26,16 @@ const PICK = `(function(){var d=document.documentElement;var pick="open";try{`
   + `if(a==="work")pick="work";else if(a==="learn")pick="learn"}catch(e){}`
   + `d.setAttribute("data-hl",pick)})()`;
 
-/* One of the three shows. The rule hangs off `[data-hl]`, which
-   the script above sets and nothing else does, so a reader with
-   no JavaScript matches none of it and the <noscript> rule below
-   is what they get instead.
+    /* One of the three shows. The rule hangs off `[data-hl]`, which the
+       script above sets and nothing else does, so a reader with no
+       JavaScript matches none of it and gets the <noscript> rule.
 
-   Written as "hide the two that do not match" rather than "hide
-   all three, then show one", and the difference is not style. A
-   rule in this inline sheet is unlayered, and unlayered author
-   CSS beats every @layer in styles.css; the old `display:revert`
-   on the winner therefore pinned the shown lede's display from
-   here, and the door's own compact rules (the line clamp on a
-   phone, the step-out on a phone held sideways) silently lost to
-   it. Saying nothing about the winner hands it back to the
-   stylesheet, which is where its layout belongs. */
+       Written as "hide the two that do not match" rather than "hide all
+       three, then show one", and the difference is not style: a rule in
+       this inline sheet is unlayered, and unlayered author CSS beats every
+       @layer in the stylesheet, so `display:revert` on the winner pins its
+       display from here and the door's own compact rules silently lose.
+       Saying nothing about the winner hands it back to the stylesheet. */
 const WHEN = `[data-hl="open"] [data-when]:not([data-when="open"]),`
   + `[data-hl="learn"] [data-when]:not([data-when="learn"]),`
   + `[data-hl="work"] [data-when]:not([data-when="work"]){display:none}`;

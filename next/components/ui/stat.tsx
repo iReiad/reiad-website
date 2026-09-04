@@ -1,46 +1,22 @@
-/* ============================================================
-   ui/stat.tsx: a figure, and what it is a figure of.
+/* A figure, and what it is a figure of. Fifty of these across the seven
+   case studies, every one the same four lines: a label, a placeholder, a
+   note and a `data-tile` key.
 
-   Fifty of these across the seven case studies, every one the
-   same four lines written out: a label, a placeholder, a note,
-   and a `data-tile` key. Fifty copies is fifty chances for one of
-   them to set its own font size, and several had.
+   IT RENDERS THE CLASSES, and that is a contract rather than a
+   preference. Seven modules under `aab/portfolio/` and the stock check
+   fill these in and find them by `[data-tile="x"] .tile-value`, and
+   `dissertation.js` BUILDS one in the browser out of the same markup: a
+   tile whose look lived in utilities would leave that one unstyled,
+   because Tailwind's compiler cannot see a string inside a module.
 
-   ---- it renders the classes, and that is deliberate ----
+   The tone colours are `.tile[data-tone="warn"] .tile-value` in
+   `@layer components`, and `tw` is a LATER layer, so a utility on the
+   value silently wins over every tone a module sets and the page still
+   renders: the number is simply never red.
 
-   This does NOT style itself with utilities, which is what the
-   first version of it did, and the reason is a contract rather
-   than a preference.
-
-   Seven modules under `aab/portfolio/` and the stock check fill
-   these in, and they find them by `[data-tile="x"] .tile-value`.
-   Two other things follow from that:
-
-     · `dissertation.js` BUILDS one, in the browser, out of the
-       same `.tile` / `.mono` / `.tile-value` markup. A tile whose
-       look lived in utilities would leave that one unstyled,
-       because Tailwind's compiler cannot see a string inside a
-       module any more than it can see an article body.
-
-     · The tone colours are `.tile[data-tone="warn"] .tile-value`
-       in `@layer components`, and `tw` is a LATER layer than
-       `components`. So a utility on the value silently wins over
-       every tone a module sets, and the page still renders: the
-       number is simply never red. That is the exact shape of
-       failure this repository keeps returning to.
-
-   So the class is the interface, `@layer components` owns the
-   look, and one rule there restyles all fifty. When the seven
-   modules become components (ARCHITECTURE.md, Stage B) this can
-   become utilities and not before.
-
-   ---- the number is not the label ----
-
-   Taken as three props rather than as children, because a figure,
-   its caption and its footnote are three kinds of text and a
-   component that took one blob would leave that to the call site,
-   which is where the fifty copies came from.
-   ============================================================ */
+   The number, its caption and its footnote are three props rather than
+   one blob, because leaving that to the call site is where the fifty
+   copies came from. */
 
 import type { ReactNode } from "react";
 

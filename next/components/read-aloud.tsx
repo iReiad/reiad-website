@@ -1,46 +1,23 @@
 "use client";
 
-/* ============================================================
-   read-aloud.tsx: the speech control under a piece's byline.
+/* The speech control under a piece's byline.
 
-   `archive/modules/read-aloud.js` was 150 lines that built this
-   toolbar with `document.createElement`, inserted it after
-   `.byline`, and appended a `<style>` to the head for the one
-   class it needed.
-   Both of those are the shape `components/scripts.tsx` is entirely
-   about: a node a script adds to a document React is about to
-   adopt is a node React removes. It survived only because it was
-   loaded from an effect.
+   IT RENDERS NOTHING ON THE SERVER, and that is the point: whether a
+   browser can speak is not a fact the server has, so the toolbar appears
+   after mount or not at all.
 
-   ---- it renders nothing on the server, and that is the point ----
+   WHAT IT READS, AND WHAT IT MUST NOT WRITE. The paragraphs come out of
+   the DOM rather than from a prop, because an article's body is HTML in a
+   database set with `dangerouslySetInnerHTML`: there is nothing to pass.
+   Reading the DOM after mount is fine. The one thing written into it is
+   `.read-aloud-highlight` on the paragraph being spoken, and it is taken
+   off again; React does not reconcile the inside of a
+   `dangerouslySetInnerHTML` node.
 
-   Whether a browser can speak is not a fact the server has, and
-   the module's first line was `if (!("speechSynthesis" in window))
-   return`. So the toolbar appears after mount or not at all, which
-   is the same rule `lib/progress.ts` follows for what a reader has
-   read: the page is the server's and the browser's own capability
-   is the browser's.
-
-   ---- what it reads, and what it must not write ----
-
-   The paragraphs come out of the DOM rather than from a prop,
-   because an article's body is HTML in a database set with
-   `dangerouslySetInnerHTML`: there is nothing to pass. READING the
-   DOM after mount is fine and is not what the rule above forbids.
-   The one thing written into it is `.read-aloud-highlight` on the
-   paragraph being spoken, and it is taken off again; React does
-   not reconcile the inside of a `dangerouslySetInnerHTML` node, so
-   nothing it does can survive a re-render of one that does.
-
-   ---- Stop stops, which is new ----
-
-   The module's Stop cancelled the current sentence and its loop
-   then spoke the next one, because the only thing that would have
-   broken the loop was `window.canceledByUser`, which nothing on
-   this site has ever set. `run` below is the token that fixes it:
-   every press claims a number, and a loop whose number is no
-   longer the current one stops where it is.
-   ============================================================ */
+   STOP STOPS. Cancelling the current sentence is not enough: the loop
+   speaks the next one. `run` below is the token that fixes it, so every
+   press claims a number and a loop whose number is no longer current
+   stops where it is. */
 
 import { useCallback, useEffect, useRef, useState, type ReactElement } from "react";
 import { Button } from "./ui/button";
@@ -203,16 +180,14 @@ export function ReadAloud(): ReactElement | null {
     <div ref={rootRef}
          className="read-aloud-toolbar flex flex-wrap items-center gap-2 select-none">
       <Button kind="ghost" size="sm" onClick={press}>{speaking ? STOP : IDLE}</Button>
-      {/* SPEED ONLY WHILE IT IS SPEAKING. It was always there, on
-          the row between the byline and the first sentence, which
-          is a slider a reader has to look past to start reading
-          and cannot have an opinion about yet: nobody knows a
-          voice is too fast until they have heard it.
+          {/* SPEED ONLY WHILE IT IS SPEAKING. On the row between the
+              byline and the first sentence it is a slider a reader has to
+              look past to start reading and cannot have an opinion about
+              yet: nobody knows a voice is too fast until they have heard
+              it.
 
-          It keeps its value across a stop and a start, because
-          `rate` is state on this component and only the markup
-          goes. Somebody who slows the voice down once does not
-          have to do it again on the next paragraph. */}
+              It keeps its value across a stop and a start, because `rate`
+              is state on this component and only the markup goes. */}
       {speaking ? (
         <label className="flex items-center gap-1.5 text-t1 text-ink-soft">
           Speed

@@ -1,45 +1,23 @@
-/* ============================================================
-   hydrate-fixture.ts: one component, server-rendered and then
-   hydrated, in a real browser.
-
-   Not a test. `insights-hub.test.ts` and `read-aloud.test.ts` both
-   need the same four things before they can ask anything: the
-   component rendered to HTML the way a route renders it, that HTML
-   served with a script that hydrates it, a browser pointed at the
-   result, and an honest answer about whether any of that was
-   possible. This is those four things, once.
+/* One component, server-rendered and then hydrated, in a real browser.
+   Not a test: several browser tests need the same four things before they
+   can ask anything, so this is those four things once.
 
    ```ts
    const { SomeThing } = await load("export { SomeThing } from './components/x';");
-   const fixture = await open({
-     port: 8993,
-     body: `<div id="root">${markup}</div>`,
-     entry: `import { hydrateRoot } from "react-dom/client"; …`,
-   });
+   const fixture = await open({ port: 8993, body: `...`, entry: `...` });
    ```
 
-   ---- why a fixture rather than the route ----
+   A fixture rather than a route because `/insights` and an article are
+   both `force-dynamic`, so neither is in `.next/server/app/` and
+   `interactive.test.ts` cannot serve either. This asks the smaller
+   question: does the COMPONENT do what the module it replaced did, once
+   React has adopted the server's HTML.
 
-   `/insights` and an article are both `force-dynamic`, so
-   neither is in `.next/server/app/` and `interactive.test.ts`
-   cannot serve either. The other way in is `dev-worker.ts`, which
-   is the OpenNext build on workerd with a database under it, and
-   that is what `article.test.ts` and `parity.test.ts` use.
-
-   This is the smaller question, asked where it can be asked
-   quickly: does the COMPONENT do what the module it replaced did,
-   once React has adopted the server's HTML. What the route puts on
-   the page is the parity test's question and stays there.
-
-   ---- the hydration is the point, not a detail ----
-
-   The server's markup goes into the document and the browser
-   hydrates it, rather than rendering it from scratch, because that
-   is the arrangement every one of these components is really in
-   and it is the one that has gone wrong here before. A mismatch
-   shows up as React error #418 in the console, which every caller
-   below watches for.
-   ============================================================ */
+   THE HYDRATION IS THE POINT: the server's markup goes into the document
+   and the browser hydrates it, rather than rendering from scratch,
+   because that is the arrangement these components are really in. A
+   mismatch shows up as React error #418, which every caller watches
+   for. */
 
 import { createServer, type Server } from "node:http";
 import { dirname, join } from "node:path";
@@ -145,16 +123,15 @@ export interface Fixture {
   close: (code?: number) => Promise<never>;
 }
 
-/**
- * Serve one page and open a browser on it.
- *
- * @param body    what goes inside `<body>`, which is the server's
- *                render with whatever wraps it.
- * @param entry   the module that hydrates it, as source. Served at
- *                `/hydrate.js` and loaded with `type="module"`.
- * @param files   anything else the page asks for by path, which is
- *                how a component's runtime module is stubbed.
- */
+    /**
+     * Serve one page and open a browser on it.
+     *
+     * @param body    what goes inside `<body>`: the server's render.
+     * @param entry   the module that hydrates it, as source. Served at
+     *                `/hydrate.js` and loaded with `type="module"`.
+     * @param files   anything else the page asks for by path, which is how
+     *                a component's runtime module is stubbed.
+     */
 export async function open({ port, body, entry, files = {} }: {
   port: number;
   body: string;
