@@ -1,22 +1,6 @@
-/* ============================================================
-   dissertation.js: the exhibits.
-
-   Nine views over one piece of research:
-
-     1. the two indices, rebased, over the sample window
-     2. the sample itself, 220 dots, three of them Islamic
-     3. the excess-return column, against a normal curve
-     4. the univariate comparison, as dumbbells with p-values
-     5. the factor loadings, as a forest plot with intervals
-     6. market beta across the three specifications
-     7. the two group drawdown curves
-     8. the evidence map, what the literature already said
-     9. the power curve, what this sample could have detected
-
-   Charts are hand-drawn inline SVG, like everywhere else on the
-   site: they inherit the theme's colours, they cost nothing, and
-   nothing here needs a plotting library.
-   ============================================================ */
+/* dissertation.js: nine exhibits over one piece of research.
+   Charts are hand-drawn inline SVG, like everywhere else here:
+   they inherit the theme's colours and need no library. */
 
 import {
   UNIVARIATE, REGRESSIONS, SPEC_ORDER, FACTORS, IVOL, MDD, SAMPLE,

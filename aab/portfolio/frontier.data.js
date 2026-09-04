@@ -1,38 +1,19 @@
-/* ============================================================
-   frontier.data.js: the price history and company data behind
-   the portfolio-construction case study.
+/* frontier.data.js: the price history and company data behind
+   the portfolio-construction case study. Everything the page
+   computes is computed in the browser from these numbers; none
+   of it is precomputed and pasted in.
 
-   WHAT THIS IS
+   PROVENANCE: prices and fundamentals were collected from a
+   Bloomberg terminal and cross-checked against Yahoo Finance.
+   Prices are in pence, as quoted, adjusted for corporate actions
+   where the source series was adjusted. The FTSE 250 comparison
+   is ANNUAL total returns rather than a daily series, so every
+   comparison the page draws against it is annual and says so.
 
-   Daily closing prices for thirteen FTSE 250 constituents over
-   2015, and for the ten that were selected over 2016 to 2020.
-   Company fundamentals as at the screening date. Everything the
-   page computes, the covariance matrix, the efficient frontier,
-   the optimised weights and the five-year hold-out test, is
-   computed in the browser from the numbers in this file. None of
-   it is precomputed and pasted in.
-
-   PROVENANCE
-
-   Prices and fundamentals were collected from a Bloomberg
-   terminal and cross-checked against Yahoo Finance, and are
-   reproduced here as the underlying data for the analysis on the
-   page. Prices are in pence, as quoted, adjusted for corporate
-   actions where the source series was adjusted.
-
-   The one figure that is not a market price is the FTSE 250
-   comparison, which is held here as annual total returns rather
-   than a daily series, because a daily index history was not
-   part of the collected set. Anywhere the page compares the
-   portfolio with the index it does so annually, and says so.
-
-   INTEGRITY
-
-   CHECKS below was computed from these arrays at the time they
-   were written. frontier.test.ts recomputes each one from the
-   shipped numbers, so a truncated series or a shifted column
-   fails the tests rather than quietly changing a chart.
-   ============================================================ */
+   CHECKS below was computed from these arrays.
+   `frontier.test.ts` recomputes each one, so a truncated series
+   or a shifted column fails a test rather than quietly changing
+   a chart. */
 
 /** The thirteen that survived the fundamental and ESG screen. */
 export const COMPANIES = [

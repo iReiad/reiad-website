@@ -1,17 +1,8 @@
-/* ============================================================
-   three-statement.js: the dashboard around the model.
-
-   All the accounting lives in three-statement.model.js, which has
-   no DOM in it and is tested on its own. This file only turns the
-   numbers into something you can push around: controls, tables,
-   charts, and a link that carries the whole model with it.
-
-   Every control writes into one `state` object, the model is
-   re-run from scratch, and everything repaints. There is no
-   partial update and no caching: the model runs in well under a
-   millisecond, and a single code path that always rebuilds is
-   worth far more than a fast one that can disagree with itself.
-   ============================================================ */
+/* three-statement.js: the dashboard around the model. Every
+   control writes into one `state` object, the model is re-run
+   from scratch and everything repaints. No partial update and no
+   caching: the model runs in well under a millisecond, and one
+   code path that always rebuilds cannot disagree with itself. */
 
 import {
   COMPANY, ACTUALS, SCENARIOS, DRIVERS, run, toCsv, openingCheck,

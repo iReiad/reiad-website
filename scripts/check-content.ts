@@ -1,62 +1,30 @@
 #!/usr/bin/env node
-/* ============================================================
-   check-content.ts, catch a page that has stopped telling the
-   truth about the site.
+/* check-content.ts: a page that has stopped telling the truth
+   about the site. Nobody writes a wrong number; each one is right
+   when it is typed, and then the thing it counts grows.
 
        node scripts/check-content.ts
 
-   THE BUG THIS EXISTS FOR
-
-   Three case studies were written, given their own pages, added
-   to the manifest, and published. The portfolio page kept listing
-   four, because its cards are markup and markup does not know
-   that a fourth, fifth and sixth file appeared next to it. The
-   same week, the stock check was described as "thirty-eight
-   ratios" on one page, "thirty-odd" on four others and "more than
-   thirty-six" in Bangla, for a model that scores forty-four.
-
-   Nobody wrote a wrong number. Each one was right when it was
-   typed, and then the thing it counted grew. check-routes looks
-   at links, check-css looks at selectors, check-sw looks at
-   caches, and nothing looked at whether the site's sentences
-   still matched the site.
-
-   WHAT IT CHECKS
-
-   1. EVERY CASE STUDY IS REACHABLE. A page in /portfolio/ that
-      looks like a case study must have an entry in PAGES (which
-      is what puts it in the menu, the palette and the sitemap)
-      and a link on portfolio.html (which is what a human finds).
-      Either one missing is the exact failure above.
-
-   2. EVERY PAGES ENTRY EXISTS. A manifest pointing at a file
-      that was renamed is a dead link in the menu of every page
-      on the site.
-
+   1. EVERY CASE STUDY IS REACHABLE: an entry in PAGES, which is
+      what puts it in the menu, the palette and the sitemap, AND a
+      link on the portfolio page, which is what a human finds.
+   2. EVERY PAGES ENTRY RESOLVES. A manifest pointing at a file
+      that was renamed is a dead link in the menu of every page.
    3. [data-count] SLOTS ARE HONEST. app.js fills these from
-      COUNTS at runtime, and the number left in the markup is the
-      fallback for a reader with no JavaScript. A fallback nobody
-      re-checks is the old bug wearing a hat, so it has to match
-      the computed value, in Latin or Bangla digits.
+      COUNTS at runtime and the number left in the markup is the
+      no-JavaScript fallback, so it has to match, in Latin or
+      Bangla digits.
+   4. TYPED COUNTS AGREE WITH THE DATA. A sentence that cannot
+      hold a slot goes in CLAIMS with the key it encodes.
+   5. THE TWO COUNTS `shared/content.ts` CANNOT COMPUTE.
+      `ratios` and `pillars` belong to `tools/stock.model.js`,
+      which the manifest deliberately does not import, so they are
+      typed in COUNTS and asserted against that model here.
 
-   4. TYPED COUNTS AGREE WITH THE DATA. Some numbers cannot be a
-      slot: a <meta> description, a blurb inside the manifest, a
-      sentence in a comment. Those are listed in CLAIMS below with
-      the count they encode, and checked against COUNTS.
-
-   5. THE TWO COUNTS shared/content.ts CANNOT COMPUTE. `ratios`
-      and `pillars` describe /tools/stock.model.js, which the
-      manifest does not import: it would pull a thousand lines
-      of scoring maths into every page on the site to print one
-      number. They are typed in COUNTS and asserted here instead.
-
-   ADDING A CASE STUDY, or any page with a count in its copy:
-   put it in PAGES, link it from the page that lists its kind,
-   and prefer a [data-count] slot over typing the number. If a
-   sentence really cannot take a slot, add it to CLAIMS so the
-   next person to change the data finds out from this script
-   rather than from a reader.
-   ============================================================ */
+   Adding a page with a count in its copy: prefer a [data-count]
+   slot, and if the sentence really cannot take one, add it to
+   CLAIMS so the next data change fails a check rather than a
+   reader. */
 
 import { readFileSync, readdirSync, existsSync } from "node:fs";
 import { dirname, join } from "node:path";
@@ -66,16 +34,10 @@ import { HEADS } from "../shared/heads.ts";
 import { nextOwns } from "../worker.js";
 import { METRICS, PILLARS } from "../aab/tools/stock.model.js";
 
-/* `ROOT` was this file's own directory, which was `aab/`. It moved
-   out for the reason the four checks before it did: every file in
-   `aab/` is uploaded and answers at a public URL, so a check
-   living there was a check published at `/check-content.ts`,
-   kept private only by a line in `.assetsignore`. A check outside
-   the served directory cannot be served, and the extension goes
-   with it because the root declares `"type": "module"`.
-
-   Everything it reads is still relative to `aab/`, so that is
-   what `ROOT` keeps meaning. */
+/* `ROOT` was this file's own directory, which was `aab/`: every
+   file there answers at a public URL, so a check living there was
+   a check published. Everything it reads is still relative to
+   `aab/`, so that is what `ROOT` keeps meaning. */
 const ROOT = join(dirname(fileURLToPath(import.meta.url)), "..", "aab");
 let failures = 0;
 
@@ -91,16 +53,12 @@ const read = (rel: string): string => readFileSync(join(ROOT, rel), "utf8");
    1. Every case study is in the manifest and on the page
    ------------------------------------------------------------ */
 
-/* A case study is a route under /portfolio/, which since Stage
-   11.3 means a directory in the Next.js app rather than a file in
-   `aab/portfolio/`. That directory is still there and still holds
-   the modules and the tests each study is computed from; what it
-   no longer holds is a page.
-
-   The two failures this section exists for are unchanged, and so
-   is the answer: a case study nobody can reach, either because
-   the manifest has never heard of it or because the portfolio
-   page does not link it. */
+/* A case study is a route under /portfolio/, so a directory in the
+   Next.js app rather than a file. `aab/portfolio/` still holds the
+   modules and tests each study is computed from; what it no longer
+   holds is a page. The failure is unchanged: a case study nobody
+   can reach, because the manifest has never heard of it or because
+   the portfolio page does not link it. */
 const NEXT_PAGES = "../next/app/(site)";
 /* One directory per case study, and the parenthesised one is not
    a case study: `(hub)` is the route group holding the portfolio
@@ -116,17 +74,13 @@ const caseFiles = readdirSync(join(ROOT, NEXT_PAGES, "portfolio"), { withFileTyp
 const listed = new Set(
   PAGES.flatMap((p) => (p.group === "case" && p.url ? [p.url] : []))
 );
-/* The route AND the table it renders from. The seven cards were
-   seven blocks of markup in the route, each carrying its own
-   `href`, until the front page had to show them too and a second
-   copy of the list would have been the failure this file opens
-   with. `next/lib/work.ts` is the one list now, joined from
-   `PAGES`, and both pages map over it, so the href a reader
-   presses is in that file rather than in either page.
-
-   Reading both is what keeps this question honest rather than
-   answering it by construction: a study whose row is gone from
-   `work.ts` is still unreachable, and this still says so. */
+/* The route AND the table it renders from. `next/lib/work.ts` is
+   the one list, joined from `PAGES`, and both the portfolio page
+   and the front page map over it, so the href a reader presses is
+   in that file rather than in either page. Reading both is what
+   keeps this question honest rather than answering it by
+   construction: a study whose row is gone from `work.ts` is still
+   unreachable, and this still says so. */
 const portfolioHtml = read(`${NEXT_PAGES}/portfolio/(hub)/page.tsx`)
   + read("../next/lib/work.ts");
 
@@ -137,10 +91,9 @@ for (const url of caseFiles) {
       "neither the menu, the Ctrl+K palette nor the sitemap.",
       'Add: { title: "…", url: "' + url + '", hint: "Case study", group: "case", blurb: "…" }');
   }
-  /* The url as a quoted string rather than as `href="..."`. The
-     route no longer writes an anchor per study: it maps over
-     `STUDIES`, where the address is the key of a row. Both shapes
-     are the same claim, which is that this study is named
+  /* The url as a quoted string rather than as `href="..."`: the
+     route maps over `STUDIES`, where the address is the key of a
+     row. Both shapes are the same claim, that this study is named
      somewhere the portfolio page renders from. */
   if (!portfolioHtml.includes(`"${url}"`)) {
     fail(`unlinked  ${url}`,
@@ -158,24 +111,18 @@ for (const url of listed) {
   }
 }
 
-/* ------------------------------------------------------------
-   2. Every PAGES entry resolves: a file, or a Worker
+/* ---- 2. Every PAGES entry resolves: a file, or a Worker
 
-   "A file that exists" was the whole question until Stage 11.
-   Some of these addresses are rendered on request now and have no
-   file behind them on purpose, so the question is the one
-   check-routes.ts already answers: does anything at all answer
-   this URL. A manifest entry pointing at neither is a dead link
-   in the menu of every page on the site, which is what this has
-   always been for.
-   ------------------------------------------------------------ */
+   Some of these addresses are rendered on request and have no file
+   behind them on purpose, so the question is the one
+   check-routes.ts answers: does anything at all answer this URL.
+   An entry pointing at neither is a dead link in the menu of every
+   page on the site. ---- */
 for (const page of PAGES) {
-  /* An entry with no address at all. `Page.url` is a string since
-     the manifest became TypeScript, so the two workbook groups can
-     no longer produce a null one: they build the url first and skip
-     the stage when `workbookUrl()` answers null for a book that
-     does not exist. An empty one is still a menu item and a palette
-     entry that go nowhere, and this is where that is said. */
+  /* An entry with no address at all. `Page.url` is a string, so
+     the two workbook groups build the url first and skip the stage
+     when `workbookUrl()` answers null. An empty one is still a
+     menu item and a palette entry that go nowhere. */
   if (!page.url) {
     fail(`no-url    ${page.title}`,
       "this PAGES entry has no url, so it is in the menu and in the palette",
@@ -185,10 +132,9 @@ for (const page of PAGES) {
   const rel = page.url.replace(/^\//, "");
   if (existsSync(join(ROOT, rel))) continue;
   /* A Worker renders it, so there is no file to look for.
-     `nextOwns` is worker.js's own predicate rather than a copy of
-     it; whether the asset router lets the path through before the
-     Worker sees it is check-routes.ts's question, not this
-     file's. */
+     `nextOwns` is worker.js's own predicate rather than a copy;
+     whether the asset router lets the path through first is
+     check-routes.ts's question. */
   if (nextOwns(page.url)) continue;
   fail(`no-file   ${page.url}`,
     `PAGES calls this "${page.title}", and there is neither a file`,
@@ -208,18 +154,12 @@ const fromBangla = (s: string): string =>
   s.replace(/[০-৯]/g, (d) => String(BN_DIGITS.indexOf(d)));
 
 /* Every file that can carry a slot, which is no longer only
-   `aab/*.html`.
-
-   This walked `aab/` for `.html` and nothing else, and by the time
-   anybody looked there was ONE slot left there and six in the
-   routes. So the rule below was reading a seventh of the site and
-   reporting "every count agrees with the data", which is this
-   check's own opening bug wearing a hat: each thing was right when
-   it was typed, and then the pages moved.
-
-   Proven rather than assumed: setting `data-count="ratios"` to 99
-   in `tools/index.html/page.tsx`, for a model that scores 44, left
-   this passing. */
+   `aab/*.html`. Walking `aab/` alone read a seventh of the site
+   and reported "every count agrees with the data", which is this
+   check's own opening bug: each thing was right when it was typed,
+   and then the pages moved. Proven rather than assumed, by setting
+   a slot to 99 for a model that scores 44 and watching this
+   pass. */
 const htmlFiles = [];
 (function walk(dir) {
   for (const entry of readdirSync(join(ROOT, dir), { withFileTypes: true })) {
@@ -244,13 +184,13 @@ for (const dir of ["../next/app", "../next/components"]) {
 }
 
 /* `COUNTS`, looked up by a name this file cannot know at compile
-   time: the keys come out of markup (`data-count="stages"`) and out
-   of the CLAIMS table below, and whether one of them really is a
-   key is the question both sections ask.
+   time: the keys come out of markup (`data-count="stages"`) and
+   out of CLAIMS, and whether one really is a key is what both
+   sections ask.
 
-   An annotation rather than a cast, so that it is checked: this
-   line stops compiling the day a value in COUNTS stops being a
-   number, which is what both readers below take it to be. */
+   An annotation rather than a cast, so it is checked: this line
+   stops compiling the day a value in COUNTS stops being a
+   number. */
 const COUNT: Record<string, number> = COUNTS;
 
 const SLOT = /<span[^>]*\bdata-count="([a-zA-Z]+)"[^>]*>([^<]*)<\/span>/g;
@@ -284,10 +224,10 @@ for (const file of htmlFiles) {
    vaguer forms ("forty-odd") to cover a decade, because that is
    what they mean: forty-odd is right for 41 and wrong for 58. */
 /** One sentence that states a number in words, and the COUNTS key
-    it is really quoting. Two shapes, and a claim is exactly one of
-    them: `word` is a number written out exactly, `approx` marks a
-    vaguer form covering a decade. Writing both on one entry, or
-    neither, is what this union refuses. */
+    it is quoting. A claim is exactly one of two shapes: `word` is
+    a number written out exactly, `approx` a vaguer form covering a
+    decade. Both on one entry, or neither, is what this union
+    refuses. */
 type Claim =
   | { file: string; text: string; key: string; word: string; approx?: never }
   | { file: string; text: string; key: string; approx: true; word?: never };
@@ -361,16 +301,13 @@ if (COUNTS.pillars !== PILLARS.length) {
     `COUNTS.pillars is ${COUNTS.pillars}, but stock.model.js has ${PILLARS.length} pillars.`);
 }
 
-/* ------------------------------------------------------------
-   6. The door marks words it actually says
-   ------------------------------------------------------------
+/* ---- 6. The door marks words it actually says
 
-   `DOOR.copy[*].mark` is drawn by finding it inside `headline`
-   and painting a marker stroke under those characters. A `mark`
-   the headline does not contain is not an error anywhere: the
-   site renders the sentence with nothing marked, the app renders
-   it with nothing marked, and the flourish that carries the
-   promise is silently gone on a page that looks finished. */
+   `DOOR.copy[*].mark` is drawn by finding it inside `headline` and
+   painting a marker stroke under those characters. A `mark` the
+   headline does not contain is not an error anywhere: site and app
+   both render the sentence with nothing marked, and the flourish
+   that carries the promise is silently gone. ---- */
 for (const [when, copy] of Object.entries(DOOR.copy)) {
   if (!copy.headline.includes(copy.mark)) {
     fail("drifted   shared/content.ts",
@@ -388,21 +325,13 @@ for (const fact of DOOR.facts) {
   }
 }
 
-/* ------------------------------------------------------------
-   7. A number in a hub's lede is a SLOT, never a numeral
-   ------------------------------------------------------------
+/* ---- 7. A number in a hub's lede is a SLOT, never a numeral
 
-   `HEADS` carries what each hub page says about itself, and a
-   lede that states a count names the `COUNTS` key that fills it
-   rather than holding a figure. Both halves have to be true and
-   each fails differently:
-
-   A `{n}` with no key ships the literal characters `{n}` to a
-   reader, on the site and in the app. A key with no `{n}` is a
-   count nobody ever prints, which is the shape this whole file
-   exists for: right on the day it was written, and then the
-   thing it counted grew and nothing said so.
-   ------------------------------------------------------------ */
+   A lede in `HEADS` that states a count names the `COUNTS` key
+   that fills it. Both halves have to be true and each fails
+   differently: a `{n}` with no key ships the literal characters
+   `{n}` to a reader, on the site and in the app, and a key with no
+   `{n}` is a count nobody ever prints. ---- */
 for (const [key, head] of Object.entries(HEADS)) {
   const slot = head.lede.includes("{n}");
   if (slot && !head.count) {

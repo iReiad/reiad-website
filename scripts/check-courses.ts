@@ -1,77 +1,40 @@
 #!/usr/bin/env node
-/* ============================================================
-   check-courses.ts: the third-party course section, held to the
-   eight things about it that are easy to get quietly wrong.
+/* check-courses.ts: the third-party course section, held to the
+   eight things that are easy to get quietly wrong. None produces
+   an error at runtime; each produces a page that renders, looks
+   finished, and is wrong.
 
        node scripts/check-courses.ts
 
-   None of these produces an error at runtime. Each of them
-   produces a page that renders, looks finished, and is wrong,
-   which is the shape of bug this repository writes checks for.
-
-   1. A DRIVE ID THAT IS NOT ONE. The catalogue is a list of
-      33-character Drive ids and nothing else identifies a lesson's
-      video. A truncated or mistyped id is a `/preview` iframe that
-      loads Drive's "file not found" page inside a 16:9 box. It
-      looks like a permissions problem, it is reported as one, and
-      no amount of changing sharing settings fixes it.
-
-   2. THE CATALOGUE LEAKING INTO THE BROWSER BUNDLE. The whole
-      section is admin-only, and the way it stays that way is that
-      no page renders it: the shells are empty and the data comes
-      from `/api/courses` behind `isAdmin()`. One `import { COURSES }`
-      in a Next component undoes all of that silently, because the
-      page still looks identical. Only `import type` is allowed.
-
+   1. A DRIVE ID THAT IS NOT ONE: a truncated id is Drive's "file
+      not found" page inside a 16:9 box, which reads as a
+      permissions problem no sharing setting fixes.
+   2. THE CATALOGUE LEAKING INTO A BROWSER BUNDLE. The section is
+      admin-only because no page renders it. One
+      `import { COURSES }` under `next/` undoes that silently.
+      Only `import type` is allowed.
    3. THE TWO COPIES OF "WHERE DOES A LESSON LIVE" DISAGREEING.
       `shared/courses.ts` is the Worker's and `aab/src/courses.ts`
-      is the browser's, and neither can import the other. So the
-      seven address rules are written twice on purpose, and this is
-      what stops the two from drifting: a sidebar that links to
-      one address while the router serves another is a section of
-      dead links that every individual page passes.
-
-   4. A SLUG THAT IS NOT AN ADDRESS. Every slug is both a URL
-      segment and part of the id a reader's ticks are filed under,
-      so it has to be lower case and hyphens like every other
-      address here. The first real import produced 21 that were
-      not, and a slug is the one thing that cannot be tidied later
-      without losing somebody's progress.
-
-   5. AN ADDRESS THE WORKER DOES NOT ROUTE. `NEXT_ROUTES` in
-      `worker.js` decides which paths reach the Next.js Worker at
-      all. A slug shape it does not match is a page that 404s on
-      the live site while every other check here passes, and the
-      Cloudflare branch preview CANNOT catch it: the preview is
-      the Next Worker addressed directly, so it answers whatever
-      it is asked and never consults that table. This is the one
-      thing about this section that only a local check can see.
-
-   6. FILES THE IMPORTER QUIETLY DROPPED. `splitName()` decides
-      what a filename is, and anything it does not recognise is
-      skipped. That is not a visible failure: the lesson still
-      renders, with one fewer thing under it, and two whole modules
-      once came back empty and were drawn as "not imported" while
-      their pages sat in the folder. The first real import dropped
-      133 of 1,579 files this way. So the drop rate is measured
-      against the committed listing and has to stay near zero.
-
-   7. THE API SAYING SOMETHING THE BROWSER DOES NOT EXPECT.
-      `forBrowser()` decides what a lesson looks like on the wire
-      and the `Lesson` interface in the browser module describes
-      it. A field added to one and not the other is `undefined`
+      the browser's, and neither can import the other, so the
+      seven address rules are written twice on purpose.
+   4. A SLUG THAT IS NOT AN ADDRESS. A slug is a URL segment AND
+      part of the id a reader's ticks are filed under, so it
+      cannot be tidied later without losing progress.
+   5. AN ADDRESS THE WORKER DOES NOT ROUTE. The Cloudflare branch
+      preview cannot catch this: it is the Next Worker addressed
+      directly and never consults `NEXT_ROUTES`.
+   6. FILES THE IMPORTER QUIETLY DROPPED. Anything `splitName()`
+      does not recognise is skipped, and the lesson still renders
+      with one fewer thing under it, so the drop rate is measured
+      against the committed listing.
+   7. THE API SAYING SOMETHING THE BROWSER DOES NOT EXPECT: a
+      field on `forBrowser()` and not on `Lesson` is `undefined`
       where a title should be.
+   8. A TICK ID THAT GAINED THE SEGMENT THE ADDRESS GAINED. See
+      section 2 below.
 
-   8. A TICK ID THAT GAINED THE SEGMENT THE ADDRESS GAINED.
-      `courses-read` holds `<course>/<module>/<lesson>` in real
-      browsers. Putting the programme in front of it is the one
-      change here that loses somebody's ticks rather than moving
-      them, and it is the change a reader tidying `lessonId()`
-      against `lessonUrl()` would think was obviously right.
-
-   The sections below are numbered in reading order and are not
-   one per reason: reason 4 is checked inside section 1, where
-   every slug is walked anyway. ============================== */
+   The sections are numbered in reading order and are not one per
+   reason: reason 4 is checked inside section 1. */
 
 import { readFileSync, existsSync } from "node:fs";
 import { join, dirname } from "node:path";
@@ -92,20 +55,16 @@ const say = (what: string): number => problems.push(what);
    1. Every Drive id is a Drive id
    ============================================================ */
 
-/* Drive's own format: base64url, and in practice 28 to 44
-   characters. The range rather than a fixed 33 because Drive has
-   issued more than one length over the years and a check that
-   insisted on today's would fail on a folder made in 2019. What
-   it is really catching is the truncation and the stray quote. */
+/* Drive's own format: base64url, in practice 28 to 44 characters.
+   A range rather than a fixed 33 because Drive has issued more
+   than one length over the years. What it really catches is the
+   truncation and the stray quote. */
 const DRIVE_ID = /^[A-Za-z0-9_-]{25,60}$/;
 
-/* Every slug goes into an address and into the tick's id, so it is
-   held to the shape every other address on this site has. The
-   first real import produced 21 that were not: a `06_Resources`
-   folder kept its capital, and the saved pages named after files
-   rather than titles brought underscores with them. Neither is
-   fatal on its own; both are expensive to correct later, because
-   moving a slug moves the id a reader's progress is filed under. */
+/* Every slug goes into an address AND into the tick's id, so it is
+   held to the shape every other address here has. Both ways it
+   went wrong are cheap now and expensive later, because moving a
+   slug moves the id a reader's progress is filed under. */
 const SLUG = /^[a-z0-9]+(?:-[a-z0-9]+)*$/;
 
 const checkSlug = (value: string, what: string, where: string): void => {
@@ -134,24 +93,17 @@ checkId(CATALOGUE.root, "the catalogue root");
 
 /* A COURSE SLUG HAS TO BE UNIQUE ACROSS THE WHOLE CATALOGUE, not
    only inside its programme, and the reason is in `lessonId()`:
-   the address gained a programme segment and the tick did not,
-   because `courses-read` holds those strings in real browsers.
-   Two programmes each holding a "Foundations" would therefore
-   share one set of ticks, and a reader would open a course they
-   had never started and find it half done.
-
-   This is the cheap end of that trade and it is where the price
-   is paid: renaming a Drive folder costs one crawl, and the
-   alternative was making every tick anybody already has
-   worthless. */
+   the address gained a programme segment and the tick did not, so
+   two programmes each holding a "Foundations" would share one set
+   of ticks and a reader would open a course they had never started
+   and find it half done. The fix is renaming a Drive folder. */
 const courseSlugs = new Map<string, string>();
 
 for (const programme of PROGRAMMES) {
   /* THE ROOT PROGRAMME SHARES THE ROOT'S ID, and that is the
-     arrangement rather than a collision. Where the Drive root
-     holds courses directly, the root folder IS the programme, so
-     the two name one folder on purpose. Everything else sharing
-     an id is still a parsing bug and still caught. */
+     arrangement rather than a collision: where the Drive root
+     holds courses directly, the root folder IS the programme.
+     Everything else sharing an id is still a parsing bug. */
   if (programme.drive !== CATALOGUE.root) {
     checkId(programme.drive, `programme ${programme.slug}`);
   }
@@ -191,16 +143,16 @@ for (const course of COURSES) {
 
       /* A lesson slug has to be unique inside its module, because
          the address and the tick's id are both built from it. Two
-         lessons sharing one means one of them is unreachable and
-         both share a tick. */
+         lessons sharing one means one is unreachable and both
+         share a tick. */
       checkSlug(lesson.slug, "lesson", at);
       if (lessonSlugs.has(lesson.slug)) say(`${at}: two lessons share this slug`);
       lessonSlugs.add(lesson.slug);
 
       /* `ID_FIELDS`, not a list written out here. This check kept
          its own and quietly stopped covering `captions` the day it
-         was added: 298 ids, none of them ever validated, and the
-         summary line said everything was well formed. */
+         was added: 298 ids never validated, and the summary line
+         said everything was well formed. */
       for (const key of ID_FIELDS) {
         if (lesson[key]) checkId(lesson[key], `${at} (${key})`);
       }
@@ -208,9 +160,8 @@ for (const course of COURSES) {
     }
 
     /* `pending` and lessons are mutually exclusive by definition.
-       Both at once means the importer wrote one and not the
-       other, and the page would draw an empty module with lessons
-       in it. */
+       Both at once means the importer wrote one and not the other,
+       and the page draws an empty module with lessons in it. */
     if (mod.pending && mod.lessons.length) {
       say(`${course.slug}/${mod.slug}: marked pending and has lessons`);
     }
@@ -229,25 +180,18 @@ for (const course of COURSES) {
   }
 }
 
-/* ============================================================
-   2. A tick id is still three segments, and none of them is the
-      programme
+/* 2. A tick id is still three segments, and none is the programme
 
-   The address gained a segment when programmes arrived and the
-   tick did not. `courses-read` and `courses-last` hold
-   `<course>/<module>/<lesson>` in real browsers and
-   `courses-answers` holds it with two more on the end, so putting
-   the programme in front of any of them does not move somebody's
-   ticks, it loses them.
+   `courses-read` and `courses-last` hold `<course>/<module>/<lesson>`
+   in real browsers and `courses-answers` holds it with two more on
+   the end, so putting the programme in front does not move
+   somebody's ticks, it loses them.
 
-   The uniqueness rule above protects the CONSEQUENCE of that:
-   two courses sharing a slug would share one set of ticks. This
+   The uniqueness rule above protects the CONSEQUENCE; this
    protects the change itself, which is the likelier one to be
-   made, because `lessonId()` and `lessonUrl()` sit four lines
-   apart in `shared/courses.ts` and one of them takes a programme.
-   Making the other match looks like tidying and is the single
-   most expensive edit anybody can make to this section.
-   ============================================================ */
+   made: `lessonId()` and `lessonUrl()` sit four lines apart in
+   `shared/courses.ts` and one of them takes a programme, so making
+   the other match looks like tidying. */
 
 for (const programme of PROGRAMMES) {
   for (const course of programme.courses) {
@@ -262,17 +206,16 @@ for (const programme of PROGRAMMES) {
         /* Compared segment by segment rather than with `includes`,
            because a course legitimately called
            `google-data-analytics-capstone-...` contains its own
-           programme's slug and is not a bug. What would be a bug
-           is the programme standing as a segment of its own. */
+           programme's slug. What would be a bug is the programme
+           standing as a segment of its own. */
         if (parts.includes(programme.slug)) {
           say(`the tick id for ${id} carries the programme ${programme.slug} as a segment, `
             + "which orphans every tick already filed under the old id");
         }
         /* The address, by contrast, MUST carry it, and must carry
-           the tick's three segments after it. The two rules are
-           one rule looked at from each end, and writing only the
-           first would pass a `lessonId` that had quietly become
-           `lessonUrl` with the prefix stripped back off. */
+           the tick's three segments after it. Writing only the
+           first rule would pass a `lessonId` that had quietly
+           become `lessonUrl` with the prefix stripped back off. */
         const url = lessonUrl(programme.slug, course.slug, mod.slug, lesson.slug);
         if (url !== `/skills/courses/${programme.slug}/${id}`) {
           say(`${url} is not /skills/courses/<programme>/ followed by the tick id ${id}`);
@@ -291,9 +234,8 @@ const grep = (pattern: string, path: string): string[] => {
     return execFileSync("grep", ["-rn", "--include=*.ts", "--include=*.tsx",
       /* `next/node_modules/@reiad/shared` is the package copied in
          by npm, so it holds the source it is copied FROM and
-         matches every pattern this looks for. It is a build
-         artifact and gitignored; reading it turns this check into
-         one that fails on nothing having gone wrong. */
+         matches every pattern this looks for. It is gitignored;
+         reading it makes this fail on nothing having gone wrong. */
       "--exclude-dir=node_modules", pattern, path],
       { cwd: ROOT, encoding: "utf8" }).split("\n").filter(Boolean);
   } catch {
@@ -305,22 +247,14 @@ const grep = (pattern: string, path: string): string[] => {
    reason and not because it is a course: it is one real person's
    day, offered to an admin by `/api/routine/templates` and to
    nobody else, and an import under `next/` would put it in a
-   bundle anybody can fetch while the page looked identical. Two
-   private things, one guard, rather than a second check whose
-   name would have to be remembered. */
-/** A grep hit inside a COMMENT is prose, not an import.
-
-    Both rules below are worth explaining where somebody will read
-    them, and a check that fails on the explanation teaches people
-    to delete the explanation. This file's own comment style is a
-    banner whose continuation lines start with whatever the
-    sentence starts with, so "does the line begin with a star" is
-    not a test: the only honest one is to know where the comments
-    ARE.
-
-    So the file is read again and every comment is blanked, spaces
-    for characters and newlines kept, which leaves line numbers
-    exactly where grep found them. */
+   bundle anybody can fetch while the page looked identical. */
+/** A grep hit inside a COMMENT is prose, not an import, and a
+    check that fails on the explanation teaches people to delete
+    the explanation. This file's banner continuation lines start
+    with whatever the sentence starts with, so "does the line begin
+    with a star" is not a test: the file is read again and every
+    comment blanked, spaces for characters and newlines kept, so
+    line numbers stay where grep found them. */
 const codeOnly = (file: string): string[] => {
   let src: string;
   try { src = readFileSync(file, "utf8"); } catch { return []; }
@@ -359,12 +293,10 @@ const sharedSrc = readFileSync(join(ROOT, "shared", "courses.ts"), "utf8");
 const browserSrc = readFileSync(join(ROOT, "aab", "src", "courses.ts"), "utf8");
 
 /** The template literal a named arrow function returns.
-
     Deliberately dumb: both files write these as one-liners
     returning a single template, so the first backtick-delimited
-    string after the name is the rule. A rewrite that made either
-    of them a block body would fail here rather than pass
-    vacuously, which is the right way round. */
+    string after the name is the rule. A rewrite to a block body
+    fails here rather than passing vacuously. */
 function template(src: string, name: string): string | null {
   const at = src.indexOf(`const ${name} =`);
   if (at === -1) return null;
@@ -376,8 +308,8 @@ function template(src: string, name: string): string | null {
 
 /* The address rules both files define. `readingUrl` is only in
    `shared/courses.ts`: the browser reaches that endpoint through
-   `api()`, which composes the path itself, so a second copy of it
-   here would be a rule with one author and nothing to check. */
+   `api()`, which composes the path itself, so a second copy here
+   would be a rule with one author and nothing to check. */
 const RULES = [
   "programmeUrl", "courseUrl", "moduleUrl", "lessonUrl",
   "lessonId", "fileUrl", "driveUrl",
@@ -530,23 +462,19 @@ if (!sample) {
   }
 }
 
-/* ============================================================
-   9. Every storage key this section writes is one the account carries
+/* 9. Every storage key this section writes is one the account carries
 
    `aab/src/courses.ts` names its keys as `*_KEY` constants and
    `aab/src/sync.ts` lists what an account owns. A key in the first
    and not the second saves on this device and goes nowhere else,
    which is a feature that works when you test it and quietly does
-   not when you pick up a phone.
+   not when you pick up a phone. `courses-answers` was added to the
+   BUILT `aab/sync.js` rather than to its source and the next
+   build overwrote it, with every check passing.
 
-   That is not hypothetical. `courses-answers` was added to the
-   BUILT `aab/sync.js` rather than to its source, and the next
-   `build-modules` run overwrote it. Every check passed: the built
-   file matched its source again, because the edit was gone.
-
-   Read as text rather than imported. Both files are browser
-   modules that touch `localStorage` as they load, and a check
-   should not need a DOM to answer a question about a string. */
+   Read as text rather than imported: both files touch
+   `localStorage` as they load, and a check should not need a DOM
+   to answer a question about a string. */
 {
   const read = (rel: string): string => readFileSync(join(ROOT, rel), "utf8");
 
@@ -567,30 +495,18 @@ if (!sample) {
   }
 }
 
-/* ============================================================
-   10. What CLAUDE.md says the catalogue holds
+/* 10. What CLAUDE.md says the catalogue holds
 
    That row states five numbers about a generated file, which is
-   the shape of claim the rule at the top of that very file is
-   about: right on the day it was typed, beside a thing that
-   grows. Every one of them was right, and the row gained a fifth
-   when programmes arrived. That is not the argument for this
-   check, though: the argument is that the next Drive folder
-   somebody adds moves four of the five, and nobody adding a
-   folder will think to come here.
+   the shape of claim the rule at the top of that file is about:
+   the next Drive folder somebody adds moves four of the five, and
+   nobody adding a folder will think to come here.
 
-   So the sentence is read and compared rather than trusted. The
-   row is the one in the courses table naming
-   `shared/courses.data.json`, and it is matched loosely on
-   purpose: what is checked is the FIGURES, not the prose around
-   them, so the sentence can be rewritten without coming here.
-
-   `ids` is every Drive id this file validates, which is the
-   lesson files PLUS the folders: the root, each programme, each
-   course and each module. That is worth saying because the
-   number looks like it should be `DRIVE_IDS.size` and is 53
-   larger.
-   ============================================================ */
+   Matched loosely on purpose: what is checked is the FIGURES, not
+   the prose around them, so the sentence can be rewritten without
+   coming here. `ids` is every Drive id this file validates, the
+   lesson files PLUS the folders, which is 53 more than
+   `DRIVE_IDS.size` and looks like it should not be. */
 
 const counts = catalogueCounts();
 

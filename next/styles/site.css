@@ -5934,43 +5934,6 @@ it collapsed to the width of the word "Bangladesh". */
     & p { color: var(--ink-soft); font-size: var(--t-5); margin-top: 6px; }
   }
 
-  /* ---------- the pledge ----------
-     "Education should be free", on both hubs, directly under the
-     hero. It is a belief the site is built on rather than a feature
-     of it, so it is set apart from the prose: the claim in the
-     Bangla serif at heading size, the consequence under it in the
-     reading face, and the English line in mono for the readers who
-     take that half.
-
-     Deliberately not a `.cell`. A card would file this with the
-     lessons, one more box among the boxes, and it is not a thing
-     to click. The gold rule is the same one `.principle` uses,
-     because this is the first principle. */
-  .pledge {
-    display: grid; gap: var(--s-3);
-    margin-block: 8px 30px; max-width: var(--measure);
-    padding: 20px 22px;
-    border: 1px solid var(--hairline);
-    border-inline-start: 3px solid var(--accent);
-    border-radius: var(--radius-sm);
-    background: var(--accent-soft);
-
-    & b {
-      font-family: var(--font-bn-serif); font-weight: 600;
-      font-size: clamp(1.08rem, 2.4vw, 1.3rem); line-height: 1.45;
-    }
-    & span { color: var(--ink-soft); font-size: var(--t-5); }
-    /* Green rather than the gold these labels normally take: gold
-       on the pledge's own soft-green ground measures 4.0:1, which
-       is under AA for text this size. Green on the same ground is
-       5.3:1 and still reads as an accent. */
-    & .pledge-en {
-      font-family: var(--font-mono); font-size: var(--t-2);
-      letter-spacing: 0.07em; text-transform: uppercase;
-      color: var(--accent); margin-top: 2px;
-    }
-  }
-
   /* ---------- deliverables checklist ---------- */
   .checks { display: grid; gap: var(--s-4); }
   .checks li {
@@ -16024,7 +15987,7 @@ German for day, and .tag is what the site has always called
   :is(.dt-figure, .dt-season-row, .dt-recipe, .dt-invite-shows,
       .tile, .chart-card, .verdict-card, .model-bar, .signal, .glance-item,
       .topic-tag, .card-chip, .gt-chip, .risk-chip, .tab-count,
-      .pledge, .hub-pledge, .id-card, .res, .cv-item, .note,
+      .hub-pledge, .id-card, .res, .cv-item, .note,
       .keep-note, .balance-check, .work-facts, .cred,
       .stat, .chart-box, .verdict, .shariah-verdict, .verdict-cap,
       .at-a-glance, .side-note, .held-group,
@@ -16228,7 +16191,7 @@ German for day, and .tag is what the site has always called
       .dt-figure, .dt-season-row, .dt-recipe, .dt-invite-shows,
       .tile, .chart-card, .verdict-card, .model-bar, .signal, .glance-item,
       .topic-tag, .card-chip, .gt-chip, .risk-chip, .tab-count,
-      .pledge, .hub-pledge, .id-card, .res, .cv-item, .note,
+      .hub-pledge, .id-card, .res, .cv-item, .note,
       .keep-note, .balance-check, .work-facts, .cred,
       .stat, .chart-box, .verdict, .shariah-verdict, .verdict-cap,
       .at-a-glance, .side-note, .held-group,

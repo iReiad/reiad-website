@@ -94,15 +94,11 @@ export function checkpointStats(school: string): CheckpointStats {
    ============================================================ */
 
 /**
- * Turn every checklist item in this lesson into a checkpoint.
- *
- * The markup an item becomes is a button wrapping what was
- * already there, and it is a button rather than a checkbox
- * because a checkbox inside prose inherits form styling from
- * nowhere in particular and cannot carry the tick mark the
- * stylesheet already draws for `.checklist li`. `aria-pressed`
- * says the state out loud; `data-done` is what the stylesheet
- * answers.
+ * Turn every checklist item in this lesson into a checkpoint: a
+ * button wrapping what was there, rather than a checkbox, which
+ * cannot carry the tick the stylesheet already draws for
+ * `.checklist li`. `aria-pressed` says the state out loud;
+ * `data-done` is what the stylesheet answers.
  */
 function wire(article: Element, school: string, lessonId: string): number {
   const prefix = PREFIX[school];

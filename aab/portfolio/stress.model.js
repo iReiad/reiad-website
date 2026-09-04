@@ -1,139 +1,33 @@
-/* ============================================================
-   stress.model.js: the credit stress-testing engine.
+/* stress.model.js: the credit stress-testing engine. No DOM,
+   numbers in and numbers out, checked by `stress.test.ts`.
 
-   No DOM. Numbers in, numbers out, same rule as the other three
-   engines in this folder, because a function that touches the
-   page cannot be checked against a value some other authority
-   already agrees on. stress.test.ts does exactly that.
+   THE LOAN BOOK SHIPPED WITH THIS PAGE IS SYNTHETIC: a composite
+   in the shape of a mid-sized Bangladeshi private commercial
+   bank's retail and SME book, and none of it is any bank's filed
+   numbers. What is real is the METHOD, and the page takes a CSV
+   of a real book and runs the identical engine over it.
 
-   ------------------------------------------------------------
-   ABOUT THE PORTFOLIO, READ THIS FIRST
+   Two links from a macro scenario to money, run on the same book
+   over the same scenario: Merton through the Vasicek conditional
+   PD, `PD(Z) = Φ[(Φ⁻¹(PD) − √ρ·Z)/√(1 − ρ)]`, which is also the
+   IRB capital formula read at Z = −3.09; and vintage analysis
+   through a hazard, `lifecycle(age) · quality(vintage) · e^(γ·s)`.
+   They are calibrated to agree at no shock and at one standard
+   deviation, and the GAP after that is the model risk, printed
+   rather than tuned away.
 
-   The loan book shipped with this page is SYNTHETIC. It is a
-   composite of what a mid-sized Bangladeshi private commercial
-   bank's retail and SME book looks like in shape: the segment
-   mix, the through-the-cycle default rates, the collateral
-   coverage and the capital position are all in the right region,
-   and none of them are any bank's filed numbers.
-
-   The same rule governs the company in the valuation case
-   studies and the index in the analysis one: publishing invented
-   numbers under a real institution's name would be inventing
-   that institution's record. What is real here is the method,
-   and the page takes a CSV of a real book and runs the identical
-   engine over it.
-
-   ------------------------------------------------------------
-   WHAT A STRESS TEST ACTUALLY HAS TO DO
-
-   A macro scenario is a set of paths for unemployment, growth,
-   rates, inflation, the exchange rate and collateral prices. A
-   stress test has to turn those paths into money, and it has to
-   do it through something more principled than "assume defaults
-   double", which is where most of them stop.
-
-   There are two respectable ways to make that link, and this
-   page runs both, on the same book, over the same scenario.
-
-   1 · MERTON, THROUGH THE VASICEK CONDITIONAL PD
-
-      A borrower defaults when the value of its assets falls
-      below what it owes. Write the asset return of borrower i in
-      segment s as one common factor plus one idiosyncratic one:
-
-          A_i = √ρ · Z + √(1 − ρ) · ε_i
-
-      with Z and ε standard normal and independent. Default is
-      A_i below a threshold, and the threshold that reproduces a
-      long-run default rate PD is simply Φ⁻¹(PD). Conditioning on
-      the common factor gives the default rate the segment runs
-      at in a year whose economy was Z:
-
-          PD(Z) = Φ[ (Φ⁻¹(PD) − √ρ · Z) / √(1 − ρ) ]
-
-      Z is the economy: positive is a good year, negative a bad
-      one, measured in standard deviations. So the whole job of
-      the macro model is to turn a scenario into a Z, which is
-      what factorZ() below does, and everything after that is one
-      line of arithmetic that has been in the Basel framework for
-      twenty years.
-
-      That last point is worth making loudly on the page: the IRB
-      capital requirement IS this formula, evaluated at the Z a
-      1-in-1000 year economy would produce, Z = −Φ⁻¹(0.999) =
-      −3.09. Capital and stress testing are not two models. They
-      are the same model read at two different severities, which
-      is why this engine computes both.
-
-   2 · VINTAGE ANALYSIS, THROUGH THE HAZARD
-
-      The second approach never mentions asset values. It says a
-      loan's default rate depends on three things: how old it is
-      (loans default on a hump-shaped seasoning curve, quiet in
-      the first months, worst somewhere between one and two
-      years, tailing off after), which cohort it came from (a
-      book written in a boom is a worse book, and it stays worse
-      for its whole life), and what the economy is doing now.
-
-          hazard(age, vintage, t)
-              = lifecycle(age) · quality(vintage) · e^(γ · s_t)
-
-      with s_t the same macro shock index, positive when things
-      are bad. Age and cohort come off the book itself; only the
-      last term is a forecast.
-
-   WHY BOTH, AND WHAT THE GAP MEANS
-
-      The two links are calibrated to agree exactly at two
-      points: at no shock at all, and at a one-standard-deviation
-      shock. Everything they do after that comes from the shape
-      of the link function and nothing else, a probit against a
-      log. The probit convexifies harder, so the deeper the
-      scenario the further apart they get.
-
-      That gap is not a bug to be tuned away. It is the model
-      risk the bank is carrying, made visible: two defensible
-      methods, calibrated on the same history, disagreeing about
-      the severe scenario by a number the page prints. A stress
-      test that reports one number and no gap has not measured
-      less uncertainty, it has just stopped showing it.
-
-   ------------------------------------------------------------
-   THE CONVENTIONS, STATED
-
-   1. Static balance sheet. What amortises or defaults is
-      replaced by new lending of the same size, which is the
-      convention the EBA and the Bank of England use, and the
-      reason a stress test is a test of the book rather than a
-      forecast of the business. New lending enters the vintage
-      ledger as a fresh cohort, so the seasoning mix stays
-      realistic and tightening underwriting in a downturn is
-      something the model can actually express.
-
-   2. Lifetime PD for IFRS 9 stage 2 is the current point-in-time
-      PD held flat over the remaining behavioural life. A term
-      structure that reverts to the through-the-cycle rate would
-      give a smaller number. Holding it flat is the conservative
-      reading, and it is the one that makes the provision cliff
-      visible rather than smearing it over three years.
-
-   3. ECL is undiscounted. IFRS 9 discounts at the effective
-      interest rate; over a two to five year life that is a few
-      per cent of the answer, and it would add a rate to every
-      segment for no gain in what the page is here to show.
-
-   4. RWA is computed on the IRB formula even though most banks
-      in Bangladesh are on the standardised approach. Under the
-      standardised approach the capital ratio would move only
-      through exposure and deductions, so the procyclicality this
-      page is about would be invisible by construction. Both
-      readings are worth having; this one is the one with
-      something to say.
-
-   5. Losses give no tax credit. Profit is taxed, a loss is not
-      rebated, which is the conservative direction and roughly
-      what happens to a bank that is already in trouble.
-   ============================================================ */
+   The conventions, which change the answer:
+     1. Static balance sheet, as the EBA and the Bank of England
+        use, so this tests the book rather than the business.
+     2. Lifetime PD for IFRS 9 stage 2 is the point-in-time PD
+        held FLAT over the remaining behavioural life, which is
+        the conservative reading and what makes the provision
+        cliff visible.
+     3. ECL is undiscounted.
+     4. RWA is on the IRB formula, because under the standardised
+        approach the procyclicality this page is about would be
+        invisible by construction.
+     5. Losses give no tax credit. */
 
 /* ------------------------------------------------------------
    1 · The normal distribution

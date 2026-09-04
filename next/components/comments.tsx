@@ -1,74 +1,35 @@
 "use client";
 
-/* ============================================================
-   comments.tsx: the thread under a piece.
+/* The thread under a piece. Three states, and the quiet one matters most:
 
-   Three states, and the quiet one matters most:
-
-     signed out    the thread, and a line saying what signing in
-                   would let you do. Never a wall: every comment
-                   already approved is readable by anybody.
+     signed out    the thread, and a line saying what signing in would let
+                   you do. Never a wall: an approved comment is public.
      signed in     the same, plus a box.
-     just posted   a note saying it is waiting to be approved,
-                   because a comment that vanishes on submit looks
-                   exactly like a comment that failed.
+     just posted   a note saying it is waiting to be approved, because a
+                   comment that vanishes on submit looks exactly like one
+                   that failed.
 
-   ---- nothing here is HTML ----
+   NOTHING HERE IS HTML. A body is text on the way in, text in the column
+   and text on the way out; `{c.body}` in JSX is a text node by
+   construction. The way to lose that is `dangerouslySetInnerHTML`.
 
-   `archive/modules/comments.js` wrote every body with `textContent`
-   and said at length that it never parses one: a body is text on
-   the way in, text in the column, and text on the way out, and
-   every injection this site has had came from parsing something.
-
-   That guarantee is stronger here rather than weaker, and it is
-   worth knowing why: `{c.body}` in JSX is a text node by
-   construction. There is no call to get wrong and no second path.
-   The way to lose it would be `dangerouslySetInnerHTML`, which is
-   named to be hard to type by accident.
-
-   ---- and it is allowed to not exist ----
-
-   Every failure is swallowed. A piece with a broken thread is a
-   piece that reads perfectly and has no thread. That was true of
-   the module and it is true of this: a fetch that throws leaves
-   the list empty and says nothing on somebody's reading page.
-
-   ---- what this replaces ----
-
-   `archive/modules/comments.js`, 219 lines, lazily imported by an inline
-   `<script type="module">` at the bottom of the article route
-   into an empty `<section>` the route rendered for it.
-
-   That arrangement is the one `components/scripts.tsx` exists to
-   warn about, one step from going wrong: a module script in the
-   body runs BEFORE hydration, and anything it writes into the
-   markup React is about to adopt gets undone. It survived only
-   because the section it filled was empty, so there was nothing
-   for React to disagree with. A client component has no such
-   edge to stand on.
-
-   The Worker's own renderer, `functions/insights/[slug].ts`, drew
-   the same empty section and imported the same module. It no
-   longer does, and that is deliberate rather than an omission:
-   see the note there. It answers only when the service binding is
-   gone, and a thread is the one thing on the page that has always
-   been allowed to be absent.
-   ============================================================ */
+   And it is allowed to not exist: every failure is swallowed, so a piece
+   with a broken thread reads perfectly and has no thread. */
 
 import { useCallback, useEffect, useRef, useState, type FormEvent } from "react";
 import { Button } from "./ui/button";
 import { runtimeModule } from "./account/runtime";
 
-/* `/account.js` is served by the other Worker at that address and
-   is not a file in this project. `next/tsconfig.json` maps the
-   path to its declaration; `runtime.ts` says why the specifier
-   has to be a variable at run time. */
+    /* `/account.js` is served by the other Worker at that address and is
+       not a file in this project. `next/tsconfig.json` maps the path to
+       its declaration; `runtime.ts` says why the specifier has to be a
+       variable at run time. */
 type AccountModule = typeof import("/account.js");
 const accountModule = () => runtimeModule<AccountModule>("/account.js");
 
-/** One comment as `/api/comments` answers it. `author_id` is
-    deliberately absent: the endpoint does not send it and
-    `scripts/comments.test.ts` fails if it starts. */
+    /** One comment as `/api/comments` answers it. `author_id` is
+        deliberately absent: the endpoint does not send it and
+        `scripts/comments.test.ts` fails if it starts. */
 export interface Comment {
   id: number;
   author_name?: string | null;
@@ -131,10 +92,10 @@ export function CommentCard({ comment, onReply }: {
       ) : null}
       {comment.replies?.length ? (
         <ul className="comment-replies">
-          {/* No `onReply` on a reply: the thread is one level deep,
-              and the endpoint refuses a second with
-              `replies-are-one-level`. Not offering the button is
-              how a reader finds that out without being told. */}
+              {/* No `onReply` on a reply: the thread is one level deep and
+                  the endpoint refuses a second with
+                  `replies-are-one-level`. Not offering the button is how a
+                  reader finds that out without being told. */}
           {comment.replies.map((r) => <CommentCard key={r.id} comment={r} />)}
         </ul>
       ) : null}
@@ -165,8 +126,8 @@ export function Comments({ slug, section = "insights" }: {
       const data = await res.json() as Reply;
       setComments(data?.comments ?? []);
     } catch {
-      /* A thread that will not load is not an error worth shouting
-         about on somebody's reading page. */
+          /* A thread that will not load is not an error worth shouting
+             about on somebody's reading page. */
       setComments([]);
     } finally {
       setLoaded(true);
@@ -175,13 +136,10 @@ export function Comments({ slug, section = "insights" }: {
 
   useEffect(() => { void draw(); }, [draw]);
 
-  /* Who is signed in, and staying up to date with it.
-
-     `current()` is synchronous and answers off the session the
-     module already holds, but the MODULE is fetched, so the first
-     answer arrives a tick late and the box appears then. That is
-     the same shape `archive/modules/comments.js` had, where the
-     import was the page's rather than this file's. */
+      /* Who is signed in, and staying up to date with it. `current()` is
+         synchronous and answers off the session the module already holds,
+         but the MODULE is fetched, so the first answer arrives a tick late
+         and the box appears then. */
   useEffect(() => {
     let alive = true;
     let account: AccountModule | null = null;
@@ -238,10 +196,9 @@ export function Comments({ slug, section = "insights" }: {
       if (data?.ok) {
         setText("");
         setReplyingTo(null);
-        /* Said plainly, because a comment that disappears on submit
-           looks exactly like one that failed to send. The site's
-           own people skip the queue, so their words are already up
-           and the thread can simply show them. */
+            /* Said plainly, because a comment that disappears on submit
+               looks exactly like one that failed to send. The site's own
+               people skip the queue, so their words are already up. */
         if (data.live) {
           await draw();
           setNote({ text: "Posted.", state: "ok" });
@@ -283,10 +240,9 @@ export function Comments({ slug, section = "insights" }: {
         )}
       </ul>
 
-      {/* Rendered rather than hidden, and only when nobody is
-          signed in: the sign-in line and the form are two states of
-          one thing, and drawing both with `hidden` on one was the
-          module's way of saying that with no components to hand. */}
+          {/* Rendered rather than hidden, and only when nobody is signed
+              in: the sign-in line and the form are two states of one
+              thing. */}
       {!signedIn ? (
         <p className="comment-invite">
           <button className="link-btn" type="button"

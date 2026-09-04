@@ -1,38 +1,26 @@
-/* ============================================================
-   worker.js: the entry point, and the reason CI can build this.
+/* worker.js: the entry point.
 
    This site is a Worker with static assets, not a Pages project.
    Everything in `aab/` is uploaded as assets and served by
-   Cloudflare directly; this script exists to put the handlers in
+   Cloudflare directly; this script puts the handlers in
    `functions/` in front of a few paths.
 
-   Those handlers are still written to the Pages Functions shape,
-   `onRequest(context)`, `context.params`, `context.next()`– because
-   that shape is a perfectly good convention and rewriting eight
-   files to change nothing would be churn. What Pages did implicitly
-   from the directory layout, the table below does explicitly:
+   Those handlers keep the Pages Functions shape, `onRequest(context)`,
+   `context.params`, `context.next()`. What Pages did implicitly from
+   the directory layout, the table below does explicitly:
 
-     functions/api/auth/[[route]].ts   →  /api/auth/*    params.route  (array)
-     functions/insights/[slug].ts      →  /insights/:slug params.slug  (string)
+     functions/api/auth/[[route]].ts   ->  /api/auth/*    params.route  (array)
+     functions/insights/[slug].ts      ->  /insights/:slug params.slug  (string)
 
    A double-bracket segment is a catch-all and hands the handler an
    array of path segments; a single-bracket one hands it a string.
-   That is the whole of the naming convention, and it is why the
-   table carries a parameter name and the routes carry a shape.
+   `context.next()` means "not mine" and falls through to the
+   ASSETS binding.
 
-   `context.next()` means "I don't want this one"– under Pages that
-   fell through to the static file, and here it does the same thing
-   by way of the ASSETS binding.
-
-   ---- Routing, and why run_worker_first matters ----
-
-   Workers serve a matching static asset *before* running this
-   script. For /api/* that is harmless, since no such file exists.
-   For /insights/* it would be wrong: aab/insights/dse-basics.html
-   is a real file, so a published-from-the-Studio version of the
-   same slug in D1 would never get a look in. wrangler.toml lists
-   both prefixes under run_worker_first so this script decides.
-   ============================================================ */
+   ROUTING. Workers serve a matching static asset BEFORE running
+   this script, so every prefix this file claims has to be listed
+   under `run_worker_first` in wrangler.toml or it is never
+   reached. */
 
 import { onRequest as auth } from "./functions/api/auth/[[route]].ts";
 import { onRequest as articles } from "./functions/api/articles/[[slug]].ts";
@@ -81,11 +69,9 @@ const API_ROUTES = [
   ["/api/news", news, null],
   ["/api/weather", weather, null],
   /* The portion library itself, which the browser gets by
-     importing `shared/foods.ts` and a phone cannot. NOT the
-     same thing as `/api/diet/food`, which is a LOOKUP against
-     two third-party databases and is rate limited and cached
-     per query: this is eighty-three of this site's own rows,
-     static, and cached for half an hour like its neighbours. */
+     importing `shared/foods.ts` and a phone cannot. NOT the same
+     thing as `/api/diet/food`, which is a LOOKUP against two
+     third-party databases, rate limited and cached per query. */
   ["/api/foods", foods, null],
   ["/api/media", media, "key"],
   ["/api/notion", notion, "route"],
@@ -104,99 +90,71 @@ const API_ROUTES = [
 
 /* The Cron schedules, as strings, because `event.cron` hands back
    the exact text from wrangler.toml and there is no binding that
-   names them. They are here rather than inline in scheduled() so
-   that scripts/check-crons.ts can compare these two against that
-   file and fail the build when they drift. Drift here is silent:
-   the job simply stops running, and nothing anywhere says so. */
+   names them. Here rather than inline in scheduled() so that
+   scripts/check-crons.ts can compare these against that file:
+   drift is silent, and the job simply stops running. */
 export const CRON = {
   notion: "*/15 * * * *",
   backup: "17 3 * * *",
   /* The Research Studio's alerts, Monday at six: every flagged
-     search rerun, what is new written for the reader to collect.
-     functions/_lib/scholar-search.ts. */
+     search rerun. functions/_lib/scholar-search.ts. */
   alerts: "0 6 * * 1",
 };
 
 /** Photos published through the Studio. Served by the same handler
-    that stores them, so there is one place that knows the key
-    format, but on a short URL, because it ends up in the HTML of
-    every article that has a picture in it. */
+    that stores them, so one place knows the key format, but on a
+    short URL, because it ends up in the HTML of every article that
+    has a picture in it. */
 const MEDIA = /^\/media\/(.+)$/;
 
 /** Published articles live in D1; the files in aab/insights/,
     aab/cooking/ and aab/travel/ are the ones written by hand. Both
-    answer here, and the section decides which mount a database piece
-    is served at: the handler falls through when they disagree. */
+    answer here, and the section decides which mount a database
+    piece is served at: the handler falls through when they
+    disagree. */
 export const ARTICLE = /^\/(insights|cooking|travel)\/([a-z0-9-]+)(?:\.html)?$/i;
 
 /* ---------- the Next.js allowlist ----------
 
-   archive/TRANSITION.md, Stage 10. A second Worker renders these routes
-   through Next.js, and this one stays in front and keeps
-   everything else. The allowlist is the whole of the switch:
-   adding a path moves it, removing the path moves it back, and
-   that is the rollback.
+   A second Worker renders these routes through Next.js; this one
+   stays in front and keeps everything else. The allowlist is the
+   whole of the switch, and it is also the rollback. Nothing is
+   forwarded until a path is in here AND the NEXT service binding
+   exists, so this file can be deployed before the second Worker
+   and change nothing.
 
-   Nothing is forwarded until a path is in here AND the NEXT
-   service binding exists. Both halves are checked below, so this
-   file can be deployed before the second Worker exists and change
-   nothing at all: `env.NEXT` is undefined, every path is answered
-   exactly as it is today, and the route turns on by itself the
-   moment the binding is added.
+   THREE FILES HAVE TO AGREE OR THE ADDRESS IS DEAD. A path listed
+   here must also be in `run_worker_first` in wrangler.toml, or the
+   asset router answers first and this is never reached; and its
+   OLD `.html` spelling must be ABSENT from `run_worker_first`, or
+   the 301 for it in `aab/_redirects` never fires.
 
-   ---- no address here ends in .html ----
-
-   Task #28. A page of this site is `/about`, `/skills`,
-   `/money/basics-1`, and every `.html` spelling of one is a 301
-   in `aab/_redirects`. The suffix was never a fact about a route:
-   it was a fact about a file, and there are two files left.
-
-   An article and a school lesson are the exception and stay as
-   they are, because their `.html` is part of a slug rather than
-   part of a route: it is in the rows, in every link inside a
+   No address here ends in `.html`. An article and a school lesson
+   are the exception, because their suffix is part of a slug rather
+   than part of a route: it is in the rows, in every link inside a
    lesson body, and in the `public.library` row of everybody who
    has saved a piece.
 
-   A path listed in `run_worker_first` never reaches the asset
-   router, so a redirect for its old spelling only fires because
-   that spelling is NOT listed. Keep the two halves in step:
-   `wrangler.toml` names the new address and `_redirects` answers
-   for the old one.
-
    ---- and /_next/, which is not a page ----
 
-   The second entry is not a route anybody visits. It is where the
-   Next.js Worker keeps its own JavaScript, and it has to be
-   forwarded or the pages that ask for it get this site's 404 page
-   back instead.
-
-   That is not hypothetical: with only the article route forwarded,
-   an article rendered by Next asked for six scripts under
-   /_next/static/ and received six copies of aab/404.html, 404 and
-   `text/html`, about 45 KB of waste per page view. The article
-   still read, because it is server-rendered and the HTML is
-   complete, which is exactly why nobody would have noticed: the
-   only symptom is a console full of errors and a React that never
-   hydrates, and neither of those shows on a page of prose. The
-   first interactive route added in Stage 11 would have been the
-   thing that broke, a long way from the cause.
-
-   `run_worker_first` in wrangler.toml has the matching entry.
-   Without it the asset router answers first and this is never
-   reached. */
+   The second entry is where the Next.js Worker keeps its own
+   JavaScript. IT HAS TO STAY FORWARDED: without it those requests
+   get this site's 404 page back, 404 and `text/html`, and the
+   article still reads because it is server-rendered, so the only
+   symptom is a React that never hydrates. `run_worker_first` has
+   the matching entry. */
 export const NEXT_ROUTES = [
-  /* All three mounts as of Stage 11.2, which is the same regex
-     ARTICLE is: the Next route reads the section out of the URL
-     and answers whichever of the three the row belongs to, and
-     the parity test holds it to refusing a piece asked for at the
-     wrong one. */
+  /* All three mounts, which is the same regex ARTICLE is: the Next
+     route reads the section out of the URL and answers whichever
+     of the three the row belongs to, and the parity test holds it
+     to refusing a piece asked for at the wrong one. */
   ARTICLE,
   /^\/(insights|cooking|travel)$/i,
-  /* The hand-written pages, one at a time, Stage 11.5. Each one
-     is here the moment its route exists, which is the same
-     moment its file leaves aab/: there is no window in which
-     both answer, because run_worker_first takes the address away
-     from the asset router in the same commit. */
+  /* The hand-written pages, one at a time. Each is here the moment
+     its route exists, which is the same moment its file leaves
+     aab/: run_worker_first takes the address away from the asset
+     router in the same commit, so there is no window in which both
+     answer. */
   /^\/(about|contact|account|skills|tools|portfolio)$/i,
   /^\/tools\/(stock|live|routine|diet)$/i,
   /^\/tools\/routine\/(settings|print|day|year)$/i,
@@ -206,21 +164,17 @@ export const NEXT_ROUTES = [
      table gets this without knowing about it. */
   /^\/tools\/research(\/.*)?$/i,
   /* The admin panel. ADMIN.md is the plan; it is `unlisted` in
-     shared/nav.ts for the reason the course section is. The
-     research desk that lived under it went into the Research
-     Studio on 2 September 2026 and `aab/_redirects` sends its
-     address there. */
+     shared/nav.ts for the reason the course section is. */
   /^\/admin$/i,
   /* The Studio's shell. Its bundle is NOT here: that is a file in
-     aab/studio/, and the asset router answers it as it always
-     has. `/desk` was the other one and is a 301 to /admin in
-     aab/_redirects now, which only works because this list and
-     run_worker_first both let it fall through to the rules file. */
+     aab/studio/, and the asset router answers it. `/desk` is a 301
+     to /admin in aab/_redirects, which only works because this
+     list and run_worker_first both let it fall through to the
+     rules file. */
   /^\/studio$/i,
   /^\/portfolio\/[a-z-]+$/i,
   /* The home page, at the address its canonical link has always
-     named. `/index.html` is not here: it 301s to this one, which
-     is what the asset router did for it before. */
+     named. `/index.html` is not here: it 301s to this one. */
   /^\/$/,
   /* The third-party course section, /skills/courses/. Its five
      shapes are built a second time in `aab/src/courses.ts`, which
@@ -229,27 +183,22 @@ export const NEXT_ROUTES = [
      or neither.
 
      THE PROGRAMME IS THE FIRST SEGMENT and is why there are five
-     rather than four: a certificate holds the courses, so the
-     shelf, a programme, a course, a module and a lesson are five
-     depths. The tick's id did not gain it, deliberately, and
-     `shared/courses.ts` says why beside `lessonId`.
+     rather than four. The tick's id did not gain it, deliberately,
+     and `shared/courses.ts` says why beside `lessonId`.
 
-     The `.html` forms are still here, after task #28 took that
-     suffix off every address on the site, and they are the one
-     place it is TOLERATED rather than redirected.
-     `shared/courses.ts` says why beside `lessonOf`: 845 addresses
-     generated out of a Drive folder cannot be one redirect rule
-     each without going stale the first time that folder changes,
-     and the whole section is behind `isAdmin()` and unlisted, so
-     there is no canonical to split and no crawler to confuse.
+     The `.html` forms are the one place that suffix is TOLERATED
+     rather than redirected, and `shared/courses.ts` says why
+     beside `lessonOf`: 845 addresses generated out of a Drive
+     folder cannot each be a redirect rule without going stale the
+     first time the folder changes, and the whole section is behind
+     `isAdmin()` and unlisted.
 
      Longest first in each pair, because the lesson pattern would
-     otherwise read `<programme>/<course>/<module>/index.html` as
-     a lesson called `index` and 404 it.
+     otherwise read `<programme>/<course>/<module>/index.html` as a
+     lesson called `index` and 404 it.
 
      Every one of these serves an EMPTY page: the catalogue is
-     admin-only and arrives from /api/courses. See
-     `next/components/course-shell.tsx`. */
+     admin-only and arrives from /api/courses. */
   /^\/skills\/courses\/?$/i,
   /^\/skills\/courses\/[a-z0-9-]+$/i,
   /^\/skills\/courses\/[a-z0-9-]+\/[a-z0-9-]+$/i,
@@ -261,100 +210,68 @@ export const NEXT_ROUTES = [
   /^\/skills\/courses\/[a-z0-9-]+\/[a-z0-9-]+\/index\.html$/i,
   /^\/skills\/courses\/[a-z0-9-]+\/[a-z0-9-]+\/[a-z0-9-]+\/index\.html$/i,
   /^\/skills\/courses\/[a-z0-9-]+\/[a-z0-9-]+\/[a-z0-9-]+\/[a-z0-9-]+\.html$/i,
-  /* The four schools, Stage 11.7, and the largest of these by a
-     long way: 251 committed pages left `aab/` in the same commit
-     that added them.
-
-     A hub, then one pattern covering a stage's ladder AND the
-     money school's full index, then a lesson twice. A dot cannot
-     get into `[a-z0-9-]+`, which is what keeps every school's own
-     modules out of all four: `/money/reader.js` matches none of
-     them and falls through to the file. */
+  /* The four schools. A hub, then one pattern covering a stage's
+     ladder AND the money school's full index, then a lesson twice.
+     A dot cannot get into `[a-z0-9-]+`, which is what keeps every
+     school's own modules out of all four: `/money/reader.js`
+     matches none of them and falls through to the file. */
   /^\/(money|deutsch|quran|english)$/i,
   /^\/(money|deutsch|quran|english)\/[a-z0-9-]+$/i,
   /^\/(money|deutsch|quran|english)\/[a-z0-9-]+\/[a-z0-9-]+\.html$/i,
   /* The lesson without its suffix, which nothing on this site
-     links but the asset router used to answer: while these were
-     files, `html_handling` served `dsex.html` for
-     `/money/terms/dsex`, and a reader who saved that form would
-     have found it dead the day the file left. The route strips
-     the suffix before it looks anything up, so both forms find
-     the same row. It is also the shape the two practice books
-     now have. */
+     links but the asset router used to answer, so a reader who
+     saved that form would have found it dead the day the file
+     left. The route strips the suffix before it looks anything up,
+     so both forms find the same row. It is also the shape the two
+     practice books have. */
   /^\/(money|deutsch|quran|english)\/[a-z0-9-]+\/[a-z0-9-]+$/i,
   /^\/_next\//,
 
   /* ---- the one /api/ path this Worker does not answer ----
 
-     Every other `/api/` prefix is in `API_ROUTES` above and is
-     handled here. `/api/book/` is Next's, and it is an exception
-     with a reason rather than an oversight.
+     `/api/book/` is Next's. The practice books are 450KB of
+     TypeScript in `next/lib/workbooks/`, read on the server and
+     never sent to a browser as data, because every prompt has its
+     answer beside it; the Android app needs the book without the
+     key. Importing them into `functions/` would bundle all of it
+     into THIS Worker, parsed on every request to every endpoint.
 
-     The practice books are 450KB of TypeScript in
-     `next/lib/workbooks/`, and they are read on the server and
-     deliberately never sent to a browser as data, because every
-     prompt in them has its answer beside it. The Android app
-     needs the book without the key, so there is a route for it,
-     and the question was only where to put the route.
-
-     Importing the books into `functions/` would bundle all of it
-     into THIS Worker, parsed on every request to every endpoint
-     on the site. Putting them in D1 would be a migration, an
-     import script and a file-and-database pair to keep in step.
-     They already live in the Next Worker, which already renders
-     them, so the route lives where the data is and nothing is
-     copied.
-
-     This entry is what makes it reachable: the API table above is
-     consulted FIRST, and `/api/book/...` matches no prefix in it,
-     so it falls through to here. `/api/*` is already in
-     `run_worker_first`, so the request reaches this Worker at
-     all. Both halves are needed and neither is obvious. */
+     This entry is what makes it reachable: `API_ROUTES` is
+     consulted FIRST and `/api/book/...` matches no prefix in it,
+     so it falls through to here, and `/api/*` is in
+     `run_worker_first` so the request reaches this Worker at all.
+     Both halves are needed and neither is obvious. */
   /^\/api\/book\//,
 ];
 
-/** A trailing slash off the path, so that the table above is
-    written once rather than twice.
+/** A trailing slash off the path, so the table above is written
+    once rather than twice.
 
-    THE BUG. Every one of these pages was a file called
-    `index.html`, and Cloudflare's `html_handling` serves
-    `deutsch/index.html` at `/deutsch/`, WITH the slash. So the
-    directory form was the canonical address of all 21 school hubs
-    and stage ladders for as long as they existed: it is what the
-    sitemap resolved to, what a crawler indexed, and what anybody
-    who bookmarked one has.
+    Cloudflare's `html_handling` served `deutsch/index.html` at
+    `/deutsch/`, WITH the slash, so the directory form was the
+    canonical address of all 21 school hubs and stage ladders: what
+    the sitemap resolved to, what a crawler indexed, what a
+    bookmark holds. Dropping `.html` from every address left it
+    matching no pattern above, and 21 addresses 404ed on a site
+    where every internal link still worked.
 
-    Task #28 dropped `.html` from every address and added a 301
-    for `/deutsch/index.html`, which is the OTHER spelling of the
-    same page. Nothing covered `/deutsch/`. It matches no pattern
-    above, so it fell to the asset router, whose copy of the file
-    had left in the same commit, and 21 addresses 404ed on a site
-    where every internal link still worked perfectly.
-
-    Stripping it here rather than writing `\/?` into twenty
-    regexes is the difference between a rule and a habit: a route
-    added next week gets this for free, and cannot be the
-    twenty-first that forgot. The request is forwarded UNCHANGED, so
-    Next sees the slash and answers with its own 308 to the
-    canonical form. One address, one page, one spelling in the
-    bar.
+    Stripping it here rather than writing `\/?` into twenty regexes
+    is the difference between a rule and a habit: a route added
+    next week cannot be the twenty-first that forgot. The request
+    is forwarded UNCHANGED, so Next answers with its own 308 to the
+    canonical form.
 
     `/` is left alone, because "" is not a path. */
 const bare = (path) => (path.length > 1 && path.endsWith("/") ? path.slice(0, -1) : path);
 
 /** Is this an address a Next.js route renders?
 
-    Exported because four checks ask exactly this question, and
-    each one used to answer it with its own copy of
-    `NEXT_ROUTES.some(...)`. Two of the four also wrote
-    `ARTICLE.test(path) ||` in front of it, which has been
-    redundant since ARTICLE became the first entry of the table.
-
-    A copy is fine while the answer is one line. It stops being
-    fine the moment the line grows a `bare()`: the Worker starts
-    forwarding `/deutsch/` and four checks go on reporting on a
-    site that does not exist. One vocabulary, one place, which is
-    the rule `check-rows.ts` already applies to the database. */
+    Exported because four checks ask exactly this, and each used to
+    keep its own copy of `NEXT_ROUTES.some(...)`. A copy is fine
+    while the answer is one line, and stops being fine the moment
+    the line grows a `bare()`: the Worker starts forwarding
+    `/deutsch/` and four checks go on reporting on a site that does
+    not exist. */
 export const nextOwns = (path) => NEXT_ROUTES.some((re) => re.test(bare(path)));
 
 /** Is this a path the Next.js Worker owns, and is it reachable? */
@@ -363,24 +280,14 @@ const goesToNext = (path, env) => Boolean(env.NEXT) && nextOwns(path);
 /** Ask the Next.js Worker, and answer from the assets if it
     declines.
 
-    A 404 from there means what `context.next()` means here. The
-    Next.js Worker is a different Worker with no ASSETS binding of
-    its own, so 404 is the only way it can say "not mine", and
-    this is what turns that into the fall-through it means.
+    A 404 from there means what `context.next()` means here: the
+    Next.js Worker has no ASSETS binding of its own, so 404 is the
+    only way it can say "not mine".
 
-    THE BUG THIS SHAPE EXISTED FOR. Four articles were committed
-    HTML rather than rows when this was written, served by the
-    asset router because the Worker's own renderer declined a slug
-    with no row. Forwarding a whole prefix to a Worker that can
-    only 404 would have taken all four off the site the moment the
-    service binding was added: every link, every share, every
-    search result.
-
-    None of them is a file any more (Stage 11.2), and this shape
-    is still what two things rest on. `_redirects` holds a 301 for
+    Two things still rest on that. `_redirects` holds a 301 for
     `/insights/dsex`, a term that moved to `/money/terms/`, and
-    that rule fires only because the route declines the slug. And
-    a slug nobody has written gets this site's own 404 page rather
+    that rule fires only because the route declines the slug. And a
+    slug nobody has written gets this site's own 404 page rather
     than a framework one. */
 async function fromNext(request, env) {
   const answer = await env.NEXT.fetch(request);
@@ -425,8 +332,8 @@ export default {
       /* Before the article route, because the point of the
          allowlist is to take a path away from the handler below
          rather than to race it. `fetch` on a service binding is a
-         call into the other Worker, not a network request: no DNS,
-         no TLS, and it never leaves Cloudflare. */
+         call into the other Worker: no DNS, no TLS, and it never
+         leaves Cloudflare. */
       if (goesToNext(path, env)) return await fromNext(request, env);
 
       const article = path.match(ARTICLE);
@@ -455,34 +362,28 @@ export default {
 
   /* ---- the Cron triggers ----
 
-     Two schedules, told apart by `event.cron`, which is the exact
-     string from wrangler.toml. Matching on the string rather than
-     on the time is what stops a change to one schedule silently
-     firing the other job: change the cron in wrangler.toml and
-     this stops matching, loudly, on the next run.
+     Two schedules, told apart by `event.cron`, the exact string
+     from wrangler.toml. Matching on the string rather than on the
+     time is what stops a change to one schedule silently firing
+     the other job: change the cron and this stops matching,
+     loudly, on the next run.
 
      Every quarter hour   Notion is where the writing happens, and
-                    this is what makes an edit there show up here
-                    without anyone pressing anything. It only
-                    touches articles that were already imported and
-                    published, and only when the Notion page says
-                    it is ready. See _lib/sync.ts for why "as you
-                    type" is neither possible nor desirable.
+                    this is what makes an edit there show up here.
+                    Only articles already imported and published,
+                    and only when the Notion page says it is ready.
 
      Nightly at 03:17     The snapshot into R2. Seventeen past
                     rather than on the hour because every cron in
                     the world fires on the hour.
 
-     (The quarter-hour schedule is not written out here in cron
-     syntax, because the first two characters of it would close
-     this comment. That is not a hypothetical: it did, and the
-     Worker stopped parsing. The strings themselves are in
-     wrangler.toml and in the comparison below, which are the two
-     places they have to agree.)
+     The quarter-hour schedule is NOT written out here in cron
+     syntax: the first two characters of it would close this
+     comment, and did, and the Worker stopped parsing. The strings
+     are in wrangler.toml and in the comparison below.
 
-     A throw here would be an unhandled rejection in a context with
-     nobody to report it to, so each pass is caught and logged; the
-     next run tries again. */
+     A throw here would be an unhandled rejection with nobody to
+     report it to, so each pass is caught and logged. */
   async scheduled(event, env, ctx) {
     ctx.waitUntil((async () => {
       const d1 = await db(env);

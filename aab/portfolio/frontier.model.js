@@ -1,74 +1,13 @@
-/* ============================================================
-   frontier.model.js: portfolio construction, end to end.
+/* frontier.model.js: portfolio construction, end to end. No DOM,
+   prices in and weights and performance out, checked by
+   `frontier.test.ts` against closed forms and identities.
 
-   No DOM. Prices in, weights and performance out, so that
-   frontier.test.ts can check every piece against a closed form
-   or an identity rather than against itself.
-
-   Everything on the page is computed here, in the browser, from
-   the daily prices in frontier.data.js. The covariance matrix,
-   the efficient frontier, the optimised weights and the
-   five-year hold-out test are all live: change a constraint and
-   the frontier is solved again, not looked up.
-
-   ------------------------------------------------------------
-   WHAT IS IMPLEMENTED
-
-   1 · Sample statistics on the estimation window. Simple daily
-       returns, the covariance matrix, correlations, and the
-       annualisation conventions stated once and used everywhere:
-       252 trading days, returns scaled by 252 and volatility by
-       its square root.
-
-   2 · Optional shrinkage of the covariance matrix towards a
-       diagonal target. Ten assets and 252 days is not a lot of
-       data for 55 free parameters, and the sample matrix is
-       known to be badly conditioned in exactly the direction the
-       optimiser leans on hardest. The dial exists because the
-       effect of moving it is one of the more useful things this
-       page can show.
-
-   3 · Long-only mean-variance optimisation, subject to weights
-       that sum to one and an optional cap per holding. Solved by
-       projected gradient ascent on
-
-           maximise  w'μ − (γ/2)·w'Σw
-
-       sweeping the risk-aversion γ from large to small, which
-       traces the whole efficient frontier without ever needing
-       an equality constraint on the target return. Every point
-       the page draws is a solved optimisation.
-
-   4 · The projection itself, onto {w : Σw = 1, 0 ≤ w ≤ cap}.
-       Bisection on the single Lagrange multiplier, which is
-       exact to machine precision and is what makes the box
-       constraint honest rather than a clip applied afterwards.
-
-   5 · A hold-out test on the years after the estimation window,
-       with both rebalancing conventions, because the choice
-       between them is a strategy decision worth several points
-       of return and is usually left unstated.
-
-   6 · The fund as it was actually built and run, which is what
-       the page loads with. Its weights came from a Solver run
-       that minimised the sum of w²σ² subject to the weights
-       summing to one, and that objective has a closed form:
-       weight proportional to one over variance. inverseVariance
-       reproduces the shipped weights to within a rounding error,
-       which is the check that the Solver converged to the
-       optimum of its own objective rather than stopped near it.
-       The frontier and the three optimised alternatives stay,
-       because a reader is entitled to ask what else was on the
-       table, but the default is the fund that was held.
-
-   7 · The reporting a fund is judged on: portfolio beta as a
-       weighted average of the holdings' betas, each holding's
-       contribution to it, and year by year the return, the
-       index, alpha against the security market line, volatility,
-       Sharpe and Treynor. Sharpe and Treynor are both quoted
-       because a fund run at half the market's beta is a fund
-       where the two measures are answering different questions.
-   ============================================================ */
+   Everything is computed live in the browser from the daily
+   prices in `frontier.data.js`: change a constraint and the
+   frontier is solved again rather than looked up. The
+   annualisation conventions are stated once and used
+   everywhere: 252 trading days, returns scaled by 252 and
+   volatility by its square root. */
 
 import {
   COMPANIES, TICKERS, HELD, DATES_2015, PRICES_2015,

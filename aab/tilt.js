@@ -1,91 +1,31 @@
-/* ============================================================
-   tilt.ts, cards lean very slightly towards the pointer.
+/* tilt.ts: cards lean very slightly towards the pointer.
 
-   The effect, in one sentence: a card rotates a couple of
-   degrees about the axis perpendicular to wherever the pointer
-   is sitting on it, so the corner nearest the cursor comes
-   forward and the far one goes back. Small enough to read as
-   "this is a physical thing", nowhere near enough to be a toy.
-
-   THREE DECISIONS WORTH KNOWING ABOUT
-
-   1. It uses the `rotate` property, NOT `transform`.
-
-      Half the cards on this site already animate `transform` on
-      hover, .door lifts by 2px, the case-study panels have
-      their own translate, and a tilt written as a transform
-      would have had to know about every one of them and
-      re-declare it. `rotate`, `translate` and `scale` are
-      independent properties that compose with each other and
-      with `transform`, so this can lean a card without knowing
-      or caring what else is moving it.
-
-      The cost is that `rotate` takes ONE axis-angle pair, not a
-      rotateX and a rotateY. That is fine: a rotation towards a
-      point is a rotation about the axis perpendicular to it,
-      which is exactly one axis. See axisFor below.
-
-   2. The perspective goes on the PARENT, because a 3D rotation
-      with no perspective anywhere is an affine squash: the card
-      shears instead of leaning. `perspective` is not an
-      independent property, so it cannot go on the card itself
-      without also claiming its `transform`; it belongs on the
-      container anyway, so that neighbouring cards share one
-      vanishing point rather than each having their own.
-
-   3. Nothing is touched unless the device actually hovers and
-      the reader has not asked for less motion. On a phone this
-      module attaches no listeners at all, and the note above
-      `initTilt` is why that is the finished state rather than a
-      gap somebody should fill with the handset's own sensor.
-
-   And one that was tried and dropped: a 2px lift to go with the
-   lean. It could not be done from here. The cards in .cards and
-   .bento carry the scroll-driven `reveal-up` animation, which
-   animates `translate` and holds its end state with fill:both,
-   and an animation's output beats an inline style, so the lift
-   silently did nothing on exactly the cards the home page is
-   made of. A tilt that works everywhere beats a tilt plus a lift
-   that works in half the places.
-   ============================================================ */
-/* Every card-like thing on the site. Matched at the container so
-   that one listener serves a whole grid, rather than one per
-   card, a home page has fourteen of these and an Insights page
-   twenty-two.
-
-   Both lists were twice this long and half of each named markup
-   that no longer exists: `.bento`, `.doorway`, `.term-grid`,
-   `.skill-grid`, `#wb-continue`, `.wb-news`, `.door`,
-   `.term-card`, `.wb-card`, `.skill-card`. A selector that
-   matches nothing costs a reader nothing, which is exactly why
-   it sat here through four rewrites of the pages it named; what
-   it costs is the next person, who reads this list to find out
-   what a card is on this site and gets an answer that has been
-   wrong since Stage 11.
-
-   `.deck` and its `.card` are IN the list as of the front-door
-   deck, which reverses the note that used to sit here. The
-   GoCard's hover lift was the reason they were out: a lift under
-   a lean was two answers to one gesture. The lift is gone from
-   `@layer deck` now, precisely so that every clickable card on
-   the site answers the pointer the same way, and the tile the
-   front page is built from (`.gate-tile`) leans with them. The
-   rule in `@layer components` names the same selectors this
-   does, and the two lists have to agree. */
+   It uses `rotate`, NOT `transform`: half the cards here already
+   animate `transform` on hover, and `rotate`/`translate`/`scale`
+   compose with it rather than replacing it. The cost is one
+   axis-angle pair, which is all a rotation towards a point needs:
+   see `axisFor`.
+   The perspective goes on the PARENT. With none anywhere a 3D
+   rotation is an affine squash, and `perspective` is not an
+   independent property, so on the card it would claim the card's
+   `transform`. Nothing is touched on a device that cannot hover
+   or for a reader who asked for less motion. */
+/* Every card-like thing on the site, matched at the CONTAINER so
+   one listener serves a whole grid. A selector here that matches
+   nothing costs nothing and quietly makes this list a wrong
+   answer to "what is a card on this site", so keep it true.
+   `@layer components` names the same selectors and the two lists
+   have to agree. A card in this list must not also have a hover
+   lift: a lift under a lean is two answers to one gesture. */
 const SCENES = [".cards", ".news-grid", ".grid-2", ".grid-3", ".path",
     ".deck"];
 const CARD = [".cell", ".news-card", ".card[data-kind=\"go\"]", ".gate-tile"].join(",");
 const MAX_DEG = 2.6; // the whole effect, corner to corner
-/** The rotation that leans a card towards (nx, ny), where both
-    are −1…1 from the card's centre.
-
-    A rotation "towards the pointer" tips the near edge down and
-    the far edge up, which for a pointer to the right is a
-    positive rotation about Y, and for a pointer below is a
-    NEGATIVE one about X (screen y grows downwards). Combining
-    those two into a single axis-angle: the axis is the vector
-    perpendicular to the pointer direction in the card's plane,
-    and the angle is how far off centre the pointer is. */
+/** The rotation that leans a card towards (nx, ny), both −1…1
+    from the card's centre. The axis is the vector perpendicular
+    to the pointer direction in the card's plane and the angle is
+    how far off centre it is; screen y grows downwards, which is
+    where the signs come from. */
 function axisFor(nx, ny) {
     const mag = Math.min(1, Math.hypot(nx, ny));
     if (!mag)
@@ -94,17 +34,10 @@ function axisFor(nx, ny) {
     return { x: ny / mag, y: nx / mag, deg: mag * MAX_DEG };
 }
 /** Is the page moving under the pointer right now?
-
-    `data-scrolling` is published by `next/components/glow.tsx`,
-    which is the shell's own pointer component, and it is read
-    here rather than watched: this file cannot import across the
-    wall into `next/`, and an attribute on the root is the channel
-    the shell already uses for `data-rail`, `data-sound` and
-    `data-audience`.
-
-    A page with no shell (the two files that are not routes) never
-    sets it, and the answer is a plain false, which is exactly
-    what those pages want: neither has a card on it. */
+    `data-scrolling` is published by `next/components/glow.tsx`
+    and READ here rather than watched: this file cannot import
+    across the wall into `next/`. A page with no shell never sets
+    it and gets a plain false, which is right: it has no cards. */
 function pageScrolling() {
     return document.documentElement.hasAttribute("data-scrolling");
 }
@@ -118,25 +51,13 @@ function attach(scene) {
         if (card)
             card.style.removeProperty("rotate");
     };
-    /* ---- the event records, the frame writes ----
-  
-       This file predates `glow.tsx` and never got that file's
-       rule, which its header states at length: `pointermove` fires
-       as fast as the pointer reports, and a 1000Hz mouse reports
-       sixteen times per frame. Every one of those events used to
-       read this card's box out of the layout and write a rotation
-       back into it, so a single sweep across the front page was
-       sixteen forced layouts and sixteen style writes per frame, on
-       the main thread, for one picture the screen can only draw
-       once.
-  
-       Now the event does one thing, which is to remember itself,
-       and the frame does the reading and the writing exactly once
-       however many events arrived. The rectangle is read inside
-       that frame rather than cached, because a cached box has to be
-       invalidated by scrolling, by resizing, by a font arriving and
-       by anything that reflows the grid, and one read per frame is
-       cheaper than getting that list wrong. */
+    /* THE EVENT RECORDS AND THE FRAME WRITES. `pointermove` fires
+       as fast as the pointer reports and a 1000Hz mouse reports
+       sixteen times per frame, so reading the box and writing the
+       rotation per event is sixteen forced layouts a frame. The
+       rectangle is read inside the frame rather than cached,
+       because a cached box has to be invalidated by scrolling, a
+       resize, a font arriving and anything that reflows a grid. */
     let pending = null;
     let frame = 0;
     const write = () => {
@@ -165,19 +86,10 @@ function attach(scene) {
     scene.addEventListener("pointermove", (e) => {
         if (e.pointerType === "touch")
             return;
-        /* ---- and it stands down while the page is moving ----
-    
-           A reader scrolling with the pointer resting over the cards
-           is making one gesture, not two. Every lean computed during
-           a scroll is computed from a position that changed because
-           the PAGE moved, so it is a lean nobody asked for, and it is
-           asked for at the one moment the browser most needs the main
-           thread: a scroll is the one interaction a reader can feel
-           every dropped frame of.
-    
-           So nothing is scheduled at all. Not a cheaper frame, no
-           frame: the lean freezes where it was, and the next real
-           pointer move after the scroll picks it up. */
+        /* It stands down while the page is moving: every lean
+           computed during a scroll comes from a position that changed
+           because the PAGE moved, at the one moment a reader can feel
+           every dropped frame. Not a cheaper frame, NO frame. */
         if (pageScrolling())
             return;
         pending = e;

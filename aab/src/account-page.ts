@@ -62,51 +62,22 @@ function paintIdentity(): void {
   face.append(img);
 }
 
-/* ============================================================
-   The diet tool's six tables
-
-   `DIET.md` section 30: the six tables go into the copy and into
-   the erase IN THE SAME COMMIT THAT CREATES THEM, and the erase
-   is the more important half. `diet_profile.meds` and
-   `diet_profile.cycle_tracking` are the two most sensitive
-   columns in this database, and a "take a copy of everything"
-   that leaves them behind and an "erase everything" that leaves
-   them in place are the same omission twice.
-
-   Read and deleted here rather than through `saved.js`, because
-   nothing on this page draws a diet row: it needs them whole,
-   once, which is what an export is. Every one is keyed
-   `user_id`, and the row level security means a read with no
-   filter would return this reader's rows anyway; the filter is
-   there for the reason `saved.js` gives beside `mine()`.
-
-   `scripts/check-diet.ts` fails if this list stops matching the
-   migration, because section 30 says in as many words that this
-   is the half that will rot first.
-   ============================================================ */
+/* The diet tool's six tables. `DIET.md` section 30: a table goes
+   into the copy AND into the erase in the commit that creates it,
+   and `diet_profile.meds` and `.cycle_tracking` are the two most
+   sensitive columns in this database. `scripts/check-diet.ts`
+   fails if this list stops matching the migration. */
 
 const DIET_TABLES = [
   "diet_profile", "diet_days", "diet_entries",
   "diet_foods", "diet_phases", "diet_labs",
 ] as const;
 
-/* ============================================================
-   The other four tables leaving has to carry
-
-   Every one of these is the reader's own rows under the same row
-   level security, and none of them had a module on this page
-   that read them whole: the routine's dashboard draws a day at a
-   time, the desk draws a thread at a time, and the broker key is
-   only ever unsealed inside a Worker. So all four were absent
-   from "take a copy of everything" AND from "erase everything",
-   which is the failure the diet block above already names: a
-   table added and its two halves of leaving added later are the
-   same omission twice.
-
-   `scripts/check-account.ts` is what holds it now, and it reads
-   the migrations rather than this list: a reader-owned table
-   nothing here names fails, and a name here that no table
-   answers fails too. */
+/* The other four tables leaving has to carry, all the reader's
+   own rows under the same row level security.
+   `scripts/check-account.ts` reads the MIGRATIONS rather than
+   this list: a reader-owned table nothing here names fails, and
+   so does a name here that no table answers. */
 /** The Research Studio's tables, RESEARCH.md section 23. Every
     one is the reader's own rows and every one goes into BOTH
     halves below in the commit that creates it, which is what
@@ -183,20 +154,10 @@ async function readerTable(
   return await res.json() as unknown[];
 }
 
-/* ============================================================
-   3. Taking a copy
-
-   Everything, in one file, readable in a text editor. Not an
-   export button that produces something only this site can read:
-   the whole argument for an account on a site like this one is
-   that leaving is as easy as arriving.
-
-   It is assembled in the browser out of the tables plus the
-   mirror, rather than by asking the server for a bundle, because
-   there is no server here that could assemble one: Supabase
-   answers tables and the Worker never sees a reader's rows at
-   all.
-   ============================================================ */
+/* 3. Taking a copy: everything, in one file, readable in a text
+   editor. Assembled in the BROWSER out of the tables plus the
+   mirror, because no server here could assemble one: Supabase
+   answers tables and the Worker never sees a reader's rows. */
 
 let profile: Profile | null = null;
 

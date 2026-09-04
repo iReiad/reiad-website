@@ -1,64 +1,18 @@
-/* ============================================================
-   courses.ts: the third-party course player.
-
-   Five pages, one module, because they are five views of one
-   thing and the reader moves between them constantly: a shelf of
-   programmes, one programme, a course, a module summary and a
-   lesson. Which one is drawn comes from the address, so there is
-   no per-page entry point to keep in step with the routes.
-
-   A PROGRAMME is a certificate, a specialisation or a bundle: one
-   Drive folder holding a run of courses meant to be taken in
-   order. It is a segment of every address below the shelf and it
-   is deliberately NOT part of a tick's id. See `lessonId`.
-
-   ---- why the browser draws this and the server does not ----
-
-   Every other ladder on this site is server-rendered, and the
-   rule in `CLAUDE.md` is that the ladder is the server's and the
-   ticks are the browser's. This section is the one place that
-   cannot be: the catalogue is one person's private Drive folder
-   and it is admin-only, so the server must not put it in a page.
-   The Worker checks `isAdmin()` and answers `/api/courses`; this
-   fetches it. See the head of `functions/api/courses/[[route]].ts`.
-
-   The ticks are still the browser's, filed under `courses-read`
-   like every other school's, and `sync.js` carries them to the
-   account. That half did not change.
-
-   ---- the video, and the thing this deliberately does not do ----
-
-   A lesson's video is a Drive `/preview` iframe. The Drive player
-   exposes NO events to the page that embeds it: no play, no
-   pause, no ended, no postMessage worth listening to. So nothing
-   here listens. There is no timer pretending to know how much
-   has been watched, and no heuristic marking a lesson done
-   because ninety seconds passed.
-
-   What there is instead is a button. "Mark complete and
-   continue" saves the tick and goes to the next lesson, and the
-   last lesson of a module goes to the module's summary. A reader
-   who skims a video and presses it has finished the lesson,
-   because they said so, which is the only honest signal
-   available and is the same rule the six schools already use:
-   opening is not finishing.
-   ============================================================ */
+/* courses.ts: the third-party course player. Five views of one
+   thing (shelf, programme, course, module summary, lesson), drawn
+   from the address. A PROGRAMME is a segment of every address
+   below the shelf and is deliberately NOT part of a tick's id:
+   see `lessonId`. The browser draws this because the catalogue is
+   admin-only and the server must not put it in a page. Ticks are
+   `courses-read` like every school's, carried by `sync.js`.
+   The Drive player exposes no events, so nothing here listens:
+   the tick is the "Mark complete and continue" button. */
 import { token, current } from "/account.js";
-/* ============================================================
-   Progress
-
-   The same shape every school uses: a set of ids under one key,
-   a bookmark under another, and an event so that anything on the
-   page showing a number redraws. `sync.js` listens for that same
-   event and is what carries a tick to the account.
-
-   The key is `courses-read` and it is new, so unlike the six
-   schools there is no history to preserve. It is still written
-   out here rather than derived from anything, because the rule
-   in `CLAUDE.md` about storage keys is that they are strings in
-   real browsers, and the day this one has history is the day
-   somebody would otherwise be tempted to rename it.
-   ============================================================ */
+/* Progress: the shape every school uses. A set of ids under one
+   key, a bookmark under another, and an event so anything showing
+   a number redraws; `sync.js` hears that event and carries the
+   tick to the account. `courses-read` is a string in real
+   browsers and may not be renamed. */
 const READ_KEY = "courses-read";
 const LAST_KEY = "courses-last";
 const ANSWER_KEY = "courses-answers";
@@ -110,16 +64,10 @@ function toggleRead(id) {
     dispatchEvent(new CustomEvent(CHANGED));
     return now;
 }
-/* ---- quiz answers ----
-
-   A `set` of `<lesson id>#<question>#<option>`, which is the
-   checkpoint shape with one more segment. Filed beside the ticks
-   and carried by `aab/sync.js` under the same key rules, so a quiz
-   answered on a laptop is answered on the phone.
-
-   It records what was PICKED and never whether it was right: a
-   Coursera export carries no answer key, so there is nothing here
-   to mark against and nothing pretends otherwise. */
+/* Quiz answers: a `set` of `<lesson id>#<question>#<option>`,
+   the checkpoint shape with one more segment, carried by
+   `aab/sync.js`. It records what was PICKED and never whether it
+   was right: a Coursera export carries no answer key. */
 const answerKey = (lesson, q, opt) => `${lesson}#${q}#${opt}`;
 function readAnswers() {
     const raw = readJSON(ANSWER_KEY, []);
@@ -167,15 +115,10 @@ function setLast(entry) {
     writeJSON(LAST_KEY, { ...entry, ts: Date.now() });
     dispatchEvent(new CustomEvent(CHANGED));
 }
-/* ============================================================
-   Where a thing lives
-
-   The same address rules as `shared/courses.ts`, and
-   `check-courses.ts` reads both files and fails if a template
-   here stops matching the one there. They are duplicated rather
-   than imported for the reason the types above are: this file is
-   the browser's and that one is the Worker's package.
-   ============================================================ */
+/* Where a thing lives: the same address rules as
+   `shared/courses.ts`, duplicated because that is the Worker's
+   package. `check-courses.ts` reads both and fails if a template
+   here stops matching the one there. */
 const programmeUrl = (programme) => `/skills/courses/${programme}`;
 const courseUrl = (programme, course) => `/skills/courses/${programme}/${course}`;
 const moduleUrl = (programme, course, mod) => `/skills/courses/${programme}/${course}/${mod}`;
@@ -200,14 +143,10 @@ const laddered = (programme, course) => course.modules.flatMap((mod) => mod.less
     url: lessonUrl(programme, course.slug, mod.slug, lesson.slug),
 })));
 /** The first lesson with no tick, which is where "start" and
-    "continue" both point.
-
-    The bookmark is where the reader WAS; what they want is where
-    to go next, and those are the same only until they finish the
-    lesson they were on. So: the first unticked lesson at or after
-    the bookmark, and failing that the first unticked lesson at
-    all. Null when the course is finished, which the caller says
-    out loud rather than sending somebody back to lesson one. */
+    "continue" both point: the first unticked lesson at or after
+    the bookmark, failing that the first unticked lesson at all.
+    Null when the course is finished, which the caller says out
+    loud rather than sending somebody back to lesson one. */
 function nextUp(rungs, read) {
     const mark = readJSON(LAST_KEY, null);
     const at = mark ? rungs.findIndex((r) => r.id === mark.id) : -1;
@@ -307,15 +246,9 @@ const KIND_WORD = {
     exam: "Challenge",
     file: "File",
 };
-/* ============================================================
-   The sidebar
-
-   Every module and every lesson of the course, a tick on the ones
-   that are done, the current one marked, and a percentage per
-   module. It is a `<details>` per module so a course with 250
-   lessons in it is navigable on a phone, and the module the
-   reader is in is the one that starts open.
-   ============================================================ */
+/* The sidebar: a `<details>` per module, so a course with 250
+   lessons is navigable on a phone, and the module the reader is
+   in is the one that starts open. */
 function sidebar(programme, course, here, open) {
     const read = readSet();
     const nav = el("nav", {
@@ -632,16 +565,10 @@ function drawLesson(root, programme, course, mod, lesson) {
     main.append(el("p", { class: "lesson-meta mono" }, [
         `${KIND_WORD[lesson.kind] ?? lesson.kind} · lesson ${lesson.position} of ${mod.lessons.length}`,
     ]));
-    /* ---- the player ----
-  
-       A real `<video>`, served from this site's own origin, and not
-       a Drive iframe. The iframe is what the first version had and
-       it could never have worked: a private Drive file inside a
-       cross-site frame gets no Drive cookie in a modern browser, so
-       Drive sees an anonymous request for something that is not
-       public and answers "Unable to load video". The Worker holds
-       the credential now and streams the bytes from here, where
-       there is no third party to be blocked. */
+    /* A real `<video>` from this origin, never a Drive iframe: a
+       private Drive file in a cross-site frame gets no Drive cookie
+       in a modern browser, so Drive answers "Unable to load video".
+       The Worker holds the credential and streams the bytes. */
     if (lesson.video) {
         const box = el("div", { class: "course-video" }, [
             el("p", { class: "course-waiting" }, ["Loading the video…"]),
@@ -649,15 +576,9 @@ function drawLesson(root, programme, course, mod, lesson) {
         main.append(box);
         void mountVideo(box, lesson.video, lesson.captions, lesson.title);
     }
-    /* A reading, a quiz or a challenge is a saved Coursera page. It
-       is fetched, sanitised by the Worker and rendered HERE.
-  
-       The first version made it a button out to Drive's viewer, on
-       the reasoning that framing somebody else's document would be
-       this site pretending to have written it. That is a publishing
-       argument and this section is not published: it is one
-       person's own study, behind the admin check. A course you
-       cannot read on the page is not a course. */
+    /* A reading, a quiz or a challenge is a saved Coursera page,
+       fetched, sanitised by the Worker and rendered HERE rather
+       than linked out to Drive's viewer. */
     for (const kind of ["reading", "quiz", "exam"]) {
         const drive = lesson[kind];
         if (!drive)
@@ -741,44 +662,25 @@ function drawLesson(root, programme, course, mod, lesson) {
     ]));
     root.append(main);
 }
-/* ============================================================
-   Fetching a lesson's own content
-
-   All three go through this site, never through Drive, for the
-   reason at the top of `functions/_lib/drive.ts`.
-   ============================================================ */
-/** A pass for one file, good for half an hour.
-
-    `<video src>` is the browser fetching a URL on its own, with
-    no header this code can add, so the permission has to travel
-    in the URL. `functions/_lib/ticket.ts` is why that is a signed
-    ticket naming one file rather than the session token.
-
-    The whole answer comes back rather than just the URL, because
-    the reason a pass was refused is the only useful thing on the
-    page when one is. See `mountVideo`. */
+/* A lesson's content goes through this site, never through
+   Drive: see the top of `functions/_lib/drive.ts`. */
+/** A pass for one file, good for half an hour. `<video src>` adds
+    no header this code controls, so the permission travels in the
+    URL as a signed ticket naming ONE file rather than as the
+    session token. See `functions/_lib/ticket.ts`. The whole answer
+    comes back because the reason a pass was refused is the only
+    useful thing on the page when one is. */
 const ticketFor = (drive) => api(`/ticket/${drive}`);
-/** Name this page, in the tab and in the last crumb.
-
-    Every other section on this site is rendered by the server, so
-    its title arrives with the HTML. This one deliberately renders
-    nothing, so the title says "Lesson" until the catalogue comes
-    down and the browser can say better. */
+/** Name the TAB. This section renders nothing on the server, so
+    the title says "Lesson" until the catalogue comes down. The
+    trail is `next/components/courses/trail.tsx` and must not be
+    renamed from here: a crumb holds a separator, a popover and a
+    label, and one text node replaces all three. */
 function name(title) {
     const clean = String(title ?? "").trim();
     if (!clean)
         return;
     document.title = `${clean} · Reiad's Library`;
-    /* The TAB's name, and nothing else. The trail used to be
-       renamed from here too, with `last.textContent = text` on the
-       current crumb, and that `<li>` holds a separator, a popover
-       of what else is at that level and a label: one text node
-       replaced all three, so the arrow in front of the last crumb
-       vanished and the row read `কোর্সOptional familiar with…`.
-       It also only ever had one crumb to rename, so the course and
-       module levels were never in the trail at all.
-       `next/components/courses/trail.tsx` draws the whole path
-       now, from the address and its own fetch. */
 }
 function saySo(box, message) {
     box.replaceChildren(el("p", { class: "course-empty" }, [message]));
@@ -786,15 +688,9 @@ function saySo(box, message) {
 async function mountVideo(box, drive, captions, title) {
     const answer = await ticketFor(drive);
     if (!answer.ok || !answer.data) {
-        /* The server's own reason, not a general one. This said "that
-           video could not be opened, try reloading" for every failure
-           there is, including the one that was actually happening: the
-           Worker had no Google credential and was saying so in the
-           response, in a sentence naming the secret to set. Reloading
-           was never going to fix it, and the page recommended it.
-    
-           `mountReading` beside this has always shown the message. The
-           two now agree. */
+        /* The SERVER's own reason, not a general one: a missing
+           Google credential is a sentence the Worker already sends,
+           and "try reloading" was never going to fix it. */
         saySo(box, answer.message || "That video could not be opened.");
         return;
     }
@@ -811,15 +707,10 @@ async function mountVideo(box, drive, captions, title) {
         title,
     });
     box.replaceChildren(video);
-    /* Captions after the player rather than with it, because they
-       need a pass of their own and waiting for it would hold up the
-       video. A `<track>` appended later is picked up: the browser
-       loads it when the reader turns captions on, not when the
-       element appears.
-  
-       `default` on, because this section has one reader and they
-       asked for captions. The control to turn them off is in the
-       player, where a reader would look for it. */
+    /* Captions after the player: they need a pass of their own and
+       waiting for it would hold up the video. A `<track>` appended
+       later is picked up, because the browser loads it when the
+       reader turns captions on rather than when it appears. */
     if (captions)
         void mountCaptions(video, captions);
 }
@@ -833,17 +724,12 @@ async function mountCaptions(video, drive) {
     const answer = await api(`/ticket/${drive}`);
     if (!answer.ok || !answer.data)
         return;
-    /* The ticket names the file; the address says what is done to it
-       on the way through. `captionsUrl` is the SubRip-to-WebVTT
-       route, because no browser reads SubRip in a track, so the pass
-       is lifted out of the URL the ticket route returned and put on
-       a different path.
-  
-       Read with a pattern rather than `new URL`, which needs a base
-       and would mean inventing a hostname to parse a relative path.
-       `check-csp.ts` reads every host named in this directory and
-       is right to refuse one that exists only to satisfy a
-       constructor. */
+    /* The ticket names the file; the address says what is done to
+       it on the way. `captionsUrl` is the SubRip-to-WebVTT route,
+       because no browser reads SubRip in a `<track>`.
+       Read with a pattern rather than `new URL`, which needs a base:
+       `check-csp.ts` reads every host named here and is right to
+       refuse one invented to satisfy a constructor. */
     const pass = /[?&]t=([^&]*)/.exec(answer.data.url)?.[1] ?? "";
     if (!pass)
         return;
@@ -855,19 +741,10 @@ async function mountCaptions(video, drive) {
         default: true,
     }));
 }
-/** A quiz, as something a reader can actually answer.
-
-    The inputs are built HERE, out of the option strings the Worker
-    parsed. None of Coursera's own markup reaches this page: their
-    `<input name="0">` was wired to their server and is meaningless
-    off it, and building our own is what makes an answer something
-    this site can keep.
-
-    Answers save as they are pressed. There is no submit button
-    because there is nothing to submit to and nothing to mark
-    against: the export carries no answer key, so this records what
-    the reader picked and says so plainly rather than implying a
-    score it cannot compute. */
+/** A quiz. The inputs are built HERE out of the option strings
+    the Worker parsed, so none of Coursera's own markup reaches
+    this page. No submit button and no score: the export carries
+    no answer key, so this records what was picked and says so. */
 async function mountQuiz(box, drive, kind, lesson) {
     const answer = await api(`/quiz/${drive}`);
     if (!answer.ok || !answer.data) {
@@ -1001,31 +878,15 @@ function refreshRail(programme, course, here) {
 export function whereAmI(path) {
     const parts = path.replace(/^\/skills\/courses\/?/, "").split("/").filter(Boolean);
     const [programme, course, mod, lesson] = parts;
-    /* THE SEGMENT COUNT DECIDES, and the `index.html` clauses are
-       what still answers an address from before task #28.
-  
-       Dropping `.html` made the counts distinct, which is why the
-       new spellings read as a plain list: one segment is a
-       programme, two a course, three a module, four a lesson. The
-       old spellings needed the suffix to tell a hub from a lesson,
-       which were the same length.
-  
-       They are read here rather than redirected in
-       `aab/_redirects`, and `shared/courses.ts` says why beside
-       `lessonOf`: 845 addresses generated out of a Drive folder
-       cannot be one rule each without going stale the first time
-       that folder changes, and this section is admin-only and
-       unlisted, so there is no canonical to split and no crawler to
-       confuse. The routes are shells, so the URL is the only thing
-       that ever said which view this is.
-  
-       AN ADDRESS FROM BEFORE THE PROGRAMME CANNOT BE READ HERE, and
-       nothing pretends otherwise: it has one segment fewer and no
-       suffix saying so, so `/skills/courses/<course>` is a
-       programme as far as this function can tell. `start()` is
-       where a course bookmark of that shape is recognised and
-       moved, because that needs the shelf and this needs only the
-       path. */
+    /* THE SEGMENT COUNT DECIDES: one is a programme, two a course,
+       three a module, four a lesson. The `index.html` clauses still
+       answer an address from before task #28.
+       Read here rather than redirected in `aab/_redirects`, which
+       is a public asset: a rule per course slug there would publish
+       the catalogue this section keeps unpublished.
+       AN ADDRESS FROM BEFORE THE PROGRAMME cannot be read here: it
+       has one segment fewer and nothing saying so. `start()` is
+       where a course bookmark of that shape is moved. */
     if (!parts.length || programme === "index.html")
         return { view: "catalogue" };
     if (parts.length === 1)
@@ -1092,21 +953,11 @@ export async function start(root) {
             return drawCatalogue(root, programmes);
         const programme = programmes.find((p) => p.slug === where.programme);
         if (!programme) {
-            /* AN ADDRESS FROM BEFORE THE PROGRAMME. `/skills/courses/
-               <course>` was live until a certificate got a segment of
-               its own, so every course bookmark anybody holds is this
-               shape. The shelf names every course under its programme
-               and has already arrived, so this is answered rather than
-               refused, with no second request.
-      
+            /* A course bookmark from before the programme segment. The
+               shelf has already arrived and names every course under
+               its programme, so this is answered with no second request.
                `replace`, not `href`: a bookmark that moved should not
-               leave the dead address in the history for Back to walk
-               into.
-      
-               It is here rather than in `aab/_redirects` because that
-               file is a public asset, and a rule per course slug there
-               would publish the catalogue this section exists to keep
-               unpublished. */
+               leave the dead address in the history for Back. */
             const holder = programmes.find((p) => p.courses.some((c) => c.slug === where.programme));
             if (holder) {
                 location.replace(courseUrl(holder.slug, where.programme));

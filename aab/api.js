@@ -1,29 +1,9 @@
-/* ============================================================
-   api.ts: the browser's side of the dynamic layer.
-
-   One rule governs this whole file: if the backend isn't there,
-   nothing breaks. Every call returns null instead of throwing,
-   and every caller has a static fallback. That means the site
-   works exactly as it does today until the database is created,
-   and starts doing more the moment it is, with no second
-   version of the site to maintain in the meantime.
-
-   ---- this file is TypeScript, and the .js beside it is built ----
-
-   archive/TRANSITION.md Stage 13. Edit `aab/src/api.ts`; the committed
-   `aab/api.js` is what the browser fetches, and
-   `node scripts/build-modules.ts --check` fails if it is edited
-   in its built form.
-
-   ---- what api() returns, and why it is `unknown` ----
-
-   Every endpoint answers something different, and this function
-   cannot know which. Typing it `any` would let every named call
-   below lie about its own shape without a word from the compiler,
-   which is the opposite of the point. So the named calls narrow
-   it, one at a time, and a caller of the raw `api()` has to
-   decide what it got.
-   ============================================================ */
+/* api.ts: the browser's side of the dynamic layer. Every call
+   answers null rather than throwing and every caller has a static
+   fallback, so the site works with no backend at all. `api()`
+   answers `unknown` rather than `any` so the named calls below
+   have to narrow it. Edit this; `aab/api.js` beside it is built,
+   and `build-modules.ts --check` fails if the output is edited. */
 import { whenActivated } from "/activation.js";
 const JSON_HEADERS = { "Content-Type": "application/json" };
 /** null means "not available", never an exception to handle. */

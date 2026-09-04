@@ -1,100 +1,35 @@
-/* ============================================================
-   import-courses.ts: the third-party course catalogue, from the
-   Drive folder it actually lives in.
+/* import-courses.ts: the third-party course catalogue, from the
+   Drive folder it lives in.
 
-   `shared/courses.data.json` is GENERATED. Do not hand-edit it,
-   for the reason at the top of `CLAUDE.md`: a list that is typed
-   is a list that is right on the day it was typed. A course
-   folder gains a lesson, somebody renames a week, and the only
-   thing that notices is a reader clicking a video that is not
-   there. So the catalogue is derived from Drive and re-derived
-   whenever Drive changes, and `--check` fails the build when the
-   committed copy has drifted from the folder it claims to
-   describe.
+     node scripts/import-courses.ts --drive <folderId> --dump <dir>
+     node scripts/import-courses.ts --crawl <dir>
+     node scripts/import-courses.ts --crawl <dir> --check
 
-   ---- two front ends, one transform ----
+   `shared/courses.data.json` is GENERATED. Do not hand-edit it:
+   a typed list is right on the day it was typed, and `--check`
+   fails the build when the committed copy has drifted.
 
-     --drive <folderId>   walk the Drive API. What you run to
-                          refresh the catalogue.
-     --crawl  <dir>       read a folder listing already captured
-                          as TSV. What seeded the first commit,
-                          and what lets this be tested with no
-                          network and no credential.
+   Two front ends, one transform. `--drive` walks the Drive API and
+   `--crawl` reads a listing already captured as TSV, and both hand
+   the same tree to the same builder, so the seed and every later
+   refresh cannot disagree about what a lesson is.
+   `scripts/lib/coursera.ts` is that agreement.
 
-   Both produce the same tree and hand it to the same builder, so
-   the seed and every later refresh cannot disagree about what a
-   lesson is. `scripts/lib/coursera.ts` is that agreement.
+   ALWAYS PASS `--dump` ON A `--drive` RUN. The listing it writes
+   back out is the only reason CI can rebuild the catalogue with no
+   credential; refresh one without the other and the next `--check`
+   fails on a drift that is really a stale fixture.
 
-   ---- the credential ----
-
-   The files are private, which is the whole point of this
-   section: it is one person's own copy of a course they are
-   working through, gated behind the admin check, never
-   published. A private file needs an OAuth ACCESS TOKEN. An API
-   key will not open one, and neither will a service account
-   unless the folder has been shared with it, so do not reach for
-   either.
-
-   The scope to ask for is the narrowest one that works:
-
-     https://www.googleapis.com/auth/drive.metadata.readonly
-
-   This script reads three fields per row, `id`, `name` and
-   `mimeType`, and never opens a file. That scope cannot read file
-   CONTENT at all, which is the right amount of power to hand a
-   catalogue builder: if it is ever wrong, the worst it can do is
-   read the names of things.
-
-   TWO WAYS TO GET ONE. Both give a token that lasts about an
-   hour, which is roughly fifty times longer than a full walk of
-   the folder takes.
-
-   1. The OAuth playground, if you want no setup at all.
-
-      https://developers.google.com/oauthplayground
-
-      Put the scope above into "Input your own scopes" in step 1,
-      authorise as the account that OWNS the folder, then press
-      "Exchange authorization code for tokens" in step 2. The
-      access token is the `ya29....` string.
-
-      Note the playground is a Google-owned OAuth client, so this
-      grants that client read access to your Drive metadata for
-      the hour the token lives. Revoke it afterwards at
-      myaccount.google.com/permissions if you would rather not
-      leave it sitting there.
-
-   2. gcloud, if it is already installed, which leaves no
-      third-party client holding anything:
-
-        gcloud auth application-default login \
-          --scopes=https://www.googleapis.com/auth/drive.metadata.readonly
-        gcloud auth application-default print-access-token
-
-   Then either pass it or export it. Exporting is better, because
-   an argument ends up in the shell history and a token is a
-   bearer credential for the hour it lives:
-
-     export GOOGLE_OAUTH_TOKEN=ya29....
-     node scripts/import-courses.ts --drive 1dyYLbVa2lS9o7oRAEZOpQgZMpUtd15La
+   The credential is an OAuth ACCESS TOKEN in `GOOGLE_OAUTH_TOKEN`,
+   scoped `drive.metadata.readonly`, which cannot read file content
+   at all. An API key will not open a private file and neither will
+   a service account unless the folder is shared with it. CLAUDE.md
+   has the two ways to get one; export it rather than passing it,
+   because an argument goes into the shell history and a token is a
+   bearer credential for the hour it lives.
 
    NOTHING IS WRITTEN UNTIL THE WHOLE WALK SUCCEEDS, so a token
-   that expires halfway leaves the committed catalogue exactly as
-   it was. Get a fresh one and run it again.
-
-   ---- the three ways to run it ----
-
-     node scripts/import-courses.ts --drive 1dyYL...    refresh
-     node scripts/import-courses.ts --crawl <dir>       from a listing
-     node scripts/import-courses.ts --crawl <dir> --check   has it drifted
-
-   Add `--dump <dir>` to a `--drive` run to write the listing back
-   out as TSV. Do that whenever the catalogue is refreshed, so the
-   fixture CI reads stays in step with it:
-
-     node scripts/import-courses.ts --drive 1dyYL... \
-       --dump scripts/fixtures/course-crawl
-   ============================================================ */
+   that expires halfway leaves the committed catalogue alone. */
 
 import { readFileSync, writeFileSync, existsSync, mkdirSync } from "node:fs";
 import { join, dirname } from "node:path";
@@ -126,8 +61,8 @@ const TOKEN = flag("--token") ?? process.env.GOOGLE_OAUTH_TOKEN ?? "";
 
 /* Folders that are in the download and are not part of the
    course. The one this exists for ships with every scraped
-   Coursera export and holds nothing but links to piracy sites;
-   it is not a module and must never become one. */
+   Coursera export and holds nothing but links to piracy sites; it
+   is not a module and must never become one. */
 const SKIP_FOLDER = /^0\.\s|^Websites you may like/i;
 
 /* ============================================================
@@ -136,31 +71,25 @@ const SKIP_FOLDER = /^0\.\s|^Websites you may like/i;
 
 const API = "https://www.googleapis.com/drive/v3/files";
 
-/* At most this many listings in the air at once.
-
-   The tree is walked a level at a time, and the bottom level of a
-   Coursera export is about 170 folders. Firing all of those at
-   once is not faster: Drive answers a burst like that with 429s,
-   the walk then fails on whichever folders happened to lose, and
-   the failure looks like a permissions problem because the body
-   of a 429 mentions quota. Eight is comfortably under the
-   per-user ceiling and finishes the whole tree in well under a
-   minute. */
+/* At most this many listings in the air at once. The bottom level
+   of a Coursera export is about 170 folders, and firing all of
+   those at once is not faster: Drive answers a burst like that
+   with 429s, and the failure looks like a permissions problem
+   because the body of a 429 mentions quota. */
 const AT_ONCE = 8;
 
-/* A 429 or a 5xx is Drive asking for a moment, not an answer. The
-   backoff is exponential from a quarter second, which is the
-   shape Google's own client libraries use, with a cap so a
-   genuinely broken call fails in seconds rather than minutes. */
+/* A 429 or a 5xx is Drive asking for a moment, not an answer.
+   Exponential from a quarter second, with a cap so a genuinely
+   broken call fails in seconds rather than minutes. */
 const RETRIES = 5;
 
 const sleep = (ms: number): Promise<void> =>
   new Promise((go) => { setTimeout(go, ms); });
 
-/** One file as Drive lists it, which is the three fields the
-    query asks for and nothing else. `mimeType` is how a folder is
-    told from a file, and it is the ONLY difference between the two
-    front ends below: the TSV carries the same fact as a column. */
+/** One file as Drive lists it: the three fields the query asks for
+    and nothing else. `mimeType` is how a folder is told from a
+    file, and it is the ONLY difference between the two front ends
+    below: the TSV carries the same fact as a column. */
 interface DriveFile {
   id: string;
   name: string;
@@ -180,10 +109,9 @@ async function askDrive(url: URL, parent: string): Promise<DriveListing> {
     const said = await res.text();
 
     /* 401 is the one worth naming, because it is the one that
-       will actually happen: an access token from the OAuth
-       playground or from gcloud lasts an hour, and an import
-       started at fifty-nine minutes dies in the middle with a
-       message about credentials that reads like a scope problem. */
+       will happen: a token lasts an hour, and an import started at
+       fifty-nine minutes dies in the middle with a message about
+       credentials that reads like a scope problem. */
     if (res.status === 401) {
       throw new Error(
         "Drive said 401: the access token is expired or wrong.\n"
@@ -249,10 +177,9 @@ async function pooled<T, R>(items: T[], job: (item: T) => Promise<R>): Promise<R
 
 const FOLDER = "application/vnd.google-apps.folder";
 
-/** One entry of the tree, and it is what both front ends produce.
-    A row read from Drive and a row read from the TSV have to be
-    the same object or the two would drift, which is the whole
-    reason the fixture exists. */
+/** One entry of the tree, and what both front ends produce. A row
+    read from Drive and a row read from the TSV have to be the same
+    object or the two would drift. */
 interface Node {
   parent: string;
   name: string;
@@ -291,14 +218,10 @@ async function walkDrive(root: string): Promise<Tree> {
   const tree: Tree = new Map();
 
   /* THE ROOT'S OWN ROW, with an empty parent so it is nobody's
-     child and `childrenOf` never returns it.
-
-     The tree used to start at the root's CHILDREN, so the name of
-     the folder everything sits in was the one fact the crawl
-     threw away. That was fine while the root held courses; it is
-     not fine now that the root is a programme, because a
-     programme has to be called something and the only honest
-     source for that is the folder. */
+     child and `childrenOf` never returns it. Listing a folder's
+     children never says what the folder is called, and a
+     programme has to be called something: the only honest source
+     is the folder. */
   tree.set(root, { parent: "", name: await folderName(root), folder: true });
 
   let level = [root];
@@ -326,14 +249,11 @@ async function walkDrive(root: string): Promise<Tree> {
   return tree;
 }
 
-/* ============================================================
-   Front end 2: a captured listing
-
-   Two tab-separated files, `id parent kind name` for folders and
-   `id parent name` for files. Exactly what the Drive listing
-   gives, with nothing added, so that a tree read from here and a
-   tree read from the API are the same object.
-   ============================================================ */
+/* Front end 2: a captured listing. Two tab-separated files,
+   `id parent kind name` for folders and `id parent name` for
+   files: exactly what the Drive listing gives, with nothing added,
+   so a tree read from here and one read from the API are the same
+   object. */
 
 function walkCrawl(dir: string): Tree {
   const tree: Tree = new Map();
@@ -376,12 +296,8 @@ const childrenOf = (
     STRUCTURAL, NOT A GUESS. A course's child folders are modules
     and a module is `NN_something`; a programme's child folders are
     courses and a course is `N. Something`. Both conventions are
-    Coursera's own and the importer already relies on each of them
-    one level down, so this asks the tree rather than the name.
-
-    A folder with neither shape under it is neither, and `build`
-    skips it the way it always skipped a folder that is not
-    `N. Title`. */
+    Coursera's own. A folder with neither shape under it is
+    neither, and `build` skips it. */
 const holdsModules = (tree: Tree, folder: string): boolean =>
   childrenOf(tree, folder, true).some((kid) => /^\d{2}_/.test(kid.name));
 
@@ -410,9 +326,9 @@ function buildCourse(tree: Tree, folder: { id: string; name: string }): Course |
 
       /* The group folder folds into the lesson's `section`, and
          the lessons are numbered across the whole module rather
-         than restarting per group, because the ladder in the
-         sidebar reads straight down and a reader counting "lesson
-         7 of 22" should not meet three lesson ones. */
+         than restarting per group: the sidebar reads straight
+         down, and a reader counting "lesson 7 of 22" should not
+         meet three lesson ones. */
       let position = 0;
       for (const group of childrenOf(tree, modFolder.id, true)) {
         const parsedGroup = /^(\d{2})_(.+)$/.exec(group.name);
@@ -425,14 +341,11 @@ function buildCourse(tree: Tree, folder: { id: string; name: string }): Course |
         }
       }
 
-      /* A module with no lessons is kept and SAYS so, rather than
-         being dropped. Two different things produce one, and the
-         reader is owed the difference either way: a folder in
-         Drive that is genuinely empty, and a module this
-         catalogue has not been walked far enough to fill. A
-         dropped module is a hole in the ladder that looks like a
-         course with fewer weeks in it; a pending one is a rung
-         that says "not imported". After a full `--drive` run
+      /* A module with no lessons is kept and SAYS so rather than
+         being dropped, because two different things produce one
+         and the reader is owed the difference: a Drive folder that
+         is genuinely empty, and a module this catalogue has not
+         been walked far enough to fill. After a full `--drive` run
          nothing carries this. */
     if (!mod.lessons.length) mod.pending = true;
     course.modules.push(mod);
@@ -445,23 +358,16 @@ function buildCourse(tree: Tree, folder: { id: string; name: string }): Course |
 
 /** The catalogue: programmes, each holding its courses.
 
-    TWO LAYOUTS, AND BOTH ARE REAL. A Drive root may hold
-    programme folders, which is what this grows into, or it may
-    hold course folders directly, which is what it holds today.
-    `holdsModules()` tells them apart by what is under them.
+    TWO LAYOUTS, AND BOTH ARE REAL. A Drive root may hold programme
+    folders, or it may hold course folders directly, which is what
+    it holds today. `holdsModules()` tells them apart by what is
+    under them.
 
-    Where the root holds courses, the root ITSELF is the
-    programme: that is not a special case invented to avoid work,
-    it is what the folder already was. Somebody's "Google Data
-    Analytics" folder full of eight numbered courses is a
-    certificate whether or not anybody has drawn a box around it,
-    and the eight were listed as unrelated courses only because
-    this importer started one level too deep.
-
-    A part-moved Drive works too: programme folders are walked as
-    programmes, any courses still loose at the root join the root
-    programme, and nothing is dropped while somebody is halfway
-    through tidying. */
+    Where the root holds courses, the root ITSELF is the programme:
+    that is what the folder already was, and the eight were listed
+    as unrelated courses only because this importer started one
+    level too deep. A part-moved Drive works too, so nothing is
+    dropped while somebody is halfway through tidying. */
 function build(tree: Tree, root: string, rootName: string): { programmes: Programme[] } {
   const programmes: Programme[] = [];
   const loose: Course[] = [];
@@ -510,11 +416,10 @@ function build(tree: Tree, root: string, rootName: string): { programmes: Progra
   return { programmes };
 }
 
-/** Every lesson inside one group folder, in file order.
-
-    A lesson is a `NN_` prefix, and everything sharing that prefix
-    belongs to it: the video, the transcript, the reading, the
-    quiz and any attachments. */
+/** Every lesson inside one group folder, in file order. A lesson
+    is a `NN_` prefix, and everything sharing that prefix belongs
+    to it: the video, the transcript, the reading, the quiz and any
+    attachments. */
 function lessonsIn(tree: Tree, group: string, groupSlug: string): NewLesson[] {
   const byPrefix = new Map<string, FilePart[]>();
 
@@ -535,8 +440,8 @@ function lessonsIn(tree: Tree, group: string, groupSlug: string): NewLesson[] {
 
 /** One file of a lesson: what its name says it is, plus where it
     sits in Drive. `Part` is the reading of the name and knows
-    nothing about Drive; the id is what turns it into something
-    the catalogue can point at. */
+    nothing about Drive; the id is what turns it into something the
+    catalogue can point at. */
 interface FilePart extends Part {
   id: string;
   name: string;
@@ -555,9 +460,9 @@ function oneLesson(parts: FilePart[], groupSlug: string): NewLesson {
   /* A `bare` page is named after its file rather than after
      itself, and the same file name recurs across groups, so it
      takes its group's name as well. Qualified for EVERY such page
-     rather than only on collision, deliberately: a slug that
-     changed the day a second `01__resources.html` appeared in the
-     module would be a URL that moved and a tick that was lost. */
+     rather than only on collision: a slug that changed the day a
+     second `01__resources.html` appeared would be a URL that moved
+     and a tick that was lost. */
   const slug = slugify(first.bare ? `${groupSlug}-${first.slug}` : first.slug);
 
   const lesson: NewLesson = {
@@ -570,10 +475,9 @@ function oneLesson(parts: FilePart[], groupSlug: string): NewLesson {
   if (video) lesson.video = video;
 
   /* A reading, a quiz and an exam are all a page of Coursera HTML
-     and all open in Drive's own viewer. They are named separately
-     because the lesson SAYS which it is, and "quiz" and "reading"
-     are different promises to somebody deciding whether they have
-     twenty minutes. */
+     and all open in Drive's own viewer. Named separately because
+     the lesson SAYS which it is, and they are different promises
+     to somebody deciding whether they have twenty minutes. */
   for (const kind of ["reading", "quiz", "exam"] as const) {
     const id = pick(kind);
     if (id) lesson[kind] = id;
@@ -581,13 +485,10 @@ function oneLesson(parts: FilePart[], groupSlug: string): NewLesson {
 
   /* Two files, and they are not the same thing. The `.en.txt` is
      the transcript: prose, offered as a link, for reading instead
-     of watching. The `.en.srt` is the captions: the same words
-     with timings on them, which is what a <track> needs and what
-     puts subtitles over the picture.
-
-     Only the first was carried for a while. Every video had both
-     in Drive, `coursera.mjs` classified both correctly, and the
-     player had no captions because the id stopped here. */
+     of watching. The `.en.srt` is the captions, the same words
+     with timings on them, which is what a <track> needs. Only the
+     first was carried for a while, so every player had a captions
+     button that turned nothing on. */
   for (const kind of ["transcript", "captions"] as const) {
     const id = pick(kind);
     if (id) lesson[kind] = id;
@@ -602,7 +503,6 @@ function oneLesson(parts: FilePart[], groupSlug: string): NewLesson {
 }
 
 /** `..._Learning_Log_Template__Think_about_data.docx` -> `Learning Log Template: Think about data`.
-
     Coursera writes a double underscore where the original title
     had a colon, and single underscores for its spaces. Both are
     reversible and neither is a guess. */
@@ -642,12 +542,12 @@ try {
   process.exit(1);
 }
 
-/* Write the listing back out as TSV, so that a walk which needed a
-   credential leaves behind something that does not. That is what
-   `scripts/fixtures/course-crawl/` is: without it, the catalogue
-   is the one generated file in this repository whose generator
-   only one person can run, and a generated file nobody can
-   regenerate quietly becomes a hand-maintained one. */
+/* Write the listing back out as TSV, so a walk that needed a
+   credential leaves behind something that does not. Without
+   `scripts/fixtures/course-crawl/`, the catalogue is the one
+   generated file here whose generator only one person can run, and
+   a generated file nobody can regenerate becomes a hand-maintained
+   one. */
 if (DUMP) {
   const dir = join(ROOT, DUMP);
   mkdirSync(dir, { recursive: true });
@@ -690,8 +590,8 @@ const catalogue: Catalogue = {
   source: "Google Drive",
   /* No timestamp, deliberately, for the reason
      `content/schools.backup.json` gives: identical content should
-     be identical bytes, so that the git log answers "did the
-     catalogue change" rather than "was this re-run". */
+     be identical bytes, so the git log answers "did the catalogue
+     change" rather than "was this re-run". */
   ...built,
 };
 

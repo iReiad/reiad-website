@@ -1,78 +1,23 @@
-/* ============================================================
-   sync.ts: progress belongs to the account.
-
-   ---- what changed, and why the old one had to go ----
-
-   The first version of this file treated a browser and an account
-   as two equal copies of the same thing and merged them. It read
-   localStorage, unioned it with the account's rows, wrote the
-   result back to both, and asked a three-way question the first
-   time a device met an account so that the merge could not lose
-   anything. Every one of those pieces was careful and the shape
-   underneath them was wrong.
-
-   A browser is not a copy of an account. It is a machine somebody
-   happens to be sitting at, and it may be a library computer, a
-   phone that was handed over for five minutes, or a profile that
-   was used for testing. Treating whatever it held as a claim on
-   the account meant the site had to ASK before it could act, and
-   a dialog in the middle of signing in is what an unanswerable
-   design question looks like from the reader's side.
-
-   So there is one record now, and it is the account. This file
-   reads it, writes it, and keeps a copy of it on the device so
-   that pages which have always read localStorage go on working
-   without knowing any of this happened.
+/* sync.ts: progress belongs to the account, and the browser is a
+   mirror. Four states, and they are the whole contract:
 
      signed out    nothing. No request, no listener, no storage
-                   touched. Progress is this browser's, exactly as
-                   it was in 2025, and no page needs an account.
+                   touched. Progress is this browser's.
+     signing in    the account's rows are written on to this
+                   device. What the browser held is not merged
+                   and never uploaded.
+     signed in     a tick here goes up, a tick on the phone
+                   comes down.
+     signing out   the mirror comes off, so the next person at
+                   this machine does not inherit somebody's ticks.
 
-     signing in    the account's rows are written onto this
-                   device. What the browser held before is not
-                   uploaded, not merged and not consulted. That is
-                   the whole rule, and it is the one the old file
-                   could not state in a sentence.
-
-     signed in     the device is a mirror. A tick made here is a
-                   change to the account and goes up; a tick made
-                   on the phone comes down.
-
-     signing out   the mirror is taken off. It was never this
-                   browser's to keep, and leaving one reader's
-                   ticks behind for the next person at the same
-                   machine is the failure the rule above exists to
-                   prevent.
-
-   ---- two signed-in devices, which is a real case ----
-
-   Read a lesson on the bus, tick another at a desk, and neither
-   the phone nor the laptop is wrong. Nothing here is
-   last-writer-wins for the things that matter, but the
-   reconciliation is now between two states that both came FROM
-   the account, rather than between the account and whatever a
-   browser happened to hold.
-
-   `base` is what the account said when this page last exchanged
-   with it. `local` is what the device says now. The difference
-   between them is what this reader actually did in this session:
-
-     added   = local \ base        their ticks
-     removed = base \ local        their untick, or a reset
-
-   and the value written back is `(remote ∪ added) \ removed`,
-   against a freshly read `remote`. A tick from another device
-   inside `remote` survives; a reset here clears the account
-   instead of being undone by it. The old file needed a special
-   case and a timestamp per key to get the reset right, and it got
-   it wrong for a year because every school's resetAll() removes a
-   key rather than emptying it. There is no special case here: an
-   absent key is an empty set, an empty set makes `removed` the
-   whole of `base`, and the account ends up empty because that is
-   what subtraction says.
-
-   archive/TRANSITION.md, Stage 6, rewritten 17 August 2026.
-   ============================================================ */
+   Two signed-in devices are the one merge left. `base` is what
+   the account said at the last exchange, so `added = local \ base`
+   and `removed = base \ local`, and the value written back is
+   `(remote ∪ added) \ removed`. There is no special case for a
+   reset: every school's `resetAll()` REMOVES a key rather than
+   emptying it, an absent key is an empty set, and subtraction
+   takes the account down with it. */
 import { SUPABASE_URL, SUPABASE_KEY, token, current } from "/account.js";
 const REST = `${SUPABASE_URL}/rest/v1/progress`;
 const KEYS = {
@@ -96,82 +41,41 @@ const KEYS = {
     "deutsch-checks": ["set", "deutsch:progress"],
     "english-checks": ["set", "english:progress"],
     "quran-checks": ["set", "quran:progress"],
-    /* The third-party course section, /skills/courses/. A `set` of
-       `<course>/<module>/<lesson>` and a bookmark, exactly like a
-       school's, because a tick is a tick whoever wrote the lesson.
-  
-       It is here rather than left to the browser alone even though
-       the whole section is admin-only and therefore always signed
-       in: that is the reason it belongs here, not a reason to skip
-       it. A reader who ticks forty lessons on a laptop and opens
-       the course on a phone is the case this table exists for, and
-       an admin has more devices than anybody. See
-       `aab/src/courses.ts`. */
+    /* /skills/courses/: a `set` of `<course>/<module>/<lesson>` and
+       a bookmark, exactly like a school's. Admin-only is a reason
+       to carry it, not to skip it: an admin has the most devices. */
     "courses-read": ["set", "courses:progress"],
     "courses-last": ["mark", "courses:progress"],
     /* Quiz answers: `<course>/<module>/<lesson>#<question>#<option>`.
        A `set`, like a checkpoint, and never a score: the course
        exports carry no answer key. See functions/_lib/quiz.ts. */
     "courses-answers": ["set", "courses:progress"],
-    /* Which days this person turned up, from streak.js. A set for
-       the obvious reason: a phone on the bus and a laptop at a desk
-       are the same Tuesday, and either one alone under-counts. */
+    /* Which days this person turned up, from streak.js. A set: a
+       phone and a laptop are the same Tuesday, and either alone
+       under-counts. */
     "days-active": ["set", "streak:changed"],
-    /* How this reader wants to be read to: the type size, the
-       measure and which language the calculators open in. See
-       /prefs.js.
-  
-       A `mark` rather than a `set`, and it is the one key here
-       where that is not obvious. Every other value in this table
-       accumulates: a tick goes from off to on and the union of two
-       devices is what the person actually did. A preference does
-       not accumulate, it is REPLACED, and the union of two devices'
-       type sizes is not a type size. So the newer of the two wins,
-       by the `ts` prefs.js writes into the value, which is exactly
-       what a bookmark already needed and why the rule was there to
-       be reused. */
+    /* How this reader wants to be read to. See /prefs.js. A `mark`
+       rather than a `set`, because a preference is REPLACED rather
+       than accumulated and the union of two devices' type sizes is
+       not a type size. The newer wins, by the `ts` prefs.js writes. */
     "reader-prefs": ["mark", "prefs:sync"],
-    /* What the reader arranged their front page into: an ordered
-       list of `"<widget>:<size>"`. The catalogue those ids come
-       from is `shared/widgets.ts`.
-  
-       A `mark` for the same reason `reader-prefs` is one, and the
-       reason is worth saying twice because the wrong rule here is
-       silent. A board is REPLACED, not accumulated: the union of
-       two devices' boards is a board holding everything either of
-       them ever had, so a widget removed on a phone would come
-       back off the laptop, and again, and again. Nothing would
-       look broken. */
+    /* The reader's front page: an ordered list of
+       `"<widget>:<size>"` out of `shared/widgets.ts`. A `mark` for
+       the reason above: the union of two boards holds everything
+       either ever had, so a widget removed on a phone comes back
+       off the laptop, for ever, with nothing looking broken. */
     "home-board": ["mark", "board:sync"],
-    /* ---- the two that are a MAP, and why that needed a rule ----
-  
-       How far into each piece the reader had got, and when they
-       last opened each calculator. Both are `{ <id>: { ts, ... } }`
-       rather than one value, and neither is a `mark`: a mark takes
-       the newer WHOLE object, so a phone that read one article
-       would throw away every position a laptop had recorded.
-       Nothing would look broken; the reader would simply find
-       themselves back at the top of pieces they were half way
-       through, on whichever device they used second.
-  
-       `merge` reconciles entry by entry on each entry's own `ts`,
-       which is the only rule that is right for a map. It is what a
-       `mark` is, one level down. */
+    /* Two MAPS, `{ <id>: { ts, ... } }`, and neither is a `mark`: a
+       mark takes the newer WHOLE object, so a phone that read one
+       article would throw away every position a laptop recorded.
+       `merge` reconciles entry by entry on each entry's own `ts`. */
     "where-read": ["merge", "read:where"],
     "tools-used": ["merge", "tools:used"],
-    /* WHAT A LEARNER TYPED INTO A PRACTICE BOOK, which is the one
-       thing they AUTHOR anywhere in the four schools and was the
-       one thing this table did not carry. A learner wrote eight
-       German sentences on a laptop, opened the book on a phone, and
-       found every box empty; "take a copy of everything" did not
-       include them and "erase everything" left them behind. Nothing
-       said so, because nothing was comparing what a browser holds
-       against what an account holds. `scripts/check-storage.ts` is
-       what does now, and this is the first thing it found.
-  
-       `merge`, and no change to the stored shape: both are
-       `{ <day>: "the text" }` in real browsers today. See `stamp()`
-       for what a plain entry is dated by and what that costs. */
+    /* What a learner typed into a practice book: the one thing they
+       AUTHOR in the four schools. `merge`, and the stored shape
+       stays `{ <day>: "the text" }`, which is what is in real
+       browsers. `stamp()` says what dates a plain entry.
+       `scripts/check-storage.ts` fails if either stops travelling. */
     "deutsch-schrift": ["merge", "deutsch:progress"],
     "english-write": ["merge", "english:progress"],
 };
@@ -228,17 +132,13 @@ function reconcileSet(base, mine, remote) {
             theirs.delete(id); // removed here
     return [...theirs];
 }
-/** The one written later. Both sides carry their own timestamp,
-    so there is nothing to infer, and a value cleared on this
-    device (a reset) stays cleared and says so with null.
+/** The one written later. A value cleared on this device (a
+    reset) stays cleared and says so with null.
 
-    Presence is "an object is there", not "it has an id". That is
-    a widening rather than a looseness: this rule started out
-    serving bookmarks alone, which always carry an `id`, and it
-    now also serves `reader-prefs`, which carries a `ts` and a
-    handful of settings and no id at all. Testing for a field only
-    one of the two shapes has would have made every preference
-    change look like an empty value and clear the account's copy. */
+    Presence is "an object is there", not "it has an id":
+    `reader-prefs` has a `ts` and no id, and testing for a field
+    only bookmarks carry would make every preference change look
+    like an empty value and clear the account's copy. */
 const there = (v) => v !== null && v !== undefined && typeof v === "object" && !Array.isArray(v);
 function reconcileMark(base, mine, remote) {
     if (there(base) && !there(mine))
@@ -251,16 +151,10 @@ function reconcileMark(base, mine, remote) {
 }
 /** The further of the two through a practice book, unless this
     device went backwards, which only a reset does. */
-/** A MAP OF STAMPED ENTRIES, reconciled entry by entry.
-
-    `mark` one level down: for each id present on either side the
-    newer `ts` wins, and an id that was in `base` and is gone from
-    `mine` was removed here, so it goes.
-
-    `ts` at the top level is the map's own stamp and is not an
-    entry; it is skipped by name, which is why an entry may never
-    be called `ts`. `where-read` keys on a URL and `tools-used` on
-    a tool id, so neither can be. */
+/** A map of stamped entries, reconciled entry by entry: `mark`
+    one level down. `ts` at the top level is the map's own stamp
+    and is skipped by name, so AN ENTRY MAY NEVER BE CALLED `ts`.
+    `where-read` keys on a URL and `tools-used` on a tool id. */
 function reconcileMerge(base, mine, remote) {
     const was = there(base) ? base : {};
     const now = there(mine) ? mine : {};
@@ -285,24 +179,12 @@ function reconcileMerge(base, mine, remote) {
     }
     return Object.keys(out).length ? out : null;
 }
-/** When an entry was written.
-
-    An entry that carries its own `ts` answers for itself, which
-    is what `where-read` and `tools-used` do. AN ENTRY THAT IS A
-    PLAIN VALUE FALLS BACK TO THE MAP'S OWN STAMP, and that is
-    what lets the practice books be carried without changing a
-    shape that has a learner's sentences in it: `deutsch-schrift`
-    is `{ <day>: "what they wrote" }` in real browsers today, and
-    rewriting every entry into an object to gain a timestamp is
-    exactly the edit CLAUDE.md warns about, one level in.
-
-    What the fallback costs is the one case where the SAME day was
-    written on two devices: the tiebreak is then which device
-    wrote last about anything, rather than which wrote that day
-    last. Every other case is exact, because a day written on only
-    one device is simply kept. A union that is right except in a
-    genuine conflict is worth more than a feature that does not
-    exist, which is what was there before. */
+/** When an entry was written. An entry with its own `ts` answers
+    for itself; A PLAIN VALUE FALLS BACK TO THE MAP'S OWN STAMP,
+    which is what carries the practice books without rewriting a
+    shape that holds a learner's sentences. The cost is the one
+    case where the same day was written on two devices: the
+    tiebreak is then which device wrote last about anything. */
 const stamp = (entry, map) => (there(entry) ? Number(entry.ts) : NaN) || Number(map.ts) || 0;
 function reconcileCount(base, mine, remote) {
     const was = Number(base) || 0;
@@ -419,13 +301,10 @@ function keepBase(userId) {
     the account is emptied. Announces, because a hub with a
     progress ring on it is looking at storage that just moved.
 
-    TWO ANNOUNCEMENTS, because two families listen. The school
-    events are what the browser modules have listened to since
-    before there were accounts; `sync:done` is what
-    `subscribe()` in `next/lib/progress.ts` hears, and every
-    React component that counts a key is behind it. Firing only
-    the first left every meter on `/account.html` showing the
-    numbers of the account that had just been erased. */
+    TWO ANNOUNCEMENTS, because two families listen: the school
+    events the browser modules have always heard, and `sync:done`,
+    which `subscribe()` in `next/lib/progress.ts` hears and every
+    React component that counts a key sits behind. */
 function clearMirror() {
     const schools = new Set();
     for (const [key, [, event]] of Object.entries(KEYS)) {
@@ -449,18 +328,12 @@ function clearMirror() {
  * Write the account's rows onto this device, and drop anything
  * the account does not have.
  *
- * THIS IS THE RULE THE FILE EXISTS FOR. Nothing local is read
- * here, nothing local is uploaded here, and a key this browser
- * holds that the account does not is removed rather than pushed.
- * Signing in on a machine that already had progress in it shows
- * you your account, which is the only thing signing in has ever
- * been able to honestly promise.
+ * THE RULE THE FILE EXISTS FOR. Nothing local is read or
+ * uploaded here, and a key this browser holds that the account
+ * does not is removed rather than pushed.
  *
- * `pre` is the one exception and it is not an exception to the
- * rule: it is the ticks made in the second or two this request
- * was in flight, on a page the reader is already using. Those
- * were made by the person who is signed in, after they signed in,
- * so they are theirs and they go up with the next push.
+ * `pre` is not an exception to it: those are the ticks made while
+ * this request was in flight, by the person who is signed in.
  */
 function adopt(remote, pre) {
     const schools = new Set();
@@ -476,12 +349,9 @@ function adopt(remote, pre) {
         let next;
         if (rule === "set")
             next = [...new Set([...list(theirs), ...list(during)])];
-        /* A map is reconciled here rather than replaced, for the
-           reason its rule exists: taking `during` whole would throw
-           away every entry the account holds that this device has not
-           seen, which for `where-read` is every piece read on another
-           machine. `pre` is what this device held when the fetch went
-           out, which is exactly the base the rule wants. */
+        /* A map is reconciled rather than replaced: taking `during`
+           whole would throw away every entry the account holds that
+           this device has not seen. `pre` is the base the rule wants. */
         else if (rule === "merge")
             next = reconcileMerge(pre.get(key), mine, theirs) ?? undefined;
         else if (during !== null && during !== undefined)

@@ -118,28 +118,13 @@ function initDoorway(): void {
    the overlay menu. Someone who chose wrong should be one tap
    from fixing it, wherever they realise.
    ------------------------------------------------------------ */
-/* ------------------------------------------------------------
-   Switching reloads the page, and it has to.
-
-   Setting data-audience on <html> reorders the blocks, and that
-   is all it does. It cannot touch the parts of a page that were
-   decided BEFORE the CSS ran: the home page picks its headline,
-   its standfirst and its button row in the inline script at the
-   top of index.html, from the same stored value, because that
-   choice has to be made before the first paint or the wrong
-   headline is briefly visible.
-
-   So a switch without a reload left a page half-swapped: the
-   sections in the new order, under a hero still addressing the
-   audience you just stopped being. The blocks moved and the
-   headline did not, which reads as a bug even to someone who
-   could not say what was wrong.
-
-   A reload is also cheap here. The page is already in the HTTP
-   cache, the service worker answers it, and browsers restore the
-   scroll position themselves, so the switch reads as the page
-   rearranging itself rather than as a navigation.
-   ------------------------------------------------------------ */
+/* SWITCHING RELOADS, and it has to. `data-audience` reorders the
+   blocks and nothing else: the headline, the standfirst and the
+   button row are chosen before the first paint by the boot
+   script, so a switch without a reload leaves the sections in the
+   new order under a hero addressing the audience you just
+   stopped being. The page is in the cache, so it reads as a
+   rearrangement rather than as a navigation. */
 function reload(): void {
   /* Guarded: a reload loop is the worst possible failure mode for
      this, and a browser that refuses the write above would give

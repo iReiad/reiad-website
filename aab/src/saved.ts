@@ -78,14 +78,9 @@ async function headers(extra?: Record<string, string>): Promise<Record<string, s
 }
 
 /**
- * One request, with the failure written down rather than thrown
- * at a page that cannot do anything about it.
- *
- * Reads answer with a fallback so a list can render empty; writes
- * throw, because a reader who pressed Save has to be told when it
- * did not save. That asymmetry is deliberate: silence is fine for
- * something nobody asked for and never fine for something
- * somebody did.
+ * One request. Reads answer with a fallback so a list can render
+ * empty; writes THROW, because a reader who pressed Save has to
+ * be told when it did not save.
  */
 async function get<T>(path: string, fallback: T): Promise<T> {
   const head = await headers();
@@ -145,14 +140,10 @@ export function listScenarios(tool?: string): Promise<Scenario[]> {
 }
 
 /**
- * Save one, and hand the stored row back.
- *
- * `inputs` is whatever shape the calculator already had for its
- * own state. The stock check passes its query string, which is
- * the format it has shared analyses in since it was written: a
- * second serialisation of the same forty fields would be a second
- * thing to keep in step with the model, and this one is already
- * proved by every link anybody has ever copied off that page.
+ * Save one, and hand the stored row back. `inputs` is whatever
+ * shape the calculator already had; the stock check passes its
+ * own query string, which is the format it has shared analyses in
+ * since it was written, so there is one encoder.
  */
 export function saveScenario(
   { tool, name, inputs, summary = "" }:
@@ -257,17 +248,11 @@ export async function libraryRow(url: string): Promise<LibraryRow | null> {
 }
 
 /**
- * Write this page's row, whatever state it was in.
- *
- * An upsert on `(user_id, url)` rather than a read and a decision:
- * one round trip instead of two, and it cannot race with the same
- * reader's phone writing the other column. `merge-duplicates` is
- * what makes the second Save on the same page an update.
- *
- * The trigger in the migration takes the row away again when both
- * facts have gone, so unsaving a page nobody annotated leaves
- * nothing behind and the reading list can be COUNTED rather than
- * filtered.
+ * Write this page's row. An upsert on `(user_id, url)`: one round
+ * trip, and it cannot race with the same reader's phone writing
+ * the other column. The trigger in the migration removes the row
+ * once both facts have gone, so the reading list can be COUNTED
+ * rather than filtered.
  */
 export async function keepPage(
   { url, title = "", kind = "piece", saved, note }:

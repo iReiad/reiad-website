@@ -1,75 +1,16 @@
-/* ============================================================
-   scorecard.model.js: the probability-of-default pipeline.
+/* scorecard.model.js: the probability-of-default pipeline. No
+   DOM, data in and fitted models and metrics out, checked by
+   `scorecard.test.ts`. Nothing is precomputed: the split, the
+   encoding, both models, the cross-validation and every metric
+   are fitted live in the browser, which is why the seed is a
+   slider.
 
-   No DOM. Data in, fitted models and metrics out, so that
-   scorecard.test.ts can check every piece against a value some
-   other authority already agrees on.
-
-   Everything here runs in the browser, on the reader's machine,
-   on a real public dataset. Nothing is precomputed: the split,
-   the encoding, both models, the cross-validation and every
-   metric are fitted live, which is why the seed is a slider. It
-   is also the argument the page is really making, so it had
-   better be true.
-
-   ------------------------------------------------------------
-   WHAT IS ACTUALLY IMPLEMENTED
-
-   1 · Logistic regression, fitted by iteratively reweighted
-       least squares (Newton's method on the log-likelihood),
-       with a ridge penalty. Returns coefficients, standard
-       errors from the inverse of the Hessian, Wald z statistics
-       and p-values. This is the scorecard: a bank can hand a
-       declined applicant the two lines that cost them the most
-       points, which is not a nicety, it is a legal requirement
-       in most places that lend money.
-
-   2 · Gradient boosting, the algorithm XGBoost and LightGBM
-       implement, written out rather than imported: second-order
-       gradient boosting on the logistic loss, with the split
-       gain
-
-           gain = ½ [ G_L²/(H_L+λ) + G_R²/(H_R+λ) − G²/(H+λ) ] − γ
-
-       and leaf values −G/(H+λ). Features are pre-binned into a
-       histogram before any tree is grown, which is the trick
-       that makes LightGBM fast and which costs nothing to do
-       here as well.
-
-       A page served as static files cannot run a C++ library,
-       so this is the algorithm rather than the package. It is
-       tested against the properties the algorithm has to have:
-       the first tree on a stump-separable feature finds the
-       split, the loss falls every iteration, a learning rate of
-       zero changes nothing, and the leaf values match the
-       closed-form minimiser of the penalised second-order
-       objective.
-
-   3 · The evaluation a credit model is actually judged on. AUC
-       and Gini, but also KS, the lift table, the information
-       value of each attribute, calibration, and the expected
-       cost of a decision under the dataset's own cost matrix,
-       which says lending to a bad applicant is five times as
-       expensive as turning away a good one.
-
-   4 · Two things that decide whether the comparison means
-       anything: DeLong's test for the difference between two
-       AUCs measured on the same applicants, and repeated
-       stratified cross-validation. On 1,000 rows the standard
-       error of an AUC is around three points, so a model that
-       wins by one point has not won.
-
-   ------------------------------------------------------------
-   THE PIPELINE ORDER, WHICH IS THE PART MOST OFTEN GOT WRONG
-
-   Split first. Everything after that, the bin edges, the
-   standardisation constants, the weight-of-evidence tables, the
-   calibration, is learned on the training rows only and applied
-   to the test rows. Fit any of it on all the data first and the
-   test AUC comes out higher than the model deserves, silently,
-   which is the single most common way a model that looked good
-   in a notebook fails in production.
-   ============================================================ */
+   THE PIPELINE ORDER IS LOAD-BEARING. Split FIRST; the bin
+   edges, the standardisation constants, the weight-of-evidence
+   tables and the calibration are all learned on the training
+   rows only and applied to the test rows. Fit any of them on all
+   the data and the test AUC comes out higher than the model
+   deserves, silently. */
 
 import { ROWS, SCHEMA, SOURCE, CHECKS } from "./scorecard.data.js";
 

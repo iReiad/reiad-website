@@ -1,43 +1,17 @@
-/* ============================================================
-   diet-api.ts: the diet tool's rows, read and written as the
-   reader.
+/* The diet tool's rows, read and written as the reader. `DIET.md`
+   section 27. Six tables, all private to one person, all behind
+   `auth.uid() = user_id`, and NO LOCAL COPY: nothing here works signed
+   out, so a second record would be a second thing to keep in step.
 
-   `DIET.md` section 27 is the shape and the reasoning. Six
-   tables, all private to one person, all behind the same row
-   level security everything else here uses, and NO LOCAL COPY:
-   nothing in this tool works signed out, so a second record
-   would be a second thing to keep in step for nobody's benefit.
-   `scenarios` and `targets` already made that call and the
-   routine's entries made it again.
+   THE BROWSER IS THE CALLER: every request goes straight to PostgREST
+   with the reader's own bearer. This project holds no service-role key.
+   The one thing behind a Worker is food SEARCH, a read-only proxy over
+   somebody else's public database that never sees a reader's log.
 
-   ---- the browser is the caller, not a Worker ----
-
-   Every request here goes straight to PostgREST with the
-   READER'S OWN bearer, exactly as the routine tool does. This
-   project holds no service-role key and this tool is not a
-   reason to start one. The one thing that does go through a
-   Worker is food SEARCH, which is a read-only proxy over
-   somebody else's public database and never sees a reader's log.
-
-   ---- and the filter is not a second lock ----
-
-   Every table here is `auth.uid() = user_id`, so a read with no
-   filter returns your own rows and nothing else. The filters
-   below are for the QUERY rather than for safety: `profiles` is
-   the one table on this site where a missing filter returns a
-   stranger's row, and the paragraph in `account.ts` about that
-   is worth reading before touching any of this.
-
-   ---- a queued write is not a local copy ----
-
-   `queue()` holds a request that has not gone yet, for the
-   reader on a bad connection, which is most of Bangladesh some
-   of the time. It is shown as pending, retried, and gone the
-   moment it lands. It is never read back as data and nothing
-   renders from it except its own pending state. That is the
-   distinction that keeps this out of the argument `sync.ts`
-   settled.
-   ============================================================ */
+   `queue()` holds a request that has not gone yet, for a reader on a bad
+   connection. It is never read back as data and nothing renders from it
+   except its own pending state, which is what keeps it out of the
+   argument `sync.ts` settled. */
 
 import type {
   Ancestry, Day, Entry, GoalKind, Phase, Place, Sex, Units,
@@ -47,27 +21,23 @@ import { runtimeModule } from "../components/account/runtime";
 type AccountModule = typeof import("/account.js");
 const accountModule = () => runtimeModule<AccountModule>("/account.js");
 
-/* The project's address and its publishable key come from
-   `/account.js`, which is where they already are. A second copy
-   here would be a second thing to rotate, and the one I first
-   wrote was a stale JWT from an older project: it would have
-   401ed on every request while the code read as correct. */
+    /* The project's address and its publishable key come from
+       `/account.js`, where they already are. A second copy would be a
+       second thing to rotate, and a stale JWT would 401 on every request
+       while the code read as correct. */
 
 let rest: string | null = null;
 let anon: string | null = null;
 
-/** A signed-in reader, and the bearer every call below sends as
-    them. It is PASSED IN rather than read here, so a page asks
-    once whether there is an account and every request after that
-    is the same reader with the same token. */
+    /** A signed-in reader, and the bearer every call below sends as them.
+        PASSED IN rather than read here, so a page asks once whether there
+        is an account. */
 export interface Who { id: string; token: string }
 
-/** Who is signed in, with a token that is good right now.
-
-    Null is the ordinary answer for a signed-out reader and not
-    an error anywhere: every page in this tool that needs an
-    account says so rather than failing, and `/tools/diet/you`
-    needs none at all. */
+    /** Who is signed in, with a token that is good right now. Null is the
+        ordinary answer for a signed-out reader and not an error: every
+        page that needs an account says so rather than failing, and
+        `/tools/diet/you` needs none. */
 export async function who(): Promise<Who | null> {
   try {
     const m = await accountModule();
@@ -102,10 +72,9 @@ async function call<T>(
     const text = await res.text();
     return { ok: true, status: res.status, data: text ? JSON.parse(text) as T : undefined };
   } catch {
-    /* A network failure rather than a refusal, which is the one
-       case worth queueing. `fetch` rejects only here: a 500 and
-       a 404 both resolve, which is the trap `sw.js` v170 was
-       written for. */
+        /* A network failure rather than a refusal, which is the one case
+           worth queueing. `fetch` rejects only here: a 500 and a 404 both
+           resolve. */
     return { ok: false, status: 0 };
   }
 }
@@ -114,13 +83,10 @@ async function call<T>(
 /* the profile                                                */
 /* ---------------------------------------------------------- */
 
-/* EVERY VOCABULARY HERE IS `shared/diet.ts`'s, NOT A COPY OF IT.
-   These five were written out inline, which is the failure
-   `check-rows.ts` exists for one level along: a third ancestry,
-   a third place or a fourth goal added to the shared type would
-   leave this file quietly refusing it, and the page would
-   render. `ancestry` is the one that would hurt most, because it
-   is what picks the BMI cut-offs. */
+    /* EVERY VOCABULARY HERE IS `shared/diet.ts`'s, NOT A COPY OF IT: a
+       third ancestry or a fourth goal added to the shared type would leave
+       an inline copy quietly refusing it, and the page would render.
+       `ancestry` hurts most, because it picks the BMI cut-offs. */
 export interface Profile {
   sex?: Sex;
   birth_year?: number;
@@ -136,11 +102,10 @@ export interface Profile {
   band_low_kg?: number;
   band_high_kg?: number;
   cycle_tracking?: boolean;
-  /** One date and a length, not a diary: everything the cycle
-      reading does is arithmetic on a repeating interval, so a
-      log of periods would be a more sensitive record collected
-      for no extra answer. Both are behind `cycle_tracking`,
-      which is off by default. */
+      /** One date and a length, not a diary: everything the cycle reading
+          does is arithmetic on a repeating interval, so a log of periods
+          would be a more sensitive record collected for no extra answer.
+          Both are behind `cycle_tracking`, off by default. */
   cycle_start?: string;
   cycle_days?: number;
   meds?: string[];
@@ -154,11 +119,10 @@ export interface Profile {
 }
 
 export async function getProfile(w: Who): Promise<Profile | null> {
-  /* `user_id=eq.<me>` even though the policy already makes any
-     other row unreachable. Two locks on this door, and the
-     reason is written out at length beside `getProfile` in
-     `account.ts`: the one table where the filter was missing
-     returned whichever row the planner reached first. */
+      /* `user_id=eq.<me>` even though the policy already makes any other
+         row unreachable. Two locks on this door; the reason is beside
+         `getProfile` in `account.ts`, which is the one table where the
+         missing filter returned whichever row the planner reached. */
   const r = await call<Profile[]>(
     `diet_profile?user_id=eq.${w.id}&select=*&limit=1`, { method: "GET" }, w,
   );
@@ -178,10 +142,10 @@ export async function saveProfile(w: Who, patch: Profile): Promise<boolean> {
 /* the days                                                   */
 /* ---------------------------------------------------------- */
 
-/** A row as PostgREST holds it. Separate from `Day` because the
-    columns are snake_case and the component's shape is not, and
-    one shape pretending to be both is how a save silently drops
-    a column. */
+    /** A row as PostgREST holds it. Separate from `Day` because the
+        columns are snake_case and the component's shape is not, and one
+        shape pretending to be both is how a save silently drops a
+        column. */
 interface DayRow {
   entry_date: string;
   weight_kg?: number | null;
@@ -250,17 +214,14 @@ const fromDay = (d: Day): DayRow => ({
 
 /** The last n days, newest first out of the index and reversed
     here, because every reading downstream wants them in order. */
-/** How many days one read brings back. Two years and a bit, so
-    the year page's 365 and the long view's windows all fit.
+    /** How many days one read brings back. Two years and a bit, so the
+        year page's 365 and the long view's windows all fit.
 
-    THE ORDER IS DESCENDING AND THE ROWS ARE TURNED ROUND HERE,
-    which is not a style choice. Ascending with a cap silently
-    returns the OLDEST rows and drops the recent ones, so a
-    reader whose log is longer than the cap gets a page drawn
-    entirely out of history: the chart renders, the figures are
-    real numbers, and every one of them is years old. Descending
-    drops the far end of the past instead, which is the half a
-    reader can afford to lose. */
+        THE ORDER IS DESCENDING AND THE ROWS ARE TURNED ROUND HERE.
+        Ascending with a cap silently returns the OLDEST rows, so a reader
+        whose log is longer than the cap gets a page drawn entirely out of
+        history: the chart renders and every figure is real and years old.
+        Descending drops the far end of the past instead. */
 const DAYS_AT_ONCE = 800;
 
 export async function getDays(w: Who, from: string): Promise<Day[]> {
@@ -274,9 +235,9 @@ export async function getDays(w: Who, from: string): Promise<Day[]> {
   return r.data.map(toDay).reverse();
 }
 
-/** One row per person per day, which is what makes this an
-    upsert on `(user_id, entry_date)` rather than a read, a
-    branch and two code paths. */
+    /** One row per person per day, which is what makes this an upsert on
+        `(user_id, entry_date)` rather than a read, a branch and two code
+        paths. */
 export async function saveDay(w: Who, day: Day): Promise<boolean> {
   const r = await writeDay(w, day);
   /* Only a network failure is worth holding. A 400 is a refusal
@@ -285,11 +246,10 @@ export async function saveDay(w: Who, day: Day): Promise<boolean> {
   return r.ok;
 }
 
-/** The write with no queueing in it, which is what the queue
-    itself must call. `saveDay` queued a retry of `saveDay`, so
-    every failed attempt pushed ANOTHER copy of itself on to an
-    array `drain()` had already refused to shift, and a reader on
-    a bad connection grew a queue rather than emptying one. */
+    /** The write with no queueing in it, which is what the queue itself
+        must call. A `saveDay` that queued a retry of `saveDay` pushed
+        ANOTHER copy of itself per failure, so a reader on a bad connection
+        grew a queue rather than emptying one. */
 function writeDay(w: Who, day: Day): Promise<{ ok: boolean; status: number }> {
   return call("diet_days?on_conflict=user_id,entry_date", {
     method: "POST",
@@ -306,10 +266,9 @@ function writeDay(w: Who, day: Day): Promise<{ ok: boolean; status: number }> {
 interface EntryRow {
   id?: string;
   entry_date: string;
-  /** `logged`, or `import:<what>`. Written out rather than left
-      to the column default, because a default is a fact the
-      database holds and the tool does not, and every other
-      provenance field on these rows is explicit. */
+      /** `logged`, or `import:<what>`. Written out rather than left to the
+          column default, because a default is a fact the database holds
+          and the tool does not. */
   origin?: string;
   at_time?: string | null;
   meal?: string | null;
@@ -355,22 +314,19 @@ export async function getEntries(w: Who, from: string, to?: string): Promise<Ent
   return r.ok && r.data ? r.data.map(toEntry) : [];
 }
 
-/** An entry as a row, WITHOUT `user_id`, `origin` or an id.
-
-    One mapper, because `addEntry` and `importEntries` both build
-    this and a field one of them dropped would be a column the
-    log fills and an import does not. Those three are the
-    caller's: an id out of a file is a collision, a `user_id`
-    out of a file is silently refused, and the origin is what
-    tells a logged year from an imported one. */
+    /** An entry as a row, WITHOUT `user_id`, `origin` or an id. One
+        mapper, because `addEntry` and `importEntries` both build this and
+        a field one of them dropped would be a column the log fills and an
+        import does not. Those three are the caller's: an id out of a file
+        is a collision, a `user_id` out of a file is silently refused, and
+        the origin tells a logged year from an imported one. */
 const fromEntry = (e: Entry): EntryRow => ({
   entry_date: e.date,
-  /* THE CLOCK GOES IN `at_time` AND THE MEAL STAYS A MEAL.
-     This wrote "HH:MM" into `meal` for a while, which left the
-     hour readable only by a regex and left no row on this site
-     carrying a breakfast, a lunch or a dinner, so section 16's
-     reading of how protein is spread across a day had nothing
-     to read. */
+      /* THE CLOCK GOES IN `at_time` AND THE MEAL STAYS A MEAL. Writing
+         "HH:MM" into `meal` leaves the hour readable only by a regex and
+         leaves no row carrying a breakfast, a lunch or a dinner, so the
+         reading of how protein is spread across a day has nothing to
+         read. */
   at_time: e.atTime ?? null,
   meal: e.meal ?? null,
   label: e.label,
@@ -383,11 +339,11 @@ const fromEntry = (e: Entry): EntryRow => ({
   est_low: e.estLow ?? null,
   est_high: e.estHigh ?? null,
   planned: e.planned ?? false,
-  /* WHERE THE NUMBER CAME FROM, on every row, and what it was
-     copied from. The log must not depend on a public database
-     still being there next year, and a history that changed
-     because somebody edited an entry in one would be worse
-     than one that went missing: nothing would announce it. */
+      /* WHERE THE NUMBER CAME FROM, on every row, and what it was copied
+         from. The log must not depend on a public database still being
+         there next year, and a history that changed because somebody
+         edited an entry in one would be worse: nothing would announce
+         it. */
   source: e.source ?? "free",
   source_id: e.sourceId ?? null,
 });
@@ -403,9 +359,9 @@ export async function addEntry(w: Who, e: Entry): Promise<Entry | null> {
     headers: { prefer: "return=representation" },
     body: JSON.stringify(row),
   }, w);
-  /* Not `addEntry` again: that would push a fresh copy on to the
-     queue on every failed retry. The queued job is the request
-     and nothing else, and it reports whether the row landed. */
+      /* Not `addEntry` again: that would push a fresh copy on to the queue
+         on every failed retry. The queued job is the request and nothing
+         else, and it reports whether the row landed. */
   if (!r.ok && r.status === 0) {
     queue(async () => {
       const again = await call<EntryRow[]>("diet_entries", {
@@ -424,22 +380,18 @@ export async function removeEntry(w: Who, id: string): Promise<boolean> {
   return r.ok;
 }
 
-/**
- * A planned row becomes an eaten one.
- *
- * `DIET.md` section 13 and the migration beside `planned`: a
- * week's plan is not a seventh table, it is these rows dated
- * ahead, and a plan becomes a log by CLEARING ONE FLAG. So this
- * is an update rather than an insert and a delete: the row keeps
- * its id, its figures, its source and the meal it was planned
- * for, and nothing downstream can tell a kept plan from a
- * logged dinner, which is the point.
- *
- * The clock is written here because a planned row has none: what
- * a plan knows is the day, and the hour is a fact about eating
- * it. Without it `entryHour()` reads null and the by-hour
- * reading loses every meal anybody planned.
- */
+    /**
+     * A planned row becomes an eaten one. A week's plan is not a seventh
+     * table, it is these rows dated ahead, and a plan becomes a log by
+     * CLEARING ONE FLAG. So this is an update rather than an insert and a
+     * delete: the row keeps its id, its figures, its source and the meal
+     * it was planned for, and nothing downstream can tell a kept plan from
+     * a logged dinner.
+     *
+     * The clock is written here because a planned row has none. Without it
+     * `entryHour()` reads null and the by-hour reading loses every meal
+     * anybody planned.
+     */
 export async function markEaten(w: Who, id: string, atTime: string): Promise<boolean> {
   const r = await call(`diet_entries?id=eq.${id}`, {
     method: "PATCH",
@@ -470,9 +422,9 @@ export interface OwnFood {
   source?: string;
 }
 
-/** Your usuals, worked out rather than asked for: most used
-    first, because anything logged three times is something you
-    will log again. */
+    /** Your usuals, worked out rather than asked for: most used first,
+        because anything logged three times is something you will log
+        again. */
 export async function getOwnFoods(w: Who): Promise<OwnFood[]> {
   const r = await call<OwnFood[]>(
     `diet_foods?user_id=eq.${w.id}&select=*&order=uses.desc&limit=200`,
@@ -484,12 +436,11 @@ export async function getOwnFoods(w: Who): Promise<OwnFood[]> {
 export async function saveOwnFood(w: Who, food: OwnFood): Promise<boolean> {
   const r = await call("diet_foods", {
     method: "POST",
-    /* AN UPSERT, because this is called twice about one row: once
-       to write the dish and again after every portion or share to
-       bump `uses` and `last_used`. A plain POST with an id that
-       already exists is a 409, so the second call has been
-       failing silently since the day it was written, and a pot
-       that never ages off the hob is what that looks like. */
+        /* AN UPSERT, because this is called twice about one row: once to
+           write the dish and again after every portion or share to bump
+           `uses` and `last_used`. A plain POST with an id that already
+           exists is a 409, so the second call fails silently and a pot
+           never ages off the hob. */
     headers: { prefer: "return=minimal,resolution=merge-duplicates" },
     body: JSON.stringify({ ...food, user_id: w.id,
       updated_at: new Date().toISOString() }),
@@ -497,13 +448,10 @@ export async function saveOwnFood(w: Who, food: OwnFood): Promise<boolean> {
   return r.ok;
 }
 
-/** A saved dish, meal or item, gone.
-
-    A list that can only grow is the friction section 13 exists
-    to remove: a meal assembled once out of a week nobody eats
-    any more sits at the top of the one-tap list for ever. The
-    rows it has already written are untouched, because a logged
-    entry carries its own numbers and never points at this. */
+    /** A saved dish, meal or item, gone. A list that can only grow is the
+        friction this exists to remove. The rows it has already written are
+        untouched, because a logged entry carries its own numbers and never
+        points at this. */
 export async function removeOwnFood(w: Who, id: string): Promise<boolean> {
   const r = await call(`diet_foods?id=eq.${id}`, { method: "DELETE" }, w);
   return r.ok;
@@ -514,10 +462,10 @@ export async function getPhases(w: Who): Promise<Phase[]> {
     `diet_phases?user_id=eq.${w.id}&select=*&order=started_on.asc`, { method: "GET" }, w,
   );
   if (!r.ok || !r.data) return [];
-  /* `Phase.startDay` counts from the same origin `Point.day`
-     does, and the caller owns that origin, so the ISO date is
-     carried through and converted there. A date turned into a
-     day number in two places is two places to get an off-by-one. */
+      /* `Phase.startDay` counts from the same origin `Point.day` does and
+         the caller owns that origin, so the ISO date is carried through
+         and converted there: a date turned into a day number in two places
+         is two places to get an off-by-one. */
   return r.data.map((p) => ({
     protocol: p.style as Phase["protocol"],
     startDay: dayNumber(p.started_on),
@@ -538,27 +486,23 @@ export async function startPhase(w: Who, style: string, on: string): Promise<boo
 /* arriving from another app                                  */
 /* ---------------------------------------------------------- */
 
-/** Days from a file, written in one go.
+    /** Days from a file, written in one go. `origin` is `import:<what>`
+        rather than `logged`, so an imported year and a logged year can be
+        told apart and A BAD IMPORT IS UNDONE AS ONE OPERATION.
 
-    `DIET.md` section 26. `origin` is `import:<what>` rather than
-    `logged`, so an imported year and a logged year can be told
-    apart and A BAD IMPORT IS UNDONE AS ONE OPERATION rather than
-    three hundred.
-
-    A merge upsert, so importing over a day already logged
-    replaces it rather than failing on the unique constraint.
-    That is the right way round: the reader chose to import, and
-    the alternative is a file that half applies with no way to
-    tell which half. */
+        A merge upsert, so importing over a day already logged replaces it
+        rather than failing on the unique constraint: the reader chose to
+        import, and the alternative is a file that half applies with no way
+        to tell which half. */
 export async function importDays(
   w: Who, days: Day[], origin: string,
 ): Promise<{ written: number; failed: number }> {
   if (!days.length) return { written: 0, failed: 0 };
   const stamp = new Date().toISOString();
-  /* In chunks, because PostgREST has a request size and a year
-     of daily rows is larger than one. Sequential rather than
-     parallel: a bad connection is the case this is for, and
-     twelve requests at once is how that connection gets worse. */
+      /* In chunks, because PostgREST has a request size and a year of
+         daily rows is larger than one. Sequential rather than parallel: a
+         bad connection is the case this is for, and twelve requests at
+         once is how that connection gets worse. */
   const SIZE = 100;
   let written = 0;
   let failed = 0;
@@ -576,27 +520,22 @@ export async function importDays(
   return { written, failed };
 }
 
-/**
- * The same, for what was eaten.
- *
- * A PLAIN INSERT, not an upsert, and no id from the caller.
- * `diet_entries` has no natural key: two eggs at eight in the
- * morning are two rows and merging them would be the tool
- * deciding somebody ate one. An id out of a file either
- * collides with a live row or resurrects a deleted one, so the
- * database mints them.
- *
- * NO `user_id` FROM THE CALLER EITHER. Row level security
- * refuses a foreign one silently, and a silent refusal is a
- * page reporting a successful import of nothing.
- */
+    /**
+     * The same, for what was eaten. A PLAIN INSERT, not an upsert, and no
+     * id from the caller: `diet_entries` has no natural key, two eggs at
+     * eight in the morning are two rows, and an id out of a file either
+     * collides with a live row or resurrects a deleted one.
+     *
+     * NO `user_id` FROM THE CALLER EITHER. Row level security refuses a
+     * foreign one silently, and a silent refusal is a page reporting a
+     * successful import of nothing.
+     */
 export async function importEntries(
   w: Who, entries: Entry[], origin: string,
 ): Promise<{ written: number; failed: number }> {
   if (!entries.length) return { written: 0, failed: 0 };
-  /* Chunked and sequential for `importDays`'s reasons: a request
-     size, and a bad connection that twelve parallel requests
-     make worse. */
+      /* Chunked and sequential for `importDays`'s reasons: a request size,
+         and a bad connection that parallel requests make worse. */
   const SIZE = 100;
   let written = 0;
   let failed = 0;
@@ -614,13 +553,13 @@ export async function importEntries(
   return { written, failed };
 }
 
-/**
- * Undone as one operation, which is what `origin` is for.
- *
- * THE ENTRIES FIRST, THEN THE DAYS. A failure halfway leaves the
- * days that still explain what the entries were, rather than a
- * few hundred orphaned foods under dates nothing describes.
- */
+    /**
+     * Undone as one operation, which is what `origin` is for.
+     *
+     * THE ENTRIES FIRST, THEN THE DAYS: a failure halfway leaves the days
+     * that still explain what the entries were, rather than a few hundred
+     * orphaned foods under dates nothing describes.
+     */
 export async function undoImport(w: Who, origin: string): Promise<boolean> {
   const stamped = encodeURIComponent(origin);
   const eaten = await call(
@@ -635,17 +574,14 @@ export async function undoImport(w: Who, origin: string): Promise<boolean> {
   return r.ok;
 }
 
-/**
- * Which imports this account carries, so one can be undone by
- * name rather than by remembering what was imported when.
- *
- * BOTH TABLES, because an import writes both and a day row is
- * not guaranteed. A copy of an account holds entries for every
- * date something was eaten and a `diet_days` row only where
- * something was measured, so an origin whose entries all landed
- * on dates that carry no day row would be an import nothing
- * could name, and `undoImport` is by name.
- */
+    /**
+     * Which imports this account carries, so one can be undone by name.
+     *
+     * BOTH TABLES, because an import writes both and a day row is not
+     * guaranteed: an origin whose entries all landed on dates carrying no
+     * day row would be an import nothing could name, and `undoImport` is
+     * by name.
+     */
 export async function importOrigins(w: Who): Promise<string[]> {
   const asked = ["diet_days", "diet_entries"].map((table) => call<Array<{ origin: string }>>(
     `${table}?user_id=eq.${w.id}&origin=neq.logged&select=origin`,
@@ -660,21 +596,18 @@ export async function importOrigins(w: Who): Promise<string[]> {
 /* the clinic's numbers                                       */
 /* ---------------------------------------------------------- */
 
-/** One reading off one report.
-
-    `ref_low` and `ref_high` are on the ROW rather than derived
-    from the marker, because a reference interval is a property
-    of an assay and a population and is printed on the report the
-    reader is holding. Two labs differ by more than the changes
-    this tool would be drawing, so a figure judged against a
-    borrowed range is a figure judged wrongly. */
+    /** One reading off one report. `ref_low` and `ref_high` are on the ROW
+        rather than derived from the marker, because a reference interval
+        is a property of an assay and a population and is printed on the
+        report the reader is holding: two labs differ by more than the
+        changes this tool would be drawing. */
 export interface Lab {
   id?: string;
   /** The date on the report, not the date it was typed in. */
   takenOn: string;
-  /** A `MARKERS` id from `components/diet/words.ts`. A stored
-      value: it is in real rows and is renamed the way a storage
-      key is renamed, which is to say not at all. */
+      /** A `MARKERS` id from `components/diet/words.ts`. A stored value:
+          it is in real rows and is renamed the way a storage key is, which
+          is to say not at all. */
   marker: string;
   value: number;
   unit: string;
@@ -705,10 +638,9 @@ const toLab = (r: LabRow): Lab => ({
   note: r.note ?? undefined,
 });
 
-/** Everything, oldest first, because every reading of these is a
-    line over time rather than a latest value. There are a dozen
-    markers and a person is tested twice a year, so the whole
-    history is smaller than one day of food. */
+    /** Everything, oldest first, because every reading of these is a line
+        over time rather than a latest value. A dozen markers tested twice
+        a year is smaller than one day of food. */
 export async function getLabs(w: Who): Promise<Lab[]> {
   const r = await call<LabRow[]>(
     `diet_labs?user_id=eq.${w.id}&select=*&order=taken_on.asc&limit=500`,
@@ -754,29 +686,22 @@ export async function removeLab(w: Who, id: string): Promise<boolean> {
 /* dates, said once                                           */
 /* ---------------------------------------------------------- */
 
-/** Days since 1970, from an ISO date.
-
-    The STRING is read in UTC, which is arithmetic and not a
-    timezone decision: `2026-08-22` is a day rather than an
-    instant, and parsing it in local time makes the difference
-    between two of them wrong by an hour twice a year. */
+    /** Days since 1970, from an ISO date. The STRING is read in UTC, which
+        is arithmetic and not a timezone decision: `2026-08-22` is a day
+        rather than an instant, and parsing it in local time makes the
+        difference between two of them wrong by an hour twice a year. */
 export const dayNumber = (iso: string): number => {
   const [y, m, d] = iso.split("-").map(Number);
   return Math.round(Date.UTC(y, m - 1, d) / 86400000);
 };
 
-/** Which day it is WHERE THE READER IS, never in UTC.
-
-    This was `toISOString().slice(0, 10)` and the argument for it
-    was that two cities must agree which day it was. They must
-    not: `entry_date` is the reader's own day, and section 4's
-    morning weight is a local-morning fact. At UTC+6 that spelling
-    filed everything logged between midnight and 6am on
-    YESTERDAY'S row, and because `diet_days` is unique on
-    `(user_id, entry_date)` and `saveDay` merges, weighing at
-    5:30am in Dhaka overwrote the previous morning's reading. The
-    streak, the strip and the by-weekday reading all moved with
-    it. */
+    /** Which day it is WHERE THE READER IS, never in UTC.
+        `toISOString().slice(0, 10)` is wrong here: `entry_date` is the
+        reader's own day, and at UTC+6 that spelling files everything
+        logged between midnight and 6am on YESTERDAY'S row. Because
+        `diet_days` is unique on `(user_id, entry_date)` and `saveDay`
+        merges, weighing at 5:30am in Dhaka then overwrites the previous
+        morning's reading. */
 export const isoDate = (at: Date = new Date()): string =>
   `${at.getFullYear()}-${String(at.getMonth() + 1).padStart(2, "0")}`
   + `-${String(at.getDate()).padStart(2, "0")}`;
@@ -801,33 +726,23 @@ let draining = false;
 let timer: ReturnType<typeof setTimeout> | null = null;
 const listeners = new Set<() => void>();
 
-/** Hold a write that failed on the NETWORK, and only on the
-    network: a 400 is a refusal and retrying it forever is a
-    loop. `call()` reports status 0 for the one case worth
-    keeping.
+    /** Hold a write that failed on the NETWORK, and only on the network: a
+        400 is a refusal and retrying it for ever is a loop. `call()`
+        reports status 0 for the one case worth keeping. It is never read
+        back; nothing renders from it except `pendingCount()`.
 
-    It is never read back. Nothing renders from it except
-    `pendingCount()`, which is how the page says "not saved yet"
-    rather than pretending it did.
+        RETRY ON A TIMER AS WELL AS ON `online`: the listener fires on a
+        transition, so a request that died on a timeout while the browser
+        still believed it was online waits for an event that never comes.
 
-    ---- three things it has to do that it did not ----
+        HOLD THE REAL ANSWER: `drain()` shifts a job off only when the job
+        says it landed, so a retry returning `true` unconditionally is a
+        write dropped in silence.
 
-    RETRY ON A TIMER AS WELL AS ON `online`. The listener fires
-    on a transition, so a request that died on a timeout while
-    the browser still believed it was online waited for an event
-    that never came.
-
-    HOLD THE REAL ANSWER. `drain()` shifts a job off the queue
-    only when the job says it landed, so a retry that returns
-    `true` unconditionally is a write dropped in silence. The one
-    caller that did that is `addEntry`, and its `.then(() =>
-    true)` is gone.
-
-    SAY THAT A CLOSED TAB LOSES IT. This is memory, deliberately:
-    a persisted queue would be a second record of what somebody
-    ate, which is the argument `sync.ts` settled. So the page
-    tells the reader it has not gone yet, and `subscribePending`
-    is how the count on screen stays true. */
+        AND A CLOSED TAB LOSES IT. This is memory, deliberately: a
+        persisted queue would be a second record of what somebody ate. The
+        page says it has not gone yet, and `subscribePending` keeps the
+        count on screen true. */
 function queue(job: Pending): void {
   pending.push(job);
   announce();
@@ -850,10 +765,10 @@ function announce(): void { for (const f of listeners) f(); }
 
 export function pendingCount(): number { return pending.length; }
 
-/** Anything drawing the pending count subscribes, for the same
-    reason every meter reading a progress key does: a component
-    that reads it once on mount is drawn against the queue as it
-    was before the write it is reporting on. */
+    /** Anything drawing the pending count subscribes, for the reason every
+        meter reading a progress key does: a component that reads it once
+        on mount is drawn against the queue as it was before the write it
+        is reporting on. */
 export function subscribePending(f: () => void): () => void {
   listeners.add(f);
   return () => { listeners.delete(f); };

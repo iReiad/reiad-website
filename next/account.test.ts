@@ -1,36 +1,14 @@
-/* ============================================================
-   account.test.ts: what an account actually gets you, driven in
-   a real browser.
+/* What an account actually gets you, driven in a real browser.
+   `node next/account.test.ts`, after `npx next build` in `next/`. Needs a
+   browser; without either it says which is missing and SKIPS, and a skip
+   is not a pass.
 
-     node next/account.test.ts
-
-   Needs `npx next build` in `next/` first, and a browser. Without
-   either it says which one is missing and skips, and a skip is
-   not a pass.
-
-   ---- why this file exists ----
-
-   Five features landed on the account at once: a reading list,
-   notes, reading preferences, a year of days and a way to take a
-   copy of all of it. Every one of them is drawn by a script into
-   markup a route rendered, which is the exact shape of thing that
-   `parity.test.ts` cannot see and `interactive.test.ts` was
-   written for: the HTML is right whether or not a single one of
-   them worked.
-
-   And the account menu is the other half. It stopped being a
-   modal dialog and became a `popover`, which moved four
-   behaviours out of `aab/signin.js` and into the browser. That is
-   a good trade and it is only a good trade if the browser
-   actually does them, so the light dismiss, the Escape key and
-   the focus return are checked here rather than assumed.
-
-   The pages are served the way Cloudflare serves them, which is
-   the same three-line split `interactive.test.ts` uses: the HTML
-   Next prerendered, the chunks beside it, and everything else out
-   of `aab/`. Supabase is routed, so nothing here reaches the real
-   project and the test needs no network.
-   ============================================================ */
+   Every feature on this page is drawn by a script into markup a route
+   rendered, so the HTML is right whether or not any of them worked. The
+   account menu is a `popover`, which moved the light dismiss, Escape and
+   the focus return into the browser: a good trade only if the browser
+   really does them, so they are checked rather than assumed. Supabase is
+   routed, so nothing here reaches the real project. */
 
 import { createServer } from "node:http";
 import { readFile, stat } from "node:fs/promises";
@@ -72,11 +50,11 @@ const browserPath = process.env.CHROMIUM_PATH
     ? "/opt/pw-browsers/chromium-1194/chrome-linux/chrome"
     : null);
 
-/* The runtime import is the real path, because node resolves a
-   file on disk; the types come from the same package through the
-   `paths` entry in `tsconfig.json`. The specifier is a VARIABLE
-   because a literal is analysed, and a relative path `paths`
-   cannot map is a module with no declaration. */
+    /* The runtime import is the real path, because node resolves a file on
+       disk; the types come from the same package through `paths` in
+       `tsconfig.json`. The specifier is a VARIABLE because a literal is
+       analysed, and a relative path `paths` cannot map has no
+       declaration. */
 const PLAYWRIGHT = "../app/node_modules/playwright/index.mjs";
 const playwright = await import(PLAYWRIGHT)
   .then((m) => m as typeof import("playwright"), () => null);
@@ -107,14 +85,10 @@ const TYPES: Record<string, string> = {
 
 const PRERENDERED: Record<string, string> = { "/account": "account.html" };
 
-/* The real policy, read out of `aab/_headers` rather than copied,
-   because a copy is a second list and this repository has been
-   bitten by one of those more than once.
-
-   It is here because a harness that drops the CSP cannot tell you
-   whether an image, a font or a fetch is allowed: the page looks
-   identical either way, which is exactly the shape of the bug
-   `scripts/check-csp.ts` was written for. */
+    /* The real policy, read out of `aab/_headers` rather than copied. A
+       harness that drops the CSP cannot tell you whether an image, a font
+       or a fetch is allowed: the page looks identical either way, which is
+       the shape of bug `scripts/check-csp.ts` was written for. */
 /* Thrown rather than defaulted to nothing: a harness that served
    the page with an empty policy would answer every check in this
    file and none of them would be about the policy. */
@@ -123,12 +97,11 @@ const policy = (await readFile(join(AAB, "_headers"), "utf8"))
 if (!policy) throw new Error("aab/_headers carries no Content-Security-Policy");
 const CSP = policy.trim();
 
-/* The one Worker endpoint the erase calls: the reading room's
-   files live in R2 under the reader's prefix, not in a table, so
-   the page asks the Worker to clear them after the rows. Counted,
-   because "erased" with the files left behind is the failure
-   `scripts/check-account.ts` reads the source for and this is
-   the half that says the button really sends it. */
+    /* The one Worker endpoint the erase calls: the reading room's files
+       live in R2 under the reader's prefix rather than in a table.
+       Counted, because "erased" with the files left behind is what
+       `scripts/check-account.ts` reads the source for, and this is the
+       half that says the button really sends it. */
 let filesErased = 0;
 
 const server = createServer(async (req, res) => {
@@ -193,19 +166,13 @@ const RESEARCH_TABLES = [
   "research_chunks",
 ] as const;
 
-/** SOMEBODY ELSE'S PROFILE, and the reason it is here.
-    `profiles` is the one table whose select policy is
-    `using (true)`, so a read with no `id=eq.` filter returns
-    whichever row the planner reaches first out of the WHOLE
-    table. This fixture used to answer every GET with the
-    reader's own row, which made it kinder than Postgres and
-    therefore blind: `getProfile()` shipped with no filter, and
-    all 117 checks here passed while the live account page drew a
-    stranger's answers.
-    It is deliberately the row a fresh account has, because that
-    is what made the bug so hard to read from the outside: no
-    pace, no `setup_at`, so the setup form came back after every
-    single save. */
+    /** SOMEBODY ELSE'S PROFILE. `profiles` is the one table whose select
+        policy is `using (true)`, so a read with no `id=eq.` filter returns
+        whichever row the planner reaches first out of the WHOLE table. A
+        fixture that answered every GET with the reader's own row is kinder
+        than Postgres and therefore blind. It is deliberately the row a
+        fresh account has: no pace, no `setup_at`, so a missing filter
+        brings the setup form back after every save. */
 const STRANGER = {
   display_name: "somebody else", following: [], pace: "", setup_at: null,
 };
@@ -241,10 +208,9 @@ const isObject = (value: unknown): value is Record<string, unknown> =>
 const asRows = (value: unknown): Record<string, unknown>[] =>
   Array.isArray(value) ? value.filter(isObject) : [];
 
-/** One row of `library`, `targets` or `scenarios`. The three
-    tables hold different columns and this harness treats them
-    alike: an id, plus whatever the check seeded or the page
-    posted. Which columns matter is said where each is seeded. */
+    /** One row of `library`, `targets` or `scenarios`. The three tables
+        hold different columns and this harness treats them alike: an id,
+        plus whatever the check seeded or the page posted. */
 type ListRow = { id: string } & Record<string, unknown>;
 
 /** One row of `progress`: a synced key and whatever is filed
@@ -298,14 +264,12 @@ interface Opened {
   errors: string[];
 }
 
-/**
- * A browser talking to an account that holds `state`.
- *
- * Every Supabase table is answered from memory, and what the
- * browser sent is kept, so a check can assert that pressing a
- * button actually wrote something rather than only that the row
- * disappeared from the page.
- */
+    /**
+     * A browser talking to an account that holds `state`. Every Supabase
+     * table is answered from memory, and what the browser sent is kept, so
+     * a check can assert that pressing a button wrote something rather
+     * than only that the row disappeared from the page.
+     */
 async function open(
   path: string,
   { signedIn = true, rows = {}, seed = {} }:
@@ -379,14 +343,12 @@ async function open(
         state.profile = { ...state.profile, ...(isObject(body) ? body : {}) };
         return route.fulfill({ status: 204, body: "" });
       }
-      /* Every other table here is owner-scoped by its own policy,
-         so an unfiltered read returns your rows and this fixture
-         can ignore the question. Not this one. `id=eq.<me>` is
-         the only thing separating a reader from a stranger, so
-         the fake answers exactly as the database would: filtered,
-         your row; unfiltered, the heap, and the stranger is at
-         the front of it because saving yours moved it to the
-         back. */
+          /* Every other table is owner-scoped by its own policy, so an
+             unfiltered read returns your rows and this fixture can ignore
+             the question. Not this one: `id=eq.<me>` is the only thing
+             separating a reader from a stranger, so the fake answers as
+             the database would. The stranger is at the front of the heap
+             because saving yours moved it to the back. */
       const want = url.searchParams.get("id");
       if (!want) return json([STRANGER, state.profile]);
       if (want !== `eq.${ME}`) return json([STRANGER]);
@@ -422,23 +384,17 @@ async function open(
       return json(state[table]);
     }
 
-    /* ---- the five the page reads whole ----
+        /* ---- the five the page reads whole ----
+           The studio's nine, the three routine tables and `broker_tokens`
+           have no module on this page: it asks for all of each, once,
+           which is what an export is.
 
-       The studio's nine, the three routine tables and `broker_tokens`
-       have no module on this page: it asks for all of each,
-       once, which is what an export is. They fell through to
-       `[]` here until 30 August 2026, so the copy could have
-       stopped carrying any of them and this file would have said
-       nothing.
-
-       `select=` IS HONOURED, and that is the point of the
-       branch rather than a detail. PostgREST returns the columns
-       asked for and no others; a fake that answered whole rows
-       would be kinder than the database, which is this file's
-       own lesson from the day its `profiles` fixture was. The
-       one thing the copy narrows is the broker key, and a
-       forgiving fake is what would let the ciphertext back into
-       a downloaded file unnoticed. */
+           `select=` IS HONOURED, and that is the point of the branch:
+           PostgREST returns the columns asked for and no others, and a
+           fake that answered whole rows would be kinder than the database.
+           The one thing the copy narrows is the broker key, and a
+           forgiving fake is what would let the ciphertext back into a
+           downloaded file unnoticed. */
     if (state.others.has(table)) {
       if (req.method() === "DELETE") {
         state.others.set(table, []);
@@ -456,10 +412,9 @@ async function open(
   await context.route(`${SUPA}/auth/v1/**`, (r: Route) =>
     r.fulfill({ status: 200, contentType: "application/json", body: "{}" }));
 
-  /* The avatar, served from here rather than from Google. The
-     request still leaves as `https://lh3.googleusercontent.com`,
-     so the page's policy decides whether it is made at all, which
-     is the half of this worth checking. */
+      /* The avatar, served from here rather than from Google. The request
+         still leaves as `https://lh3.googleusercontent.com`, so the page's
+         policy decides whether it is made at all. */
   await context.route("https://lh3.googleusercontent.com/**", (r: Route) =>
     r.fulfill({ status: 200, contentType: "image/png", body: PIXEL }));
 
@@ -496,10 +451,10 @@ console.log("the account menu");
   is("and the button says so", await button.getAttribute("aria-expanded"), "true");
   is("it names the account", await menu.locator(".acc-who-text strong").textContent(), "Rony Reiad");
   is("six places to go", await menu.locator(".acc-item[href]").count(), 6);
-  /* The menu is `aab/src/signin.ts`, which still writes the
-     `.html` spelling: the browser modules were not part of task
-     #28 and `_redirects` answers for it. Asserted as the module
-     writes it, so this fails the day the two part company. */
+      /* The menu is `aab/src/signin.ts`, which still writes the `.html`
+         spelling: the browser modules were not part of task #28 and
+         `_redirects` answers for it. Asserted as the module writes it, so
+         this fails the day the two part company. */
   ok("including the reading list",
     (await menu.locator('.acc-item[href="/account.html#reading-list"]').count()) === 1);
   ok("and a way out", (await menu.locator(".acc-out").count()) === 1);
@@ -576,14 +531,12 @@ console.log("\nthe account page");
   ok("it greets the reader",
     (await page.locator("#account-hello").textContent())?.includes("Rony Reiad"));
 
-  /* ---- the picture a Google sign-in brings with it ----
-
-     Three facts, and the third is the one worth a browser: the
-     tag is there, the letter is still under it, and the image
-     actually LOADED. `img-src` in `_headers` had to be widened
-     for this one host, and a policy that refuses it leaves an
-     `<img>` in the DOM with `naturalWidth` of 0 and nothing in
-     the console a test reads. */
+      /* ---- the picture a Google sign-in brings with it ----
+         Three facts, and the third needs a browser: the tag is there, the
+         letter is still under it, and the image actually LOADED. `img-src`
+         had to be widened for this host, and a policy that refuses it
+         leaves an `<img>` with `naturalWidth` of 0 and nothing in the
+         console a test reads. */
   const faceImg = page.locator("#account-face img");
   is("the account's face carries the picture", await faceImg.count(), 1);
   is("and it is the one the session names", await faceImg.getAttribute("src"), AVATAR);
@@ -593,18 +546,14 @@ console.log("\nthe account page");
     (await page.locator("#account-face").textContent())?.trim() === "R");
   is("and the host is not told which page it is on",
     await faceImg.getAttribute("referrerpolicy"), "no-referrer");
-  /* By id and by role rather than by class. Every section here
-     already needs an id, because the account menu in the header
-     links straight into them by fragment. A class hook would be a
-     third name for a thing that has two. */
-  /* Named, not counted. This asserted 8 and the page has held 9
-     since the routine became a section in #168: three checks red
-     on main for as long as that, saying "got 9, want 8", which is
-     a number that was right on the day it was typed. What is
-     actually load bearing is that the strip and the panels are
-     the SAME set, because the account menu in the header links
-     into them by fragment and a section with no tab is a section
-     nothing can reach. */
+      /* By id and by role rather than by class: every section already
+         needs an id, because the account menu links straight into them by
+         fragment, and a class hook would be a third name. */
+      /* Named, not counted. What is load bearing is that the strip and the
+         panels are the SAME set, because the account menu links into them
+         by fragment and a section with no tab is a section nothing can
+         reach. A count is a number that is right on the day it is
+         typed. */
   const SECTIONS = [
     "you", "ladders", "reading-list", "notes", "targets",
     "routine", "scenarios", "preferences", "data",
@@ -642,22 +591,20 @@ console.log("\nthe account page");
   await page.getByRole("tab", { name: "Courses" }).click();
   await page.waitForTimeout(250);
 
-  /* The ladders. The denominator comes down from the ROUTE, out
-     of `next/lib/school-ladders.ts`, and the ticks are read here,
-     which is the rule `next/lib/progress.ts` states. Until 18
-     August 2026 this section imported all four schools'
-     `curriculum.js` in the browser to find the denominator. */
+      /* The ladders. The denominator comes down from the ROUTE, out of
+         `next/lib/school-ladders.ts`, and the ticks are read here, which
+         is the rule `next/lib/progress.ts` states. */
   ok("every course has a bar", (await page.locator(".ladder-row .meter").count()) === 4);
   ok("and the money school is not at nought",
     (await page.locator(".ladder-row").first().locator(".ladder-pct").textContent()) !== "0%");
 
   const money = page.locator(".ladder-row").first();
 
-  /* The account holds two money ticks, `share` and `dse`, and the
-     school's key is `learn-read` rather than `money-read`: the
-     school moved to /money/ and the key deliberately did not. A
-     bar reading "0 of ..." here is that rename having happened by
-     accident, and it loses somebody a year of ticks. */
+      /* The account holds two money ticks, and the school's key is
+         `learn-read` rather than `money-read`: the school moved to /money/
+         and the key deliberately did not. A bar reading "0 of ..." here is
+         that rename having happened by accident, and it loses somebody a
+         year of ticks. */
   /* Checkpoints are localStorage too, and the clause beside the
      count is drawn from them: same key, same mirror, same race. */
   ok("and names the checkpoints ticked inside them",
@@ -710,15 +657,14 @@ console.log("\nthe account page");
   await page.getByRole("tab", { name: "Targets" }).click();
   await page.waitForTimeout(200);
   is("both targets are drawn", await page.locator(".target").count(), 2);
-  /* A habit reads `days-active`; a course reads the reader's own
-     ticks against the ladder the route handed down. Neither is a
-     number anybody typed, which is the test a fourth kind would
-     have to pass. */
-  /* Not zero, which is the whole check. `days-active` is a synced
-     key, so a habit read once on mount is measured against
-     whatever this device held BEFORE the account's rows landed:
-     "0 of 4 days this week" for somebody who was here on ten of
-     the last fourteen. It looks like an honest number. */
+      /* A habit reads `days-active`; a course reads the reader's own ticks
+         against the ladder the route handed down. Neither is a number
+         anybody typed, which is the test a fourth kind would have to
+         pass. */
+      /* Not zero, which is the whole check. `days-active` is a synced key,
+         so a habit read once on mount is measured against whatever this
+         device held BEFORE the account's rows landed, and "0 of 4 days
+         this week" looks like an honest number. */
   ok("a habit target counts the days the account holds",
     /^[1-9]\d* of 4 days this week/.test(
       (await page.locator(".target").first().locator(".target-line").textContent()) ?? ""),
@@ -788,28 +734,18 @@ console.log("\nreading preferences");
   is("the language chip writes the tools' own key",
     await page.evaluate(() => localStorage.getItem("tool-lang")), "en");
 
-  /* ---- what the glass is made of ----
+      /* ---- what the glass is made of ----
+         Three settings under one heading, checked here for the reason the
+         four above are: the markup is right whether or not a press reaches
+         `<html>`, and `<html>` is the whole mechanism. `data-glass` names
+         the material and the two custom properties are what every radius
+         and tint derive from, so a chip that writes storage and not those
+         three changes nothing until the next load.
 
-     Three settings under one heading, and the reason they are
-     checked here rather than in `interactive.test.ts` is the
-     same reason the four above are: the markup is right whether
-     or not a press reaches `<html>`, and `<html>` is the whole
-     mechanism. `data-glass` names the material and the two custom
-     properties are what every radius and every tint is derived
-     from, so a chip that writes storage and not those three is a
-     chip that changes nothing until the next load.
-
-     SCOPED TO THE ROW, not to the panel.
-
-     It was scoped to the panel, which was enough while there were
-     three finishes and every option in it had a different first
-     word. There are twelve now and "Deep flute" is one of them,
-     so `{ name: /Deep/ }` matched a finish and a blur and the
-     test died on a strict-mode violation rather than on anything
-     being wrong. Naming the row is what makes that impossible
-     again: every one of these rows is a `role="group"` with its
-     own label, because a group of chips that changes one setting
-     is one control. */
+         SCOPED TO THE ROW, not to the panel: with twelve finishes
+         `{ name: /Deep/ }` matches a finish and a blur, and the test dies
+         on a strict-mode violation rather than on anything being wrong.
+         Every row is a `role="group"` with its own label. */
   const prefs = page.locator("#account-prefs");
   /** One row of the appearance panel, by the label it announces
       itself with. */
@@ -842,10 +778,10 @@ console.log("\nreading preferences");
   is("pressing Deep moves every blur at once", await propNow("--glass-amount"), "1.7");
   is("and the blur is remembered", await stored("blur"), "deep");
 
-  /* The fourth knob. It rode on `--depth` for one draft and
-     resolved to the same number on every surface, so what is
-     asserted here is the property the stylesheet actually reads
-     rather than the storage key, which was right either way. */
+      /* The fourth knob. Asserted as the property the stylesheet actually
+         reads rather than as the storage key, which was right either way
+         when this rode on `--depth` and resolved to one number on every
+         surface. */
   await row("Texture").getByRole("button", { name: /Strong/ }).click();
   await page.waitForTimeout(300);
   is("pressing Strong deepens the pattern", await propNow("--tex-strength"), "1.6");
@@ -856,11 +792,10 @@ console.log("\nreading preferences");
   is("pressing Clear thins the tint", await propNow("--glass-veil"), "0.54");
   is("and the tint is remembered", await stored("veil"), "clear");
 
-  /* AND EVERY OPTION DRAWS ITSELF. A row of chips reading "Frost",
-     "Paper", "Thin reed" is a reader imagining eleven materials
-     from their names; the swatch is the whole point of the panel
-     and it is made of the same tokens the site is, so a swatch
-     that renders empty is a preview that lies. */
+      /* AND EVERY OPTION DRAWS ITSELF. A row of chips reading "Frost",
+         "Paper", "Thin reed" is a reader imagining eleven materials from
+         their names, so a swatch that renders empty is a preview that
+         lies. */
   is("every finish carries a picture of itself",
     await row("Finish").locator(".pref-chip > .pref-swatch").count(), 12);
   is("and the picture is the material rather than a colour",
@@ -869,11 +804,10 @@ console.log("\nreading preferences");
     const el = document.querySelector('.pref-swatch-face[data-finish="callisto"]');
     return el ? getComputedStyle(el).backgroundImage.slice(0, 40) : "missing";
   });
-  /* `ok` rather than `is`, so the message can say what the value
-     was AND why it matters: `@layer glow` sets
-     `--glass-grain: none` on every descendant of a surface, and
-     a chip is a surface, so a swatch inside one paints nothing
-     unless that rule makes an exception for it. */
+      /* `ok` rather than `is`, so the message can say what the value was
+         AND why it matters: `@layer glow` sets `--glass-grain: none` on
+         every descendant of a surface, and a chip is a surface, so a
+         swatch inside one paints nothing unless that rule excepts it. */
   ok("and it really paints a grain, inside a chip that is a surface",
     grained.startsWith("repeating-radial-gradient"),
     `got ${grained}`);
@@ -919,26 +853,19 @@ console.log("\nadding a target");
   await context.close();
 }
 
-/* ============================================================
-   4a. The strip, which is what makes `role="tablist"` true
-
-   A section per screen of scrolling became one on screen. There
-   were eight when this was written and there are nine, which is
-   why nothing here counts them. The four decisions that took, from
-   `components/ui/tab-panels.tsx`, are the four checked here: the
-   fragment chooses, the address follows, a link from elsewhere on
-   the site opens the panel rather than scrolling to it, and the
-   arrows move within the strip.
-   ============================================================ */
+    /* ---- 4a. the strip, which is what makes `role="tablist"` true ----
+       Nothing here counts the sections. The four decisions from
+       `components/ui/tab-panels.tsx` are the four checked: the fragment
+       chooses, the address follows, a link from elsewhere opens the panel
+       rather than scrolling to it, and the arrows move within the strip. */
 
 console.log("\nthe strip, and what it switches");
 {
   const { page, context, errors } = await open("/account#notes");
 
-  /* A deep link is the case this has to get right: the account
-     menu in the header links straight to `#reading-list` and
-     `#data`, and before the strip switched anything those were
-     scroll targets on one long page. */
+      /* A deep link is the case this has to get right: the account menu
+         links straight to `#reading-list` and `#data`, and before the
+         strip those were scroll targets on one long page. */
   is("a link straight to a section opens that panel",
     await page.locator('[role="tabpanel"]:not([hidden])').getAttribute("id"), "panel-notes");
   is("and the strip says which", await page.locator('[role="tab"][aria-selected="true"]')
@@ -959,10 +886,9 @@ console.log("\nthe strip, and what it switches");
   is("still one panel on screen",
     await page.locator('[role="tabpanel"]:not([hidden])').count(), 1);
 
-  /* replaceState, never a hash assignment: assigning would push an
-     entry per press, so Back would walk the strip instead of
-     leaving the page, and it would scroll the panel under the
-     sticky bar every time. */
+      /* replaceState, never a hash assignment: assigning would push an
+         entry per press, so Back would walk the strip instead of leaving
+         the page, and it would scroll the panel under the sticky bar. */
   const before = await page.evaluate(() => history.length);
   for (const name of ["Targets", "Notes", "Courses"]) {
     await page.getByRole("tab", { name }).click();
@@ -991,14 +917,10 @@ console.log("\nthe strip, and what it switches");
   await context.close();
 }
 
-/* ============================================================
-   4b. The three settings questions, and the two framings
-
-   One form serves setup and settings, decided by whether the
-   profile carries a `setup_at`. Two forms would be two save
-   handlers and two places for a label to drift, and this is what
-   says the one form really does both.
-   ============================================================ */
+    /* ---- 4b. the three settings questions, and the two framings ----
+       One form serves setup and settings, decided by whether the profile
+       carries a `setup_at`. Two forms would be two save handlers and two
+       places for a label to drift. */
 
 console.log("\nsetting the account up, then changing it");
 {
@@ -1012,13 +934,11 @@ console.log("\nsetting the account up, then changing it");
   await page.getByRole("tab", { name: "Preferences" }).click();
   await page.waitForTimeout(200);
 
-  /* THE READ NAMES THE READER. Everything below this line reads
-     the reader's own answers back, and every one of them passed
-     for a fortnight against a profile that was somebody else's,
-     because the fixture answered any GET with the right row and
-     the real database does not. Said out loud and first, so that
-     a missing filter fails as itself rather than as eleven
-     confusing assertions about a name. */
+      /* THE READ NAMES THE READER. Everything below reads the reader's own
+         answers back, and every one of them passes against a profile that
+         is somebody else's if the filter is missing. Said out loud and
+         first, so that a missing filter fails as itself rather than as
+         eleven confusing assertions about a name. */
   const asked = state.reads.filter((u) => u.includes("/profiles?"));
   ok("the profile is read at all", asked.length > 0);
   ok("and every read of it names the reader",
@@ -1039,10 +959,9 @@ console.log("\nsetting the account up, then changing it");
     "you have already started this");
   ok("a course never opened does not", !await page.locator("#course-quran").isChecked());
 
-  /* Four boxes, not five. `COURSES` in content.js held the money
-     school twice until 18 August 2026, once by hand under a name
-     it stopped using when it moved to /money/, so this rendered
-     two checkboxes carrying one id. */
+      /* Four boxes, not five: `COURSES` in content.js held the money
+         school twice, once by hand under the name it used before /money/,
+         so this rendered two checkboxes carrying one id. */
   is("one box per school with a ladder",
     await page.locator("#account-courses input").count(), 4);
 
@@ -1073,15 +992,11 @@ console.log("\nsetting the account up, then changing it");
   await context.close();
 }
 
-/* ============================================================
-   4c. Erasing everything, which has to empty the page too
-
-   `forgetOnAccount()` clears the mirror, and until 19 August 2026
-   `clearMirror()` fired the school events and not `sync:done`.
-   Every React meter on this page is behind `subscribe()` in
-   `next/lib/progress.ts`, which hears the second, so the numbers
-   of the account that had just been erased stayed on screen.
-   ============================================================ */
+    /* ---- 4c. erasing everything, which has to empty the page too ----
+       `forgetOnAccount()` clears the mirror, and every React meter here is
+       behind `subscribe()` in `next/lib/progress.ts`, which hears
+       `sync:done`. A `clearMirror()` that fires the school events and not
+       that one leaves the erased account's numbers on screen. */
 
 console.log("\nerasing everything");
 {
@@ -1109,10 +1024,9 @@ console.log("\nerasing everything");
     await page.locator(".acct-tile strong").first().textContent(), "0");
   await page.getByRole("tab", { name: "Overview" }).click();
   await page.waitForTimeout(200);
-  /* At most today, and today is not a leak: `streak.js` marks the
-     day on the first interaction with the page, and the click that
-     erased everything is one. Being here now is not something an
-     erase can undo. */
+      /* At most today, and today is not a leak: `streak.js` marks the day
+         on the first interaction, and the click that erased everything is
+         one. */
   ok("the year is emptied down to today",
     (await page.locator(".heat-cell[data-on]").count()) <= 1,
     String(await page.locator(".heat-cell[data-on]").count()));
@@ -1120,12 +1034,10 @@ console.log("\nerasing everything");
     await page.locator("#data .cell").count(), 0);
   is("and the targets are gone", await page.locator(".target").count(), 0);
 
-  /* ---- the five nothing on this page draws ----
-
-     There is no element to count for these, which is exactly why
-     they were left behind: the only evidence an erase reached
-     them is the request. All five reported success without ever
-     being asked for until 30 August 2026. */
+      /* ---- the five nothing on this page draws ----
+         There is no element to count for these, which is why they were
+         left behind: the only evidence an erase reached them is the
+         request. All five reported success without ever being asked. */
   for (const table of [
     ...RESEARCH_TABLES, "routines", "routine_entries", "routine_templates", "broker_tokens",
   ]) {
@@ -1154,16 +1066,13 @@ console.log("\ntaking a copy of everything");
   await page.getByRole("tab", { name: "Your data" }).click();
   await page.waitForTimeout(400);
 
-  /* WHAT THIS BROWSER IS HOLDING, drawn from `shared/storage.ts`
-     rather than written out on the page. The panel above it
-     counts what the reader has done per school; this is the list
-     that had no answer anywhere, which is what ALL of it is and
-     which parts leave the machine.
+      /* WHAT THIS BROWSER IS HOLDING, drawn from `shared/storage.ts`
+         rather than written out on the page: what ALL of it is, and which
+         parts leave the machine.
 
-     Asserted by its words rather than by a count, because the
-     count is the point: it grows on its own when a key is added
-     anywhere on the site, and a test that pinned it would have to
-     be edited by whoever adds one. */
+         Asserted by its words rather than by a count, because the count
+         grows on its own when a key is added anywhere on the site, and a
+         pinned one would be edited by whoever adds one. */
   const held = await page.locator(".held").innerText();
   ok("the data panel says what this browser is holding",
     held.includes("What you have done"), held.slice(0, 120));
@@ -1184,10 +1093,9 @@ console.log("\ntaking a copy of everything");
   const stream = await file.createReadStream();
   const chunks: Buffer[] = [];
   for await (const chunk of stream) chunks.push(Buffer.from(chunk));
-  /* Narrowed rather than trusted: the whole claim of this block is
-     that the file holds five things, so reading it as a shape
-     already agreed on would be checking the shape and not the
-     file. */
+      /* Narrowed rather than trusted: the claim of this block is that the
+         file holds five things, so reading it as a shape already agreed on
+         would be checking the shape and not the file. */
   const parsed: unknown = JSON.parse(Buffer.concat(chunks).toString());
   const took: Record<string, unknown> = isObject(parsed) ? parsed : {};
 
@@ -1197,14 +1105,11 @@ console.log("\ntaking a copy of everything");
   ok("the profile", isObject(took.profile) && took.profile.display_name === "Rony Reiad");
   ok("and says what it is", typeof took.what === "string" && took.what.length > 10);
 
-  /* ---- and the five that nothing on this page draws ----
-
-     Every one of these was in neither this file nor the button
-     until 30 August 2026: the copy downloaded, reported success,
-     and carried five sixths of an account.
-     `scripts/check-account.ts` reads the migrations and fails on
-     a table nothing carries; this is the other half of that,
-     which is whether the file it actually writes holds one. */
+      /* ---- and the five that nothing on this page draws ----
+         The copy downloaded, reported success, and carried five sixths of
+         an account. `scripts/check-account.ts` reads the migrations and
+         fails on a table nothing carries; this is the other half, which is
+         whether the file it writes holds one. */
   for (const [table, what] of [
     ["research_projects", "the studio's projects"],
     ["research_collections", "its collections"],
@@ -1240,11 +1145,10 @@ console.log("\ntaking a copy of everything");
       JSON.stringify(held));
   }
 
-  /* THE BROKER KEY, AND WHAT IT LEAVES BEHIND. The row is useful:
-     which broker, what it was called, live or demo. `cipher` is
-     AES-GCM under a Worker secret, so it is bytes nobody holding
-     the file can open, and a credential in a downloaded file is
-     one more place it exists. */
+      /* THE BROKER KEY, AND WHAT IT LEAVES BEHIND. The row is useful:
+         which broker, what it was called, live or demo. `cipher` is
+         AES-GCM under a Worker secret, and a credential in a downloaded
+         file is one more place it exists. */
   const keys = Array.isArray(took.broker_tokens) ? took.broker_tokens : [];
   ok("it holds the broker key's row", keys.length === 1);
   ok("with what a person would want off it",

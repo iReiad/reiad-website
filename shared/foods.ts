@@ -1,137 +1,70 @@
 /* ============================================================
-   foods.ts: the portion library, for two kitchens.
-
-   `DIET.md` §22 is the plan: no food database, a short list per
-   place of what people actually eat, carrying the nutrients §15
-   names where they are known and a price from §17. This file is
-   that list. Nothing here renders and nothing here computes a
-   day: it is the rows, and the four ways of reaching them.
-
-   ---- the rule under all of it ----
+   foods.ts: the portion library, for two kitchens. `DIET.md` §22
+   is the plan. Nothing here renders and nothing computes a day:
+   it is the rows and the ways of reaching them.
 
    A GRAIN, A DAL OR A PASTA STATES ITS STATE, IN THE NAME, IN
-   BOTH LANGUAGES.
+   BOTH LANGUAGES. Rice roughly triples in weight when cooked, so
+   100 g is either 130 kcal or 350 depending which 100 g somebody
+   meant. `raw` is the flag the arithmetic reads and the NAME is
+   what the reader reads; a row in scope carries both. In scope is
+   anything bought dry and cooked in water, and `raw: false` is
+   written out on the cooked side rather than left off. A slice of
+   bread and a restaurant plate carry no flag, because nobody
+   weighs either dry.
 
-   Rice roughly triples in weight when cooked, so 100 g of rice
-   is either 130 kcal or 350 depending on which 100 g somebody
-   meant, and `DIET.md` §14 calls that the most common single
-   error in the whole of calorie counting. `raw` is the flag the
-   arithmetic reads; the NAME is what the reader reads, and a row
-   in scope carries both.
+   `en` and `bn` are one row said twice: a `bn` that only spells
+   the `en` out in Bangla letters is not finished.
 
-   IN SCOPE IS ANYTHING BOUGHT DRY AND COOKED IN WATER: rice,
-   parboiled rice, both dals, pasta, oats, chickpeas, and the
-   dishes made of them. `raw: false` is written out on the cooked
-   side rather than left off, because a missing flag on a row
-   whose dry form is also a row is the bug and not the default.
+   AN ID IS A STORED KEY. It goes into a reader's log the moment
+   they tap the row, so RENAMING ONE LOSES WHAT THEY LOGGED.
+   Kebab-case, unique, added rather than corrected. A duplicate
+   would not fail: `byId` indexes once and the later row would
+   silently never be reachable.
 
-   A slice of bread, a roti and a restaurant plate carry no flag
-   at all, and that is the rule holding rather than an omission:
-   nobody weighs any of the three dry, so there is no second
-   number for a reader to confuse the first with.
+   A PRICE IS A FACT WITH A DATE ON IT: `price`, `currency` and
+   `pricedOn`, all three or none. Reference figures for
+   arithmetic, quoting nobody and naming no shop. A row in both
+   places therefore carries NO price, because one number cannot be
+   two currencies.
 
-   ---- both languages, on every row ----
+   OMIT RATHER THAN GUESS. An optional nutrient is ABSENT where
+   the figure is not known, which is what §15's coverage counts; a
+   zero reads as "none of it". A MEASURED ZERO IS NOT SILENCE: an
+   oil carries no magnesium and writes the nought.
 
-   `en` and `bn` are one row said twice. A Bangla reader should
-   never have to read English to find out that something exists
-   in their own language, and a food list is the most literal
-   case of that rule the site has. A `bn` that only spells its
-   `en` out in Bangla letters is not finished: use the everyday
-   word where there is one, and a short gloss where there is
-   not.
-
-   ---- an id is a stored key ----
-
-   `id` goes into a reader's log the moment they tap the row, so
-   RENAMING ONE LOSES WHAT THEY LOGGED. Kebab-case, unique, and
-   added rather than corrected, which is the rule the storage
-   keys at the top of `CLAUDE.md` already follow. `byId` indexes
-   them once, so a duplicate id would not fail: it would quietly
-   shadow the row above it.
-
-   ---- a price is a fact with a date on it ----
-
-   `price`, `currency` and `pricedOn` are three parts of one
-   fact: all three, or none of them. Every figure is a REFERENCE
-   FIGURE for arithmetic, checked in August 2026, a Dhaka retail
-   price in BDT or a UK supermarket own-brand price in GBP. They
-   quote nobody and name no shop, and §17 is why: the moment
-   this tool says where to buy something it stops being a
-   calculator and starts being an advertisement.
-
-   A row in both places therefore carries NO price, because one
-   number cannot be two currencies. Where a food matters to
-   §17's cost per gram of protein in both countries, it is two
-   rows and each carries its own.
-
-   ---- omit rather than guess ----
-
-   An optional nutrient is ABSENT where the figure is not known
-   for that dish, and absent is exactly what §15's coverage
-   arithmetic counts. A zero reads as "none of it" and is worse
-   than silence, because a confident number missing a third of
-   the day is the one thing that section refuses to print.
-
-   A MEASURED ZERO IS NOT SILENCE. An oil carries no magnesium
-   and no sugar, and saying so is knowledge rather than a gap:
-   those rows write the nought. What may never be written is a
-   nought standing in for a figure nobody looked up.
-
-   ---- and selenium follows the soil, not the food ----
-
-   Magnesium, iodine, selenium, sugars and water arrived after
-   the rest of this library. A UK label states sugars and no
-   mineral past salt, the Bangladesh FCT states moisture and not
-   every mineral, and a composed home dish states whatever its
-   ingredients do, so `also()` names the second table on any row
-   whose own one does not carry the figure.
-
-   SELENIUM is the one that cannot be substituted between
-   countries. It is taken up from the soil, Bangladesh's soils
-   are low in it and North America's are high, so an American
-   figure for rice or dal would be wrong by a multiple rather
-   than by a rounding. It is carried on animal foods, on the
-   rows whose own table states it, and left ABSENT on the
-   Bangladeshi grain, pulse and vegetable rows, which is what
-   §15's coverage line then reports.
-
-   IODINE is thinner still, and for the opposite reason: it is
-   in the salt and in whatever the animal was fed. Eleven rows
-   carry it and the rest do not.
+   `also()` names the second table where a row's own one does not
+   carry a figure. SELENIUM cannot be substituted between
+   countries: it is taken up from the soil, and an American figure
+   for Bangladeshi rice is wrong by a multiple, so it is left
+   absent on the Bangladeshi grain, pulse and vegetable rows.
+   IODINE is in the salt and in whatever the animal was fed.
    ============================================================ */
 
-/** Where the reader eats, which decides the library, the
-    currency and the search's ranking.
-
-    Imported rather than declared again: `diet.ts` already says
-    this, and two files spelling one vocabulary is how a place
-    gets added to one of them. */
+/** Where the reader eats. Imported rather than declared again:
+    two files spelling one vocabulary is how a place gets added to
+    only one of them. */
 import type { Entry, Place } from "./diet.ts";
 export type { Place };
 
-/** What a row is for, as a search aid rather than a taxonomy.
-
-    A union rather than `string[]` so a typo is a compile error:
-    a tag nothing matches is a row a reader cannot find, and it
-    looks exactly like a row that is simply not there. Some rows
-    carry none, which is honest: a teaspoon of sugar is not a
-    snack, a staple or a drink. */
+/** What a row is for, as a search aid rather than a taxonomy. A
+    union rather than `string[]` so a typo is a compile error: a
+    tag nothing matches is a row a reader cannot find. Some rows
+    carry none. */
 export type Tag =
   | "staple" | "protein" | "veg" | "fruit" | "drink" | "snack" | "oil";
 
 /** One thing a reader can tap, at the size they actually eat it.
-
-    Energy is kcal, every macro is grams, and every micronutrient
-    is milligrams EXCEPT `vitd`, `b12` and `folate`, which are
-    micrograms, because that is how each of those three is
-    labelled and stated everywhere a reader will meet it. */
+    Energy is kcal, every macro grams, and every micronutrient
+    milligrams EXCEPT `vitd`, `b12` and `folate`, which are
+    micrograms, because that is how each is labelled. */
 export interface Portion {
   /** Stable, kebab-case, never renamed. */
   id: string;
   en: string;
   bn: string;
-  /** Both, where the row is genuinely the same object in both
-      kitchens. Such a row carries no price. */
+  /** Both, where the row is the same object in both kitchens.
+      Such a row carries no price. */
   place: Place[];
   qty: number;
   unit: string;
@@ -158,39 +91,32 @@ export interface Portion {
   folate?: number;
   iodine?: number;
   selenium?: number;
-  /** Grams, and the reason it is here rather than in the macros
-      is §15: keto raises it for most people who try it, and the
-      tool tracks it as a share of total fat where the library
-      knows it. */
+  /** Grams. Here rather than in the macros because the tool
+      tracks it as a share of total fat. */
   satfat?: number;
   /** Grams of TOTAL sugars, which is what a table and a label
-      both state. It is not the same quantity as the free sugars
-      the UK's 30 g advice is about, and `nutrients.ts` says so
-      where the figure is drawn rather than letting a reader
-      assume the two are one number. */
+      state. NOT the free sugars the UK's 30 g advice is about,
+      and `nutrients.ts` says so where the figure is drawn. */
   sugar?: number;
-  /** Grams of water in the food itself, which is about the same
-      number of millilitres. §15 logs what is DRUNK in glasses,
-      and food is the other fifth to third of a day's fluid: a
-      figure that counts only the glasses is a figure that is
-      wrong by that much, every day. */
+  /** Grams of water in the food itself. The glasses are logged
+      separately, and food is the other fifth to third of a day's
+      fluid. */
   water?: number;
   /** Per portion, in `currency`, checked in `pricedOn`. All
       three or none. */
   price?: number;
   currency?: "BDT" | "GBP";
-  /** The month the price was checked, `YYYY-MM`. Out of date by
-      more than a few months and §17 shows the figure greyed with
-      its date rather than silently. */
+  /** The month the price was checked, `YYYY-MM`. Stale by more
+      than a few months and the figure is drawn greyed with its
+      date rather than silently. */
   pricedOn?: string;
   /** Where the composition figure came from. Every row has one:
       a number with no source is a number this tool invented. */
   source: string;
   tags?: Tag[];
-  /** True where the figure is for the RAW food and false where
-      it is for the cooked form of something bought dry. Absent
-      where the question cannot arise, which is most rows: see
-      the top of this file. */
+  /** True for the RAW food, false for the cooked form of
+      something bought dry, absent where the question cannot
+      arise. See the top of this file. */
   raw?: boolean;
 }
 
@@ -198,25 +124,20 @@ const USDA = "USDA FoodData Central, SR Legacy";
 const INFS = "Food Composition Table for Bangladesh, INFS Dhaka, 2013";
 const MW = "McCance and Widdowson, 7th summary edition";
 const LABEL_UK = "UK supermarket own-brand label, per 100 g";
-/** A cooked dish is composition plus what went in the pan, and
-    the oil is the part nobody measures: `DIET.md` §14 opens on
-    it. Where a row says this, the oil is IN the figure. */
+/** Where a row says this, THE OIL IS IN THE FIGURE. */
 const HOME = "INFS Bangladesh FCT 2013, cooked with the oil counted in;"
   + " any magnesium, iodine, selenium, sugars and water figure is composed"
   + " from the ingredients";
 
-/** A row whose energy and macros come from one table and one of
-    the newer nutrients from another. Both are named, because a
-    citation that is right about half of itself is worse than
-    none: a reader checking a magnesium figure against the
-    Bangladesh FCT would not find it there. */
+/** A row whose energy and macros come from one table and a
+    nutrient from another. Both are named: a citation right about
+    half of itself is worse than none. */
 const also = (base: string, what: string): string => `${base}; ${what} from ${USDA}`;
 
 const BDT = "BDT" as const;
 const GBP = "GBP" as const;
-/** One month for the whole file, because a library priced half
-    in one month and half in another is a library whose prices
-    cannot be compared with each other. */
+/** One month for the whole file: prices from two months cannot
+    be compared with each other. */
 const ON = "2026-08";
 
 /* ------------------------------------------------------------
@@ -312,9 +233,8 @@ const BOTH: Portion[] = [
     kcal: 0, protein: 0, carbs: 0, fat: 0, fibre: 0,
     sodium: 2325,
     magnesium: 0, iodine: 120, sugar: 0, water: 0,
-    /* Here for the sodium, and for the line in §15 that a low
-       sodium push can quietly take Bangladesh's main source of
-       iodine with it. */
+    /* Here for the sodium, and because a low sodium push can
+       quietly take Bangladesh's main source of iodine with it. */
     source: `${USDA}; iodine at Bangladesh's 20 mg/kg household standard,`
       + " before cooking losses",
   },
@@ -335,9 +255,8 @@ const BD: Portion[] = [
     magnesium: 16, sugar: 0.2, water: 112,
     price: 11, currency: BDT, pricedOn: ON,
     /* Most of what is actually eaten in Bangladesh. Lower
-       glycaemic response than polished white rice and much the
-       same energy, which is `DIET.md` §14: relevant to somebody
-       managing blood sugar, irrelevant to the calorie total. */
+       glycaemic response than polished white rice at much the
+       same energy: irrelevant to the calorie total. */
     source: also(INFS, "magnesium, sugars and water"), tags: ["staple"], raw: false,
   },
   {
@@ -360,11 +279,8 @@ const BD: Portion[] = [
     sodium: 3, potassium: 70, iron: 2.2, zinc: 0.9,
     magnesium: 18, sugar: 0.1, water: 152,
     price: 10, currency: BDT, pricedOn: ON,
-    /* Rice cooled and left overnight forms resistant starch,
-       which lowers available energy SLIGHTLY. `DIET.md` §14 says
-       the second half of that sentence as loudly as the first,
-       so the figure here is the cooked rice's and not a
-       discount. */
+    /* Resistant starch lowers available energy SLIGHTLY, so the
+       figure here is the cooked rice's and not a discount. */
     source: also(INFS, "magnesium, sugars and water"), tags: ["staple"], raw: false,
   },
   {
@@ -433,11 +349,9 @@ const BD: Portion[] = [
     sodium: 1500, potassium: 520, iron: 3.8, zinc: 4.0, b12: 1.6,
     satfat: 15.0,
     price: 350, currency: BDT, pricedOn: ON,
-    /* A restaurant plate is not knowable and this is a midpoint,
-       not a measurement: `DIET.md` §14 puts the plate between 700
-       and 1,100 kcal and says anybody quoting 863 is reading a
-       number a website invented. Logged as a range, the midpoint
-       into the total and the width into the day's confidence. */
+    /* A midpoint, not a measurement: the plate is 700 to 1,100
+       kcal. Logged as a range, the midpoint into the total and
+       the width into the day's confidence. */
     source: "restaurant plate, midpoint of the range at DIET.md §14",
     tags: ["staple", "protein"],
   },
@@ -547,8 +461,8 @@ const BD: Portion[] = [
     b12: 2.0, satfat: 1.8,
     magnesium: 24, selenium: 17, sugar: 0.3, water: 34,
     price: 35, currency: BDT, pricedOn: ON,
-    /* Eaten with the bones, which is where the calcium is, and
-       why this row is not interchangeable with a fillet. */
+    /* Eaten with the bones, which is where the calcium is, so
+       this row is not interchangeable with a fillet. */
     source: HOME, tags: ["protein"],
   },
   {
@@ -635,9 +549,8 @@ const BD: Portion[] = [
     folate: 85, satfat: 0.8,
     magnesium: 55, zinc: 0.9, sugar: 0.6, water: 85,
     price: 12, currency: BDT, pricedOn: ON,
-    /* Non-haem iron, so §15's pairing applies: it roughly doubles
-       with vitamin C at the same meal, and tea with the meal
-       works the other way. */
+    /* Non-haem iron: it roughly doubles with vitamin C at the
+       same meal, and tea with the meal works the other way. */
     source: HOME, tags: ["veg"],
   },
   {
@@ -797,8 +710,8 @@ const BD: Portion[] = [
     satfat: 3.4,
     magnesium: 17, sugar: 7.7, water: 0.5,
     price: 20, currency: BDT, pricedOn: ON,
-    /* One of §17's cheap Bangladeshi proteins, which is the
-       whole reason it is a row rather than free entry. */
+    /* One of the cheap Bangladeshi proteins, which is why it is a
+       row rather than free entry. */
     source: also("Dhaka retail pack label, per 100 g", "magnesium, sugars and water"),
     tags: ["protein", "drink"],
   },
@@ -858,9 +771,8 @@ const BD: Portion[] = [
     magnesium: 0, sugar: 0, water: 0,
     price: 3, currency: BDT, pricedOn: ON,
     /* Two tablespoons is about 240 kcal and it is routine to use
-       more. `DIET.md` §14 calls this the single largest unlogged
-       item in a week of home cooking, which is why the tool
-       calibrates the household's bottle rather than the dish. */
+       more: the single largest unlogged item in a week of home
+       cooking, which is why the tool calibrates the bottle. */
     source: USDA, tags: ["oil"],
   },
   {
@@ -914,8 +826,7 @@ const UK: Portion[] = [
     magnesium: 9, zinc: 0.2, selenium: 2.2, sugar: 1.2, water: 13.4,
     price: 0.06, currency: GBP, pricedOn: ON,
     /* UK white flour is fortified with calcium and iron by law,
-       which is why those two are higher here than the wholemeal
-       row a reader would expect to beat it. */
+       which is why those two beat the wholemeal row. */
     source: also(LABEL_UK, "magnesium, zinc, selenium and water"), tags: ["staple"],
   },
   {
@@ -953,8 +864,8 @@ const UK: Portion[] = [
     b12: 0.6,
     magnesium: 46, sugar: 1.7, water: 2.5,
     price: 0.14, currency: GBP, pricedOn: ON,
-    /* Fortified, which is the point of the row: the iron, folate
-       and B12 here are added rather than the wheat's. */
+    /* Fortified: the iron, folate and B12 are added rather than
+       the wheat's. */
     source: also(LABEL_UK, "magnesium and water"), tags: ["staple"],
   },
   {
@@ -1001,9 +912,8 @@ const UK: Portion[] = [
     satfat: 3.1,
     magnesium: 29, selenium: 20, sugar: 0, water: 76,
     price: 0.75, currency: GBP, pricedOn: ON,
-    /* One of §17's cheap UK proteins, and the reason the cost per
-       gram of protein table is worth having: it beats the breast
-       above on price and loses on protein. */
+    /* One of the cheap UK proteins: it beats the breast above on
+       price and loses on protein. */
     source: MW, tags: ["protein"],
   },
   {
@@ -1042,8 +952,7 @@ const UK: Portion[] = [
     vitd: 12.0, b12: 4.5, satfat: 2.8,
     magnesium: 38, iodine: 18, selenium: 29, sugar: 0, water: 81,
     price: 3.00, currency: GBP, pricedOn: ON,
-    /* One of the few real dietary sources of vitamin D, which
-       §15 says the UK winter genuinely runs short of. */
+    /* One of the few real dietary sources of vitamin D. */
     source: MW, tags: ["protein"],
   },
   {
@@ -1140,8 +1049,8 @@ const UK: Portion[] = [
     sodium: 1600, potassium: 450, calcium: 140, iron: 2.4,
     satfat: 10.0,
     price: 3.90, currency: GBP, pricedOn: ON,
-    /* The whole thing rather than the sandwich, because the
-       crisps and the drink are what a reader stops counting. */
+    /* The whole meal deal rather than the sandwich: the crisps
+       and the drink are what a reader stops counting. */
     source: "three UK supermarket labels added together",
     tags: ["staple", "snack"],
   },
@@ -1154,11 +1063,10 @@ const UK: Portion[] = [
     sodium: 12, potassium: 150,
     magnesium: 34, sugar: 3.4, water: 528,
     price: 5.20, currency: GBP, pricedOn: ON,
-    /* The macros do not add up to the energy here and cannot:
-       most of a pint's calories are the alcohol, which is a
-       fourth energy source at about 7 kcal a gram and is not a
-       carbohydrate. Anything summing macros to check a total
-       has to know that. */
+    /* THE MACROS DO NOT ADD UP TO THE ENERGY and cannot: most of
+       a pint's calories are the alcohol, a fourth energy source
+       at about 7 kcal a gram. Anything summing macros to check a
+       total has to know that. */
     source: MW, tags: ["drink"],
   },
   {
@@ -1256,10 +1164,9 @@ const UK: Portion[] = [
   },
 ];
 
-/** The whole library, in one array, because the search ranks
-    across both places rather than filtering to one. `forPlace`
-    is the filter, and §22's rule that only one place's list is
-    ever DOWNLOADED is the route's job rather than this file's. */
+/** The whole library, because the search ranks across both
+    places rather than filtering to one. `forPlace` is the filter,
+    and downloading only one place's list is the route's job. */
 export const FOODS: Portion[] = [...BOTH, ...BD, ...UK];
 
 /* ------------------------------------------------------------
@@ -1271,28 +1178,22 @@ export const FOODS: Portion[] = [...BOTH, ...BD, ...UK];
 export const forPlace = (place: Place): Portion[] =>
   FOODS.filter((f) => f.place.includes(place));
 
-/** Built once, because `byId` is called per logged item and a
-    scan of the whole library per row is a scan per row. A
-    duplicate id would not fail here: the later row would simply
-    never be reachable, which is why ids are unique by hand. */
+/** Built once: `byId` is called per logged item. A duplicate id
+    would not fail here, the later row would simply never be
+    reachable. */
 const INDEX: Map<string, Portion> = new Map(FOODS.map((f) => [f.id, f]));
 
 export const byId = (id: string): Portion | undefined => INDEX.get(id);
 
 /**
  * Rows matching `q` in English, in Bangla or in a tag, with the
- * reader's own place first.
- *
- * The other place's rows are still returned, and last. A
- * Bangladeshi reader in Manchester eats both lists, and a search
- * that hid the half they did not tick would look like a library
- * that has never heard of dal.
+ * reader's own place first. The other place's rows are still
+ * returned, and last: a Bangladeshi reader in Manchester eats
+ * both lists.
  *
  * Ranked, not scored: available here beats not, and a name that
- * STARTS with what was typed beats one that merely contains it,
- * so "rice" opens on the rice rather than on the jasmine tea
- * that mentions it. Ties keep file order, which is the order
- * these were written in and is therefore stable.
+ * STARTS with what was typed beats one that merely contains it.
+ * Ties keep file order, which is stable.
  */
 export function search(q: string, place: Place): Portion[] {
   const needle = q.trim().toLowerCase();
@@ -1317,20 +1218,14 @@ export function search(q: string, place: Place): Portion[] {
 }
 
 /**
- * The nutrients §15's coverage arithmetic counts, and the whole
- * of them.
- *
- * "Iron: about 9 mg, from 62% of today's food" is the sentence
- * this list exists for: the denominator is every logged item and
- * the numerator is the ones whose row carries the key, so a key
- * that is not on this list is a nutrient nobody is told the
+ * The nutrients the coverage arithmetic counts, and the whole of
+ * them: a key not on this list is a nutrient nobody is told the
  * coverage of.
  *
- * `satisfies` rather than an annotation, so a key misspelled
- * here fails to compile instead of quietly covering nothing.
- * Protein, carbs, fat and fibre are absent on purpose: they are
- * required on every row, so their coverage is always the whole
- * of what was logged with a row at all.
+ * `satisfies` rather than an annotation, so a key misspelled here
+ * fails to compile instead of quietly covering nothing. Protein,
+ * carbs, fat and fibre are absent on purpose: they are required
+ * on every row.
  */
 export const COVERAGE_KEYS = [
   "sodium", "potassium", "magnesium", "calcium", "iron", "zinc",
@@ -1345,8 +1240,7 @@ export type CoverageKey = (typeof COVERAGE_KEYS)[number];
    ------------------------------------------------------------ */
 
 /** Which shelf a nutrient sits on, so nineteen figures can be
-    found rather than scanned. A wall of nineteen is worse than
-    a wall of five: the reader came for ONE of them. */
+    found rather than scanned. */
 export type NutrientGroup = "macro" | "mineral" | "vitamin" | "other";
 
 export const NUTRIENT_GROUPS: Array<{ id: NutrientGroup; en: string; bn: string }> = [
@@ -1360,32 +1254,26 @@ export const NUTRIENT_GROUPS: Array<{ id: NutrientGroup; en: string; bn: string 
     whose range it is.
 
     A RANGE WITH NO POPULATION ON IT IS A RANGE A READER CANNOT
-    ARGUE WITH, and several of these differ between the UK, the
-    WHO and the US by more than a rounding: vitamin C is 40 mg
-    in one and 90 in another for the same adult. So `refEn` and
-    `refBn` say whose figure it is, and where the panels
-    genuinely disagree the copy says so rather than picking a
-    side quietly. */
+    ARGUE WITH: vitamin C is 40 mg in one panel and 90 in another
+    for the same adult. `refEn` and `refBn` say whose figure it
+    is, and the copy says so where panels disagree. */
 export interface Nutrient {
   /** A `COVERAGE_KEYS` name, or one of the four macros a
       `DayTotal` totals at the top level. */
   key: string;
   group: NutrientGroup;
-  /** Where the figure is in a day's total. A macro is a
-      top-level number and everything else is in `micros`;
-      `water` is BOTH, because the glasses are logged and the
-      water in the food is estimated. */
+  /** Where the figure is in a day's total. A macro is top-level
+      and everything else is in `micros`; `water` is BOTH,
+      because the glasses are logged and the food estimated. */
   reads: "total" | "micros" | "both";
-  /** Both languages, because a Bangla figure carrying an
-      English unit is a figure said in one language. */
+  /** Both languages: a Bangla figure carrying an English unit is
+      a figure said in one language. */
   unit: string;
   unitBn: string;
   /** BOTH ENDS ARE OPTIONAL ON PURPOSE. `low` alone is a floor,
-      `high` alone is a ceiling, and NEITHER is a nutrient with
-      no single right amount: carbohydrate and fat are chosen
-      rather than prescribed, and printing a range for them
-      would tell a reader on keto they were failing at
-      something they had decided to do. */
+      `high` alone a ceiling, and NEITHER is a nutrient with no
+      single right amount: a range on carbohydrate would tell a
+      reader on keto they were failing at something they chose. */
   low?: number;
   high?: number;
   en: string;
@@ -1399,20 +1287,14 @@ export interface Nutrient {
 }
 
 /**
- * The nineteen, in the order they are drawn.
- *
- * Ordered inside each group by what actually goes wrong for
- * this tool's two readerships rather than alphabetically or by
- * how much of it a body holds. Iron leads the minerals because
- * anaemia among women in Bangladesh is the largest single
- * nutrition problem this tool's reader is likely to have; the
- * keto three follow together because `DIET.md` §7 names them
- * together and a reader who has just started keto is looking
- * for all three at once.
+ * The nineteen, in the order they are drawn: inside each group,
+ * by what actually goes wrong for this tool's two readerships
+ * rather than alphabetically. Iron leads the minerals, and the
+ * keto three follow together because somebody who has just
+ * started keto is looking for all three at once.
  *
  * Carbohydrate and fat come last among the macros and carry no
- * range, which is the honest shape: they are the split the
- * reader chose.
+ * range: they are the split the reader chose.
  */
 export const NUTRIENTS: Nutrient[] = [
   /* ---- the macros ---- */
@@ -1586,14 +1468,9 @@ export const nutrient = (key: string): Nutrient | undefined => BY_KEY.get(key);
    Where the reader eats, said once
    ------------------------------------------------------------ */
 
-/** The place a caller assumes when nobody has said.
-
-    ONE constant because three callers with three defaults is
-    three different libraries leading for one reader: the Worker
-    ranked Bangladesh first while the picker and the price table
-    asked for the UK, so a reader in Dhaka typing "dal" waited on
-    a British list. `bd` because this site's reader is in
-    Bangladesh unless they say otherwise. */
+/** The place a caller assumes when nobody has said. ONE
+    constant: three callers with three defaults is three different
+    libraries leading for one reader. */
 export const DEFAULT_PLACE: Place = "bd";
 
 /* ------------------------------------------------------------
@@ -1601,14 +1478,12 @@ export const DEFAULT_PLACE: Place = "bd";
    ------------------------------------------------------------ */
 
 /** The digits of a barcode, or nothing. EAN-8, UPC-A, EAN-13,
-    GTIN-14, with spaces and hyphens taken off first because that
-    is how a number read off a packet gets typed.
+    GTIN-14, with spaces and hyphens taken off first.
 
     Here rather than in the Worker's `_lib/food.ts` because the
-    browser has to decide the same thing before it asks, and a
-    browser module may not import that file at all: it writes out
-    both upstream hostnames and `check-csp.ts` scans every string
-    under `next/`. */
+    browser decides the same thing before it asks, and it may not
+    import that file: it writes out both upstream hostnames and
+    `check-csp.ts` scans every string under `next/`. */
 export const barcodeOf = (typed: string): string | undefined => {
   const digits = typed.replace(/[\s-]/g, "");
   return /^\d{8,14}$/.test(digits) ? digits : undefined;
@@ -1622,8 +1497,7 @@ export const isBarcode = (typed: string): boolean => barcodeOf(typed) !== undefi
 
 export interface UnitWord {
   en: string;
-  /** The English plural, written out rather than derived,
-      because deriving it gives "2 gs". */
+  /** Written out rather than derived: deriving gives "2 gs". */
   ens: string;
   bn: string;
   /** Bangla counts with the numeral attached: `২টা`, never
@@ -1632,12 +1506,8 @@ export interface UnitWord {
 }
 
 /** Every unit any row here is measured in, in both languages.
-
-    A unit is half of what a figure is FOR, so a portion a Bangla
-    reader is shown an English word inside is a portion said in
-    one language. `food.test.ts` fails on a unit in `FOODS` with
-    no entry here, which is what stops a new row quietly
-    introducing one. */
+    `food.test.ts` fails on a unit in `FOODS` with no entry here,
+    which stops a new row quietly introducing one. */
 export const UNIT_WORDS: Record<string, UnitWord> = {
   biscuit: { en: "biscuit", ens: "biscuits", bn: "টা", tight: true },
   bowl: { en: "bowl", ens: "bowls", bn: "বাটি" },
@@ -1657,16 +1527,13 @@ export const UNIT_WORDS: Record<string, UnitWord> = {
 };
 
 /**
- * The portion a figure is for: "2 biscuits", "২টা".
+ * The portion a figure is for: "2 biscuits", "২টা". `qty`
+ * arrives in the language's own numerals already, so this stays
+ * free of `bnNum`.
  *
- * `qty` arrives in the language's own numerals already, so this
- * stays free of `bnNum` and of every other digit conversion.
- *
- * An unknown unit falls back to the token itself, because a
- * portion reading "1 sachet" is readable and one reading "1" is
- * a number with nothing under it. The fallback is for a row out
- * of a public database rather than for this library: a unit here
- * with no word fails the test.
+ * An unknown unit falls back to the token itself, for a row out
+ * of a public database: a unit in THIS library with no word fails
+ * the test.
  */
 export function portionWords(
   qty: number | string, unit: string, lang: "en" | "bn",
@@ -1681,18 +1548,18 @@ export function portionWords(
    What was actually eaten, which is never what was found
    ------------------------------------------------------------ */
 
-/** Rounded on the way out: a float artefact on a page
-    ("0.21000000000000002 g") makes a tool look broken. */
+/** Rounded on the way out: "0.21000000000000002 g" on a page
+    makes a tool look broken. */
 const round = (value: number, places: number): number => {
   const scale = 10 ** places;
   return Math.round(value * scale) / scale;
 };
 
 /** The nutrients a row states, and the portion it states them
-    for. A `Portion` above satisfies this and so does a hit out
-    of either public database, which is the point: the
-    arithmetic below has one input shape and cannot be given a
-    per-100 g row and a per-cup row to add up. */
+    for. A `Portion` satisfies this and so does a hit out of
+    either public database, so the arithmetic below has ONE input
+    shape and cannot be given a per-100 g row and a per-cup row to
+    add up. */
 export interface Stated extends Partial<Record<CoverageKey, number>> {
   qty: number;
   unit: string;
@@ -1713,13 +1580,12 @@ export interface Ate {
 
 export interface ScaledPortion {
   kcal: number;
-  /** Only the macros the row states. An absent one is absent
-      here too, and a zero somebody measured is kept, because
-      presence is the question and a zero is a figure. */
+  /** Only the macros the row states. An absent one stays absent
+      and a measured zero is kept: presence is the question. */
   macros: Record<string, number>;
-  /** The §15 coverage list, and only the keys the row carries.
+  /** The coverage list, and only the keys the row carries.
       `totalFor()` counts an entry with ANY key here as covered,
-      so a key invented with a nought in it buys the day coverage
+      so an invented key with a nought in it buys the day coverage
       the log does not have. */
   micros: Record<string, number>;
   /** What the row's own portion was multiplied by. */
@@ -1730,41 +1596,33 @@ export interface ScaledPortion {
 }
 
 /** The four a `DayTotal` holds at the top level, and the ones
-    `scaleTo` puts in `macros` rather than in `micros`.
+    `scaleTo` puts in `macros` rather than `micros`.
 
-    EXPORTED because it is a vocabulary and the Android app has
-    to split a scaled row the same way this file does. It reached
-    the phone by being derived from `NUTRIENTS`, which was right
-    on the day it was written and would part company the moment a
-    fifth `reads: "total"` row arrived: this file would go on
-    scaling four and the app would scale five. `/api/foods` sends
-    it, so there is one list. */
+    EXPORTED because it is a vocabulary the Android app has to
+    split a scaled row by in the same way. `/api/foods` sends it,
+    so there is one list rather than a derivation that parts
+    company the day a fifth `reads: "total"` row arrives. */
 export const MACRO_KEYS = ["protein", "carbs", "fat", "fibre"] as const;
 
 /**
  * The row at the amount that was actually eaten, or `null`.
  *
- * NULL IS A REFUSAL AND IT IS THE POINT. A log wrong in the
- * flattering direction is the failure this tool is built around,
- * and a found food is stated per 100 g or per cup with no idea
- * what was on the plate. So an amount that cannot be turned into
- * a factor honestly (not a positive number, or grams asked of a
- * row that never says what it weighs) logs NOTHING, rather than
- * logging the row's own portion and hoping.
+ * NULL IS A REFUSAL AND IT IS THE POINT: an amount that cannot be
+ * turned into a factor honestly (not a positive number, or grams
+ * asked of a row that never says what it weighs) logs NOTHING
+ * rather than logging the row's own portion and hoping.
  *
  * EVERY nutrient is scaled by the one factor. Scaling the
- * calories alone is how a log ends up with a day of 2,400 kcal
- * and 40 g of protein in it.
+ * calories alone is a day of 2,400 kcal and 40 g of protein.
  */
 export function scaleTo(row: Stated, ate: Ate): ScaledPortion | null {
   const n = round(ate.n, 2);
   if (!Number.isFinite(n) || n <= 0) return null;
 
   /* The basis is what the row's figures are FOR: its own `qty`
-     where the reader answered in its own unit, and its weight
-     where they answered in grams. A row with no weight cannot
-     answer a question in grams, and inventing one is the error
-     this returns null for. */
+     where the reader answered in its unit, its weight where they
+     answered in grams. A row with no weight cannot answer in
+     grams, which is what the null is for. */
   const basis = ate.unit === row.unit ? row.qty
     : ate.unit === "g" ? row.grams
       : undefined;
@@ -1787,9 +1645,9 @@ export function scaleTo(row: Stated, ate: Ate): ScaledPortion | null {
   }
 
   return {
-    /* One decimal, which is what `diet_entries.kcal` holds. A
-       figure the column would round is a row saying one thing
-       and storing another. */
+    /* One decimal, which is what `diet_entries.kcal` holds: a
+       figure the column would round is a row saying one thing and
+       storing another. */
     kcal: round(row.kcal * factor, 1),
     macros,
     micros,
@@ -1799,14 +1657,9 @@ export function scaleTo(row: Stated, ate: Ate): ScaledPortion | null {
 }
 
 /** A food from any of the three sources, ready to be copied into
-    a log row.
-
-    `en` and `bn` are the row's name in each language, and a
-    source that has only one of them sets `en` and leaves `bn`
-    off: an English database is not a translation waiting to
-    happen. Deliberately NOT called `source`, because a
-    `Portion`'s own `source` is its citation ("USDA FoodData
-    Central, SR Legacy") and an entry's is the word for where it
+    a log row. A source with only one language sets `en` and
+    leaves `bn` off. Deliberately NOT called `source`: a
+    `Portion`'s `source` is its citation, an entry's is where it
     came from. */
 export interface FoundFood extends Stated {
   en: string;
@@ -1816,16 +1669,14 @@ export interface FoundFood extends Stated {
 /**
  * What the log stores, or `null` where `scaleTo` refused.
  *
- * `qty` is rounded to two places before anything is scaled by
- * it, because `diet_entries.qty` is `numeric(9,2)`: a row that
- * scaled by 1.333 and stored 1.33 is a row whose own numbers do
- * not follow from each other.
+ * `qty` is rounded to two places BEFORE anything is scaled by it,
+ * because `diet_entries.qty` is `numeric(9,2)`: scaling by 1.333
+ * and storing 1.33 is a row whose numbers do not follow from each
+ * other.
  *
- * BOTH NAMES ARE WRITTEN. `label` is the English and `labelBn`
- * the Bangla, always in that order whichever language the reader
- * has on: a Bangla name in the English column is a log that
- * turns to Bangla when the tool is switched to English and
- * cannot be switched back.
+ * BOTH NAMES ARE WRITTEN, `label` English and `labelBn` Bangla,
+ * whichever language the reader has on: a Bangla name in the
+ * English column cannot be switched back.
  */
 export function loggedFrom(
   food: FoundFood, ate: Ate, from: { source: string; sourceId?: string },

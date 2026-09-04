@@ -1,51 +1,10 @@
-/* ============================================================
-   audience.ts: the front door.
-
-   Three completely different people arrive at this site:
-
-     · a Bangladeshi reader who wants to understand money, in
-       Bangla, and has no interest whatsoever in a CV;
-     · a Bangladeshi reader who came for one of the other
-       schools, German today, five more being written, and
-       does not want a savings lesson either;
-     · a recruiter or a client, in English, who wants the work
-       and the credentials and needs neither.
-
-   Serving all three from one undifferentiated homepage means
-   each of them reads past the others' share of it. So the home
-   page asks once and remembers the answer.
-
-   TWO AXES, not three doors, and the distinction matters:
-
-     audience   "learn" | "work"      who you are
-     track      "finance" | "skills"  which library you came for,
-                                      and only meaningful for a
-                                      learner
-
-   Keeping the learner one value rather than splitting it in two
-   is what lets every rule written before the second school
-   arrived, the nav order, the menu columns, the palette
-   ranking, go on working untouched. `track` refines; it never
-   contradicts.
-
-   What the answer changes:
-     · the order of the header nav (CSS only, see the `audience`
-       block in styles.css, so there is no flash and no reflow)
-     · which column of the overlay menu comes first
-     · how the Ctrl+K palette ranks its results
-     · which half of the home page leads, and which headline it
-       is written in
-
-   What it never changes: what exists. Nothing is hidden from
-   anybody, no page becomes unreachable, and the choice is
-   reversible from the menu and the footer on every page. It is a
-   preference, not a gate: someone who picked "hiring" and then
-   wants to read the Bangla library must never hit a wall.
-
-   Both attributes are set before first paint by the inline
-   script in each page's <head>, next to the theme. This module
-   handles the behaviour on top of them.
-   ============================================================ */
+/* audience.ts: the front door. Two axes, not three doors:
+   `audience` is "learn" or "work" (who you are) and `track` is
+   "finance" or "skills" (which library), meaningful only for a
+   learner, so it refines and never contradicts.
+   It changes what LEADS, never what exists: nothing is hidden and
+   the choice is reversible from the menu and the footer. Both
+   attributes are set before first paint by the boot script. */
 const KEY = "audience";
 const TRACK_KEY = "track";
 /* The two vocabularies, said once. `AUDIENCES` in
@@ -156,28 +115,13 @@ function initDoorway() {
    the overlay menu. Someone who chose wrong should be one tap
    from fixing it, wherever they realise.
    ------------------------------------------------------------ */
-/* ------------------------------------------------------------
-   Switching reloads the page, and it has to.
-
-   Setting data-audience on <html> reorders the blocks, and that
-   is all it does. It cannot touch the parts of a page that were
-   decided BEFORE the CSS ran: the home page picks its headline,
-   its standfirst and its button row in the inline script at the
-   top of index.html, from the same stored value, because that
-   choice has to be made before the first paint or the wrong
-   headline is briefly visible.
-
-   So a switch without a reload left a page half-swapped: the
-   sections in the new order, under a hero still addressing the
-   audience you just stopped being. The blocks moved and the
-   headline did not, which reads as a bug even to someone who
-   could not say what was wrong.
-
-   A reload is also cheap here. The page is already in the HTTP
-   cache, the service worker answers it, and browsers restore the
-   scroll position themselves, so the switch reads as the page
-   rearranging itself rather than as a navigation.
-   ------------------------------------------------------------ */
+/* SWITCHING RELOADS, and it has to. `data-audience` reorders the
+   blocks and nothing else: the headline, the standfirst and the
+   button row are chosen before the first paint by the boot
+   script, so a switch without a reload leaves the sections in the
+   new order under a hero addressing the audience you just
+   stopped being. The page is in the cache, so it reads as a
+   rearrangement rather than as a navigation. */
 function reload() {
     /* Guarded: a reload loop is the worst possible failure mode for
        this, and a browser that refuses the write above would give

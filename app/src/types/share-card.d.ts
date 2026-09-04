@@ -25,23 +25,11 @@ export interface CardWords {
     title?: string;
     /** The tag, in the mono face above the title. */
     kicker?: string;
-    /** Which desk it is on: `insights`, `cooking`, `travel`. The
-        card takes that section's own colour, so a kitchen piece
-        shares as rose and a travel piece as plum.
-  
-        Resolved out of the RAIL rather than out of a table here,
-        and that is the point. `shared/nav.ts` is the one place a
-        section's colour is written down, the rail renders every
-        section with that colour inline on the link, and this page
-        has a rail on it: reading it is reading the one table
-        through the markup it already produced. A copy of six
-        colours in this file would be the failure CLAUDE.md opens
-        with, and putting `nav.ts` on the wire as a served module to
-        carry a hue would cost a module, a precache entry and a
-        service worker bump.
-  
-        Falls back to the site's own green, which is what a piece on
-        a desk the rail does not list should share as anyway. */
+    /** Which desk it is on. The card takes that section's colour,
+        resolved out of the RAIL rather than a table here:
+        `shared/nav.ts` is the one place a section's colour is
+        written down and the rail renders it inline on every link.
+        Falls back to the site's own green. */
     section?: string;
     /** The token directly, for anything that already has it and
         for a caller with no rail to read. */
@@ -58,13 +46,9 @@ export interface CardWords {
     fails a check rather than rendering that shape in black. */
 export declare const ART_TOKENS: readonly ["lit", "hot", "mid", "deep", "shade", "sink", "fore-hot", "fore-lit", "fore-mid"];
 /**
- * Draw the card: a 1200x630 JPEG.
- *
- * `src` has to be a path this site serves. The bytes are read back
- * through fetch, so a `data:` URL works too and somebody else's
- * URL will not. An empty `src` is allowed and means a card with
- * no photograph on it, which is a card this site can now draw for
- * every piece rather than only for the illustrated ones.
+ * Draw the card: a 1200x630 JPEG. `src` has to be a path this
+ * site serves (a `data:` URL works, somebody else's URL will
+ * not), and an empty one means a card with no photograph.
  */
 export declare function shareCardBlob({ src, focus }: {
     src: string;
@@ -114,20 +98,13 @@ export declare function drawingFor(subject: string): Promise<{
     subject?: string;
     motif?: string;
 }>;
-/** What a PIECE wears, in one request.
-
-    The choice is `shared/art.ts`'s and is made in the Worker,
-    because a browser bundle cannot import that file and a second
-    copy of the rule here would be two hubs drawing different
-    cards for the same row. Everything is optional and every
-    failure is `{}`, which the card reads as "the room with
-    nothing standing in it".
-
-    Not cached, unlike `artTable()`: the answer depends on which
-    piece is being asked about. The drawings inside it are the
-    same 34 KB every time and are the reason a caller drawing
-    forty cards should use `artTable()` and `drawingFor()`
-    instead. */
+/** What a PIECE wears, in one request. The choice is
+    `shared/art.ts`'s and is made in the WORKER: a browser bundle
+    cannot import that file, and a second copy of the rule here
+    would be two hubs drawing different cards for one row. Every
+    failure is `{}`, which the card reads as an empty room.
+    Not cached: a caller drawing forty cards should use
+    `artTable()` and `drawingFor()` instead. */
 export declare function drawingForPiece(src: {
     id?: string;
     section?: string;

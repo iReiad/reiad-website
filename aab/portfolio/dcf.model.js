@@ -1,70 +1,13 @@
-/* ============================================================
-   dcf.model.js, a discounted cash flow valuation.
+/* dcf.model.js: a discounted cash flow valuation. No DOM,
+   numbers in and numbers out, checked by `dcf.test.ts`.
 
-   No DOM here, same as three-statement.model.js. The page is a
-   way of looking at this; this is the thing being looked at.
-
-   ------------------------------------------------------------
-   IT SITS ON TOP OF THE OPERATING MODEL
-
-   The cash flows are not a second set of invented numbers. They
-   are derived from the three-statement model in this same
-   folder, which means the DCF inherits a forecast whose balance
-   sheet balances, and switching the operating scenario changes
-   the valuation, because it changes the cash flows.
-
-   That is how it works in practice, and it is the part most
-   spreadsheet DCFs get wrong: a valuation tab with hardcoded
-   EBITDA that no longer agrees with the model two tabs to the
-   left.
-
-   ------------------------------------------------------------
-   WHAT IS ACTUALLY COMPUTED
-
-     unlevered free cash flow
-       = EBIT × (1 − tax) + D&A − capex − increase in working capital
-
-     Unlevered, before financing. Interest is deliberately NOT
-     deducted: the cost of debt is already inside the discount
-     rate, and subtracting it here as well would double-count it.
-     This gives enterprise value, from which net debt is bridged
-     out to reach equity value.
-
-     WACC
-       cost of equity = risk-free + beta × equity risk premium
-                        + country risk premium
-       WACC = wₑ × cost of equity + w_d × cost of debt × (1 − tax)
-
-     terminal value, either
-       Gordon growth   TV = FCFₙ × (1 + g) / (WACC − g)
-       exit multiple   TV = EBITDAₙ × multiple
-
-     Both are offered because they answer different objections,
-     and each one implies the other: a Gordon TV can be quoted as
-     the exit multiple it amounts to, and an exit-multiple TV can
-     be quoted as the perpetuity growth it assumes. Those two
-     cross-checks are computed and shown, because a terminal
-     value that implies 7% growth forever should be visible as
-     such rather than buried.
-
-   ------------------------------------------------------------
-   THE CONVENTIONS, STATED
-
-   1. Mid-year discounting is optional and off by default. Cash
-      arrives through the year rather than all on the last day, so
-      mid-year is the more defensible convention; year-end is the
-      more common one. The toggle exists because reviewers ask.
-
-   2. When mid-year is on, the explicit forecast is discounted at
-      t − 0.5 but the terminal value is discounted at full year n.
-      The terminal value is a lump sum standing at the end of the
-      forecast, not a flow through it.
-
-   3. Gordon growth requires WACC > g. Where it isn't, the model
-      returns a flagged invalid result rather than a number, a
-      negative denominator produces a confidently wrong valuation,
-      which is worse than no valuation.
-   ============================================================ */
+   The cash flows are DERIVED from `three-statement.model.js` in
+   this folder, so switching the operating scenario changes the
+   valuation. Free cash flow is UNLEVERED: interest is not
+   deducted, because the cost of debt is already inside the
+   discount rate and taking it twice double-counts it.
+   Gordon growth requires WACC > g; where it is not, the model
+   returns a flagged invalid result rather than a number. */
 
 /* Relative, not root-absolute: this module is imported both by the
    browser from /portfolio/ and from the filesystem by the test

@@ -1,47 +1,17 @@
-/* ============================================================
-   /tools/live.js: the live portfolio page, all three faces.
+/* /tools/live.js: the live portfolio page. Edit
+   aab/src/tools/live.ts and run scripts/build-modules.ts.
 
-   This file is TypeScript and compiles to the served module:
-   edit aab/src/tools/live.ts, run scripts/build-modules.ts,
-   commit both. It is the first module served from a
-   subdirectory; the MODULES list in that script names it as
-   "tools/live".
-
-   One page, three readers, decided at load and redecided when
-   the account changes:
-
-     a stranger        the site's own portfolio, percentages
-                       only, from GET /api/broker/public.
-     signed in         the same page grows a second half: paste
-                       a Trading 212 key, keep it or don't, and
-                       the dashboard reads YOUR account through
-                       the Worker.
-     the admin         a third panel: the key behind the public
-                       numbers, the switches that decide what a
-                       stranger sees, and the site account in
-                       full.
-
+   Three readers, decided at load and again when the account
+   changes: a stranger gets the site's own portfolio in
+   percentages, a signed-in reader can paste a Trading 212 key and
+   read their own account, an admin gets the levers.
    The key never touches this page's URL and never goes to any
    host but this site's own /api/broker, which is the only
-   broker-shaped thing the CSP lets this page call. "Keep it"
-   sends the key once, to be sealed server-side and stored in
-   the reader's own row; "this tab only" keeps it in
-   sessionStorage and sends it per request in a header, so
-   closing the tab is the whole of revoking it.
-
-   Drawing rules, so the charts stay readable and honest: every
-   bar is a share of the same whole, one hue per job (accent for
-   weight, green and red only ever for sign), values written in
-   ink rather than in the bar's colour, and no second axis
-   anywhere. The weight list and the dividend columns carry
-   their numbers as text, so nothing here is colour-alone.
-
-   The classes are in @layer tools in styles.css rather than
-   Tailwind, deliberately: this DOM is built in a loop, and a
-   class name inside createElement is invisible to Tailwind's
-   scanner, which reads aab/*.js but not aab/tools/. CLAUDE.md,
-   "Tailwind is live", the third row of the table.
-   ============================================================ */
+   broker-shaped thing the CSP lets this page call. "This tab
+   only" keeps it in sessionStorage and sends it per request.
+   The classes are in `@layer tools` rather than Tailwind because
+   this DOM is built in a loop and a class name inside
+   `createElement` is invisible to Tailwind's scanner. */
 import { token, current } from "/account.js";
 import { dividendMonths, dividendTotal, holdingsOf, totalsOf } from "/portfolio.js";
 import { listScenarios } from "/saved.js";
@@ -206,28 +176,11 @@ async function drawPublic() {
 function statTile(k, v, n, cls = "") {
     return el("div", { className: "stat" }, el("span", { className: "k" }, k), el("span", { className: `v ${cls}`.trim() }, v), n ? el("span", { className: "n" }, n) : null);
 }
-/* ============================================================
-   A HOLDING IS A QUESTION, AND THE STOCK CHECK IS WHERE IT IS
-   ANSWERED
-
-   A list of what somebody owns and how it is doing is a list of
-   things to decide about, and until now every one of them was a
-   dead end: the reader read the row, and then went and typed the
-   company's name into another page by hand.
-
-   The link carries what this page actually knows, which is the
-   name, the ticker and the price. It does not carry the quantity:
-   `shares` in the stock check is the company's shares OUTSTANDING
-   and this reader's holding is not that, and a field filled in
-   with the wrong meaning is worse than an empty one.
-
-   THE BENCHMARKS ARE DHAKA'S. The check's sector medians, market
-   P/E, FDR and sanchayapatra rates are the ones a DSE investor
-   compares against, and a holding here may be listed anywhere.
-   Every one of those is an input the reader can change, which is
-   why the link is still worth making, and the check says so on
-   its own page rather than this one repeating it.
-   ============================================================ */
+/* A holding is a question and the stock check answers it. The
+   link carries the name, the ticker and the price, and NEVER the
+   quantity: `shares` in the check is the company's shares
+   OUTSTANDING, and a field filled in with the wrong meaning is
+   worse than an empty one. */
 const checkUrl = (h) => {
     const p = new URLSearchParams();
     if (h.name)

@@ -1,37 +1,14 @@
-/* ============================================================
-   dsex.model.js: the statistics engine.
+/* dsex.model.js: the statistics engine. No DOM, numbers in and
+   numbers out, checked by `dissertation.test.ts`'s sibling
+   fixtures and by the page's own CSV path.
 
-   No DOM. Every function here takes numbers and returns numbers,
-   which is what makes them testable against hand-computable
-   cases rather than against themselves.
-
-   ------------------------------------------------------------
-   ABOUT THE DATA, READ THIS FIRST
-
-   The series shipped with this page is SIMULATED. It is not the
-   Dhaka Stock Exchange's index history, and it is not presented
-   as such anywhere on the page.
-
-   The reason is the same one that governs the company in the
-   other two case studies: publishing invented numbers under a
-   real index's name would be inventing that index's record, and
-   anyone who checked would find it doesn't match. A portfolio
-   piece that fails that check is worse than no portfolio piece.
-
-   What is real here is the METHOD, rolling volatility, drawdown
-   decomposition, holding-period distributions, tail measures,
-   and the method is what a client is buying. So the page also
-   takes a CSV of actual prices and runs exactly the same
-   analysis over it. DSE publishes daily index history; paste it
-   in and every number on the page is about the real series.
-
-   The simulation is deterministic (seeded), so the same numbers
-   appear for every visitor and in every test run. It is built to
-   have the properties that make this analysis worth doing,
-   volatility clustering, fat tails, long drawdowns, because a
-   demonstration on tidy Gaussian noise would be a demonstration
-   of nothing.
-   ============================================================ */
+   THE SERIES SHIPPED WITH THIS PAGE IS SIMULATED and is nowhere
+   presented as the Dhaka Stock Exchange's own history:
+   publishing invented numbers under a real index's name would be
+   inventing that index's record. What is real is the METHOD, and
+   the page takes a CSV of actual prices and runs the identical
+   analysis over it. The simulation is SEEDED, so every visitor
+   and every test run sees the same numbers. */
 
 export const TRADING_DAYS = 252;
 

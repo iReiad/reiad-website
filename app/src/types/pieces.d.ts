@@ -24,16 +24,10 @@ export interface Piece {
     from: "database" | "file";
 }
 /**
- * Every live piece the site has, database first.
- *
- * A slug in the database wins: publishing through the Studio is
- * how a file piece gets taken over, and the row is the newer of
- * the two by definition.
- *
- * The database being unreachable is not an error here. It is a
- * site that falls back to exactly what it did before any of this
- * existed, which is the whole reason content.js still holds the
- * pieces at all.
+ * Every live piece the site has, database first: a slug in the
+ * database wins, because publishing through the Studio is how a
+ * file piece gets taken over. An unreachable database is not an
+ * error, it is a fallback to `content.js`.
  */
 export declare function allPieces(): Promise<Piece[]>;
 /** Where a piece can be read. Never build this by hand: the whole

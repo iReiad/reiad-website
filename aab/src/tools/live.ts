@@ -272,28 +272,11 @@ function statTile(k: string, v: string, n: string, cls = ""): HTMLElement {
     n ? el("span", { className: "n" }, n) : null);
 }
 
-/* ============================================================
-   A HOLDING IS A QUESTION, AND THE STOCK CHECK IS WHERE IT IS
-   ANSWERED
-
-   A list of what somebody owns and how it is doing is a list of
-   things to decide about, and until now every one of them was a
-   dead end: the reader read the row, and then went and typed the
-   company's name into another page by hand.
-
-   The link carries what this page actually knows, which is the
-   name, the ticker and the price. It does not carry the quantity:
-   `shares` in the stock check is the company's shares OUTSTANDING
-   and this reader's holding is not that, and a field filled in
-   with the wrong meaning is worse than an empty one.
-
-   THE BENCHMARKS ARE DHAKA'S. The check's sector medians, market
-   P/E, FDR and sanchayapatra rates are the ones a DSE investor
-   compares against, and a holding here may be listed anywhere.
-   Every one of those is an input the reader can change, which is
-   why the link is still worth making, and the check says so on
-   its own page rather than this one repeating it.
-   ============================================================ */
+/* A holding is a question and the stock check answers it. The
+   link carries the name, the ticker and the price, and NEVER the
+   quantity: `shares` in the check is the company's shares
+   OUTSTANDING, and a field filled in with the wrong meaning is
+   worse than an empty one. */
 
 const checkUrl = (h: { name?: string; ticker?: string; price?: number }): string => {
   const p = new URLSearchParams();

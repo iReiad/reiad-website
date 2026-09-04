@@ -1,20 +1,6 @@
-/* ============================================================
-   dsex.js: the charts and the interaction.
-
-   Six views over one series, all recomputed from the same
-   analyse() call so they can never disagree with each other:
-
-     1. the index, with drawdown episodes shaded
-     2. rolling volatility, window on a slider
-     3. the underwater curve
-     4. the return distribution against a normal curve
-     5. holding-period outcomes by horizon: the money chart
-     6. a calendar-year table
-
-   Charts are hand-drawn inline SVG. No library: they inherit the
-   theme's colours, they are a few hundred bytes each, and the
-   site already draws its own charts everywhere else.
-   ============================================================ */
+/* dsex.js: the charts and the interaction. Six views over one
+   series, all recomputed from the same `analyse()` call so they
+   can never disagree. Charts are hand-drawn inline SVG. */
 
 import {
   analyse, simulate, parseCsv, toCsv, HORIZONS, holdingPeriod,
