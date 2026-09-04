@@ -1,29 +1,13 @@
-/* ============================================================
-   schools/hub.js: the parts of a school's front page that are
-   the same drawing in every school.
+/* schools/hub.js: the parts of a school's front page that are
+   the same drawing in every school. Shared by deutsch, english
+   and quran, so the ring is drawn once rather than three times.
 
-   ---- why this file exists ----
-
-   Three hubs, 291, 247 and 240 lines, and ten functions each in
-   the same order doing the same thing. Four of those ten were
-   identical but for the Bangla in them: the resume card's
-   markup, the bar at the top, the reset button and the boot
-   sequence. Three more were helpers copied verbatim, `bn`, `el`
-   and the progress ring, so the ring was drawn by three files
-   and a change to its stroke width was three edits or a school
-   that quietly looked different.
-
-   What is NOT here is each school's ladder row. That is where
+   What is NOT here is each school's LADDER ROW, which is where
    the schools genuinely differ: a Stufe shows sections and a
-   practice book, a ধাপ shows days, a term shows neither, and
-   folding three of those into one function with a config would
-   be a bigger knot than the three readable copies. A row is
-   drawn by the school; everything around it is drawn here.
-
-   The money school is not a caller: its hub is a Next.js route
-   and its ticks are React. These three still need a browser
-   module because their practice books are generated static HTML.
-   ============================================================ */
+   practice book, a ধাপ shows days, a term shows neither. A row
+   is drawn by the school; everything around it is drawn here.
+   The money school is not a caller: its hub is a route and its
+   ticks are React. */
 
 /** Bangla numerals, so a counter on a Bangla page doesn't read
     half in one script and half in another. */

@@ -1982,193 +1982,70 @@ which is the contract `ANDROID.md` already describes.
 
 ---
 
-## 29. What we will be missing during real work
+## 29. What real work needs that no room owned
 
-The plan above was written room by room. This section was written
-by walking the three projects through a year and noting what the
-rooms did not have, and every item below is either already answered
-above (with the section) or was ADDED to the plan because of this
-walk, marked **added**. Nothing here is left as a wish.
+Written by walking the three projects through a year. Everything
+below was ADDED to the plan because of that walk; the sections
+above hold the detail.
 
-### The first week: a proposal that has to name a supervisor's own papers
+**Around a source**
 
-- **Finding a prospective supervisor's publications by name and
-  ORCID** and reading them first: the people room with an ORCID
-  lookup, section 18. **Added:** a person's page offers "import all
-  their works from OpenAlex" as one press.
-- **A proposal is a document of kind `proposal`** with a budget the
-  institution sets: section 16. **Added:** the project's `body.rules`
-  holds word limits, formatting and submission format, and the desk
-  shows the limit beside the count, as a fact.
-- **The university's regulations PDF** is a source of type `report`
-  filed under the project, so it is one press away in the desk:
-  section 9.
-- **Fifteen universities with a visa question nobody verified:**
-  fifteen people rows and one task per university in `waiting`, with
-  the answer as a note when it comes: sections 17 and 18.
-- **The Statement of Purpose cites a 2020 paper by a named
-  professor**: the citation chip carries the locator, and the person
-  row links to the source row, so the sentence "building on Bashar's
-  2020 method" is a chip and a link rather than a memory.
+- A person's page offers "import all their works from OpenAlex" as
+  one press (18).
+- An interlibrary loan tracker: a task of kind `request` on the
+  source with the library, the date asked and the date arrived, and
+  a chip reading "requested 12 days ago".
+- A paper with no DOI is a `report` with `added_via: manual` and a
+  `check me` chip until the record is complete (9).
+- A "waiting since" column on the board's waiting lane, so the
+  oldest wait is visible (17).
 
-### The first month: the literature is in six places
+**Around a document**
 
-- SSRN, RePEc and the publishers: section 10's finance shelf.
-- **A paper behind a paywall the reader can reach only through a
-  library**: **added**, an interlibrary loan tracker, which is a
-  task of kind `request` on the source with the library, the date
-  asked and the date arrived, and a chip on the source reading
-  "requested 12 days ago".
-- **A paper with no DOI at all** (a Bangladesh Bank working paper, a
-  conference paper): section 9's `report` type with `added_via:
-  manual` and a `check me` chip until the record is complete.
-- **A working paper that becomes an article halfway through the
-  year**: section 9's supersedes link.
-- **The reading is faster than the noting**: section 11's one-line
-  takeaway, asked once at `read`.
-- **A hundred PDFs from an old Zotero**: section 24's Zotero pull.
-
-### Month three: the data does not come
-
-- **A request to Bangladesh Bank that takes months**: a `waiting`
-  task with a date, section 17, and **added** a "waiting since"
-  column on the board's waiting lane so the oldest wait is visible.
-- **DSE data as a spreadsheet with merged headers**: the lab's
-  importer knows the exchange's shape, section 14, and a transform
-  fixes the rest as SQL that is kept.
-- **A dataset's licence and citation**: section 14's dataset source
-  row.
-- **Two datasets with different symbol spellings**: a transform with
-  a mapping table, kept as a run so the join is documented.
-
-### Month six: the first interview
-
-- Consent, pseudonyms, the sealed real name: section 15.
-- **Recording on a phone and uploading a 200 MB m4a**: section 23's
-  cap is 100 MB per file, so **added**: the field room's uploader
-  transcodes audio in the browser to opus at 32 kbps before upload
-  (an hour is about 15 MB), through the browser's own encoder, and
-  says so. The original stays on the phone.
-- Transcription in Bangla with corrections: section 15.
-- **A quote used in English with the Bangla kept**: section 15's
-  translation on the coding, section 16's quotation.
-- **"Who said the thing about liquidity in the second interview"**:
-  code retrieval, section 15, and the board's search over notes.
-
-### Month nine: a chapter is due
-
-- Outline from the question tree, budgets, citations, footnotes:
-  section 16.
-- **Figures that renumber when a section moves**: section 16's
-  derived numbering.
-- **A table the supervisor wants in a different style**: the run's
-  APA table with stars switched off, section 14.
-- **Sending a draft and getting comments back without the
-  supervisor making an account**: section 24's share and comments.
-- **"Which version did I send"**: the named snapshot, section 16.
-- **Two devices editing one chapter on the same afternoon**: section
-  12's conflict answer.
-- **An abbreviation used before it was defined, in chapter 4 when
-  it was defined in chapter 2**: **added**, the abbreviations list is
-  per project across documents in order, not per document.
-
-### Month fourteen: a conference, and a paper from a chapter
-
-- **The paper is the chapter, shorter, in another style**: a
-  document made "from" another (a copy that remembers its parent),
-  **added**, with its own style and budget, and a line on the desk
-  saying which chapter it came from.
-- **A conference deadline and a poster**: the event of kind
-  `conference`, section 17; a poster is the document exported to
-  PDF at a page size Settings offers (A0, A1), **added** as a print
-  size option rather than a poster tool.
-- **Slides**: **added** as an export of a document's outline to a
-  Markdown deck the browser prints one heading per page, no slide
-  editor.
-- **Submission tracking and the reviewers' comments table**: the
-  event of kind `submission`, section 17.
-- **A preprint on SSRN with its own number**: `identifiers.ssrn` on
-  the source, which is the reader's own paper as a source row of
-  type `preprint`, and the CV tool reads it, section 19.
-
-### Month twenty: writing up
-
-- **Fifty thousand words across eight chapters, one bibliography**:
-  **added**, a project-level bibliography that renders from every
-  chip in every chapter in order, deduplicated, in the project's
-  style, as a document of kind `bibliography` the desk keeps
-  current.
-- **A table of contents and a list of figures**: derived from the
-  chapters' outlines and figure chips, **added** as two more derived
-  blocks.
-- **Appendices holding the interview guide, the consent form, the
-  codebook and the search log**: each is already a row; **added**, an
-  "insert as appendix" on each that renders it into a document of
+- A project's `body.rules` holds word limits, formatting and
+  submission format, and the desk shows the limit beside the count,
+  as a fact (16).
+- The abbreviations list is per PROJECT across documents in order,
+  not per document: an abbreviation used in chapter 4 and defined
+  in chapter 2 is the case.
+- A document made "from" another: a copy that remembers its parent,
+  with its own style and budget, and a line on the desk saying
+  which chapter it came from.
+- A project-level bibliography rendering every chip in every
+  chapter in order, deduplicated, in the project's style, as a
+  document of kind `bibliography` the desk keeps current.
+- A table of contents and a list of figures, derived from the
+  chapters' outlines and figure chips.
+- "Insert as appendix" on the interview guide, the consent form,
+  the codebook and the search log, rendering into a document of
   kind `appendix`.
-- **The claims audit across the whole thesis**: section 16's pane,
-  run per project, **added**.
-- **A last check that nothing cited is retracted**: the monthly
-  retraction pass, section 9, and a press on the project page.
+- The claims audit run per project rather than per document (16).
+- A poster is the document exported to PDF at a page size Settings
+  offers (A0, A1), a print size rather than a poster tool.
+- Slides are an export of a document's outline to a Markdown deck
+  the browser prints one heading per page. No slide editor.
 
-### The viva
+**Around the work itself**
 
-- The questions an examiner asks, with the reader's answers: the
-  viva bank, section 19.
-- **"What did you do in March 2027"**: the daily log, section 12.
-- **"Why did you exclude those 212 records"**: the review's reasons,
-  section 13.
-- **Flashcards of the field's terms**: section 19's quiz.
-
-### After: publishing, teaching, the next project
-
-- **The book's chapters as pages on the site**: section 16's last
-  export.
-- **A CV and a publication list**: section 19.
-- **Starting the next project with the same library**: `projects` is
-  an array, section 2, and a new project starts with a source picker
-  over the library.
-- **Handing a supervisor or a co-author the whole thing**: the
-  Archive room's zip, section 24.
-
-### The things a year finds that no room owns
-
-- **A parking lot**: **added**, a note of kind `capture` pinned to
-  every document's side rail, for the sentence that does not belong
-  here yet, so it is not lost and does not stay in the draft.
-- **A "why did I stop"**: **added**, closing a session asks one
-  optional line, which is what the next session opens with.
-- **Reading on the bus with no signal**: kept files, section 11,
-  and the queue's abstracts cached with the room.
-- **A source read in the wrong edition**: the edition on the CSL
-  record and the supersedes link, section 9.
-- **The same paper saved twice by two routes**: refused on arrival,
-  section 9.
-- **A citation key changed after a chapter used it**: refused unless
-  rewritten everywhere, section 9.
-- **A highlight in a PDF the reader later replaced with a better
-  scan**: anchored to text, section 11.
-- **The assistant's cost creeping**: the month's figure in Settings,
-  section 21.
-- **OpenAlex's free allowance running out mid-month**: the status
-  line, the merge over what answered, and the D1 cache, section 10
-  and 22.
-- **A phone with a small screen and a big thumb**: section 5 and 11.
-- **Somebody else at the same laptop**: the mirror comes off at sign
-  out, `CLAUDE.md`'s rule, and the five device keys are not the
-  reader's data.
-- **Losing the passphrase to the sealed names**: not recoverable,
-  said in Settings, section 25; the pseudonyms and the research
-  survive it.
-- **The Bangla input on a laptop without a Bangla keyboard**:
-  **added**, not a keyboard, but a note in Settings pointing at the
-  operating system's own phonetic layout, because a phonetic
-  transliterator in the editor is a second editor.
-- **A thesis in Bangla**: section 16's last paragraph, and the Word
-  export carrying the font.
-- **Time zones between Dhaka and Brighton**: **added**, every event
-  is stored in UTC and shown in the browser's zone with the zone
-  named beside a meeting, because a meeting at "3pm" is the one
-  place this goes wrong.
+- The field room's uploader transcodes audio in the browser to opus
+  at 32 kbps before upload, through the browser's own encoder, and
+  says so: §23's cap is 100 MB a file and an hour of phone audio is
+  about 15 MB at that rate. The original stays on the phone.
+- A parking lot: a note of kind `capture` pinned to every
+  document's side rail, for the sentence that does not belong here
+  yet, so it is not lost and does not stay in the draft.
+- Closing a session asks one optional "why did I stop", which is
+  what the next session opens with.
+- **Every event is stored in UTC and shown in the browser's zone
+  with the zone named beside a meeting**, because a meeting at
+  "3pm" between Dhaka and Brighton is the one place this goes
+  wrong.
+- Bangla input is a note in Settings pointing at the operating
+  system's own phonetic layout. A transliterator in the editor
+  would be a second editor.
+- **Losing the passphrase to the sealed names is not recoverable**,
+  said in Settings (25). The pseudonyms and the research survive
+  it.
 
 ---
 

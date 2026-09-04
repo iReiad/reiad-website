@@ -1,35 +1,17 @@
 "use client";
 
-/* ============================================================
-   The front page is a board the reader arranges.
+/* The front page is a board the reader arranges.
 
-   ---- what was wrong with it ----
+   `shared/widgets.ts` is the catalogue and the parse, and it is DATA, so
+   the Android app draws the same board from the same list. A widget's
+   DRAWING is code on each side: `DRAWABLE` below is what THIS build can
+   render, and a kind in the catalogue that is not in it is skipped rather
+   than left as an empty box with a title on it.
 
-   A deck of tiles, every one of them a link, every one saying the
-   same thing in the same voice. Nothing on it was about the
-   reader: how far through a school they were, what they were
-   reading, what was published this week were all one page deeper.
-   A page like that is a menu, and a menu is what you read once.
-
-   ---- the split ----
-
-   `shared/widgets.ts` is the catalogue and the parse, and it is
-   DATA, so the Android app draws the same board from the same
-   list. A widget's DRAWING is code on each side: `DRAWABLE`
-   below is what THIS build can render, and a kind in the
-   catalogue that is not in it is skipped rather than left as an
-   empty box with a title on it.
-
-   ---- and it renders with no JavaScript ----
-
-   `useSyncExternalStore` with a server snapshot of "never
-   arranged", which is the same shape `door.tsx` uses. The server
-   renders the DEFAULT board, so a reader with JavaScript off gets
-   a real front page rather than a blank one, and a reader who has
-   arranged theirs sees it swap in on hydration. The alternative,
-   reading storage during render, is a hydration mismatch and
-   React error #418.
-   ============================================================ */
+   It renders with no JavaScript: `useSyncExternalStore` with a server
+   snapshot of "never arranged", so the server renders the DEFAULT board
+   and a reader who has arranged theirs sees it swap in on hydration.
+   Reading storage during render is a hydration mismatch. */
 
 import { useCallback, useState, useSyncExternalStore } from "react";
 import { LADDER_SCHOOLS, NAV, SCHOOL_ACCENTS } from "@reiad/shared/nav";
@@ -47,25 +29,18 @@ import { Band } from "../ui/band";
 import { Button, ButtonLink } from "../ui/button";
 import { readSet, subscribe as onProgress } from "../../lib/progress";
 
-/** What this build has a renderer for.
+    /** What this build has a renderer for. Four of the catalogue's twelve;
+        the three that went are the three the PAGE now draws, and measured
+        off the built page those three were 61 per cent of the front page
+        on a phone, each a second drawing of something already on screen.
 
-    Four of the catalogue's twelve, and the three that went are the
-    three the PAGE now draws: the newest writing, the schools and
-    the tools. Measured off the built page, those three widgets
-    were 61 per cent of the front page on a phone, and every one of
-    them was a second drawing of something already on screen or one
-    press away. A widget the page draws better is a widget on the
-    board twice.
+        They stay in the catalogue, so the Android app keeps them:
+        `DRAWABLE` is what THIS build renders, and the whole reason the
+        catalogue is data is that the two sides run different releases.
 
-    They stay in the catalogue, so the Android app keeps them:
-    `DRAWABLE` is what THIS build renders, which is not what the
-    catalogue holds, and the whole reason the catalogue is data is
-    that the two sides run different releases.
-
-    The other five read an account and this page makes no such
-    request: `/account` is where they are, and offering them here
-    would be five boxes saying sign in on the page a stranger
-    meets first. */
+        The other five read an account and this page makes no such request:
+        offering them here would be five boxes saying sign in on the page a
+        stranger meets first. */
 const DRAWABLE = ["continue", "progress", "market", "stock"];
 
 const KINDS = new Map(WIDGETS.map((k) => [k.id, k]));
@@ -81,16 +56,11 @@ const SIZE_CLASS: Record<WidgetSize, string> = {
   tall: "board-tall",
 };
 
-/** Widgets that say their own name loudly enough, so the board
-    does not say it again above them.
-
-    One so far, and the test is whether the widget's FIRST LINE is
-    already its name: the featured-style pulse tile leads with the
-    piece's title, the meters lead with a list, and the market
-    grid leads with somebody else's headline, so all three need
-    telling apart. The continue card leads with a chip that says
-    where you were, in the school's own words, which is the same
-    sentence its head would carry. */
+    /** Widgets that say their own name loudly enough, so the board does
+        not say it again above them. The test is whether the widget's FIRST
+        LINE is already its name: the continue card leads with a chip
+        saying where you were, which is the same sentence its head would
+        carry. */
 const SELF_TITLED = new Set(["continue"]);
 
 /* ---------- the widgets this page can draw ---------- */
@@ -158,20 +128,15 @@ export function Board({ start, totals }: { start?: string; totals?: Record<strin
     () => JSON.stringify(stored()),
     () => "null",
   );
-  /* A WIDGET WITH NOTHING TO SAY IS NOT PLACED, and hiding it
-     afterwards is not the same thing: on a laptop the board is
-     twelve columns and the continue card is six of them, so a
-     reader who has not started a lesson got the board's first
-     row half empty and the widget beside it orphaned. A cell
-     that is hidden is still a cell.
+      /* A WIDGET WITH NOTHING TO SAY IS NOT PLACED, and hiding it
+         afterwards is not the same thing: a cell that is hidden is still a
+         cell, so on a laptop the board's first row goes half empty and the
+         widget beside it is orphaned.
 
-     One widget can be empty today and it is this one, so the
-     test is written out rather than made into a table of one.
-     `useBookmark` is the card's own hook, so the two cannot
-     disagree about whether there is a bookmark to continue from.
-
-     Never while ARRANGING: a widget nobody can see is a widget
-     nobody can take off the board. */
+         `useBookmark` is the card's own hook, so the two cannot disagree
+         about whether there is a bookmark to continue from. Never while
+         ARRANGING: a widget nobody can see is a widget nobody can take off
+         the board. */
   const bookmark = useBookmark();
   const ticked = useAnyProgress();
   const [arranging, setArranging] = useState(false);
@@ -188,16 +153,14 @@ export function Board({ start, totals }: { start?: string; totals?: Record<strin
     (k) => DRAWABLE.includes(k.id) && !placed.some((p) => p.id === k.id),
   );
 
-  /* A BOARD IS A READER'S, SO A STRANGER HAS NONE. It opened with
-     "আপনার বোর্ড · Your board" and an arrange button on the first
-     visit anybody ever made, over four rows reading ০টা পাঠ. That
-     is a dashboard of somebody's progress shown to somebody who
-     has none, and it was the first thing under the hero.
+      /* A BOARD IS A READER'S, SO A STRANGER HAS NONE. A dashboard of
+         somebody's progress shown to somebody who has none is worse than
+         no dashboard.
 
-     Three things make a board theirs, and any one is enough: a
-     lesson opened, a lesson ticked, or a board they arranged.
-     Until then this is the invitation instead, which says what
-     the thing is rather than drawing an empty one. */
+         Three things make a board theirs and any one is enough: a lesson
+         opened, a lesson ticked, or a board they arranged. Until then this
+         is the invitation, which says what the thing is rather than
+         drawing an empty one. */
   const theirs = Boolean(bookmark) || ticked || snapshot !== "null";
 
   if (!theirs) {
@@ -228,14 +191,11 @@ export function Board({ start, totals }: { start?: string; totals?: Record<strin
 
   return (
     <section aria-labelledby="board-label">
-      {/* The board's own head, and the button lives IN it. It was
-          a lone control at the right of an empty band with nothing
-          saying what it arranged, which reads as a stray button
-          rather than as the top of a section. Every other section
-          of this site opens with a `SectionLabel` and a rule under
-          it; this one does too, and the button sits on the same
-          line because it belongs to the label rather than to the
-          first widget under it. */}
+          {/* The board's own head, and the button lives IN it: a lone
+              control at the right of an empty band reads as a stray button
+              rather than as the top of a section. It sits on the label's
+              line because it belongs to the label rather than to the first
+              widget under it. */}
       <div className="board-bar">
         <SectionLabel id="board-label">
           আপনার বোর্ড · <span lang="en">Your board</span>
@@ -249,14 +209,11 @@ export function Board({ start, totals }: { start?: string; totals?: Record<strin
         </Button>
       </div>
 
-      {/* `data-arranging` is what lets the stylesheet hide a
-          widget that drew nothing without hiding it from the
-          person trying to take it off the board. A widget can
-          render empty for a reason only the browser knows: the
-          continue card has nothing to say until there is a
-          bookmark, and its cell was a six-column hole at the top
-          of the board for every reader who has not started a
-          lesson, which is everybody arriving for the first time. */}
+          {/* `data-arranging` is what lets the stylesheet hide a widget
+              that drew nothing without hiding it from the person trying to
+              take it off the board. A widget can render empty for a reason
+              only the browser knows: the continue card has nothing to say
+              until there is a bookmark. */}
       <div className="board" data-arranging={arranging ? "yes" : undefined}>
         {placed.map((p, at) => {
           const kind = KINDS.get(p.id);
@@ -339,16 +296,13 @@ export function Board({ start, totals }: { start?: string; totals?: Record<strin
   );
 }
 
-/** One widget's arranging controls.
+    /** One widget's arranging controls, in the head BESIDE its name rather
+        than in a strip above it: an overlay on glass is a second surface
+        on a surface, and a strip of its own repeats the widget's name.
 
-    In the head BESIDE its name rather than in a strip above it:
-    an overlay on glass is a second surface on a surface, and a
-    strip of its own was a second row saying the widget's name,
-    which the head already says once, out of the catalogue.
-
-    A control that cannot do anything is absent rather than
-    disabled, because a disabled control is a control a reader
-    presses twice before deciding the page is broken. */
+        A control that cannot do anything is absent rather than disabled,
+        because a disabled control is one a reader presses twice before
+        deciding the page is broken. */
 function Strip({ kind, placed, first, last, onUp, onDown, onResize, onRemove }: {
   kind: WidgetKind; placed: Placed; first: boolean; last: boolean;
   onUp: () => void; onDown: () => void; onResize: () => void; onRemove: () => void;
@@ -356,15 +310,12 @@ function Strip({ kind, placed, first, last, onUp, onDown, onResize, onRemove }: 
   const other = otherSize(kind, placed.size);
   return (
     <div className="board-strip">
-      {/* THE DIRECTION IS ON THE BUTTON, NOT ON ITS POSITION. The
-          one chevron in the icon set points right, so up and down
-          are that drawing turned, and the stylesheet turned it by
-          `button:nth-of-type(1)` and `(2)`. Both of those controls
-          are CONDITIONAL: the first widget on the board has no up
-          and the last has no down, so at the top of the board the
-          down arrow was the first button and pointed UP, and at
-          the bottom the resize mark was the second and was turned
-          on its side. A board of one widget got both. */}
+          {/* THE DIRECTION IS ON THE BUTTON, NOT ON ITS POSITION. The one
+              chevron in the icon set points right, so up and down are that
+              drawing turned. Turning it by `button:nth-of-type(1)` and
+              `(2)` breaks, because both controls are CONDITIONAL: the
+              first widget has no up and the last has no down, so at the
+              top of the board the down arrow points UP. */}
       {first ? null : (
         <Button kind="quiet" size="sm" className="board-up"
                 onClick={onUp} aria-label={`${kind.bn}: উপরে নিন`}>

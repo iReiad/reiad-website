@@ -1,44 +1,21 @@
-/* ============================================================
-   schools/progress.js: what a learner has read, which days they
-   have done, and where they were. Once, for every school that
-   keeps that in the browser.
+/* schools/progress.js: what a learner has read, which days they
+   have done, and where they were. One engine for deutsch,
+   english and quran, which kept the same program three times.
 
-   ---- why this file exists ----
+   The money school is not a caller: its ticks are
+   `next/lib/progress.ts`, because its pages are routes. These
+   three agree with that file about ONE thing and it is the thing
+   that matters: THE STORAGE KEYS. Those are in real browsers and
+   in real accounts, `aab/sync.js` maps them, and renaming one
+   does not move somebody's ticks, it loses them. So every key is
+   passed in by the school, spelled exactly as it always was.
 
-   Three schools kept the same program three times. deutsch,
-   english and quran each had a progress.js of their own, 316,
-   318 and 236 lines, and the diff between the first two was
-   nouns: `stufe` against `term`, `teile` against `parts`. Every
-   one of them wrapped localStorage the same way, counted live
-   lessons the same way, worked out "the stage you are in" the
-   same way and fired the same three listeners. A fix to one was
-   a fix somebody had to remember to make twice more, and the
-   ladder-state function is subtle enough that nobody would have
-   noticed the day they drifted.
+   A school hands in a ladder, the four key names and its own
+   words, and gets back the API it already had.
 
-   The money school never had one of these: its ticks are React,
-   in `next/lib/progress.ts`, because its pages are routes. These
-   three still need a browser module because their practice books
-   are generated static HTML, so this is the browser's half and
-   that file is the server's. They agree about one thing only,
-   and it is the thing that matters: THE STORAGE KEYS. Those are
-   in real browsers and in real accounts, `aab/sync.js` maps them,
-   and renaming one does not move somebody's ticks, it loses them.
-   So every key a school used before this file existed is passed
-   in by that school, spelled exactly as it was.
-
-   ---- what a school hands in ----
-
-   A ladder, the four key names, and the words its pages use. What
-   it gets back is the same API it had, under generic names its
-   own module renames on the way out, so nothing that imports
-   `stufeStats` or `dhapState` had to change.
-
-   Nothing is sent anywhere, nothing needs an account, and
-   clearing browser data clears it. It is a bookmark, not
-   analytics. Every write is wrapped: private mode throws on
-   setItem, and a thrown tick must never take the page down.
-   ============================================================ */
+   Nothing is sent anywhere and nothing needs an account. Every
+   write is wrapped: private mode throws on setItem, and a thrown
+   tick must never take the page down. */
 
 import { whenActivated } from "/activation.js";
 

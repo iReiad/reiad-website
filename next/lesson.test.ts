@@ -1,47 +1,24 @@
 #!/usr/bin/env node
-/* ============================================================
-   lesson.test.ts: every kind of lesson block, and every model
-   behind a lab, server-rendered and then hydrated in a real
-   browser.
+/* Every kind of lesson block, and every model behind a lab, server
+   rendered and then hydrated in a real browser.
+     node next/lesson.test.ts
 
-       node next/lesson.test.ts
+   THE FAILURE IT WAS WRITTEN FOR: a `<div>` inside a `<p>` is not
+   something the HTML parser allows, so it closes the paragraph and the
+   DOM the browser builds is not the tree React rendered. React gives up
+   on the server's markup and renders the whole root again. On a real page
+   React owns `<html>`, so the tree it throws away is the document, and
+   the boot script in `shell.tsx` has already put `data-theme`,
+   `data-rail` and `data-read-lang` on it: 43 of the 81 lessons lost the
+   reader's theme, their rail and their language the moment React caught
+   up, with everything still looking right.
 
-   ---- the failure it was written for ----
-
-   `<p className="ls-verdict">` held a `<TBlock>`, and a `TBlock`
-   is two `<div>`s. A `<div>` inside a `<p>` is not something the
-   HTML parser allows: it closes the paragraph and puts the div
-   after it, so the DOM the browser builds is not the tree React
-   rendered. React gives up on the server's markup and renders
-   the whole root again.
-
-   Everything still looked right, which is why nothing caught it.
-   The lesson read, the blocks worked, `parity.test.ts` compares
-   the server's HTML and found it correct, and `check-money.ts`
-   reads the prose rather than the components. What went missing
-   was invisible: on a real page React owns `<html>`, so the tree
-   it throws away is the document, and the boot script in
-   `shell.tsx` has already put `data-theme`, `data-rail` and
-   `data-read-lang` on it before the first paint. 43 of the 81
-   lessons lost the reader's theme, their rail and their language
-   the moment React caught up.
-
-   ---- what it asks ----
-
-   Every kind in `BLOCK_KINDS`, every shape a figure can be, and
-   every model in `LAB_IDS`, each on a page of its own. On its
-   own because React reports the first mismatch on a page and
-   then stops being informative about the rest, and because a
-   per-case answer names the component to go and fix.
-
-   React runs in development here, which `hydrate-fixture.ts`
-   arranges, so a mismatch prints the tag and the tree rather
-   than a numbered error.
-
-   One bundle, one browser, one server, a page each. The first
-   draft built a bundle and launched a browser per case and took
-   ten minutes, which is a test nobody runs.
-   ============================================================ */
+   Every kind in `BLOCK_KINDS`, every shape a figure can be, and every
+   model in `LAB_IDS`, each on a page of its own: React reports the first
+   mismatch on a page and then stops being informative, and a per-case
+   answer names the component to go and fix. React runs in development
+   here, which `hydrate-fixture.ts` arranges, so a mismatch prints the tag
+   and the tree. One bundle, one browser, one server, a page each. */
 
 import { readFileSync } from "node:fs";
 import { load, open, skip, type Extra } from "./hydrate-fixture.ts";
@@ -160,15 +137,12 @@ for (const c of CASES) {
   ok(`${c.name} is a block the validator accepts`, problems.length === 0, problems[0]);
 }
 
-/* ---------- a sheet resolves a formula of a formula ----------
-
-   `solve()` runs two passes rather than sorting the rows, and the
-   six sheets that ship all happen to list their rows in the order
-   the formulas need, so one pass answers every one of them
-   correctly. That is the second pass being untested rather than
-   unnecessary: a model is a table somebody writes, and putting a
-   total ABOVE the things it totals is a thing somebody will
-   write. This is the case the six do not cover. */
+    /* ---------- a sheet resolves a formula of a formula ----------
+       `solve()` runs two passes rather than sorting the rows, and the six
+       sheets that ship all list their rows in the order the formulas need,
+       so one pass answers every one correctly. That is the second pass
+       being untested rather than unnecessary: a total ABOVE the things it
+       totals is a thing somebody will write. */
 {
   const OUT_OF_ORDER = {
     id: "t", title: { bn: "", en: "" }, columns: [{ bn: "", en: "" }],
@@ -205,15 +179,13 @@ const { render } = await load<{ render: (b: unknown) => string }>(`
     a string in a lesson can never close the script tag. */
 const json = (block: Block): string => JSON.stringify(block).replace(/</g, "\\u003c");
 
-/* THE REAL STYLESHEET, because half of what a block does is
-   geometry and none of that is visible against no CSS at all.
+    /* THE REAL STYLESHEET, because half of what a block does is geometry
+       and none of that is visible against no CSS at all.
 
-   `aab/fallback.css` rather than `next/styles/site.css`: the
-   second is three files behind an `@import` and a Tailwind
-   compiler, and the first is the same design system with its
-   comments taken out, written by `scripts/build-fallback.ts` and
-   held to the source by `check-next.ts`. It is what the two pages
-   that are files already link. */
+       `aab/fallback.css` rather than `next/styles/site.css`: the second is
+       three files behind an `@import` and a Tailwind compiler, and the
+       first is the same design system with its comments taken out, held to
+       the source by `check-next.ts`. */
 const CSS = readFileSync(new URL("../aab/fallback.css", import.meta.url), "utf8");
 
 const files: Record<string, Extra> = {
@@ -237,18 +209,15 @@ CASES.forEach((c, i) => {
   };
 });
 
-/* ---------- and the same question of the real lessons ----------
+    /* ---------- and the same question of the real lessons ----------
+       The samples above are one block of each kind and every one of them
+       fitted while 22 real charts did not: a three-point bar chart's last
+       band overhangs by a third of a third.
 
-   The samples above are one block of each kind, small enough to
-   validate and no larger, and every one of them fitted while 22
-   real charts did not. A three-point bar chart's last band
-   overhangs by a third of a third; an eight-point one by a third
-   of an eighth of the width, on a column three times as wide.
-
-   So the committed snapshot is asked as well. It is the schools'
-   backup and the only copy of the lesson prose a check with no
-   network can read, which is what makes this affordable: 81
-   written lessons and 317 blocks, laid out rather than parsed. */
+       So the committed snapshot is asked as well. It is the only copy of
+       the lesson prose a check with no network can read, which is what
+       makes this affordable: 81 written lessons and 317 blocks, laid out
+       rather than parsed. */
 const REAL = (() => {
   const snap = JSON.parse(readFileSync(
     new URL("../content/schools.backup.json", import.meta.url), "utf8")) as {
@@ -319,18 +288,13 @@ for (const [i, c] of CASES.entries()) {
   ok(`${c.name} hydrates with no mismatch`, bad.length === 0, bad[0]?.slice(0, 600));
 }
 
-/* ============================================================
-   A SHEET IS THE ONE BLOCK THAT ANSWERS BACK
-
-   Everything above asks whether a block renders and survives
-   hydration, which for the eleven kinds that only display is the
-   whole question. A sheet is the twelfth and it computes: a
-   number typed into one cell has to move another, and a word
-   typed into a hole has to be marked against the right answer.
-
-   Both are invisible to anything reading HTML. A sheet whose
-   formulas never run renders a perfect table of noughts.
-   ============================================================ */
+    /* ---- a sheet is the one block that answers back ----
+       Everything above asks whether a block renders and survives
+       hydration. A sheet computes: a number typed into one cell has to
+       move another, and a word typed into a hole has to be marked against
+       the right answer. Both are invisible to anything reading HTML, and a
+       sheet whose formulas never run renders a perfect table of
+       noughts. */
 {
   const at = CASES.findIndex((c) => c.name === "the pnl sheet");
   ok("the profit and loss sheet is one of the cases", at >= 0);
@@ -410,30 +374,23 @@ for (const [i, c] of CASES.entries()) {
   ok("nothing threw", said.filter((l) => BAD.test(l)).length === 0);
 }
 
-/* ---------- and nothing is drawn outside its own column ----------
+    /* ---------- and nothing is drawn outside its own column ----------
+       The house rule for anything wider than the reading column is that it
+       scrolls inside its own box. A block that paints past the column runs
+       over whatever is beside it and, where nothing above it clips, gives
+       the page a horizontal scrollbar.
 
-   A lesson block is content in a reading column, and the house
-   rule for anything wider than that column is that it scrolls
-   inside its own box. A block that instead paints past the column
-   runs over whatever is beside it and, where nothing above it
-   clips, gives the page a horizontal scrollbar and slides the
-   whole column sideways under the reader's thumb.
+       THE MEASURE IS PAINT, NOT SCROLL. Comparing the root's `scrollWidth`
+       against its `clientWidth` is what a horizontal scrollbar is made of,
+       and it passes against a bar chart drawing 107 pixels outside itself:
+       an SVG's visible overflow is ink, and ink does not widen a scroll
+       container. So every element is asked for its own box and the one
+       furthest past the edge is named.
 
-   THE MEASURE IS PAINT, NOT SCROLL, and that is the part worth
-   copying. The first draft of this compared the root's
-   `scrollWidth` against its `clientWidth`, which is what a
-   horizontal scrollbar is made of, and it passed against a bar
-   chart drawing 107 pixels outside itself: an SVG's visible
-   overflow is ink, and ink does not widen a scroll container. So
-   this asks every element for its own box and reports the one
-   furthest past the edge, which catches both, and names it.
-
-   Two widths, because the two ways to get this wrong are
-   opposite. A 360px phone catches a hard minimum: a table of
-   eight columns, a grid of fixed tracks. A 1280px laptop catches
-   anything proportional, which no narrow test would ever see,
-   because at 360px a 7% overhang is 25 pixels and at 1280px it is
-   90. The bar chart bug was found by the wide one. */
+       Two widths, because the two ways to get this wrong are opposite. 360px
+       catches a hard minimum; 1280px catches anything proportional, which
+       no narrow test would see, because a 7% overhang is 25 pixels at
+       360px and 90 at 1280px. */
 const WIDTHS = [
   { name: "a phone", width: 360, height: 780 },
   { name: "a laptop", width: 1280, height: 900 },

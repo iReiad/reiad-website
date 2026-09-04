@@ -1,49 +1,18 @@
-/* ============================================================
-   schools/workbook.js: a practice book, made daily.
+/* schools/workbook.js: a practice book, made daily. One engine
+   where the German and English books were 388 lines each whose
+   diff was nouns.
 
-   The German book and the English book were 388 lines each and
-   the diff between them was nouns. `schools/progress.js` and
-   `schools/hub.js` already made that argument for the three
-   schools' ladders; this is the same argument for their books.
+   THE DOM VOCABULARY IS FIXED, because one component
+   (`components/workbook.tsx`) renders both books: `.buch-tag`,
+   `data-schrift`, `data-fertig`. What differs is a storage key,
+   a curriculum and two words, all passed in.
 
-   ---- what was actually wrong ----
-
-   Two things, and the second is worse than the first.
-
-   The English module keyed on a vocabulary the page does not
-   have. It looked for `.wb-day`, `[data-wb-write]`,
-   `[data-wb-done]`, `[data-wb-today]`; `components/workbook.tsx`
-   renders both books with the German one, `.buch-tag`,
-   `data-schrift`, `data-fertig`. So on the English book nothing
-   saved, nothing revealed an answer and nothing ticked.
-
-   And the German module did not run at all. Both files open with
-
-       const book = document.getElementById("tage");
-       ...
-       const articles = [...book.querySelectorAll(".buch-tag[data-tag]")];
-
-   at the top level, and the route that replaced the generated
-   page has no element with that id. `book` was null, the second
-   line threw, and the module died before its first function ran.
-   Both books rendered perfectly and neither did anything: no
-   writing kept, no day at a time, no answers, no ticks.
-
-   That is the failure `CLAUDE.md` opens on. A port is finished
-   when it does what the thing it replaced did, and these two
-   looked finished from the outside for as long as nobody typed
-   in a box and came back.
-
-   ---- what a school passes in ----
-
-   The DOM vocabulary is FIXED, because one component renders
-   both books. What differs is a storage key, a curriculum, and
-   two words. `aab/schools/workbook.test.ts` asserts the keys by
-   name: `deutsch-schrift` and `english-write` are in real
-   browsers, and the rule at the top of "What a reader has read"
-   is why renaming one loses somebody's work rather than moving
-   it.
-   ============================================================ */
+   `aab/schools/workbook.test.ts` asserts the keys BY NAME:
+   `deutsch-schrift` and `english-write` are in real browsers,
+   and renaming one loses somebody's work rather than moving it.
+   Nothing here may read an element at module scope: the route
+   has no `#tage`, and a top-level `getElementById` threw before
+   the first function ran while the page rendered perfectly. */
 
 /** Bangla numerals, so a counter is not half in one script.
 
