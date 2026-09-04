@@ -1,10 +1,10 @@
 {
-  "version": "v244",
+  "version": "v245",
   "hashes": {
     "/offline.html": "bd9144e7162be323",
     "/fallback.css": "a3a4ec35e3575fab",
     "/app.js": "d0b5bf300691d393",
-    "/content.js": "f918cea2a4edf8f5",
+    "/content.js": "2e7bfeb8fe5bdf8a",
     "/api.js": "a7bab41d860a4806",
     "/pieces.js": "abb6a19a6cc1ea76",
     "/signin.js": "39ed9349d0b5494d",

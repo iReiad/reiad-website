@@ -31,6 +31,12 @@
    login could not have reached anyone either. Bump this whenever a
    precached file changes.
 
+   v245: /content.js. The front door describes the site instead of
+        selling it: the three headlines were slogans playing on the
+        word ভাষা, and a reader learnt nothing from them. The social
+        cards stopped lying about the numbers too, though that is
+        build-og.ts and not served.
+
    v244: /fallback.css. The palette got loud. Light mode's accents
         were pinned at 44% lightness, where the sRGB gamut caps
         green at 0.097 and gold at 0.093, so the "restrained"
@@ -2157,7 +2163,7 @@
    imports (crumbs, audience, learn progress) and the hub is a
    different page. Without a bump, a returning reader would be
    served the v3 app.js forever and none of it would appear. */
-const VERSION = "v244";
+const VERSION = "v245";
 const SHELL = `shell-${VERSION}`;
 const RUNTIME = `runtime-${VERSION}`;
 

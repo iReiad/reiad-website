@@ -28,6 +28,13 @@
 import { globSync, mkdirSync, readFileSync, writeFileSync } from "node:fs";
 import { dirname, join } from "node:path";
 import { fileURLToPath } from "node:url";
+/* The three numbers on these cards are COUNTS', never typed.
+   `stock.png` said "38 ratios" for a model scoring 44 and nothing
+   could see it: `check-content.ts` reads pages and this is a
+   script, so it was the one copy of that sentence the sweep in
+   CLAUDE.md's opening section never reached. */
+import { COUNTS } from "../shared/content.ts";
+import { bnNum } from "../shared/schools.ts";
 
 import { chromium } from "playwright";
 
@@ -86,12 +93,25 @@ interface Card {
   bn?: boolean;
 }
 
+/* Spelled out, because a card reads as prose. Anything outside
+   the table falls back to the numeral rather than to a wrong word. */
+const WORD: Record<number, string> = {
+  3: "three", 4: "four", 5: "five", 6: "six", 7: "seven", 8: "eight",
+};
+
 const CARDS: Card[] = [
   { file: "default.png", eyebrow: "reiad.co.uk", title: "Bangladesh's markets, explained in the language we speak.",
     sub: "Plain-Bangla investment education · financial modeling · analysis" },
-  { file: "learn.png", eyebrow: "শেখার লাইব্রেরি · Learn hub", title: "টাকার ভাষা, আমাদের ভাষায়।",
-    sub: "শেয়ার · সঞ্চয়পত্র · মিউচুয়াল ফান্ড · চক্রবৃদ্ধি: ১৮টি টার্ম, সহজ বাংলায়", bn: true },
-  { file: "tools.png", eyebrow: "Tools · ক্যালকুলেটর", title: "The five sums worth doing before you decide anything.",
+  /* The title was `টাকার ভাষা, আমাদের ভাষায়।`, which was the front
+     door's headline until the door started describing the site
+     rather than selling it. Nothing tied the two, so this went on
+     saying the slogan after the door stopped. */
+  { file: "learn.png", eyebrow: "শেখার লাইব্রেরি · Learn hub",
+    title: "প্রতিটা কোর্স একদম শুরু থেকে, ব্যাখ্যা বাংলায়।",
+    sub: `শেয়ার · সঞ্চয়পত্র · মিউচুয়াল ফান্ড · চক্রবৃদ্ধি: ${bnNum(COUNTS.terms)}টি টার্ম, সহজ বাংলায়`,
+    bn: true },
+  { file: "tools.png", eyebrow: "Tools · ক্যালকুলেটর",
+    title: `The ${WORD[COUNTS.calculators] ?? COUNTS.calculators} sums worth doing before you decide anything.`,
     sub: "Compounding · সঞ্চয়পত্র vs FDR · inflation · EMI · position sizing" },
   { file: "insights.png", eyebrow: "Insights", title: "Notes on markets, written to be understood.",
     sub: "Explainers, analysis, and an auto-updating pulse of what matters" },
@@ -100,7 +120,8 @@ const CARDS: Card[] = [
      and a link to the contact form previewed identically, which
      wastes the one thing a shared link gets to say for itself. */
   { file: "stock.png", eyebrow: "Tools · advanced", title: "Should you buy, hold or sell this share?",
-    sub: "38 ratios · six pillars · a verdict that shows its own arithmetic · English or বাংলা" },
+    sub: `${COUNTS.ratios} ratios · ${WORD[COUNTS.pillars] ?? COUNTS.pillars} pillars`
+      + " · a verdict that shows its own arithmetic · English or বাংলা" },
   { file: "portfolio.png", eyebrow: "Portfolio & services", title: "Models you can open and take apart.",
     sub: "Three-statement modelling · DCF · index analysis · live, in the browser" },
   { file: "three-statement.png", eyebrow: "Case study · Financial modelling",
