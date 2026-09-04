@@ -7747,16 +7747,9 @@
     aspect-ratio: 16 / 9;
     background: var(--art-sink);
     isolation: isolate;
-
-    perspective: 900px;
   }
 
-  .art-space {
-    position: absolute; inset: 0;
-    transform:
-      rotateY(calc(var(--gpx, 0) * var(--art-a) * var(--art-turn) * 5deg))
-      rotateX(calc(var(--gpy, 0) * var(--art-a) * var(--art-turn) * -3.4deg));
-  }
+  .art-space { position: absolute; inset: 0; }
 
   .art-space > * {
     position: absolute;
@@ -7891,10 +7884,23 @@
     transition-duration: 190ms;
   }
 
-  .art-space > * {
-    translate:
-      calc(var(--gpx, 0) * var(--art-depth, 0) * var(--art-a) * var(--art-throw) * -1)
-      calc(var(--gpy, 0) * var(--art-depth, 0) * var(--art-a) * var(--art-throw) * -0.7);
+  @media (hover: hover) and (pointer: fine) {
+    @media (prefers-reduced-motion: no-preference) {
+
+      .artwork { perspective: 900px; }
+
+      .art-space {
+        transform:
+          rotateY(calc(var(--gpx, 0) * var(--art-a) * var(--art-turn) * 5deg))
+          rotateX(calc(var(--gpy, 0) * var(--art-a) * var(--art-turn) * -3.4deg));
+      }
+
+      .art-space > * {
+        translate:
+          calc(var(--gpx, 0) * var(--art-depth, 0) * var(--art-a) * var(--art-throw) * -1)
+          calc(var(--gpy, 0) * var(--art-depth, 0) * var(--art-a) * var(--art-throw) * -0.7);
+      }
+    }
   }
 
   .artwork[data-size="tile"]  { --art-throw: 1.1px; --art-turn: 0.7; }
@@ -7902,8 +7908,6 @@
 
   @media (prefers-reduced-motion: reduce) {
     .artwork { transition: none; }
-    .art-space { transform: none; }
-    .art-space > * { translate: none; }
     .art-spec { opacity: 0.5; }
   }
 

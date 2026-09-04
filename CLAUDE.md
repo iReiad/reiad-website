@@ -585,6 +585,39 @@ studies each carry a sparkline describing that model.
 `--art-throw` is what differs, because a subject that slides 26px inside an
 84px thumbnail slides off its own floor.
 
+### The room turns for a pointer, and a phone has none
+
+`glow.tsx` is the only writer of `--gpx`/`--gpy` and it returns early unless
+`(hover: hover) and (pointer: fine)` matches. So on a handset the rotation on
+`.art-space` is the identity and every layer's slide is zero: the scene is
+already a still picture there, which is the right answer and was not the
+cheap one.
+
+**A 3D transform promotes its element whatever its value.** An identity
+`rotateY(0)` bought a composited layer per card and pulled the layers
+overlapping it up with it. Measured through the compositor's own layer tree,
+a deck of 24 cards at 390x844 and dpr 3:
+
+| | layers | texture |
+| --- | --- | --- |
+| before | 100 | 60.5 MB |
+| after | 76 | 32.8 MB |
+
+So `perspective`, the turn and the slide are all inside that query in
+`@layer deck`, exactly as `.tilt-scene`'s perspective already is in
+`@layer components`, and the two have to agree. **Both, or neither**: a 3D
+rotation with no perspective anywhere is an affine squash rather than a lean.
+
+**The reduced-motion promise is the `no-preference` nesting**, not a block
+further down undoing three declarations. What is left in the `reduce` block
+is the half that costs no layer and still has to stop: the `--art-a` fade and
+the specular.
+
+**What is NOT gated is the drawing.** The blurs, the reflection and the
+floor's own keystone are the picture rather than the pointer, and a phone
+gets all of them. Measured, they cost no composited layer: gating them would
+be two drawings to keep in step for nothing.
+
 ### At night a thing is lit; on paper a thing is printed
 
 A palette is not enough. Light ADDS: a glowing edge over black is brighter
