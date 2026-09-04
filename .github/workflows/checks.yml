@@ -1,51 +1,18 @@
-# ============================================================
 # The checks, on a pull request rather than after it.
 #
-# ---- the gap this closes ----
-#
-# Every check in this file already ran, and ran in the right
-# order, inside deploy.yml. That workflow fires on a push to
-# main, which is AFTER the merge. So the sequence was: open a
-# pull request, watch a green tick, merge it, and only then find
-# out whether the checks pass.
-#
-# The green tick was real but it was answering a different
-# question. `live-check.yml` runs on every push and asks the LIVE
-# site how it is doing, which on a branch is a question about the
-# last deploy rather than about the branch. A pull request that
-# broke check-content.ts showed green on both, merged, and then
-# failed at the top of deploy.yml with main already carrying it.
-#
-# That is the shape of failure this repository has been bitten by
-# twice and written up both times: nothing looks wrong, because a
-# Worker that fails to deploy is a Worker still answering every
-# request with its last good version. The site stays up, the live
-# check stays green, and the only place the failure is written
-# down is a run nobody has open.
-#
-# ---- one list, two entry points ----
-#
-# `workflow_call` is why deploy.yml no longer carries its own
-# copy of the list below. It calls this, waits for it, and
-# uploads only if it passed. Adding a check here adds it to the
-# pull request AND to the deploy, which is the whole point: two
-# copies of a list of checks is the same bug the checks are for.
-# ============================================================
+# `workflow_call` is why deploy.yml keeps no copy of the list
+# below: it calls this, waits for it, and uploads only if it
+# passed. Two copies of a list of checks is the same bug the
+# checks are for.
 
 name: checks
 
 on:
-  # `push` is the trigger this leans on, and that is deliberate.
-  #
-  # `pull_request` stopped firing this workflow on 18 August 2026,
-  # for opens and for pushes alike, while `push` kept working:
-  # live-check.yml runs on push and never missed one. Two pull
-  # requests sat with three green checks and no `checks` run, which
-  # is the one that runs the tests, and merging on that is merging
-  # on an incomplete signal.
-  #
-  # main is excluded because deploy.yml calls this workflow before
-  # it uploads, so a push there would run it twice.
+  # `push` is the trigger this leans on: `pull_request` has stopped
+  # firing this workflow before, for opens and pushes alike, while
+  # `push` kept working, leaving pull requests with three green
+  # checks and no `checks` run. main is excluded because deploy.yml
+  # calls this workflow before it uploads.
   push:
     branches-ignore: [main]
   # Kept as well, so the run attaches to the pull request itself
@@ -76,84 +43,37 @@ jobs:
 
       # The root package.json is not a dependency of the site:
       # nothing in it is shipped. It is here for the three
-      # `--check` steps, which shell out to tsc and to the
-      # Tailwind CLI, and for linkedom, which is the DOM the
-      # school hub test builds three hubs in.
+      # `--check` steps, which shell out to tsc and to the Tailwind
+      # CLI, and for linkedom.
       #
-      # Leaving this out does not fail loudly. `build-modules.ts`
+      # Leaving this out does not fail loudly: `build-modules.ts`
       # runs `npx tsc`, and with no node_modules npx goes to the
-      # registry, where `tsc` is not TypeScript: a deploy once
-      # died inside `tsc@2.0.4`, a package nothing here has ever
-      # asked for, having installed it first.
+      # registry, where `tsc` is not TypeScript.
       - name: Install the build tools
         run: npm ci
 
       # THE LIST IS scripts/check-all.ts, AND IT IS THE ONLY ONE.
-      #
-      # These three steps each ran their own hand-written copy of
-      # it until 19 August 2026, which is a second copy of a list
-      # and the failure the top of CLAUDE.md is about. It bit the
-      # way that file predicts: four generators were renamed to
-      # .ts, every document that named them was updated, and this
-      # was not, so CI would have failed on files that no longer
-      # existed for a rename that was correct.
-      #
-      # `--stage` is what keeps them three steps: the headings stay
-      # separate in the interface here and the list stays in one
-      # place there. A check added to check-all.ts runs here by
-      # itself.
-      #
-      # Every one of them exists because something shipped broken
-      # once. check-routes.ts is the one that would have caught the
-      # outage deploy.yml was written for: it runs the same
-      # run_worker_first overlap test wrangler runs, and wrangler
-      # runs it before it reads a line of worker.js.
+      # `--stage` is what keeps this three steps: the headings stay
+      # separate here and the list stays in one place there, so a
+      # check added to check-all.ts runs here by itself.
       - name: Run the checks
         run: node scripts/check-all.ts --stage=checks
 
       # Generated files are committed here, so a build is not run:
       # what matters is that what was committed still matches its
-      # source. An edit to a built file rather than to its source
-      # is a change that survives until the next build silently
-      # reverts it.
-      #
-      # The course catalogue is generated too, and its source is a
-      # Drive folder nothing in CI can reach. The committed crawl in
-      # scripts/fixtures/ is what makes it reproducible here:
-      # without it, shared/courses.data.json is the one generated
-      # file in the repository that nobody could regenerate.
+      # source. The course catalogue's source is a Drive folder
+      # nothing in CI can reach, and the committed crawl in
+      # scripts/fixtures/ is what makes it reproducible here.
       - name: Check the generated files match their sources
         run: node scripts/check-all.ts --stage=generated
 
-      # The tests. Nineteen files and about 1,200 checks, none of
-      # which needs a network, a browser, a database or a running
+      # The tests that need no network, browser, database or
       # server.
       #
-      # WHAT IS DELIBERATELY ABSENT, and why it is not an
-      # oversight. aab/editor.test.ts, aab/sync.test.ts,
-      # aab/studio-publish.test.ts, both files in app/ and three
-      # in next/ all need something this job does not have: a
-      # browser, a server on :8899, or an OpenNext build. Every one
-      # of them SKIPS rather than fails when that is missing, and
-      # exits 0.
-      #
-      # So adding them here would turn a green tick into a
-      # statement about nothing, which is worse than not running
-      # them: the repository's own rule is that a skip is never
-      # silent and never a pass. They stay a thing you run on a
-      # laptop until this job is given a browser, and CLAUDE.md
-      # says which ones and what each needs.
+      # THE BROWSER TESTS ARE DELIBERATELY ABSENT. Every one of
+      # them SKIPS rather than fails without a browser, a server on
+      # :8899 or an OpenNext build, and exits 0, so adding them
+      # here would turn a green tick into a statement about
+      # nothing. CLAUDE.md says which ones and what each needs.
       - name: Run the tests
         run: node scripts/check-all.ts --stage=tests
-
-      # The em dash rule was a step here, written out as a grep,
-      # which made it the one thing in this file that
-      # `check-all.ts` did not run: a laptop could not catch what
-      # CI would fail on, and it duly failed a commit where every
-      # local check passed. It is `check-dashes.ts` now, inside
-      # the checks stage above, and it reads every tracked file
-      # rather than the six directories this grep named.
-      #
-      # The comment that stood here said the character is not
-      # written out anywhere on purpose, one line above a grep
-      # that wrote it out.

@@ -1,71 +1,35 @@
-# ============================================================
-# The deploy.
+# The deploy: a push to main uploads worker.js and aab/ to the
+# `reiad-website` Worker.
 #
-# A push to main uploads worker.js and aab/ to the `reiad-website`
-# Worker. It is here rather than in the Cloudflare dashboard for
-# one reason, and it is a reason with a date on it.
-#
-# On 16 August 2026 this Worker stopped deploying and nothing said
-# so. Thirteen commits, about four hours, all of Stages 11.1 to 14
-# sat in the repository while the live Worker carried on serving
-# the upload it had made at 12:24 UTC. Nothing looked wrong: a
+# It is here rather than in the Cloudflare dashboard because a
 # Worker that fails to deploy is a Worker still answering every
-# request with its last good version, so the site stayed up, the
-# live check stayed green, and the only place the failure was
-# written down was a build log in a dashboard nobody had open.
+# request with its last good version: the site stays up, the live
+# check stays green, and the failure is written down only in a
+# build log nobody has open. A workflow leaves a red tick on the
+# commit that broke it. Dashboard build settings are also invisible
+# from a clone; this file can be read.
 #
-# The cause was one line of wrangler.toml, and it was fixable in
-# thirty seconds once seen. Seeing it was the whole problem. A
-# workflow leaves a red tick on the commit that broke it.
+# WHAT IT NEEDS: the repository secret CLOUDFLARE_API_TOKEN, with
 #
-# The second reason is smaller and still real: the build settings
-# that ran before this were four fields in a dashboard, invisible
-# from a clone. When they were wrong, the repository looked
-# perfect. This file can be read.
-#
-# ---- what it needs ----
-#
-# The repository secret CLOUDFLARE_API_TOKEN, which already exists
-# for import-schools.yml, with one permission added to it:
-#
-#   My Profile → API Tokens → the existing token → Edit
-#   Permissions: Account → Workers Scripts → Edit      (this file)
-#               Account → D1 → Edit                    (the import)
+#   Account -> Workers Scripts -> Edit      (this file)
+#   Account -> D1 -> Edit                   (import-schools.yml)
 #   Account Resources: this account, and nothing else
 #
-# Editing a token's permissions does not change its value, so the
-# GitHub secret is untouched by that. Adding Workers Scripts → Edit
-# lets it upload a Worker to this account and still nothing else:
-# it cannot read R2, cannot read a secret already set on the
-# Worker, and is revocable from the page it was made on.
-#
-# The D1 and R2 bindings need no permission of their own. They are
-# declared in wrangler.toml by id and by name, and the upload
+# The D1 and R2 bindings need no permission of their own: they are
+# declared in wrangler.toml by id and by name and the upload
 # attaches them.
 #
-# ---- and the thing that is not obvious ----
-#
 # A token scoped that narrowly cannot list the account it belongs
-# to, and wrangler asks for that list before it does anything:
+# to, and wrangler asks for that list first ("Failed to
+# automatically retrieve account IDs"). `account_id` in
+# wrangler.toml is the answer; widening the token is not.
 #
-#   Failed to automatically retrieve account IDs for the logged in user
-#
-# The answer is `account_id` in wrangler.toml, which has been there
-# since the import hit the same wall. Widening the token to make
-# that error go away would be the wrong fix.
-#
-# ---- one dashboard step, once ----
-#
-# Workers Builds must be disconnected from this Worker, or both
-# deploy on every push and the later one wins at random:
-#
-#   Workers & Pages → reiad-website → Settings → Build →
-#   disconnect the repository
-#
-# `reiad-next` keeps its own Workers Build. It has a real build
-# step (OpenNext), it needs the branch previews that check-preview.ts
-# reads, and it was deploying happily throughout the outage above.
-# ============================================================
+# ONE DASHBOARD STEP, ONCE: Workers Builds must be disconnected
+# from this Worker (Workers & Pages -> reiad-website -> Settings ->
+# Build), or both deploy on every push and the later one wins at
+# random. `reiad-next` keeps its own Workers Build: it has a real
+# build step and it needs the branch previews check-preview.ts
+# reads.
 
 name: Deploy
 
@@ -89,14 +53,9 @@ concurrency:
   cancel-in-progress: false
 
 jobs:
-  # The same checks a pull request runs, called rather than
-  # copied. checks.yml is the one list; this waits for it and the
-  # upload below happens only if it passed.
-  #
-  # It used to be a copy of that list living here, which meant the
-  # checks ran after the merge and a pull request could be green
-  # on a branch that failed every one of them. Two copies of a
-  # list of checks is the same bug the checks exist for.
+  # The same checks a pull request runs, called rather than copied.
+  # checks.yml is the one list; this waits for it and the upload
+  # below happens only if it passed.
   checks:
     uses: ./.github/workflows/checks.yml
 
@@ -111,26 +70,13 @@ jobs:
         with:
           node-version: "22"
 
-      # No `npm ci` here any more, and that is a deliberate
-      # subtraction rather than an oversight. It was here for the
-      # checks and the three `--check` builds, which shell out to
-      # tsc and to the Tailwind CLI; those are checks.yml's now,
-      # and that job does its own install. What is left in this
-      # job needs nothing from node_modules: `npx --yes wrangler@4`
-      # fetches wrangler itself, and check-live.ts imports only
-      # node builtins and one file from shared/.
-      #
-      # The reason it mattered is worth keeping even though the
-      # step has gone. `build-modules.ts` runs `npx tsc`, and
-      # with no node_modules npx does not fail: it goes to the
-      # registry, where `tsc` is not TypeScript. A run once died
-      # inside `tsc@2.0.4`, a package nothing here has ever asked
-      # for, having installed it first. That is why checks.yml
-      # installs before it builds anything.
+      # No `npm ci` here, deliberately: the builds that need it are
+      # checks.yml's and that job installs its own. What is left
+      # here needs nothing from node_modules.
 
-      # Said before anything runs, because the failure it prevents
-      # is a job that gets all the way to the upload and then dies
-      # on an authentication error that reads like a Cloudflare
+      # Said before anything runs, because the failure it prevents is
+      # a job that gets all the way to the upload and then dies on
+      # an authentication error that reads like a Cloudflare
       # outage.
       - name: Check the token is there
         run: |
@@ -153,11 +99,9 @@ jobs:
           CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
         run: npx --yes wrangler@4 deploy
 
-      # live-check.yml asks the same questions on every push to
-      # every branch, but it races this job when the push is to
-      # main: it can read the site before the upload has landed and
-      # report on the previous version. Asking again here, after
-      # the upload, is the run whose answer is about what was just
-      # deployed.
+      # live-check.yml races this job on a push to main: it can read
+      # the site before the upload has landed and report on the
+      # previous version. This run is the one whose answer is about
+      # what was just deployed.
       - name: Ask the live site
         run: node scripts/check-live.ts

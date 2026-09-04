@@ -98,16 +98,9 @@ function need<T>(found: T | null | undefined, what: string): T {
   return found;
 }
 
-/* ============================================================
-   The fixture
-
-   Two modules, one of them pending, so that every branch the page
-   has is reachable: a video lesson, a reading, a lesson with an
-   attachment, a module that ends, and a module with nothing in it.
-
-   Two programmes above them, because one programme cannot show
-   that a card, a bar or an address belongs to the right one.
-   ============================================================ */
+/* The fixture: two modules, one pending, so every branch is
+   reachable. TWO programmes above them, because one cannot show
+   that a card, a bar or an address belongs to the right one. */
 
 /** The programme every deep address below sits in, written once:
     it is four segments to a lesson now and a typo in one of them
@@ -576,17 +569,10 @@ console.log("\n--- the lesson page ---");
   ok("a transcript is offered",
     all(doc, ".course-files a").some((a) => a.textContent === "Transcript"));
 
-  /* ---- captions ----
-
-     Every video in this catalogue ships with two files beside it:
-     a `.en.txt`, which is the transcript and is offered as a link,
-     and a `.en.srt`, which is the same words with timings on them.
-     Only the first was carried through the importer for a while,
-     so the player had a captions button that turned nothing on.
-
-     They are two things, not one thing twice, and the test says
-     so: the transcript stays a link in the Files list and the
-     captions become a track inside the player. */
+  /* Captions. A video ships a `.en.txt` transcript and a
+     `.en.srt` with timings, and they are TWO THINGS: the
+     transcript stays a link in the Files list and the captions
+     become a `<track>` inside the player. */
   const track = doc.querySelector(".course-video video track");
   ok("a video carries a caption track", Boolean(track));
   ok("the track is captions, not chapters or metadata",
@@ -616,18 +602,10 @@ console.log("\n--- the lesson page ---");
       && !bare.querySelector(".course-video video track"));
   }
 
-  /* ---- when the pass is refused ----
-
-     The page said "that video could not be opened, if you have
-     just signed in, reload" for every failure there is. One of
-     them was a Worker with no Google credential, which was saying
-     so in the response, in a sentence naming the secret to set.
-     Reloading could never fix that, and the page recommended it,
-     so the real reason went unread for an afternoon while the
-     obvious suspects were checked instead.
-
-     The rule this asserts: whatever the server said is what the
-     reader is shown. */
+  /* When the pass is refused: WHATEVER THE SERVER SAID IS WHAT
+     THE READER IS SHOWN. A generic "try reloading" hides the one
+     failure that matters, a Worker with no Google credential,
+     which names the secret to set in its own response. */
   {
     const { document: sad } = await visit(
       `${AT}/week-one/welcome`, new Map(),

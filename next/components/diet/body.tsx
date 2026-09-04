@@ -1,52 +1,29 @@
-/* ============================================================
-   diet/body.tsx: measurements in, composition out.
+/* Measurements in, composition out. `DIET.md` section 2, and
+   `shared/diet.ts` is every formula: nothing is recomputed here, because
+   a route with its own copy of an equation will disagree with the check.
 
-   The first page of the diet tool that shows a number, and the
-   first that shows a range. `DIET.md` section 2 is the reasoning
-   and `shared/diet.ts` is every formula: nothing is recomputed
-   here, because a route with its own copy of an equation is a
-   route that will disagree with the check.
+   IT STORES NOTHING UNTIL THE READER ASKS IT TO. No account, no row, no
+   localStorage: a reader can work out what their body probably is without
+   signing into anything. One button changes that, for somebody already
+   signed in: height, year of birth, which formula and which cut-offs are
+   the four facts every other page of this tool gates on, and without a
+   writer there is no target, no protein floor, no learned maintenance,
+   no projection and no BMI on a real account. The write is explicit
+   because the rest of the page is not.
 
-   ---- it stores nothing until the reader asks it to ----
+   THE CUT-OFF FOLLOWS THE READER: the WHO's 2004 consultation recommends
+   lower BMI action points for Asian populations, and the page says WHICH
+   SET IT IS USING beside the number. A tool serving Bangladesh that
+   quietly used 25 would tell a large number of its readers they are fine
+   when their own health service would not.
 
-   Everything here is arithmetic over what is typed into it. No
-   account, no row, no localStorage: a reader can work out what
-   their body probably is without signing into anything, which is
-   what makes this the stage that ships before the migration is
-   used for anything.
+   WAIST TO HEIGHT LEADS: one tape measure and no assumption about
+   population, which is the property BMI lacks.
 
-   ONE BUTTON CHANGES THAT, and only for somebody already signed
-   in. Height, year of birth, which formula and which cut-offs
-   are the four facts every other page of this tool needs, and
-   for a while nothing on this site could write them: `board`,
-   `goal` and `summary` all gate on `profile.height_cm` and
-   `profile.birth_year`, so on a real account there was no
-   target, no protein floor, no learned maintenance, no
-   projection and no BMI, and the goal page said "the body page
-   is where the first two go" while this page stored neither.
-   The write is explicit because the rest of the page is not: a
-   reader who came here to work something out has not asked to
-   be remembered.
-
-   ---- the three rules it is here to hold on screen ----
-
-   THE CUT-OFF FOLLOWS THE READER. The WHO's 2004 consultation
-   recommends lower BMI action points for Asian populations, and
-   the page says WHICH SET IT IS USING and why, beside the
-   number. A tool serving Bangladesh that quietly used 25 would
-   tell a large number of its readers they are fine when their
-   own health service would not.
-
-   WAIST TO HEIGHT LEADS. It needs one tape measure and no
-   assumption about population, which is exactly the property BMI
-   lacks, so it is first and BMI is beside it.
-
-   NOTHING IS A POINT ESTIMATE. Body fat is printed as a range
-   because the tape method is three to four points against DXA
-   and the equation is worse. `fatEstimate()` returns the width
-   with the value so this component cannot print one without the
-   other even by accident.
-   ============================================================ */
+   NOTHING IS A POINT ESTIMATE: the tape method is three to four points
+   against DXA and the equation is worse, so `fatEstimate()` returns the
+   width with the value and this component cannot print one without the
+   other even by accident. */
 
 "use client";
 
@@ -306,19 +283,15 @@ export function BodyPanel() {
   );
 }
 
-/** THE SHAPE OF WHAT IS COMING, rather than a blank half a page.
+    /** THE SHAPE OF WHAT IS COMING, rather than a blank half a page. An
+        empty readout leaves a reader unable to tell whether the page will
+        answer with one number or six, or which of the boxes on the left
+        each one needs.
 
-    An empty readout was two lines of grey text beside a form,
-    and the whole right side of a wide screen was nothing at all.
-    A reader could not tell whether the page was going to answer
-    with one number or six, or which of the boxes on the left
-    each one needed.
-
-    So it draws the five figures it will fill, each naming what
-    it is waiting for. That is not decoration: a placeholder that
-    says "a waist" is the shortest route to the reader typing a
-    waist, and it is the same five cards, in the same order and
-    the same sizes, that arrive when they do. */
+        So it draws the five figures it will fill, each naming what it is
+        waiting for: a placeholder that says "a waist" is the shortest
+        route to the reader typing a waist, and it is the same five cards,
+        in the same order and sizes, that arrive when they do. */
 function Coming() {
   const WAITING: Array<{ h: ReactNode; needs: { en: string; bn: string }; lead?: true }> = [
     {
@@ -372,19 +345,15 @@ function Coming() {
   );
 }
 
-/** UNDER 18 IS A REFUSAL, NOT A WARNING.
+    /** UNDER 18 IS A REFUSAL, NOT A WARNING. `DIET.md` section 31: the
+        equations are for adults and the tool says so and stops; there is
+        no child mode. Mifflin-St Jeor is an adult equation, the Navy tape
+        method was validated on adult service personnel, and the BMI
+        cut-offs are adult cut-offs against which a growing body is read on
+        a centile chart instead.
 
-    `DIET.md` section 31: "the equations are for adults and the
-    tool says so and stops. This is not a soft warning; there is
-    no child mode." Every formula on this page was fitted on
-    adults: Mifflin-St Jeor is an adult equation, the Navy tape
-    method was validated on adult service personnel, and the BMI
-    cut-offs below are adult cut-offs against which a growing
-    body is read on a centile chart instead.
-
-    `min={18}` on the age box was the whole of this and it is
-    advisory markup outside a submitted form, so typing 15 drew
-    a complete readout. */
+        `min={18}` on the age box is advisory markup outside a submitted
+        form, so typing 15 draws a complete readout. */
 function TooYoung() {
   return (
     <div className="dt-readout dt-readout-stop" role="note">

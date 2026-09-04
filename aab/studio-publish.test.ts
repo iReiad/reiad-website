@@ -468,20 +468,13 @@ const firstUrl = uploads[0] ? `/media/${uploads[0].key}` : "(nothing was uploade
 check("no data: URL survives into the database", (body.match(/src="data:/g) ?? []).length, 0);
 check("the photo is a /media path instead", (body.match(/src="\/media\//g) ?? []).length, 1);
 
-/* AND THE TWO ATTRIBUTES THAT NEVER USED TO ARRIVE.
-
-   `hostPhotosIn` has set both on every photo it hosts since it was
-   written, and the browser's own sanitiser stripped both on the
-   way out, because `ATTRS.IMG` in `aab/editor.js` allowed four
-   attributes and `ALLOWED.img` in `functions/_lib/sanitise.ts`
-   allowed six. Two dead lines, and every photo in every article
-   loading eagerly while the markup said it should not.
-
-   Checked HERE rather than in a unit test because the trip is the
-   point: the attribute has to survive being written, sanitised in
-   the browser, sent, and sanitised again on the server.
-   `check-css.ts` now compares the two tables so they cannot drift
-   apart again. */
+/* `loading` AND `decoding`, which `hostPhotosIn` sets and the
+   browser's sanitiser used to strip because `ATTRS.IMG` in
+   `aab/editor.js` and `ALLOWED.img` in
+   `functions/_lib/sanitise.ts` disagreed. Checked HERE because
+   THE TRIP is the point: the attribute has to survive being
+   written, sanitised in the browser, sent, and sanitised again on
+   the server. `check-css.ts` compares the two tables. */
 check("the hosted photo is left lazy, as hostPhotosIn asked",
   (body.match(/loading="lazy"/g) ?? []).length, 1);
 check("and asynchronously decoded",

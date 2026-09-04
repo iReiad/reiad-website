@@ -1,23 +1,13 @@
 /* ============================================================
-   content.ts: the site's content manifest.
-
-   The menu, the Ctrl+K palette, the sitemap, the RSS feed and
-   every number this site says about itself read from here.
-
-   ---- where it is served from ----
+   content.ts: the site's content manifest. The menu, the Ctrl+K
+   palette, the sitemap, the RSS feed and every number this site
+   says about itself read from here.
 
    `scripts/build-modules.ts` compiles this file to
-   `aab/content.js`, which is the address the browser has always
-   fetched it from and which `sw.js` precaches by name. Edit this
-   file, never that one.
-
-   ---- and the four specifiers that are rewritten ----
-
-   A ladder is `./curricula/<school>.ts` here and
-   `/money/curriculum.js` or one of its three siblings in the
-   browser, which is the address each has been fetched from for a
-   year. The generator rebases the one on to the other, so
-   `aab/content.js` names what both the browser and node resolve.
+   `aab/content.js`, which `sw.js` precaches by name. Edit this
+   file, never that one. It also rebases the four ladder imports
+   from `./curricula/<school>.ts` on to `/money/curriculum.js` and
+   its three siblings, which is where the browser fetches them.
    ============================================================ */
 export const SITE = {
     name: "Reiad's Library",
@@ -28,62 +18,37 @@ export const SITE = {
 };
 /* ---------- the three reading sections ----------
 
-   Empty, and that is the finished state rather than a gap.
+   Empty, and that is the finished state rather than a gap: a
+   piece is a row in D1, written in the Studio and rendered by its
+   route. Nothing needs adding here to publish.
 
-   A piece of writing on this site is a row in D1, written in the
-   Studio, rendered by the Next.js route at its own address, and
-   listed on its hub by a query. These three arrays were the other
-   half of that: a manifest entry beside a committed HTML file,
-   which is how every piece worked before the Studio existed and
-   how none of them has worked since 15 August 2026. The files
-   went to `archive/` with Stage 11.2 and the entries went with
-   them, because a manifest entry pointing at a file that is not
-   there is a card and a search result pointing at a 404, which is
-   the exact bug `pieces.js` was written to end.
-
-   They are still exported, and `SECTIONS` still names them, for
-   two reasons. `pieces.js` merges them with the database and
-   would need a shape either way. And a section is a real thing
-   with a mount, a language and a hub whether or not anything is
-   written in it; this file describes the site's structure, and
-   that is the part of it that was never about articles.
-
-   Nothing needs adding here to publish. That is the point.
+   Still exported because `pieces.js` merges them with the
+   database and needs a shape either way, and because a section is
+   a real thing with a mount, a language and a hub whether or not
+   anything is written in it.
    ============================================================ */
 export const ARTICLES = [];
 /* ============================================================
-   The Learn area.
+   The Learn area. The money curriculum lives in
+   shared/curricula/money.ts and is re-exported here so the menu,
+   the palette and build-meta.ts have a single import.
 
-   The curriculum, every stage, section and lesson, lives in
-   shared/curricula/money.ts, which is the one file to edit when
-   the money school changes. It is re-exported here so that the
-   menu, the palette and build-meta.ts have a single import.
-
-   TERM_GROUPS below is the ORIGINAL eighteen-term grouping, kept
-   because /money/terms/*.html and the A–Z glossary were built
-   around it and its URLs are published. It is now the same data
-   as stage `basics-1` of the ladder; the ladder is the source of
-   truth for the structure, this for the term cards.
+   TERM_GROUPS below is the eighteen-term grouping the published
+   /money/terms/ URLs were built around. It is the same data as
+   stage `basics-1`: THE LADDER IS THE SOURCE OF TRUTH for the
+   structure, this for the term cards.
    ============================================================ */
 import { STAGES, SCHOOLS, allLessons, stageLessons, stageUrl, lessonUrl, findStage, } from "./money/curriculum.js";
-/* The second school. German has its own ladder for the same
-   reason it has its own mount: nothing about ব্রোকার belongs in a
-   file about Akkusativ. Both are imported here so the menu, the
-   palette and build-meta.ts still have a single import. */
+/* The second school, imported here so the menu, the palette and
+   build-meta.ts still have a single import. */
 import { STUFEN, SCHOOL as DEUTSCH, allTeile, stufeUrl, teilUrl, workbookUrl, } from "./deutsch/curriculum.js";
-/* The third school, and the same argument a third time: nothing
-   about ইদাফা belongs in a file about Akkusativ either. The
-   aliases are not decoration: /money/ already exports a
-   `lessonUrl` and an `allLessons`, and importing this school's
-   under the same names would silently shadow them. */
+/* The third school. THE ALIASES ARE LOAD-BEARING: /money/ already
+   exports a `lessonUrl` and an `allLessons`, and importing this
+   school's under those names would silently shadow them. */
 import { DHAPS, SCHOOL as QURAN, allLessons as allDars, dhapUrl, lessonUrl as darsUrl, totalDays as quranDays, } from "./quran/curriculum.js";
-/* The fourth school, and the same argument a fourth time:
-   nothing about phrasal verbs belongs in a file about Akkusativ
-   either. The aliases matter for the same reason as the Quranic
-   ones: /deutsch/ already exports a `workbookUrl`, and importing
-   this school's under that name would silently shadow it, which
-   is how the German practice books would have started pointing
-   at the English one. */
+/* The fourth school. Same reason for the alias: /deutsch/ already
+   exports a `workbookUrl`, and shadowing it would point the
+   German practice books at the English one. */
 import { TERMS as ENGLISH_TERMS, SCHOOL as ENGLISH, allParts, termUrl, partUrl, workbookUrl as englishBookUrl, } from "./english/curriculum.js";
 // re-exported, because `export … from` alone would not give this
 // file the local bindings that searchIndex() below needs
@@ -258,10 +223,9 @@ export const TOOLS = [
 ];
 export const COOKING = [];
 export const TRAVEL = [];
-/* The sections themselves. `pieces` is a function rather than the
-   array, because ARTICLES is declared at the top of this file and
-   these two are declared just above: a direct reference would be
-   fine here and would break the day someone moves one of them. */
+/* `pieces` is a FUNCTION rather than the array, because ARTICLES
+   is declared at the top of this file and these two just above:
+   a direct reference breaks the day one of them moves. */
 export const SECTIONS = [
     {
         id: "insights",
@@ -269,9 +233,8 @@ export const SECTIONS = [
         bn: "ইনসাইটস",
         mount: "/insights/",
         hub: "/insights",
-        /* The name of the array in THIS file. The Studio prints it into
-           the index entry it hands you, so the paste has somewhere to
-           go without you having to know which list is which. */
+        /* The Studio prints this into the index entry it hands you,
+           so the paste has somewhere to go. */
         list: "ARTICLES",
         lang: "en",
         blurb: "Longer pieces on money, markets and Bangladesh.",
@@ -302,8 +265,8 @@ export const SECTIONS = [
 ];
 const idOf = (ref) => typeof ref === "string" ? ref : ref?.id;
 /** A section by id, falling back to Insights rather than to
-    undefined: an unknown id comes from an old draft or a hand-typed
-    URL, and the honest answer is the default section, not a crash. */
+    undefined: an unknown id comes from an old draft or a
+    hand-typed URL. */
 export const findSection = (id) => SECTIONS.find((s) => s.id === idOf(id)) ?? SECTIONS[0];
 /** Where a piece lives, whichever section it is in. */
 export const pieceUrl = (section, slug) => `${findSection(section).mount}${slug}.html`;
@@ -312,14 +275,10 @@ export const livePieces = (section) => findSection(section).pieces()
     .filter((p) => p.status !== "soon")
     .sort((a, b) => (b.date || "").localeCompare(a.date || ""));
 /** The two Bangla reading sections, which share a hub layout, a
-    cascade layer and a page shape. Insights is the odd one out: it
-    is in English, it has its own filtering page and its own feed. */
+    cascade layer and a page shape. Insights is in English with
+    its own filtering page and feed. */
 export const READS = SECTIONS.filter((s) => s.id !== "insights");
 export const PAGES = [
-    /* "/" rather than "/index.html" as of Stage 11.5. That is what
-       the canonical link has always said, and it is now the address
-       that answers: the file it used to name is a Next.js route and
-       `_redirects` sends the old spelling here. */
     { title: "Home", url: "/",
         hint: "Page", blurb: "The short version of everything here." },
     { title: "Money: টাকা ও শেয়ার", url: "/money",
@@ -331,10 +290,8 @@ export const PAGES = [
     { title: "Deutsch: জার্মান, বাংলায়", url: "/deutsch",
         hint: "Page", blurb: "German from Bangla in four stages, with a daily practice book for the first three." },
     /* One entry per practice book, built from the curriculum rather
-       than typed. There used to be exactly one of these, written out
-       by hand, because there used to be exactly one book. Stufe 2
-       and 3 then arrived with sixty and ninety days and the hand
-       written line would have gone on advertising thirty. */
+       than typed: a hand-written line goes on advertising thirty
+       days after a book grows to ninety. */
     ...STUFEN.flatMap((s) => {
         const url = workbookUrl(s);
         return url && s.workbook ? [{
@@ -347,10 +304,8 @@ export const PAGES = [
     }),
     { title: "English: মন থেকে ইংরেজি", url: "/english",
         hint: "Page", blurb: "English from Bangla in two terms, from word order to holding the floor for two minutes." },
-    /* One entry per practice book, built from the curriculum the
-       same way the German ones are, and for the same reason: the
-       day count belongs to the data, not to a line of markup that
-       was right on the day it was typed. */
+    /* One entry per practice book, built from the curriculum, for
+       the reason the German ones are. */
     ...ENGLISH_TERMS.flatMap((t) => {
         const url = englishBookUrl(t);
         return url && t.workbook ? [{
@@ -366,8 +321,8 @@ export const PAGES = [
     { title: "Travel: ভ্রমণ", url: "/travel",
         hint: "Page", blurb: "Visas, paperwork and the whole route out, in Bangla." },
     /* One entry per piece in both Bangla sections, built from
-       SECTIONS rather than typed, so a new piece reaches the menu,
-       the palette and the sitemap by being written and nothing else. */
+       SECTIONS, so a new piece reaches the menu, the palette and the
+       sitemap by being written and nothing else. */
     ...READS.flatMap((section) => livePieces(section).map((p) => ({
         title: `${p.title} · ${p.en ?? section.en}`,
         url: pieceUrl(section, p.slug),
@@ -381,13 +336,11 @@ export const PAGES = [
         hint: "Tool", group: "tool", blurb: "Forty-odd ratios across six pillars, a verdict that shows its own arithmetic, in English or Bangla." },
     { title: "Live portfolio: a real account, live", url: "/tools/live",
         hint: "Tool", group: "tool", blurb: "The site's own Trading 212 portfolio in percentages, live from the broker, and the full dashboard for your own account when you connect a key." },
-    /* THE OTHER TWO TOOLS WERE IN NO SITEMAP AND NO PALETTE. Both
-       are in `nav.ts`, so the rail and the footer reached them and
-       nothing else did: `build-meta.ts` builds the sitemap out of
-       this table, and Ctrl+K reads it too. The eleven diet pages
-       and the four routine pages are one entry each, the way
-       `/tools/stock` is, because a palette is a way in rather than
-       a table of contents. */
+    /* A TOOL IN `nav.ts` AND NOT HERE IS IN NO SITEMAP AND NO
+       PALETTE: `build-meta.ts` builds the sitemap out of this table
+       and Ctrl+K reads it too. The eleven diet pages and the four
+       routine pages are one entry each, as `/tools/stock` is,
+       because a palette is a way in rather than a contents page. */
     { title: "Diet: what your body is, and what it costs", url: "/tools/diet",
         hint: "Tool", group: "tool", blurb: "Waist to height, BMI on the cut-offs that apply to you, body fat with its error bars, a food log priced in taka and in pounds, and what to expect at each hour of a change." },
     { title: "Routine: the day, and the year behind it", url: "/tools/routine",
@@ -434,69 +387,43 @@ export const PAGES = [
 /* ============================================================
    COUNTS: every number this site says about itself.
 
-   WHY THIS EXISTS
-
-   A page said "four case studies" while seven existed, another
-   said "thirty-eight ratios" where a third said "thirty-odd" and
-   a fourth, in Bangla, said "more than thirty-six". All three
-   were describing the same file. Nobody wrote a wrong number:
-   each was right when it was typed, and then the thing it counted
-   grew.
-
-   A number typed into a sentence is a copy of the data, and every
-   copy drifts. So the sentence gets a slot instead:
+   A number typed into a sentence is a copy of the data and every
+   copy drifts, so the sentence gets a slot instead:
 
        <span data-count="stages">৮</span>টা ধাপ
 
-   app.js fills every [data-count] on the page from this object,
-   in Bangla digits inside a [lang="bn"] element and Latin ones
-   everywhere else. The number in the markup is the fallback for
-   a reader with no JavaScript, so it should be kept roughly
-   right, but it can no longer be the thing that goes stale
-   unnoticed: check-content.ts fails the build when it disagrees
-   with the value here.
+   app.js fills every [data-count] from this object, in Bangla
+   digits inside a [lang="bn"] element. The number in the markup
+   is the no-JavaScript fallback, and `check-content.ts` fails the
+   build when it disagrees with the value here.
 
-   TWO OF THESE ARE TYPED, and deliberately. `ratios` and
-   `pillars` belong to /tools/stock.model.js, and importing that
-   whole model here would pull a thousand lines of scoring maths
-   into every page on the site to print one number. They are
-   asserted against the model by check-content.ts instead, which
-   is the same guarantee without the payload.
+   TWO ARE TYPED: `ratios` and `pillars` belong to
+   /tools/stock.model.js, and importing that model here would pull
+   a thousand lines of scoring maths into every page to print one
+   number. `check-content.ts` asserts them against it instead.
+
+   Deliberately not annotated: the type of this object IS its
+   keys, so `COUNTS.stufens` does not compile.
    ============================================================ */
-/* Deliberately not annotated. The type of this object IS its keys,
-   so `COUNTS.stufen` is checked and `COUNTS.stufens` does not
-   compile, and check-content.ts holds every value to being a
-   number where it reads one by a key out of markup. */
 export const COUNTS = {
     /** Case studies you can open and drive. */
     caseStudies: PAGES.filter((p) => p.group === "case" && !p.private).length,
     /** Everything you can open and drive: the case studies plus the
-        calculators that are pages of their own. Tagged `case` or
-        `tool` in PAGES, which is the same tagging the menu and the
-        palette group by, so publishing another one moves this
-        without anybody editing it. */
+        calculators that are pages of their own, tagged `case` or
+        `tool` in PAGES. */
     models: PAGES.filter((p) => !p.private
         && (p.group === "case" || p.group === "tool")).length,
     /** Calculators on the Tools hub, not counting the stock check. */
     calculators: TOOLS.length,
     /** Stages in the money ladder, starter to research. */
     stages: STAGES.length,
-    /** Lessons actually written, not the ones still marked "soon".
-  
-        It used to be 8 higher than the number of lesson PAGES,
-        because the starter guide's eight steps were anchors on the
-        hub rather than pages of their own. They are pages, the
-        stage is no longer `inline`, and the two numbers are the
-        same number again. */
+    /** Lessons actually written, not the ones still marked
+        "soon". */
     lessons: allLessons().filter((l) => l.status === "live").length,
-    /* AND THE WHOLE LIBRARY'S, which is not the same number and was
-       told apart the hard way: the front door printed `lessons`
-       under the word "পাঠ" beside a link to `/skills`, which reads
-       as every lesson on the site and is the money school's alone.
-       It understated the library by 144.
-  
-       All four ladders, counted rather than added up by hand, so a
-       Stufe written next month moves it. */
+    /* AND THE WHOLE LIBRARY'S, which is NOT `lessons`: that key is
+       the money school's alone and understates all four ladders by
+       144. Counted rather than added up, so a Stufe written next
+       month moves it. */
     libraryLessons: [
         ...allLessons(), ...allTeile(), ...allDars(), ...allParts(),
     ].filter((l) => l.status === "live").length,
@@ -507,46 +434,27 @@ export const COUNTS = {
     /** Steps in the Quranic Arabic ladder. */
     dhaps: DHAPS.length,
     /** Days that ladder covers, counted from the lessons rather
-        than declared. The course promises sixty on its own first
-        slide, so a lesson added without a day range moves this. */
+        than declared, so a lesson added without a day range moves
+        this. */
     quranDays: quranDays(),
-    /** Terms in the English ladder.
-  
-        NOT `terms`: that key is already the A-Z glossary's, and
-        404.html prints it. Two different things called the same
-        word in one object is how a page ends up telling a reader
-        there are two entries in the glossary. */
+    /** Terms in the English ladder. NOT `terms`, which is the A-Z
+        glossary's and is printed by 404.html. */
     englishTerms: ENGLISH_TERMS.length,
     /** Parts of the English course actually written. */
     englishParts: allParts().filter((p) => p.status === "live").length,
-    /** Stufen that come with a practice book.
-  
-        Not the same as `stufen`, and that is the point: Stufe 4
-        deliberately has none, because at B2 the daily page stops
-        being a form to fill in and becomes the news you read. */
+    /** Stufen that come with a practice book. Not `stufen`: Stufe
+        4 deliberately has none. */
     workbooks: STUFEN.filter((s) => s.workbook).length,
     /** Schools in the Skills hub, German included. */
     skills: SKILLS.length,
-    /** And the ones a reader can actually start today.
-  
-        NOT `skills`, which counts the one still marked `soon` too.
-        The front door says "six free courses" and a course nobody
-        can open is not one: the door claimed six with a numeral
-        typed into the page for as long as that page existed, and
-        it was right by accident, because `SKILLS` had seven rows
-        with one of them unwritten. */
+    /** And the ones a reader can start today. NOT `skills`, which
+        counts the one still marked `soon`: a course nobody can open
+        is not one. */
     courses: liveSkills().length,
-    /* No count of pieces here, deliberately, since Stage 11.2.
-  
-       There were three: `articles`, `cooking` and `travel`, each
-       counting an array in this file. Those arrays are empty now
-       and a piece is a row, so every one of them would have
-       answered 0 while the site had five. A number that counts the
-       wrong thing is worse than no number, and this whole table
-       exists because that went wrong twice.
-  
-       Anything that needs the real count asks `pieces.js`, which
-       asks the database, and prints what it drew. */
+    /* NO COUNT OF PIECES HERE, deliberately: the three arrays in
+       this file are empty and a piece is a row, so a key counting
+       them would answer 0 on a site with five. Anything needing the
+       real count asks `pieces.js`, which asks the database. */
     /** Scored ratios in the stock check. Asserted against METRICS. */
     ratios: 44,
     /** The groups it sorts them into. Asserted against PILLARS. */
@@ -564,11 +472,9 @@ export const topics = () => {
         .map(([name, count]) => ({ name, count }));
 };
 export const searchIndex = () => [
-    /* `private` pages are out. The Article Studio was appearing in
-       public search results, an admin screen offered to every reader
-       who typed a letter that happened to match it. `private` already
-       kept it out of the menu and the sitemap; search was the one
-       place that ignored the flag. */
+    /* `private` pages are out: search was the one place that
+       ignored the flag, and the Article Studio was being offered to
+       every reader who typed a matching letter. */
     ...PAGES.filter((p) => !p.private).map((p) => ({
         title: p.title, url: p.url, hint: p.hint,
         kind: p.group === "case" ? "case" : p.group === "tool" ? "tool"
@@ -590,10 +496,7 @@ export const searchIndex = () => [
         hint: "Tool",
         kind: "tool",
     })),
-    /* `stageUrl()` rather than a second spelling of it. This branched
-       on `stage.inline` for the starter guide, whose eight steps were
-       anchors on the hub; no stage is `inline` since 17 August 2026
-       and the branch could not fire. Typing this file is what said so. */
+    /* `stageUrl()` rather than a second spelling of it. */
     ...STAGES.map((s) => ({
         title: `${s.kicker} · ${s.bn}: ${s.en}`,
         url: stageUrl(s),
@@ -606,12 +509,9 @@ export const searchIndex = () => [
         hint: `${l.stage.kicker}`,
         kind: "money",
     })),
-    /* German. Both the four Stufen and every Teil inside them,
-       including the ones still marked "soon": someone searching
-       for "Dativ" should find the place it will be, not nothing.
-       The German name is in the title as well as the Bangla one,
-       because a learner halfway through the course will reach for
-       "Klammer" or "sein" long before they reach for "বন্ধনী". */
+    /* German. The German name rides in the title beside the Bangla:
+       a learner halfway through reaches for "Klammer" long before
+       "বন্ধনী". */
     ...STUFEN.map((s) => ({
         title: `${s.kicker} · ${s.bn}: ${s.de}`,
         url: stufeUrl(s),
@@ -624,11 +524,8 @@ export const searchIndex = () => [
         hint: `${t.stufe.kicker}`,
         kind: "deutsch",
     })),
-    /* Qur'anic Arabic. Three ধাপ and every day inside them. The
-       Arabic name rides in the title beside the Bangla for the
-       same reason the German one does: someone looking for
-       "Akkusativ" or "إضافة" is looking for the word they met in
-       the lesson, not for its translation. */
+    /* Qur'anic Arabic. The Arabic name rides beside the Bangla for
+       the reason the German one does. */
     ...DHAPS.map((d) => ({
         title: `${d.kicker} · ${d.bn}: ${d.ar}`,
         url: dhapUrl(d),
@@ -641,10 +538,8 @@ export const searchIndex = () => [
         hint: `${l.dhap.kicker} · ${l.label}`,
         kind: "quran",
     })),
-    /* English. Both terms and every part inside them. The English
-       title rides beside the Bangla one because a learner halfway
-       through will reach for "present perfect" or "phrasal verbs"
-       long before they reach for "সেতু-কাল". */
+    /* English, and the English title rides beside the Bangla for
+       the same reason. */
     ...ENGLISH_TERMS.map((t) => ({
         title: `${t.kicker} · ${t.bn}: ${t.en}`,
         url: termUrl(t),
@@ -658,10 +553,8 @@ export const searchIndex = () => [
         kind: "english",
     })),
     /* The other schools. A skill still being written is in here on
-       purpose: someone typing "রান্না" should be told where it will
-       be, not handed "No matches". The three schools that exist are
-       skipped because each already has a page entry and every
-       lesson of its own above. */
+       purpose. The three that exist are skipped: each already has a
+       page entry and every lesson of its own above. */
     ...SKILLS.filter((s) => !["deutsch", "quran", "english", "cooking", "travel"].includes(s.slug)).map((s) => ({
         title: `${s.bn}: ${s.en}`,
         url: skillUrl(s),
@@ -700,11 +593,10 @@ export const DOOR = {
         open: {
             headline: "টাকা, ভাষা, রান্না আর ভ্রমণ, সবটা বাংলায়।",
             mark: "সবটা বাংলায়",
-            /* NOT "উপরের সুইচটা ঘুরিয়ে দিন". The audience switch is at
+            /* NOT "উপরের সুইচটা ঘুরিয়ে দিন": the audience switch is at
                the FOOT of the rail, and below 900px the rail is a drawer
-               behind a burger, so a sentence that sends a reader to it
-               points at a control which on a phone is not on screen at
-               all. The English door is a button under this sentence. */
+               behind a burger, so on a phone it is not on screen. The
+               English door is a button under this sentence. */
             lede: "প্রতিটা বিষয় ধরে ধরে বোঝানো, আগে থেকে কিছু জানা লাগে না। কোম্পানি যাচাই "
                 + "করা বা কিস্তির হিসাব কষার ব্যবস্থাও আছে। সব ফ্রি, আর পড়তে বা টিক দিতে "
                 + "অ্যাকাউন্ট লাগে না।",
@@ -714,9 +606,7 @@ export const DOOR = {
             headline: "প্রতিটা কোর্স একদম শুরু থেকে, ব্যাখ্যা বাংলায়।",
             mark: "একদম শুরু থেকে",
             /* No count in the sentence: the ledger states them and the
-               library band draws one card per course, six inches below.
-               A number typed here is a number that has to be right
-               twice. */
+               library band draws one card per course. */
             lede: "টাকা ও শেয়ার, জার্মান, ইংরেজি আর কুরআনের আরবি: পাঠগুলো একটার পর একটা "
                 + "সাজানো। রান্না আর ভ্রমণ নিয়ে আলাদা লেখা আছে। কোন পাঠটা পড়া হয়েছে টিক "
                 + "দিয়ে রাখা যায়, অ্যাকাউন্ট ছাড়াই।",
@@ -725,31 +615,21 @@ export const DOOR = {
         work: {
             headline: "Financial models, data analysis and finance writing.",
             mark: "Financial models",
-            /* The reader is not asked to trust a number, they are told
-               what they can do to it. And no case study is named: the
-               lede sat directly above all seven and listed four, which
-               is a list to keep in step with a list. */
+            /* No case study is named: this lede sits directly above all
+               seven, and naming any is a list to keep in step with a
+               list. */
             lede: "The case studies below are working models rather than screenshots: "
                 + "open one, change an assumption, and every number downstream of it "
                 + "moves. The arithmetic in each is covered by tests.",
             lang: "en",
         },
     },
-    /* Five rather than three, and each one a way in.
-  
-       They were three numerals in a row under the lede, on a first
-       screen whose right-hand half was empty. What a reader wants
-       to know about a library is how much is in it, so the two
-       largest true figures this site has, the lessons written and
-       the ratios the stock check scores, are the two that were
-       missing. */
+    /* Five, and each one a WAY IN rather than a numeral. */
     facts: [
         { count: "libraryLessons", label: "পাঠ", en: "lessons written", href: "/skills" },
         /* NOT `courses`, which points at `/skills` and so does the row
-           above it: a list of five whose whole job is to be five ways
-           in had two of them going to one place. "ছয়টা কোর্স" is said
-           where it can be seen instead, by the six cards in the
-           library band. */
+           above: five ways in cannot have two going to one place. The
+           library band's six cards say it where it can be seen. */
         { count: "terms", label: "শব্দ", en: "terms, A to Z", href: "/money/contents" },
         { count: "caseStudies", label: "কেস স্টাডি", en: "case studies you can drive",
             href: "/portfolio" },

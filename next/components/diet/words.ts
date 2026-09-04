@@ -1,38 +1,23 @@
-/* ============================================================
-   diet/words.ts: the tool's vocabulary, said once.
+/* The tool's vocabulary, said once: one place for every token a component
+   needs a word for, which is the rule `check-rows.ts` already enforces
+   for the database. Three files printing the same facts in three
+   spellings is how a raw token like `raised` reaches a page handed to a
+   clinician, in English even in Bangla.
 
-   Three files were printing the same facts in three spellings.
-   `body.tsx` had a BMI band as "above the healthy range";
-   `summary-panel.tsx` printed the raw token `raised` on a page
-   that gets handed to a clinician, in English even in Bangla,
-   and did the same with `male form` and with the medicine ids
-   `glp1, insulin, steroid`. `health-panel.tsx` held the only
-   readable list of those.
-
-   This is the same rule `check-rows.ts` already enforces for the
-   database: one vocabulary, one place. A component that needs a
-   word for a token reads it here.
-
-   No JSX in this file. It is a table of strings so that a check,
-   a test and a route can all read it, and so that adding a
-   language later is one column rather than a sweep.
-   ============================================================ */
+   No JSX in this file. It is a table of strings so a check, a test and a
+   route can all read it, and so adding a language is one column. */
 
 export interface Words { en: string; bn: string }
 
-/* ---- four of them live in `shared/` now ----
+    /* ---- four of them live in `shared/` ----
+       Re-exported here under the names every component already uses. What
+       moved is where the STRINGS are: the Android app draws the same
+       figures, and a band printed in Kotlin would be a second copy of
+       eight Bangla sentences with nothing holding the two together. Copy
+       is DATA, so these reach a phone through `/api/site`.
 
-   They are re-exported here under the names every component on
-   this page already uses, so nothing else changed. What moved is
-   where the STRINGS are: the Android app draws the same figures,
-   and a band printed in Kotlin would be a second copy of eight
-   Bangla sentences with nothing holding the two together. Copy is
-   DATA by the contract at the top of `CLAUDE.md`, so these reach
-   a phone through `/api/site` and a reworded band arrives at the
-   next fetch.
-
-   `Phrase` and `Words` are the same shape, which is why the
-   re-export needs no adapter. */
+       `Phrase` and `Words` are the same shape, which is why the re-export
+       needs no adapter. */
 export {
   BMI_BANDS as BAND_WORDS,
   WHTR_BANDS as WHTR_WORDS,
@@ -89,27 +74,18 @@ export const medWords = (id: string): Words => {
   return m ? { en: m.en, bn: m.bn } : { en: id, bn: id };
 };
 
-/* ------------------------------------------------------------
-   the clinic's own numbers
+    /* ---- the clinic's own numbers ----
+       A MARKER'S ID IS A STORED VALUE, exactly like a medicine's:
+       `diet_labs.marker` holds these strings in real rows.
 
-   `diet_labs` has had a table, four policies and an index since
-   the migration was written, and no reader and no writer at all,
-   while the front door's card calls these "the only objective
-   measurements in the whole tool". A promise a page makes and a
-   table cannot keep.
-
-   A MARKER'S ID IS A STORED VALUE, exactly like a medicine's:
-   `diet_labs.marker` holds these strings in real rows.
-
-   AND THE RANGE IS THE READER'S LAB'S, NOT THIS FILE'S. A
-   reference interval is a property of an assay and a population,
-   it is printed on the report the reader is holding, and it
-   varies between labs by more than the differences this tool
-   would be drawing. `ref_low` and `ref_high` are columns on the
-   row for that reason. What is below is a TYPICAL adult range,
-   offered as a default and overwritten by whatever the report
-   says, and every figure drawn against a default says so.
-   ------------------------------------------------------------ */
+       AND THE RANGE IS THE READER'S LAB'S, NOT THIS FILE'S. A reference
+       interval is a property of an assay and a population, it is printed
+       on the report the reader is holding, and it varies between labs by
+       more than the differences this tool would be drawing. `ref_low` and
+       `ref_high` are columns on the row for that reason. What is below is
+       a TYPICAL adult range, offered as a default and overwritten by
+       whatever the report says, and every figure drawn against a default
+       says so. */
 
 export interface Marker {
   id: string;

@@ -1,38 +1,18 @@
 "use client";
 
-/* ============================================================
-   diet/foods-panel.tsx: the portion library, and what it costs.
+/* The portion library, and what it costs. `DIET.md` section 17, and
+   section 14's oil calibration at the foot of this page.
 
-   `DIET.md` section 17, and section 14's oil calibration, which
-   is asked for once a month at the foot of this page.
+   COST PER GRAM OF PROTEIN is the number that changes behaviour: protein
+   is the expensive macronutrient and the one with a floor, so "what is
+   the cheapest protein I will actually eat" is a real optimisation with a
+   real answer, and the answer is different in Dhaka and in Manchester.
 
-   ---- why a price table is on a diet tool at all ----
+   A PRICE IS A FACT WITH A DATE ON IT. An undated price is worse than
+   none, so every row carries the month it was checked.
 
-   This is a personal finance site. It teaches money in Bangla,
-   it has a school called টাকা ও শেয়ার, and it holds a portfolio
-   tool and a stock model. A diet tool here that never mentioned
-   money would be the one place on the site where the obvious
-   question does not get asked.
-
-   COST PER GRAM OF PROTEIN is the number that changes behaviour.
-   Protein is the expensive macronutrient and the one with a
-   floor, so "what is the cheapest protein I will actually eat"
-   is a real optimisation with a real answer, and the answer is
-   different in Dhaka and in Manchester.
-
-   ---- a price is a fact with a date on it ----
-
-   An undated price is worse than none. Every row carries the
-   month it was checked and anything older is drawn with its date
-   rather than silently.
-
-   ---- and no shop, ever ----
-
-   No links, no affiliate, no basket. These are reference figures
-   for arithmetic. The moment this recommends where to buy
-   something it stops being a calculator and becomes an
-   advertisement.
-   ============================================================ */
+   AND NO SHOP, EVER: no links, no affiliate, no basket. The moment this
+   recommends where to buy something it stops being a calculator. */
 
 import { useEffect, useMemo, useState } from "react";
 import {
@@ -55,33 +35,23 @@ const MONEY: Record<string, string> = { BDT: "৳", GBP: "£" };
 const perProtein = (f: Portion): number | null =>
   f.price != null && f.protein > 0 ? (f.price / f.protein) * 100 : null;
 
-/** PRECISION FOLLOWS THE MEASUREMENT, NEVER THE FLOAT, and here
-    it also has to follow the CURRENCY.
+    /** PRECISION FOLLOWS THE MEASUREMENT, NEVER THE FLOAT, and here it
+        also has to follow the CURRENCY. Cost per 100 g of protein lands
+        between one and three pounds in Britain and between fifty and three
+        hundred taka in Bangladesh, so rounding both to whole units makes
+        three different foods all read "£1" in a table that has just sorted
+        them by that exact number.
 
-    Cost per 100 g of protein lands between one and three pounds
-    in Britain and between fifty and three hundred taka in
-    Bangladesh. Rounding both to whole units made three different
-    foods all read "£1" in a table that had just sorted them by
-    that exact number: a table that sorts by a figure and then
-    hides the figure is a table telling the reader to trust an
-    order they cannot check.
-
-    Two decimals under ten, one under a hundred, whole above it.
-    The rule is about the size of the number rather than about
-    the currency, so a third currency needs nothing added. */
+        Two decimals under ten, one under a hundred, whole above it. The
+        rule is about the size of the number rather than the currency, so a
+        third currency needs nothing added. */
 const money = (n: number): string =>
   n < 10 ? n.toFixed(2) : n < 100 ? n.toFixed(1) : n.toFixed(0);
 
-/** The month a price was checked, drawn WITH the price and never
-    instead of it.
-
-    An undated price is worse than none, which is section 17 and
-    the header above, and this panel drew none of them for its
-    first two releases: the rows carried `pricedOn` and the table
-    printed a figure with nothing to date it. `YYYY-MM` is passed
-    through as it is written rather than made into a month name,
-    because a month name is a third thing to say in two
-    languages. */
+    /** The month a price was checked, drawn WITH the price and never
+        instead of it: an undated price is worse than none. `YYYY-MM` is
+        passed through as written rather than made into a month name,
+        because a month name is a third thing to say in two languages. */
 const Priced = ({ on, lang }: { on?: string; lang: "en" | "bn" }) =>
   (on ? <span className="dt-priced">{digits(on, lang)}</span> : null);
 
@@ -237,23 +207,17 @@ export function FoodsPanel() {
   );
 }
 
-/** THE OIL NOBODY MEASURES.
+    /** THE OIL NOBODY MEASURES. A curry's oil is poured, not weighed, and
+        it is invisible in the finished dish. Across a week of home cooking
+        it is frequently the largest unlogged item in the diet, and it is
+        why the gap between an estimated maintenance and a learned one is
+        20 to 30 per cent.
 
-    `DIET.md` section 14. A curry's oil is poured, not weighed,
-    and it is invisible in the finished dish. Across a week of
-    home cooking it is frequently the single largest unlogged
-    item in the entire diet, larger than any snack anybody feels
-    guilty about, and it is why the gap between an estimated
-    maintenance and a learned one is 20 to 30 percent.
-
-    ONE QUESTION, ONCE A MONTH, and the bottle comes with its own
-    scale printed on the side. The arithmetic is shown rather
-    than asserted: a figure a reader cannot check is a figure
-    they will not believe, and this one is going into their log.
-
-    It lives here rather than on the log form because it is a
-    fact about a kitchen rather than about a meal, and it is
-    asked once for a month of them. */
+        ONE QUESTION, ONCE A MONTH, and the bottle comes with its own scale
+        printed on the side. The arithmetic is shown rather than asserted:
+        a figure a reader cannot check is one they will not believe, and
+        this one is going into their log. It lives here because it is a
+        fact about a kitchen rather than about a meal. */
 function Oil() {
   const lang = useToolLang();
   const [w, setW] = useState<Who | null>(null);

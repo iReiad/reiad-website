@@ -1,49 +1,29 @@
 "use client";
 
-/* ============================================================
-   diet/log-form.tsx: the left column. What you came here to do.
+/* The left column. What you came here to do. `DIET.md` section 13: food
+   diaries are abandoned because of FRICTION, not motivation, and the
+   measure of this file is a stopwatch: a repeat dinner in three
+   interactions, a new dish in under a minute.
 
-   `DIET.md` section 13: the reason food diaries get abandoned is
-   FRICTION, not motivation, and the fix is that most people eat
-   the same forty things. The measure of this file is a
-   stopwatch, and it belongs in the test: a repeat dinner in
-   three interactions, a new dish in under a minute.
+   SAVING SAYS SO, AND SAYS WHEN IT HAS NOT. Every field writes on blur
+   rather than behind a Save button, because a Save button is one more
+   thing to forget and a forgotten one loses the day. So `saving` is
+   shown, and `queued` is a real state with its own word rather than a lie
+   about having saved.
 
-   ---- saving says so, and says when it has not ----
+   NOTHING HERE CAN BE FAILED: no red, no target line across the input, no
+   message when a number is larger than another number.
 
-   Every field here writes on blur rather than behind a Save
-   button, because a Save button is one more thing to forget and
-   a forgotten one loses the day. That makes the STATE the
-   important part: a page that silently drops a write on a bad
-   connection is worse than one that refuses, so `saving` is
-   shown, and `queued` is a real state with its own word rather
-   than a lie about having saved.
+   A PLANNED ROW IS NOT AN EATEN ONE. The week plan is these same rows
+   dated ahead with `planned` set. `totalFor` has always excluded them, so
+   a list that does not split them draws tonight's plan in the eaten list
+   under a total that leaves it out.
 
-   ---- and nothing here can be failed ----
-
-   No red, no target line across the input, no message when a
-   number is larger than another number. The tool's job at this
-   moment is to accept what happened.
-
-   ---- a planned row is not an eaten one ----
-
-   Section 13's week plan is these same rows dated ahead with
-   `planned` set, so a day being logged can hold both. `totalFor`
-   has always excluded them and this list did not, so a plan for
-   tonight would have been drawn in the eaten list, with its
-   energy beside it, under a total that left it out. Splitting
-   them is the fix and the tick is the other half: a plan becomes
-   a log by clearing one flag, which is one row and not a second.
-
-   ---- and Enter means what it says ----
-
-   Every box here writes on blur, and a keyboard has no blur
-   until something else is focused: a reader who typed this
-   morning's weight, pressed Enter and closed the tab lost it.
-   Enter commits and stays put rather than blurring, because a
-   blur to the body sends the next Tab back to the top of the
-   page.
-   ============================================================ */
+   AND ENTER MEANS WHAT IT SAYS: a keyboard has no blur until something
+   else is focused, so a reader who typed this morning's weight and
+   pressed Enter would lose it. Enter commits and stays put rather than
+   blurring, because a blur to the body sends the next Tab back to the top
+   of the page. */
 
 import { useEffect, useState, type KeyboardEvent } from "react";
 import {
@@ -305,19 +285,16 @@ export function LogForm({
           <span className="mono"> {digits(Math.round(totals.kcal), lang)}</span>
         </h3>
 
-        {/* HOW MUCH OF TODAY IS A GUESS. `DIET.md` section 14: a
-            restaurant plate is not knowable, so its midpoint is
-            in the figure above and its width is here, rather than
-            hidden inside a decimal that reads as a measurement. A
-            day with two of them is a wider band, the same way a
-            sparse micronutrient day is drawn faintly.
+            {/* HOW MUCH OF TODAY IS A GUESS. A restaurant plate is not
+                knowable, so its midpoint is in the figure above and its
+                width is here, rather than hidden inside a decimal that
+                reads as a measurement.
 
-            HALF THE SUMMED WIDTH IS THE WORST CASE, all the
-            guesses wrong in the same direction. Two guesses that
-            missed independently would be narrower than this, and
-            claiming that narrower figure would be the tool being
-            more certain than it has any right to be, which is the
-            direction this whole tool is arranged against. */}
+                HALF THE SUMMED WIDTH IS THE WORST CASE, all the guesses
+                wrong in the same direction. Two guesses that missed
+                independently would be narrower, and claiming that narrower
+                figure would be the tool being more certain than it has any
+                right to be. */}
         {totals.spread > 0 ? (
           <p className="dt-hint">
             <T

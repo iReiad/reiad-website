@@ -1,33 +1,20 @@
 "use client";
 
-/* ============================================================
-   diet/health-panel.tsx: the numbers a clinic gives you, and the
-   medicines that change what a chart means.
+/* The numbers a clinic gives you, and the medicines that change what a
+   chart means. `DIET.md` sections 21 and 22.
 
-   `DIET.md` sections 21 and 22.
+   UNITS ARE STORED, NEVER ASSUMED: glucose is reported in mmol/L in the
+   UK and commonly in mg/dL on a Bangladeshi lab report, and the two
+   differ by a factor of eighteen. This is the one place in the tool where
+   an assumed unit would be wrong exactly once, catastrophically.
 
-   ---- units are stored, never assumed ----
+   THE TOOL PRINTS A RANGE AND NOTHING ELSE. A reference range is a
+   property of an ASSAY rather than of a person, so it comes from the lab
+   that produced the number and everything past that is a clinician's job.
 
-   Glucose is reported in mmol/L in the UK and commonly in mg/dL
-   on a Bangladeshi lab report, and the two differ by a factor of
-   eighteen. This is the one place in the tool where an assumed
-   unit would be wrong exactly once, catastrophically.
-
-   ---- and the tool prints a range and nothing else ----
-
-   No interpretation, no colour on an out of range value, no
-   "your risk is". A reference range is a property of an ASSAY
-   rather than of a person, so the range comes from the lab that
-   produced the number and everything past that point is a
-   clinician's job.
-
-   ---- the medicines list adjusts nothing ----
-
-   It says what a drug does to the numbers ON THESE PAGES and
-   stops. Adjusting an equation for a medicine would be
-   practising medicine with arithmetic; saying what the medicine
-   does to a reading is explaining a chart.
-   ============================================================ */
+   THE MEDICINES LIST ADJUSTS NOTHING: it says what a drug does to the
+   numbers ON THESE PAGES and stops. Adjusting an equation for a medicine
+   would be practising medicine with arithmetic. */
 
 import { useEffect, useState } from "react";
 import {
@@ -428,20 +415,14 @@ export function HealthPanel() {
   );
 }
 
-/** WHAT HAS BEEN KEPT, one marker at a time.
+    /** WHAT HAS BEEN KEPT, one marker at a time. A reading of any of these
+        is a line over time rather than a latest value, so every marker
+        with more than one reading gets the direction it moved, in its own
+        units, against the range it is being read against.
 
-    A reading of any of these is a line over time rather than a
-    latest value, and the whole reason a sheet of them goes in a
-    drawer is that one number on one day says almost nothing. So
-    every marker with more than one reading gets the direction it
-    moved, in its own units, and the reader is told which range
-    it is being read against.
-
-    IT NEVER GRADES. No red, no "high", no verdict: `worseHigh`
-    is used to say which way a change went and nothing else.
-    Deciding what a number means about a person is what the
-    appointment is for, and a calculator that did it here would
-    be practising medicine with arithmetic. */
+        IT NEVER GRADES: no red, no "high", no verdict. `worseHigh` says
+        which way a change went and nothing else. Deciding what a number
+        means about a person is what the appointment is for. */
 function LabHistory({ labs, lang, onDrop }: {
   labs: Lab[];
   lang: "en" | "bn";

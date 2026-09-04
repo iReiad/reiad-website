@@ -1,56 +1,31 @@
 "use client";
 
-/* ============================================================
-   diet/habits-panel.tsx: seven daily things, read off what is
-   already logged.
+/* Seven daily things, read off what is already logged. `DIET.md`
+   sections 11 and 19.
 
-   `DIET.md` sections 11 and 19.
+   THERE IS NO FORM ON THIS PAGE, and that is the point: if the site
+   cannot measure a thing out of something it already holds, the bar would
+   be a decoration. Every one of these is a column of `diet_days` that the
+   log form already writes, read back as a run of days, and an eighth
+   habit has to name its column before it is an eighth habit.
 
-   ---- there is no form on this page, and that is the point ----
+   `streak()` in `shared/diet.ts` carries the argument and `habits()`
+   hands its days to it rather than counting a run of its own. `best` is
+   drawn beside `current` on every row, because a number that can only
+   fall is a number people stop looking at, and a missed day is one fewer
+   day in a count rather than a break in something.
 
-   Section 30 sets the test for a target and it holds for a habit:
-   if the site cannot measure a thing out of something it already
-   holds, the bar would be a decoration. So none of these is a new
-   field and none of them is a checklist to tick. Every one is a
-   column of `diet_days` that the log form already writes, read
-   back as a run of days, and an eighth habit has to name its
-   column before it is an eighth habit.
+   NOTHING HERE GOES RED: no flame, no countdown, no colour that means
+   failure, and no sentence that praises anybody either, because a status
+   that praises you is a status people stop reading.
 
-   ---- it counts showing up ----
+   A HABIT WITH NO DATA IS NOT A FAILED HABIT: a column nothing writes yet
+   is a sentence saying what would fill it, never a fortnight of noughts.
 
-   `streak()` in `shared/diet.ts` carries the whole argument and
-   `habits()` hands its days to that function rather than counting
-   a run of its own. What follows from it here: `best` is drawn
-   beside `current` on every row, because a number that can only
-   fall is a number people stop looking at, and a missed day is
-   never a break in something, it is one fewer day in a count.
-
-   ---- and nothing here goes red ----
-
-   Section 31. No flame, no countdown, no colour that means
-   failure, and no sentence that praises anybody either: a status
-   that praises you is a status people stop reading, which would
-   take the honest half down with it.
-
-   ---- a habit with no data is not a failed habit ----
-
-   Every reading has three answers and the third one is why this
-   page is legible on the day somebody arrives. A column nothing
-   writes yet is a sentence saying what would fill it, never a
-   fortnight of noughts. `sleep_hours` is that column today: no
-   log form offers hours, so the row says so and says what would
-   fill it.
-
-   ---- and two readings that are not habits ----
-
-   Section 19's other half: movement is progress a scale cannot
-   see, and so is a tape. `Moved` puts the walking, the trend and
-   the log over one window beside each other, which is the only
-   way the fourth stall is visible at all; `Taped` puts the tape
-   beside the trend, which is the one kind of stall the tool can
-   settle on its own. Both are `shared/insights.ts` and neither
-   is counted towards a run of days.
-   ============================================================ */
+   Two of these are not habits: `Moved` puts the walking, the trend and
+   the log over one window beside each other, and `Taped` puts the tape
+   beside the trend. Both are `shared/insights.ts` and neither is counted
+   towards a run of days. */
 
 import { useEffect, useMemo, useState } from "react";
 import {
@@ -411,16 +386,16 @@ export function HabitsPanel() {
   );
 }
 
-/** SECTION 19'S FOURTH STALL, AS THREE FACTS AND NOT AS A
-    VERDICT. Deliberate exercise is the small advertised part of
-    what anybody burns; the large part is walking, standing and
-    carrying, and it falls quietly during a deficit. Nothing else
-    on this page can see that, because a trend that has flattened
-    while a log has not changed looks identical either way.
+    /** SECTION 19'S FOURTH STALL, AS THREE FACTS AND NOT AS A VERDICT.
+        Deliberate exercise is the small advertised part of what anybody
+        burns; the large part is walking, standing and carrying, and it
+        falls quietly during a deficit. Nothing else here can see that,
+        because a trend that has flattened while a log has not changed
+        looks identical either way.
 
-    The window is the one section 4 reads a stall over, so the
-    three readings are about the same three weeks. Nothing here
-    is added to a target: what a walk changes is the forecast. */
+        The window is the one a stall is read over, so the three readings
+        are about the same three weeks. Nothing here is added to a target:
+        what a walk changes is the forecast. */
 function Moved({ it }: { it: Movement | null }) {
   const band = it?.kcal
     ? {
@@ -556,16 +531,12 @@ function Moved({ it }: { it: Movement | null }) {
   );
 }
 
-/** THE TAPE, BESIDE THE SCALE, and section 19 says this one
-    reading justifies the whole measurement set.
-
-    Somebody starting resistance training in a deficit can add
-    muscle while losing fat, and the scale barely moves for
-    weeks. Every tracker in the world calls that a stall and it
-    is the opposite. `stall()` already names it, and only inside
-    a detected stall; this is the same two facts whether or not
-    one was detected, because a reader who is not stalled still
-    cannot read this out of a weight. */
+    /** THE TAPE, BESIDE THE SCALE. Somebody starting resistance training
+        in a deficit can add muscle while losing fat, and the scale barely
+        moves for weeks: every tracker in the world calls that a stall and
+        it is the opposite. `stall()` names it only inside a detected
+        stall; this is the same two facts either way, because a reader who
+        is not stalled still cannot read this out of a weight. */
 function Taped({ it }: { it: Tape | null }) {
   return (
     <section aria-labelledby="dt-tape-said-h">
