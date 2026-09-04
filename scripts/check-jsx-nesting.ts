@@ -1,60 +1,35 @@
 #!/usr/bin/env node
-/* ============================================================
-   check-jsx-nesting.ts: a paragraph holding something a
-   paragraph cannot hold, which is how a page loses hydration.
+/* check-jsx-nesting.ts: a paragraph holding something a paragraph
+   cannot hold, which is how a page loses hydration.
 
        node scripts/check-jsx-nesting.ts
        node scripts/check-jsx-nesting.ts --list   # every component's root
 
-   THE BUG THIS EXISTS FOR
+   A start tag for a block element CLOSES an open paragraph, so a
+   `<p>` wrapping a component that renders `<div>`s builds a DOM
+   that is not the tree React rendered. React then abandons the
+   server's markup and renders the root again from scratch, which
+   loses what the boot script in `shell.tsx` wrote on to `<html>`
+   before the first paint: the reader's theme, their rail, their
+   language. The markup validates, `parity.test.ts` compares the
+   SERVER's HTML and finds it perfect, and the page looks right in
+   a screenshot.
 
-   `<p className="ls-verdict">` held a `<TBlock>`, and a `TBlock`
-   renders two `<div>`s. HTML does not allow that: a start tag
-   for a block element CLOSES an open paragraph, so the browser
-   builds
+   Every `.tsx` under `next/`, parsed twice: the first pass records
+   what each component renders at its ROOT, following a component
+   that returns another until the answer stops changing; the second
+   walks the children of every `<p>`.
 
-       <p class="ls-verdict"></p><div class="ls-bn">…</div>
+   `next/lesson.test.ts` asks the same question at runtime and is
+   the better answer where it can run. This one takes a fifth of a
+   second with no build and no browser, and names the line.
 
-   where React rendered one paragraph with the divs inside it.
-   The DOM is then not the tree, React abandons the server's
-   markup and renders the root again from scratch.
-
-   Nothing else here could see it. The markup validates as far as
-   any check that reads a string is concerned, `parity.test.ts`
-   compares the SERVER's HTML and finds it perfect, and the page
-   looks right in a screenshot. What is lost is what the boot
-   script in `shell.tsx` wrote on to `<html>` before the first
-   paint: the reader's theme, their rail, their language. A route
-   that regenerates its tree drops all three, on a page that
-   renders.
-
-   It was live on 43 of the money school's 81 lessons.
-
-   WHAT IT READS
-
-   Every `.tsx` under `next/`, parsed as TSX, twice. The first
-   pass records what each component in this repository renders at
-   its ROOT, following a component that returns another component
-   until the answer stops changing. The second pass walks the
-   children of every `<p>` and asks whether any of them is, or
-   renders, one of the elements that closes a paragraph.
-
-   `next/lesson.test.ts` is the same question asked at runtime, in
-   a browser, and it is the better answer where it can run: it
-   sees a mismatch this cannot, such as an attribute the server
-   and the browser disagree about. This one runs in a fifth of a
-   second with no build and no browser, and it names the line.
-
-   WHAT IT LEAVES ALONE, ON PURPOSE
-
-     A component this cannot resolve: one imported from a package,
-     or one whose return is an expression rather than JSX. Naming
-     those as suspects would be a check nobody could satisfy.
-
-     A conditional root. A component that returns `<div>` on one
-     branch is flagged; one that returns `null` on the other is
-     not thereby excused, because null is not what breaks.
-   ============================================================ */
+   It leaves alone, on purpose: a component it cannot resolve, one
+   imported from a package or returning an expression rather than
+   JSX, because naming those as suspects would be a check nobody
+   could satisfy. A component that returns `<div>` on one branch is
+   flagged; returning `null` on the other does not excuse it,
+   because null is not what breaks. */
 
 import ts from "typescript";
 import { readdirSync, readFileSync, statSync } from "node:fs";

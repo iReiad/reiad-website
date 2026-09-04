@@ -15,16 +15,10 @@
    and the revolver is a cash sweep rather than a covenant model,
    charged on its opening balance too. */
 
-/* ------------------------------------------------------------
-   The company.
-
-   A representative Bangladeshi listed manufacturer, cement and
-   building materials, the profile of a mid-cap on the DSE main
-   board. The figures are illustrative and internally consistent,
-   NOT the filed accounts of any real company: publishing invented
-   numbers under a real company's name would be inventing that
-   company's financial records. Everything is in BDT lakh.
-   ------------------------------------------------------------ */
+/* The company: a representative Bangladeshi listed manufacturer.
+   The figures are illustrative and internally consistent, NOT
+   the filed accounts of any real company. Everything is in BDT
+   lakh. */
 export const COMPANY = {
   name: "Padma Cement & Building Materials PLC",
   short: "Padma Cement",

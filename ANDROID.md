@@ -11,9 +11,8 @@ the app consumes, what the server has to grow (very little), and
 in what order the app gets built so that each phase makes the next
 one smaller.
 
-Written 22 August 2026, against the code as it stands. Where this
-file and the code disagree, the code is right and this file gets
-corrected, which is the rule every document here lives under.
+Where this file and the code disagree, the code is right and this
+file gets corrected.
 
 ## What "native" is for, and the two ways not to do it
 
@@ -29,23 +28,16 @@ accident, a real video player for the courses, text that scrolls
 like the platform's own, widgets, share targets, and a UI thread
 that never pays for hydration.
 
-**Not React Native, and the trade was weighed rather than waved
-off.** The case for it is real: the site is written in React and
-TypeScript, the fluency transfers whole, and the site's hardest
-pure logic (the sync engine in `aab/src/sync.ts`, the stock model
-in `aab/tools/stock.model.js`, the shapes in `shared/`) has no
-DOM in it and would import into a JavaScript runtime nearly
-as-is, where Kotlin has to port each one under fixture tests.
-What would not transfer is the part that looks most transferable:
-the React here is server components rendering database rows into
-HTML for a stylesheet React Native cannot read, and much of the
-interactivity is plain browser modules wiring served pages. The
-choice was made with that cost in view, 22 August 2026: Kotlin,
-for no JavaScript layer between the app and the platform,
-first-class widgets and media, and one runtime to maintain for
-years. The price is the ports, and the plan treats them as
-first-class work: fixture-locked, in the risks table, never
-assumed.
+**Not React Native.** What looks most transferable is not: the
+React here is server components rendering database rows into HTML
+for a stylesheet React Native cannot read, and much of the
+interactivity is plain browser modules wiring served pages. Kotlin
+buys no JavaScript layer between the app and the platform,
+first-class widgets and media, and one runtime to maintain. **The
+price is the ports** (the sync engine in `aab/src/sync.ts`, the
+stock model in `aab/tools/stock.model.js`, the shapes in
+`shared/`), and they are first-class work: fixture-locked, in the
+risks table, never assumed.
 
 **So: Kotlin and Jetpack Compose.** One activity, Compose
 navigation, Material 3 as the substrate with this site's own
@@ -55,15 +47,12 @@ which is the same "one file until it hurts" judgement the
 stylesheet lives by.
 
 **And its own repository.** Everything the app consumes is public
-by design (the argument is the same one `content/articles.backup.json`
-rests on: every byte already answers at a public URL), so the app
-does not need to live inside this repo's privacy boundary, and it
-should not live inside its check estate either: every check here
-reads every tracked file and all of them were written for a web
-codebase. A Gradle tree is a few hundred files those checks were
-never meant to parse. The app repo holds its own fixtures,
-refreshed by script from the public endpoints, which is how its CI
-tests parity with the site without a credential.
+by design, so it does not need this repo's privacy boundary, and
+it should not live inside its check estate: every check here reads
+every tracked file and all of them were written for a web
+codebase. The app repo holds its own fixtures, refreshed by script
+from the public endpoints, which is how its CI tests parity with
+the site without a credential.
 
 ## The contracts that carry over unchanged
 
@@ -100,19 +89,15 @@ with no app release, and anything that is CODE needs one.**
 | a new storage key or sync rule | needs a release, and a migration of nothing |
 
 The first two rows are true because of one decision in
-`functions/api/site.ts`: it SPREADS the tables rather than
-mapping them field by field. Hand-picked fields would look
-identical on the day they were written and would silently drop
-whatever somebody added a year later, which is the failure this
-repository is built around. `scripts/site-api.test.ts` walks the
-source objects and fails if a field stops surviving the trip, so
-the property is held by a test rather than by intention.
+`functions/api/site.ts`: it SPREADS the tables rather than mapping
+them field by field. Hand-picked fields look identical on the day
+they are written and silently drop whatever somebody adds a year
+later. `scripts/site-api.test.ts` walks the source objects and
+fails if a field stops surviving the trip.
 
-The third row is the honest half. A block class is a renderer
-change, a calculator is arithmetic, a storage key is a contract
-with real accounts. What keeps that list short is pushing work
-into the data half wherever it will go: a lesson is prose in a
-row, not a screen; a school is a table entry, not a module.
+What keeps the release-needing list short is pushing work into the
+data half wherever it will go: a lesson is prose in a row, not a
+screen; a school is a table entry, not a module.
 
 **So the obligation runs both ways.** Anything added to those
 tables IS published at `/api/site` the moment it is added, which
@@ -173,81 +158,55 @@ plan touches the site.
    imported it from node and a migration comment already quoted
    its school ids. A file three runtimes read belongs in the
    directory this repository keeps for exactly that.
-2. **`/.well-known/assetlinks.json`. Written, and one value
-   short.** `aab/.well-known/assetlinks.json` names the package
-   and carries an empty fingerprint list, which is a valid
-   statement that authorises nothing. Nothing else claims the
-   path: `run_worker_first` does not list it, no route matches
-   it, and `aab/.assetsignore` does not cover it.
+2. **`/.well-known/assetlinks.json`. Written.**
+   `aab/.well-known/assetlinks.json` names the package and carries
+   the debug key's fingerprint. Nothing else claims the path:
+   `run_worker_first` does not list it, no route matches it, and
+   `aab/.assetsignore` does not cover it. A dot-directory IS
+   uploaded, measured with `npx wrangler@4 deploy --dry-run`,
+   which prints the asset-manifest size: adding a second file
+   inside `aab/.well-known/` moved it and removing it put it back.
 
-   **A dot-directory IS uploaded, and that is measured rather
-   than assumed.** It was written here as a thing this repository
-   could not prove from the inside, and it can:
-   `npx wrangler@4 deploy --dry-run`, which is what `deploy.yml`
-   runs, prints the size of the asset manifest. Adding a second
-   file inside `aab/.well-known/` took it from 191 to 192 and
-   removing it put it back, so the directory is read like any
-   other. The file is here early anyway, because the deploy that
-   ships the real fingerprint is a bad moment to discover
-   otherwise.
+   **The package is `uk.co.reiad.library`**: the domain backwards,
+   then the site's own name. It is a permanent identifier, so it
+   is decided once, here, rather than at the first `gradle init`.
 
-   **The package is `uk.co.reiad.library`**: the domain
-   backwards, then the site's own name. It is a permanent
-   identifier, so it is decided once, here, rather than at the
-   first `gradle init`.
-
-   **The fingerprint is there now, and it is the DEBUG key's.**
+   **The fingerprint in it is the DEBUG key's**, from
    `keystore/debug.keystore` in the app repository, committed,
-   with the password every Android debug keystore has had since
-   the beginning: `android`, alias `androiddebugkey`. That is not
-   a credential leaking. A debug key cannot sign a Play release
-   and authorises nothing beyond saying "this APK and the last one
-   are the same app".
+   with the password every Android debug keystore has had:
+   `android`, alias `androiddebugkey`. That is not a credential
+   leaking: a debug key cannot sign a Play release and authorises
+   nothing beyond saying "this APK and the last one are the same
+   app". It is committed because Android generates a debug
+   keystore PER MACHINE, so an APK built in CI and one built on a
+   laptop are signed differently and Android refuses to install
+   either over the other, and because an app link verifies against
+   ONE fingerprint.
 
-   Which is exactly the problem it solves, and there are two.
-   Android generates a debug keystore PER MACHINE, so an APK built
-   in CI and one built on a laptop are signed differently and
-   Android refuses to install either over the other: the reader
-   uninstalls first and loses whatever had not synced. And an app
-   link verifies against ONE fingerprint, so a per-machine key
-   means a shared lesson opens in a browser however carefully the
-   intent filters were written.
+   **A release key does not go in the repository.** It lives in CI
+   as a secret and its fingerprint is a second line in the array,
+   which takes several so an app link verifies for the sideloaded
+   build and the store build alike. **Make that release keystore
+   once and back it up.** The same package can never be signed by
+   another key, so losing it means an installed app cannot be
+   updated, only uninstalled and replaced, and every reader loses
+   what the device was holding.
 
-   **A release key is a different thing and does not go in the
-   repository.** When there is one it lives in CI as a secret and
-   its fingerprint is a second line in the array, because the
-   array takes several: an app link should verify for the
-   sideloaded build and the store build alike. **Make that release
-   keystore once and back it up.** Losing it is not a bad
-   afternoon: the same package can never be signed by another key,
-   so an installed app cannot be updated, only uninstalled and
-   replaced, and every reader loses what the device was holding.
-
-   Enrolling in Play later takes that same key, so the
-   fingerprint carries over and this file does not change. Letting
-   Play generate its own instead is also fine and costs one more
-   line in the array, because the array takes several: an app link
-   should verify for the sideloaded build and the store build
-   alike.
-3. **One Supabase dashboard entry**, and it is one of the two
-   things in this whole plan that cannot be done from a
-   repository: the project's auth configuration is not in the
-   database and not in the tooling, so no migration, no script
-   and no API call here reaches it. One value to add to the auth
-   allowlist: **`uk.co.reiad.library://auth`**.
+3. **One Supabase dashboard entry.** The project's auth
+   configuration is not in the database and not in the tooling, so
+   no migration, no script and no API call here reaches it. One
+   value to add to the auth allowlist:
+   **`uk.co.reiad.library://auth`**. Done on 22 August 2026.
 
    **A custom scheme rather than an App Link, and the reason is
    the dependency it removes.** The site's flow is the implicit
    one: `GET /auth/v1/authorize?provider=google&redirect_to=...`,
    with the tokens coming back in the fragment of whatever
-   `redirect_to` names, and the magic link landing the same way.
-   An `https://reiad.co.uk/...` redirect would deliver that
-   intact and would also make signing in wait on a verified App
-   Link, which waits on a fingerprint, which waits on a Play
-   Console account. A scheme the app declares needs none of that,
-   so phase 2 depends on one dashboard field and nothing else.
-   The https redirect can be added beside it later; two entries
-   are allowed and neither excludes the other.
+   `redirect_to` names. An `https://reiad.co.uk/...` redirect
+   would make signing in wait on a verified App Link, which waits
+   on a fingerprint, which waits on a Play Console account. A
+   scheme the app declares needs none of that. The https redirect
+   can be added beside it later; two entries are allowed.
 
    The app opens the authorize URL in a Custom Tab, catches the
    redirect, and stores the session; `aab/src/account.ts` is the
@@ -266,26 +225,18 @@ plan touches the site.
 ## The two things a repository cannot do
 
 Everything else in this plan is decided here, written here, or
-checked here. These two are not, and both are late rather than
-blocking, so nothing waits on them:
+checked here. Both of these are done, and neither gated phase 1,
+which is signed out:
 
-| | What | When |
-| --- | --- | --- |
-| Supabase | add `uk.co.reiad.library://auth` under Authentication, URL Configuration | before anybody signs in, so start of phase 2 |
-| assetlinks | done: the debug key's fingerprint is in it, and the key is committed at `keystore/debug.keystore` in the app repository. A release key adds a second line | |
-
-Neither is needed to build phase 1, which is signed out, which is
-why phase 1 is first. **The first row was done on 22 August
-2026**, so the only one left is the second, and the second gates
-nothing.
+| | What |
+| --- | --- |
+| Supabase | `uk.co.reiad.library://auth` under Authentication, URL Configuration |
+| assetlinks | the debug key's fingerprint, with the key committed at `keystore/debug.keystore` in the app repository. A release key adds a second line |
 
 **They are independent of each other, deliberately.** The custom
-scheme above is what keeps sign-in off the fingerprint's critical
-path: the second row is a nicety about how links behave, not a
-gate on the account. The debug keystore's fingerprint
-(`~/.android/debug.keystore`, alias `androiddebugkey`, password
-`android`) is enough to try App Links on a handset, with no store
-account involved at all, and the array takes several.
+scheme keeps sign-in off the fingerprint's critical path: the
+second row is a nicety about how links behave, not a gate on the
+account.
 
 ## The app itself
 
@@ -593,24 +544,10 @@ pass on that. Concretely:
 
 ## Starting the build
 
-The plan above is the what and the why. This is the first hand of
-work, written so a build session can start without re-deriving any
-of it.
-
-**Phase 0, in this repository.** Three small changes:
-
-1. The manifest endpoint: a handler under `functions/api/`,
-   mounted in `API_ROUTES` in `worker.js`, serialising the
-   sections, tools, pages, skills, term groups and counts out of
-   `shared/content.ts` plus the public half of the nav table in
-   `shared/nav.ts`, cached like `/api/news`, and registered in
-   `SERVER_ONLY` in `scripts/check-api.ts` with the app named as
-   its caller.
-2. `assetlinks.json` under a `.well-known/` directory in `aab/`,
-   carrying the release signing fingerprints, verified live after
-   a deploy.
-3. The app's redirect URL added to the Supabase auth allowlist,
-   in the dashboard rather than in code.
+**Phase 0 is done in this repository**: `functions/api/site.ts`,
+`aab/.well-known/assetlinks.json`, and the Supabase auth
+allowlist entry. What is left of it is the release fingerprint,
+which gates nothing.
 
 **The app repository.** Suggested name `reiad-android`. Kotlin,
 one module. The dependency list, chosen to stay short: the

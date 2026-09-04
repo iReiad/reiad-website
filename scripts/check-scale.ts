@@ -1,56 +1,24 @@
 #!/usr/bin/env node
-/* ============================================================
-   check-scale.ts: the type scale is the type scale.
+/* check-scale.ts: the type scale is the type scale.
 
        node scripts/check-scale.ts
        node scripts/check-scale.ts --list   # every size in use
 
-   WHY THIS EXISTS
+   An audit found fifty distinct font sizes in 476 declarations, a
+   near-continuum of 0.02rem steps: eight of them inside the 1.3px
+   band between 0.90 and 0.98. Nobody chose fifty. Each was chosen
+   once, against whatever was next to it that afternoon.
 
-   An audit of `styles.css` in August 2026 found fifty distinct
-   font sizes in 476 declarations, in a near-continuum of 0.02rem
-   steps from 0.58rem to 1.06rem. Eight different sizes lived
-   inside the 1.3px band between 0.90 and 0.98, and 1.24rem and
-   1.25rem both shipped, a sixth of a pixel apart.
+   `--t-0` to `--t-8` are the scale, read out of the stylesheet
+   rather than copied here. Three things are allowed: a
+   `var(--t-N)`, a `clamp()`, which answers to the viewport, and a
+   size above the top of the scale. A bare `font-size` in rem BELOW
+   the top of the scale is what this fails on.
 
-   Nobody chose fifty sizes. Each one was chosen once, on its own,
-   against whatever was next to it that afternoon, because there
-   was nothing to reach for. `--t-0` to `--t-8` are the things to
-   reach for now, and this is what stops the fifty-first from
-   arriving the same way: not a rule anybody has to remember, a
-   red check.
-
-   WHAT IT ALLOWS
-
-   Three things, and each is a real category rather than a hole:
-
-     a `var(--t-N)`      the scale, which is the answer
-     a `clamp()`         a page title, which answers to the
-                         viewport rather than to a scale
-     a size above the    section heads and page titles, nineteen
-     top of the scale    of them, deliberately not on it
-
-   A bare `font-size` in rem BELOW the top of the scale is the
-   thing this fails on, because that is the one that had fifty
-   answers.
-
-   It reads the scale out of `styles.css` rather than keeping a
-   copy: a check with its own copy of the design is a check that
-   passes while the site drifts.
-
-   ---- and the corners, for the same reason ----
-
-   The radii went the same way and further: thirty-three literal
-   `border-radius` declarations across fourteen values, from 2px
-   to 20px, with a `--radius-icon` token that nothing reached for
-   at all. Nobody chose fourteen corner sizes either. The result
-   was a site that read as boxes, because a 10px corner on a
-   200px card is a square with the edges taken off.
-
-   `--radius-xs` to `--radius-lg` and `--radius-pill` are the
-   rungs. A literal px radius fails here. A percentage or a `50%`
-   does not, because a circle is a shape rather than a rung.
-   ============================================================ */
+   The corners are the same rule: `--radius-xs` to `--radius-lg`
+   and `--radius-pill` are the rungs and a literal px radius fails.
+   A percentage does not, because a circle is a shape rather than a
+   rung. */
 
 import { readFileSync } from "node:fs";
 import { dirname, join } from "node:path";
@@ -133,14 +101,10 @@ if (bad.length) {
 const RUNGS = [...css.matchAll(/(--radius(?:-[a-z]+)?):\s*([^;]+);/g)]
   .map(([, name]) => name);
 
-/* Prose is not code, and this file's prose talks about corners.
-
-   The line "used to end with `border-radius: 3px`" is inside a
-   block comment whose first line is prose, so a test for a line
-   STARTING with a comment marker walks straight past it. That is
-   the same hole check-contrast.ts had, where a comment saying
-   `--accent: blue` became the first declaration of --accent.
-   Track the block instead of guessing from one line. */
+/* Prose is not code, and this file's prose talks about corners. A
+   test for a line STARTING with a comment marker walks past a
+   declaration quoted mid-paragraph, which is the hole
+   check-contrast.ts had. Track the block instead. */
 /** A corner radius written as a literal rather than as a rung:
     where it is, and how many pixels it asks for. */
 const corners: Array<{ line: number; px: number }> = [];

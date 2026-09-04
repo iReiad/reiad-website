@@ -1,73 +1,29 @@
 "use client";
 
-/* ============================================================
-   diet/usuals.tsx: the four things that decide whether anybody
-   keeps a food log at all.
+/* The four things that decide whether anybody keeps a food log at all.
+   `DIET.md` section 13: copy yesterday, your usuals, saved meals, and the
+   week. A planned row is not a seventh table, it is `diet_entries` dated
+   ahead with `planned` set, so a plan becomes a log by clearing one flag.
 
-   `DIET.md` section 13. Copy yesterday is the most pressed
-   button in any food diary and it is usually right. Your usuals
-   is the other half: most people eat the same forty things, so
-   anything logged three times should be one tap, and the ones
-   eaten around this hour should be at the top, because
-   breakfast at eight in the morning should offer breakfast.
+   A MEAL IS NOT A RECIPE, and the difference is the yield. A recipe is a
+   POT with a yield, so `pot()` collapses it into one food and `scaleTo()`
+   cuts a portion out. A meal has nothing to divide and stays four rows,
+   each keeping its own label, source and micronutrients.
 
-   MEALS are the third. "My breakfast" is one tap for four
-   things, saved out of a day that already happened rather than
-   assembled in a builder, because a reader who has just logged
-   their breakfast has already done the assembling.
+   So NOTHING HERE SCALES ANYTHING, and there is no second copy of
+   `next/lib/recipes.ts`. Collapsing four foods into one row would be
+   dishonest twice over: three labels would leave `topSources()`, and
+   `totalFor()` counts an entry's WHOLE energy as covered for any key it
+   carries, so a summed meal would buy the day coverage that only two of
+   its four items paid for.
 
-   THE WEEK is the fourth and it is the same list with dates on
-   it: plan on Sunday, tick through the week. A planned row is
-   not a seventh table, it is `diet_entries` dated ahead with
-   `planned` set, so the plan, the shopping list and section
-   16's reading all come out of rows that already exist and a
-   plan becomes a log by clearing one flag.
+   The usuals ranking is COUNTED out of the log rather than curated, and
+   every row written here carries its own numbers, so correcting a portion
+   next week does not rewrite last week.
 
-   ---- a meal is not a recipe, and the difference is the yield ----
-
-   A recipe is a POT with a yield on it: `pot()` collapses its
-   ingredients into one food stated for `serves` portions and
-   `scaleTo()` cuts a portion out of it, which is one row in the
-   log reading "chicken curry, one portion". A meal has no yield
-   and nothing to divide. It is four rows: an egg, two rutis and
-   a cup of tea, each keeping its own label, its own source and
-   its own micronutrients.
-
-   So NOTHING HERE SCALES ANYTHING, and there is no second copy
-   of the arithmetic in `next/lib/recipes.ts`. Collapsing four
-   foods into one row would also be dishonest twice over: three
-   labels would leave `topSources()`, and `totalFor()` counts an
-   entry's WHOLE energy as covered for any key it carries, so a
-   summed meal would buy the day coverage that only two of its
-   four items paid for.
-
-   ---- worked out, never asked for ----
-
-   Nothing in the usuals list asks the reader to curate one. The
-   ranking is COUNTED out of the log, which is the rule at the
-   top of `CLAUDE.md`: a page that says how many of something
-   there are counts them rather than remembering them.
-   `usualsFrom()` in `next/lib/recipes.ts` is that count and one
-   sort, and `next/recipes.test.ts` asserts both.
-
-   ---- a copy is a copy ----
-
-   Every row written here carries its own numbers, exactly as it
-   did the day it was first logged. Nothing points at anything,
-   so correcting a portion size next week does not rewrite last
-   week, and a public database changing its mind about a biscuit
-   cannot reach into somebody's history. A saved meal is the
-   same promise one level up: editing it does not rewrite what
-   it has already written.
-
-   ---- and the clock is read after the first paint ----
-
-   The hour has to come from an effect. The server has no idea
-   what time it is where the reader is, so reading it during
-   render would put one order in the HTML and another in the
-   browser, which is React error #418 and the day every
-   calculator on this site went blank.
-   ============================================================ */
+   AND THE CLOCK IS READ AFTER THE FIRST PAINT: the server has no idea
+   what time it is where the reader is, so reading it during render puts
+   one order in the HTML and another in the browser. */
 
 import { useEffect, useMemo, useState } from "react";
 import {
@@ -259,16 +215,14 @@ export function Usuals() {
     if (!w || !rows.length) return;
     setGoing((state) => ({ ...state, [key]: "going" }));
     const at = clockTime();
-    /* WHICH MEAL OF THE DAY, written out. The hour decides it
-       unless the reader has said, which is what fills
-       `diet_entries.meal` and what lets one meal of yesterday be
-       taken on its own tomorrow. A saved meal does not carry
-       one: "my breakfast" eaten at three in the afternoon is
-       lunch, and the row should say what happened.
+        /* WHICH MEAL OF THE DAY, written out. The hour decides it unless
+           the reader has said. A saved meal does not carry one: "my
+           breakfast" eaten at three in the afternoon is lunch, and the row
+           should say what happened.
 
-       The hour comes off THIS clock rather than out of `hour`,
-       which is read once on mount and is wrong by however long
-       the tab has been open. */
+           The hour comes off THIS clock rather than out of `hour`, which
+           is read once on mount and is wrong by however long the tab has
+           been open. */
     const named = meal ?? mealAt(Number(at.slice(0, 2))).id;
     const landed: Entry[] = [];
     for (const row of rows) {
@@ -317,13 +271,11 @@ export function Usuals() {
       label_bn: called.bn.trim() || undefined,
       kind: "meal",
       parts: partsToSave,
-      /* NO `qty`, NO `unit` AND NO `serves`. Everywhere else in
-         this tool those three say what a row's figures are FOR,
-         and a meal's figures are for itself: it is eaten whole
-         or not at all, which is the whole difference between it
-         and a recipe. A `serves` here would be a yield nothing
-         divides by, and the migration's own constraint only
-         demands one of a recipe. */
+          /* NO `qty`, NO `unit` AND NO `serves`. Everywhere else those
+             three say what a row's figures are FOR, and a meal's figures
+             are for itself: it is eaten whole or not at all. A `serves`
+             here would be a yield nothing divides by, and the migration
+             only demands one of a recipe. */
       source: "meal",
       uses: 0,
     });
@@ -911,13 +863,11 @@ export function Usuals() {
           ) : null}
         </div>
 
-        {/* WHAT WAS PLANNED AGAINST WHAT WAS EATEN. Two numbers
-            and no verdict: section 13 says the difference is a
-            reading rather than a scolding, so there is no
-            percentage kept, no tick and nothing that turns red.
-            Only days something was planned for appear, because a
-            day nobody planned is not a day a plan was broken
-            on. */}
+            {/* WHAT WAS PLANNED AGAINST WHAT WAS EATEN. Two numbers and no
+                verdict: the difference is a reading rather than a
+                scolding, so nothing turns red. Only days something was
+                planned for appear, because a day nobody planned is not a
+                day a plan was broken on. */}
         {kept.length ? (
           <>
             <h3><T en="Planned, and eaten" bn="যা ঠিক ছিল, আর যা খাওয়া হয়েছে" /></h3>

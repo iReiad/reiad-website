@@ -1,101 +1,45 @@
 "use client";
 
-/* ============================================================
-   diet/food-picker.tsx: food found rather than typed.
+/* Food found rather than typed. `DIET.md` sections 12, 13 and 22. The
+   search reaches this site's own portion library and two open databases
+   through the Worker.
 
-   `DIET.md` sections 12, 13 and 22. A tool that makes somebody
-   type "chicken curry, 380" from memory is a tool they use for
-   four days, so food is SEARCHED, and the search reaches three
-   places: this site's own portion library, and two open
-   databases through the Worker.
+   A RESULT IS NOT AN ENTRY. Every figure arrives stated FOR something, so
+   the portion is printed on every result and there is a step between the
+   tap and the row where the reader says how much. `scaleTo()` REFUSES an
+   amount it cannot scale honestly, and nothing is written rather than
+   something being guessed: an error in the flattering direction is the
+   failure this tool is built around.
 
-   ---- a result is not an entry, and that gap is the tool ----
+   EVERYTHING IS SCALED, never just the calories. `loggedFrom()` in
+   `shared/foods.ts` is the whole of that arithmetic; scaling the energy
+   alone is how a log ends up reading 2,400 kcal and 40 g of protein.
 
-   Every figure that arrives here is stated FOR something: per
-   100 g out of either database, per cup or per plate out of the
-   library. What was eaten is a different number, so the portion
-   is printed on every result and there is a step between the tap
-   and the row where the reader says how much.
+   THE SOURCE IS PRINTED ON EVERY RESULT, so a reader can tell a figure
+   this site checked from one a stranger typed into a public database.
+   `completeness` is the second half: a crowdsourced row missing half its
+   fields has to LOOK worse than a laboratory one.
 
-   It logged the row's own portion once, silently, with no unit
-   on screen: a tap on "chicken breast" after eating 250 g put
-   165 kcal in the log. An error in the flattering direction is
-   the failure this whole tool is built around, so `scaleTo()`
-   REFUSES an amount it cannot scale honestly and nothing is
-   written rather than something being guessed.
+   THE BROWSER NEVER TALKS TO EITHER UPSTREAM: `/api/diet/food` and
+   nothing else. `check-csp.ts` scans every string here and a hostname
+   written into this file would rightly fail it.
 
-   ---- everything is scaled, never just the calories ----
+   A FOUND FOOD IS COPIED, NOT REFERENCED: the numbers, the source and the
+   upstream id go into the row, so the log does not depend on a public
+   database still being there next year.
 
-   `loggedFrom()` in `shared/foods.ts` is the whole of that
-   arithmetic and it is asserted in `functions/_lib/food.test.ts`.
-   Scaling the energy alone is how a log ends up reading 2,400
-   kcal and 40 g of protein.
+   Three of section 14's corrections live here because all three are about
+   the moment a row is written. A HAND is a first-class amount and needs a
+   row that says what its own portion weighs, which is why the chips are
+   offered only where that is true. A PLATE SOMEBODY ELSE COOKED IS A
+   RANGE, widened into `est_low` and `est_high` with the midpoint kept.
+   SMALL EXTRAS ARE ONE TAP, in the open rather than behind a summary.
 
-   ---- the source is printed on every result, always ----
-
-   A reader has to be able to tell a figure this site checked
-   from a figure a stranger typed into a public database from a
-   figure out of a government laboratory. Almost no app shows
-   this and it is the difference between a number and a rumour.
-   `completeness` is the second half of it: a crowdsourced row
-   missing half its fields has to LOOK worse than a laboratory
-   one.
-
-   ---- and the browser never talks to either upstream ----
-
-   `/api/diet/food` and nothing else, exactly as `/tools/live`
-   asks `/api/broker/*` rather than talking to Trading 212. The
-   CSP does not change, `check-csp.ts` scans every string here,
-   and a hostname written into this file would rightly fail it.
-
-   ---- a found food is copied, not referenced ----
-
-   What goes into the row is the numbers, the source and the
-   upstream id, so the log does not depend on a public database
-   still being there next year. A history that changed because
-   somebody edited an entry in one would be worse than one that
-   went missing: nothing would announce it.
-
-   ---- and three of section 14's corrections live here ----
-
-   Because all three are about the moment a row is written rather
-   than about a page.
-
-   A HAND is a first-class amount, not a fallback. Weighing is
-   the most accurate method and it is the one most people
-   abandon, so the four hand portions sit beside the number box
-   and set it. They need a row that says what its own portion
-   WEIGHS, and `scaleTo()` refuses in grams for a row that does
-   not, which is why they are offered only where that is true.
-
-   A PLATE SOMEBODY ELSE COOKED IS A RANGE. One press widens the
-   figure into `est_low` and `est_high`, the midpoint stays the
-   total's, and `totalFor()` in `shared/diet.ts` adds the widths
-   up as the day's spread. Where there is no row at all, two
-   numbers and a name are a whole entry.
-
-   SMALL EXTRAS ARE ONE TAP, in the open rather than behind a
-   summary, because a thing that takes two taps to log is a thing
-   that does not get logged. `next/lib/recipes.ts` holds all
-   three sets of figures and `next/recipes.test.ts` asserts them.
-
-   ---- and the whole of it works without a mouse ----
-
-   Section 13: type, arrow, enter. The results are a roving
-   tabindex, which is the account page's pattern and the only one
-   this site has, so the list is ONE tab stop rather than six and
-   the arrows walk it. Enter on the search box takes the first
-   result, Enter in the amount box ADDS IT, and Escape backs out
-   of the step.
-
-   The amount box is the one that matters. Every path here ended
-   at a button four tab stops past the field somebody had just
-   typed in: the unit chips, the four hand chips and the ate-out
-   chip all sit between the number and Add, so a reader who never
-   touches a pointer typed a portion and then pressed Tab five
-   times, or gave up. A form that cannot be submitted from the
-   field it ends in is a form that looks finished.
-   ============================================================ */
+   AND THE WHOLE OF IT WORKS WITHOUT A MOUSE: type, arrow, enter. The
+   results are a roving tabindex, so the list is ONE tab stop. Enter in
+   the amount box ADDS IT, because the unit chips, the hand chips and the
+   ate-out chip all sit between that field and Add, and a form that cannot
+   be submitted from the field it ends in is a form that looks finished. */
 
 import { useEffect, useRef, useState, type KeyboardEvent } from "react";
 import type { Entry } from "@reiad/shared/diet";
@@ -284,18 +228,14 @@ export function FoodPicker({ onPick, place = DEFAULT_PLACE, ingredient = false }
     setChosen(null);
     if (asked.length < 2) { setHits([]); setSources(undefined); setLooking(false); return; }
 
-    /* THE SITE'S OWN LIBRARY LEADS, and it answers with no
-       request at all. It is small on purpose, it is the only
-       source with real Bangladeshi home cooking in it, it is the
-       only one written in both languages, and it is the only one
-       whose figures this site has checked. A reader typing
-       "rice" should not wait on a round trip to find out what a
-       cup of it is.
+        /* THE SITE'S OWN LIBRARY LEADS, and it answers with no request at
+           all: it is the only source with real Bangladeshi home cooking in
+           it, the only one written in both languages, and the only one
+           whose figures this site has checked.
 
-       The two open databases come from the Worker underneath,
-       and their results are appended rather than merged, so the
-       ranking never mixes a checked figure into a list of
-       strangers' ones. */
+           The two open databases come from the Worker underneath, and
+           their results are appended rather than merged, so the ranking
+           never mixes a checked figure into a list of strangers' ones. */
     const code = barcodeOf(asked);
     const own: Hit[] = code
       ? []
@@ -303,16 +243,14 @@ export function FoodPicker({ onPick, place = DEFAULT_PLACE, ingredient = false }
     setHits(own);
     setSources(undefined);
 
-    /* Debounced, because a request per keystroke is a request
-       per keystroke for everybody, and the Worker caches by
-       query rather than by reader.
+        /* Debounced, because a request per keystroke is a request per
+           keystroke for everybody, and the Worker caches by query rather
+           than by reader.
 
-       SEQUENCED as well, which the debounce alone does not do:
-       an answer for "ric" that arrives after the answer for
-       "rice" would replace the list with the older one. `live`
-       is per effect, so a request whose query is no longer on
-       screen cannot write to state, and the abort saves the
-       round trip as well. */
+           SEQUENCED as well, which the debounce alone does not do: an
+           answer for "ric" arriving after the answer for "rice" would
+           replace the list with the older one. `live` is per effect, so a
+           request whose query has left the screen cannot write to state. */
     let live = true;
     const stop = new AbortController();
     const timer = window.setTimeout(() => {
@@ -377,13 +315,10 @@ export function FoodPicker({ onPick, place = DEFAULT_PLACE, ingredient = false }
     setUnit(next);
   };
 
-  /** A hand, as an amount in grams.
-
-      IT SETS THE BOX RATHER THAN ADDING TO IT, and the box is
-      right there to be edited: a reader who had two palms types
-      200. Adding would have to know whether what is in the box
-      is already a hand or the row's own portion, and guessing
-      wrong is a doubled dinner. */
+      /** A hand, as an amount in grams. IT SETS THE BOX RATHER THAN ADDING
+          TO IT, and the box is right there to be edited: adding would have
+          to know whether what is in the box is already a hand or the row's
+          own portion, and guessing wrong is a doubled dinner. */
   const byHand = (grams: number): void => {
     setUnit("g");
     setAmount(String(grams));
@@ -659,13 +594,12 @@ export function FoodPicker({ onPick, place = DEFAULT_PLACE, ingredient = false }
             )}
           </p>
 
-          {/* A PLATE SOMEBODY ELSE COOKED IS NOT KNOWABLE.
-              Section 14: a plate of kacchi biryani is somewhere
-              between 700 and 1,100 kcal and anybody who says it
-              is 863 is reading a number a website invented. So
-              this one press keeps the figure and adds the width
-              to it, and the width goes into the day rather than
-              into a decimal place nobody can defend. */}
+              {/* A PLATE SOMEBODY ELSE COOKED IS NOT KNOWABLE: a plate of
+                  kacchi biryani is between 700 and 1,100 kcal and anybody
+                  who says it is 863 is reading a number a website
+                  invented. This press keeps the figure and adds the width
+                  to it, and the width goes into the day rather than into a
+                  decimal place nobody can defend. */}
           {!ingredient ? (
             <div className="dt-measure-row">
               <ChipButton pressed={out} onClick={() => setOut(!out)}>
