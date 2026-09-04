@@ -95,10 +95,12 @@ const SELF_TITLED = new Set(["continue"]);
 
 /* ---------- the widgets this page can draw ---------- */
 
-function Widget({ id, size }: { id: string; size: WidgetSize }) {
+function Widget({ id, size, totals }: {
+  id: string; size: WidgetSize; totals?: Record<string, number>;
+}) {
   switch (id) {
     case "continue": return <ContinueCard />;
-    case "progress": return <SchoolMeters />;
+    case "progress": return <SchoolMeters totals={totals} />;
     /* A size genuinely changes this one: at `wide` it shows its
        first three stories and at `tall` the morning's worth. A
        size that only stretched the same drawing would be a
@@ -147,7 +149,7 @@ function useAnyProgress(): boolean {
 
 /* ---------- the board ---------- */
 
-export function Board({ start }: { start?: string }) {
+export function Board({ start, totals }: { start?: string; totals?: Record<string, number> }) {
   /* The stored list as a STRING, not the parsed array: React
      compares snapshots by identity and a fresh array every read
      would loop for ever. The same trap `door.tsx` names. */
@@ -176,7 +178,11 @@ export function Board({ start }: { start?: string }) {
   const placed = layoutOf(JSON.parse(snapshot) as string[] | null, DRAWABLE)
     .filter((p) => arranging || p.id !== "continue" || bookmark);
 
-  const put = useCallback((next: Placed[]) => { save(next); }, []);
+  /* DRAWABLE goes WITH the write. `layoutOf` filtered the stored
+     board down to what this build can draw, so writing the result
+     back would delete the eight kinds it could not, out of the
+     account and off the phone. `save` puts them back. */
+  const put = useCallback((next: Placed[]) => { save(next, DRAWABLE); }, []);
 
   const offered = WIDGETS.filter(
     (k) => DRAWABLE.includes(k.id) && !placed.some((p) => p.id === k.id),
@@ -291,7 +297,7 @@ export function Board({ start }: { start?: string }) {
               ) : null}
               <div className={["board-body", arranging ? "opacity-70" : null]
                 .filter(Boolean).join(" ")}>
-                <Widget id={p.id} size={p.size} />
+                <Widget id={p.id} size={p.size} totals={totals} />
               </div>
             </section>
           );

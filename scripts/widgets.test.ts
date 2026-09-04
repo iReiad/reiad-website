@@ -16,7 +16,7 @@
    ============================================================ */
 
 import {
-  WIDGETS, HOME_DEFAULT, layoutOf, parsePlaced, storedOf,
+  WIDGETS, HOME_DEFAULT, keepUndrawn, layoutOf, parsePlaced, storedOf,
 } from "../shared/widgets.ts";
 
 let passed = 0;
@@ -163,6 +163,42 @@ is("a build that draws two widgets draws two",
 is("a round trip is the identity",
   storedOf(layoutOf(["market:tall", "stock:small"], all)),
   ["market:tall", "stock:small"]);
+
+/* ------------------------------------------------------------
+   WHAT A BUILD CANNOT DRAW, IT MUST NOT DELETE
+
+   `layoutOf` drops a kind this build has no renderer for, which
+   is right. Writing the result back is not, and both renderers
+   could make that mistake: the site draws four of the twelve, the
+   app draws more, and the board is synced. So a reader who
+   arranged the schools, the tools and the newest writing on their
+   phone and then pressed সাজান once on the web had all three
+   deleted, out of the account and off the phone, with nothing
+   looking broken, because the board they were looking at was
+   correct.
+
+   The three assertions below are the three ways to get the merge
+   wrong: losing what was never shown, resurrecting what the
+   reader took off, and duplicating a kind that is in both lists.
+   ------------------------------------------------------------ */
+const PHONE = ["continue:wide", "pulse:tall", "progress:wide", "schools:tall"];
+const DRAWS = ["continue", "progress"];
+
+is("a kind this build never showed comes back",
+  keepUndrawn(PHONE, storedOf(layoutOf(PHONE, DRAWS)), DRAWS),
+  ["continue:wide", "pulse:tall", "progress:wide", "schools:tall"]);
+
+is("a kind the reader took off stays off",
+  keepUndrawn(PHONE, ["continue:wide"], DRAWS),
+  ["continue:wide", "pulse:tall", "schools:tall"]);
+
+is("and nothing is written twice",
+  keepUndrawn(["pulse:tall"], ["pulse:wide"], DRAWS),
+  ["pulse:wide"]);
+
+is("a board nobody had arranged is written as it stands",
+  keepUndrawn(null, ["continue:wide"], DRAWS),
+  ["continue:wide"]);
 
 /* ------------------------------------------------------------ */
 const total = passed + failures.length;

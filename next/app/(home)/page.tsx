@@ -64,6 +64,7 @@ import type { Metadata } from "next";
 import type { CSSProperties } from "react";
 import { Board } from "../../components/home/board";
 import { LatestWriting } from "../../components/home/writing";
+import { Reckoner } from "../../components/home/reckoner";
 import { GoCard } from "../../components/deck";
 import { WorkCard } from "../../components/work-card";
 import { Icon } from "../../components/icons";
@@ -71,15 +72,21 @@ import { ButtonLink } from "../../components/ui/button";
 import { SectionLabel } from "../../components/ui/label";
 import { pageMeta } from "../../lib/pageMeta";
 import { STUDIES } from "../../lib/work";
-import { COUNTS, DOOR, allLessons } from "@reiad/shared/content";
+import {
+  COUNTS, DOOR, allDars, allLessons, allParts, allTeile,
+} from "@reiad/shared/content";
 import { NAV, accentFor } from "@reiad/shared/nav";
 import { bnNum } from "@reiad/shared/schools";
 
 export const metadata: Metadata = pageMeta({
   path: "/",
   title: "Reiad's Library · বাংলায় টাকা, দক্ষতা আর কাজ",
-  description: "বাংলাদেশের বাজার আর টাকার কথা সহজ বাংলায়, ছয়টা ফ্রি কোর্স, "
-    + "পাঁচটা ক্যালকুলেটর, আর খুলে দেখার মতো আর্থিক মডেল।",
+  /* No counts in the description. It said ছয়টা and পাঁচটা as
+     number WORDS, which no slot can fill and no check can see, on
+     the one sentence that is quoted into search results and into
+     every pasted link. */
+  description: "বাংলাদেশের বাজার আর টাকার কথা সহজ বাংলায়: ফ্রি কোর্স, "
+    + "ক্যালকুলেটর, আর খুলে চালিয়ে দেখার মতো আর্থিক মডেল।",
   ogTitle: "Reiad's Library",
   ogDescription: "বাংলায় শেখা, আর যে কাজগুলো খুলে দেখা যায়।",
   card: "home",
@@ -113,6 +120,22 @@ const SCHOOLS = NAV.find((g) => g.id === "learn")?.items
     it to a browser to read one URL would put a hundred kilobytes
     on the front page for a link. */
 const FIRST_LESSON = allLessons().find((l) => l.status === "live")?.url;
+
+/** How many lessons each ladder has, so the board's meters can
+    say "20 / 81" rather than "20".
+
+    Four integers, counted from the four curricula at build time
+    and handed down. The meters read no ladder in the browser and
+    must not: the reason they were a bare count was that reading
+    four on the one page whose job is to be instant is not worth
+    a denominator, and it is still not. Counting them here costs
+    nothing, because `COUNTS` has already imported all four. */
+const LADDER_TOTALS: Record<string, number> = {
+  money: allLessons().filter((l) => l.status === "live").length,
+  deutsch: allTeile().length,
+  quran: allDars().length,
+  english: allParts().length,
+};
 
 const TOOLBOX = NAV.find((g) => g.id === "make")?.items
   .filter((i) => !i.unlisted && !i.soon) ?? [];
@@ -148,7 +171,7 @@ export default function HomePage() {
             anybody sees a second. */}
         <header className="door">
           <div className="door-say">
-            <span className="gate-eyebrow mono">{DOOR.eyebrow}</span>
+            <span className="gate-eyebrow mono" lang="en">{DOOR.eyebrow}</span>
 
             {/* One <h1> per audience, all three server-rendered and
                 chosen by `data-hl` before first paint. The copy is
@@ -230,6 +253,17 @@ export default function HomePage() {
           </div>
         </header>
 
+        {/* ---- one line of the site's own arithmetic ----
+
+            The one thing on this page a reader can USE, and it
+            answers "is a site about money in Bangla worth my
+            evening" better than any sentence could. Between the
+            door and the library because it is the door's claim
+            made concrete and the library's subject introduced:
+            everything above it is who this is, everything below
+            is what is here. */}
+        <Reckoner />
+
         {/* ============ the library ============
 
             FIRST, AND IT WAS SECOND. The door speaks Bangla to
@@ -246,15 +280,20 @@ export default function HomePage() {
             best pictures and they are how a reader tells six
             schools apart at a glance; three columns rather than
             four, so six of them are two clean rows. */}
-        <section aria-labelledby="learn-label">
+        <section aria-labelledby="learn-h">
           <div className="hub-section-head">
-            <SectionLabel id="learn-label">
+            <SectionLabel>
               শেখা · <span lang="en">The library</span>
             </SectionLabel>
-            <h2 className="band-h" lang="bn">যা যা শেখানো হয়</h2>
+            <h2 className="band-h" id="learn-h" lang="bn">যা যা শেখানো হয়</h2>
+            {/* NOT "সব ডিভাইসে জমা থাকে", which is only true with
+                an account and is read by a reader who has none.
+                Ticks are kept in this browser; an account is what
+                carries them between devices, and `/account` is
+                where that is offered. */}
             <p className="hub-section-note" lang="bn">
-              সবগুলো ফ্রি, সবগুলো বাংলায়, একদম শুরু থেকে। কোনটা পড়া হয়েছে টিক
-              দিয়ে রাখা যায়, আর সেটা সব ডিভাইসে জমা থাকে।
+              সবগুলো ফ্রি, সবগুলো বাংলায়, একদম শুরু থেকে। কোন পাঠটা পড়া হয়েছে
+              টিক দিয়ে রাখা যায়, অ্যাকাউন্ট ছাড়াই।
             </p>
           </div>
           <div className="deck learn-deck">
@@ -294,19 +333,29 @@ export default function HomePage() {
             `shared/nav.ts` decides what colour a thing is, and the
             band asks that table rather than inheriting the page's
             green. */}
-        <section aria-labelledby="work-label" style={bandAccent("portfolio")}>
+        <section aria-labelledby="work-h" style={bandAccent("portfolio")}>
           <div className="hub-section-head">
-            <SectionLabel id="work-label">
+            <SectionLabel>
               কাজ · <span lang="en">Selected work</span>
             </SectionLabel>
-            <h2 className="band-h">Models you can open and drive</h2>
+            <h2 className="band-h" id="work-h" lang="en">Models you can open and drive</h2>
             {/* No count in the sentence: the ledger a screen above
                 states the same figure out of `COUNTS`, and a number
                 said twice on one page is a number that will one day
                 be said two ways. */}
-            <p className="hub-section-note">
+            <p className="hub-section-note" lang="en">
               Interactive, all of them. The arithmetic runs in your browser as
               you read: nothing here is a picture of a spreadsheet.
+            </p>
+            {/* THE ONE BAND ON THIS PAGE THAT IS NOT IN THE
+                READER'S LANGUAGE, and it says so in theirs. The
+                work is written in English because that is who it
+                is for; a Bangla reader arriving at a band of seven
+                English cards with no explanation has been left to
+                guess whether the site stopped being theirs. */}
+            <p className="hub-section-note" lang="bn">
+              এই অংশটা ইংরেজিতে, কারণ কাজগুলো ইংরেজিতেই করা।
+              শেখার সবকিছু বাংলায়, উপরে।
             </p>
           </div>
           {/* ONE LEAD AND SIX. Seven equal cards in a three column
@@ -322,12 +371,12 @@ export default function HomePage() {
         </section>
 
         {/* ============ the writing ============ */}
-        <section aria-labelledby="read-label">
+        <section aria-labelledby="read-h">
           <div className="hub-section-head">
-            <SectionLabel id="read-label">
+            <SectionLabel>
               নতুন লেখা · <span lang="en">Latest writing</span>
             </SectionLabel>
-            <h2 className="band-h" lang="bn">সবচেয়ে নতুন যা লেখা হয়েছে</h2>
+            <h2 className="band-h" id="read-h" lang="bn">সবচেয়ে নতুন যা লেখা হয়েছে</h2>
           </div>
           {/* Four, because the band is a row of four on a laptop
               and a column of four on a phone, and a fifth would be
@@ -350,15 +399,21 @@ export default function HomePage() {
             wallpaper: a tool is a thing you go and use, so the
             icon and the sentence are what a reader needs. It is
             also what makes the two bands read as two bands. */}
-        <section aria-labelledby="make-label" style={bandAccent("tools")}>
+        <section aria-labelledby="make-h" style={bandAccent("tools")}>
           <div className="hub-section-head">
-            <SectionLabel id="make-label">
+            <SectionLabel>
               যন্ত্রপাতি · <span lang="en">The tools</span>
             </SectionLabel>
-            <h2 className="band-h" lang="bn">যেগুলো দিয়ে হিসাবটা করা যায়</h2>
+            <h2 className="band-h" id="make-h" lang="bn">যেগুলো দিয়ে হিসাবটা করা যায়</h2>
+            {/* NOT "যা লেখেন তা আপনার কাছেই থাকে". The routine,
+                the diet log and the Research Studio keep a
+                reader's rows in an account, which is the opposite
+                of that sentence, and the calculators are the ones
+                it is true of. Say the thing that is true of all
+                six instead. */}
             <p className="hub-section-note" lang="bn">
-              সবগুলোই ব্রাউজারেই চলে: কিছু ইনস্টল করতে হয় না, আর যা লেখেন তা
-              আপনার কাছেই থাকে।
+              হিসাবটা আপনার ব্রাউজারেই চলে, কিছু ইনস্টল করতে হয় না। বেশিরভাগই
+              অ্যাকাউন্ট ছাড়াই খোলা যায়।
             </p>
           </div>
           <div className="deck make-deck">
@@ -385,7 +440,7 @@ export default function HomePage() {
             should always have done: what a reader has read is not
             a fact the site has about a stranger, and a dashboard
             of noughts is worse than no dashboard. */}
-        <Board start={FIRST_LESSON} />
+        <Board start={FIRST_LESSON} totals={LADDER_TOTALS} />
       </div>
     </main>
   );

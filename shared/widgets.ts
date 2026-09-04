@@ -261,3 +261,43 @@ export function layoutOf(
 export function storedOf(placed: readonly Placed[]): string[] {
   return placed.map((p) => `${p.id}:${p.size}`);
 }
+
+/** Everything the stored board holds that THIS build could not
+    draw, put back where it was.
+
+    `layoutOf` drops an entry whose kind is not drawable, and that
+    is right: a hole with a title on it is worse than a board with
+    one fewer thing on it. What is not right is writing the result
+    back, and both sides can make that mistake, which is why the
+    answer is here rather than in either renderer.
+
+    The site draws four of the twelve and the app draws more. So a
+    reader who arranged the schools, the tools and the newest
+    writing on their phone and then pressed সাজান once on the web
+    had all three deleted, out of the account and off the phone,
+    with nothing looking broken: the board they were looking at
+    was correct.
+
+    A DRAWABLE KIND MISSING FROM `next` IS A DECISION. The reader
+    could see it and could take it off, so it stays off. Only what
+    this build never showed them comes back.
+
+    Position is approximate on purpose: an entry returns to the
+    index it held, clamped. Losing the widget is the failure;
+    losing its exact place is not. */
+export function keepUndrawn(
+  previous: readonly string[] | null | undefined,
+  next: readonly string[],
+  drawable: Iterable<string>,
+): string[] {
+  const out = [...next];
+  if (!previous?.length) return out;
+  const can = new Set(drawable);
+  const idOf = (entry: string) => entry.split(":")[0];
+  previous.forEach((entry, at) => {
+    const id = idOf(entry);
+    if (can.has(id) || out.some((e) => idOf(e) === id)) return;
+    out.splice(Math.min(at, out.length), 0, entry);
+  });
+  return out;
+}

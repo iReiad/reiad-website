@@ -1951,7 +1951,21 @@
                 translate var(--fast) var(--ease);
 
     &:active { translate: 0 1px; --surface-shadow: 0 0 transparent; }
-    &:focus-visible { outline: none; --surface-shadow: var(--focus-ring); }
+    /* THE OUTLINE STAYS. This said `outline: none` and put the
+       whole focus indicator in `--focus-ring`, which is
+       `--accent-ring`, which is the accent at 30 per cent: about
+       1.3:1 against the paper, where a focus indicator needs 3:1.
+       The two hero buttons on the front page are the first
+       controls a reader meets and neither had a visible ring.
+
+       `@layer base`'s `:focus-visible` is a 2px full-opacity
+       accent outline and the ring now sits BESIDE it as a glow,
+       which is the same arrangement `--surface-shadow` was
+       invented for: a ring that replaces an edge is an edge that
+       is gone. `check-contrast.ts` already measures every accent
+       against every ground at 4.5, so the indicator is covered by
+       the pairs it has rather than by a new one. */
+    &:focus-visible { --surface-shadow: var(--focus-ring); }
     &:disabled { opacity: 0.45; pointer-events: none; }
   }
 
@@ -5810,20 +5824,6 @@ it collapsed to the width of the word "Bangladesh". */
   /* a card the filter has hidden */
   .cell[hidden] { display: none; }
 
-  /* ---------- A–Z glossary index ---------- */
-  .az {
-    display: flex; flex-wrap: wrap; gap: var(--s-3);
-    margin-block: 18px 28px;
-  }
-  .az a, .az span {
-    font-family: var(--font-mono); font-size: var(--t-2);
-    min-width: 30px; text-align: center;
-    padding: 5px 7px; border-radius: var(--radius-xs);
-    border: 1px solid var(--hairline); text-decoration: none; color: var(--ink);
-  }
-  .az a:hover { border-color: var(--accent); color: var(--accent); }
-  .az span { opacity: 0.35; }
-
   .glossary { border-top: 1px solid var(--hairline); }
   .glossary .g-row {
     display: grid; grid-template-columns: 1fr 1fr; gap: var(--s-5) 20px;
@@ -6056,13 +6056,6 @@ it collapsed to the width of the word "Bangladesh". */
   .gate-msg { font-size: var(--t-4); min-height: 1.3em; }
   .gate-msg.err { color: var(--danger); }
   .gate-msg.ok { color: var(--accent); }
-  .gate-or {
-    display: flex; align-items: center; gap: var(--s-6);
-    color: var(--ink-soft); font-family: var(--font-mono); font-size: var(--t-1);
-    text-transform: uppercase; letter-spacing: 0.08em;
-
-    &::before, &::after { content: ""; flex: 1; height: 1px; background: var(--hairline); }
-  }
   .gate-fine {
     font-size: var(--t-3); color: var(--ink-soft);
     border-top: 1px solid var(--hairline); padding-top: 14px; text-align: start;
@@ -8662,7 +8655,16 @@ German for day, and .tag is what the site has always called
     }
     & span { color: var(--ink-soft); font-size: var(--t-3); }
   }
-  .checks {
+  /* `.check-tests`, and it was `.checks`, which is the site's own
+     tick list in `@layer components`: the About page's, the
+     portfolio's three service lists and the dissertation's two.
+     `check` comes after `components`, so this rule won on all six
+     of them, and the stock check's grid, gap and type size have
+     been drawing every tick list on the site since both existed.
+     Nobody typed a wrong rule; each was right in its own layer,
+     and a layer is the thing that makes "in its own layer"
+     false. */
+  .check-tests {
     list-style: none; margin: 0; padding: 0;
     display: grid; gap: 9px;
 
@@ -8677,14 +8679,14 @@ German for day, and .tag is what the site has always called
     border: 1px solid var(--hairline); display: grid; place-items: center;
     font-size: 11px; line-height: 1;
   }
-  .checks li[data-state="pass"] .check-box {
+  .check-tests li[data-state="pass"] .check-box {
     background: var(--accent); border-color: var(--accent);
   }
-  .checks li[data-state="pass"] .check-box::before { content: "✓"; color: var(--paper); }
-  .checks li[data-state="fail"] .check-box { border-color: var(--danger); }
-  .checks li[data-state="fail"] .check-box::before { content: "✕"; color: var(--danger); }
-  .checks li[data-state="skip"] { opacity: 0.55; }
-  .checks li[data-state="skip"] .check-box::before { content: "–"; color: var(--ink-soft); }
+  .check-tests li[data-state="pass"] .check-box::before { content: "✓"; color: var(--paper); }
+  .check-tests li[data-state="fail"] .check-box { border-color: var(--danger); }
+  .check-tests li[data-state="fail"] .check-box::before { content: "✕"; color: var(--danger); }
+  .check-tests li[data-state="skip"] { opacity: 0.55; }
+  .check-tests li[data-state="skip"] .check-box::before { content: "–"; color: var(--ink-soft); }
 
   .shariah-verdict {
     display: inline-block; padding: 7px 16px; border-radius: var(--radius-pill);
@@ -9126,6 +9128,32 @@ German for day, and .tag is what the site has always called
     body { background: #fff; color: #000; font-size: 11pt; }
     .article a::after { content: " (" attr(href) ")"; font-size: 0.85em; color: #555; }
   }
+
+  /* ---------- High Contrast, which this site had never answered ----------
+
+     Windows High Contrast and its kin replace every colour on the
+     page with the reader's own four, and they discard background
+     images and most shadows while doing it. This stylesheet is
+     eighteen thousand lines of glass, and every edge on it is a
+     `box-shadow` and every ground a gradient, so in that mode the
+     whole site is unstyled text with nothing separating one
+     surface from the next and nothing at all where a focus ring
+     used to be. There was not one `forced-colors` block in it.
+
+     Three declarations, and none of them is a colour: `Highlight`
+     and `CanvasText` are the reader's, and `1px solid` is the one
+     thing that survives the substitution. */
+  @media (forced-colors: active) {
+    :focus-visible { outline: 2px solid Highlight; outline-offset: 2px; }
+    :is(.card, .cell, .pane, .tile, .band, .chip, .btn, .icon-btn,
+        .work-card, .news-card, .gate-tile, .reckoner) {
+      border: 1px solid CanvasText;
+    }
+    /* A chip whose only pressed state is a background fill has no
+       pressed state here, so the reader's own highlight says it. */
+    .chip[aria-pressed="true"] { forced-color-adjust: none; }
+  }
+
 }
 
 /* ============================================================
@@ -9538,7 +9566,12 @@ German for day, and .tag is what the site has always called
      two models. Outcomes are a separate axis again: a defaulted
      applicant is red wherever one appears.
      ============================================================ */
-  .chip-row {
+  /* `.work-chips`, and it was `.chip-row`, which `@layer studio`
+     defines for the Studio's own rows and the desk's filters.
+     `work` comes after `studio`, so this gap and these margins
+     were drawing every chip row in the Studio, which is a page
+     this layer has nothing to do with. */
+  .work-chips {
     display: flex; flex-wrap: wrap; gap: var(--s-3); margin-block: 4px 14px;
 
     & .chip[aria-pressed="true"] {
@@ -11667,10 +11700,6 @@ German for day, and .tag is what the site has always called
     line-height: 1.25;
   }
   .gate-tile[lang="bn"] .gt-title, .gt-title[lang="bn"] { font-family: var(--font-bn-serif); }
-  .gt-dek {
-    color: var(--ink-soft); font-size: var(--t-4);
-    max-width: 52ch;
-  }
   .gt-go {
     display: flex; align-items: center; gap: 6px;
     margin-top: auto; padding-top: 6px;
@@ -11796,6 +11825,101 @@ German for day, and .tag is what the site has always called
     .ledger a { padding: 7px 0; }
   }
 
+  /* ---- the reckoner ----
+
+     One line of the site's own arithmetic, between the door and
+     the library. A strip rather than a box: the first screen
+     already has a headline and a ledger on it, and a fourth
+     rectangle of glass would be a third thing asking to be read
+     first. Hairlines above and below, which is also what keeps it
+     off `check-material.ts`'s books: it paints no ground.
+
+     THE ANSWER IS CHOSEN BY THE SIBLING COMBINATOR. Five radios
+     sit before everything else inside `.reckoner`, so
+     `#rk-5000:checked ~ .rk-out [data-rk="5000"]` reaches the one
+     answer that belongs to the one checked radio. Written out
+     five times rather than by position, for the reason
+     `board.tsx` gives about `nth-of-type`: a rule keyed on where
+     a control sits is a rule that breaks the day one of them is
+     conditional. */
+  .reckoner {
+    display: grid; gap: 12px;
+    padding-block: clamp(18px, 2.4vw, 26px);
+    border-block: 1px solid var(--hairline);
+  }
+  /* Off screen, never `display: none`: a hidden radio is a radio
+     no keyboard can reach and a group no screen reader announces. */
+  .rk-in {
+    position: absolute; width: 1px; height: 1px;
+    margin: -1px; padding: 0; border: 0;
+    clip-path: inset(50%); overflow: hidden; white-space: nowrap;
+  }
+  .rk-ask {
+    display: flex; flex-wrap: wrap; align-items: center;
+    gap: 10px clamp(12px, 2vw, 22px);
+  }
+  .rk-q {
+    margin: 0; font-family: var(--font-bn); font-size: var(--t-5);
+    color: var(--ink-soft);
+  }
+  .rk-chips { display: flex; flex-wrap: wrap; gap: 8px; }
+  .rk-chips .chip { cursor: pointer; font-family: var(--font-bn); }
+
+  .rk-out { min-height: 1px; }
+  .rk-a { display: none; margin: 0; align-items: baseline; flex-wrap: wrap; gap: 4px 12px; }
+  .rk-lead { font-family: var(--font-bn); color: var(--ink-soft); font-size: var(--t-5); }
+  .rk-fig {
+    font-family: var(--font-bn-serif); font-weight: 500;
+    font-size: clamp(1.5rem, 3.2vw, 2.4rem); line-height: 1.1;
+    color: var(--accent);
+  }
+  .rk-sub { font-family: var(--font-bn); color: var(--ink-soft); font-size: var(--t-4); }
+  .rk-note {
+    margin: 0; font-family: var(--font-bn);
+    font-size: var(--t-3); color: var(--ink-soft);
+
+    & a { color: var(--accent); text-decoration: none; }
+  }
+  .rk-note a:hover, .rk-note a:focus-visible { text-decoration: underline; }
+
+  /* The five pairs. A reader with no CSS at all gets every answer,
+     which is five true sentences rather than none. */
+  #rk-1000:checked ~ .rk-out [data-rk="1000"],
+  #rk-2000:checked ~ .rk-out [data-rk="2000"],
+  #rk-5000:checked ~ .rk-out [data-rk="5000"],
+  #rk-10000:checked ~ .rk-out [data-rk="10000"],
+  #rk-20000:checked ~ .rk-out [data-rk="20000"] { display: flex; }
+
+  /* Which chip is pressed, and which one the keyboard is on. The
+     input carries the state for anything that reads the page; this
+     is the same fact drawn. */
+  #rk-1000:checked ~ .rk-ask label[for="rk-1000"],
+  #rk-2000:checked ~ .rk-ask label[for="rk-2000"],
+  #rk-5000:checked ~ .rk-ask label[for="rk-5000"],
+  #rk-10000:checked ~ .rk-ask label[for="rk-10000"],
+  #rk-20000:checked ~ .rk-ask label[for="rk-20000"] {
+    background: var(--accent-strong); color: var(--accent-ink);
+  }
+  #rk-1000:focus-visible ~ .rk-ask label[for="rk-1000"],
+  #rk-2000:focus-visible ~ .rk-ask label[for="rk-2000"],
+  #rk-5000:focus-visible ~ .rk-ask label[for="rk-5000"],
+  #rk-10000:focus-visible ~ .rk-ask label[for="rk-10000"],
+  #rk-20000:focus-visible ~ .rk-ask label[for="rk-20000"] {
+    outline: 2px solid var(--accent); outline-offset: 2px;
+  }
+
+  @media (width >= 900px) {
+    .reckoner {
+      grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+      align-items: center;
+      column-gap: clamp(24px, 4vw, 56px);
+    }
+    .rk-ask { grid-column: 1; grid-row: 1; }
+    .rk-note { grid-column: 1; grid-row: 2; }
+    .rk-out { grid-column: 2; grid-row: 1 / span 2; }
+    .rk-a { align-content: center; }
+  }
+
   /* ---- the bands ----
 
      Every band on the front page is one LEAD and a set behind it,
@@ -11839,7 +11963,6 @@ German for day, and .tag is what the site has always called
     display: -webkit-box; -webkit-box-orient: vertical; -webkit-line-clamp: 3;
     overflow: hidden;
   }
-  .learn-lead .card-dek { -webkit-line-clamp: 4; }
   /* THE COLUMN COUNT IS DECIDED BY WHAT IS IN THE BAND, because a
      lead spanning two of them and a set behind it either fills the
      rows or leaves holes. Six schools with a lead is seven units,
@@ -11868,15 +11991,6 @@ German for day, and .tag is what the site has always called
      nothing. */
   .read-deck-one { grid-template-columns: minmax(0, 460px); }
 
-  @media (width >= 900px) {
-    .learn-lead { grid-column: span 2; }
-  }
-
-  /* A LEAD IS TWICE AS WIDE, not twice as tall. Its drawing is a
-     band across a card twice the width, so at the deck's own
-     16:9 it is 250px of picture over 90px of words and the card
-     beside it is the other way round. */
-  .learn-lead .card-band { max-height: 190px; }
 
   /* One quiet line at the end of a band: everything it had no room
      for is one press away. `.gp-all` is the same idea inside a
@@ -12365,11 +12479,6 @@ German for day, and .tag is what the site has always called
     max-width: 100%;
   }
   .gate-slim .gt-go { margin-top: 0; padding-top: 0; }
-  .gt-live {
-    width: 7px; height: 7px; border-radius: 50%;
-    background: var(--accent);
-    box-shadow: 0 0 0 3px color-mix(in oklab, var(--accent) 22%, transparent);
-  }
 
   /* The pulse card's swap: the incoming piece rises half a line.
      The class is written by pulse-card.tsx on a keyed span, so
@@ -13732,7 +13841,21 @@ German for day, and .tag is what the site has always called
     transition: background var(--fast) var(--ease);
 
     &:hover { background: var(--accent-soft); }
-    &:focus-visible { outline: none; --surface-shadow: var(--focus-ring); }
+    /* THE OUTLINE STAYS. This said `outline: none` and put the
+       whole focus indicator in `--focus-ring`, which is
+       `--accent-ring`, which is the accent at 30 per cent: about
+       1.3:1 against the paper, where a focus indicator needs 3:1.
+       The two hero buttons on the front page are the first
+       controls a reader meets and neither had a visible ring.
+
+       `@layer base`'s `:focus-visible` is a 2px full-opacity
+       accent outline and the ring now sits BESIDE it as a glow,
+       which is the same arrangement `--surface-shadow` was
+       invented for: a ring that replaces an edge is an edge that
+       is gone. `check-contrast.ts` already measures every accent
+       against every ground at 4.5, so the indicator is covered by
+       the pairs it has rather than by a new one. */
+    &:focus-visible { --surface-shadow: var(--focus-ring); }
   }
   .rt-task-name {
     flex: 1 1 auto; min-inline-size: 0;
@@ -13970,7 +14093,21 @@ German for day, and .tag is what the site has always called
     background-color: color-mix(in oklab, var(--accent) calc(var(--fill, 0) * 78%), var(--paper-sunk));
 
     &:hover { border-color: var(--accent); }
-    &:focus-visible { outline: none; --surface-shadow: var(--focus-ring); }
+    /* THE OUTLINE STAYS. This said `outline: none` and put the
+       whole focus indicator in `--focus-ring`, which is
+       `--accent-ring`, which is the accent at 30 per cent: about
+       1.3:1 against the paper, where a focus indicator needs 3:1.
+       The two hero buttons on the front page are the first
+       controls a reader meets and neither had a visible ring.
+
+       `@layer base`'s `:focus-visible` is a 2px full-opacity
+       accent outline and the ring now sits BESIDE it as a glow,
+       which is the same arrangement `--surface-shadow` was
+       invented for: a ring that replaces an edge is an edge that
+       is gone. `check-contrast.ts` already measures every accent
+       against every ground at 4.5, so the indicator is covered by
+       the pairs it has rather than by a new one. */
+    &:focus-visible { --surface-shadow: var(--focus-ring); }
   }
   /* Today is ringed rather than filled, so it is findable without
      looking like it has been marked. */
@@ -14017,7 +14154,21 @@ German for day, and .tag is what the site has always called
     border-radius: var(--radius-sm);
 
     &:hover { background: var(--accent-soft); }
-    &:focus-visible { outline: none; --surface-shadow: var(--focus-ring); }
+    /* THE OUTLINE STAYS. This said `outline: none` and put the
+       whole focus indicator in `--focus-ring`, which is
+       `--accent-ring`, which is the accent at 30 per cent: about
+       1.3:1 against the paper, where a focus indicator needs 3:1.
+       The two hero buttons on the front page are the first
+       controls a reader meets and neither had a visible ring.
+
+       `@layer base`'s `:focus-visible` is a 2px full-opacity
+       accent outline and the ring now sits BESIDE it as a glow,
+       which is the same arrangement `--surface-shadow` was
+       invented for: a ring that replaces an edge is an edge that
+       is gone. `check-contrast.ts` already measures every accent
+       against every ground at 4.5, so the indicator is covered by
+       the pairs it has rather than by a new one. */
+    &:focus-visible { --surface-shadow: var(--focus-ring); }
   }
   .rt-jar svg { inline-size: 44px; block-size: 56px; }
   .rt-out {

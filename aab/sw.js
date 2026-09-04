@@ -31,6 +31,33 @@
    login could not have reached anyone either. Bump this whenever a
    precached file changes.
 
+   v239: /fallback.css and /tools/stock.js. `check-css.ts` read
+        only the FIRST block of a cascade layer, and `@layer deck`
+        opens twice, so the whole front page's stylesheet had been
+        outside the dead-rule ratchet and the two-layer check for
+        the life of it. With that fixed: the stock check's `.checks`
+        is `.check-tests`, because `@layer check` comes after
+        `components` and its grid, gap and type size had been
+        drawing the site's own tick lists on six pages; the work
+        layer's `.chip-row` is `.work-chips` for the same reason
+        against the Studio's; and five rules that style nothing are
+        gone.
+
+   v238: /fallback.css. A visible focus ring on every button,
+        which had been the accent at 30 per cent alpha and nothing
+        else, and the first `forced-colors: active` block this
+        stylesheet has ever had: in High Contrast every edge here
+        is a box-shadow and every ground a gradient, so the site
+        was unstyled text with no surface boundaries and no focus
+        indicator at all.
+
+   v237: /fallback.css. The front page again: a reckoner between
+        the door and the library, which is one line of the site's
+        own compounding model with five amounts to choose from and
+        no JavaScript in it, plus the ladder totals behind the
+        board's meters and a continue card that stops pointing at
+        a lesson the reader has already ticked.
+
    v236: /fallback.css, /content.js and /tilt.js. The front page
         rebuilt: the door is two columns with a counted ledger in
         the second, the schools, the work, the writing and the
@@ -2097,7 +2124,7 @@
    imports (crumbs, audience, learn progress) and the hub is a
    different page. Without a bump, a returning reader would be
    served the v3 app.js forever and none of it would appear. */
-const VERSION = "v236";
+const VERSION = "v239";
 const SHELL = `shell-${VERSION}`;
 const RUNTIME = `runtime-${VERSION}`;
 

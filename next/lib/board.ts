@@ -30,7 +30,7 @@
    thing.
    ============================================================ */
 
-import { layoutOf, storedOf, type Placed } from "@reiad/shared/widgets";
+import { keepUndrawn, layoutOf, storedOf, type Placed } from "@reiad/shared/widgets";
 
 export const BOARD_KEY = "home-board";
 
@@ -69,11 +69,23 @@ export function board(drawable: Iterable<string>, fallback?: readonly string[]):
   return layoutOf(saved ?? (fallback ? [...fallback] : null), drawable);
 }
 
-/** Write it, stamped, and tell this tab. */
-export function save(placed: readonly Placed[]): void {
+/** Write it, stamped, and tell this tab.
+
+    `drawable` is what the CALLER can render, and passing it is
+    what stops this from deleting the rest of the reader's board:
+    see `withUndrawn`. It is optional so that a caller which
+    genuinely holds the whole catalogue can leave it out, and
+    absent means "everything here is everything there is". */
+export function save(placed: readonly Placed[], drawable?: Iterable<string>): void {
   if (typeof localStorage === "undefined") return;
   try {
-    const value: Record_ = { board: storedOf(placed), ts: Date.now() };
+    /* `keepUndrawn` is `shared/widgets.ts`'s, because both
+       renderers can make this mistake and only one of them is in
+       this repository. */
+    const board = drawable
+      ? keepUndrawn(stored(), storedOf(placed), drawable)
+      : storedOf(placed);
+    const value: Record_ = { board, ts: Date.now() };
     localStorage.setItem(BOARD_KEY, JSON.stringify(value));
   } catch {
     /* A browser with storage turned off still gets a working

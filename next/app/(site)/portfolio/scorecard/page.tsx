@@ -480,7 +480,7 @@ export default function Page() {
             approximately: walk each tree, and give every split the change in value it
             caused. The parts add to the prediction, which the test file checks.
               </p>
-              <div className="chip-row" id="applicant-bar" role="group" aria-label="Pick an applicant" />
+              <div className="work-chips" id="applicant-bar" role="group" aria-label="Pick an applicant" />
               <div className="grid-2">
                 <figure className="chart-card">
                   <figcaption>
@@ -523,7 +523,7 @@ export default function Page() {
                   <span className="mono" id="fair-label">–
                   </span>
                 </figcaption>
-                <div className="chip-row" id="group-picker" role="group" aria-label="Which grouping" />
+                <div className="work-chips" id="group-picker" role="group" aria-label="Which grouping" />
                 <div id="fair-chart" />
                 <p className="statement-note" id="fair-note">–
                 </p>

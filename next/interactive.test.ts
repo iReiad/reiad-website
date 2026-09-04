@@ -37,6 +37,13 @@ import { readFile, stat } from "node:fs/promises";
 import { extname, join, dirname } from "node:path";
 import { fileURLToPath } from "node:url";
 import type { Page, Route } from "playwright";
+/* The SOURCE, not the package copy: node strips types from a
+   file in the tree and refuses to from one inside
+   `node_modules`, which is where `install-links` puts
+   `@reiad/shared`. `next/lesson.test.ts` reaches for the same
+   files the same way. */
+import { compounding } from "../shared/calculators.ts";
+import { fmtTk } from "../shared/tool-strings.ts";
 
 const HERE = dirname(fileURLToPath(import.meta.url));
 const BUILD = join(HERE, ".next");
@@ -657,6 +664,57 @@ for (const [who, audience, track, expected] of READERS) {
 }
 
 /* ============================================================
+   The reckoner: the one thing on the front page a reader can use
+
+   Five radios, five answers, and the stylesheet shows the one
+   whose radio is checked. There is no JavaScript in it, which is
+   the whole point: it answers before hydration and it answers
+   with the site's own model rather than with a number somebody
+   typed. So this checks two things a screenshot cannot: that
+   exactly ONE answer is on screen at a time, and that the figure
+   in it is what `compounding.run()` returns.
+   ============================================================ */
+{
+  const { page, errors } = await open("/");
+
+  const shown = () => page.evaluate(() =>
+    [...document.querySelectorAll<HTMLElement>(".rk-a")]
+      .filter((el) => getComputedStyle(el).display !== "none")
+      .map((el) => ({ for: el.dataset.rk, fig: (el.querySelector(".rk-fig")?.textContent ?? "").trim() })));
+
+  const first = await shown();
+  ok("the reckoner shows one answer", first.length === 1, `${first.length} shown`);
+  ok("and it is the middle amount before anything is pressed",
+    first[0]?.for === "5000", first[0]?.for ?? "none");
+
+  /* THE FIGURE IS THE MODEL'S. `compounding` is imported here and
+     run with the same three arguments the component uses, so a
+     change to the model that this page did not follow fails
+     rather than shipping a wrong number under a heading about
+     money. */
+  const want = fmtTk(compounding.run({
+    start: 0, monthly: 5000, rate: 10, years: 20,
+  }).values.final ?? 0, "bn", 0);
+  ok("and the figure is what the model returns", first[0]?.fig === want,
+    `${first[0]?.fig} vs ${want}`);
+
+  await page.click('label[for="rk-20000"]');
+  const after = await shown();
+  ok("pressing an amount answers with that amount",
+    after.length === 1 && after[0]?.for === "20000",
+    after.map((a) => a.for).join(", "));
+  const want20 = fmtTk(compounding.run({
+    start: 0, monthly: 20000, rate: 10, years: 20,
+  }).values.final ?? 0, "bn", 0);
+  ok("with the model's figure again", after[0]?.fig === want20,
+    `${after[0]?.fig} vs ${want20}`);
+
+  /* No JavaScript ran to do any of that. */
+  ok("no page errors in the reckoner", errors.length === 0, errors[0]);
+  await page.close();
+}
+
+/* ============================================================
    The board, which is the reader's and nobody else's
 
    A stranger got a section headed "আপনার বোর্ড · Your board" with
@@ -732,6 +790,7 @@ for (const [who, audience, track, expected] of READERS) {
          not the three they have not: four rows of nought under an
          apology is what the board used to open with. */
       meters: document.querySelectorAll(".meters-list li").length,
+      meterText: (document.querySelector(".meters-list b")?.textContent ?? "").trim(),
     };
   });
 
@@ -745,8 +804,47 @@ for (const [who, audience, track, expected] of READERS) {
   ok("with the arrange button on the same line", board.bar?.sameLine === true);
   ok("and the meters name only the school they have started",
     board.meters === 1, `${board.meters} rows`);
+  /* A COUNT WITH NO DENOMINATOR SAYS LESS THAN THE PAGE IT LINKS
+     TO: twenty of eighty-one and twenty of thirty read the same. */
+  ok("and say it against the ladder's own total",
+    /\/\s*\S/.test(board.meterText), board.meterText);
 
   ok("no page errors on a board", errors.length === 0, errors[0]);
+  await page.close();
+}
+
+{
+  /* A BOOKMARK IS WHERE YOU WERE, NOT WHERE TO GO. A reader who
+     read a lesson, ticked it and closed the tab was offered that
+     same lesson again by the one card on the page that is about
+     them. This seeds exactly that state: the bookmark and the tick
+     on the same lesson. */
+  const page = await browser.newPage();
+  const errors: string[] = [];
+  page.on("pageerror", (e: Error) => { errors.push(e.message); });
+  await page.route("https://fonts.googleapis.com/**", (r: Route) => r.abort());
+  await page.addInitScript(() => {
+    localStorage.setItem("learn-read", JSON.stringify(["basics-1/why-invest"]));
+    localStorage.setItem("learn-last", JSON.stringify({
+      id: "basics-1/why-invest", title: "কেন বিনিয়োগ করবেন", stage: "basics-1",
+      url: "/money/basics-1/why-invest", ts: Date.now(),
+    }));
+  });
+  await page.goto(`http://localhost:${PORT}/`, { waitUntil: "load" });
+  await page.waitForTimeout(1500);
+
+  const carry = await page.evaluate(() => {
+    const card = document.querySelector<HTMLAnchorElement>(".gate-slim");
+    return card ? { href: card.getAttribute("href"), text: (card.textContent ?? "").trim() } : null;
+  });
+
+  ok("a finished lesson does not send the reader back to it",
+    carry !== null && carry.href !== "/money/basics-1/why-invest",
+    JSON.stringify(carry));
+  ok("it offers the school, which knows what comes next",
+    carry?.href === "/money", carry?.href ?? "no card");
+
+  ok("no page errors on a finished lesson", errors.length === 0, errors[0]);
   await page.close();
 }
 

@@ -1,10 +1,10 @@
 {
-  "version": "v236",
+  "version": "v239",
   "hashes": {
     "/offline.html": "bd9144e7162be323",
-    "/fallback.css": "d703d9af6af1df02",
+    "/fallback.css": "e26b8e5c573142e9",
     "/app.js": "d0b5bf300691d393",
-    "/content.js": "a05a2b3049ea381a",
+    "/content.js": "f918cea2a4edf8f5",
     "/api.js": "a7bab41d860a4806",
     "/pieces.js": "abb6a19a6cc1ea76",
     "/signin.js": "39ed9349d0b5494d",
@@ -43,7 +43,7 @@
     "/english/part.js": "c62f3c202be0ccde",
     "/english/term.js": "e9af15c1e57e24ce",
     "/english/workbook.js": "8d6fe3d315de91a3",
-    "/tools/stock.js": "562088fbd0cec891",
+    "/tools/stock.js": "9d07c921afcf5c5a",
     "/tools/stock.model.js": "941798589ae75820",
     "/tools/stock.i18n.js": "70a6af2a66d87669",
     "/favicon.ico": "296539578a1f25f8"

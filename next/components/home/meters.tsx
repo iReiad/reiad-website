@@ -40,7 +40,7 @@ const iconOf = (key: string): string =>
 
 const bn = (n: number) => String(n).replace(/\d/g, (d) => "০১২৩৪৫৬৭৮৯"[Number(d)]);
 
-export function SchoolMeters() {
+export function SchoolMeters({ totals }: { totals?: Record<string, number> }) {
   /* The counts joined into one string, not the object built from
      them: React compares snapshots by identity and a fresh object
      every read would loop. */
@@ -88,13 +88,21 @@ export function SchoolMeters() {
         {LADDER_SCHOOLS.filter((school) => (counts.get(school.key) ?? 0) > 0)
           .map((school) => {
             const done = counts.get(school.key) ?? 0;
+            const total = totals?.[school.key] ?? 0;
             return (
               <li key={school.key} style={{ ["--accent" as string]: school.accent }}>
                 <a href={school.href}>
                   <Icon name={iconOf(school.key)} size={15} />
                   <span className="min-w-0 truncate" lang="bn">{school.bn}</span>
+                  {/* A COUNT WITH NO DENOMINATOR SAYS LESS THAN THE
+                      PAGE IT LINKS TO. "২০টা পাঠ" was true and
+                      unusable: a reader cannot tell twenty of
+                      eighty-one from twenty of thirty. The total
+                      is four integers, counted from the ladders at
+                      build time and handed down as a prop, so this
+                      still reads no ladder in the browser. */}
                   <b className="mono" data-done="yes" lang="bn">
-                    {bn(done)}টা পাঠ
+                    {total ? `${bn(done)} / ${bn(total)}` : `${bn(done)}টা পাঠ`}
                   </b>
                 </a>
               </li>

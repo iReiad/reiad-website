@@ -1032,7 +1032,7 @@ function renderPiotroski(a) {
       <b>${r.fTested >= 5 ? `${fmtInt(r.fScore, lang)} / ${fmtInt(r.fTested, lang)}` : "–"}</b>
       <span>${esc(t("t.ofTested", lang, { v: fmtInt(r.fTested, lang) }))}</span>
     </p>
-    <ul class="checks">${r.fChecks.map((c) => `
+    <ul class="check-tests">${r.fChecks.map((c) => `
       <li data-state="${!c.testable ? "skip" : c.pass ? "pass" : "fail"}">
         <span class="check-box" aria-hidden="true"></span>
         <span>${esc(t(`p.${c.id}`, lang))}${!c.testable
@@ -1096,7 +1096,7 @@ function renderShariah(a) {
     <div class="shariah-verdict" data-pass="${s.pass}">
       ${esc(t(s.pass ? "sh.pass" : "sh.fail", lang))}
     </div>
-    <ul class="checks">${s.tests.map((x) => `
+    <ul class="check-tests">${s.tests.map((x) => `
       <li data-state="${x.pass ? "pass" : "fail"}">
         <span class="check-box" aria-hidden="true"></span>
         <span>${esc(t(`sh.${x.id}`, lang))}

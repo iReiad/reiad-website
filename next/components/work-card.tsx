@@ -33,15 +33,32 @@ export function WorkCard({ study, lead, compact }: {
   compact?: boolean;
 }) {
   return (
+    /* `lang="en"` on the card, which covers the chip, the title,
+       the line and the facts at once. The front page's document
+       language is Bangla and every word of a case study is
+       English: unmarked, a screen reader reads seven English
+       titles with Bengali phonology, and a browser offers to
+       translate the only band that sells the work. */
     <a className={["cell work-card", lead ? "work-lead" : null,
       compact ? "work-compact" : null].filter(Boolean).join(" ")}
-       href={study.url}>
+       href={study.url} lang="en">
       {study.spark ? (
         <svg className="work-art" viewBox="0 0 240 72" aria-hidden="true"
              dangerouslySetInnerHTML={{ __html: study.spark }} />
       ) : null}
       <div className="work-copy">
-        <Chip>{lead ? `Featured · ${study.chip}` : `${study.chip} · Interactive`}</Chip>
+        {/* A CHECKABLE NUMBER, RATHER THAN THE WORD "INTERACTIVE".
+            The band's own note says every one of these runs in the
+            browser, so the chip was saying it a second time in
+            seven places while `next/lib/work.ts` held the three
+            facts a reviewer actually checks and the compact card
+            threw all three away in favour of a chart with no
+            numbers in it. The first fact costs no height: it goes
+            where the word it replaces was. */}
+        <Chip>
+          {lead ? `Featured · ${study.chip}`
+            : `${study.chip} · ${study.facts[0] ?? "Interactive"}`}
+        </Chip>
         <h3>{study.title}</h3>
         <p>{compact ? study.line : study.paragraph}</p>
         {compact || !study.facts.length ? null : (

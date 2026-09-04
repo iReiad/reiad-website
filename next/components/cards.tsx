@@ -81,7 +81,11 @@ export function PieceCard({ piece, icon, hidden }: {
       icon={icon}
       chip={piece.tag}
       title={piece.title}
-      lang={bangla ? "bn" : undefined}
+      /* Always said, never left to the document. A piece in
+         English on a page whose `<html lang>` is Bangla is read
+         with Bengali phonology by anything listening, and offered
+         for machine translation by the browser. */
+      lang={piece.lang || "en"}
       dek={piece.dek}
       go={bangla ? "পড়ুন" : "Read"}
     >
