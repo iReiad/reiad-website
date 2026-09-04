@@ -12444,23 +12444,18 @@ German for day, and .tag is what the site has always called
     aspect-ratio: 16 / 9;
     background: var(--art-sink);
     isolation: isolate;
-
-    /* The room has a depth, so leaning it keystones rather than
-       skewing. 900px against a card about 400px wide is a long
-       lens: enough to feel, not enough to fish-eye. */
-    perspective: 900px;
   }
 
   /* The whole room turns as one, and every layer inside it
      slides by its own depth. Two mechanisms on purpose: the turn
      is what makes the frame a window, and the slide is what puts
-     the things behind that window at different distances. */
-  .art-space {
-    position: absolute; inset: 0;
-    transform:
-      rotateY(calc(var(--gpx, 0) * var(--art-a) * var(--art-turn) * 5deg))
-      rotateX(calc(var(--gpy, 0) * var(--art-a) * var(--art-turn) * -3.4deg));
-  }
+     the things behind that window at different distances.
+
+     BOTH ARE UNDER THE POINTER'S OWN QUERY, at the foot of this
+     section, and the reason is measured rather than tidy: a
+     phone reads them as a promotion it never gets a picture out
+     of. See the note down there. */
+  .art-space { position: absolute; inset: 0; }
 
   /* EVERY LAYER IS BIGGER THAN THE FRAME BY ITS OWN BLEED, and
      the bleed is not decoration: a layer that travels 26px and is
@@ -12659,16 +12654,70 @@ German for day, and .tag is what the site has always called
     transition-duration: 190ms;
   }
 
-  /* `--gpx` and `--gpy` are NOT registered, so they inherit, which
-     is what lets a layer read the pointer at all. Only the
-     strength is animated: transitioning `translate` itself would
-     start a fresh 820ms ease on every pointer move and the picture
-     would lag the hand holding it, which is the one thing the
-     spring in `glow.tsx` is there to avoid. */
-  .art-space > * {
-    translate:
-      calc(var(--gpx, 0) * var(--art-depth, 0) * var(--art-a) * var(--art-throw) * -1)
-      calc(var(--gpy, 0) * var(--art-depth, 0) * var(--art-a) * var(--art-throw) * -0.7);
+  /* ============================================================
+     THE ROOM TURNS FOR A POINTER, AND A PHONE HAS NONE
+
+     `glow.tsx` publishes `--gpx`/`--gpy` only where
+     `(hover: hover) and (pointer: fine)` matches, and it is the
+     only writer of either. So on a handset both fall back to 0,
+     the rotation below is the identity and every layer's slide
+     is zero: the scene is ALREADY a still picture there.
+
+     It was not costing like one. A 3D transform promotes its
+     element whatever its value, so an identity `rotateY(0)`
+     bought a composited layer per card and dragged the layers
+     overlapping it up with it. Measured over a deck of 24 cards
+     at 390x844 and dpr 3, through the compositor's own layer
+     tree:
+
+       | | layers | texture |
+       | as it was       | 100 | 60.5 MB |
+       | under this query|  76 | 32.8 MB |
+
+     24 composited layers and 27.7 MB for a rotation that is
+     always zero, on the machines least able to hold it. Nothing
+     about the picture changes: what is inside this block cannot
+     move without a pointer, and the pointer is what the query
+     asks about.
+
+     `perspective` sits here for the same reason and one more: a
+     3D rotation with no perspective anywhere is an affine
+     squash, so the two have to be behind the SAME query or the
+     lean shears. `.tilt-scene` in `@layer components` is the
+     same arrangement one level up and the two have to agree.
+
+     THE REDUCED-MOTION HALF IS THE `no-preference` NESTING, not
+     a block further down undoing three declarations: a reader
+     who has asked for no movement is asking about this exact
+     block, and a promise kept where it is made cannot drift from
+     the thing it is about.
+     ============================================================ */
+  @media (hover: hover) and (pointer: fine) {
+    @media (prefers-reduced-motion: no-preference) {
+      /* The room has a depth, so leaning it keystones rather
+         than skewing. 900px against a card about 400px wide is a
+         long lens: enough to feel, not enough to fish-eye. */
+      .artwork { perspective: 900px; }
+
+      .art-space {
+        transform:
+          rotateY(calc(var(--gpx, 0) * var(--art-a) * var(--art-turn) * 5deg))
+          rotateX(calc(var(--gpy, 0) * var(--art-a) * var(--art-turn) * -3.4deg));
+      }
+
+      /* `--gpx` and `--gpy` are NOT registered, so they inherit,
+         which is what lets a layer read the pointer at all. Only
+         the strength is animated: transitioning `translate`
+         itself would start a fresh 820ms ease on every pointer
+         move and the picture would lag the hand holding it,
+         which is the one thing the spring in `glow.tsx` is there
+         to avoid. */
+      .art-space > * {
+        translate:
+          calc(var(--gpx, 0) * var(--art-depth, 0) * var(--art-a) * var(--art-throw) * -1)
+          calc(var(--gpy, 0) * var(--art-depth, 0) * var(--art-a) * var(--art-throw) * -0.7);
+      }
+    }
   }
 
   /* THREE SIZES, and each one changes the throw and nothing else.
@@ -12678,10 +12727,12 @@ German for day, and .tag is what the site has always called
   .artwork[data-size="tile"]  { --art-throw: 1.1px; --art-turn: 0.7; }
   .artwork[data-size="panel"] { --art-throw: 3.6px; --art-turn: 1.1; }
 
+  /* The light is the half that is NOT in the query above: a still
+     picture still has a specular and still fades one in, and
+     neither costs a layer. `--art-a` is what both read, so this
+     is the one place it has to be stopped by hand. */
   @media (prefers-reduced-motion: reduce) {
     .artwork { transition: none; }
-    .art-space { transform: none; }
-    .art-space > * { translate: none; }
     .art-spec { opacity: 0.5; }
   }
 

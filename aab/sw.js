@@ -24,10 +24,14 @@
    the number moves. `node scripts/check-sw.ts --update` records the
    new hashes.
 
+   v250: a card's scene no longer turns where there is no pointer to
+        turn it towards. /fallback.css carries the same stylesheet,
+        so its bytes moved.
+
    v249: comments. Every precached module lost the essay at the top
         of it and this file lost 2,167 lines of changelog, so the
         bytes moved without a line of behaviour changing. */
-const VERSION = "v249";
+const VERSION = "v250";
 const SHELL = `shell-${VERSION}`;
 const RUNTIME = `runtime-${VERSION}`;
 
