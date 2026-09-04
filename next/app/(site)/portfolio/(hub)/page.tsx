@@ -21,6 +21,8 @@ import { Button, ButtonLink } from "../../../../components/ui/button";
 import { Chip } from "../../../../components/ui/chip";
 import { InfoCard } from "../../../../components/deck";
 import { Eyebrow, SectionLabel } from "../../../../components/ui/label";
+import { WorkCard } from "../../../../components/work-card";
+import { STUDIES } from "../../../../lib/work";
 import { HEADS } from "@reiad/shared/heads";
 
 export const metadata: Metadata = pageMeta({
@@ -134,223 +136,23 @@ export default function Page() {
           show that a model works.
         
             </p>
-            <a className="cell work-card work-lead" href="/portfolio/three-statement">
-              <svg className="work-art" viewBox="0 0 240 72" aria-hidden="true">
-                <line className="wa-grid" x1="10" y1="62" x2="230" y2="62" />
-                <rect className="wa-bar" x="18" y="40" width="26" height="22" rx="2" />
-                <rect className="wa-bar" x="56" y="34" width="26" height="28" rx="2" />
-                <rect className="wa-bar" x="94" y="27" width="26" height="35" rx="2" />
-                <rect className="wa-bar" x="132" y="21" width="26" height="41" rx="2" />
-                <rect className="wa-bar" x="170" y="13" width="26" height="49" rx="2" />
-                <path className="wa-line" d="M31,49 L69,43 L107,34 L145,30 L183,19" />
-                <circle className="wa-dot" cx="183" cy="19" r="3.5" />
-              </svg>
-              <div className="work-copy">
-                <Chip>Featured · Financial model</Chip>
-                <h3>Three-statement model: DSE-listed manufacturer
-                </h3>
-                <p>Linked income statement, balance sheet and cash flow, with a
-              scenario switch and a balance check that is computed rather than
-              asserted: if the model were wrong, it would say so. Drag any
-              assumption and all three statements, the charts and the credit
-              metrics move with it.
-                </p>
-                <ul className="work-facts">
-                  <li>FY24A to FY29E
-                  </li>
-                  <li>Three scenarios
-                  </li>
-                  <li>Live balance check
-                  </li>
-                  <li>CSV export
-                  </li>
-                </ul>
-                <span className="more">Open the model →
-                </span>
-              </div>
-            </a>
+            {/* The seven, out of `next/lib/work.ts`, whose rows come
+                from `PAGES` in `shared/content.ts`. They were written
+                out here as seven blocks of markup carrying their own
+                charts, which is a second copy of a list the site
+                already holds: this page said four while seven
+                existed, for that reason, and the front page could
+                not show them at all without a third copy.
+
+                The lead is the first row rather than a URL named
+                here, because `PAGES` already lists the
+                three-statement model first and the DCF is built on
+                top of it. */}
+            <WorkCard study={STUDIES[0]} lead />
             <div className="grid-3 work-grid">
-              <a className="cell work-card" href="/portfolio/dcf">
-                <svg className="work-art" viewBox="0 0 240 72" aria-hidden="true">
-                  <line className="wa-grid" x1="10" y1="62" x2="230" y2="62" />
-                  <rect className="wa-bar" x="18" y="31" width="22" height="31" rx="2" />
-                  <rect className="wa-bar" x="48" y="35" width="22" height="27" rx="2" />
-                  <rect className="wa-bar" x="78" y="39" width="22" height="23" rx="2" />
-                  <rect className="wa-bar" x="108" y="43" width="22" height="19" rx="2" />
-                  <rect className="wa-bar" x="138" y="46" width="22" height="16" rx="2" />
-                  <rect className="wa-bar-gold" x="176" y="17" width="42" height="45" rx="2" />
-                  <path className="wa-line-dash" d="M29,27 L149,42" />
-                </svg>
-                <div className="work-copy">
-                  <Chip>Valuation · Interactive</Chip>
-                  <h3>DCF with sensitivity tables
-                  </h3>
-                  <p>WACC built up from its parts, two terminal value methods that
-                quote each other back, and a two-way grid on WACC and terminal
-                growth where every cell is a full revaluation and clicking one
-                adopts it.
-                  </p>
-                  <ul className="work-facts">
-                    <li>WACC built up, not typed in
-                    </li>
-                    <li>Two terminal methods
-                    </li>
-                    <li>Fed by the model above
-                    </li>
-                  </ul>
-                  <span className="more">Open the valuation →
-                  </span>
-                </div>
-              </a>
-              <a className="cell work-card" href="/portfolio/dsex">
-                <svg className="work-art" viewBox="0 0 240 72" aria-hidden="true">
-                  <rect className="wa-band" x="100" y="10" width="62" height="52" />
-                  <path className="wa-fill" d="M10,54 L44,45 L78,51 L112,33 L146,47 L180,28 L214,33 L230,17 L230,62 L10,62 Z" />
-                  <path className="wa-line" d="M10,54 L44,45 L78,51 L112,33 L146,47 L180,28 L214,33 L230,17" />
-                  <line className="wa-grid" x1="10" y1="62" x2="230" y2="62" />
-                </svg>
-                <div className="work-copy">
-                  <Chip>Data analysis · Interactive</Chip>
-                  <h3>Index returns: volatility and drawdowns
-                  </h3>
-                  <p>Rolling volatility, drawdown episodes with their recovery times,
-                fat-tail diagnostics against a normal curve, and what actually
-                happened to someone who held for a day, a year or five.
-                  </p>
-                  <ul className="work-facts">
-                    <li>Six linked views
-                    </li>
-                    <li>Your CSV, parsed in the browser
-                    </li>
-                    <li>Demo series marked as simulated
-                    </li>
-                  </ul>
-                  <span className="more">Open the analysis →
-                  </span>
-                </div>
-              </a>
-              <a className="cell work-card" href="/portfolio/frontier">
-                <svg className="work-art" viewBox="0 0 240 72" aria-hidden="true">
-                  <line className="wa-grid" x1="10" y1="62" x2="230" y2="62" />
-                  <path className="wa-line" d="M24,55 C62,27 108,17 150,15 C186,14 210,17 226,21" />
-                  <circle className="wa-scatter" cx="52" cy="48" r="2.6" />
-                  <circle className="wa-scatter" cx="86" cy="39" r="2.6" />
-                  <circle className="wa-scatter" cx="104" cy="52" r="2.6" />
-                  <circle className="wa-scatter" cx="138" cy="34" r="2.6" />
-                  <circle className="wa-scatter" cx="176" cy="45" r="2.6" />
-                  <circle className="wa-scatter" cx="204" cy="36" r="2.6" />
-                  <circle className="wa-point" cx="150" cy="15" r="4" />
-                </svg>
-                <div className="work-copy">
-                  <Chip>Portfolio construction · Interactive</Chip>
-                  <h3>A screened FTSE 250 fund, built in 2015 and held to 2020
-                  </h3>
-                  <p>Ten mid-cap holdings past a Shariah and sustainability screen that
-                runs before any price is looked at, weighted at the end of 2015 by
-                minimising contributed variance, then held unchanged through five
-                years nobody had seen. The frontier and the optimised alternatives
-                are solved beside it, live.
-                  </p>
-                  <ul className="work-facts">
-                    <li>Ten holdings, £10m
-                    </li>
-                    <li>Weighted 2015, held to 2020
-                    </li>
-                    <li>Computed from daily closes
-                    </li>
-                  </ul>
-                  <span className="more">Open the fund →
-                  </span>
-                </div>
-              </a>
-              <a className="cell work-card" href="/portfolio/scorecard">
-                <svg className="work-art" viewBox="0 0 240 72" aria-hidden="true">
-                  <path className="wa-fill" d="M16,62 C58,28 108,18 224,12 L224,62 Z" />
-                  <line className="wa-line-dash" x1="16" y1="62" x2="224" y2="12" />
-                  <path className="wa-line" d="M16,62 C58,28 108,18 224,12" />
-                  <circle className="wa-point" cx="108" cy="21" r="4" />
-                </svg>
-                <div className="work-copy">
-                  <Chip>Machine learning · Interactive</Chip>
-                  <h3>Probability of default: scorecard vs gradient boosting
-                  </h3>
-                  <p>The whole pipeline on a real public dataset, fitted in your browser
-                while you read: split, encode, a logistic scorecard against a boosted
-                ensemble, cross-validation, calibration, and the cut-off where the
-                modelling stops and the lending decision starts. Including an honest
-                answer about which model wins.
-                  </p>
-                  <ul className="work-facts">
-                    <li>Nothing precomputed
-                    </li>
-                    <li>Refits on every seed change
-                    </li>
-                    <li>Calibrated, then priced
-                    </li>
-                  </ul>
-                  <span className="more">Fit the models →
-                  </span>
-                </div>
-              </a>
-              <a className="cell work-card" href="/portfolio/stress">
-                <svg className="work-art" viewBox="0 0 240 72" aria-hidden="true">
-                  <rect className="wa-band" x="92" y="6" width="68" height="56" />
-                  <line className="wa-grid" x1="10" y1="62" x2="230" y2="62" />
-                  <line className="wa-zero" x1="10" y1="54" x2="230" y2="54" />
-                  <path className="wa-line" d="M14,22 L58,25 L96,30 L126,47 L152,50 L188,40 L226,30" />
-                  <circle className="wa-point" cx="152" cy="50" r="4" />
-                </svg>
-                <div className="work-copy">
-                  <Chip>Credit risk · Interactive</Chip>
-                  <h3>Portfolio stress testing: macro shocks to capital
-                  </h3>
-                  <p>Unemployment, growth and rates driving default rates through a
-                Merton model and a vintage hazard model at once, then loss given
-                default as an option on the collateral, IFRS 9 staging, and the
-                capital ratio. The gap between the two engines stays on the page,
-                because that gap is the model risk.
-                  </p>
-                  <ul className="work-facts">
-                    <li>Two engines, side by side
-                    </li>
-                    <li>IFRS 9 staging to CET1
-                    </li>
-                    <li>Reverse stress test
-                    </li>
-                  </ul>
-                  <span className="more">Run the stress test →
-                  </span>
-                </div>
-              </a>
-              <a className="cell work-card" href="/portfolio/dissertation">
-                <svg className="work-art" viewBox="0 0 240 72" aria-hidden="true">
-                  <line className="wa-zero" x1="120" y1="8" x2="120" y2="64" />
-                  <line className="wa-ci" x1="52" y1="27" x2="198" y2="27" />
-                  <circle className="wa-point" cx="142" cy="27" r="4" />
-                  <line className="wa-ci" x1="74" y1="50" x2="178" y2="50" />
-                  <circle className="wa-point" cx="108" cy="50" r="4" />
-                </svg>
-                <div className="work-copy">
-                  <Chip>Empirical research · Interactive</Chip>
-                  <h3>Islamic vs conventional funds: an MSc dissertation
-                  </h3>
-                  <p>The hypothesis was that Shariah-compliant funds carry less risk.
-                It failed, and the power analysis then showed why a sample of
-                three could never have tested it. Every table and series on the
-                page is the submitted one.
-                  </p>
-                  <ul className="work-facts">
-                    <li>220 UK equity funds
-                    </li>
-                    <li>19,577 fund-months
-                    </li>
-                    <li>Five-factor and Carhart
-                    </li>
-                  </ul>
-                  <span className="more">Read the research →
-                  </span>
-                </div>
-              </a>
+              {STUDIES.slice(1).map((study) => (
+                <WorkCard key={study.url} study={study} />
+              ))}
             </div>
             {/* ============ THE REST OF IT ============
              The case studies above are the work that has a page of

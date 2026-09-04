@@ -30,7 +30,9 @@
    thing.
    ============================================================ */
 
-import { layoutOf, storedOf, type Placed } from "@reiad/shared/widgets";
+import {
+  HOME_DEFAULT, keepUndrawn, layoutOf, storedOf, type Placed,
+} from "@reiad/shared/widgets";
 
 export const BOARD_KEY = "home-board";
 
@@ -69,11 +71,32 @@ export function board(drawable: Iterable<string>, fallback?: readonly string[]):
   return layoutOf(saved ?? (fallback ? [...fallback] : null), drawable);
 }
 
-/** Write it, stamped, and tell this tab. */
-export function save(placed: readonly Placed[]): void {
+/** Write it, stamped, and tell this tab.
+
+    `drawable` is what the CALLER can render, and passing it is
+    what stops this from deleting the rest of the reader's board:
+    see `withUndrawn`. It is optional so that a caller which
+    genuinely holds the whole catalogue can leave it out, and
+    absent means "everything here is everything there is". */
+export function save(placed: readonly Placed[], drawable?: Iterable<string>): void {
   if (typeof localStorage === "undefined") return;
   try {
-    const value: Record_ = { board: storedOf(placed), ts: Date.now() };
+    /* `keepUndrawn` is `shared/widgets.ts`'s, because both
+       renderers can make this mistake and only one of them is in
+       this repository.
+
+       AND `HOME_DEFAULT` WHERE NOTHING IS STORED, which is the
+       same bug one step along. A reader who has never arranged a
+       board has no stored list, and the board they were looking
+       at on their phone was the default: writing back only what
+       this build can draw would take the three widgets the
+       default holds and this build does not off their account on
+       the first press of সাজান, having never shown them. What
+       they had is what has to survive, stored or not. */
+    const board = drawable
+      ? keepUndrawn(stored() ?? HOME_DEFAULT, storedOf(placed), drawable)
+      : storedOf(placed);
+    const value: Record_ = { board, ts: Date.now() };
     localStorage.setItem(BOARD_KEY, JSON.stringify(value));
   } catch {
     /* A browser with storage turned off still gets a working

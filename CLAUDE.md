@@ -325,10 +325,10 @@ number left in the markup is the no-JavaScript fallback, so keep it
 roughly right; `check-content.ts` fails the build if it drifts.
 
 The same rule covers lists. A list of things that exist elsewhere on the
-site (case studies, articles, tools) is built from `shared/content.ts` by
-`home.js` or `app.js`, and the markup in the page is a fallback, not the
-source. Adding a case study should require editing `shared/content.ts`
-and nothing else.
+site (case studies, articles, tools) is built from `shared/content.ts` or
+`shared/nav.ts` by the route that draws it, and the markup in the page is
+a fallback, not the source. Adding a case study should require editing
+`shared/content.ts` and nothing else.
 
 This exists because it went wrong, twice in one file. The portfolio page
 listed four case studies while seven existed, and three finished pieces of
@@ -863,11 +863,13 @@ step's name since the schools were written, at 1.6em square, in
 page 27 pixels wide.
 
 **And a modifier handed to `<CardArt>` has to be two classes deep
-or declared after `.artwork`.** `.gate-feat-art` was one class and
-came first, so `.artwork`'s `position: relative` and 16:9 ratio won
-and the front page's biggest card carried a 540px stamp in its top
-left corner with two thirds of itself empty. It rendered perfectly
-wrong, which is why nothing failed.
+or declared after `.artwork`.** The featured card's own class was
+one class and came first, so `.artwork`'s `position: relative` and
+16:9 ratio won and the front page's biggest card carried a 540px
+stamp in its top left corner with two thirds of itself empty. It
+rendered perfectly wrong, which is why nothing failed. That card
+is gone; the rule is not, and `.learn-lead` broke it the same way
+the day it was written.
 
 ### The light is instant and the glass has weight
 
@@ -1027,6 +1029,96 @@ correct: does every name in the list reach a class; does everything
 that lifts also STOP for a reader who asked for no motion; and is
 anything in both the scene and the relief, which would move it
 twice against one pointer.
+
+## The front page is five bands, and the last one is the reader's
+
+`next/app/(home)/page.tsx`. Every band is a lead and a set behind
+it, so the page has a hierarchy rather than six bands of equal
+weight stacked down a column, and the order answers the three
+questions somebody arriving actually has: what is this, is it any
+good, where do I start.
+
+| | |
+| --- | --- |
+| the door | who this is, what is here, and two ways in |
+| the reckoner | one line of the site's own compounding model |
+| the library | six courses, each wearing its own drawing |
+| the work | seven case studies, each with its chart |
+| the writing | the newest pieces |
+| the tools | six things a reader can use today |
+| the board | the reader's own, and only when they have one |
+
+**It was a board and two copies of the rail.** Measured off the
+built page, the board was 73 per cent of the laptop page and the
+two bands inside it listing the schools and the tools were 61 per
+cent of the phone page, which is the rail drawn a second time on
+a page that already has one. Seven finished case studies, 225
+written lessons and five calculators were invisible from it. And
+the first thing under the hero, for somebody who had never been
+here, was `আপনার বোর্ড · Your board` with an arrange button over
+four rows reading `০টা পাঠ`.
+
+**A BOARD IS A READER'S, SO A STRANGER HAS NONE.** Three things
+make it theirs and any one is enough: a lesson opened, a lesson
+ticked, or a board they arranged. Until then the section is an
+invitation saying what the thing is rather than an empty one.
+
+**`DRAWABLE` in `home/board.tsx` is four of the catalogue's
+twelve, and what went is what the PAGE draws better.** They stay
+in `shared/widgets.ts`, so the Android app keeps them: that split
+is the whole reason `layoutOf` takes the drawable list as an
+argument. **A build that cannot draw a kind must not delete it**,
+which is what `keepUndrawn` is for and what `save()` was doing
+without it.
+
+**The audience switch moves a DOOR.** It moved the headline, the
+lede and one card two screens down, so the answer to "I am here to
+hire" was a paragraph. `DOOR.ways` is a pair of buttons per
+audience, all three server-rendered and chosen by `data-hl` before
+the first paint, exactly as the headline is.
+
+**`DOOR.facts` is the ledger, and its five rows go to five
+different places.** Two of them pointed at `/skills`, in a list of
+exactly five whose whole job is to be five ways in.
+
+**`COUNTS.lessons` is the money school's and `COUNTS.libraryLessons`
+is all four ladders.** The door printed the first under the word
+পাঠ beside a link to `/skills`, which understated the library by
+144 and which no check could see: the check verifies that a slot
+carries the number its key holds, never that the key means what
+the label says.
+
+**`/` is a prerendered file and must stay one.** It was
+`force-dynamic` for an hour so the writing band could read D1 on
+the server, which made every visit to the most-hit page a Worker
+render and a query for four card titles, and took
+`next/interactive.test.ts` down with it silently: that harness
+serves `.next/server/app/index.html` from disk and SKIPS when the
+file is not there, so 217 checks covering every calculator here
+reported nothing at all. A test that skips is not a pass. The
+writing band fetches, and what it draws first is a real door to
+`/insights` rather than a skeleton.
+
+### The reckoner, and why it has no JavaScript in it
+
+`next/components/home/reckoner.tsx`. Five radios, five answers,
+and the stylesheet shows the one whose radio is checked through
+the sibling combinator. Not `:has()` and not a script: the page is
+prerendered, and an interactive that needs hydration to answer is
+an interactive that is dead for the length of the hydration.
+
+**Nothing in it is typed.** The five answers are
+`compounding.run()` called on the server, which is the same model
+`/tools` runs and the same rule the counts follow: a wrong number
+under a heading about money is the one mistake this site cannot
+make. The rate and the horizon are on screen and the line under
+them says, in the reader's own language, that it is a calculation
+rather than a guarantee.
+
+It also has no storage key, so there is no row for
+`shared/storage.ts` and nothing for `sync.ts` to carry: what a
+reader tapped there is not something they MADE.
+
 
 ## One thing is one card
 

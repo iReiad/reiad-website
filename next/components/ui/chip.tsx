@@ -33,7 +33,7 @@
    ============================================================ */
 
 import type {
-  AnchorHTMLAttributes, ButtonHTMLAttributes, ReactNode,
+  AnchorHTMLAttributes, ButtonHTMLAttributes, LabelHTMLAttributes, ReactNode,
 } from "react";
 
 /* Four tones, named for what they say rather than for a colour.
@@ -112,6 +112,31 @@ export function ChipButton({
 }
 
 /** The same chip, when it really does take you somewhere. */
+/** The same chip, when it is the LABEL of a control rather than
+    the control.
+
+    A `<label>`, so pressing it presses the input it names and a
+    screen reader announces the two as one thing. It exists for a
+    set of radios drawn as a row of chips: `<ChipButton>` would be
+    a button, which is a second control beside the real one, and a
+    bare `className="chip"` is the hand-written chip this library
+    exists to stop.
+
+    No `data-glow`: the input carries the state, and the material's
+    light comes up on the label through the group's own rules
+    rather than on hover, because a radio in a row of five is not
+    a lone control asking to be pressed. */
+export function ChipLabel({
+  tone = "quiet", className, children, ...rest
+}: { tone?: ChipTone; className?: string; children: ReactNode }
+  & LabelHTMLAttributes<HTMLLabelElement>) {
+  return (
+    <label className={classes(tone, className)} {...rest}>
+      {children}
+    </label>
+  );
+}
+
 export function ChipLink({
   tone = "quiet", className, children, ...rest
 }: { tone?: ChipTone; className?: string; children: ReactNode }

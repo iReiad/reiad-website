@@ -31,6 +31,58 @@
    login could not have reached anyone either. Bump this whenever a
    precached file changes.
 
+   v242: /fallback.css. The door's ledger is capped when the door
+        stacks: at one column `auto 1fr auto` put six hundred
+        pixels between a Bangla label and its English gloss, so a
+        row read as two columns that had lost each other.
+
+   v241: /fallback.css. The writing band is three across like the
+        other three: at 260px a fourth column needed more room
+        than the content column has, so four pieces laid out three
+        and one.
+
+   v240: /fallback.css. The front page's decks stretch again now
+        that every card in each of them has the same anatomy, so a
+        row's actions line up, and the byline is a link to /about:
+        nothing on the page was independently checkable.
+
+   v239: /fallback.css and /tools/stock.js. `check-css.ts` read
+        only the FIRST block of a cascade layer, and `@layer deck`
+        opens twice, so the whole front page's stylesheet had been
+        outside the dead-rule ratchet and the two-layer check for
+        the life of it. With that fixed: the stock check's `.checks`
+        is `.check-tests`, because `@layer check` comes after
+        `components` and its grid, gap and type size had been
+        drawing the site's own tick lists on six pages; the work
+        layer's `.chip-row` is `.work-chips` for the same reason
+        against the Studio's; and five rules that style nothing are
+        gone.
+
+   v238: /fallback.css. A visible focus ring on every button,
+        which had been the accent at 30 per cent alpha and nothing
+        else, and the first `forced-colors: active` block this
+        stylesheet has ever had: in High Contrast every edge here
+        is a box-shadow and every ground a gradient, so the site
+        was unstyled text with no surface boundaries and no focus
+        indicator at all.
+
+   v237: /fallback.css. The front page again: a reckoner between
+        the door and the library, which is one line of the site's
+        own compounding model with five amounts to choose from and
+        no JavaScript in it, plus the ladder totals behind the
+        board's meters and a continue card that stops pointing at
+        a lesson the reader has already ticked.
+
+   v236: /fallback.css, /content.js and /tilt.js. The front page
+        rebuilt: the door is two columns with a counted ledger in
+        the second, the schools, the work, the writing and the
+        tools are bands of the page rather than widgets of the
+        board, and the board itself draws only for a reader who
+        has one. `.gate-deck` went with the featured card, so
+        tilt.js no longer names it, and `COUNTS` gained
+        `libraryLessons`, which is all four ladders rather than
+        the money school's alone.
+
    v235: /fallback.css. The writing desk's deck: a document of kind
         slides is one 16:9 card per h2, and the print rules lay one
         out to a landscape page.
@@ -2087,7 +2139,7 @@
    imports (crumbs, audience, learn progress) and the hub is a
    different page. Without a bump, a returning reader would be
    served the v3 app.js forever and none of it would appear. */
-const VERSION = "v235";
+const VERSION = "v242";
 const SHELL = `shell-${VERSION}`;
 const RUNTIME = `runtime-${VERSION}`;
 

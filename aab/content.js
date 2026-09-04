@@ -489,6 +489,17 @@ export const COUNTS = {
         stage is no longer `inline`, and the two numbers are the
         same number again. */
     lessons: allLessons().filter((l) => l.status === "live").length,
+    /* AND THE WHOLE LIBRARY'S, which is not the same number and was
+       told apart the hard way: the front door printed `lessons`
+       under the word "পাঠ" beside a link to `/skills`, which reads
+       as every lesson on the site and is the money school's alone.
+       It understated the library by 144.
+  
+       All four ladders, counted rather than added up by hand, so a
+       Stufe written next month moves it. */
+    libraryLessons: [
+        ...allLessons(), ...allTeile(), ...allDars(), ...allParts(),
+    ].filter((l) => l.status === "live").length,
     /** Terms in the A-Z glossary. */
     terms: TERM_GROUPS.reduce((n, g) => n + g.terms.length, 0),
     /** German Stufen. */
@@ -689,29 +700,81 @@ export const DOOR = {
         open: {
             headline: "টাকার ভাষা, আমাদের ভাষায়।",
             mark: "আমাদের ভাষায়",
+            /* NOT "উপরের সুইচটা ঘুরিয়ে দিন". The audience switch is at
+               the FOOT of the rail, and below 900px the rail is a drawer
+               behind a burger, so the one instruction the front page
+               gave pointed at a control that is not above anything and
+               on a phone is not on screen at all. The English door is a
+               button under this sentence now, so the sentence does not
+               have to send anybody looking. */
             lede: "বাংলাদেশের বাজার, টাকা, ভাষা আর রান্না: যেটা শিখতে চান সেটা বাংলায়, "
-                + "একদম শুরু থেকে। আর যদি কাজের খোঁজে এসে থাকেন, উপরের সুইচটা ঘুরিয়ে দিন।",
+                + "একদম শুরু থেকে। সবটা ফ্রি, আর পড়া শুরু করতে অ্যাকাউন্টও লাগে না।",
             lang: "bn",
         },
         learn: {
             headline: "যা শিখতে চান, নিজের ভাষায়।",
             mark: "নিজের ভাষায়",
-            lede: "ছয়টা কোর্স, সবগুলো ফ্রি। বিও অ্যাকাউন্ট খোলা থেকে জার্মান বাক্য "
-                + "বানানো পর্যন্ত, আর আপনি কতদূর পড়েছেন সেটা জমা থাকে আপনার অ্যাকাউন্টে।",
+            /* No count in the sentence: the ledger states it and the
+               library band draws one card per course, six inches below.
+               A number typed here is a number that has to be right
+               twice. */
+            lede: "বিও অ্যাকাউন্ট খোলা থেকে জার্মান বাক্য বানানো পর্যন্ত, প্রতিটা কোর্স "
+                + "ফ্রি আর বাংলায়। কোন পাঠটা পড়া হয়েছে টিক দিয়ে রাখা যায়, "
+                + "অ্যাকাউন্ট ছাড়াই।",
             lang: "bn",
         },
         work: {
-            headline: "Financial models you can open, edit and trust.",
-            mark: "open, edit and trust",
-            lede: "Three-statement models, a DCF, a stress test and a frontier "
-                + "optimiser, each one a working spreadsheet you can open in the "
-                + "browser and pull apart. The numbers are pinned by tests.",
+            /* "check" rather than "trust". Trust is what the reader is
+               being asked for; checking is what the page lets them do,
+               and it is the whole argument of the work band under it. */
+            headline: "Financial models you can open, edit and check.",
+            mark: "open, edit and check",
+            /* It named four of the seven case studies it now sits
+               directly above, which is a list to keep in step with a
+               list. */
+            lede: "Interactive case studies rather than screenshots: open one, "
+                + "change an assumption, and every number downstream of it moves. "
+                + "Each model's arithmetic is pinned by tests.",
             lang: "en",
         },
     },
+    /* Five rather than three, and each one a way in.
+  
+       They were three numerals in a row under the lede, on a first
+       screen whose right-hand half was empty. What a reader wants
+       to know about a library is how much is in it, so the two
+       largest true figures this site has, the lessons written and
+       the ratios the stock check scores, are the two that were
+       missing. */
     facts: [
-        { count: "courses", label: "ফ্রি কোর্স", en: "free courses" },
-        { count: "calculators", label: "ক্যালকুলেটর", en: "calculators" },
-        { count: "caseStudies", label: "কেস স্টাডি", en: "case studies" },
+        { count: "libraryLessons", label: "পাঠ", en: "lessons written", href: "/skills" },
+        /* NOT `courses`, which points at `/skills` and so does the row
+           above it: a list of five whose whole job is to be five ways
+           in had two of them going to one place. "ছয়টা কোর্স" is said
+           where it can be seen instead, by the six cards in the
+           library band. */
+        { count: "terms", label: "শব্দ", en: "terms, A to Z", href: "/money/contents" },
+        { count: "caseStudies", label: "কেস স্টাডি", en: "case studies you can drive",
+            href: "/portfolio" },
+        { count: "calculators", label: "ক্যালকুলেটর", en: "calculators", href: "/tools" },
+        { count: "ratios", label: "অনুপাত", en: "ratios in the stock check",
+            href: "/tools/stock" },
+    ],
+    ways: [
+        {
+            when: "open",
+            go: { label: "শেখা শুরু করুন", href: "/skills", lang: "bn" },
+            also: { label: "See the work", href: "/portfolio", lang: "en" },
+        },
+        {
+            when: "learn",
+            go: { label: "টাকা ও শেয়ার", href: "/money", lang: "bn" },
+            also: { label: "সব কোর্স", href: "/skills", lang: "bn" },
+        },
+        {
+            when: "work",
+            go: { label: "See the work", href: "/portfolio", lang: "en" },
+            also: { label: "Start a project", href: "/contact", lang: "en" },
+        },
     ],
 };

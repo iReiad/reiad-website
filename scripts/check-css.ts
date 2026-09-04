@@ -119,17 +119,36 @@ const css = readFileSync(join(REPO, "next", "styles", "site.css"), "utf8");
 }
 
 /** The body of `@layer <name> { … }`, brace-matched. */
+/** A layer's WHOLE body, which is every block that opens it.
+
+    A cascade layer may be opened as many times as it likes and
+    the browser concatenates them, and this stylesheet does:
+    `@layer deck` opens twice, `@layer work` seven times, `@layer
+    shell` twice. This returned the FIRST block only, so every
+    rule in every later block was outside both ratchets below: the
+    entire front page's stylesheet, which lives in `deck`'s second
+    block, was never checked for a dead rule or for a class two
+    layers both define, for the whole of the redesign that wrote
+    it. Nothing failed, and nothing could. */
 function layerBody(name: string): string | null {
-  const open = css.indexOf(`@layer ${name} {`);
-  if (open === -1) return null;
-  let depth = 0;
-  for (let i = open; i < css.length; i++) {
-    if (css[i] === "{") depth++;
-    else if (css[i] === "}" && --depth === 0) {
-      return css.slice(css.indexOf("{", open) + 1, i);
+  const parts: string[] = [];
+  let from = 0;
+  for (;;) {
+    const open = css.indexOf(`@layer ${name} {`, from);
+    if (open === -1) break;
+    let depth = 0;
+    for (let i = open; i < css.length; i++) {
+      if (css[i] === "{") depth++;
+      else if (css[i] === "}" && --depth === 0) {
+        parts.push(css.slice(css.indexOf("{", open) + 1, i));
+        from = i + 1;
+        break;
+      }
+      if (i === css.length - 1) from = css.length;
     }
+    if (from <= open) break;
   }
-  return null;
+  return parts.length ? parts.join("\n") : null;
 }
 
 /** Selectors at the top level of a layer body, including inside a
@@ -506,6 +525,29 @@ function bareSelectors(body: string): string[] {
   return out;
 }
 
+/** A selector list, split on the commas that separate selectors.
+
+    NOT `sel.split(",")`. A comma inside `:is()`, `:where()`,
+    `:not()` or `:has()` separates arguments of ONE compound
+    selector, and reading it as a list turns
+    `:is(.card, .cell, .work-card):hover .artwork` into a bare
+    `.cell` rule. The moment `layerBody` started reading a layer's
+    later blocks, that one line reported `.cell`, `.news-card` and
+    `.lesson-card` as classes two layers both define, which is a
+    failure about a rule that does not exist. */
+function selectorList(sel: string): string[] {
+  const out: string[] = [];
+  let depth = 0, buf = "";
+  for (const ch of sel) {
+    if (ch === "(") depth++;
+    else if (ch === ")") depth--;
+    if (ch === "," && depth === 0) { out.push(buf.trim()); buf = ""; continue; }
+    buf += ch;
+  }
+  if (buf.trim()) out.push(buf.trim());
+  return out;
+}
+
 /** Every layer that gives a class a rule of its own: `.cls { … }`
     on its own, which is the shape that says "this is what this
     class is", as opposed to `.cls .child` or `.other.cls`. */
@@ -515,7 +557,7 @@ function definedIn(cls: string): string[] {
     const body = layerBody(name);
     if (!body) continue;
     const bare = bareSelectors(body)
-      .flatMap((sel) => sel.split(",").map((s) => s.trim()))
+      .flatMap(selectorList)
       .some((sel) => sel === `.${cls}`);
     if (bare && !layers.includes(name)) layers.push(name);
   }
@@ -678,6 +720,13 @@ const ALLOWED = new Map([
      card rather than restating it. Different properties, and the
      card is one card. */
   [".resume", "money+deck, deck adjusts the card money defines"],
+  /* `components` says what the account popover IS: a popover with
+     its dialog defaults cleared and its own geometry. `shell`
+     names it in ONE grouped rule that gives all six pieces of
+     fixed chrome the same glass ground, which is the same kind of
+     cross-cutting a material layer does and cannot redefine what
+     the popover is. */
+  [".acc-menu", "components+shell, shell gives the six chrome surfaces one glass ground"],
 ]);
 
 /* ============================================================
@@ -755,7 +804,7 @@ for (const name of [...css.matchAll(/@layer ([a-z]+) \{/g)].map((m) => m[1])) {
   const body = layerBody(name);
   if (!body) continue;
   for (const sel of topLevelSelectors(body)) {
-    for (const part of sel.split(",").map((s) => s.trim())) {
+    for (const part of selectorList(sel)) {
       const m = part.match(/^\.(-?[A-Za-z_][\w-]*)$/);
       if (m) everyClass.add(m[1]);
     }
@@ -892,9 +941,23 @@ for (const token of [...used].sort()) {
      the site writes `className={plain ? "art" : "art stage-art"}`,
      and a pattern anchored to the quotes calls every one of those
      dead. Both false positives it produced were that shape. */
+  /* A class BUILT by concatenation is real, and its full name is
+     nowhere in the repository. `dissertation.js` writes
+     `` `finding-${d.k}` ``, so `.finding-better` and its six
+     siblings are live rules that no search for their own name can
+     find. Every prefix that appears immediately before a template
+     placeholder counts as a mention of everything under it, which
+     is the same "err towards saying nothing" the paragraph above
+     describes: the cost of a false negative here is a rule nobody
+     deletes, and the cost of a false positive is a page losing its
+     design. */
+  const built = new Set<string>();
+  for (const m of anywhere.matchAll(/([A-Za-z][\w-]*?-)\$\{/g)) built.add(m[1]);
+
   const mentions = (cls: string): boolean =>
     new RegExp(`["'\`][^"'\`]*(?<![\\w-])${cls}(?![\\w-])[^"'\`]*["'\`]`).test(anywhere)
-    || new RegExp(`\\.${cls}(?![\\w-])`).test(anywhere);
+    || new RegExp(`\\.${cls}(?![\\w-])`).test(anywhere)
+    || [...built].some((prefix) => cls.startsWith(prefix));
 
   const dead = [...everyClass].filter((c) => !mentions(c)).sort();
 

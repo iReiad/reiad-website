@@ -41,6 +41,8 @@
     "./research-lab": "./research-lab.ts",
     "./research-field": "./research-field.ts",
     "./research-tools": "./research-tools.ts",
-    "./research-assist": "./research-assist.ts"
+    "./research-assist": "./research-assist.ts",
+    "./calculators": "./calculators.ts",
+    "./tool-strings": "./tool-strings.ts"
   }
 }

@@ -32,27 +32,41 @@
    ============================================================ */
 
 import { useCallback, useState, useSyncExternalStore } from "react";
-import { NAV, SCHOOL_ACCENTS } from "@reiad/shared/nav";
+import { LADDER_SCHOOLS, NAV, SCHOOL_ACCENTS } from "@reiad/shared/nav";
 import {
   WIDGETS, layoutOf, storedOf, type Placed, type WidgetKind, type WidgetSize,
 } from "@reiad/shared/widgets";
-import { board as read, save, reset, stored, subscribe } from "../../lib/board";
+import { save, reset, stored, subscribe } from "../../lib/board";
 import { GoCard } from "../deck";
 import { ContinueCard, useBookmark } from "../door";
-import { PulseCard } from "../pulse-card";
 import { MarketPulse } from "../market-pulse";
 import { SchoolMeters } from "./meters";
 import { Icon } from "../icons";
 import { SectionLabel } from "../ui/label";
-import { Button } from "../ui/button";
+import { Band } from "../ui/band";
+import { Button, ButtonLink } from "../ui/button";
+import { readSet, subscribe as onProgress } from "../../lib/progress";
 
 /** What this build has a renderer for.
 
-    Seven of the catalogue's twelve. The other five read an
-    account and this page makes no such request: `/account` is
-    where they are, and offering them here would be five boxes
-    saying sign in on the page a stranger meets first. */
-const DRAWABLE = ["continue", "progress", "pulse", "market", "schools", "tools", "stock"];
+    Four of the catalogue's twelve, and the three that went are the
+    three the PAGE now draws: the newest writing, the schools and
+    the tools. Measured off the built page, those three widgets
+    were 61 per cent of the front page on a phone, and every one of
+    them was a second drawing of something already on screen or one
+    press away. A widget the page draws better is a widget on the
+    board twice.
+
+    They stay in the catalogue, so the Android app keeps them:
+    `DRAWABLE` is what THIS build renders, which is not what the
+    catalogue holds, and the whole reason the catalogue is data is
+    that the two sides run different releases.
+
+    The other five read an account and this page makes no such
+    request: `/account` is where they are, and offering them here
+    would be five boxes saying sign in on the page a stranger
+    meets first. */
+const DRAWABLE = ["continue", "progress", "market", "stock"];
 
 const KINDS = new Map(WIDGETS.map((k) => [k.id, k]));
 
@@ -81,76 +95,20 @@ const SELF_TITLED = new Set(["continue"]);
 
 /* ---------- the widgets this page can draw ---------- */
 
-function Widget({ id, size }: { id: string; size: WidgetSize }) {
+function Widget({ id, size, totals }: {
+  id: string; size: WidgetSize; totals?: Record<string, number>;
+}) {
   switch (id) {
     case "continue": return <ContinueCard />;
-    case "progress": return <SchoolMeters />;
-    /* The two feeds are the kinds a size genuinely changes: at
-       `wide` each shows its first story and at `tall` the
-       morning's worth. A size that only stretched the same
-       drawing would be a stretch wearing a size's name. */
-    case "pulse": return <PulseCard limit={size === "tall" ? 4 : 1} />;
+    case "progress": return <SchoolMeters totals={totals} />;
+    /* A size genuinely changes this one: at `wide` it shows its
+       first three stories and at `tall` the morning's worth. A
+       size that only stretched the same drawing would be a
+       stretch wearing a size's name. */
     case "market": return <MarketPulse limit={size === "tall" ? undefined : 3} />;
-    case "schools": return <NavBand group="learn" />;
-    case "tools": return <NavBand group="make" />;
     case "stock": return <StockTile />;
     default: return null;
   }
-}
-
-/** A group of the menu as a row of tiles.
-
-    Out of `shared/nav.ts` and never typed here, which is the rule
-    at the top of `CLAUDE.md`: a school added there appears on the
-    front page, in the rail and in the footer at once. `hub` is
-    skipped for the reason `/skills` skips it, and `soon` and
-    `unlisted` for theirs.
-
-    It draws no heading of its own. It used to draw the nav
-    group's (`শেখা · LEARNING`), which is a THIRD name for one
-    thing: the catalogue calls this widget `যা যা শেখানো হয়`, the
-    picker offers it under that name, and the arranging strip said
-    it a fourth time. The board's head carries it once now, from
-    the catalogue, which is the half of this that the Android app
-    reads too.
-
-    `.deck board-deck`, and it was `.deck deck-2`. A band is half
-    the board on a laptop now rather than the whole of it, and at
-    501px measured `deck-2`'s 400px minimum, and `.deck`'s 280px,
-    both came out at ONE column: the six schools stacked 1305px
-    tall beside four tools at 737px. `board-deck` is the same deck
-    with a minimum that fits two in half a board. */
-/* ONE CARD, AND IT IS THE SITE'S. These tiles were `.gate-tile`,
-   which is a second card form for exactly the things `/skills`
-   already draws as `<GoCard>`: the same school, two shapes, two
-   sets of rules, depending on which page a reader was standing
-   on. They are the same card now, wearing the drawing
-   `shared/nav.ts` names for them, so a school looks like itself
-   wherever it appears. */
-function NavBand({ group }: { group: string }) {
-  const found = NAV.find((g) => g.id === group);
-  if (!found) return null;
-  const rows = found.items.filter((i) => !i.hub && !i.unlisted && !i.soon);
-  if (!rows.length) return null;
-
-  return (
-    <div className="deck board-deck">
-      {rows.map((item) => (
-        <GoCard
-          key={item.href}
-          href={item.href}
-          art={item.art}
-          icon={item.icon}
-          accent={item.accent ?? found.accent}
-          chip={item.kind ? <span lang="bn">{item.kind}</span> : undefined}
-          title={item.sub ?? item.label}
-          lang={item.sub ? "bn" : undefined}
-          dek={item.blurb}
-          go={item.kind === "কোর্স" ? "কোর্সটা খুলুন" : "খুলুন"}
-        />
-      ))}
-    </div>
-  );
 }
 
 function StockTile() {
@@ -174,9 +132,24 @@ function StockTile() {
   );
 }
 
+/** Whether this reader has ticked anything at all, in any school.
+
+    The same store the meters read, asked as one question, because
+    the board's own existence turns on it: `readSet` is a set per
+    school and `subscribe` is the three events that can change one,
+    the third of which (`sync:done`) is the one that matters for a
+    signed-in reader arriving on a new device. */
+function useAnyProgress(): boolean {
+  return useSyncExternalStore(
+    onProgress,
+    () => (LADDER_SCHOOLS.some((s) => readSet(s.key).size > 0) ? "yes" : "no"),
+    () => "no",
+  ) === "yes";
+}
+
 /* ---------- the board ---------- */
 
-export function Board() {
+export function Board({ start, totals }: { start?: string; totals?: Record<string, number> }) {
   /* The stored list as a STRING, not the parsed array: React
      compares snapshots by identity and a fresh array every read
      would loop for ever. The same trap `door.tsx` names. */
@@ -200,15 +173,58 @@ export function Board() {
      Never while ARRANGING: a widget nobody can see is a widget
      nobody can take off the board. */
   const bookmark = useBookmark();
+  const ticked = useAnyProgress();
   const [arranging, setArranging] = useState(false);
   const placed = layoutOf(JSON.parse(snapshot) as string[] | null, DRAWABLE)
     .filter((p) => arranging || p.id !== "continue" || bookmark);
 
-  const put = useCallback((next: Placed[]) => { save(next); }, []);
+  /* DRAWABLE goes WITH the write. `layoutOf` filtered the stored
+     board down to what this build can draw, so writing the result
+     back would delete the eight kinds it could not, out of the
+     account and off the phone. `save` puts them back. */
+  const put = useCallback((next: Placed[]) => { save(next, DRAWABLE); }, []);
 
   const offered = WIDGETS.filter(
     (k) => DRAWABLE.includes(k.id) && !placed.some((p) => p.id === k.id),
   );
+
+  /* A BOARD IS A READER'S, SO A STRANGER HAS NONE. It opened with
+     "আপনার বোর্ড · Your board" and an arrange button on the first
+     visit anybody ever made, over four rows reading ০টা পাঠ. That
+     is a dashboard of somebody's progress shown to somebody who
+     has none, and it was the first thing under the hero.
+
+     Three things make a board theirs, and any one is enough: a
+     lesson opened, a lesson ticked, or a board they arranged.
+     Until then this is the invitation instead, which says what
+     the thing is rather than drawing an empty one. */
+  const theirs = Boolean(bookmark) || ticked || snapshot !== "null";
+
+  if (!theirs) {
+    return (
+      <Band
+        tone="soft"
+        label={<>আপনার বোর্ড · <span lang="en">Your board</span></>}
+        title={<span lang="bn">একটা পাঠ পড়লেই এই পাতাটা আপনার হয়ে যাবে।</span>}
+        /* A LESSON, NOT A THIRD INDEX. The door's own button and
+           the ledger already offer `/skills`, and a third one on
+           the same page is the same call to action said three
+           times. `start` is the first lesson of the money ladder,
+           handed down as a prop because the ladder is a hundred
+           kilobytes of curriculum and this is a client
+           component. */
+        actions={start
+          ? <ButtonLink kind="solid" href={start} lang="bn">প্রথম পাঠটা পড়ুন</ButtonLink>
+          : null}
+      >
+        <span lang="bn">
+          কোথায় থেমেছিলেন, কোন স্কুলে কতদূর হয়েছে, আর কী কী রেখে দিয়েছেন:
+          সবটা এখানে জমতে থাকবে, আর আপনি নিজের মতো সাজিয়ে নিতে পারবেন।
+          কিছু জমা রাখতে অ্যাকাউন্ট লাগে না।
+        </span>
+      </Band>
+    );
+  }
 
   return (
     <section aria-labelledby="board-label">
@@ -281,7 +297,7 @@ export function Board() {
               ) : null}
               <div className={["board-body", arranging ? "opacity-70" : null]
                 .filter(Boolean).join(" ")}>
-                <Widget id={p.id} size={p.size} />
+                <Widget id={p.id} size={p.size} totals={totals} />
               </div>
             </section>
           );
@@ -407,4 +423,7 @@ function firstSize(kind: WidgetKind): WidgetSize {
   return kind.sizes[0] ?? "full";
 }
 
-export { DRAWABLE as BOARD_DRAWABLE, storedOf as boardStoredOf, read as readBoard };
+/* Nothing imports these: they were a re-export for a test
+   that reads the shared half directly. `read` went with the
+   import it aliased. */
+export { DRAWABLE as BOARD_DRAWABLE };

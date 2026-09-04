@@ -86,6 +86,10 @@ const NOT_A_SURFACE = new Map<string, string>([
              + "not on the list, and the material on the list drew a rectangle "
              + "round the whole group inside the card that already holds it."],
   ["chip-row", "a row of chips. The chips light, the row does not."],
+  /* The same row, under the name `@layer work` gives its own.
+     It was `.chip-row` there too, which is a second definition
+     of the Studio's class in a later layer. */
+  ["work-chips", "a row of chips. The chips light, the row does not."],
   ["ls-cell-in", "a cell of a sheet, which is a text field in a table. The row "
                  + "header names it and the caret is the affordance; a lit rim on "
                  + "every hole in a profit and loss account would draw forty "
@@ -285,7 +289,6 @@ const NOT_GLASS = new Map<string, string>([
   ["palette-search-mark", "a mark: the highlight on a matched substring in the palette"],
   ["card-tick",           "a mark: the done tick in the corner of a lesson card"],
   ["gt-disc",             "a mark: the gate tile's icon disc"],
-  ["gt-live",             "a mark: the gate tile's live dot"],
 
   /* THE SIX MARKS A FIGURE IS DRAWN OUT OF. A lesson's figures
      are HTML rather than SVG, because every label in one is two

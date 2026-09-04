@@ -1951,8 +1951,44 @@
                 translate var(--fast) var(--ease);
 
     &:active { translate: 0 1px; --surface-shadow: 0 0 transparent; }
-    &:focus-visible { outline: none; --surface-shadow: var(--focus-ring); }
+    /* THE OUTLINE STAYS. This said `outline: none` and put the
+       whole focus indicator in `--focus-ring`, which is
+       `--accent-ring`, which is the accent at 30 per cent: about
+       1.3:1 against the paper, where a focus indicator needs 3:1.
+       The two hero buttons on the front page are the first
+       controls a reader meets and neither had a visible ring.
+
+       `@layer base`'s `:focus-visible` is a 2px full-opacity
+       accent outline and the ring now sits BESIDE it as a glow,
+       which is the same arrangement `--surface-shadow` was
+       invented for: a ring that replaces an edge is an edge that
+       is gone. `check-contrast.ts` already measures every accent
+       against every ground at 4.5, so the indicator is covered by
+       the pairs it has rather than by a new one. */
+    &:focus-visible { --surface-shadow: var(--focus-ring); }
     &:disabled { opacity: 0.45; pointer-events: none; }
+  }
+
+  /* BANGLA IS NOT A MONO FACE AND HAS NO CAPITALS, and every
+     button on this site was set in one. `--font-mono` is
+     `"IBM Plex Mono", ui-monospace, Consolas, monospace` with no
+     Bengali family in it, so শুরু করুন fell through the whole
+     stack to whatever the machine reached for last; `uppercase`
+     did nothing but cost the shaping; and 0.06em of letter
+     spacing is applied BETWEEN grapheme clusters, which pulls a
+     conjunct apart.
+
+     `:lang(bn)` rather than `[lang="bn"]`: the attribute is on
+     `<html>` or on a card, never on the button, and an attribute
+     selector does not inherit. The same correction is made for
+     the deck's mono labels in `@layer deck`, beside the rules it
+     corrects, because a class may not be styled from two
+     layers. */
+  .btn:lang(bn) {
+    font-family: var(--font-bn);
+    text-transform: none;
+    letter-spacing: 0;
+    font-size: var(--t-4);
   }
   /* ---------- the four kinds, and the ladder between them ----------
 
@@ -5788,20 +5824,6 @@ it collapsed to the width of the word "Bangladesh". */
   /* a card the filter has hidden */
   .cell[hidden] { display: none; }
 
-  /* ---------- A–Z glossary index ---------- */
-  .az {
-    display: flex; flex-wrap: wrap; gap: var(--s-3);
-    margin-block: 18px 28px;
-  }
-  .az a, .az span {
-    font-family: var(--font-mono); font-size: var(--t-2);
-    min-width: 30px; text-align: center;
-    padding: 5px 7px; border-radius: var(--radius-xs);
-    border: 1px solid var(--hairline); text-decoration: none; color: var(--ink);
-  }
-  .az a:hover { border-color: var(--accent); color: var(--accent); }
-  .az span { opacity: 0.35; }
-
   .glossary { border-top: 1px solid var(--hairline); }
   .glossary .g-row {
     display: grid; grid-template-columns: 1fr 1fr; gap: var(--s-5) 20px;
@@ -6034,13 +6056,6 @@ it collapsed to the width of the word "Bangladesh". */
   .gate-msg { font-size: var(--t-4); min-height: 1.3em; }
   .gate-msg.err { color: var(--danger); }
   .gate-msg.ok { color: var(--accent); }
-  .gate-or {
-    display: flex; align-items: center; gap: var(--s-6);
-    color: var(--ink-soft); font-family: var(--font-mono); font-size: var(--t-1);
-    text-transform: uppercase; letter-spacing: 0.08em;
-
-    &::before, &::after { content: ""; flex: 1; height: 1px; background: var(--hairline); }
-  }
   .gate-fine {
     font-size: var(--t-3); color: var(--ink-soft);
     border-top: 1px solid var(--hairline); padding-top: 14px; text-align: start;
@@ -6134,6 +6149,56 @@ it collapsed to the width of the word "Bangladesh". */
      the card next to it has a long one. */
   .work-copy { display: flex; flex-direction: column; gap: var(--s-6); flex: 1; }
 
+  /* THE FRONT PAGE'S DENSITY, and the same card. Seven of these
+     in a band have room for the chart, the chip, the title and
+     one line; `/portfolio` has a page and prints the paragraph
+     and the three checkable facts. What changes is how much of a
+     study the card has room to say, which is why this is a
+     modifier rather than a second card: two cards for one thing
+     is two sets of rules that stop being in step, which is what
+     `<GoCard>` exists to have settled. */
+  /* The compact lead: the art beside the copy rather than above
+     it, at the band's full width. `a.work-card.work-lead` already
+     does the grid; this is the one number that differs, because a
+     compact lead has one line of copy where the portfolio's has a
+     paragraph and three facts, so the art column can be wider. */
+  @media (width >= 820px) {
+    a.work-card.work-lead.work-compact { grid-template-columns: minmax(0, 300px) minmax(0, 1fr); }
+  }
+  .work-lead.work-compact .work-art { max-height: none; }
+  .work-lead.work-compact h3 { font-size: var(--t-7); }
+  .work-lead.work-compact p { -webkit-line-clamp: 4; }
+
+  /* A PHONE IS A COLUMN, so a card's paragraph costs a whole row
+     of the page rather than a third of one. Two lines there and
+     three where there is a grid: the same card, spending what the
+     screen has. */
+  @media (width < 700px) {
+    .work-compact p,
+    .learn-deck .card-dek,
+    .make-deck .card-dek { -webkit-line-clamp: 2; }
+    /* A picture on a phone is a whole screen's worth of scroll
+       rather than a third of a row, and six of them in one band
+       is six. Big enough to tell a coin from a pan, which is the
+       only thing the drawing has to do. */
+    .learn-deck .card-band { max-height: 128px; }
+    .work-compact { padding: 18px; }
+  }
+
+  .work-compact {
+    gap: var(--s-5);
+
+    & .work-art { max-height: 72px; }
+    & .work-copy { gap: var(--s-5); }
+    & h3 { font-size: var(--t-6); }
+    & p {
+      margin: 0;
+      font-size: var(--t-4); color: var(--ink-soft);
+      display: -webkit-box; -webkit-box-orient: vertical; -webkit-line-clamp: 3;
+      overflow: hidden;
+    }
+  }
+
   /* A small piece of chart art per card: bars for the
      three-statement model, discounted cash flows and a terminal
      block for the DCF, an index line with a drawdown band for the
@@ -6167,6 +6232,13 @@ it collapsed to the width of the word "Bangladesh". */
   .wa-ci { stroke: var(--accent); stroke-width: 3; stroke-linecap: round; }
   .wa-dot { fill: var(--accent); }
   .wa-point { fill: var(--accent); }
+  /* The cloud the optimum is picked out of. It was six circles
+     with no rule at all, so they took the SVG default fill, which
+     is black: invisible on the dark theme and a black dot on the
+     light one, on the one chart whose subject is that the chosen
+     point sits above the others. Quieter than `.wa-point`, which
+     is the optimum itself. */
+  .wa-scatter { fill: var(--ink-soft); opacity: 0.45; }
 
   /* The checkable facts: horizon, sample size, number of views.
      Kept short enough to stay one line each, because the point of
@@ -8583,7 +8655,16 @@ German for day, and .tag is what the site has always called
     }
     & span { color: var(--ink-soft); font-size: var(--t-3); }
   }
-  .checks {
+  /* `.check-tests`, and it was `.checks`, which is the site's own
+     tick list in `@layer components`: the About page's, the
+     portfolio's three service lists and the dissertation's two.
+     `check` comes after `components`, so this rule won on all six
+     of them, and the stock check's grid, gap and type size have
+     been drawing every tick list on the site since both existed.
+     Nobody typed a wrong rule; each was right in its own layer,
+     and a layer is the thing that makes "in its own layer"
+     false. */
+  .check-tests {
     list-style: none; margin: 0; padding: 0;
     display: grid; gap: 9px;
 
@@ -8598,14 +8679,14 @@ German for day, and .tag is what the site has always called
     border: 1px solid var(--hairline); display: grid; place-items: center;
     font-size: 11px; line-height: 1;
   }
-  .checks li[data-state="pass"] .check-box {
+  .check-tests li[data-state="pass"] .check-box {
     background: var(--accent); border-color: var(--accent);
   }
-  .checks li[data-state="pass"] .check-box::before { content: "✓"; color: var(--paper); }
-  .checks li[data-state="fail"] .check-box { border-color: var(--danger); }
-  .checks li[data-state="fail"] .check-box::before { content: "✕"; color: var(--danger); }
-  .checks li[data-state="skip"] { opacity: 0.55; }
-  .checks li[data-state="skip"] .check-box::before { content: "–"; color: var(--ink-soft); }
+  .check-tests li[data-state="pass"] .check-box::before { content: "✓"; color: var(--paper); }
+  .check-tests li[data-state="fail"] .check-box { border-color: var(--danger); }
+  .check-tests li[data-state="fail"] .check-box::before { content: "✕"; color: var(--danger); }
+  .check-tests li[data-state="skip"] { opacity: 0.55; }
+  .check-tests li[data-state="skip"] .check-box::before { content: "–"; color: var(--ink-soft); }
 
   .shariah-verdict {
     display: inline-block; padding: 7px 16px; border-radius: var(--radius-pill);
@@ -9047,6 +9128,32 @@ German for day, and .tag is what the site has always called
     body { background: #fff; color: #000; font-size: 11pt; }
     .article a::after { content: " (" attr(href) ")"; font-size: 0.85em; color: #555; }
   }
+
+  /* ---------- High Contrast, which this site had never answered ----------
+
+     Windows High Contrast and its kin replace every colour on the
+     page with the reader's own four, and they discard background
+     images and most shadows while doing it. This stylesheet is
+     eighteen thousand lines of glass, and every edge on it is a
+     `box-shadow` and every ground a gradient, so in that mode the
+     whole site is unstyled text with nothing separating one
+     surface from the next and nothing at all where a focus ring
+     used to be. There was not one `forced-colors` block in it.
+
+     Three declarations, and none of them is a colour: `Highlight`
+     and `CanvasText` are the reader's, and `1px solid` is the one
+     thing that survives the substitution. */
+  @media (forced-colors: active) {
+    :focus-visible { outline: 2px solid Highlight; outline-offset: 2px; }
+    :is(.card, .cell, .pane, .tile, .band, .chip, .btn, .icon-btn,
+        .work-card, .news-card, .gate-tile, .reckoner) {
+      border: 1px solid CanvasText;
+    }
+    /* A chip whose only pressed state is a background fill has no
+       pressed state here, so the reader's own highlight says it. */
+    .chip[aria-pressed="true"] { forced-color-adjust: none; }
+  }
+
 }
 
 /* ============================================================
@@ -9459,7 +9566,12 @@ German for day, and .tag is what the site has always called
      two models. Outcomes are a separate axis again: a defaulted
      applicant is red wherever one appears.
      ============================================================ */
-  .chip-row {
+  /* `.work-chips`, and it was `.chip-row`, which `@layer studio`
+     defines for the Studio's own rows and the desk's filters.
+     `work` comes after `studio`, so this gap and these margins
+     were drawing every chip row in the Studio, which is a page
+     this layer has nothing to do with. */
+  .work-chips {
     display: flex; flex-wrap: wrap; gap: var(--s-3); margin-block: 4px 14px;
 
     & .chip[aria-pressed="true"] {
@@ -11175,6 +11287,34 @@ German for day, and .tag is what the site has always called
   }
   a.card:hover .card-go::after { translate: 4px 0; }
 
+  /* ---- BANGLA IS NOT A MONO FACE AND HAS NO CAPITALS ----
+
+     `.card-chip`, `.card-meta` and `.card-go` are mono, uppercase
+     and letter-spaced, which is right for "OPEN THE MODEL" and
+     wrong for খুলুন three ways at once: `--font-mono` is
+     `"IBM Plex Mono", ui-monospace, Consolas, monospace` with no
+     Bengali family in it, so the word falls through the whole
+     stack to whatever the machine reaches for last; `uppercase`
+     is a no-op that still costs the shaping; and letter-spacing
+     is applied BETWEEN grapheme clusters, which pulls a conjunct
+     apart. Seventeen labels on the front page were set that way,
+     on a site whose whole argument is Bangla typography.
+
+     `:lang(bn)` rather than `[lang="bn"]`, and that is the whole
+     reason this rule works: the attribute is on `<html>` or on
+     the card, never on the label itself, and an attribute
+     selector does not inherit. The pseudo-class does. */
+  :is(.card-chip, .card-meta, .card-go, .gt-chip, .gt-go, .band-more a):lang(bn) {
+    font-family: var(--font-bn);
+    text-transform: none;
+    letter-spacing: 0;
+  }
+  /* And one step up, because the mono sizes were chosen for
+     letter-spaced capitals: Bengali carries more ink per em than
+     Latin lowercase and reads small at the same number. */
+  :is(.card-go, .card-meta, .band-more a):lang(bn) { font-size: var(--t-3); }
+  .card-chip:lang(bn) { font-size: var(--t-1); }
+
   /* ---------- printed in the accent ----------
 
      The last card in a set, when it is the conclusion of the
@@ -11440,6 +11580,13 @@ German for day, and .tag is what the site has always called
      selects on keep a name. */
 
   .gate-eyebrow { color: var(--accent); }
+  /* The hover is a top-level rule rather than a nested `&`,
+     because `check-material.ts` reads a `:hover` anywhere inside
+     a bare class block as "this is a surface a reader presses".
+     A line of credits is not one; the link inside it is. */
+  .gate-eyebrow a { color: inherit; text-decoration: none; }
+  .gate-eyebrow a:hover,
+  .gate-eyebrow a:focus-visible { text-decoration: underline; }
   .gate-h1 {
     margin: 0;
     font-size: clamp(1.9rem, 4.4vw, 3.4rem);
@@ -11466,24 +11613,6 @@ German for day, and .tag is what the site has always called
     font-size: clamp(0.95rem, 1.3vw, 1.08rem);
   }
   .gate-lede[lang="bn"] { font-family: var(--font-bn); }
-
-  /* The three counts, as one strip with hairline dividers rather
-     than three floating pairs: a row reads as one statement. */
-  .gate-facts {
-    list-style: none; padding: 0; margin: 0;
-    display: flex; flex-wrap: wrap; align-items: stretch;
-  }
-  .gate-facts li {
-    display: flex; align-items: baseline; gap: var(--s-4);
-    padding-inline: clamp(12px, 1.6vw, 22px);
-    border-inline-start: 1px solid var(--hairline);
-  }
-  .gate-facts li:first-child { padding-inline-start: 0; border-inline-start: 0; }
-  .gate-facts b {
-    font-family: var(--font-bn-serif); font-size: 1.5rem; color: var(--accent);
-    font-weight: 500;
-  }
-  .gate-facts span { font-family: var(--font-bn); font-size: var(--t-4); color: var(--ink-soft); }
 
   .gate-hint {
     display: flex; align-items: center; gap: var(--s-4);
@@ -11578,10 +11707,6 @@ German for day, and .tag is what the site has always called
     line-height: 1.25;
   }
   .gate-tile[lang="bn"] .gt-title, .gt-title[lang="bn"] { font-family: var(--font-bn-serif); }
-  .gt-dek {
-    color: var(--ink-soft); font-size: var(--t-4);
-    max-width: 52ch;
-  }
   .gt-go {
     display: flex; align-items: center; gap: 6px;
     margin-top: auto; padding-top: 6px;
@@ -11592,53 +11717,331 @@ German for day, and .tag is what the site has always called
   .gt-arrow { display: inline-flex; transition: translate var(--fast) var(--ease); }
   .gate-tile:hover .gt-arrow { translate: 4px 0; }
 
-  /* The front page's one big card. It carries its drawing as a
-     child rather than as a ground, so this rule is its size and
-     the room it leaves for the picture beside the words.
+  /* ---- the door ----
 
-     The height is a fact about the picture rather than a taste:
-     under about 230px the drawing has no room to be one. */
-  .gate-feat {
-    min-height: clamp(230px, 26vw, 340px);
-    padding: clamp(18px, 2.4vw, 28px) clamp(18px, 2.4vw, 28px) clamp(18px, 2.4vw, 28px) 24px;
-    padding-right: clamp(18px, 48%, 960px);
-    gap: 10px;
+     Two columns from 1000px up: what this is on the left, what is
+     here on the right. It was one column, and the headline
+     measured 490px inside a 1071px wrap, so the right-hand 581px
+     of the first screen was empty on every laptop.
+
+     The ledger is the narrower column because it is a list of
+     figures and they set in about 20 characters; the sentence
+     beside it needs the measure. Under 1000px they stack, and the
+     ledger keeps its rules, which is what stops it reading as
+     three loose numbers under a paragraph. */
+  /* THE GRID OWNS THE RHYTHM HERE, and `main section` does not.
+     That rule leads every section with `--step` of top padding,
+     which is right for a hub built of sections and doubles a gap
+     on a page that is already a grid with one: measured, 124px of
+     nothing between the door's last button and the first section
+     label. The same note sits over the research pages, which hit
+     this first. */
+  .home-wrap > section { padding-block: 0; }
+  .home-wrap > section > .hub-section-head { margin-bottom: var(--gap); }
+  /* A LABEL AND ITS ONE LINE ARE ONE THING. `.section-label`
+     carries 26px under its own rule, which is the rhythm a hub
+     with two or three headings wants; this page has five, and 44px
+     between a label and the sentence explaining it reads as two
+     separate statements. */
+  .home-wrap .hub-section-head > .section-label { margin-bottom: 10px; }
+
+  .door {
+    display: grid;
+    gap: clamp(20px, 3vw, 44px);
+    align-items: start;
   }
-  .gate-feat .gt-dek { font-size: var(--t-5); max-width: 46ch; }
-  .gate-feat .gt-title { font-size: clamp(1.35rem, 2.5vw, 1.9rem); max-width: 21ch; }
+  /* A UNIFORM GAP BETWEEN FOUR THINGS OF DIFFERENT WEIGHT IS NOT
+     A RHYTHM. It was 18px everywhere, so a 12.6px eyebrow sat as
+     far from its 54px headline as that headline sat from its own
+     lede: the caption read as detached and the lede as glued.
+     The eyebrow belongs to the headline and closes up; the lede
+     opens; the buttons are a separate act. */
+  .door-say { display: grid; gap: clamp(10px, 1.6vw, 18px); align-content: start; }
+  .door-say .gate-eyebrow { margin-bottom: -6px; }
+  .door-say .gate-lede { margin-top: 4px; }
+  .door-ledger { display: grid; gap: 14px; align-content: start; }
 
-  /* THE ONE CARD WHOSE PICTURE IS BESIDE ITS WORDS. Every other
-     card on this site wears its drawing as a band across the top,
-     because that is the shape a card in a deck is. This one is
-     four times as wide as it is tall on a laptop, and a band
-     across the top of that is a stripe, so the drawing takes the
-     right-hand third and is masked into the ground.
-
-     Under 760px the card stops being wide and the picture goes
-     back to being a band, which is the shape it is everywhere
-     else. One card, two arrangements, and the second one is the
-     site's ordinary one.
-
-     TWO CLASSES DEEP, AND THAT IS THE WHOLE OF WHY IT WORKS.
-     `.artwork` sets `position: relative` and a 16:9 ratio, it is
-     declared later in this layer, and one class beats one class
-     by whichever came last. So this rule lost both of them, the
-     drawing landed in the flow at its own aspect ratio, and the
-     front page's biggest card carried a 540px stamp in its top
-     left corner with two thirds of itself empty. It renders
-     perfectly wrong, which is why nothing failed. */
-  .gate-feat .gate-feat-art {
-    position: absolute; inset: 0 0 0 auto; z-index: 0;
-    width: clamp(260px, 48%, 960px); aspect-ratio: auto;
-    mask-image: linear-gradient(100deg, transparent 1%, #000 26%);
+  /* ONE COLUMN IS NOT A WIDE COLUMN. Stacked, the ledger takes
+     the whole measure, and `auto 1fr auto` then puts six hundred
+     pixels of nothing between a Bangla label and its English
+     gloss: one row reads as two columns that have lost each
+     other. The cap keeps the row a row. */
+  @media (width < 1000px) {
+    .door-ledger { max-width: 520px; }
   }
-  @media (max-width: 760px) {
-    .gate-feat { padding-top: 0; padding-right: clamp(18px, 2.4vw, 28px); }
-    .gate-feat .gate-feat-art {
-      position: relative; inset: auto; width: auto; aspect-ratio: 16 / 9;
-      margin: 0 -18px 8px -24px;
-      mask-image: none;
+
+  @media (width >= 1000px) {
+    /* 1.2 / 0.8 rather than 1.35 / 0.65. `.gate-h1` is capped at
+       18ch, which measures 490px at this size, so a wider left
+       column is empty rather than generous: the fix the door made
+       to the page was the same fix one level up. The ledger takes
+       the difference, which is where the numbers are. */
+    .door { grid-template-columns: minmax(0, 1.2fr) minmax(300px, 0.8fr); }
+    /* The ledger sits on the headline's baseline rather than on
+       the eyebrow's: the eyebrow is a caption for the sentence
+       under it, and a column starting level with it reads as a
+       second caption. */
+    .door-ledger { padding-top: 6px; }
+  }
+
+  /* ---- the ledger ----
+
+     What is here, counted, and every row a way in. No ground and
+     no edge: the headline already carries the weight on this
+     screen, so a panel of glass beside it would be two things
+     asking to be read first. That also keeps it off
+     `check-material.ts`'s books rather than adding a seventh kind
+     of surface for one list.
+
+     The hover rule is a separate top-level selector rather than a
+     nested `&`, because a `:hover` anywhere inside a bare class
+     block is what that check reads as "this is pressable", and a
+     row in a list of five is not: the LIST is the affordance. */
+  .ledger {
+    list-style: none; margin: 0; padding: 0;
+    display: grid;
+
+    & li + li { border-top: 1px solid var(--hairline); }
+    & a {
+      display: grid;
+      grid-template-columns: auto 1fr auto;
+      align-items: baseline;
+      gap: 4px 10px;
+      padding: 9px 0;
+      min-height: var(--tap);
+      text-decoration: none; color: inherit;
     }
+    & b {
+      font-family: var(--font-bn-serif); font-size: var(--t-8);
+      font-weight: 500; color: var(--accent);
+      font-variant-numeric: tabular-nums;
+      min-width: 1.6em;
+    }
+  }
+  .ledger-bn { font-family: var(--font-bn); font-size: var(--t-5); }
+  .ledger-en {
+    font-size: var(--t-1); letter-spacing: 0.06em; text-transform: uppercase;
+    color: var(--ink-soft); text-align: end;
+  }
+  .ledger a:hover .ledger-bn,
+  .ledger a:focus-visible .ledger-bn { color: var(--accent); }
+  .ledger a:focus-visible {
+    outline: 2px solid var(--accent); outline-offset: 3px;
+    border-radius: var(--radius-xs);
+  }
+  /* The English gloss is the first thing to go when there is no
+     room for it: the number and the Bangla word are the row. It
+     holds to 380px, which is narrower than any phone in use, so
+     what it actually guards against is a very long gloss on a
+     narrow one rather than the phone itself. */
+  @media (width < 380px) {
+    .ledger-en { display: none; }
+  }
+  @media (width < 640px) {
+    .ledger a { padding: 7px 0; }
+  }
+
+  /* ---- the reckoner ----
+
+     One line of the site's own arithmetic, between the door and
+     the library. A strip rather than a box: the first screen
+     already has a headline and a ledger on it, and a fourth
+     rectangle of glass would be a third thing asking to be read
+     first. Hairlines above and below, which is also what keeps it
+     off `check-material.ts`'s books: it paints no ground.
+
+     THE ANSWER IS CHOSEN BY THE SIBLING COMBINATOR. Five radios
+     sit before everything else inside `.reckoner`, so
+     `#rk-5000:checked ~ .rk-out [data-rk="5000"]` reaches the one
+     answer that belongs to the one checked radio. Written out
+     five times rather than by position, for the reason
+     `board.tsx` gives about `nth-of-type`: a rule keyed on where
+     a control sits is a rule that breaks the day one of them is
+     conditional. */
+  .reckoner {
+    display: grid; gap: 12px;
+    padding-block: clamp(18px, 2.4vw, 26px);
+    border-block: 1px solid var(--hairline);
+  }
+  /* Off screen, never `display: none`: a hidden radio is a radio
+     no keyboard can reach and a group no screen reader announces. */
+  .rk-in {
+    position: absolute; width: 1px; height: 1px;
+    margin: -1px; padding: 0; border: 0;
+    clip-path: inset(50%); overflow: hidden; white-space: nowrap;
+  }
+  .rk-ask {
+    display: flex; flex-wrap: wrap; align-items: center;
+    gap: 10px clamp(12px, 2vw, 22px);
+  }
+  .rk-q {
+    margin: 0; font-family: var(--font-bn); font-size: var(--t-5);
+    color: var(--ink-soft);
+  }
+  .rk-chips { display: flex; flex-wrap: wrap; gap: 8px; }
+  .rk-chips .chip { cursor: pointer; font-family: var(--font-bn); }
+
+  .rk-out { min-height: 1px; }
+  .rk-a { display: none; margin: 0; align-items: baseline; flex-wrap: wrap; gap: 4px 12px; }
+  .rk-lead { font-family: var(--font-bn); color: var(--ink-soft); font-size: var(--t-5); }
+  .rk-fig {
+    font-family: var(--font-bn-serif); font-weight: 500;
+    font-size: clamp(1.5rem, 3.2vw, 2.4rem); line-height: 1.1;
+    color: var(--accent);
+  }
+  .rk-sub { font-family: var(--font-bn); color: var(--ink-soft); font-size: var(--t-4); }
+  .rk-note {
+    margin: 0; font-family: var(--font-bn);
+    font-size: var(--t-3); color: var(--ink-soft);
+
+    & a { color: var(--accent); text-decoration: none; }
+  }
+  .rk-note a:hover, .rk-note a:focus-visible { text-decoration: underline; }
+
+  /* The five pairs. A reader with no CSS at all gets every answer,
+     which is five true sentences rather than none. */
+  #rk-1000:checked ~ .rk-out [data-rk="1000"],
+  #rk-2000:checked ~ .rk-out [data-rk="2000"],
+  #rk-5000:checked ~ .rk-out [data-rk="5000"],
+  #rk-10000:checked ~ .rk-out [data-rk="10000"],
+  #rk-20000:checked ~ .rk-out [data-rk="20000"] { display: flex; }
+
+  /* Which chip is pressed, and which one the keyboard is on. The
+     input carries the state for anything that reads the page; this
+     is the same fact drawn. */
+  #rk-1000:checked ~ .rk-ask label[for="rk-1000"],
+  #rk-2000:checked ~ .rk-ask label[for="rk-2000"],
+  #rk-5000:checked ~ .rk-ask label[for="rk-5000"],
+  #rk-10000:checked ~ .rk-ask label[for="rk-10000"],
+  #rk-20000:checked ~ .rk-ask label[for="rk-20000"] {
+    background: var(--accent-strong); color: var(--accent-ink);
+  }
+  #rk-1000:focus-visible ~ .rk-ask label[for="rk-1000"],
+  #rk-2000:focus-visible ~ .rk-ask label[for="rk-2000"],
+  #rk-5000:focus-visible ~ .rk-ask label[for="rk-5000"],
+  #rk-10000:focus-visible ~ .rk-ask label[for="rk-10000"],
+  #rk-20000:focus-visible ~ .rk-ask label[for="rk-20000"] {
+    outline: 2px solid var(--accent); outline-offset: 2px;
+  }
+
+  @media (width >= 900px) {
+    .reckoner {
+      grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+      align-items: center;
+      column-gap: clamp(24px, 4vw, 56px);
+    }
+    .rk-ask { grid-column: 1; grid-row: 1; }
+    .rk-note { grid-column: 1; grid-row: 2; }
+    .rk-out { grid-column: 2; grid-row: 1 / span 2; }
+    .rk-a { align-content: center; }
+  }
+
+  /* ---- the bands ----
+
+     Every band on the front page is one LEAD and a set behind it,
+     which is the hierarchy the page did not have when it was six
+     full-width widgets of equal weight. The lead is the first item
+     and takes two columns; it is the only one wearing a drawing,
+     because six pictures in a row tell a reader that there were
+     six.
+
+     `minmax(min(100%, N), 1fr)` throughout: the `min(100%, ...)`
+     is what stops a track wider than the screen on a phone. */
+  /* ---- a band's heading, which the page did not have ----
+
+     Measured on the built page: one `clamp()` at 54.4px for the
+     headline and then TEN sizes inside the 10px between 19.84 and
+     9.6, with `.section-label` at 12.64 the smallest thing
+     dividing the page into bands. Four bands under a kicker
+     smaller than the card titles beneath it read as one
+     continuous field rather than as a composition.
+
+     `.section-label` stays what it is, a kicker, and the heading
+     under it carries the level, which is what `ui/label.tsx` says
+     it is for. Between the headline and the ledger numeral, so
+     the page has four steps rather than two. */
+  .band-h {
+    margin: 0;
+    font-size: clamp(1.4rem, 2.4vw, 2rem);
+    line-height: 1.25;
+  }
+  .band-h[lang="bn"] { font-family: var(--font-bn-serif); line-height: 1.4; }
+
+  .work-deck { grid-template-columns: repeat(auto-fill, minmax(min(100%, 300px), 1fr)); }
+
+  /* A CARD IN A BAND IS A ROW OF A LIST, so its blurb is clamped
+     and its neighbours are the same height. `PAGES` writes these
+     for the search palette, where a whole sentence is the answer;
+     in a grid of six the difference between a two-line card and a
+     six-line one is a ragged band. */
+  .learn-deck .card-dek,
+  .make-deck .card-dek {
+    display: -webkit-box; -webkit-box-orient: vertical; -webkit-line-clamp: 3;
+    overflow: hidden;
+  }
+  /* THE COLUMN COUNT IS DECIDED BY WHAT IS IN THE BAND, because a
+     lead spanning two of them and a set behind it either fills the
+     rows or leaves holes. Six schools with a lead is seven units,
+     which is four columns and one empty cell at the end; five
+     tools with a lead is six units, which is three columns and
+     none. */
+  .learn-deck,
+  .make-deck { grid-template-columns: repeat(auto-fill, minmax(min(100%, 300px), 1fr)); }
+
+  /* A CARD IS AS TALL AS WHAT IS IN IT, unless every card in the
+     deck has the same anatomy, and on this page they do: six
+     schools all wearing a drawing, six tools all without one, six
+     compact studies all carrying a chart. So the rows stretch and
+     `margin-top: auto` on the action lines every "খুলুন" and every
+     "Open the model" up along the bottom of the row.
+
+     It was `start` for one draft, for a good reason that has
+     gone: the library band had a LEAD spanning two columns with a
+     300px picture in it, which stretched its two pictureless
+     row-mates to 450px and left 300px of empty glass in each. The
+     lead went when every school got its drawing, and with the
+     deck homogeneous again the ragged bottoms `start` produces
+     are the worse of the two. */
+  .work-deck,
+  .learn-deck,
+  .make-deck,
+  .read-deck { align-items: stretch; }
+  /* THREE, LIKE EVERY OTHER BAND. At 260px a fourth column needs
+     1,094px and the content column is 1,070, so four pieces laid
+     out three and one, and the page's other three decks are three
+     across. One rhythm down the page rather than a deck that is
+     nearly but not quite the others. */
+  .read-deck { grid-template-columns: repeat(auto-fill, minmax(min(100%, 300px), 1fr)); }
+  /* ONE CARD IS NOT A ROW OF FOUR. The band draws a door to
+     `/insights` when the database did not answer, and in a
+     four-column grid that is one card beside three columns of
+     nothing. */
+  .read-deck-one { grid-template-columns: minmax(0, 460px); }
+
+
+  /* One quiet line at the end of a band: everything it had no room
+     for is one press away. `.gp-all` is the same idea inside a
+     board widget, and this is the page's own. */
+  .band-more {
+    margin: var(--gap) 0 0; text-align: end;
+
+    & a {
+      color: var(--accent); text-decoration: none;
+      font-family: var(--font-mono); font-size: var(--t-2);
+      letter-spacing: 0.08em; text-transform: uppercase;
+    }
+  }
+  .band-more a:hover, .band-more a:focus-visible { text-decoration: underline; }
+
+  /* THE KEYBOARD HINT IS NOT FOR A PHONE, and it carried
+     `max-sm:hidden` and was on screen on every one of them.
+     `.gate-hint` sets `display: flex` in this layer, `@layer deck`
+     is later than `@layer tw`, and a utility cannot win a property
+     a later layer sets. Nothing failed and nothing could: the page
+     rendered perfectly, with a Ctrl K hint on a device that has no
+     Ctrl key. */
+  @media (width < 640px) {
+    .gate-hint { display: none; }
   }
 
   /* ---- the light the front page is standing in ----
@@ -12103,11 +12506,6 @@ German for day, and .tag is what the site has always called
     max-width: 100%;
   }
   .gate-slim .gt-go { margin-top: 0; padding-top: 0; }
-  .gt-live {
-    width: 7px; height: 7px; border-radius: 50%;
-    background: var(--accent);
-    box-shadow: 0 0 0 3px color-mix(in oklab, var(--accent) 22%, transparent);
-  }
 
   /* The pulse card's swap: the incoming piece rises half a line.
      The class is written by pulse-card.tsx on a keyed span, so
@@ -12125,20 +12523,6 @@ German for day, and .tag is what the site has always called
   }
   .gp-dots i[data-on] { background: var(--accent); scale: 1.25; }
 
-
-  /* The action on the two loud cards, written as the button the
-     mock draws. The CARD is still the link, so this is a drawing
-     of a button rather than a control inside a control, exactly
-     as the arrow beside it is a drawing of going. On the accent
-     ground the label takes `--accent-ink`, which is the pair the
-     real buttons already use. */
-  .gate-feat .gt-go {
-    justify-self: start;
-    padding: 9px 16px;
-    border-radius: var(--radius-pill);
-    background: var(--accent-strong);
-    color: var(--accent-ink);
-  }
 
   @media (prefers-reduced-motion: reduce) {
     .gate-tile, .gt-arrow, .gp-dots i { transition: none; }
@@ -12870,22 +13254,6 @@ German for day, and .tag is what the site has always called
     .board-tall { grid-column: 1 / -1; }
   }
 
-  /* A BAND'S DECK IS DENSER THAN THE SITE'S, because half a board
-     is not half a page. `.deck` fits a 280px minimum and
-     `.deck-2` a 400px one, both written for a full-width section;
-     a `wide` widget measured 501px on a 1440px screen, so both
-     came out at one column and the six schools stacked 1305px
-     tall beside four tools at 737px. 232px fits two of them in
-     that 501px and four across a `tall` widget, and it is still
-     the same card. */
-  /* 232px, and the number is decided by the HALF board rather
-     than by the tile. A `wide` widget measures about 480px on a
-     laptop, so anything over 240 fits exactly one column in it
-     and turns six schools into a column six tiles tall. At 232 a
-     half board holds two and a full one holds four, and a band
-     across a 232px column is 130px of picture, which is a picture
-     rather than a strip. */
-  .board-deck { grid-template-columns: repeat(auto-fill, minmax(min(100%, 232px), 1fr)); }
 
   /* The arranging controls, in the widget's head beside its name
      rather than in a strip of their own above it. No ground and
@@ -13500,7 +13868,21 @@ German for day, and .tag is what the site has always called
     transition: background var(--fast) var(--ease);
 
     &:hover { background: var(--accent-soft); }
-    &:focus-visible { outline: none; --surface-shadow: var(--focus-ring); }
+    /* THE OUTLINE STAYS. This said `outline: none` and put the
+       whole focus indicator in `--focus-ring`, which is
+       `--accent-ring`, which is the accent at 30 per cent: about
+       1.3:1 against the paper, where a focus indicator needs 3:1.
+       The two hero buttons on the front page are the first
+       controls a reader meets and neither had a visible ring.
+
+       `@layer base`'s `:focus-visible` is a 2px full-opacity
+       accent outline and the ring now sits BESIDE it as a glow,
+       which is the same arrangement `--surface-shadow` was
+       invented for: a ring that replaces an edge is an edge that
+       is gone. `check-contrast.ts` already measures every accent
+       against every ground at 4.5, so the indicator is covered by
+       the pairs it has rather than by a new one. */
+    &:focus-visible { --surface-shadow: var(--focus-ring); }
   }
   .rt-task-name {
     flex: 1 1 auto; min-inline-size: 0;
@@ -13738,7 +14120,21 @@ German for day, and .tag is what the site has always called
     background-color: color-mix(in oklab, var(--accent) calc(var(--fill, 0) * 78%), var(--paper-sunk));
 
     &:hover { border-color: var(--accent); }
-    &:focus-visible { outline: none; --surface-shadow: var(--focus-ring); }
+    /* THE OUTLINE STAYS. This said `outline: none` and put the
+       whole focus indicator in `--focus-ring`, which is
+       `--accent-ring`, which is the accent at 30 per cent: about
+       1.3:1 against the paper, where a focus indicator needs 3:1.
+       The two hero buttons on the front page are the first
+       controls a reader meets and neither had a visible ring.
+
+       `@layer base`'s `:focus-visible` is a 2px full-opacity
+       accent outline and the ring now sits BESIDE it as a glow,
+       which is the same arrangement `--surface-shadow` was
+       invented for: a ring that replaces an edge is an edge that
+       is gone. `check-contrast.ts` already measures every accent
+       against every ground at 4.5, so the indicator is covered by
+       the pairs it has rather than by a new one. */
+    &:focus-visible { --surface-shadow: var(--focus-ring); }
   }
   /* Today is ringed rather than filled, so it is findable without
      looking like it has been marked. */
@@ -13785,7 +14181,21 @@ German for day, and .tag is what the site has always called
     border-radius: var(--radius-sm);
 
     &:hover { background: var(--accent-soft); }
-    &:focus-visible { outline: none; --surface-shadow: var(--focus-ring); }
+    /* THE OUTLINE STAYS. This said `outline: none` and put the
+       whole focus indicator in `--focus-ring`, which is
+       `--accent-ring`, which is the accent at 30 per cent: about
+       1.3:1 against the paper, where a focus indicator needs 3:1.
+       The two hero buttons on the front page are the first
+       controls a reader meets and neither had a visible ring.
+
+       `@layer base`'s `:focus-visible` is a 2px full-opacity
+       accent outline and the ring now sits BESIDE it as a glow,
+       which is the same arrangement `--surface-shadow` was
+       invented for: a ring that replaces an edge is an edge that
+       is gone. `check-contrast.ts` already measures every accent
+       against every ground at 4.5, so the indicator is covered by
+       the pairs it has rather than by a new one. */
+    &:focus-visible { --surface-shadow: var(--focus-ring); }
   }
   .rt-jar svg { inline-size: 44px; block-size: 56px; }
   .rt-out {
@@ -15376,11 +15786,17 @@ German for day, and .tag is what the site has always called
      Written as one gradient rather than as a pseudo-element for
      the reason at the top of this layer: `::after` is taken on
      half of these already. */
+  /* `.gate-hint` is NOT here, and it was. It is one line of text
+     with a key cap in it, 23px tall and the width of a column, so
+     a plate's lit rim around it read as an empty search box: the
+     one thing a hint saying "press Ctrl K" must not look like. It
+     paints no ground and draws no edge of its own, so it is not a
+     surface at all once the material lets go of it. */
   :is(.dt-figure, .dt-season-row, .dt-recipe, .dt-invite-shows,
       .tile, .chart-card, .verdict-card, .model-bar, .signal, .glance-item,
       .topic-tag, .card-chip, .gt-chip, .risk-chip, .tab-count,
       .pledge, .hub-pledge, .id-card, .res, .cv-item, .note,
-      .keep-note, .gate-hint, .balance-check, .work-facts, .cred,
+      .keep-note, .balance-check, .work-facts, .cred,
       .stat, .chart-box, .verdict, .shariah-verdict, .verdict-cap,
       .at-a-glance, .side-note, .held-group,
       .callout, .ex, .quiz-q, .method-step, .rt-confirm, .card-art,
@@ -15584,7 +16000,7 @@ German for day, and .tag is what the site has always called
       .tile, .chart-card, .verdict-card, .model-bar, .signal, .glance-item,
       .topic-tag, .card-chip, .gt-chip, .risk-chip, .tab-count,
       .pledge, .hub-pledge, .id-card, .res, .cv-item, .note,
-      .keep-note, .gate-hint, .balance-check, .work-facts, .cred,
+      .keep-note, .balance-check, .work-facts, .cred,
       .stat, .chart-box, .verdict, .shariah-verdict, .verdict-cap,
       .at-a-glance, .side-note, .held-group,
       .callout, .ex, .quiz-q, .method-step, .rt-confirm, .card-art,
