@@ -1098,43 +1098,40 @@ export const DOOR: Door = {
   eyebrow: "Rony Reiad · Dhaka / Brighton · CFA L1 candidate",
   copy: {
     open: {
-      headline: "টাকার ভাষা, আমাদের ভাষায়।",
-      mark: "আমাদের ভাষায়",
+      headline: "টাকা, ভাষা, রান্না আর ভ্রমণ, সবটা বাংলায়।",
+      mark: "সবটা বাংলায়",
       /* NOT "উপরের সুইচটা ঘুরিয়ে দিন". The audience switch is at
          the FOOT of the rail, and below 900px the rail is a drawer
-         behind a burger, so the one instruction the front page
-         gave pointed at a control that is not above anything and
-         on a phone is not on screen at all. The English door is a
-         button under this sentence now, so the sentence does not
-         have to send anybody looking. */
-      lede: "বাংলাদেশের বাজার, টাকা, ভাষা আর রান্না: যেটা শিখতে চান সেটা বাংলায়, "
-        + "একদম শুরু থেকে। সবটা ফ্রি, আর পড়া শুরু করতে অ্যাকাউন্টও লাগে না।",
+         behind a burger, so a sentence that sends a reader to it
+         points at a control which on a phone is not on screen at
+         all. The English door is a button under this sentence. */
+      lede: "প্রতিটা বিষয় ধরে ধরে বোঝানো, আগে থেকে কিছু জানা লাগে না। কোম্পানি যাচাই "
+        + "করা বা কিস্তির হিসাব কষার ব্যবস্থাও আছে। সব ফ্রি, আর পড়তে বা টিক দিতে "
+        + "অ্যাকাউন্ট লাগে না।",
       lang: "bn",
     },
     learn: {
-      headline: "যা শিখতে চান, নিজের ভাষায়।",
-      mark: "নিজের ভাষায়",
-      /* No count in the sentence: the ledger states it and the
+      headline: "প্রতিটা কোর্স একদম শুরু থেকে, ব্যাখ্যা বাংলায়।",
+      mark: "একদম শুরু থেকে",
+      /* No count in the sentence: the ledger states them and the
          library band draws one card per course, six inches below.
          A number typed here is a number that has to be right
          twice. */
-      lede: "বিও অ্যাকাউন্ট খোলা থেকে জার্মান বাক্য বানানো পর্যন্ত, প্রতিটা কোর্স "
-        + "ফ্রি আর বাংলায়। কোন পাঠটা পড়া হয়েছে টিক দিয়ে রাখা যায়, "
-        + "অ্যাকাউন্ট ছাড়াই।",
+      lede: "টাকা ও শেয়ার, জার্মান, ইংরেজি আর কুরআনের আরবি: পাঠগুলো একটার পর একটা "
+        + "সাজানো। রান্না আর ভ্রমণ নিয়ে আলাদা লেখা আছে। কোন পাঠটা পড়া হয়েছে টিক "
+        + "দিয়ে রাখা যায়, অ্যাকাউন্ট ছাড়াই।",
       lang: "bn",
     },
     work: {
-      /* "check" rather than "trust". Trust is what the reader is
-         being asked for; checking is what the page lets them do,
-         and it is the whole argument of the work band under it. */
-      headline: "Financial models you can open, edit and check.",
-      mark: "open, edit and check",
-      /* It named four of the seven case studies it now sits
-         directly above, which is a list to keep in step with a
-         list. */
-      lede: "Interactive case studies rather than screenshots: open one, "
-        + "change an assumption, and every number downstream of it moves. "
-        + "Each model's arithmetic is pinned by tests.",
+      headline: "Financial models, data analysis and finance writing.",
+      mark: "Financial models",
+      /* The reader is not asked to trust a number, they are told
+         what they can do to it. And no case study is named: the
+         lede sat directly above all seven and listed four, which
+         is a list to keep in step with a list. */
+      lede: "The case studies below are working models rather than screenshots: "
+        + "open one, change an assumption, and every number downstream of it "
+        + "moves. The arithmetic in each is covered by tests.",
       lang: "en",
     },
   },
