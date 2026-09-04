@@ -23,19 +23,35 @@
    dropped Arabic title fails a check rather than a reader. */
 
 import type { Rows as SnapshotRows, Row } from "./schools-snapshot.ts";
-import { existsSync, writeFileSync } from "node:fs";
+import { existsSync, readFileSync, writeFileSync } from "node:fs";
 import { dirname, join, resolve } from "node:path";
 import { fileURLToPath, pathToFileURL } from "node:url";
 
 const ROOT = join(dirname(fileURLToPath(import.meta.url)), "..");
 
-/* The prose these read left `aab/`, which is what taking it off
-   the site means: those modules were being uploaded and served at
-   `/quran/content/dhap-1.js` and nothing had asked for one in
-   months. The database is where a lesson's words live now, and
-   `content/schools.backup.json` is what the builders read. */
-const ARCHIVE = join(ROOT, "archive", "schools");
 const CURRICULA = join(ROOT, "shared", "curricula");
+
+/* THE PROSE COMES FROM THE SNAPSHOT, and there is nowhere else it
+   could come from: the database is where a lesson's words live,
+   `content/schools.backup.json` is the committed export of it, and
+   the per-stage modules this used to read are gone. Structure comes
+   from `shared/curricula/`, prose from here, and the two are joined
+   on school/stage/slug. A lesson the snapshot does not carry gets
+   an empty body, which is a "coming soon" page rather than a
+   failure. */
+const SNAPSHOT = join(ROOT, "content", "schools.backup.json");
+
+interface SnapshotLesson { school: string; stage: string; slug: string; body?: string }
+
+function proseFromSnapshot(): Map<string, string> {
+  const by = new Map<string, string>();
+  if (!existsSync(SNAPSHOT)) return by;
+  const snap = JSON.parse(readFileSync(SNAPSHOT, "utf8")) as { lessons?: SnapshotLesson[] };
+  for (const l of snap.lessons ?? []) {
+    if (l.body) by.set(`${l.school}/${l.stage}/${l.slug}`, l.body);
+  }
+  return by;
+}
 
 /* ---------- the four schools, and what is different ---------- */
 
@@ -67,7 +83,6 @@ export interface School {
   /** What a section calls its children: `lessons`, `teile` or
       `parts`. */
   within: string;
-  bodies: (stage: Node) => string;
 }
 
 export const SCHOOLS: School[] = [
@@ -83,32 +98,24 @@ export const SCHOOLS: School[] = [
        of the thing it teaches. Assuming `lessons` everywhere
        quietly imported two schools with no lessons in them. */
     within: "lessons",
-    /* Its prose was under lessons/<stage>.js, not
-       content/<stage>.js. The other three agreed on `content/`
-       later; this one was first, which is a good reason to read it
-       from a table rather than to guess. */
-    bodies: (stage) => join(ARCHIVE, "money", `${String(stage.slug)}.js`),
   },
   {
     id: "deutsch",
     dir: "deutsch",
     stages: (m) => m.STUFEN as Node[],
     within: "teile",
-    bodies: (stage) => join(ARCHIVE, "deutsch", `${String(stage.slug)}.js`),
   },
   {
     id: "quran",
     dir: "quran",
     stages: (m) => m.DHAPS as Node[],
     within: "lessons",
-    bodies: (stage) => join(ARCHIVE, "quran", `${String(stage.slug)}.js`),
   },
   {
     id: "english",
     dir: "english",
     stages: (m) => m.TERMS as Node[],
     within: "parts",
-    bodies: (stage) => join(ARCHIVE, "english", `${String(stage.slug)}.js`),
   },
 ];
 
@@ -141,6 +148,7 @@ export async function readSchool(school: School): Promise<Rows> {
   if (!Array.isArray(stages) || stages.length === 0) {
     throw new Error(`${school.id}: no stages found, the export moved`);
   }
+  const prose = proseFromSnapshot();
 
   const rows: Rows = { stages: [], sections: [], lessons: [] };
 
@@ -153,9 +161,6 @@ export async function readSchool(school: School): Promise<Rows> {
       status: stage.status ?? "live",
       meta: restOf(stage, STAGE_COLUMNS, "bn"),
     });
-
-    const file = school.bodies(stage);
-    const bodies = existsSync(file) ? (await import(file)).default ?? {} : {};
 
     let lessonIndex = 0;
     for (const [sectionIndex, section] of
@@ -197,7 +202,7 @@ export async function readSchool(school: School): Promise<Rows> {
           /* An empty body is not a failure: the builders already
              draw a "coming soon" page for a lesson nobody has
              written, and that has to keep working. */
-          body: bodies[String(lesson.slug)] ?? "",
+          body: prose.get(`${school.id}/${stage.slug}/${lesson.slug}`) ?? "",
         });
       }
     }
