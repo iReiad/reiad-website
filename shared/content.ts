@@ -570,11 +570,14 @@ export const READS = SECTIONS.filter((s) => s.id !== "insights");
              which reads as a stutter under a heading that says
              "open one and take it apart".
 
-   Both are optional and both are read by home.js. They exist so
-   that a case study is described ONCE, here, rather than once
-   here and again inside index.html, which is how the home page
-   came to be listing three of seven with a trailing line naming
-   two of the four it had left out.
+   Both are optional. `kind` is read by `next/lib/work.ts`, which
+   joins these rows with the drawing and the three checkable facts
+   a row cannot hold, and both `/portfolio` and the front page map
+   over the result. `home.js` read them before that: it is gone,
+   and so is `index.html`. They exist so that a case study is
+   described ONCE, here, which is how the home page came to be
+   listing three of seven with a trailing line naming two of the
+   four it had left out.
    ============================================================ */
 
 /** One entry of the menu, the palette and the sitemap. */
