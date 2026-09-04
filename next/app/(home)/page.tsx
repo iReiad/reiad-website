@@ -171,7 +171,15 @@ export default function HomePage() {
             anybody sees a second. */}
         <header className="door">
           <div className="door-say">
-            <span className="gate-eyebrow mono" lang="en">{DOOR.eyebrow}</span>
+            {/* THE NAME IS A LINK. Nothing on the front page was
+                independently checkable: no CV, no institution, no
+                way to find out who is talking without going
+                looking for the rail's About. A reader who wants to
+                know who wrote this presses the name, which is
+                where they would press anyway. */}
+            <span className="gate-eyebrow mono" lang="en">
+              <a href="/about">{DOOR.eyebrow}</a>
+            </span>
 
             {/* One <h1> per audience, all three server-rendered and
                 chosen by `data-hl` before first paint. The copy is

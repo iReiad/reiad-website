@@ -31,6 +31,11 @@
    login could not have reached anyone either. Bump this whenever a
    precached file changes.
 
+   v240: /fallback.css. The front page's decks stretch again now
+        that every card in each of them has the same anatomy, so a
+        row's actions line up, and the byline is a link to /about:
+        nothing on the page was independently checkable.
+
    v239: /fallback.css and /tools/stock.js. `check-css.ts` read
         only the FIRST block of a cascade layer, and `@layer deck`
         opens twice, so the whole front page's stylesheet had been
@@ -2124,7 +2129,7 @@
    imports (crumbs, audience, learn progress) and the hub is a
    different page. Without a bump, a returning reader would be
    served the v3 app.js forever and none of it would appear. */
-const VERSION = "v239";
+const VERSION = "v240";
 const SHELL = `shell-${VERSION}`;
 const RUNTIME = `runtime-${VERSION}`;
 

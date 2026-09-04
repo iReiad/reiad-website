@@ -7315,6 +7315,10 @@
   .stage-progress-react { max-width: 420px; margin-block: 14px; }
 
   .gate-eyebrow { color: var(--accent); }
+
+  .gate-eyebrow a { color: inherit; text-decoration: none; }
+  .gate-eyebrow a:hover,
+  .gate-eyebrow a:focus-visible { text-decoration: underline; }
   .gate-h1 {
     margin: 0;
     font-size: clamp(1.9rem, 4.4vw, 3.4rem);
@@ -7575,10 +7579,10 @@
   .learn-deck,
   .make-deck { grid-template-columns: repeat(auto-fill, minmax(min(100%, 300px), 1fr)); }
 
+  .work-deck,
   .learn-deck,
   .make-deck,
-  .work-deck,
-  .read-deck { align-items: start; }
+  .read-deck { align-items: stretch; }
   .read-deck { grid-template-columns: repeat(auto-fill, minmax(min(100%, 260px), 1fr)); }
 
   .read-deck-one { grid-template-columns: minmax(0, 460px); }

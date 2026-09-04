@@ -11580,6 +11580,13 @@ German for day, and .tag is what the site has always called
      selects on keep a name. */
 
   .gate-eyebrow { color: var(--accent); }
+  /* The hover is a top-level rule rather than a nested `&`,
+     because `check-material.ts` reads a `:hover` anywhere inside
+     a bare class block as "this is a surface a reader presses".
+     A line of credits is not one; the link inside it is. */
+  .gate-eyebrow a { color: inherit; text-decoration: none; }
+  .gate-eyebrow a:hover,
+  .gate-eyebrow a:focus-visible { text-decoration: underline; }
   .gate-h1 {
     margin: 0;
     font-size: clamp(1.9rem, 4.4vw, 3.4rem);
@@ -11972,18 +11979,24 @@ German for day, and .tag is what the site has always called
   .learn-deck,
   .make-deck { grid-template-columns: repeat(auto-fill, minmax(min(100%, 300px), 1fr)); }
 
-  /* A CARD IS AS TALL AS WHAT IS IN IT. `.deck` sets no
-     `align-items`, so a grid item stretches to its row, and a
-     picture-bearing card 450px tall took its two row-mates with
-     it: 300px of empty glass each, with `.card-go`'s
-     `margin-top: auto` pinning the action to the floor of it.
-     `start` on the home page's own decks, rather than on `.deck`,
-     because a deck of cards that all carry pictures is right to
-     stretch. */
+  /* A CARD IS AS TALL AS WHAT IS IN IT, unless every card in the
+     deck has the same anatomy, and on this page they do: six
+     schools all wearing a drawing, six tools all without one, six
+     compact studies all carrying a chart. So the rows stretch and
+     `margin-top: auto` on the action lines every "খুলুন" and every
+     "Open the model" up along the bottom of the row.
+
+     It was `start` for one draft, for a good reason that has
+     gone: the library band had a LEAD spanning two columns with a
+     300px picture in it, which stretched its two pictureless
+     row-mates to 450px and left 300px of empty glass in each. The
+     lead went when every school got its drawing, and with the
+     deck homogeneous again the ragged bottoms `start` produces
+     are the worse of the two. */
+  .work-deck,
   .learn-deck,
   .make-deck,
-  .work-deck,
-  .read-deck { align-items: start; }
+  .read-deck { align-items: stretch; }
   .read-deck { grid-template-columns: repeat(auto-fill, minmax(min(100%, 260px), 1fr)); }
   /* ONE CARD IS NOT A ROW OF FOUR. The band draws a door to
      `/insights` when the database did not answer, and in a
