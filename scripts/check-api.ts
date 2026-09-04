@@ -1,44 +1,24 @@
 #!/usr/bin/env node
-/* ============================================================
-   check-api.ts: does the browser call routes that exist?
+/* check-api.ts: does the browser call routes that exist?
 
        node scripts/check-api.ts
 
-   archive/TRANSITION.md Stage 12, step 4. `aab/api.js` knows every
-   endpoint by string:
-
-       api("signals/react", { method: "POST", body })
-
-   and `worker.js` decides what `/api/signals` means by a table
-   of prefixes. Nothing connects the two. Rename a mount and the
-   browser keeps asking for the old one; every call in this file
-   returns `null` on failure by design, so the page does not
-   break, it quietly stops doing the thing. That is the worst
-   shape a bug can have here: no error anywhere, and a feature
-   that has silently switched itself off.
-
-   It has happened in kind if not in name. The whole of Stage 1
-   was three separate places building `/insights/<slug>.html` for
-   pieces that were not in Insights, and every one of them looked
-   fine.
-
-   ---- what it checks ----
+   `aab/api.js` knows every endpoint by string and `worker.js`
+   decides what `/api/signals` means by a table of prefixes.
+   Nothing connects the two. Rename a mount and the browser keeps
+   asking for the old one; every call returns `null` on failure by
+   design, so the page does not break, it quietly stops doing the
+   thing.
 
    1. Every mount the browser asks for is a mount `worker.js`
-      routes, whether it asks through `api()` or through a plain
-      `fetch`. The first segment after `/api/` is the whole of the
-      contract: everything after it is that handler's own.
-   2. Every mount `worker.js` routes is asked for by something,
-      or is listed below as one nothing in a browser calls.
+      routes, whether through `api()` or a plain `fetch`. The first
+      segment after `/api/` is the whole of the contract.
+   2. Every mount `worker.js` routes is asked for by something, or
+      is listed below as one nothing in a browser calls.
 
-   ---- what it does not ----
-
-   It does not check the path AFTER the mount, or the method, or
-   the body. Those are the handler's, and a check that tried to
-   know them would be a second copy of every handler. The mount is
-   the seam between two files that cannot see each other, which is
-   the only place a rename goes silently wrong.
-   ============================================================ */
+   It does not check the path after the mount, the method or the
+   body: those are the handler's, and a check that tried to know
+   them would be a second copy of every handler. */
 
 import { readFileSync, readdirSync, statSync } from "node:fs";
 import { dirname, join, relative } from "node:path";
@@ -65,16 +45,11 @@ const mounts = [...table.matchAll(/\["\/api\/([a-z-]+)"/g)].map((m) => m[1]);
 
 /* ---------- and the ones the OTHER Worker answers ----------
 
-   `API_ROUTES` was the whole of "what worker.js routes" until
-   `/api/book/` existed, and reading only that table now reports a
-   live endpoint as dead.
-
-   A `/api/` path can reach the Next Worker, and one does. The API
+   A `/api/` path can reach the Next Worker, and one does: the API
    table is consulted first, so a path matching no prefix in it
    falls through to `NEXT_ROUTES`, and a pattern there beginning
-   `/api/` is that path being routed just as surely as an entry in
-   the table above. `worker.js` says why the books are the one
-   thing served that way.
+   `/api/` is that path being routed. Reading only `API_ROUTES`
+   reports a live endpoint as dead.
 
    Read from the same file rather than listed here, so the day a
    second one is added this check knows without being told. */
@@ -89,27 +64,17 @@ const nextMounts = [...nextTable.matchAll(/\/\^\\\/api\\\/([a-z-]+)\\\//g)]
 
    `api()` in `aab/api.js` takes the path WITHOUT the `/api/`
    prefix, which it adds itself. Both quote styles, because a call
-   with an interpolated slug is a template literal and a call
-   without one is not, and the character after the mount can be a
-   slash, a query, the end of the string or the start of an
-   interpolation.
-
-   The Studio's own client is typed, so a call there reads
-   `api<{ lessons: Lesson[] }>(\`schools/...\`)` and the generic
-   sits between the name and the bracket. That is the shape Stage
-   12 step 4 is heading towards for the whole of `api.js`, so a
-   check that could not see it would go blind exactly as the work
-   lands.
+   with an interpolated slug is a template literal, and the
+   character after the mount can be a slash, a query, the end of
+   the string or the start of an interpolation. The Studio's own
+   client is typed, so the generic sits between the name and the
+   bracket.
 
    And `next/components/comments.tsx` calls `fetch("/api/comments")`
-   directly, as `archive/modules/comments.js` did before it was a
-   component.
-   That is not an oversight to tidy here: a comment thread wants
-   the status code and the error body, and `api()` deliberately
-   flattens both into `null` so that every other caller can have a
-   static fallback. Two calling conventions with one seam between
-   them is exactly the thing this file is watching, so it watches
-   both rather than pretending there is one. */
+   directly. That is not an oversight to tidy: a comment thread
+   wants the status code and the error body, and `api()`
+   deliberately flattens both into `null` so every other caller can
+   have a static fallback. */
 const CALL = /\bapi(?:<[^>()]*>)?\(\s*(["'`])([a-z-]+)(?=[/?`"']|\$\{)/g;
 const FETCH = /["'`]\/api\/([a-z-]+)(?=[/?`"']|\$\{)/g;
 
@@ -125,11 +90,8 @@ const walk = (dir: string, skip: string[] = []): void => {
 walk(join(ROOT, "aab"), ["og", "node_modules", "studio"]);
 walk(join(ROOT, "app", "src"), ["node_modules"]);
 /* And the routes and components, because that is where the
-   browser's half of this site is going. `archive/modules/news.js` was the
-   only caller of `/api/news` until the market pulse became
-   `components/news.tsx`, and archiving the module left a live
-   endpoint reading as dead. The three shipped directories only:
-   a mount that just a test asks for is a mount nothing asks
+   browser's half of this site is. The three shipped directories
+   only: a mount that just a test asks for is a mount nothing asks
    for. */
 for (const dir of ["app", "components", "lib"]) {
   walk(join(ROOT, "next", dir), ["node_modules"]);

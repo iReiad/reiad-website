@@ -1,36 +1,17 @@
-/* ============================================================
-   article.test.ts: the article page, in a browser, on the real
-   Worker.
-
+/* The article page, in a browser, on the real Worker.
      node next/article.test.ts
 
-   THE GAP THIS CLOSES
+   Every other browser test here drives a PRERENDERED page. An article is
+   rendered per request out of D1, so none of them can reach it, and a
+   client component on one is otherwise verified for its first paint and
+   for nothing an effect or a click does.
 
-   Every browser test in this repository drives a PRERENDERED
-   page: `interactive.test.ts` serves Next's output files from a
-   little static server, and `account.test.ts` does the same for
-   its own. An article is not prerendered. It is
-   rendered per request out of D1, so none of them could reach it,
-   and a client component on it was verified for its first paint
-   and for nothing an effect or a click does.
-
-   That mattered the moment the comment thread became a component
-   (#147) and again when the reactions and the question box did
-   (#149), and again when the read-aloud control did.
-
-   ---- why the Worker rather than a deployed preview ----
-
-   Cloudflare gives every branch a preview URL with the real
-   database behind it, which sounds like the easier answer. A
-   browser in the container this was written in cannot reach the
-   network at all: `example.com` resets the same way the preview
-   does, and only the browser's own component-update requests
-   reach the egress proxy. Every browser test here serves from
-   localhost, and that is why. `scripts/check-preview.ts` is what
-   asks a deployed preview anything, over fetch.
-
-   `dev-worker.ts` is the boot, shared with `parity.test.ts`.
-   ============================================================ */
+   The Worker rather than a deployed preview because a browser in a
+   container cannot reach the network at all: only its own
+   component-update requests reach the egress proxy. Every browser test
+   here serves from localhost. `scripts/check-preview.ts` is what asks a
+   deployed preview anything, over fetch. `dev-worker.ts` is the boot,
+   shared with `parity.test.ts`. */
 
 import { dirname, extname, join } from "node:path";
 import { fileURLToPath } from "node:url";
@@ -193,20 +174,16 @@ const open = async (
     if (r.status() >= 400) unreachable.push(new URL(r.url()).pathname);
   });
 
-  /* THE OTHER HALF OF THE SITE, off disk.
+      /* THE OTHER HALF OF THE SITE, off disk. `wrangler dev` here is
+         running the NEXT Worker, and `/app.js`, `/saved.js` and every
+         other served module live in `aab/`, which the front-door Worker
+         answers for. Without this every one of them 404s, and a 404 for a
+         `<script type="module">` is a console error per module: this test
+         would have to ignore console errors to pass, which is the one
+         thing it is here to notice.
 
-     `wrangler dev` here is running the NEXT Worker, and that is
-     one of two. `/app.js`, `/saved.js` and every other served
-     module live in `aab/`, which the front-door Worker
-     answers with `[assets] directory = "./aab"`. Without this the
-     page loads and every one of them 404s, and a 404 for a
-     `<script type="module">` is not a quiet thing: it is a
-     console error per module, and this test would have to ignore
-     console errors to pass, which is the one thing it is here to
-     notice.
-
-     Registered FIRST, so the endpoint route below takes
-     precedence: Playwright tries handlers in reverse. */
+         Registered FIRST, so the endpoint route below takes precedence:
+         Playwright tries handlers in reverse. */
   await page.route("**/*", async (route: Route, request: Request) => {
     const path = new URL(request.url()).pathname;
     if (!/^\/[\w./-]+\.\w+$/.test(path) || path.startsWith("/_next/")) {
@@ -272,20 +249,14 @@ const open = async (
   return { page, thrown, logged, unreachable };
 };
 
-/** What this harness does not answer, and why each one is here.
+    /** What this harness does not answer, and why each one is here. THE
+        POINT OF THE LIST is that it is a list: "ignore the console" would
+        pass this file with a genuinely missing module on the page.
 
-    THE POINT OF THE LIST is that it is a list. "Ignore the
-    console" would pass this file with a genuinely missing module
-    on the page, which is the one thing it exists to notice, so
-    what is allowed to be missing is named instead and anything
-    else fails.
-
-    The first three are the OTHER Worker's: `wrangler dev` is
-    running `reiad-next`, and `functions/api/` belongs to the
-    front door. Serving `aab/` off disk covers its static half and
-    nothing covers its endpoints, which is the boundary of this
-    harness and is worth knowing before writing a check that needs
-    one. */
+        The first three are the OTHER Worker's: `wrangler dev` is running
+        `reiad-next`, and `functions/api/` belongs to the front door.
+        Serving `aab/` off disk covers its static half and nothing covers
+        its endpoints, which is the boundary of this harness. */
 const MAY_BE_MISSING = [
   "/api/articles",        // the front door's, for the reading rail
   "/api/auth/me",         // the front door's, so nobody is ever signed in here
@@ -499,20 +470,16 @@ console.log("the article page, in a browser");
   await page.close();
 }
 
-/* ---------- 8. the view is counted once, and this asks it twice ----------
+    /* ---------- 8. the view is counted once, and this asks it twice ----------
+       Calling `countView()` at a module's top level as well as from
+       `app.js` posts `signals/view` twice per load, and nothing says so
+       because two rows a day is not a shape anybody looks at.
 
-   `archive/modules/engage.js` called `countView()` at its top level and
-   `app.js` calls it for every page, so an insights piece posted
-   `signals/view` twice per load and a cooking piece once. Nothing
-   said so, because two rows a day is not a shape anybody looks at.
-
-   THE RUNTIME HALF CANNOT SEE IT FROM HERE, and that is
-   `countView()` being right rather than this being wrong: it
-   refuses on `localhost` and `127.0.0.1` so that the author
-   reading their own drafts is not a view, and this harness is
-   127.0.0.1 by definition. So the observation is that a dev host
-   posts NOTHING, which is the other half of the same rule, and
-   the claim about double counting is asked of the source. */
+       THE RUNTIME HALF CANNOT SEE IT FROM HERE, and that is `countView()`
+       being right rather than this being wrong: it refuses on `localhost`
+       and `127.0.0.1` so the author reading their own drafts is not a
+       view. So the observation is that a dev host posts NOTHING, and the
+       claim about double counting is asked of the source. */
 
 {
   const page = await browser.newPage();

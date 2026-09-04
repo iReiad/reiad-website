@@ -145,14 +145,10 @@ const CARDS: Card[] = [
   { file: "dissertation.png", eyebrow: "Case study · Empirical research",
     title: "Are Islamic funds really lower risk?",
     sub: "220 UK funds · 19,577 fund-months · five-factor models · and what three funds could actually detect" },
-  { file: "contents.png", eyebrow: "সব বিষয় · Full contents", title: "প্রতিটা লেখা, এক পাতায়।",
-    sub: "আট ধাপের সবকিছু, সাথে ইংরেজি বর্ণানুক্রমে শব্দকোষ", bn: true },
   { file: "about.png", eyebrow: "About", title: "Chittagong economics to Brighton risk management.",
     sub: "Why this site exists, and who is writing it" },
   { file: "contact.png", eyebrow: "Contact", title: "For recruiters, clients and readers.",
     sub: "Financial modelling, analysis and writing, or just a question" },
-  { file: "colophon.png", eyebrow: "Colophon", title: "Every technical decision, written down.",
-    sub: "How this site is built, and why each choice was made" },
 
   /* One per stage, so a shared lesson previews as the stage it
      belongs to rather than as the whole library. Read from
@@ -176,12 +172,6 @@ const CARDS: Card[] = [
   { file: "deutsch.png", eyebrow: "জার্মান · Deutsch von Herzen",
     title: "মন থেকে জার্মান।",
     sub: "শব্দ মুখস্থ নয়, কাঠামো · চারটা স্তর · রোজ একটা পাতার অনুশীলন", bn: true },
-  /* One card for all three practice books. They differ in length,
-     not in kind, and a card naming a day count would be wrong on
-     two of the three pages that use it. */
-  { file: "deutsch-arbeitsbuch.png", eyebrow: "Das Arbeitsbuch · অনুশীলন",
-    title: "দিনে একটা পাতা।",
-    sub: "একটা ছাঁচ · পাঁচটা নমুনা · নিজের আটটা বাক্য · একটা সত্যি অনুচ্ছেদ", bn: true },
   ...STUFEN.map((st) => ({
     file: `deutsch-${st.slug}.png`,
     eyebrow: `${st.kicker} · ${st.de}`,
@@ -208,13 +198,10 @@ const CARDS: Card[] = [
   })),
 
   /* The English school, the same arrangement a third time: a hub
-     card, one per term, and one for the practice book. */
+     card and one per term. */
   { file: "english.png", eyebrow: "মন থেকে ইংরেজি · English From The Heart",
     title: "মুখস্থ নয়। কাঠামো।",
     sub: "দুই টার্ম · রোজ এক ঘণ্টা · অর্ধেকটা মুখে বলা", bn: true },
-  { file: "english-workbook.png", eyebrow: "The 30-day workbook · অনুশীলন",
-    title: "দিনে একটা পাতা।",
-    sub: "একটা কাঠামো · পাঁচটা নমুনা · নিজের আটটা বাক্য · একটা সত্যি অনুচ্ছেদ", bn: true },
   /* The kitchen. One card for the whole of it: the pieces differ
      in ingredient, not in kind, and a card naming an onion would
      be wrong on the next piece that lands. */
@@ -258,7 +245,6 @@ const ASSIGN: Assignment[] = [
   [/^portfolio\/stress\.html$/, "stress.png"],
   [/^portfolio\/dissertation\.html$/, "dissertation.png"],
   [/^portfolio\.html$/, "portfolio.png"],
-  [/^money\/contents\.html$/, "contents.png"],
   [/^money\/index\.html$/, "learn.png"],
   ...STAGES.map((st): Assignment => [
     st.slug === "basics-1"
@@ -268,15 +254,6 @@ const ASSIGN: Assignment[] = [
   ]),
   [/^money\//, "learn.png"],
   [/^skills\//, "skills.png"],
-  /* Every practice book, before the per-Stufe rule below, which
-     would otherwise claim them for their Stufe's card. This has
-     to agree with the `og` the German book's route renders into the
-     workbook pages, or the two generators take turns overwriting
-     each other's tags. */
-  ...STUFEN.flatMap((st) => (st.workbook ? [[
-    new RegExp(`^deutsch\\/${st.slug}\\/${st.workbook.slug}\\.html$`),
-    "deutsch-arbeitsbuch.png",
-  ] as Assignment] : [])),
   [/^deutsch\/index\.html$/, "deutsch.png"],
   ...STUFEN.map((st): Assignment => [
     new RegExp(`^deutsch\\/${st.slug}\\/`),
@@ -285,22 +262,15 @@ const ASSIGN: Assignment[] = [
   [/^deutsch\//, "deutsch.png"],
   /* The Quran school. Same order as the German block above: the
      hub first, then one rule per ধাপ, then a catch-all so a page
-     added under /quran/ later still previews as the school. These
-     have to agree with the `og` values build-quran.mjs writes. */
+     added under /quran/ later still previews as the school. */
   [/^quran\/index\.html$/, "quran.png"],
   ...DHAPS.map((dh): Assignment => [
     new RegExp(`^quran\\/${dh.slug}\\/`),
     `quran-${dh.slug}.png`,
   ]),
   [/^quran\//, "quran.png"],
-  /* The English school. The workbook first, before the per-term
-     rule that would otherwise claim it, then the hub, then one
-     rule per term, then a catch-all. These have to agree with the
-     `og` values the English book's route renders. */
-  ...TERMS.flatMap((t) => (t.workbook ? [[
-    new RegExp(`^english\\/${t.slug}\\/${t.workbook.slug}\\.html$`),
-    "english-workbook.png",
-  ] as Assignment] : [])),
+  /* The English school: the hub, then one rule per term, then a
+     catch-all. */
   [/^english\/index\.html$/, "english.png"],
   ...TERMS.map((t): Assignment => [
     new RegExp(`^english\\/${t.slug}\\/`),
@@ -312,7 +282,6 @@ const ASSIGN: Assignment[] = [
   [/^insights/, "insights.png"],
   [/^about\.html$/, "about.png"],
   [/^contact\.html$/, "contact.png"],
-  [/^colophon\.html$/, "colophon.png"],
 ];
 
 const cardFor = (rel: string): string =>

@@ -1,54 +1,11 @@
-/* ============================================================
-   checkpoints.ts: the ticks inside a lesson, rather than on it.
-
-   A school lesson already has one tick, and it is about the whole
-   page: "I have read this". That is the right unit for a ladder
-   and the wrong one for what is actually inside several of these
-   lessons, which is a checklist. Open an account at a broker, get
-   a BO number, keep six months of statements: five things a
-   reader does over a fortnight, in a lesson they will come back
-   to four times, and until now the page could not remember which
-   three of them were done.
-
-   ---- it invents nothing ----
-
-   `.checklist` is an article block that has existed since the
-   Studio was written. It is styled in `@layer article`, allowed
-   in `KEEP_CLASSES` in `aab/editor.js` and in `ALLOWED_CLASSES`
-   in `functions/_lib/sanitise.ts`, and there are checklists in
-   real lessons today. So this adds no class, changes no lesson
-   body and asks nothing of whoever writes the next one: every
-   checklist in a school lesson becomes a set of checkpoints, and
-   a checklist in an article that is not a lesson stays a
-   checklist, because there is nothing to file the ticks under.
-
-   ---- what a checkpoint is called ----
-
-     <lesson id>#<n>
-
-   The lesson's own id, which is what its ticks are already filed
-   under, and the item's position in the lesson. Position rather
-   than text: the text is prose and prose gets edited, and a
-   checkpoint that forgets itself because a typo was fixed is
-   worse than one that stays put when a line is reworded. The
-   trade is the other way round when an item is INSERTED in the
-   middle, which shifts everything below it by one, and that is
-   the honest cost of not storing a copy of the sentence. It is
-   the smaller cost: an insert is rare, a typo is not.
-
-   They are stored under `<school>-checks` and travel with the
-   account like every other tick. `aab/sync.js` carries the four
-   keys and `next/lib/progress.ts` never sees them: a checkpoint
-   is not a lesson and must not count towards a ladder.
-
-   ---- and it runs after hydration ----
-
-   Loaded through `next/components/scripts.tsx` like every other
-   module a route loads, for the reason that file is entirely
-   about. It rewrites part of a lesson body React has just
-   adopted; running before hydration would have React put every
-   one of these back.
-   ============================================================ */
+/* checkpoints.ts: the ticks INSIDE a lesson, as against the one
+   tick on it. It invents no markup: `.checklist` is already an
+   article block in `@layer article` and in both sanitisers, so
+   every checklist in a school lesson becomes checkpoints and one
+   anywhere else stays a list. A checkpoint is `<lesson id>#<n>`,
+   by POSITION rather than text, filed under `<school>-checks` and
+   carried by `sync.js`. It never counts towards a ladder. It runs
+   after hydration, loaded through `next/components/scripts.tsx`. */
 
 /* The storage key prefix each school files its ticks under. Not
    the school's own name, and `learn` is the reason: the money
@@ -137,15 +94,11 @@ export function checkpointStats(school: string): CheckpointStats {
    ============================================================ */
 
 /**
- * Turn every checklist item in this lesson into a checkpoint.
- *
- * The markup an item becomes is a button wrapping what was
- * already there, and it is a button rather than a checkbox
- * because a checkbox inside prose inherits form styling from
- * nowhere in particular and cannot carry the tick mark the
- * stylesheet already draws for `.checklist li`. `aria-pressed`
- * says the state out loud; `data-done` is what the stylesheet
- * answers.
+ * Turn every checklist item in this lesson into a checkpoint: a
+ * button wrapping what was there, rather than a checkbox, which
+ * cannot carry the tick the stylesheet already draws for
+ * `.checklist li`. `aria-pressed` says the state out loud;
+ * `data-done` is what the stylesheet answers.
  */
 function wire(article: Element, school: string, lessonId: string): number {
   const prefix = PREFIX[school];

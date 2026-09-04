@@ -1,5 +1,4 @@
-/* ============================================================
-   /api/courses/*: the third-party course catalogue, to an admin
+/* /api/courses/*: the third-party course catalogue, to an admin
    and to nobody else.
 
    GET /api/courses               the programmes, each with its
@@ -11,49 +10,27 @@
    GET /api/courses/file/<id>     that file's bytes, streamed
    GET /api/courses/reading/<id>  that page, sanitised
 
-   ---- why the last two exist ----
+   The last two exist because a private Drive file cannot be
+   embedded: a cross-site iframe gets no Drive cookie, so Drive
+   answers an anonymous request for something not public with
+   "Unable to load video". So the browser asks this origin and the
+   Worker holds the one credential. `_lib/drive.ts` is that seam.
 
-   Because the first version handed Drive ids to the browser and
-   let it embed Drive directly, and that cannot work for a private
-   file. A cross-site iframe gets no Drive cookie in a modern
-   browser, so Drive sees an anonymous request for something that
-   is not public and answers "Unable to load video". The file is
-   fine and the embed is fine; the mechanism only ever worked for
-   files shared by link, and these deliberately are not.
-
-   So the browser asks this origin instead and the Worker holds
-   the one credential. `_lib/drive.ts` is that seam.
-
-   ---- why this is an endpoint rather than a page ----
-
-   Every other ladder on this site is rendered by the server into
-   the HTML, because every other ladder is this site's own
-   writing and a crawler is welcome to it. This one is somebody
-   else's course sitting in one person's private Drive folder. It
-   is not published, and the way a thing is not published is that
-   the server does not put it in a response it will give anybody.
-
-   So the pages under `/skills/courses/` are shells: real
-   addresses, real chrome, and no catalogue in them. The
-   catalogue arrives here, once the reader has proved who they
-   are and `isAdmin()` has said yes. A reader who is not an admin
+   AN ENDPOINT RATHER THAN A PAGE, because this is somebody else's
+   course in one person's private Drive folder. The way a thing is
+   not published is that the server does not put it in a response
+   it will give anybody, so the pages under `/skills/courses/` are
+   shells with no catalogue in them. A reader who is not an admin
    gets 403 and a shell that says so, which is the truth rather
    than a 404 pretending the section does not exist.
 
-   That is the same arrangement `/tools/live` uses for the
-   broker's admin half, and the argument is the one in
-   `_lib/admins.ts`: anything that wants to know whether somebody
-   is an admin asks `isAdmin()`, and nothing keeps a second list.
+   Anything that wants to know whether somebody is an admin asks
+   `isAdmin()`, and nothing keeps a second list.
 
-   ---- what "gated" does and does not mean ----
-
-   It means the catalogue is not readable without an admin
-   session. It does NOT mean the Drive files are protected by
-   this site: they are protected by Drive, which is where they
-   live and whose permissions decide who may open them. This
-   endpoint hands out ids, and an id opens nothing on its own.
-   Both locks are real and neither is the other.
-   ============================================================ */
+   "Gated" means the catalogue is not readable without an admin
+   session. It does NOT mean the Drive files are protected by this
+   site: they are protected by Drive. This endpoint hands out ids,
+   and an id opens nothing on its own. */
 
 import { fail, methods, ok } from "../../_lib/http.ts";
 import { readerFrom } from "../../_lib/reader.ts";
@@ -98,17 +75,14 @@ export async function onRequest(context: CoursesContext): Promise<Response> {
      sends no `Authorization` header, and this site's reader
      session is a bearer token in localStorage rather than a
      cookie, so such a request arrives with NO credential of any
-     kind. Putting it behind the sign-in check below would 401
-     every video that has ever been played. It did, for exactly as
-     long as it took to ask the deployed site.
+     kind: putting it behind the sign-in check below 401s every
+     video that has ever been played.
 
      A ticket is the credential instead, and it is not a weaker
-     one: it is signed with a key only this Worker holds, it names
-     this one file, it expires in half an hour, and it is only ever
-     minted for a reader who was signed in and an admin at the
-     moment they asked. Possession of a valid ticket therefore
-     means an admin minted it, minutes ago, for this file, which is
-     the whole of what the two checks below would establish.
+     one: signed with a key only this Worker holds, naming this one
+     file, expiring in half an hour, and only ever minted for a
+     reader who was signed in and an admin at the moment they
+     asked.
 
      `isCourseFile()` still runs first, so an id the catalogue does
      not name is refused before a credential is even loaded. */
@@ -129,9 +103,8 @@ export async function onRequest(context: CoursesContext): Promise<Response> {
   /* ---- captions, in front of sign-in for the same reason ----
 
      A `<track>` inside a `<video>` is fetched by the browser on
-     its own, exactly like the video, with no header this site can
-     add. So it carries the same signed ticket and rests on the
-     same argument. */
+     its own, with no header this site can add, so it carries the
+     same signed ticket. */
   if (parts[0] === "captions") {
     const id = parts[1] ?? "";
     if (!isCourseFile(id)) return fail("no-such-file", 404);
@@ -177,7 +150,7 @@ export async function onRequest(context: CoursesContext): Promise<Response> {
 
      `isCourseFile()` is the second lock and the load-bearing one.
      Without it this is a proxy that fetches any Drive id it is
-     handed, which is a read-only window onto the whole of
+     handed, which is a read-only window on to the whole of
      somebody's Drive resting entirely on the admin check above.
      With it, an id that is not part of a lesson is refused before
      a credential is even loaded. */
@@ -194,18 +167,12 @@ export async function onRequest(context: CoursesContext): Promise<Response> {
 
   /* ---- what the admin panel asks, and why it is answered HERE ----
 
-     ADMIN.md §3 C wants a panel saying whether this section works:
-     how much catalogue there is, whether Drive is reachable, and
-     which videos ship without captions.
-
-     Every one of those numbers is counted out of
-     `shared/courses.data.json` rather than typed, which is the
-     rule at the top of `CLAUDE.md`. It is counted in the WORKER
-     because `next/` may not import the value half of
-     `shared/courses.ts`: a page that did would put 1,629 Drive
-     ids into a bundle anybody can fetch, and would look identical.
-     So the panel gets totals and a handful of lesson titles, and
-     never the ids. */
+     Every number is counted out of `shared/courses.data.json`
+     rather than typed, and it is counted in the WORKER because
+     `next/` may not import the value half of `shared/courses.ts`:
+     a page that did would put 1,629 Drive ids into a bundle
+     anybody can fetch, and would look identical. So the panel gets
+     totals and a handful of lesson titles, and never the ids. */
   if (route === "status") {
     return methods(request, {
       GET: async () => {
@@ -246,12 +213,12 @@ export async function onRequest(context: CoursesContext): Promise<Response> {
     });
   }
 
-  /* ONE COURSE, NAMED THE WAY ITS ADDRESS NAMES IT: the
-     programme and then the course. A course slug is unique across
-     the catalogue, so this could have taken one segment, but the
-     page asks with the address it is on and a route that quietly
-     accepts half of one is a route that stops matching the page
-     the day two programmes hold the same slug. */
+  /* ONE COURSE, NAMED THE WAY ITS ADDRESS NAMES IT: the programme
+     and then the course. A course slug is unique across the
+     catalogue, so this could have taken one segment, but the page
+     asks with the address it is on, and a route that quietly
+     accepts half of one stops matching the page the day two
+     programmes hold the same slug. */
   const programme = programmeOf(parts[0] ?? "");
   const course = programme && parts.length === 2
     ? courseOf(programme, parts[1])
@@ -268,8 +235,7 @@ export async function onRequest(context: CoursesContext): Promise<Response> {
          the other thing this address names, not a field of a
          course, and `forBrowser()` is also what the module and
          lesson pages read. It is here so a course page can name
-         the certificate it is in without a second request and
-         without inventing a title out of the slug. */
+         the certificate it is in without a second request. */
       programme: { slug: programme.slug, title: programme.title },
     }),
   });
@@ -286,14 +252,10 @@ const notConnected = (): Response => fail("drive-not-connected", 503, {
     + "also has to be shared with that service account. See CLAUDE.md.",
 });
 
-/** Stream one file through, without holding it.
-
-    The upstream response is passed on rather than read, so a
-    thirty-megabyte lesson video never sits in the Worker's
-    memory. `Range` is forwarded both ways, which is the whole of
-    what makes a video scrubbable: without it the browser can only
-    play from the beginning and dragging the bar re-downloads
-    everything before the point dragged to. */
+/** Stream one file through, without holding it: a thirty-megabyte
+    lesson video never sits in the Worker's memory. `Range` is
+    forwarded both ways, which is the whole of what makes a video
+    scrubbable. */
 async function serveFile(request: Request, env: CoursesEnv, id: string): Promise<Response> {
   if (request.method !== "GET" && request.method !== "HEAD") {
     return fail("method-not-allowed", 405);
@@ -333,16 +295,13 @@ async function serveFile(request: Request, env: CoursesEnv, id: string): Promise
     lesson.
 
     These are scraped web pages, so they arrive as whole documents
-    with their own stylesheets, scripts and asset links that point to
+    with their own stylesheets, scripts and asset links pointing at
     a server that stopped serving them years ago. `sanitiseHTML()`
-    is the same one the Studio runs over an article on the way
-    into the database, and it drops script, style, iframe and the
-    rest outright. What is left is the words, which is what a
-    reading is.
-
-    The result reads plainly rather than beautifully, and that is
-    the honest outcome: this site is showing somebody else's page
-    without its stylesheet, not recreating it. */
+    is the same one the Studio runs over an article, and it drops
+    script, style, iframe and the rest outright. The result reads
+    plainly rather than beautifully, which is honest: this is
+    somebody else's page without its stylesheet, not a recreation
+    of it. */
 async function serveReading(env: CoursesEnv, id: string): Promise<Response> {
   const upstream = await driveFile(env, id);
   if (!upstream) return fail("drive-not-connected", 503);
@@ -366,20 +325,18 @@ async function serveReading(env: CoursesEnv, id: string): Promise<Response> {
 
 /** A quiz, as questions rather than as somebody else's markup.
 
-    `serveReading` cannot do this job. Every option in a Coursera
-    quiz lives inside a `<form>`, and `sanitiseHTML()` drops `form`
-    whole, contents and all, which is correct for an article and
-    silently deletes the entire answer list here. The page showed
-    "Question 2", a rule, "Question 3", a rule, and looked fine.
-
-    So the structure is read before anything is sanitised, and what
-    goes over the wire is data: a prompt, a type, and a list of
-    option strings. The browser builds its own inputs from that,
-    which is also why no foreign `<input>` ever reaches this page.
+    `serveReading` cannot do this job: every option lives inside a
+    `<form>` and `sanitiseHTML()` drops `form` whole, contents and
+    all, which is correct for an article and silently deletes the
+    entire answer list here. So the structure is read before
+    anything is sanitised and what goes over the wire is data: a
+    prompt, a type, and a list of option strings. The browser
+    builds its own inputs from that, which is also why no foreign
+    `<input>` ever reaches this page.
 
     Falls back to the reading renderer when the file turns out not
-    to be a quiz after all, so an export in a shape this does not
-    know is still readable rather than blank. */
+    to be a quiz, so an unknown shape is readable rather than
+    blank. */
 async function serveQuiz(env: CoursesEnv, id: string): Promise<Response> {
   const upstream = await driveFile(env, id);
   if (!upstream) return fail("drive-not-connected", 503);
@@ -407,14 +364,12 @@ async function serveQuiz(env: CoursesEnv, id: string): Promise<Response> {
 /** A video's captions, as WebVTT.
 
     The files in Drive are SubRip, which no browser has ever read
-    in a `<track>`: point one at an `.srt` and you get a player
-    with a captions button that turns nothing on. The two formats
-    are close enough that converting is a header and a decimal
-    point, and far enough apart that not converting fails silently.
+    in a `<track>`: point one at an `.srt` and you get a captions
+    button that turns nothing on. Converting is a header and a
+    decimal point, and not converting fails silently.
 
-    Read whole rather than streamed: a caption file for a ten
-    minute lesson is a few kilobytes, and it has to be rewritten
-    before it can be sent. */
+    Read whole rather than streamed: a caption file is a few
+    kilobytes and has to be rewritten before it can be sent. */
 async function serveCaptions(env: CoursesEnv, id: string): Promise<Response> {
   const upstream = await driveFile(env, id);
   if (!upstream) return fail("drive-not-connected", 503);
@@ -436,18 +391,16 @@ async function serveCaptions(env: CoursesEnv, id: string): Promise<Response> {
   });
 }
 
-/** SubRip to WebVTT.
+/** SubRip to WebVTT. Three differences and that is all of them:
+    VTT wants a `WEBVTT` line at the top, writes the fraction of a
+    second after a full stop where SubRip writes a comma, and will
+    not tolerate a byte order mark before the header. Cue numbers
+    are legal in both.
 
-    Three differences and that is all of them: VTT wants a
-    `WEBVTT` line at the top, it writes the fraction of a second
-    after a full stop where SubRip writes a comma, and it will not
-    tolerate a byte order mark before the header. Cue numbers are
-    legal in both and are left alone.
-
-    The comma is replaced only inside a timecode, not everywhere.
-    Captions are prose and prose has commas in it; a blanket
-    replace turns "first, we will" into "first. we will" in every
-    subtitle on the site. */
+    The comma is replaced ONLY inside a timecode. Captions are
+    prose and prose has commas in it: a blanket replace turns
+    "first, we will" into "first. we will" in every subtitle on the
+    site. */
 export function toVTT(srt: string): string {
   const text = srt.replace(/^\uFEFF/, "").replace(/\r\n?/g, "\n");
 
@@ -463,12 +416,10 @@ export function toVTT(srt: string): string {
   return `WEBVTT\n\n${cues.trimStart()}`;
 }
 
-/** The inside of `<body>`, when the file is a whole document.
-
-    A saved page carries `<html>`, `<head>` and a title bar that
-    would be a second heading inside a page that already has one.
-    Anything without a body tag is passed through as it stands,
-    which is what a fragment is. */
+/** The inside of `<body>`, when the file is a whole document. A
+    saved page carries `<html>`, `<head>` and a title bar that
+    would be a second heading. Anything without a body tag is
+    passed through as it stands, which is what a fragment is. */
 function bodyOf(html: string): string {
   const match = /<body[^>]*>([\s\S]*?)<\/body\s*>/i.exec(html);
   return match ? match[1] : html;

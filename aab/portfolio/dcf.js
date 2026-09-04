@@ -1,11 +1,7 @@
-/* ============================================================
-   dcf.js: the dashboard around the valuation.
-
-   Same split as the three-statement model: dcf.model.js holds
-   the arithmetic and is tested on its own; this turns it into
-   something you can argue with. One state object, a full
-   recompute on every change, no partial updates.
-   ============================================================ */
+/* dcf.js: the dashboard around the valuation. `dcf.model.js`
+   holds the arithmetic; this turns it into something you can
+   argue with. One state object, a full recompute on every
+   change, no partial updates. */
 
 import {
   COMPANY, SCENARIOS, EQUITY, DEFAULTS, DRIVERS,

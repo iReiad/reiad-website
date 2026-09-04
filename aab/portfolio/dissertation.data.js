@@ -1,34 +1,15 @@
-/* ============================================================
-   dissertation.data.js: the numbers behind the case study.
-
-   ------------------------------------------------------------
-   WHERE THESE COME FROM
-
-   This is a real MSc dissertation, submitted at the University
-   of Brighton: "Are Islamic mutual funds exposed to lower risk
-   than conventional funds? Evidence from the United Kingdom."
-   Sample: UK-domiciled equity funds, monthly NAV-based returns,
-   January 2018 to July 2025.
-
-   Every table on this page is transcribed from the submitted
-   document. Every series is lifted out of the charts embedded in
-   it, Word stores a chart's data alongside the picture, so the
-   FTSE 100 series, the Islamic index series, the two group
-   drawdown curves, the 216 fund-level standard deviations and
-   the full 19,797-observation excess-return column are the
-   actual numbers that produced the actual figures, not a
-   redrawing by eye.
-
-   Nothing here is invented, smoothed or extended. Where the
-   underlying data cannot be published, Bloomberg's terms cover
-   the fund-level NAV panel, the page shows the derived
-   statistics and says so rather than fabricating a stand-in.
+/* dissertation.data.js: the numbers behind the case study,
+   transcribed from a real MSc dissertation submitted at the
+   University of Brighton, "Are Islamic mutual funds exposed to
+   lower risk than conventional funds? Evidence from the United
+   Kingdom." Nothing here is invented, smoothed or extended, and
+   the fund-level NAV panel is not published because Bloomberg's
+   terms cover it.
 
    PROVENANCE TAGS used below:
-     "doc"    transcribed from a table in the dissertation
-     "chart"  extracted from a chart's embedded data cache
-     "derived" computed on this page from one of the above
-   ============================================================ */
+     "doc"     transcribed from a table in the dissertation
+     "chart"   extracted from a chart's embedded data cache
+     "derived" computed on this page from one of the above */
 
 export const STUDY = {
   title: "Are Islamic mutual funds exposed to lower risk than conventional funds?",

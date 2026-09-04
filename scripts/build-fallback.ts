@@ -1,68 +1,30 @@
 #!/usr/bin/env node
-/* ============================================================
-   build-fallback.ts: the stylesheet for the two pages that
-   cannot have one.
+/* build-fallback.ts: the stylesheet for the two pages that cannot
+   have one.
 
        node scripts/build-fallback.ts           # write it
        node scripts/build-fallback.ts --check   # or compare
 
-   `404.html` and `offline.html` are files, and they are files on
-   purpose: they have to answer when the Worker, the route and the
-   network are all unavailable, which is exactly when a route
-   cannot. So they cannot link the stylesheet Next emits, because
-   that name carries a content hash and changes on every build,
-   and `sw.js` precaches by exact path.
+   `404.html` and `offline.html` are files on purpose: they answer
+   when the Worker, the route and the network are all unavailable.
+   So they cannot link the stylesheet Next emits, whose name
+   carries a content hash, and `sw.js` precaches by exact path.
 
-   ---- it is the whole stylesheet, and that is deliberate ----
+   IT IS THE WHOLE STYLESHEET WITH ITS COMMENTS TAKEN OUT. A subset
+   is a second design system kept by hand: the first version took
+   three layers plus every rule naming a class those pages carry,
+   and was wrong four times over, partly because both pages load
+   the precached `/app.js`, which offline builds a crumb row, a
+   palette and a sign-in button that appear in no markup a
+   generator could read.
 
-   The first version took a SUBSET: three layers whole, then every
-   rule naming one of the classes those two pages carry. It came
-   out at 27 KB against 330, and it was wrong four times over
-   before it was looked at properly.
-
-     The wordmark filled the screen, because `.slimbar-mark svg`
-     is in the SECOND `@layer shell` block and the extractor read
-     only the first.
-
-     The breadcrumb came out as a numbered list, because both
-     pages load `/app.js`, which is precached, so offline it runs
-     and builds a crumb row, a palette and a sign-in button that
-     appear in no markup a generator could read.
-
-     `.crumbs` is in `@layer money`, which is not a misfiling: that
-     layer holds the site's own `.hero`, `.band` and
-     `.section-label` because they really are sitewide.
-
-     And the footer came out on the wrong ground in dark mode.
-
-   Each was one more name to add to a list. A subset of a design
-   system is a second design system kept by hand, which is the
-   drift most of the checks here exist for. So this is the whole
-   file with its comments taken out: SMALLER than the 330 KB those
-   two pages were loading before the stylesheet moved, and it
-   cannot be missing a rule.
-
-   The comments are worth their bytes in the source, where
-   somebody reads them, and not in a file whose whole job is to
-   arrive when nothing else has.
-
-   ---- and it is the one place a vendor prefix is written ----
-
-   `site.css` writes the standard property alone, because Next
-   builds it through Lightning CSS and Lightning CSS adds the
-   prefixes from the build targets. Writing a `-webkit-` twin by
-   hand there DELETES the standard property: Lightning CSS reads
-   the pair as one property and keeps the last, so the whole site
-   shipped `-webkit-backdrop-filter` alone, which Chrome has never
-   supported, and no glass surface blurred anywhere but Safari.
-   `scripts/check-prefixes.ts` fails on it now.
-
-   This file has no Lightning CSS, so it adds the twins itself.
-   Safari needed `-webkit-backdrop-filter` until 18 and
-   `-webkit-mask-image` until 15.4, and `/404.html` reaching an
-   iPhone on a bad connection is exactly the case this stylesheet
-   exists for.
-   ============================================================ */
+   AND IT IS THE ONE PLACE A VENDOR PREFIX IS WRITTEN. `site.css`
+   writes the standard property alone, because Next builds it
+   through Lightning CSS, which adds the prefixes; a hand-written
+   `-webkit-` twin there DELETES the standard property, and the
+   whole site once shipped `-webkit-backdrop-filter` alone.
+   `scripts/check-prefixes.ts` fails on that now. This file has no
+   Lightning CSS, so it adds the twins itself. */
 
 import { readFileSync, writeFileSync } from "node:fs";
 import { dirname, join, resolve } from "node:path";
@@ -77,9 +39,8 @@ const OUT = join(ROOT, "aab", "fallback.css");
    `-webkit-backdrop-filter` until 18 and `-webkit-mask-image`
    until 15.4. A third property added to `site.css` that needs a
    prefix has to be added here; nothing can work that out from the
-   source, and `caniuse` is not a dependency this file is worth.
-   `scripts/check-prefixes.ts` is what stops one being hand-written
-   into the source instead. */
+   source. `scripts/check-prefixes.ts` stops one being
+   hand-written into the source instead. */
 const PREFIX = [
   "backdrop-filter",      // Safari until 18
   "mask-image",           // Safari until 15.4

@@ -3460,28 +3460,6 @@
     & p { color: var(--ink-soft); font-size: var(--t-5); margin-top: 6px; }
   }
 
-  .pledge {
-    display: grid; gap: var(--s-3);
-    margin-block: 8px 30px; max-width: var(--measure);
-    padding: 20px 22px;
-    border: 1px solid var(--hairline);
-    border-inline-start: 3px solid var(--accent);
-    border-radius: var(--radius-sm);
-    background: var(--accent-soft);
-
-    & b {
-      font-family: var(--font-bn-serif); font-weight: 600;
-      font-size: clamp(1.08rem, 2.4vw, 1.3rem); line-height: 1.45;
-    }
-    & span { color: var(--ink-soft); font-size: var(--t-5); }
-
-    & .pledge-en {
-      font-family: var(--font-mono); font-size: var(--t-2);
-      letter-spacing: 0.07em; text-transform: uppercase;
-      color: var(--accent); margin-top: 2px;
-    }
-  }
-
   .checks { display: grid; gap: var(--s-4); }
   .checks li {
     display: grid; grid-template-columns: 20px 1fr; gap: var(--s-5);
@@ -10104,7 +10082,7 @@
   :is(.dt-figure, .dt-season-row, .dt-recipe, .dt-invite-shows,
       .tile, .chart-card, .verdict-card, .model-bar, .signal, .glance-item,
       .topic-tag, .card-chip, .gt-chip, .risk-chip, .tab-count,
-      .pledge, .hub-pledge, .id-card, .res, .cv-item, .note,
+      .hub-pledge, .id-card, .res, .cv-item, .note,
       .keep-note, .balance-check, .work-facts, .cred,
       .stat, .chart-box, .verdict, .shariah-verdict, .verdict-cap,
       .at-a-glance, .side-note, .held-group,
@@ -10187,7 +10165,7 @@
       .dt-figure, .dt-season-row, .dt-recipe, .dt-invite-shows,
       .tile, .chart-card, .verdict-card, .model-bar, .signal, .glance-item,
       .topic-tag, .card-chip, .gt-chip, .risk-chip, .tab-count,
-      .pledge, .hub-pledge, .id-card, .res, .cv-item, .note,
+      .hub-pledge, .id-card, .res, .cv-item, .note,
       .keep-note, .balance-check, .work-facts, .cred,
       .stat, .chart-box, .verdict, .shariah-verdict, .verdict-cap,
       .at-a-glance, .side-note, .held-group,

@@ -1,65 +1,24 @@
 /* ============================================================
-   quran.ts: the Quranic Arabic school's ladder, in one file.
+   quran.ts: THE ONE COPY of the Quranic Arabic school's ladder.
+   Everything reads from it: the hub, the day routes, the
+   breadcrumb, the palette, the menu and the sitemap.
 
-   THIS IS THE ONE FILE YOU EDIT to add, rename or reorder
-   anything under /quran/. Everything else reads from it: the hub,
-   the day routes, the breadcrumb, the palette, the menu and the
-   sitemap.
-
-   ---- and it is served as well as imported ----
-
-   `scripts/build-modules.ts` compiles this file to
-   `aab/quran/curriculum.js`, which is the address the browser has
-   always fetched it from and which `sw.js` precaches by name.
+   `scripts/build-modules.ts` compiles it to
+   `aab/quran/curriculum.js`, which `sw.js` precaches by name.
    Edit this file, never that one.
 
-   ------------------------------------------------------------
-   WHY THIS IS A THIRD SCHOOL AND NOT A THIRD STUFE
+   THE SHAPE: `DHAPS[]`, three stages, a folder and a page each;
+   `.sections[]`, segments and never pages; `.lessons[]`, one page
+   each. THE UNIT IS A DAY, so there is no separate workbook and
+   progress is ticked per day. There is nothing to write anywhere
+   in this school: no page here has a text box.
 
-   /money/ is about money, /deutsch/ is about German. This is
-   about reading the Quran with understanding, and it shares no
-   vocabulary with either. It is mounted at /quran/, built from
-   the same parts as the German school so that anyone who has
-   used one already knows how to use this one, and nothing here
-   can break anything there.
+   SOME DAYS SHARE A LESSON (দিন ৫–৬, দিন ২০–২১), so a lesson
+   carries a day RANGE and a stage's day count is the sum of the
+   ranges rather than the lesson count.
 
-   ------------------------------------------------------------
-   WHAT IS DIFFERENT FROM THE GERMAN SCHOOL, AND WHY
-
-   1. THE UNIT IS A DAY, NOT A CHAPTER. German had fourteen Teile
-      per Stufe and, separately, a practice book of thirty to
-      ninety days. Here the day IS the lesson: the course says
-      "একদিনে একটা দিন" and means it. So there is no separate
-      workbook, and progress is ticked per day.
-
-   2. THERE IS NOTHING TO WRITE. The method is stated on the very
-      first slide: কোনো লেখা নয়, only reading, saying aloud and
-      feeling. So no page here has a text box, and the German
-      workbook's boxes-you-type-into have no equivalent.
-
-   3. THE COMPANION IS PART OF THE DAY. Each of the first two
-      ধাপ ships a সহায়িকা that explains the same days in more
-      words, with an example table, a fact about the Quran and a
-      say-it-aloud drill. It is not a second book to navigate to;
-      it is the second half of each day's page.
-
-   4. SOME DAYS SHARE A LESSON. The decks occasionally teach two
-      days together (দিন ৫–৬, দিন ২০–২১). A lesson therefore
-      carries a day RANGE rather than a number, and the stage's
-      day count is the sum of the ranges, not the lesson count.
-
-   ------------------------------------------------------------
-   THE SHAPE
-
-   DHAPS[]               three stages, letters to a whole surah.
-                         A ধাপ is a folder and a page of its own.
-
-     .sections[]         a segment inside a stage. Never a page.
-
-       .lessons[]        one page each. A "দিন" is what the course
-                         itself calls them, so that is what they
-                         are called here.
-
+   A SLUG IS HALF OF A STORED PROGRESS ID and may never be
+   renamed.
    ============================================================ */
 /* ------------------------------------------------------------
    ধাপ ১: the foundation. Ten days, no verbs yet.
@@ -699,12 +658,9 @@ const DHAP_3_SECTIONS = [
     },
 ];
 /* ------------------------------------------------------------
-   THE LADDER, three ধাপ.
-
-   Ten days, then twenty, then thirty: sixty in all, which is the
-   number the course promises on its own first slide. The stages
-   get longer because what they carry gets heavier, and the daily
-   sitting grows with them, from twenty minutes to forty.
+   THE LADDER, three ধাপ: ten days, then twenty, then thirty.
+   Sixty in all, which is what the course promises on its own
+   first slide.
    ------------------------------------------------------------ */
 export const DHAPS = [
     {
@@ -759,11 +715,8 @@ export const SCHOOL = {
     tagline: "অন্তর থেকে। কোনো লেখা নয়: শুধু চেনা, শোনা আর অনুভব করা।",
 };
 /* ------------------------------------------------------------
-   URLs, ids and sums
-
-   Nothing below assumes there are three ধাপ or that a lesson is
-   one day, so adding a fourth is a matter of adding it to the
-   array above.
+   URLs, ids and sums. Nothing below assumes there are three ধাপ
+   or that a lesson is one day.
    ------------------------------------------------------------ */
 /** A ধাপ's ladder URL. */
 export const dhapUrl = (dhap) => `/quran/${dhap.slug}`;
@@ -773,10 +726,8 @@ export const lessonUrl = (dhap, lesson) => `/quran/${dhap.slug}/${lesson.slug}.h
 export const lessonId = (dhap, lesson) => `${dhap.slug}/${lesson.slug}`;
 /** How many days a lesson covers. Most cover one. */
 export const lessonDays = (lesson) => (lesson.to ?? lesson.from) - lesson.from + 1;
-/** "দিন ৫" or "দিন ৫–৬", in Bangla digits.
-
-    The en dash is deliberate and allowed: it is a number range,
-    which is the one thing the house rule on dashes keeps it for. */
+/** "দিন ৫" or "দিন ৫–৬", in Bangla digits. The en dash is a
+    number range, which is what the house rule keeps it for. */
 export const bnNum = (n) => String(n).replace(/\d/g, (d) => "০১২৩৪৫৬৭৮৯"[Number(d)]);
 export const dayLabel = (lesson) => lesson.to ? `দিন ${bnNum(lesson.from)}–${bnNum(lesson.to)}` : `দিন ${bnNum(lesson.from)}`;
 /** Lessons of one ধাপ, flattened, in order. */
@@ -790,18 +741,13 @@ export const dhapLessons = (dhap) => dhap.sections.flatMap((section) => section.
     days: lessonDays(lesson),
     status: lesson.status ?? "live",
 })));
-/** Flat list of every lesson in the school.
-
-    Takes the ladder as an argument, defaulting to this file's own.
-    Every other helper here is already a pure function of what it
-    is handed, and these three were the only ones that closed over
-    the module's array. archive/TRANSITION.md Stage 8 needs a builder to be
-    able to pass in a ladder read from the database; no existing
-    caller can tell the difference. */
+/** Flat list of every lesson in the school. Takes the ladder as
+    an argument, defaulting to this file's own, so a caller can
+    pass in one read from the database. */
 export const allLessons = (stages = DHAPS) => stages.flatMap(dhapLessons);
 /** How many days a ধাপ covers, counted from its lessons rather
-    than declared, so a lesson that grows to cover two days moves
-    the number on the stage page by itself. */
+    than declared, so a lesson that grows to two days moves the
+    number on the stage page by itself. */
 export const dhapDays = (dhap) => dhapLessons(dhap).reduce((n, l) => n + l.days, 0);
 /** Every day in the school. The course promises sixty. */
 export const totalDays = (stages = DHAPS) => stages.reduce((n, d) => n + dhapDays(d), 0);

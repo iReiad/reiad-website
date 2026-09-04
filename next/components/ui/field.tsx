@@ -1,57 +1,29 @@
-/* ============================================================
-   ui/field.tsx: a text box, and the label and the error it needs.
+/* A text box, and the label and the error it needs. One component, and
+   the label goes with it: a floating `<label>` beside a bare `<input>` is
+   how a form ends up with a box nothing announces.
 
-   `styles.css` styles an input in eleven places, once per page
-   that has one, and they disagree: the Studio's, the desk's, the
-   contact form's, the gate's, the term filter's and the stock
-   check's all pick their own padding, their own border and their
-   own focus ring. Five of them set `outline: 2px solid
-   var(--accent)` by hand because there was nowhere to get it
-   from.
+   THE ID IS GIVEN, NOT GENERATED. `useId()` is a hook and there is no
+   "use client" anywhere in this app: a field is content, and content is
+   rendered on the server. So the caller names it, which is better anyway,
+   because the id is what a `<label for>`, an `aria-describedby` and an
+   autofill hint all key off.
 
-   One component, and the label goes with it. That is the part
-   worth insisting on: a floating `<label>` beside a bare
-   `<input>` is how a form ends up with a box nothing announces,
-   and every one of those eleven had to remember `for` and `id`
-   separately.
-
-   ---- the id is given, not generated ----
-
-   `useId()` is a hook, and there is no "use client" anywhere in
-   this app: a field is content, and content is rendered on the
-   server. So the caller names the field. That is not a
-   concession, it is better: the id is what a `<label for>`, an
-   `aria-describedby` and an autofill hint all key off, and one
-   the component invented would be a string nothing else could
-   name.
-
-   ---- the error is part of the field ----
-
-   Not a paragraph somebody remembers to put underneath.
-   `aria-invalid` and `aria-describedby` are wired here, so a
-   field that shows a message announces it, which is the whole
-   difference between a form that is accessible and one that
-   looks it.
-   ============================================================ */
+   THE ERROR IS PART OF THE FIELD: `aria-invalid` and `aria-describedby`
+   are wired here, so a field that shows a message announces it. */
 
 import type { ComponentPropsWithRef, ReactNode } from "react";
 
-/* The box itself is `@layer base`, and this adds nothing to it.
+    /* The box itself is `@layer base`, and this adds nothing to it. The
+       stylesheet styles one input, on
+       `:is(input:not(...), textarea, select)`, so every box on this site
+       is that box whether React made it, a browser module made it, or an
+       article carries one.
 
-   That is a change, and the reason is the one this file already
-   argues for one level down. `styles.css` used to style an input
-   in eleven places; it now styles one, on
-   `:is(input:not(...), textarea, select)`, so every box on this
-   site is that box whether React made it, a browser module made
-   it, or an article carries one. A second definition here in
-   utilities would have made twelve, and it would have won,
-   because `tw` is a later cascade layer than `base`: the pages
-   using this component had `--radius-card` corners at `--t-3`
-   over a flat panel, and every other box on the site had
-   `--radius-sm` corners at `--t-5` over glass.
-
-   So the only thing this adds is width, which is layout rather
-   than looks and belongs to the caller's column. */
+       A second definition here in utilities would win, because `tw` is a
+       later cascade layer than `base`: the pages using this component
+       would get `--radius-card` corners over a flat panel while every
+       other box on the site had `--radius-sm` over glass. So the only
+       thing this adds is width, which is layout rather than looks. */
 const BOX = "w-full block";
 
 interface Shared {

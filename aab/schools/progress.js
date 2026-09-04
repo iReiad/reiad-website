@@ -1,44 +1,21 @@
-/* ============================================================
-   schools/progress.js: what a learner has read, which days they
-   have done, and where they were. Once, for every school that
-   keeps that in the browser.
+/* schools/progress.js: what a learner has read, which days they
+   have done, and where they were. One engine for deutsch,
+   english and quran, which kept the same program three times.
 
-   ---- why this file exists ----
+   The money school is not a caller: its ticks are
+   `next/lib/progress.ts`, because its pages are routes. These
+   three agree with that file about ONE thing and it is the thing
+   that matters: THE STORAGE KEYS. Those are in real browsers and
+   in real accounts, `aab/sync.js` maps them, and renaming one
+   does not move somebody's ticks, it loses them. So every key is
+   passed in by the school, spelled exactly as it always was.
 
-   Three schools kept the same program three times. deutsch,
-   english and quran each had a progress.js of their own, 316,
-   318 and 236 lines, and the diff between the first two was
-   nouns: `stufe` against `term`, `teile` against `parts`. Every
-   one of them wrapped localStorage the same way, counted live
-   lessons the same way, worked out "the stage you are in" the
-   same way and fired the same three listeners. A fix to one was
-   a fix somebody had to remember to make twice more, and the
-   ladder-state function is subtle enough that nobody would have
-   noticed the day they drifted.
+   A school hands in a ladder, the four key names and its own
+   words, and gets back the API it already had.
 
-   The money school never had one of these: its ticks are React,
-   in `next/lib/progress.ts`, because its pages are routes. These
-   three still need a browser module because their practice books
-   are generated static HTML, so this is the browser's half and
-   that file is the server's. They agree about one thing only,
-   and it is the thing that matters: THE STORAGE KEYS. Those are
-   in real browsers and in real accounts, `aab/sync.js` maps them,
-   and renaming one does not move somebody's ticks, it loses them.
-   So every key a school used before this file existed is passed
-   in by that school, spelled exactly as it was.
-
-   ---- what a school hands in ----
-
-   A ladder, the four key names, and the words its pages use. What
-   it gets back is the same API it had, under generic names its
-   own module renames on the way out, so nothing that imports
-   `stufeStats` or `dhapState` had to change.
-
-   Nothing is sent anywhere, nothing needs an account, and
-   clearing browser data clears it. It is a bookmark, not
-   analytics. Every write is wrapped: private mode throws on
-   setItem, and a thrown tick must never take the page down.
-   ============================================================ */
+   Nothing is sent anywhere and nothing needs an account. Every
+   write is wrapped: private mode throws on setItem, and a thrown
+   tick must never take the page down. */
 
 import { whenActivated } from "/activation.js";
 
@@ -108,15 +85,9 @@ export function createProgress(config) {
     saveSet(keys.read, set);
   }
 
-  /* ----------------------------------------------------------
-     the practice book's days
-
-     Ticked by hand, never by arriving: a day is done when you
-     have actually spoken it out loud, and that is the one
-     promise a practice book makes, so the page cannot make it
-     for you. Schools with no book pass no `days` key and every
-     function here answers an empty book.
-     ---------------------------------------------------------- */
+  /* The practice book's days, ticked BY HAND and never by
+     arriving. Schools with no book pass no `days` key and every
+     function here answers an empty book. */
 
   const isDayDone = (stage, n) => daySet().has(dayId(stage, n));
 
@@ -216,15 +187,10 @@ export function createProgress(config) {
     }
   }
 
-  /* ----------------------------------------------------------
-     sums the hub asks for
-
-     `weighted` is the count in whatever unit the school counts
-     in. Three of the four count pages and weigh every lesson 1,
-     so it equals `done`; the Quranic Arabic school counts days
-     and two of its lessons cover two, which is why the number
-     exists at all rather than being assumed.
-     ---------------------------------------------------------- */
+  /* Sums the hub asks for. `weighted` is the count in whatever
+     unit the school counts in: three of the four weigh every
+     lesson 1, and the Quranic Arabic school counts days, two of
+     its lessons covering two. */
 
   const sum = (lessons, f) => lessons.reduce((n, l) => n + f(l), 0);
 
@@ -314,18 +280,11 @@ export function createProgress(config) {
     addEventListener("pageshow", (e) => { if (e.persisted) fn(); });
   }
 
-  /* ----------------------------------------------------------
-     the lesson page's side of the deal
-
-     Opening a lesson counts as reading it. A lesson marked
-     data-soon is not ticked off: you have not read what has not
-     been written.
-
-     And it waits for activation. Hovering a link prerenders the
-     page it points at, scripts and all, so without whenActivated
-     this ticked lessons off as the pointer swept across a list.
-     See /activation.js for the full story.
-     ---------------------------------------------------------- */
+  /* Opening a lesson counts as reading it, except one marked
+     `data-soon`. IT WAITS FOR ACTIVATION: hovering a link
+     prerenders the page and its scripts, so without
+     `whenActivated` this ticks lessons off as the pointer sweeps
+     across a list. See /activation.js. */
 
   function recordVisit(root = document) {
     const article = root.querySelector(`article[${attr.id}]`);

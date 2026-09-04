@@ -1,37 +1,21 @@
 #!/usr/bin/env node
-/* ============================================================
-   next/admin.test.ts: /admin in a real browser.
-
+/* /admin in a real browser.
      cd next && npx next build
      node next/admin.test.ts
 
-   `scripts/admin.test.ts` asserts what the SOURCE says. This
-   drives the page, and the two catch different things: a panel
-   that renders perfectly and does nothing looks exactly like one
-   that works, which is the failure
-   `archive/desk-react/desk.test.ts` was written for and what this
-   file inherited when the desk retired.
+   `scripts/admin.test.ts` asserts what the SOURCE says; this drives the
+   page, and a panel that renders perfectly and does nothing looks exactly
+   like one that works.
 
-   ---- the one rule this exists to hold ----
+   THE RULE THIS EXISTS TO HOLD (ADMIN.md §1): a panel missing its
+   credential says so and never draws as an empty one, because an empty
+   list looks identical to a working panel with nothing in it and the day
+   it is wrong is the day somebody deletes a queue believing it is clear.
+   So the first pass answers 401 to everything, the second answers rows,
+   and the third presses the buttons.
 
-   ADMIN.md §1, second rule: **a panel missing its credential says
-   so, and never draws as an empty one.** An empty list where a
-   credential is missing looks identical to a working panel with
-   nothing in it, and the day it is wrong is the day somebody
-   deletes a queue believing it is clear.
-
-   So the first pass answers 401 to everything and reads what each
-   panel says. The second answers rows and reads what it does with
-   them. The third presses the buttons.
-
-   ---- what it fakes, and what it does not ----
-
-   Every `/api/*` answer is a fixture: there is no D1 here, no
-   Supabase and no session, and a test that needed all three would
-   be a test that runs nowhere. The PAGE is real: the built
-   prerender, the real stylesheet, the real components, hydrating
-   the way it hydrates on the site.
-   ============================================================ */
+   Every `/api/*` answer is a fixture: there is no D1, no Supabase and no
+   session here. The PAGE is real. */
 
 import { createServer } from "node:http";
 import { readFile, stat } from "node:fs/promises";
@@ -123,23 +107,13 @@ const PIECES = [
     published_at: null, updated_at: "2026-08-19", embedded: 1 },
 ];
 
-/* ---------- dates, and why none of them is a literal ----------
-
-   `isNew` in `queues.tsx` is "arrived within the week", relative
-   to NOW, and deliberately so: a stored flag would be a field
-   that goes stale sitting still.
-
-   The fixtures below carried literal dates, which made the two
-   assertions about that flag pass for a week and fail for ever
-   after. They did: "a recent comment is marked new" and "and so
-   is a recent enquiry" were red on main, twelve days after the
-   dates in them were typed, and the panel was correct throughout.
-
-   A test of a relative rule has to state its dates relatively
-   too, or it is asserting what the calendar said on the day it
-   was written. `AGO(2)` is two days ago and is inside the week
-   whenever this runs; `AGO(90)` is outside it whenever this
-   runs. */
+    /* ---------- dates, and why none of them is a literal ----------
+       `isNew` in `queues.tsx` is "arrived within the week", relative to
+       NOW. A test of a relative rule has to state its dates relatively too
+       or it is asserting what the calendar said on the day it was written:
+       literal dates here pass for a week and fail for ever after, on a
+       panel that is correct throughout. `AGO(2)` is inside the week
+       whenever this runs and `AGO(90)` is outside it. */
 const AGO = (days: number): string =>
   new Date(Date.now() - days * 86_400_000).toISOString().slice(0, 10);
 
@@ -243,14 +217,11 @@ const SCHOOLS_AUDIT = {
   },
 };
 
-/* What `/api/signals/stats?days=` answers: a path, a day and a
-   number, which is the whole record behind that endpoint.
-
-   Four paths on purpose, and each is a different way of being
-   named. `/portfolio` and `/tools/stock` are known to
-   `shared/content.ts` and to nothing else; `/insights/a-live-piece.html`
-   is a row, so only `/api/articles` can name it; `/nothing/here` is
-   known to neither and has to be printed as it is. */
+    /* What `/api/signals/stats?days=` answers: a path, a day and a number.
+       Four paths on purpose, each a different way of being named.
+       `/portfolio` and `/tools/stock` are known to `shared/content.ts`;
+       `/insights/a-live-piece.html` is a row, so only `/api/articles` can
+       name it; `/nothing/here` is known to neither. */
 const VIEWS = [
   { path: "/portfolio", views: 400 },
   { path: "/tools/stock", views: 300 },
@@ -295,14 +266,12 @@ const BACKUP_STATUS = {
     something rather than that it looked pressable. */
 interface Sent { method: string; url: string; body: unknown }
 
-/**
- * One load of /admin, with the API answering however this pass
- * wants it to.
- *
- * `signedIn` is the passphrase half: `/api/auth/me` is what the
- * shell asks. `admin` is the account half, which the shell reads
- * off `/api/routine/templates` rather than keeping a second list.
- */
+    /**
+     * One load of /admin, with the API answering however this pass wants.
+     * `signedIn` is the passphrase half, which `/api/auth/me` answers;
+     * `admin` is the account half, which the shell reads off
+     * `/api/routine/templates` rather than keeping a second list.
+     */
 async function open(
   { signedIn, admin, nonsense = false }:
   { signedIn: boolean; admin: boolean; nonsense?: boolean },
@@ -365,17 +334,14 @@ async function open(
       return json({ ok: true });
     }
 
-    /* Every GET answers `{ ok: true }` and nothing else: a body
-       that is JSON, that is a success, and that carries none of
-       the fields a panel reads. This is the shape an endpoint
-       takes on the day somebody changes it.
+        /* Every GET answers `{ ok: true }` and nothing else: JSON, a
+           success, and none of the fields a panel reads. This is the shape
+           an endpoint takes on the day somebody changes it.
 
-       EXCEPT the credential probe. `/api/auth/me` answering
-       `{ ok: true }` carries no `signedIn`, so the page reads it
-       as nobody and draws the sign-in page, and this block stops
-       exercising a single panel while still passing every
-       assertion it can reach. A fixture that talks the page out
-       of rendering its subject is a check that tests nothing. */
+           EXCEPT the credential probe: `/api/auth/me` answering
+           `{ ok: true }` carries no `signedIn`, so the page draws the
+           sign-in page instead, and a fixture that talks the page out of
+           rendering its subject is a check that tests nothing. */
     if (nonsense && url.pathname !== "/api/auth/me") return json({ ok: true });
 
     if (path === "auth/me") return json({ ok: true, signedIn });
@@ -479,21 +445,14 @@ console.log("/admin with no credential");
   ok("the page renders", body.length > 200, `${body.length} characters`);
   ok("and nothing threw", errors.length === 0, errors.join(" | "));
 
-  /* ---- what a stranger must NOT be shown ----
-
-     This block used to assert the opposite, panel by panel, and
-     it was faithful to ADMIN.md: a locked panel says which
-     credential it wants rather than drawing an empty list. That
-     rule is about somebody already through the door, and it was
-     read as licence to render the whole shell to the street.
-
-     What that meant in practice: thirteen panel headings, both
-     gate cards, Health, and an inventory of what each credential
-     opens. A stranger learnt that this site keeps pieces,
-     comments, questions, enquiries, subscribers, media and
-     backups behind one credential and a course section, a
-     broker's admin half and private routine templates behind
-     another, without holding either. */
+      /* ---- what a stranger must NOT be shown ----
+         The rule that a locked panel names the credential it wants is
+         about somebody already through the door, and reading it as licence
+         to render the whole shell to the street told a stranger that this
+         site keeps pieces, comments, questions, enquiries, subscribers,
+         media and backups behind one credential and a course section, a
+         broker's admin half and private routine templates behind
+         another. */
   for (const heading of [
     "Waiting", "Published", "Comments", "Questions", "Enquiries", "Subscribers",
     "What is read", "Health", "Media", "Schools", "Backups", "People",
@@ -743,18 +702,12 @@ console.log("\n/admin with both");
   await page.close();
 }
 
-/* ============================================================
-   5. An endpoint that answers the wrong shape
-
-   THE BUG THIS BLOCK EXISTS FOR. `health.tsx` read
-   `d.stores.d1` off whatever came back and `courses-panel.tsx`
-   read `data.samples.length`. A throw during render in a client
-   component unmounts the WHOLE route, so one endpoint answering
-   `{ ok: true }` took `/admin` to "This page couldn't load" with
-   every panel gone, Health included: the one panel whose entire
-   justification is working on the day something is broken was
-   the one that could break everything.
-   ============================================================ */
+    /* ---- 5. an endpoint that answers the wrong shape ----
+       A throw during render in a client component unmounts the WHOLE
+       route, so one endpoint answering `{ ok: true }` takes `/admin` to
+       "This page couldn't load" with every panel gone, Health included:
+       the one panel whose entire justification is working on the day
+       something is broken is the one that can break everything. */
 console.log("\n/admin when an endpoint answers something else");
 {
   const { page, errors } = await open({ signedIn: true, admin: true, nonsense: true });
@@ -843,10 +796,8 @@ console.log("\n/admin, the three the desk never had");
 /* ============================================================
    6. What the desk did that a queue has to keep
 
-   Each of these is a check in `archive/desk-react/desk.test.ts`,
-   which is 76 of them and every one a feature the desk had. A
-   panel that renders is not the same as a panel that does them,
-   which is why they came here rather than retiring with it.
+   Every check below is a feature the retired desk had. A panel
+   that renders is not the same as a panel that does them.
    ============================================================ */
 console.log("\n/admin, the desk's own features");
 {
@@ -858,14 +809,10 @@ console.log("\n/admin, the desk's own features");
   ok("and so is a recent enquiry",
     (await text(page, "#enquiries")).includes("new"));
 
-  /* ---- and the one queue that is not a queue of messages ----
-
-     Every lesson on this site shared its stage's standing card
-     until there was somewhere to draw one, so 251 of them were
-     six pictures. The panel is what draws them, one at a time, in
-     the tab: what is asserted here is that it is mounted and says
-     what it would do, because the drawing itself is
-     `aab/studio-publish.test.ts`'s subject and needs R2. */
+      /* ---- and the one queue that is not a queue of messages ----
+         What is asserted here is that the panel is mounted and says what
+         it would do: the drawing itself is `aab/studio-publish.test.ts`'s
+         subject and needs R2. */
   ok("the desk offers to draw what has no picture",
     (await text(page, "#cards")).length > 0);
 
@@ -927,18 +874,13 @@ console.log("\n/admin, the desk's own features");
   await page.close();
 }
 
-/* ============================================================
-   7. What is read
+    /* ---- 7. what is read ----
+       Three of the checks below could not be made before: the panel names
+       a path out of one index and a piece out of another, and nothing said
+       which of the two had answered.
 
-   The one panel the desk had and this page did not, ported out of
-   its `Stats.tsx`. Every check below is one of the eight the
-   desk's own `desk.test.ts` made under "what's read", plus the
-   three it could not: it named a path out of one index and a piece
-   out of another, and nothing said which of the two had answered.
-
-   A port is finished when it does what the thing it replaced did,
-   not when it renders, and those two look identical from here.
-   ============================================================ */
+       A port is finished when it does what the thing it replaced did, not
+       when it renders, and those two look identical from here. */
 console.log("\n/admin, what is read");
 {
   const { page, errors } = await open({ signedIn: true, admin: false });
@@ -985,9 +927,8 @@ console.log("\n/admin, what is read");
     week.includes("2026-08-08") && !week.includes("2026-07-16"), week.slice(0, 200));
 
   /* ---- what a row says about itself ---- */
-  /* Each of these is a `desk.test.ts` check with a subject on
-     /admin and nothing asking it. The behaviour was there; the
-     assertion was not, which is the same as not having it. */
+  /* The behaviour was there; the assertion was not, which is the
+     same as not having it. */
   ok("an anonymous asker is named as one",
     (await text(page, "#questions")).includes("anonymous"));
   ok("and is offered no reply, rather than a broken one",

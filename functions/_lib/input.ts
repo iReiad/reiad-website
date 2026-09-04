@@ -1,23 +1,13 @@
-/* ============================================================
-   _lib/input.ts: what a bad request looks like, decided once.
+/* _lib/input.ts: what a bad request looks like, decided once.
 
-   archive/TRANSITION.md Stage 12, step 2. The error SHAPE has been one
-   thing since the beginning: `_lib/http.ts` writes
-   `{ ok: false, reason }` and every endpoint uses it. What was
-   never one thing is the RULES, and the two handlers the plan
-   names are the clearest case of it.
+   The error SHAPE has always been one thing: `_lib/http.ts` writes
+   `{ ok: false, reason }`. What was never one thing is the RULES.
+   A comment shorter than its minimum answered `empty`, a question
+   `too-short`, an enquiry `too-short`; the minimums were 2, 10 and
+   10. Three numbers and two words for one idea, in three files
+   that are otherwise the same handler with different nouns.
 
-   A comment shorter than its minimum answers `empty`. A question
-   shorter than its minimum answers `too-short`. An enquiry
-   shorter than its minimum also answers `too-short`. The
-   minimums are 2, 10 and 10. Three numbers and two words for one
-   idea, in three files that are otherwise the same handler with
-   different nouns, and a browser that wanted to say "that is too
-   short" in Bangla had to know all three.
-
-   ---- what this is, and what it is not ----
-
-   It is a declaration read once per request:
+   A declaration read once per request:
 
        const got = await read(request, {
          slug: { slug: true, required: "slug-required" },
@@ -27,37 +17,27 @@
        if (got.bad) return got.bad;
        got.value.slug   // a safe slug, or ""
 
-   It is NOT a schema library and does not want to become one.
-   There is no nesting, no coercion beyond what the site already
-   does in `str()` and `isEmail()`, and no way to express a rule
-   that only one endpoint has: those stay in the endpoint, which
-   is where a reader of that endpoint will look for them.
+   It is NOT a schema library and does not want to become one: no
+   nesting, no coercion beyond `str()` and `isEmail()`, and no way
+   to express a rule only one endpoint has. Those stay in the
+   endpoint, where a reader of that endpoint will look.
 
-   ---- why the reason strings did not get tidied ----
-
-   They are an API contract. `aab/api.js` and the two React apps
-   read `reason` and some of them switch on it, so renaming
+   THE REASON STRINGS ARE AN API CONTRACT. `aab/api.js` and the two
+   React apps read `reason` and some switch on it, so renaming
    `empty` to `too-short` to make this file read better would be
-   changing an interface to improve a comment. Each declaration
-   names the reason its endpoint already returns, and the words
-   converge when somebody decides they should rather than as a
-   side effect of a refactor.
-   ============================================================ */
+   changing an interface to improve a comment. */
 
 import { body as readBody, fail, isEmail, str } from "./http.ts";
 
 /* ---- the four kinds a field can be ----
 
    Written out rather than left as an index signature, because the
-   whole point of this file is that a declaration is checkable. A
-   rule with a `slug` and a `min` is a rule whose `min` does
-   nothing, and that is now a compile error rather than a quiet
-   no-op.
+   point of this file is that a declaration is checkable: a rule
+   with a `slug` and a `min` is a rule whose `min` does nothing,
+   and that is a compile error rather than a quiet no-op.
 
    `required`, `short`, `long` and `invalid` are REASON STRINGS
-   rather than booleans, and the comment above says why they are
-   not free to rename: `aab/api.js` and the two React apps switch
-   on them. */
+   rather than booleans, and are not free to rename. */
 
 interface Common {
   /** The reason to answer with when the field is missing. A rule
@@ -94,13 +74,10 @@ export type ReadResult =
   | { value: Checked; input: Record<string, unknown>; bad?: undefined }
   | { bad: Response; value?: undefined; input?: undefined };
 
-/** A slug, or "".
-
-    The same test three endpoints were making separately: lower
-    case, and nothing in it that could become a path segment
-    somewhere else. A slug from a request body becomes a URL
-    prefix, and a URL prefix from a request body is how you end up
-    serving /etc/passwd.html. */
+/** A slug, or "". The same test three endpoints were making
+    separately: lower case, and nothing in it that could become a
+    path segment somewhere else. A URL prefix from a request body
+    is how you end up serving /etc/passwd.html. */
 export const safeSlug = (value: unknown, max = 120): string => {
   const s = str(value, max).toLowerCase();
   return /^[a-z0-9-]+$/.test(s) ? s : "";
@@ -121,10 +98,9 @@ export const safeId = (value: unknown): number => {
  * Read and check a request body against a declaration.
  *
  * Returns `{ value }` when everything passed, or `{ bad }` where
- * `bad` is the Response to return. Never both, and never throws:
- * a body that is not JSON at all is an empty object, which is
- * what `http.ts` has always done and what every "required" rule
- * then catches by itself.
+ * `bad` is the Response to return. Never both, and never throws: a
+ * body that is not JSON at all is an empty object, which every
+ * "required" rule then catches by itself.
  *
  * Each field takes one of four kinds and some options:
  *
@@ -134,10 +110,9 @@ export const safeId = (value: unknown): number => {
  *   { email: true, required, invalid }
  *   { oneOf: [...], required, invalid }
  *
- * `required`, `short`, `long` and `invalid` are the reason
- * strings to answer with. A rule with no reason named is a rule
- * that cannot fail the request: the value is cleaned and handed
- * back, which is what an optional field wants.
+ * A rule with no reason named cannot fail the request: the value
+ * is cleaned and handed back, which is what an optional field
+ * wants.
  */
 export async function read(request: Request, spec: Spec): Promise<ReadResult> {
   const input = await readBody(request) as Record<string, unknown>;
@@ -197,12 +172,11 @@ export async function read(request: Request, spec: Spec): Promise<ReadResult> {
 
     /* Text, which is the default and the one with lengths.
 
-       The cap is applied before the minimum is checked, in that
-       order deliberately: `str()` truncates, so a 5000 character
-       body capped at 4000 is 4000 long and passes a minimum of
-       10, which is the right answer. Checking the minimum against
-       the raw value would pass the same body and then store the
-       truncated one, which is the same outcome by luck. */
+       The cap is applied BEFORE the minimum is checked: `str()`
+       truncates, so a 5000 character body capped at 4000 is 4000
+       long and passes a minimum of 10, which is the right answer.
+       Checking the minimum against the raw value would pass the
+       same body and then store the truncated one. */
     const text = str(raw, ("max" in rule ? rule.max : undefined) ?? 4000);
     if (!text && rule.required) return { bad: fail(rule.required) };
     const t = rule as TextRule;

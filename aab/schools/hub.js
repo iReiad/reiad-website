@@ -1,29 +1,13 @@
-/* ============================================================
-   schools/hub.js: the parts of a school's front page that are
-   the same drawing in every school.
+/* schools/hub.js: the parts of a school's front page that are
+   the same drawing in every school. Shared by deutsch, english
+   and quran, so the ring is drawn once rather than three times.
 
-   ---- why this file exists ----
-
-   Three hubs, 291, 247 and 240 lines, and ten functions each in
-   the same order doing the same thing. Four of those ten were
-   identical but for the Bangla in them: the resume card's
-   markup, the bar at the top, the reset button and the boot
-   sequence. Three more were helpers copied verbatim, `bn`, `el`
-   and the progress ring, so the ring was drawn by three files
-   and a change to its stroke width was three edits or a school
-   that quietly looked different.
-
-   What is NOT here is each school's ladder row. That is where
+   What is NOT here is each school's LADDER ROW, which is where
    the schools genuinely differ: a Stufe shows sections and a
-   practice book, a ধাপ shows days, a term shows neither, and
-   folding three of those into one function with a config would
-   be a bigger knot than the three readable copies. A row is
-   drawn by the school; everything around it is drawn here.
-
-   The money school is not a caller: its hub is a Next.js route
-   and its ticks are React. These three still need a browser
-   module because their practice books are generated static HTML.
-   ============================================================ */
+   practice book, a ধাপ shows days, a term shows neither. A row
+   is drawn by the school; everything around it is drawn here.
+   The money school is not a caller: its hub is a route and its
+   ticks are React. */
 
 /** Bangla numerals, so a counter on a Bangla page doesn't read
     half in one script and half in another. */
@@ -38,26 +22,15 @@ export const el = (tag, props = {}, ...kids) => {
   return node;
 };
 
-/** The little ring showing a stage's progress. One drawing for
-    four schools, deliberately: one visual language.
-
-    The DOM here is `<Ring>` in `next/components/deck.tsx`, node
-    for node, and that is the point of it rather than a
-    coincidence. There were two rings: this one put `.ring` on
-    the SVG and turned it with a `transform` attribute, deck's
-    wraps the SVG in a span and turns it with a `rotate` in the
-    stylesheet. Both were styled by rules called `.ring`, in two
-    layers, and deck's came later and won. What kept this one
-    looking right was that `.ring svg` did not match an SVG that
-    was itself the `.ring`, so it never got a second rotation.
-
-    Relying on a selector not matching is not a design. One
-    shape, one rule, and the rotation is the stylesheet's in both
-    places now.
+/** The little ring showing a stage's progress. THE DOM HERE IS
+    `<Ring>` IN `next/components/deck.tsx`, NODE FOR NODE: two
+    shapes both styled by rules called `.ring` in two layers is a
+    design that depends on a selector not matching. The rotation
+    is the stylesheet's in both places.
 
     The class is `progress-ring`, not `ring`: `ring` is a Tailwind
     utility and this file is one of the sources its scanner reads,
-    so the name drew a 1px square around every ring on the site. */
+    so that name drew a 1px square around every ring on the site. */
 export function ring(pct) {
   const r = 19;
   const c = 2 * Math.PI * r;

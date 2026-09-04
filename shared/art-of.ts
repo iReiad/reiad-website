@@ -2,19 +2,10 @@
    art-of.ts: the drawing resolver, with the rail's two tables
    already handed to it.
 
-   `art.ts` is the DECISION and deliberately imports nothing:
-   `nav.ts` takes the subject vocabulary from it, and a value
-   import back the other way would be a cycle. So the two tables
-   the decision needs, which subject the rail names for a section
-   and what colour that section is, are passed in.
-
-   This file is the passing in, once, for everybody who needs it.
-   It was `next/lib/art.ts` and reachable only by the Next Worker,
-   which was fine until the share card needed the same answer: a
-   card is drawn in a browser, from a Vite bundle that cannot
-   import `shared/` at all, so the answer is worked out by
-   `functions/api/admin/[[route]].ts` and sent. Three runtimes,
-   one rule.
+   `art.ts` is the DECISION and deliberately imports nothing,
+   because `nav.ts` takes the subject vocabulary from it and a
+   value import back would be a cycle. This file is the passing
+   in, once, for the three runtimes that need the same answer.
    ============================================================ */
 
 import { NAV, accentFor } from "./nav.ts";

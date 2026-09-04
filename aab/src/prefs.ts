@@ -1,56 +1,11 @@
-/* ============================================================
-   prefs.ts: how this reader wants to be read to.
-
-   Four settings, and every one of them has to pass the same test
-   the account page's three questions pass: it changes something
-   the reader can point at, on every page, immediately.
-
-     text     the body size of an article. Three steps, and the
-              middle one is what the site has always been.
-     measure  how wide a line of prose runs. The single biggest
-              lever on whether long-form Bangla is comfortable,
-              and the one nobody can set in a browser.
-     theme    light, dark, or whatever the system says. It was
-              already stored under `theme` by /app.js; this is
-              the same key, read by the same boot script, now
-              carried between devices as well.
-     glass    what the site's translucent surfaces are made of.
-              Three finishes, and `plain` is the honest name for
-              off: no blur, solid grounds, which is also what a
-              browser with no `backdrop-filter` and a reader who
-              has asked for reduced transparency both get.
-     blur     how far through those surfaces you can see. A
-              multiplier on every radius rather than a radius, so
-              one step moves the whole site together and the top
-              bar stays thicker than a chip.
-     veil     how much tint sits over the blur. The two are a
-              pair: a reader who wants to see the page moving
-              under the bar turns the veil down, and one who finds
-              that busy turns it up.
-     lang     which language the calculators open in. Named for
-              exactly what it does rather than for what it sounds
-              like it might do: this site is Bangla-first
-              everywhere and a preference that turned that off
-              would be a preference against the point of it. The
-              tools are the one place with a real switch, they
-              have stored `tool-lang` since long before accounts,
-              and this writes that same key so the choice is the
-              same on every device.
-
-   ---- why the account is not the source ----
-
-   It is the record, like everything else since the sync rewrite,
-   and it is still not what a page READS. A preference has to be
-   applied before the first paint or the reader watches the page
-   resize itself, and nothing that involves a network can happen
-   before the first paint. So the shape is the same one the whole
-   site uses: the browser holds a copy, the boot script in
-   `next/components/shell.tsx` reads it synchronously, and
-   `aab/sync.js` carries the key so the copy is the account's.
-
-   Signed out it is simply a local preference, which is what it
-   was before this file existed, and every page still works.
-   ============================================================ */
+/* prefs.ts: how this reader wants to be read to. Text size,
+   measure, theme, glass finish, blur, veil, and which language
+   the calculators open in.
+   The account is the record and is still not what a page READS: a
+   preference has to be applied before the first paint, and
+   nothing involving a network can be. So the browser holds a
+   copy, the boot script in `shell.tsx` reads it synchronously,
+   and `sync.js` carries the key. Signed out it is local. */
 
 /* One key, holding all four, because they are read together on
    every page and four keys would be four reads in a blocking
@@ -85,26 +40,14 @@ export const SCALES = [
   { id: "large", label: "Comfortable", note: "easier on the eyes", size: "1.12" },
 ] as const satisfies readonly PrefOption[];
 
-/* A STEP, NOT A WIDTH, and the note counts WORDS.
-
-   Both halves of that are the same correction. This read
-   `56ch / 66ch / 78ch` with notes promising 56, 66 and 78
-   characters, and the promise was never kept: `ch` is the width
-   of the "0" glyph, and measured in a browser against this site's
-   own prose the middle setting delivered 78 characters of English
-   and 116 of Bangla. A character count cannot be true in a site
-   written in two scripts, so the note says words, which is the
-   thing the 45-to-75 rule was always a proxy for and the one
-   number that means the same in both.
-
-   The value is a multiplier on `--measure-base`, which the
-   stylesheet sets per script. That is what lets one control move
-   both: a reader who asks for a wider line gets a wider line in
-   Bangla and in English, and neither this file nor the boot
-   script has to know which page it is on.
-
-   `next/reading.test.ts` measures all six combinations against
-   real rows and fails if any note stops being true. */
+/* A STEP, NOT A WIDTH, and the note counts WORDS. `ch` is the
+   width of the "0" glyph, so a character count cannot be true in
+   a site written in two scripts: measured, `66ch` delivered 78
+   characters of English and 116 of Bangla. The value is a
+   multiplier on `--measure-base`, which the stylesheet sets per
+   script, so one control moves both and nothing here has to know
+   which page it is on. `next/reading.test.ts` measures all six
+   combinations and fails if a note stops being true. */
 export const MEASURES = [
   { id: "narrow", label: "Narrow", note: "about 9 words a line", wide: "0.85" },
   { id: "normal", label: "Normal", note: "about 11 words a line", wide: "1" },
@@ -122,43 +65,20 @@ export const LANGS = [
   { id: "en", label: "English", note: "the calculators open in English" },
 ] as const satisfies readonly PrefOption[];
 
-/* ============================================================
-   Glass
+/* ELEVEN FINISHES, NOT ELEVEN BLURS: what separates them is what
+   the surface is MADE of, and the two sliders then move whichever
+   one is on. REEDING is convex ridges and FLUTING concave
+   channels, so a reed is lit on the flank nearest the light and a
+   flute on the wall furthest from it.
+   `plain` is a real finish with solid grounds rather than the
+   others switched off: it is what a browser with no
+   `backdrop-filter` and `prefers-reduced-transparency` both get.
 
-   ELEVEN FINISHES, NOT ELEVEN BLURS. What separates them is what
-   the surface is MADE of, and the two sliders below then move
-   whichever one is on.
-
-   Nine of them are cast glass and the names are the trade's own.
-   The distinction that runs through them is the one the design
-   system already makes between a plate and a groove: REEDING is a
-   run of convex ridges and FLUTING is a run of concave channels,
-   so a reed is lit on the flank nearest the light and a flute on
-   the wall furthest from it.
-
-   Two are not glass. `paper` is the site's own sheet, rebuilt: it
-   was two hairlines crossing at 45 degrees every five pixels,
-   which is a fabric at an angle no paper-making process produces
-   and a lattice the eye finds in about a second. It is a wove
-   tooth, laid lines and the cloudiness a sheet has from the way
-   the pulp fell.
-
-   `plain` is the one to keep working. It is what a browser with
-   no `backdrop-filter` gets, what `prefers-reduced-transparency`
-   gets, and what anybody who finds moving text under a bar hard
-   to read chooses. So it is a real finish with its own solid
-   grounds rather than the others with a feature switched off.
-
-   ---- adding one is three places and a check ----
-
-   Here, a `[data-glass="<id>"]` block in `next/styles/site.css`,
-   and the whitelist in the boot script in
-   `next/components/shell.tsx`. `scripts/check-glass.ts` fails if
-   the three stop being the same set, because each way of getting
-   it wrong is silent in its own way: a finish offered and never
-   drawn, a finish drawn and never offered, and a finish the boot
-   script throws away before the first paint.
-   ============================================================ */
+   ADDING ONE IS THREE PLACES: here, a `[data-glass="<id>"]` block
+   in `next/styles/site.css`, and the whitelist in the boot script
+   in `next/components/shell.tsx`. `scripts/check-glass.ts` fails
+   if they stop being the same set, and each way of getting it
+   wrong is silent in its own way. */
 export const GLASSES = [
   { id: "frost", label: "Frost", note: "cold, and you see a long way through" },
   { id: "paper", label: "Paper", note: "a wove tooth, laid lines, and the way the pulp fell" },
@@ -183,90 +103,49 @@ export const BLURS = [
   { id: "deep", label: "Deep", note: "properly frosted", amount: "1.7" },
 ] as const satisfies readonly PrefOption[];
 
-/* HOW MUCH OF THE FINISH a reader sees, which is a knob rather
-   than a ladder and had to be.
-
-   It rode on `--depth` for one draft, so a pane at 9 would carry
-   more of its pattern than a chip at 1, which is what more
-   material really does to a moulded surface. It computed to the
-   same number on every surface on the site: a custom property's
-   computed value is the specified value with `var()` already
-   substituted, on the element the declaration is on, and the
-   whole chain is declared on `:root`. `next/styles/site.css` says
-   it again where somebody would try it a second time.
-
-   So it is the reader's, which is the better answer anyway: the
-   eleven finishes already span an order between a thin reed and a
-   deep flute, and what somebody actually wants to say is "less of
-   that" or "more". */
+/* HOW MUCH OF THE FINISH a reader sees: a knob, and it cannot
+   ride on `--depth`. A custom property's computed value is the
+   specified value with `var()` ALREADY substituted, on the
+   element the declaration is on, and the whole chain is declared
+   on `:root`, so it computes to the same number everywhere.
+   `next/styles/site.css` says it again where somebody would try. */
 export const TEXTURES = [
   { id: "faint", label: "Faint", note: "barely a tooth", amount: "0.5" },
   { id: "normal", label: "Normal", note: "the finish as it is cast", amount: "1" },
   { id: "strong", label: "Strong", note: "you can feel it", amount: "1.6" },
 ] as const satisfies readonly PrefOption[];
 
-/* The middle one is the 0.72 the stylesheet has always carried,
-   for the same reason the middle measure is 66ch: the steps are
-   away from what is already there rather than a scale invented
-   around it. */
+/* The middle one is the 0.72 the stylesheet already carried: the
+   steps are away from what is there rather than a new scale. */
 export const VEILS = [
   { id: "clear", label: "Clear", note: "the page shows through", alpha: "0.54" },
   { id: "normal", label: "Normal", note: "what this site has always been", alpha: "0.72" },
   { id: "dense", label: "Dense", note: "quieter behind the words", alpha: "0.9" },
 ] as const satisfies readonly PrefOption[];
 
-/* ============================================================
-   Sound
-
-   The site says a handful of things out loud: a lesson finished,
-   a stage finished, a setting saved, a page turned. They are
-   SYNTHESISED rather than played, in `next/lib/sound.ts`, so
-   there is no audio file in this repository and nothing to fetch;
-   a cue is a few oscillators and an envelope.
-
-   ON by default, and that is a real decision rather than a
-   default nobody thought about. Every cue is tied to something
-   the reader just did, none of them can fire on a page load, and
-   a browser will not let any of them make a noise before the
-   first gesture anyway. What it must not be is loud or
-   surprising, which is why the whole bus sits under a low master
-   gain and a press is a tenth of what finishing a stage is.
-   ============================================================ */
+/* The cues, synthesised in `next/lib/sound.ts`: no audio file in
+   this repository. ON by default, which is safe because every cue
+   is tied to something the reader just did, none can fire on a
+   page load, and a browser allows nothing before the first
+   gesture. It must not be loud: the master gain is low and a
+   press is a tenth of finishing a stage. */
 export const SOUNDS = [
   { id: "on", label: "On", note: "a quiet note when something finishes" },
   { id: "off", label: "Off", note: "the site is silent" },
 ] as const satisfies readonly PrefOption[];
 
-/* ============================================================
-   Weather
+/* The sky costs one permission, asked from a button and never
+   from a page load, and keeps two coordinates rounded to about a
+   kilometre on this device only. ON draws NOTHING until the
+   button is pressed, so it cannot leak: with no coordinates there
+   is nothing to ask about.
 
-   A little of the reader's own sky on the glass: rain when it is
-   raining where they are, stars at night, fog in fog. It costs
-   one permission, asked once from a button and never from a page
-   loading, and what is kept is two coordinates rounded to about a
-   kilometre, on this device only.
-
-   ON is the default and it draws NOTHING until that button has
-   been pressed, which is the only arrangement that is honest:
-   defaulting to off would mean a reader who granted the
-   permission then had to find a second switch, and defaulting to
-   on cannot leak anything, because with no coordinates there is
-   nothing to ask about.
-   ============================================================ */
-/* HOW MUCH OF A CALCULATOR A READER WANTS TO FILL IN.
-
-   The stock check reads eighty-five inputs across eight groups,
-   which is right for somebody with the statements open and is a
-   wall for somebody holding one share and one question. `quick`
-   shows eleven of them and leaves the rest at the sector's
-   typical figures, which is what the examples already load: the
-   same model against an assumed background rather than a
-   different model, and the page says so where it matters.
-
-   Here rather than in the calculator's own storage because it is
-   a choice about how the site behaves, which is what this file
-   is, and because that makes it travel with the account like
-   every other one. */
+   HOW MUCH OF A CALCULATOR A READER FILLS IN. The stock check
+   reads eighty-five inputs; `quick` shows eleven and leaves the
+   rest at the sector's typical figures, which is the same model
+   against an assumed background and the page says so. It is here
+   rather than in the calculator's own storage so that it travels
+   with the account like every other preference. */
 export const DEPTHS = [
   { id: "quick", label: "The main numbers", note: "eleven figures, the rest assumed" },
   { id: "all", label: "Everything", note: "every field the model reads" },
@@ -277,12 +156,9 @@ export const WEATHERS = [
   { id: "off", label: "Off", note: "nothing, whatever the weather" },
 ] as const satisfies readonly PrefOption[];
 
-/* The four settings, as the types they can actually hold. Derived
-   from the tables above rather than written out again: a fifth
-   scale added to SCALES is a fifth `Scale` without anybody
-   remembering to widen a union, and a typo in one of the two
-   lists stops compiling instead of quietly becoming a preference
-   that never matches. */
+/* Derived from the tables above rather than written out again,
+   so a typo stops compiling instead of quietly becoming a
+   preference that never matches. */
 export type Scale = (typeof SCALES)[number]["id"];
 export type Measure = (typeof MEASURES)[number]["id"];
 export type Theme = (typeof THEMES)[number]["id"];
@@ -314,10 +190,6 @@ const DEFAULTS = {
   glass: "frost", blur: "normal", texture: "normal", veil: "normal",
   sound: "on",
   weather: "on",
-  /* Quick by default, and that is the change: the stock check
-     opened with eighty-five fields for everybody, including
-     somebody who came to check one share. A reader who wants all
-     of them presses once and the account remembers. */
   depth: "quick",
 } as const;
 
@@ -406,21 +278,10 @@ export function savePrefs(patch: Partial<Prefs>): Prefs {
     } catch { /* private mode: it holds for this page */ }
   }
 
-  /* SPREAD, never a field list.
-
-     This named eight fields by hand, so `texture` arrived, was
-     applied to the page, and was gone on the next load: the
-     panel said Strong, the site was Strong, and `readPrefs` came
-     back with Normal because nothing had ever written it. Every
-     check passed and the only symptom was a setting that would
-     not stick.
-
-     It is the rule `/api/site` already states one floor up: pick
-     fields by hand and it looks identical on the day it is
-     written, then silently drops whatever somebody adds a year
-     later. `theme` is the one exclusion and it is a real one,
-     because it lives under its own key, written above, where
-     `/app.js` has always read it. */
+  /* SPREAD, never a field list: naming fields by hand looks
+     identical on the day it is written and silently drops
+     whatever is added later. `theme` is the one exclusion,
+     because it lives under its own key, written above. */
   const { theme: _theme, ...device } = next;
   try {
     localStorage.setItem(PREFS_KEY,
@@ -432,24 +293,12 @@ export function savePrefs(patch: Partial<Prefs>): Prefs {
   return next;
 }
 
-/* ============================================================
-   Putting them on the page
-
-   Custom properties and attributes on <html>, and the stylesheet
-   answers. Nothing here touches an element: a preference that had
-   to walk the DOM would be a preference that is wrong on anything
-   rendered after it ran, and the boot script that runs before the
-   first paint could not walk one anyway.
-
-   `data-glass` is an attribute because it names a material and
-   the stylesheet has a block per material; the two numbers are
-   custom properties because every radius and every tint on the
-   site is derived from them by `calc()`. Both are read before the
-   first paint by the boot script in `next/components/shell.tsx`,
-   which carries the same three tables inline: a bar that arrived
-   at one thickness and thickened a frame later would be worse
-   than one that never blurred.
-   ============================================================ */
+/* Putting them on the page: custom properties and attributes on
+   <html>, and NOTHING HERE TOUCHES AN ELEMENT. A preference that
+   walked the DOM would be wrong on anything rendered after it
+   ran, and the boot script that runs before the first paint has
+   no DOM to walk. `next/components/shell.tsx` carries the same
+   three tables inline for that paint. */
 
 export function applyPrefs(prefs: Prefs = readPrefs()): void {
   const root = document.documentElement;

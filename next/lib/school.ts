@@ -1,33 +1,14 @@
-/* ============================================================
-   school.ts: one lesson of one school, out of D1, and the four
-   schools' own words about themselves.
+/* One lesson of one school, out of D1, and the four schools' own words
+   about themselves.
 
-   archive/TRANSITION.md Stage 11.7. The prose moved into the database at
-   Stage 8 and `shared/schools.ts` has read it since; what did not
-   move is the 251 pages, which are still generated files. This is
-   the source half of the route that replaces them.
-
-   ---- why a table rather than four routes ----
-
-   The four builders wrote the same page, and are in
-   `archive/schools-builders/`. Compare `lessonPage()` in
-   `archive/schools-builders/build-lessons.mjs` with `teilPage()`,
-   `partPage()` and the Quran school's `lessonPage()`: one
-   article, one eyebrow, one heading with a drawing in it, one
-   blurb, one meta line, the body, a backlink and a prev/next
-   pair. What differs is entirely wording and four decisions, and
-   every one of those is written down here rather than branched on
-   in the component:
+   ONE TABLE RATHER THAN FOUR ROUTES: all four schools draw the same page,
+   and what differs is wording and four decisions, every one written down
+   here rather than branched on in the component:
 
      · what the school calls a lesson (a পাঠ, a পর্ব, a দিন)
      · which language sits under the Bangla title
      · which of the school's own scripts the page loads
-     · where the last lesson of the last stage points
-
-   Four templates that say the same thing in four files is exactly
-   the drift `build-lessons.mjs` was written to stop happening
-   between forty hand-copied pages, one level up.
-   ============================================================ */
+     · where the last lesson of the last stage points */
 
 import { cache } from "react";
 import { getCloudflareContext } from "@opennextjs/cloudflare";
@@ -606,20 +587,14 @@ export const getStage = cache(async (school: string, stageSegment: string) => {
 
 export type Stage = NonNullable<Awaited<ReturnType<typeof getStage>>>;
 
-/** A whole school: its ladder, its lessons and what has been
-    written of it.
+    /** A whole school: its ladder, its lessons and what has been written
+        of it.
 
-    archive/TRANSITION.md Stage 11.8. The four hubs were hand-written
-    pages copied verbatim into `lib/school-hubs.ts`, which was the
-    right move while they were being ported and the wrong place
-    for them to stay: a hub says how many stages a school has and
-    how many lessons are in them, and a page that says that in
-    prose is a page that stops being true the moment a lesson is
-    added. The money school reads this instead, and the other
-    three follow.
-
-    Every number here is counted from the rows. Nothing in `meta`
-    is trusted to say how much of anything there is. */
+        Every number here is counted from the rows, and nothing in `meta`
+        is trusted to say how much of anything there is: a hub says how
+        many stages a school has and how many lessons are in them, and a
+        page that says that in prose stops being true the moment a lesson
+        is added. */
 export const getSchool = cache(async (school: string) => {
   if (!isSchool(school)) return null;
 

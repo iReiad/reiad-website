@@ -1,48 +1,24 @@
 "use client";
 
-/* ============================================================
-   diet/insights-panel.tsx: the readings that come out of a log,
-   and what the food in it cost.
+/* The readings that come out of a log, and what the food in it cost.
+   `DIET.md` sections 16 and 17. All of the arithmetic is
+   `shared/insights.ts`; this file chooses words.
 
-   `DIET.md` sections 16 and 17. Three of section 16's readings
-   were already on this page (`topSources`, `byWeekday`,
-   `byHour`, in `nutrition-panel.tsx`); this is the rest of them,
-   plus the money.
+   EVERY SENTENCE PRINTS ITS ARITHMETIC: no reading states a figure
+   without the span it was measured over, how many days of that span were
+   written down, or the two numbers it was divided out of.
 
-   ---- every sentence here is a template, so every one prints
-        its arithmetic ----
+   AND A READING WITH TOO LITTLE DATA SAYS SO. Every reading has an empty
+   state that is a SENTENCE saying what it will show and when, never a
+   zero, never a spinner and never an empty box. A zero is a claim.
 
-   A generated sentence is a claim somebody has to be able to
-   check, and a reader who cannot follow the sum will not believe
-   the number. So no reading below states a figure without the
-   span it was measured over, how many days of that span were
-   written down, or the two numbers it was divided out of. All of
-   the arithmetic is `shared/insights.ts` and none of it is here:
-   this file chooses words.
+   MONEY IS A FACT AND NEVER A JUDGEMENT: no links, no shop and no basket,
+   because the moment this recommends where to buy something it stops
+   being a calculator.
 
-   ---- and a reading with too little data says so ----
-
-   Section 15's coverage floor, one level up. Every reading has an
-   empty state that is a SENTENCE saying what it will show and
-   when, out of section 9's unlock table, and never a zero,
-   never a spinner and never an empty box. A zero is a claim.
-
-   ---- money is a fact and never a judgement ----
-
-   Section 17. Cost per gram of protein is a fact; "you spent too
-   much" is not, and the price table's own voice is the one this
-   matches. There are no links here, no shop and no basket: the
-   moment this recommends where to buy something it stops being a
-   calculator and becomes an advertisement.
-
-   ---- two of these need no account, and they are drawn signed
-        out ----
-
-   How full a hundred calories is, and what a calorie costs, are
-   facts about the portion library rather than about a reader.
-   The page already teaches signed out and these belong to that
-   half.
-   ============================================================ */
+   Two of these need no account and are drawn signed out: how full a
+   hundred calories is, and what a calorie costs, are facts about the
+   portion library rather than about a reader. */
 
 import { useEffect, useMemo, useState, type CSSProperties } from "react";
 import {
@@ -71,19 +47,15 @@ import { T, digits, useToolLang, type ToolLang } from "./lang";
     pulled out of a public database: neither carries a price and
     neither is in the portion library, which is exactly the gap
     every coverage figure on this panel is measuring. */
-/* THIS RESOLVER WAS `byId(sourceId)` AND RESOLVED NOTHING, ever,
-   for every entry. `byId()` is keyed by the bare library id and
-   `food-picker.tsx` writes `library:<id>` into `sourceId`, so
-   both readings below have been reading an empty log since they
-   shipped: the money readout has told every reader that half of
-   what they log needs a price on it, and the swap finder has had
-   no rows to offer.
+    /* THE RESOLVER TAKES THE PREFIX OFF. `byId()` is keyed by the bare
+       library id and `food-picker.tsx` writes `library:<id>` into
+       `sourceId`, so `byId(sourceId)` resolves nothing for every entry and
+       both readings below read an empty log while rendering perfectly.
 
-   Nothing failed, because `scripts/insights.test.ts` hands in its
-   own resolver keyed by bare ids: a fixture kinder than the thing
-   it stands in for. `foodResolver()` in `next/lib/recipes.ts` is
-   the prefix taken off plus the reader's own dishes, and
-   `next/recipes.test.ts` asserts both halves by name. */
+       A fixture keyed by bare ids is kinder than the thing it stands in
+       for and sees none of it. `foodResolver()` in `next/lib/recipes.ts`
+       is the prefix taken off plus the reader's own dishes, and
+       `next/recipes.test.ts` asserts both halves by name. */
 
 const MONEY: Record<string, string> = { BDT: "৳", GBP: "£" };
 
@@ -139,14 +111,11 @@ const TAG_WORDS: Record<string, { en: string; bn: string }> = {
   oil: { en: "oil", bn: "তেল" },
 };
 
-/** A price with the month it was checked under it, greyed once
-    it is older than section 17's few months.
-
-    An undated price is worse than none, and a price that has
-    quietly gone out of date is the same thing with a date on it
-    to make it look current. `YYYY-MM` is passed through as it is
-    written: a month name is a third thing to say in two
-    languages. */
+    /** A price with the month it was checked under it, greyed once it is
+        older than a few months: an undated price is worse than none, and
+        one that has quietly gone out of date is the same thing with a date
+        on it to look current. `YYYY-MM` is passed through as written,
+        because a month name is a third thing to say in two languages. */
 function Priced({ on, now, lang }: { on?: string; now: string; lang: ToolLang }) {
   const months = monthsSince(on, now);
   if (!on) return null;
@@ -534,20 +503,15 @@ function ThisWeek({ days, today }: { days: Day[]; today: string }) {
 
 /* ---- 4b. days after a short night ---- */
 
-/** `DIET.md` section 18, and the whole of what an hours field
-    earns: one plain observation of the kind section 16 allows.
+    /** One plain observation, and it stops there: no score, no grade for a
+        night and no target for one.
 
-    WHICH NIGHT, WRITTEN OUT FOR THE READER. A row's hours are
-    the night that ended on that row's morning, so they are set
-    against that row's own eating: what a short night changes is
-    the appetite of the day that follows it, and that day is this
-    one. A panel a day out in either direction would look
-    entirely correct, so what is compared is said in the copy
-    rather than left in the arithmetic.
-
-    And it stops there. No score, no grade for a night, and no
-    target for one: section 18 is explicit that this is never
-    turned into a sleep score. */
+        WHICH NIGHT, WRITTEN OUT FOR THE READER. A row's hours are the
+        night that ended on that row's morning, so they are set against
+        that row's own eating: what a short night changes is the appetite
+        of the day that follows. A panel a day out in either direction
+        would look entirely correct, so what is compared is said in the
+        copy rather than left in the arithmetic. */
 function AfterAShortNight({
   days, profile, today,
 }: { days: Day[]; profile: Profile | null; today: string }) {
@@ -1188,14 +1152,10 @@ function PriceOfFood({ place, month }: { place: Place; month: string }) {
    the one assembly two of the readings above share
    ============================================================ */
 
-/** The body, the estimated burn and the day's target, assembled
-    the way `goal-panel.tsx` assembles them.
-
-    Null where the profile has not answered enough to build a
-    body, which is the same condition every other page of this
-    tool refuses on: there is no default height and no default
-    age, because a target built on one is a number about
-    somebody else. */
+    /** The body, the estimated burn and the day's target, assembled the
+        way `goal-panel.tsx` assembles them. Null where the profile has not
+        answered enough: there is no default height and no default age,
+        because a target built on one is a number about somebody else. */
 function bodyAndTarget(days: Day[], profile: Profile | null, today: number) {
   const points = days.filter((d) => d.weightKg != null)
     .map((d) => ({ day: dayNumber(d.date), kg: d.weightKg as number }))

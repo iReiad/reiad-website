@@ -1,16 +1,10 @@
 /* ============================================================
-   shared/research-tools.ts: the workshop's arithmetic. RESEARCH.md
-   section 19.
+   shared/research-tools.ts: the workshop's arithmetic.
+   RESEARCH.md section 19.
 
-   Thirty small tools are a form and an answer each, and every
-   answer that can be a pure function is one here, so node holds
-   it to a known value in scripts/research-tools.test.ts and the
-   page only draws it: sample sizes, effect sizes, p and CI both
-   ways, the which-test tree, dates including the tabular Islamic
-   calendar, words in both scripts, abbreviations, readability as
-   facts, a grid to four table syntaxes, Boolean strings in each
-   database's syntax, a question from a frame, a card's memory for
-   ts-fsrs, and a seeded random.
+   Every answer that can be a pure function is one here, so
+   `scripts/research-tools.test.ts` holds it to a known value and
+   the page only draws it.
    ============================================================ */
 
 import { normalCdf, normalInv } from "./research-stats.ts";
@@ -310,12 +304,12 @@ export function questionFrom(frame: "pico" | "spider" | "peo", slots: Record<str
 /* ---------- spaced repetition: the card, and its memory ---------- */
 
 /** A card is the quiz note's own shape and its four scheduling
-    fields are NOT renamed: `ease`, `interval`, `reps` and `due`
-    are what SM-2 wrote into every card before 3 September 2026,
-    they are still written after every review, and `due` stays a
-    date so a build reading either shape draws the same card. The
-    FSRS fields arrive with the first review under `ts-fsrs` and
-    a card without them is read through `fromSm2`. */
+    fields are NOT RENAMED: `ease`, `interval`, `reps` and `due`
+    are what SM-2 wrote into every existing card, are still
+    written after every review, and `due` stays a date so a build
+    reading either shape draws the same card. The FSRS fields
+    arrive with the first review and a card without them is read
+    through `fromSm2`. */
 export interface Card {
   id: string; front: string; back: string;
   ease: number; interval: number; reps: number; due: string;
@@ -340,8 +334,7 @@ const dayOf = (d: Date): string => d.toISOString().slice(0, 10);
 /** An SM-2 card as an FSRS memory. Stability is the interval at
     which recall is nine in ten, which is what an SM-2 interval
     was, so it carries over as it is. Difficulty runs 1 to 10 the
-    other way from ease: 2.5 is 5, the floor of 1.3 is 10. A card
-    never reviewed is new, whatever else it says. */
+    other way from ease: 2.5 is 5, the floor of 1.3 is 10. */
 export function fromSm2(card: Card): Memory {
   if (card.reps === 0 || card.interval <= 0) return { due: dateOf(card.due), stability: 0, difficulty: 0, elapsed_days: 0, scheduled_days: 0, learning_steps: 0, reps: 0, lapses: 0, state: 0 };
   const difficulty = Math.min(10, Math.max(1, 5 + (2.5 - card.ease) * (5 / 1.2)));

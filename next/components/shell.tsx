@@ -1,38 +1,15 @@
 import "../styles/globals.css";
 
-/* ============================================================
-   shell.tsx: the page around the page.
+/* The page around the page: the head, the rail, the top bar and the
+   footer, once. What is NOT here is anything a route states about itself:
+   the title, description, canonical link and share card come out of each
+   route's `generateMetadata`, because Next owns the head.
 
-   The head, the rail, the top bar and the footer, once. Every
-   route renders them, and the head is where a second copy costs
-   the most: a canonical link, an Open Graph tag or the webfont
-   URL written twice drifts the day one of them is edited, which
-   is the whole argument of `shared/look.ts` one level up.
-
-   What is NOT in here is anything a route states about itself.
-   The title, the description, the canonical link and the share
-   card come out of each route's `generateMetadata`, because Next
-   owns the head and hoists those tags itself. This file holds the
-   furniture: the things every page of this site carries whatever
-   is written on it.
-
-   ---- the shape, and what changed ----
-
-   Until August 2026 this was a header bar with seven links, an
-   overlay menu built in JavaScript, and a three-line footer. The
-   nav is a rail down the left now (`sidebar.tsx`), the bar at the
-   top carries the audience switch and nothing else
-   (`topbar.tsx`), and the footer spells the whole site out
-   (`footer.tsx`). All three read one table, `shared/nav.ts`.
-
-   Two elements are deliberately not `<header>` and `<footer>` as
-   direct children of `<body>`: `styles.css` has rules for
-   `body > header` and `body > footer` going back to the first
-   version of this site, and a shell that half-matched them would
-   be two designs fighting. The rail is an `<aside>`, the footer
-   sits inside the scrolling column, and the old rules match
-   nothing.
-   ============================================================ */
+   The rail, the bar and the footer all read one table, `shared/nav.ts`.
+   Two elements are deliberately not `<header>` and `<footer>` as direct
+   children of `<body>`: the stylesheet has `body > header` and
+   `body > footer` rules going back to the first version of this site, and
+   a shell that half-matched them would be two designs fighting. */
 
 import type { CSSProperties, ReactNode } from "react";
 import { FONTS, LOOK } from "@reiad/shared/look";
@@ -50,33 +27,22 @@ import { trailFor, trailJsonLd } from "../lib/crumbs";
 import { siteOrigin } from "../lib/article";
 import { Crumbs, type Crumb } from "./ui/crumbs";
 
-/* Before the first paint, and therefore inline and blocking.
+    /* Before the first paint, and therefore inline and blocking. Every
+       value here affects LAYOUT: the theme, or a dark-mode reader sees a
+       white flash; the audience, which reorders the rail's groups; whether
+       the rail is folded, which is 190px of width; and the type scale and
+       the measure, which change the height of every paragraph. A page that
+       restores one and not the others shows the furniture rearranging
+       itself after load.
 
-   Everything here is stored by the site's own scripts and every
-   one of them affects layout: the theme, or a dark-mode reader
-   sees a white flash; the audience, which reorders the rail's
-   groups for somebody who has said they are here for work rather
-   than to learn; whether the rail is folded away, which is a
-   190px change to the width of everything; and, since accounts
-   grew reading preferences, the type scale and the measure, which
-   change the height of every paragraph on the page. A page that
-   restores one and not the others shows the furniture
-   rearranging itself after load, which is the same bug wearing
-   five hats.
+       The two custom properties are set rather than defaulted, and the
+       defaults live in the stylesheet so a reader with no preference and a
+       reader with JavaScript off get the same page. `aab/prefs.js` writes
+       the same values; this is the copy that runs before a paint.
 
-   The two custom properties are set rather than defaulted, and
-   the defaults live in `styles.css` so a reader with no
-   preference and a reader with JavaScript off get the same page.
-   `aab/prefs.js` writes the same three values from the account
-   page and applies them the same way; this is the copy that runs
-   first and the only one that runs before a paint.
-
-   It is the first thing inside <body> rather than in <head>,
-   which is not where the Worker puts it. App Router owns the head
-   and hoists only the tags it knows about; a blocking inline
-   script is not one of them. First-child-of-body runs before the
-   browser has painted anything, which is the property that
-   matters. */
+       First child of <body> rather than in <head>: App Router hoists only
+       the tags it knows about and a blocking inline script is not one, and
+       first-child-of-body runs before the browser has painted. */
 const BOOT = `(function(){var d=document.documentElement;try{`
   + `var t=localStorage.getItem("theme");`
   + `if(t==="dark"||t==="light")d.setAttribute("data-theme",t);`
@@ -89,17 +55,15 @@ const BOOT = `(function(){var d=document.documentElement;try{`
   + `if(s)d.style.setProperty("--read-scale",s);`
   + `var m={narrow:"0.85",normal:"1",wide:"1.18"}[p.measure];`
   + `if(m)d.style.setProperty("--read-wide",m);`
-  /* The glass. Three tables, and they are the ones in
-     `aab/src/prefs.ts`: GLASSES, BLURS and VEILS. A surface that
-     arrived flat and frosted a frame later would be worse than
-     one that never blurred, so this cannot wait for a module.
+      /* The glass. Three tables, the ones in `aab/src/prefs.ts`: GLASSES,
+         BLURS and VEILS. A surface that arrived flat and frosted a frame
+         later is worse than one that never blurred, so this cannot wait
+         for a module.
 
-     The finish list is written out here a second time and
-     `scripts/check-glass.ts` is what stops the two drifting. It
-     cannot be imported: this is a string that runs before any
-     module has loaded, which is the whole reason it exists, and a
-     finish missing from THIS copy is thrown away before the first
-     paint while the panel goes on offering it. */
+         The finish list is written out a second time here and
+         `scripts/check-glass.ts` stops the two drifting: it cannot be
+         imported, and a finish missing from THIS copy is thrown away
+         before the first paint while the panel goes on offering it. */
   + `d.setAttribute("data-glass",`
   + `{frost:1,paper:1,"thin-reed":1,"linear-ridge":1,"crossed-reed":1,`
   + `"deep-flute":1,aquatex:1,"arctic-ice":1,callisto:1,champagne:1,`
@@ -110,71 +74,56 @@ const BOOT = `(function(){var d=document.documentElement;try{`
   + `if(v)d.style.setProperty("--glass-veil",v);`
   + `var x={faint:"0.5",normal:"1",strong:"1.6"}[p.texture];`
   + `if(x)d.style.setProperty("--tex-strength",x);`
-  /* WHETHER THE SITE MAKES A SOUND, as an attribute rather than a
-     value the sound module digs out of storage on every press.
-     Here rather than in that module because the first press can
-     come before any module has loaded, and a cue that fired once
-     for somebody who had turned sound off would be the whole of
-     the promise broken. */
+      /* WHETHER THE SITE MAKES A SOUND, as an attribute rather than a
+         value the sound module digs out of storage on every press: the
+         first press can come before any module has loaded, and a cue that
+         fired once for somebody who turned sound off is the whole promise
+         broken. */
   + `d.setAttribute("data-sound",p.sound==="off"?"off":"on");`
-  /* WHICH LANGUAGE THE TOOLS SPEAK. `tool-lang` is the key the
-     calculators have written since long before there were
-     accounts, and `prefs.ts` writes that same one, so there is
-     one key and no second switch to keep in step.
+      /* WHICH LANGUAGE THE TOOLS SPEAK. `tool-lang` is the key the
+         calculators have written since long before accounts, and
+         `prefs.ts` writes the same one.
 
-     It has to be an attribute set before the first paint because
-     of how the diet tool renders two languages: both are in the
-     HTML and the stylesheet shows one. That is the only
-     arrangement that survives hydration, because a component
-     that picked a language in the browser would render one on
-     the server and the other on the client, which is the error
-     that blanked every calculator on this site for a day. */
+         It has to be an attribute set before the first paint because both
+         languages are in the HTML and the stylesheet shows one. That is
+         the only arrangement that survives hydration: a component picking
+         a language in the browser renders one on the server and the other
+         on the client, which is what blanked every calculator here. */
   + `var l=localStorage.getItem("tool-lang");`
   + `d.setAttribute("data-tool-lang",l==="bn"?"bn":"en");`
-  /* THE SAME KEY, THE OTHER DEFAULT. A lesson of a school is
-     Bangla unless somebody has said English, and a calculator is
-     English unless somebody has said Bangla, so null means
-     different things to the two and both answers are right for
-     what they open. One key still, because a reader who has
-     chosen has chosen once. MONEY.md says this again where
-     somebody adding a school will see it. */
+      /* THE SAME KEY, THE OTHER DEFAULT. A lesson is Bangla unless
+         somebody has said English and a calculator is English unless
+         somebody has said Bangla, so null means different things to the
+         two. One key still, because a reader who has chosen has chosen
+         once. */
   + `d.setAttribute("data-read-lang",l==="en"?"en":"bn")}catch(e){`
   + `d.setAttribute("data-rail","open");d.setAttribute("data-glass","frost");`
   + `d.setAttribute("data-tool-lang","en");d.setAttribute("data-read-lang","bn");`
   + `d.setAttribute("data-sound","on")}})()`;
 
-/** Which nav item is marked as where you are.
-
-    A page marks its own link with `aria-current="page"`. A page
-    that sits INSIDE a section marks that section's link the same
-    way: the rail is a list of places, and a lesson of the money
-    school is in the money school. `null` is for a page the rail
-    does not list, a case study or an article. */
+    /** Which nav item is marked as where you are. A page marks its own
+        link with `aria-current="page"`; a page INSIDE a section marks that
+        section's link, because a lesson of the money school is in the
+        money school. `null` is for a page the rail does not list. */
 export type Current =
   | "money" | "skills" | "tools" | "stock" | "live" | "routine" | "diet" | "research"
   | "insights"
   | "portfolio"
   | "about" | "contact" | "account" | "deutsch" | "quran" | "english"
   | "cooking" | "travel" | "home" | "admin"
-  /* Kept because four routes still pass it: a piece in the
-     kitchen or on the travel desk is inside the skills half, and
-     said so before the money school joined that list. */
+      /* Kept because four routes still pass it: a piece in the kitchen or
+         on the travel desk is inside the skills half. */
   | "in-skills" | null;
 
 export function SiteHead() {
   return (
     <head>
-      {/* No stylesheet link. The stylesheet is imported at the top
-          of this file, so Next compiles it, hashes it and puts the
-          tag here itself.
-
-          It was two `<link>` tags at `/styles.css` and
-          `/tailwind.css`, which were files in `aab/` served by the
-          other Worker, and the order between them was the whole of
-          the cascade: the first `@layer` statement a browser sees
-          fixes the order of the layers. That ordering is now two
-          lines in `styles/globals.css`, which is a sequence rather
-          than something to remember. */}
+          {/* No stylesheet link: the stylesheet is imported at the top of
+              this file, so Next compiles it, hashes it and puts the tag
+              here itself. The cascade order that used to be the sequence
+              of two `<link>` tags is two lines in `styles/globals.css`,
+              because the first `@layer` statement a browser sees fixes the
+              order of the layers. */}
       <link rel="preconnect" href="https://fonts.googleapis.com" />
       <link rel="preconnect" href="https://fonts.gstatic.com" crossOrigin="" />
       <link href={FONTS} rel="stylesheet" />
@@ -187,15 +136,13 @@ export function SiteHead() {
   );
 }
 
-/**
- * A whole page: <html>, the head, the rail, the top bar, what is
- * in the middle, the footer, and the site's own scripts.
- *
- * `scripts` is for the modules one kind of page needs and the
- * rest do not, `/tools/stock.js` on the stock check for instance.
- * `/app.js` is not one of them: the palette, the theme toggle and
- * the tilt are on every page of this site.
- */
+    /**
+     * A whole page: <html>, the head, the rail, the top bar, what is in
+     * the middle, the footer, and the site's own scripts.
+     *
+     * `scripts` is for the modules one kind of page needs and the rest do
+     * not. `/app.js` is not one of them: it is on every page.
+     */
 export function SiteShell({
   lang = "en",
   bodyClass,
@@ -212,68 +159,55 @@ export function SiteShell({
   lang?: string;
   bodyClass?: string;
   skip?: string;
-  /* Where the skip link goes. Most pages say #main and the case
-     studies each point at the thing the page is actually for: the
-     valuation, the stress test, the models. Their own choice, kept. */
+      /* Where the skip link goes. Most pages say #main and the case
+         studies each point at the thing the page is for. */
   skipTo?: string;
   footer?: string;
   /* The desk signs its footer "Rony Reiad" rather than "Reiad's
      Library", which is its own and is kept. */
   footerName?: string;
   current?: Current;
-  /** The trail in the bar, for a page deeper than its section: a
-      stage, a lesson, a case study. Left out, the section's own
-      trail is built from `shared/nav.ts`, which is right for every
-      page that IS a section. */
+      /** The trail in the bar, for a page deeper than its section. Left
+          out, the section's own trail is built from `shared/nav.ts`, which
+          is right for every page that IS a section. */
   crumbs?: Crumb[];
-  /** A section that renders its OWN trail, in place of the row
-      the bar draws from `crumbs`.
+      /** A section that renders its OWN trail, in place of the row the bar
+          draws from `crumbs`. One does: the course catalogue is
+          admin-only, so a route there has no names to render and
+          `check-courses.ts` refuses a value import of the catalogue into
+          `next/`.
 
-      One section does: the course catalogue is admin-only, so a
-      route there has no names to render and `check-courses.ts`
-      refuses a value import of the catalogue into `next/`. Its
-      trail is `components/courses/trail.tsx`, a client component
-      that reads the shape out of the path and the names out of a
-      fetch.
-
-      `crumbs` is still passed and is still what the JSON-LD is
-      built from: a machine-readable trail of what the server
-      could not name is worse than a short one, which is the same
-      reason `PENDING` is left out of it. */
+          `crumbs` is still passed and is still what the JSON-LD is built
+          from: a machine-readable trail of what the server could not name
+          is worse than a short one. */
   liveTrail?: ReactNode;
-  /** One page is not a scrolling column: the front door fills the
-      viewport exactly and has no footer under it, because there is
-      nothing under it to scroll to. Everything else is a page. */
+      /** One page is not a scrolling column: the front door fills the
+          viewport exactly and has no footer under it. */
   fixed?: boolean;
   beforeMain?: ReactNode;
   scripts?: ReactNode;
   children: ReactNode;
 }) {
-  /* `suppressHydrationWarning` on both, because the boot script
-     below writes `data-theme`, `data-audience`, `data-rail`,
-     `data-read-lang` and,
-     on the home page, `data-hl` onto the root before React sees
-     any of it. Without this React treats an attribute it did not
-     render as a mismatch and takes it off, which is a reader's
-     theme being thrown away between the paint and the hydration. */
+      /* `suppressHydrationWarning` on both, because the boot script below
+         writes `data-theme`, `data-audience`, `data-rail`, `data-read-lang`
+         and, on the home page, `data-hl` on to the root before React sees
+         any of it. Without this React treats an attribute it did not
+         render as a mismatch and takes it off, which is a reader's theme
+         thrown away between the paint and the hydration. */
   const trail = crumbs ?? trailFor(current);
   const ld = trailJsonLd(trail, siteOrigin());
 
   return (
     <html
       lang={lang}
-      /* The page wears the colour of its own icon in the rail.
-         One custom property does it: `--accent-soft`,
-         `--accent-line` and `--accent-ring` all derive from
-         `--accent`, so the cards, chips, meters, rules and focus
-         rings on a German page are blue without one of them
-         naming blue.
+          /* The page wears the colour of its own icon in the rail. One
+             custom property does it: `--accent-soft`, `--accent-line` and
+             `--accent-ring` all derive from `--accent`.
 
-         Inline rather than a stylesheet of `[data-section]` rules,
-         so the table in `shared/nav.ts` stays the only place the
-         mapping exists and there is nothing to regenerate.
-         `data-section` is written too, for the few rules that
-         need to know WHICH section rather than what colour. */
+             Inline rather than a stylesheet of `[data-section]` rules, so
+             the table in `shared/nav.ts` stays the only place the mapping
+             exists. `data-section` is written too, for the few rules that
+             need to know WHICH section rather than what colour. */
       data-section={current ?? undefined}
       /* Cast for the same reason `footer.tsx` casts: React's
          CSSProperties cannot express a custom property. */
@@ -290,12 +224,9 @@ export function SiteShell({
         <Sidebar current={current} />
         <DrawerBackdrop />
 
-        {/* The trail again, for a machine. It is what `crumbs.js`
-            emitted beside the row it drew, and the one thing that
-            file did which the row itself did not, so it moves here
-            rather than being lost with it. `dangerouslySetInnerHTML`
-            because React drops the children of a `<script>`, which
-            for this one tag is the ordinary way. */}
+            {/* The trail again, for a machine. `dangerouslySetInnerHTML`
+                because React drops the children of a `<script>`, which for
+                this one tag is the ordinary way. */}
         {ld ? (
           <script type="application/ld+json"
                   dangerouslySetInnerHTML={{ __html: ld }} />
@@ -305,13 +236,11 @@ export function SiteShell({
           <TopBar
             tree={<NavTree current={current} />}
             bare={trail.length < 2}
-            /* `skip={1}` because the mark to its left IS the home
-               crumb, and a bar reading "Reiad's Library > Home >
-               Skills" says the first thing twice. The whole trail
-               goes in and the component draws from the second, so
-               that the first crumb it DOES draw still knows it has
-               a level in front of it and keeps the arrow that
-               opens its siblings. Slicing here lost that. */
+                /* `skip={1}` because the mark to its left IS the home
+                   crumb. The whole trail goes in and the component draws
+                   from the second, so the first crumb it DOES draw still
+                   knows it has a level in front of it and keeps the arrow
+                   that opens its siblings. Slicing here loses that. */
             crumbs={liveTrail ?? <Crumbs trail={trail} skip={1}
                             label="পথ" className="crumbs-bar" min={2} />}
           />
@@ -320,31 +249,24 @@ export function SiteShell({
           {fixed ? null : <SiteFooter note={footer} name={footerName} />}
         </div>
 
-        {/* The site's own scripts, at the paths every other page
-            loads them from, through `SiteScripts` rather than as
-            `<script>` tags, and never as `<script>` tags again: a
-            module that runs before React has hydrated has its work
-            undone by the hydration. `components/scripts.tsx` is
-            the whole story and is worth reading before adding
-            one. */}
+            {/* The site's own scripts, through `SiteScripts` and never as
+                `<script>` tags: a module that runs before React has
+                hydrated has its work undone by the hydration.
+                `components/scripts.tsx` is the whole story. */}
         {scripts}
         <SiteScripts srcs={["/app.js"]} />
-        {/* The pointer's position, for `@layer glow`. A component
-            rather than a served module because nothing outside
-            this shell ever needed it, and because `aab/` is a
-            closed set: `scripts/check-closed.ts`. It renders
-            nothing and its effect is one document listener, so
-            it costs a page one element in the tree. */}
+            {/* The pointer's position, for `@layer glow`. A component
+                rather than a served module because nothing outside this
+                shell needed it and `aab/` is a closed set:
+                `scripts/check-closed.ts`. */}
         <Glow />
         <Sound />
         <Weather />
-        {/* WHEN A CALCULATOR WAS LAST OPENED, and nothing else:
-            see `components/used.tsx`. Here rather than in the five
-            tool routes because the shell already knows which rail
-            key this page is, and `TOOL_KEYS` is derived from
-            `shared/nav.ts`, so a sixth tool is recorded by being
-            added to that table. A page that is not a tool renders
-            nothing at all. */}
+            {/* WHEN A CALCULATOR WAS LAST OPENED, and nothing else: see
+                `components/used.tsx`. Here because the shell already knows
+                which rail key this page is, and `TOOL_KEYS` is derived
+                from `shared/nav.ts`, so a sixth tool is recorded by being
+                added to that table. */}
         {current && TOOL_KEYS.includes(current) ? <Used id={current} /> : null}
       </body>
     </html>

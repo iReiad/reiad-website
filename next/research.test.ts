@@ -1,43 +1,22 @@
-/* ============================================================
-   research.test.ts: the research window on the About page, in a
-   browser.
-
+/* The research window on the About page, in a browser.
      node next/research.test.ts
+   Needs Playwright and a browser; without either it says which and SKIPS,
+   and a skip is not a pass.
 
-   Needs Playwright and a browser. Without either it says which and
-   skips, and a skip is not a pass.
+   Six things the window has to do, and a port is finished when it does
+   what the thing it replaced did rather than when it renders, so all six
+   are written down here.
 
-   `archive/modules/about.js` was 107 lines over `el` and `flip`
-   imported from `/news.js`, and it did six things: it turned each research card
-   into a control, it took away the plain link that was the way in
-   without JavaScript, it built one window and reused it, it filled
-   that window from the card that was pressed, it grew the window
-   out of that card's own rectangle, and it closed on Escape, on
-   the button and on the backdrop. It is `components/research.tsx`
-   now, and a port is finished when it does what the thing it
-   replaced did, not when it renders, so all six are written down
-   here.
+   One of the six had already stopped working: the detail was a
+   `<template data-detail>` in markup a route rendered EMPTY, so every
+   window opened on a title and nothing under it and looked exactly like
+   one built correctly. The words are a prop now.
 
-   ---- one of the six had already stopped working ----
-
-   The detail a window shows was a `<template data-detail>` in the
-   markup, and the port of the page itself to a route rendered
-   those templates EMPTY. The module cloned an empty fragment, so
-   every window on the live page opened on a title and nothing
-   under it, and it looked exactly like a window that had been
-   built correctly. The words are a prop now and the check below is
-   that they arrive.
-
-   ---- why a browser ----
-
-   Everything here happens after React has hydrated: on the server
-   a card is a card with a link under it, which is what a reader
-   with no JavaScript gets and is asserted first.
-   `hydrate-fixture.ts` renders the component the way the route
-   does, serves that markup with a script that hydrates it, and
-   watches for the mismatch that would mean React had put the
-   server's version back.
-   ============================================================ */
+   WHY A BROWSER: everything happens after React has hydrated. On the
+   server a card is a card with a link under it, which is what a reader
+   with no JavaScript gets and is asserted first. `hydrate-fixture.ts`
+   renders the component the way the route does and watches for the
+   mismatch that would mean React had put the server's version back. */
 
 import { existsSync, readFileSync } from "node:fs";
 import { dirname, join } from "node:path";

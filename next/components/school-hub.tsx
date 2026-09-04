@@ -1,31 +1,13 @@
-/* ============================================================
-   school-hub.tsx: a school's front page, out of its rows.
+/* A school's front page, out of its rows, counting what it drew. A
+   hand-written hub is three copies of the database kept in step by
+   somebody remembering, and both the count and the per-stage card go
+   wrong the way `CLAUDE.md` says counts go wrong. Adding a lesson in the
+   Studio changes this page and nothing has to be rebuilt.
 
-   archive/TRANSITION.md Stage 11.8. `/money` was 832 lines of
-   hand-written HTML: the eight starter steps written out as
-   accordions, the ladder written out as eight cards, and a
-   sentence saying how many lessons there were. All three were
-   copies of the database, kept in step by somebody remembering.
-
-   The count went wrong the way `CLAUDE.md` says counts go wrong,
-   and the ladder went wrong in a quieter way: a stage's card said
-   "৯টি লেখা" because that was true when it was typed.
-
-   So there is one page here and it counts what it drew. Adding a
-   lesson in the Studio changes this page and nothing has to be
-   rebuilt, which is what Stage 11.7 was for and what the hub
-   never got.
-
-   ---- what it does with the two kinds of card ----
-
-   Deliberately, and it is the clearest place on the site to see
-   the distinction the `deck` layer exists for. Every step and
-   every stage is a `GoCard`: they take you to a page, they carry
-   an accent rail and an arrow, and they show a tick when you have
-   read them. Everything explaining how the school works is an
-   `InfoCard`: no arrow, no lift, a dashed edge. A reader can tell
-   the two apart from across the room, which was the complaint.
-   ============================================================ */
+   Every step and every stage is a `GoCard`: they take you to a page, they
+   carry an accent rail and an arrow, and they show a tick. Everything
+   explaining how the school works is an `InfoCard`: no arrow, no lift, a
+   dashed edge. */
 
 import { bnNum, type SchoolStage } from "@reiad/shared/schools";
 import { GoCard, InfoCard } from "./deck";
@@ -34,28 +16,22 @@ import { LadderMeter, Resume, type LadderLesson } from "./progress";
 import type { School } from "../lib/school";
 import { SectionLabel } from "./ui/label";
 
-/* What a rung's card is coloured by, and the distinction is
-   between STATE and section.
+    /* What a rung's card is coloured by, and the distinction is between
+       STATE and section. `live` follows the page: a rung belongs to its
+       school, so `var(--green)` draws a green card on the German hub while
+       the rail, the meter and every other card are blue.
 
-   `live` follows the page. It said `var(--green)` and that was a
-   real bug rather than a preference: a written Stufe on the
-   German hub drew a green card while the rail, the meter and
-   every other card on the page were blue. A rung belongs to its
-   school, so it wears its school's colour.
+       FOLLOWING THE PAGE IS `undefined`, NOT `"var(--accent)"`. The card
+       writes its accent into `--accent`, so that string makes the
+       declaration `--accent: var(--accent)`: a cycle, thrown out, and
+       `--accent` invalid on the card and everything inside it. Since
+       `--panel` is mixed from the accent, fourteen cards then have no
+       ground, no rail, no icon tile and no chip.
+       `scripts/check-selfref.ts` fails on it.
 
-   FOLLOWING THE PAGE IS `undefined`, NOT `"var(--accent)"`. The
-   card writes its accent into `--accent`, so that string made the
-   declaration `--accent: var(--accent)`: a cycle, thrown out, and
-   `--accent` invalid on the card and everything inside it. Since
-   `--panel` is mixed from the accent, fourteen cards on
-   /money had no ground, no rail, no icon tile and no
-   chip. `scripts/check-selfref.ts` fails on it now.
-
-   `soon` is a state and is deliberately not the accent: a rung
-   that has been promised and not written should look the same in
-   every school, because what it is saying has nothing to do with
-   which school it is in. `<SoonCard>` in deck.tsx makes the same
-   argument about being a div rather than a link. */
+       `soon` is a state and is deliberately not the accent: a rung that
+       has been promised and not written should look the same in every
+       school. */
 const ACCENT = {
   start: undefined,
   live: undefined,

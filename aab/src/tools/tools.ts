@@ -1,27 +1,10 @@
-/* ============================================================
-   tools.ts: the calculators.
-
-   Five of them, all live: change an input and the numbers and
-   the chart move with it. Every calculator writes its state
-   into the URL, so a result is a link you can send someone.
-
-   Charts are inline SVG drawn here: no library, no canvas, and
-   they inherit the theme's colours so dark mode just works.
-
-   The maths is deliberately transparent and every calculator
-   says what it assumes. Rates in Bangladesh change; the numbers
-   here are inputs, not promises.
-
-   ---- the two series, and why they are not colours ----
-
-   A chart here draws with `--series-1` and `--series-2`, which
-   the stylesheet derives: the first is the page's own accent and
-   the second is neutral. It used to draw `--green` and `--gold`
-   by name, so every calculator on the gold tools page drew itself
-   in Insights' green, and the legend beside it did too. The
-   legend is `next/components/ui/legend.tsx` and it reads the same
-   two tokens, so the two halves cannot drift.
-   ============================================================ */
+/* tools.ts: the five calculators. Every one writes its state into
+   the URL, so a result is a link. Charts are inline SVG drawn
+   here, inheriting the theme's colours.
+   A chart draws `--series-1` and `--series-2`, never a colour by
+   name: the first is the page's own accent and the second is
+   neutral. `next/components/ui/legend.tsx` reads the same two, so
+   the chart and its legend cannot drift. */
 
 import { CALCULATORS, FORMATS } from "/calculators.js";
 import { t, type Lang } from "/tools/stock.i18n.js";
@@ -242,27 +225,13 @@ const setStat = (root: HTMLElement, key: string, value: string, note?: string) =
 const slot = (root: HTMLElement, sel: string): HTMLElement =>
   $(sel, root) ?? document.createElement("div");
 
-/* ============================================================
-   THE FIVE, over one model
-
-   Every calculator here used to hold its own arithmetic AND its
-   own sentences, inline, in the function that drew them. The
-   arithmetic is `shared/calculators.ts` now and the sentences are
-   `shared/tool-strings.ts`, for the reason `shared/` exists at
-   all: the Android app has a Kotlin port of the first, and a
-   second copy of the second would have parted company with this
-   one at the first edit.
-
-   So what is left here is the DRAWING, which is what this file
-   was always for. A calculator hands back numbers by name and the
-   key of a sentence; this fills the figures, the notes, the chart
-   and the verdict from them.
-
-   **And the words follow `tool-lang`.** These five were English
-   only, not by decision but because their sentences were template
-   literals: translating one meant editing code. They are in the
-   table now, in both languages, like the stock check next door.
-   ============================================================ */
+/* THE FIVE, over one model. The arithmetic is
+   `shared/calculators.ts` and the sentences are
+   `shared/tool-strings.ts`, because the Android app ports the
+   first and a second copy of the second would drift. What is left
+   here is the DRAWING: a calculator hands back numbers by name
+   and the key of a sentence, and this fills them in. The words
+   follow `tool-lang`. */
 
 /** A named number, printed the way `FORMATS` says. One place, so
     `{growth}` inside a Bangla sentence and the figure above it
@@ -318,18 +287,12 @@ const chartLabels = (years: number): string[] => [
   t("calc.chart.year", lang, { n: num.format(years) }),
 ];
 
-/* `bindTool` runs its compute SYNCHRONOUSLY, at the end of
-   binding, so everything the compute reaches has to be declared
-   above this loop. `chartLabels` was below it for one commit: an
-   arrow function in a `const` is in the temporal dead zone until
-   its line runs, so the first calculator threw at its chart, the
-   loop unwound, and the other four were never bound at all.
-
-   Every figure ABOVE the chart line had already been written, so
-   the page showed a filled-in compounding calculator and four
-   empty ones, and the one assertion watching this page read the
-   first of those figures. `next/interactive.test.ts` reads all
-   five now, and the verdict under each. */
+/* `bindTool` runs its compute SYNCHRONOUSLY at the end of
+   binding, so EVERYTHING THE COMPUTE REACHES HAS TO BE DECLARED
+   ABOVE THIS LOOP: a `const` arrow function below it is in the
+   temporal dead zone, the first calculator throws at its chart
+   and the other four are never bound at all.
+   `next/interactive.test.ts` reads all five and each verdict. */
 for (const calc of CALCULATORS) {
   bindTool(calc.id, (v, root) => {
     const nums: Values2 = Object.fromEntries(
@@ -391,22 +354,11 @@ function fillSides(root: HTMLElement, v: Values2): void {
 applyLang();
 
 
-/* ============================================================
-   ONE CALCULATOR AT A TIME
-
-   Five stacked calculators meant that whichever one you came for,
-   you scrolled past the others to reach it, and the page never
-   looked like a tool: it looked like a list. So the picker in the
-   hero becomes a real tab set and only the chosen calculator is
-   shown, starting with the first.
-
-   Everything here is an upgrade applied at runtime. The markup
-   ships as five ordinary <section>s and five ordinary anchor
-   links, so with JavaScript off the page behaves exactly as it
-   did before: all five present, links jumping to them. Nothing is
-   hidden by CSS alone: the hiding only happens once this code
-   has run and can undo it.
-   ============================================================ */
+/* ONE CALCULATOR AT A TIME: the picker becomes a real tab set.
+   It is an upgrade applied at runtime, so with JavaScript off all
+   five sections are present and the links jump to them. NOTHING
+   IS HIDDEN BY CSS ALONE: the hiding happens only once this code
+   has run and can undo it. */
 (function tabs() {
   const bar = document.getElementById("tool-tabs");
   const panels = $$(".tool");

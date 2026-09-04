@@ -18,18 +18,11 @@
 
      npx wrangler d1 export reiad --remote --output schools.db
 
-   ---- and --from-files, which exists for exactly two reasons ----
+   ---- and --from-files ----
 
    The first snapshot had to come from somewhere, and on the day
    it was taken the files and the database were the same thing,
-   proved field by field. And `schools-build.test.mjs` builds both
-   ways to compare them, so the file side has to stay reachable.
-
-   That second reason is also why the prose files are still in
-   `aab/` rather than in `archive/`. The rule for archiving is
-   that nothing serves it and nothing imports it, and two things
-   still import them: that test, and `check-schools.ts`. Moving
-   them is a step of its own.
+   proved field by field.
 
    Neither switch is a way to publish. A change typed into one of
    those files and exported from here would be a change nobody

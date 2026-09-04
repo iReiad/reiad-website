@@ -1,40 +1,22 @@
 /* ============================================================
-   tool-strings.ts: every word on the stock check, twice.
+   tool-strings.ts: every word on the calculators, twice.
 
-   It was `aab/tools/stock.i18n.js` until the Android app needed
-   it, and the move is this repository's own rule rather than a
-   tidy-up: `shared/` is for anything more than one runtime has to
-   say the same way, and there are three of them now. The browser
-   reads the compiled copy at `/tools/stock.i18n.js`, which is
-   where it has always been and where `sw.js` precaches it;
-   `functions/api/tools.ts` serves the same table to the app.
+   The browser reads the compiled copy at `/tools/stock.i18n.js`,
+   which `sw.js` precaches by name; `functions/api/tools.ts`
+   serves the same table to the Android app, SO AN EDITED SENTENCE
+   REACHES THE APP WITH NO RELEASE. The FORMATTERS at the foot of
+   this file are the other half of that contract and go the other
+   way: they are code, and the app has its own.
 
-   **So an edited sentence reaches the app with no app release.**
-   That is the whole reason it is here rather than bundled twice.
-   The FORMATTERS at the foot of this file are the other half of
-   that contract and go the other way: they are code, the app has
-   its own, and a change to one needs a release.
+   Static text carries data-i18n="key" and is filled at load and
+   on every language switch; generated text asks `t(key, lang)`
+   for the same keys. There is no third place a string can hide,
+   which is what stops half a page switching.
 
-   HOW IT WORKS
-
-   Static text in the HTML carries data-i18n="key" and is filled
-   in at load and on every language switch. Text generated in JS
-   asks t(key, lang) for the same keys. There is no third place a
-   string can hide, which is what stops half a page switching.
-
-   THE BANGLA
-
-   Written the way Bangladeshi investors actually talk about
-   this, not the way a textbook would. Terms that everyone uses
-   in English, P/E, ROE, cash flow, free float, stay in
-   English inside a Bangla sentence, because translating them
-   into Sanskritised coinages nobody says would make the page
-   harder to read, not easier. Where a real Bangla word is in
-   common use (মুনাফা, ঋণ, লভ্যাংশ), that word is used.
-
-   Numbers switch script too: Bengali digits in Bangla mode,
-   via Intl. Input fields stay in ASCII, because a number input
-   has to.
+   THE BANGLA is written the way Bangladeshi investors talk. Terms
+   everybody uses in English (P/E, ROE, cash flow, free float)
+   stay English inside a Bangla sentence; where a real Bangla word
+   is in common use (মুনাফা, ঋণ, লভ্যাংশ), that word is used.
    ============================================================ */
 
 /** The two the whole site is written in. */
@@ -42,11 +24,8 @@ export type Lang = "en" | "bn";
 
 export const LANGS: Lang[] = ["en", "bn"];
 
-/** One phrase, in both. Both are REQUIRED, and the type is what
-    says so: a key added with only English compiles nowhere, which
-    is the point. A Bangla reader should never have to read
-    English to find out that something exists in their own
-    language. */
+/** One phrase, in both. BOTH ARE REQUIRED and the type says so:
+    a key added with only English compiles nowhere. */
 export type Phrase = Record<Lang, string>;
 
 export const STRINGS: Record<string, Phrase> = {
@@ -822,9 +801,8 @@ export const STRINGS: Record<string, Phrase> = {
   "a.collapseAll": { en: "Close them all", bn: "সব বন্ধ করুন" },
 
   /* Saving a filled-in check, which only appears when somebody is
-     signed in. Everything a signed-out reader could do before is
-     still there: the URL in the address bar carries every input,
-     and "Copy link" is the button for it. */
+     signed in. A signed-out reader still has the URL, which
+     carries every input, and "Copy link". */
   "a.saveLabel": { en: "Save this check as", bn: "এই যাচাইটা সেভ করুন এই নামে" },
   "a.save": { en: "Save", bn: "সেভ" },
   "a.saved": { en: "Saved to your account.", bn: "আপনার অ্যাকাউন্টে জমা হয়েছে।" },
@@ -846,38 +824,23 @@ export const STRINGS: Record<string, Phrase> = {
   },
 
   /* ============================================================
-     THE OTHER FIVE CALCULATORS
-
-     Compounding, sanchayapatra against FDR, inflation, loan EMI
-     and position sizing. Their arithmetic is
-     `shared/calculators.ts` and every word of them is here, which
-     is the same split the stock check above already uses: a
+     THE OTHER FIVE CALCULATORS. Their arithmetic is
+     `shared/calculators.ts` and every word of them is here: a
      calculator returns numbers by name and the key of a sentence,
      and both the browser and the Android app fill the
      `{placeholders}` from those numbers.
 
-     **These were English only until they moved here**, and that
-     was not a decision anybody took: the verdicts were template
-     literals inside the module that drew them, so translating one
-     meant editing code. A Bangla reader should never have to read
-     English to find out that something exists in their own
-     language, and five of this site's six calculators were
-     failing that rule in the one place they actually explain
-     themselves.
-
-     `{placeholders}` are looked up in the calculator's own
-     `values` and printed the way `FORMATS` in that file says, so
+     A placeholder is looked up in the calculator's own `values`
+     and printed the way `FORMATS` in that file says, so
      `{growth}` is money in both languages without either sentence
      having to know it.
      ============================================================ */
 
   /* ---------------- the calculators' own chrome ----------------
 
-     A SHORT name per calculator, because the full ones are in
-     `TOOLS` in `content.ts` and are a sentence long: "চক্রবৃদ্ধি
-     ক্যালকুলেটর" does not fit a chip on a handset. The full name
-     is NOT repeated here; the app reads it from `/api/site` like
-     every other label, so there is one copy of it. */
+     A SHORT name per calculator: the full ones are in `TOOLS` in
+     `content.ts` and are a sentence long. The full name is NOT
+     repeated here; the app reads it from `/api/site`. */
   "calc.eyebrow": { en: "Tools", bn: "টুল" },
   "calc.compounding.short": { en: "Compounding", bn: "চক্রবৃদ্ধি" },
   "calc.sanchayapatra.short": { en: "সঞ্চয়পত্র vs FDR", bn: "সঞ্চয়পত্র বনাম এফডিআর" },
@@ -1069,11 +1032,9 @@ export const STRINGS: Record<string, Phrase> = {
 };
 
 /* ------------------------------------------------------------
-   t(key, lang, vars): the lookup.
-
-   A missing key returns the key itself rather than an empty
-   string, because a visible "m.something" in testing is a bug
-   report and a blank space is not.
+   t(key, lang, vars): the lookup. A missing key returns THE KEY
+   ITSELF rather than an empty string: a visible "m.something" is
+   a bug report and a blank space is not.
    ------------------------------------------------------------ */
 export function t(
   key: string,
@@ -1083,9 +1044,9 @@ export function t(
   const entry = STRINGS[key];
   if (!entry) return key;
   /* `?? entry.en` is not dead code guarded by the type: this
-     table is also served as JSON and read by a client that was
-     built before a key existed, so a missing half has to fall
-     back rather than print "undefined". */
+     table is also served as JSON to a client built before a key
+     existed, so a missing half falls back rather than printing
+     "undefined". */
   let s = entry[lang] ?? entry.en ?? key;
   if (vars) {
     for (const [k, v] of Object.entries(vars)) s = s.replaceAll(`{${k}}`, String(v));
@@ -1094,9 +1055,9 @@ export function t(
 }
 
 /* ------------------------------------------------------------
-   Numbers switch script with the language. Bengali digits in
-   Bangla mode, via Intl rather than a lookup table, so grouping
-   and the decimal separator come along too.
+   Numbers switch script with the language: Bengali digits via
+   Intl rather than a lookup table, so grouping and the decimal
+   separator come along too.
    ------------------------------------------------------------ */
 const locale = (lang: Lang): string => (lang === "bn" ? "bn-BD" : "en-GB");
 

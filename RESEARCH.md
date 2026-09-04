@@ -9,49 +9,27 @@ calculators, the routine and the diet tool, and built the way they
 are built: routes under `next/`, rows under row-level security, the
 site's own glass, the site's own keyboard, in Bangla and in English.
 
-**This file is the plan, and nothing in it is built.** It was written
-on 2 September 2026, in one sitting, before a line of the studio
-existed, so that the building can be judged against something rather
-than against whoever last remembered what was wanted. It is long on
-purpose: every room, every table, every connection and every gap that
-a year of real research would have found is written down here, so
-that the work is a matter of executing a list rather than of
-discovering the list while executing.
+**This file is the plan and the reference.** It is long on purpose:
+every room, every table, every connection and every gap that a year
+of real research would find is written down, so that the work is a
+matter of executing a list rather than of discovering the list
+while executing.
 
 The order of the file is the order a reader needs it in, not the
-order it will be built in. Section 31 is the build order and section
-36 amends it. Section 34 is every decision this plan takes, in one
-list, so that the build does not reopen them, and section 36 adds
-ten more.
+order it was built in. Section 31 is the build order and what is
+left of it; section 36 amends it. **Section 34 is every decision
+this plan takes, in one list, so that the build does not reopen
+them**, and section 36 adds ten more.
 
-**What was read to write it.** The site as it stands, in particular
-the diet tool, whose fifteen routes and one pages table are the shape
-this borrows, and the research desk under `/admin`, which this
-replaces. The Notion workspace: the home page with its three live
-projects (a funded doctorate with a 2028 intake, a book on halal
-micro-investing for Bangladesh, and an application whose strongest
-paragraph is the investing platform), the supervisor shortlist for
-banking and ethical finance, and the Drive document on faculty
-alignment for an MPhil in finance and risk management with a focus on
-Islamic funds. Nothing in this plan is specific to those three, but
-every room was walked through with them in hand, and section 29 is
-that walk written down.
-
-**What could not be read, said plainly.** Conversations and memory
-held on claude.ai are not reachable from this session, and no tool
-here can open them. If a decision was taken there that this plan
-contradicts, the plan is what has to move, and section 34 is where
-to change it.
+Its shape is borrowed from the diet tool, whose fifteen routes and
+one pages table are the arrangement this uses.
 
 **A note on file names in this file.** `scripts/check-pointers.ts`
 reads every tracked file and fails on a path into this repository
-that reaches nothing. A plan for things that do not exist yet cannot
-name them with their extensions, so every file this plan promises is
-written without one (`next/lib/research-pages.ts`, not the `.ts` form),
-and every file it names WITH an extension is one that exists today.
-That is a rule about this document, and it is also the first thing
-the build gets to delete: once a file exists, the sentence naming it
-gains its extension.
+that reaches nothing, so a file this plan promises and has not
+built is written WITHOUT its extension, and a file named with one
+exists today. Once a file exists, the sentence naming it gains its
+extension.
 
 ---
 
@@ -87,12 +65,11 @@ browser except the in-flight copy of what they are typing, and
 section 23 says exactly which keys those are.
 
 **And a plan is a list of claims a check can hold.** `DIET.md` is
-held by `scripts/check-diet.ts`, `ADMIN.md` by `scripts/admin.test.ts`,
-and this file will be held by a check of its own under `scripts/`,
-named in section 30 without its extension for the reason the
-preamble gives. Every rule below that could be broken silently is
-listed there as a question, and the build is not finished until each
-question is asked by code rather than by prose.
+held by `scripts/check-diet.ts`, `ADMIN.md` by
+`scripts/admin.test.ts`, and this file by `scripts/check-research.ts`.
+Every rule below that could be broken silently is listed in section
+30 as a question, and nothing is finished until each question is
+asked by code rather than by prose.
 
 ---
 
@@ -161,43 +138,37 @@ The page is open to any signed-in reader from the first stage,
 because there is nothing in it to protect from a stranger: they
 would see their own empty studio.
 
-**Three projects on the day it opens**, out of the Notion home page,
-and they are three different KINDS of project, which is why a project
-carries a kind at all:
+**Three projects, and they are three different KINDS of project,
+which is why a project carries a kind at all:**
 
 | | kind | what the studio has to be good at |
 | --- | --- | --- |
-| a doctorate in banking and ethical finance, intake 2028 | `degree` | a literature that spans econometrics, Islamic jurisprudence and policy; a proposal that has to cite a prospective supervisor's own papers; data from the Dhaka Stock Exchange, Bangladesh Bank and audited annual reports; a supervisor shortlist with a spouse-visa filter that was never verified |
-| a book on halal micro-investing for Bangladesh | `book` | chapters with no structure yet, two drafts that need a place to sit, Bangla prose beside English sources, and a way out of the studio into the Article Studio so a chapter can become a piece on the site |
+| a doctorate in banking and ethical finance | `degree` | a literature spanning econometrics, Islamic jurisprudence and policy; a proposal citing a prospective supervisor's own papers; data from the Dhaka Stock Exchange, Bangladesh Bank and audited annual reports |
+| a book on halal micro-investing for Bangladesh | `book` | chapters with no structure yet, Bangla prose beside English sources, and a way out into the Article Studio so a chapter can become a piece on the site |
 | an application to a foundation | `application` | a positioning paragraph that is nearly a cover letter, a CV drawn from the same library, and a deadline |
 
-**All three share one thread, the investing platform**, which the
-home page calls the research basis for the doctorate, the companion
-to the book, and the strongest paragraph in the application. The
-studio has to let one source, one note and one dataset belong to
-three projects at once, which is why a row carries `projects` as an
-array rather than one foreign key.
+**One source, one note and one dataset can belong to all three at
+once**, which is why a row carries `projects` as an ARRAY rather
+than one foreign key.
 
-**And the fields it has to be honest about, because they are the
-fields the reader works in:**
+**The fields it has to be honest about**, because each one bends a
+design decision:
 
-- **Finance and economics**, where the literature is on SSRN, RePEc
-  and the big publishers as much as in open indexes, the data is
-  time series and panels, and the methods are the ones the Drive
-  document names: Fama-MacBeth, GARCH, ARDL, CSAD herding, panel
-  regressions, event studies. Section 14 has each.
+- **Finance and economics.** The literature is on SSRN, RePEc and
+  the big publishers as much as in open indexes, the data is time
+  series and panels, and the methods are Fama-MacBeth, GARCH, ARDL,
+  CSAD herding, panel regressions and event studies. Section 14 has
+  each.
 - **Islamic finance**, where a source can be a verse, a hadith, a
   fatwa, an AAOIFI standard or a Shariah board's ruling, none of
   which has a DOI and all of which have a citation form of their
   own. Section 9 gives them types.
-- **Law**, out of the LLB and LLM modules in Drive, where a source
-  is a case with a neutral citation or a statute with a section
-  number, and the style is OSCOLA, which is footnotes rather than
-  brackets and which most citation tools get wrong. Section 16 has
-  the footnote engine because of this.
-- **Qualitative work**, interviews with Shariah board members and
-  retail investors, in Bangla, transcribed, coded, and quoted in
-  English with the original kept. Section 15.
+- **Law**, where a source is a case with a neutral citation or a
+  statute with a section number, and the style is OSCOLA, which is
+  footnotes rather than brackets and which most citation tools get
+  wrong. **Section 16 has the footnote engine because of this.**
+- **Qualitative work**: interviews in Bangla, transcribed, coded,
+  and quoted in English with the original kept. Section 15.
 
 **Both languages, the site's way.** The chrome, the labels and every
 explanatory sentence are said twice and the stylesheet shows one,
@@ -301,12 +272,11 @@ and both tools use it. That is a conversion the diet tool gets for
 free and the third tool that wants a strip gets for one line.
 
 **The components** live in `next/components/research/`, one file per
-room and a `shared` subdirectory for the panes and pickers every room
-uses. `next/components/research.tsx` already exists and is the About
-page's three research cards; it keeps its name, the directory sits
-beside it, and the two are unrelated. The build should not rename
-the About page's file to tidy this: `scripts/check-pointers.ts` has
-an entry keyed on that name.
+room and a `shared` subdirectory for the panes and pickers every
+room uses. `next/components/research.tsx` is the About page's three
+research cards and is unrelated: **do not rename it to tidy this**,
+because `scripts/check-pointers.ts` has an entry keyed on that
+name.
 
 **The rows** live in Supabase under `research_` tables, section 23,
 read and written by the browser as the reader through PostgREST with
@@ -321,35 +291,21 @@ read through the Worker with a signed ticket, section 23.
 `functions/api/research/`, section 22. Nothing under `next/` names a
 host that is not this site's; `scripts/check-csp.ts` would fail it.
 
-### The research desk goes, and what it leaves behind
+### What the retired research desk left behind
 
-The desk under `/admin/research` is retired in the studio's first
-stage, and retired properly:
+The desk under `/admin/research` is gone. What survives it and must
+not be undone:
 
-- the desk's threads component goes to `archive/desk-research/threads.tsx`, with the
-  forty-five `.rd-` rules in `@layer admin` of `next/styles/site.css`
-  and the route directory. `scripts/check-css.ts` would otherwise
-  report forty-five rules styling nothing.
-- `/admin/research` becomes a 301 to `/tools/research/questions` in
-  `aab/_redirects`, and the entry comes OUT of `run_worker_first` and
+- `/admin/research` is a 301 to `/tools/research/questions` in
+  `aab/_redirects`, and the entry is OUT of `run_worker_first` and
   out of `NEXT_ROUTES`, because a path a Worker answers first never
   reaches the rules file.
-- The `threads` rows are carried, not dropped. The first migration
-  creates `research_questions` and copies every thread into it in
-  the same file: `question` to `text`, `state` to `state`, the note
-  and the sources and the steps out of `body` into the shape section
-  8 gives, and the three link lists into evidence rows. Then it drops
-  `public.threads`. One migration, so there is no commit on which
-  both tables exist and neither is the record.
-- `"threads"` leaves `MINE_TABLES` in `aab/src/account-page.ts` in
-  the same commit and `"research_questions"` arrives, or
+- The `threads` rows were carried into `research_questions` and
+  `public.threads` dropped **in one migration**, so there is no
+  commit on which both tables exist and neither is the record.
+- `"research_questions"` is in `MINE_TABLES` in
+  `aab/src/account-page.ts` where `"threads"` was, or
   `scripts/check-account.ts` fails, which is what it is for.
-- its test goes with it, as `archive/desk-research/threads.test.ts`. Its lesson about a
-  controlled field is section 12's, written into the studio's own
-  test.
-- The `/admin` panel that linked to the desk links to the studio.
-- `ADMIN.md` section 7 gets one paragraph saying where the desk went
-  and why, and nothing else changes in that file.
 
 **The name.** `/studio` is the Article Studio and stays. "Research
 Studio" is what the page is called; the address is `/tools/research`
@@ -1983,205 +1939,80 @@ which is the contract `ANDROID.md` already describes.
 
 ---
 
-## 29. What we will be missing during real work
+## 29. What real work needs that no room owned
 
-The plan above was written room by room. This section was written
-by walking the three projects through a year and noting what the
-rooms did not have, and every item below is either already answered
-above (with the section) or was ADDED to the plan because of this
-walk, marked **added**. Nothing here is left as a wish.
+Written by walking the three projects through a year. Everything
+below was ADDED to the plan because of that walk; the sections
+above hold the detail.
 
-### The first week: a proposal that has to name a supervisor's own papers
+**Around a source**
 
-- **Finding a prospective supervisor's publications by name and
-  ORCID** and reading them first: the people room with an ORCID
-  lookup, section 18. **Added:** a person's page offers "import all
-  their works from OpenAlex" as one press.
-- **A proposal is a document of kind `proposal`** with a budget the
-  institution sets: section 16. **Added:** the project's `body.rules`
-  holds word limits, formatting and submission format, and the desk
-  shows the limit beside the count, as a fact.
-- **The university's regulations PDF** is a source of type `report`
-  filed under the project, so it is one press away in the desk:
-  section 9.
-- **Fifteen universities with a visa question nobody verified:**
-  fifteen people rows and one task per university in `waiting`, with
-  the answer as a note when it comes: sections 17 and 18.
-- **The Statement of Purpose cites a 2020 paper by a named
-  professor**: the citation chip carries the locator, and the person
-  row links to the source row, so the sentence "building on Bashar's
-  2020 method" is a chip and a link rather than a memory.
+- A person's page offers "import all their works from OpenAlex" as
+  one press (18).
+- An interlibrary loan tracker: a task of kind `request` on the
+  source with the library, the date asked and the date arrived, and
+  a chip reading "requested 12 days ago".
+- A paper with no DOI is a `report` with `added_via: manual` and a
+  `check me` chip until the record is complete (9).
+- A "waiting since" column on the board's waiting lane, so the
+  oldest wait is visible (17).
 
-### The first month: the literature is in six places
+**Around a document**
 
-- SSRN, RePEc and the publishers: section 10's finance shelf.
-- **A paper behind a paywall the reader can reach only through a
-  library**: **added**, an interlibrary loan tracker, which is a
-  task of kind `request` on the source with the library, the date
-  asked and the date arrived, and a chip on the source reading
-  "requested 12 days ago".
-- **A paper with no DOI at all** (a Bangladesh Bank working paper, a
-  conference paper): section 9's `report` type with `added_via:
-  manual` and a `check me` chip until the record is complete.
-- **A working paper that becomes an article halfway through the
-  year**: section 9's supersedes link.
-- **The reading is faster than the noting**: section 11's one-line
-  takeaway, asked once at `read`.
-- **A hundred PDFs from an old Zotero**: section 24's Zotero pull.
-
-### Month three: the data does not come
-
-- **A request to Bangladesh Bank that takes months**: a `waiting`
-  task with a date, section 17, and **added** a "waiting since"
-  column on the board's waiting lane so the oldest wait is visible.
-- **DSE data as a spreadsheet with merged headers**: the lab's
-  importer knows the exchange's shape, section 14, and a transform
-  fixes the rest as SQL that is kept.
-- **A dataset's licence and citation**: section 14's dataset source
-  row.
-- **Two datasets with different symbol spellings**: a transform with
-  a mapping table, kept as a run so the join is documented.
-
-### Month six: the first interview
-
-- Consent, pseudonyms, the sealed real name: section 15.
-- **Recording on a phone and uploading a 200 MB m4a**: section 23's
-  cap is 100 MB per file, so **added**: the field room's uploader
-  transcodes audio in the browser to opus at 32 kbps before upload
-  (an hour is about 15 MB), through the browser's own encoder, and
-  says so. The original stays on the phone.
-- Transcription in Bangla with corrections: section 15.
-- **A quote used in English with the Bangla kept**: section 15's
-  translation on the coding, section 16's quotation.
-- **"Who said the thing about liquidity in the second interview"**:
-  code retrieval, section 15, and the board's search over notes.
-
-### Month nine: a chapter is due
-
-- Outline from the question tree, budgets, citations, footnotes:
-  section 16.
-- **Figures that renumber when a section moves**: section 16's
-  derived numbering.
-- **A table the supervisor wants in a different style**: the run's
-  APA table with stars switched off, section 14.
-- **Sending a draft and getting comments back without the
-  supervisor making an account**: section 24's share and comments.
-- **"Which version did I send"**: the named snapshot, section 16.
-- **Two devices editing one chapter on the same afternoon**: section
-  12's conflict answer.
-- **An abbreviation used before it was defined, in chapter 4 when
-  it was defined in chapter 2**: **added**, the abbreviations list is
-  per project across documents in order, not per document.
-
-### Month fourteen: a conference, and a paper from a chapter
-
-- **The paper is the chapter, shorter, in another style**: a
-  document made "from" another (a copy that remembers its parent),
-  **added**, with its own style and budget, and a line on the desk
-  saying which chapter it came from.
-- **A conference deadline and a poster**: the event of kind
-  `conference`, section 17; a poster is the document exported to
-  PDF at a page size Settings offers (A0, A1), **added** as a print
-  size option rather than a poster tool.
-- **Slides**: **added** as an export of a document's outline to a
-  Markdown deck the browser prints one heading per page, no slide
-  editor.
-- **Submission tracking and the reviewers' comments table**: the
-  event of kind `submission`, section 17.
-- **A preprint on SSRN with its own number**: `identifiers.ssrn` on
-  the source, which is the reader's own paper as a source row of
-  type `preprint`, and the CV tool reads it, section 19.
-
-### Month twenty: writing up
-
-- **Fifty thousand words across eight chapters, one bibliography**:
-  **added**, a project-level bibliography that renders from every
-  chip in every chapter in order, deduplicated, in the project's
-  style, as a document of kind `bibliography` the desk keeps
-  current.
-- **A table of contents and a list of figures**: derived from the
-  chapters' outlines and figure chips, **added** as two more derived
-  blocks.
-- **Appendices holding the interview guide, the consent form, the
-  codebook and the search log**: each is already a row; **added**, an
-  "insert as appendix" on each that renders it into a document of
+- A project's `body.rules` holds word limits, formatting and
+  submission format, and the desk shows the limit beside the count,
+  as a fact (16).
+- The abbreviations list is per PROJECT across documents in order,
+  not per document: an abbreviation used in chapter 4 and defined
+  in chapter 2 is the case.
+- A document made "from" another: a copy that remembers its parent,
+  with its own style and budget, and a line on the desk saying
+  which chapter it came from.
+- A project-level bibliography rendering every chip in every
+  chapter in order, deduplicated, in the project's style, as a
+  document of kind `bibliography` the desk keeps current.
+- A table of contents and a list of figures, derived from the
+  chapters' outlines and figure chips.
+- "Insert as appendix" on the interview guide, the consent form,
+  the codebook and the search log, rendering into a document of
   kind `appendix`.
-- **The claims audit across the whole thesis**: section 16's pane,
-  run per project, **added**.
-- **A last check that nothing cited is retracted**: the monthly
-  retraction pass, section 9, and a press on the project page.
+- The claims audit run per project rather than per document (16).
+- A poster is the document exported to PDF at a page size Settings
+  offers (A0, A1), a print size rather than a poster tool.
+- Slides are an export of a document's outline to a Markdown deck
+  the browser prints one heading per page. No slide editor.
 
-### The viva
+**Around the work itself**
 
-- The questions an examiner asks, with the reader's answers: the
-  viva bank, section 19.
-- **"What did you do in March 2027"**: the daily log, section 12.
-- **"Why did you exclude those 212 records"**: the review's reasons,
-  section 13.
-- **Flashcards of the field's terms**: section 19's quiz.
-
-### After: publishing, teaching, the next project
-
-- **The book's chapters as pages on the site**: section 16's last
-  export.
-- **A CV and a publication list**: section 19.
-- **Starting the next project with the same library**: `projects` is
-  an array, section 2, and a new project starts with a source picker
-  over the library.
-- **Handing a supervisor or a co-author the whole thing**: the
-  Archive room's zip, section 24.
-
-### The things a year finds that no room owns
-
-- **A parking lot**: **added**, a note of kind `capture` pinned to
-  every document's side rail, for the sentence that does not belong
-  here yet, so it is not lost and does not stay in the draft.
-- **A "why did I stop"**: **added**, closing a session asks one
-  optional line, which is what the next session opens with.
-- **Reading on the bus with no signal**: kept files, section 11,
-  and the queue's abstracts cached with the room.
-- **A source read in the wrong edition**: the edition on the CSL
-  record and the supersedes link, section 9.
-- **The same paper saved twice by two routes**: refused on arrival,
-  section 9.
-- **A citation key changed after a chapter used it**: refused unless
-  rewritten everywhere, section 9.
-- **A highlight in a PDF the reader later replaced with a better
-  scan**: anchored to text, section 11.
-- **The assistant's cost creeping**: the month's figure in Settings,
-  section 21.
-- **OpenAlex's free allowance running out mid-month**: the status
-  line, the merge over what answered, and the D1 cache, section 10
-  and 22.
-- **A phone with a small screen and a big thumb**: section 5 and 11.
-- **Somebody else at the same laptop**: the mirror comes off at sign
-  out, `CLAUDE.md`'s rule, and the five device keys are not the
-  reader's data.
-- **Losing the passphrase to the sealed names**: not recoverable,
-  said in Settings, section 25; the pseudonyms and the research
-  survive it.
-- **The Bangla input on a laptop without a Bangla keyboard**:
-  **added**, not a keyboard, but a note in Settings pointing at the
-  operating system's own phonetic layout, because a phonetic
-  transliterator in the editor is a second editor.
-- **A thesis in Bangla**: section 16's last paragraph, and the Word
-  export carrying the font.
-- **Time zones between Dhaka and Brighton**: **added**, every event
-  is stored in UTC and shown in the browser's zone with the zone
-  named beside a meeting, because a meeting at "3pm" is the one
-  place this goes wrong.
+- The field room's uploader transcodes audio in the browser to opus
+  at 32 kbps before upload, through the browser's own encoder, and
+  says so: §23's cap is 100 MB a file and an hour of phone audio is
+  about 15 MB at that rate. The original stays on the phone.
+- A parking lot: a note of kind `capture` pinned to every
+  document's side rail, for the sentence that does not belong here
+  yet, so it is not lost and does not stay in the draft.
+- Closing a session asks one optional "why did I stop", which is
+  what the next session opens with.
+- **Every event is stored in UTC and shown in the browser's zone
+  with the zone named beside a meeting**, because a meeting at
+  "3pm" between Dhaka and Brighton is the one place this goes
+  wrong.
+- Bangla input is a note in Settings pointing at the operating
+  system's own phonetic layout. A transliterator in the editor
+  would be a second editor.
+- **Losing the passphrase to the sealed names is not recoverable**,
+  said in Settings (25). The pseudonyms and the research survive
+  it.
 
 ---
 
 ## 30. What must be checked
 
 **Three guards, three halves**, the arrangement `DIET.md` section 33
-made: the arithmetic in a test under `scripts/`, the pages in a check
-under `scripts/`, and the built rooms in a browser test under
-`next/`. The three are named here without their extensions for the
-reason the preamble gives; the first stage creates all three, empty
-but running, so that every later stage adds a question rather than a
-file.
+made: the arithmetic in `scripts/research.test.ts` and its siblings,
+the pages in `scripts/check-research.ts`, and the built rooms in
+`next/research-studio.test.ts`. Every stage adds a question rather
+than a file.
 
 ### The studio check, and the questions it asks
 
@@ -2313,394 +2144,114 @@ are the ones that make the studio worth opening every day.
 | **12. The methods room** | the hub over pieces tagged `method`, the first twelve pieces, the links from every tool to its method | learning a method where it is used | `scripts/check-pieces.ts` |
 | **13. Later, in this order when wanted** | webR in the lab after Python; OCR in the reading room; the canvas in the atlas; the thirteenth drawing (a lens) in `shared/art-svg.ts` for the studio's own card; sharing with comments; the pg_cron backup; the front page's three research widgets; the app's reading room | | |
 
-**Stage 1 landed on 2 September 2026, in the pull request that
-carried this plan.** What it does, as against what it will:
-`shared/nav.ts` has the entry, `next/lib/research-pages.ts` is the
-pages table and every one of its seventeen rooms answers at its
-address, the board's capture box files a DOI, an ISBN, an address,
-BibTeX, RIS, CSL-JSON, a todo and a sentence each as the thing it
-is, the library lists and searches and opens a source page that
-autosaves, the notebook mounts the site's editor, the tasks are
-five lanes, Settings holds the preferences and the projects and
-pulls a Zotero library through the Worker, the archive exports
-JSON, BibTeX and RIS, and
-`supabase/migrations/20260902150000_research.sql` is the nine
-tables. `scripts/check-research.ts` asks its five questions,
-`scripts/research.test.ts` is the arithmetic and
-`next/research-studio.test.ts` drives the board and the library in
-a browser. The rooms stages 2 to 12 open say so on their own page
-rather than answering 404.
+**Every stage in the table has landed, in its first form.** The
+migration is `supabase/migrations/20260902150000_research.sql` plus
+`20260903040000_research_chunks.sql`;
+`scripts/check-research.ts` asks its questions,
+`scripts/research.test.ts` and its four siblings under `scripts/`
+hold the arithmetic, and `next/research-studio.test.ts` drives the
+rooms in a browser.
 
-**Stage 2 landed the same day.** What it does: a source carries
-files, sent as bytes to `PUT /api/research/file` and kept in R2
-under `research/<user id>/<sha256>.<ext>` by
-`functions/_lib/files.ts`, against the 100 MB cap and the 5 GB
-quota Settings draws as a meter; the bytes come back through a
-thirty-minute ticket, whole or as a Range, because pdf.js and
-`<audio>` send no bearer; a web page is captured through
-`POST /api/research/capture`, cleaned by the site's own sanitiser
-and kept as the page that was read. `/tools/research/read` is the
-queue, and with `?source=` it is the reader:
-`next/components/research/reader.tsx` draws a PDF with pdf.js's
-legacy build and a text layer, a captured page as prose, audio as a
-player and a book as a form, and a highlight in any of them is a
-row of `research_highlights` anchored to its quote and thirty
-characters either side, with the rectangles as a cache and
-`findAnchor()` in `shared/research.ts` as the way back when they
-are gone. Five meanings on the keys 1 to 5, a card each with a note
-and the extraction fields, the place kept on the row, and one line
-asked once when the status moves to read. Erasing the account
-removes the files after the rows, and `scripts/check-account.ts`
-asks that it does. Not yet from that section: the phone's swipes,
-keeping a file offline, and OCR, which section 31 always put later.
+### What is not built yet, by section
 
-**Stage 3 landed the same day, in part.** What it does:
-`functions/_lib/scholar-search.ts` asks OpenAlex, Crossref, Semantic
-Scholar, arXiv, Europe PMC, CORE and DOAJ in parallel within a
-budget, merges by DOI and by the title hash, ranks by how many had
-it, and reports an index that did not answer as such; Unpaywall
-answers for a free copy and OpenAlex for the three related lists,
-which sit on every source page. `/tools/research/find` is the
-room: fielded search, the databases as chips, every hit saying
-which indexes had it and whether it is already in the library,
-Add filing it as a verified source. A kept search is a
-`research_searches` row, the search log; its alert flag copies it
-to D1 through `PUT /api/research/alerts`, the Monday cron in
-`worker.js` reruns it and what is new is collected into the inbox
-at the next visit. Not yet from section 10: ORCID, the law shelf,
-the Islamic finance shelf and the data shelf, each of which is an
-adapter in the same shape and lands with the room that needs it.
+| section | left |
+| --- | --- |
+| 11, the reading room | the phone's swipes, keeping a file offline, OCR |
+| 10, finding | ORCID, and the law, Islamic finance and data shelves, each an adapter in the same shape, landing with the room that needs it |
+| 16, the writing desk | figures from runs, the glossary and abbreviations list, the outline dragged into order, Google Docs and a piece on this site, and Vancouver, which the styles repository no longer carries under that name |
+| 17, the planner | drag between lanes, the Gantt view, the project page whole, the reading queue's own lane |
+| 18, the atlas | the Excalidraw canvas, and the argument map dragging a highlight in as evidence |
+| 13, the review room | the search log and extraction sheet as Word tables on the desk, the reader open beside full-text screening, extraction prefilled from reading cards, a second screener's column |
+| 14 and 36, the lab | Univer sheets, Python through Pyodide and Colab, the origin private file system between visits, CodeMirror for the SQL, Observable Plot, an APA table exported to Word, regression tables with several models side by side, re-running a run from its page, the compare-to-the-paper panel, the data adapters beyond the market series, "climate for a place", the GitHub bridge |
+| 15, the field room | audio recorded in the browser and transcoded, memos as notes of kind memo linked from a code or a coding, the quote with its translation inserted into a draft, the consent form as a file on the row, a second screener's column |
+| 19, the workshop | KaTeX for the equation, the lab opening with the picked test's data selected, `ts-fsrs` in place of SM-2, Word export of the table maker |
+| 21, the assistant | the model picked by task rather than one model with an effort knob, the reading room's own "ask about this source" door, and insert at the caret rather than copy |
 
-**Stage 4 landed the same day, in its first form.** What it does:
-a document is a `research_documents` row and
-`/tools/research/write` is the desk over it, the site's editor with
-a citation chip (`@` or the button opens a picker over the library,
-a page after it is the locator) whose href holds the key and whose
-text is what `next/lib/cite.ts` rendered last through citeproc,
-with nine styles vendored as strings under `shared/csl/` by
-`scripts/import-csl.ts`; the whole document is rendered again when
-a chip lands or the style changes, the bibliography under it is the
-engine's, and a cited source moves to `cited`. Footnotes are a
-marker and a note numbered by position, and a note style renders a
-note's chips as one citation with ibid. `shared/research-write.ts`
-is the outline, the counts in both scripts, Markdown with Pandoc
-citations, a LaTeX skeleton with the cited BibTeX, the claims audit
-and the self-overlap check; `next/lib/export-docx.ts` is Word with
-real footnotes and a bibliography. A named snapshot is a version.
-Not yet from section 16: figures from runs, the glossary and the
-abbreviations list, the outline dragged into order, Google Docs and
-a piece on this site, and Vancouver, which the styles repository no
-longer carries under that name.
+### The metered services are the OWNER'S, not the reader's
 
-**Stage 5 landed the same day, in its first form.** What it does:
-`/tools/research/plan` is four views, the board (the tasks room's
-lanes), the dates, the timeline and the sessions. A date is a
-`research_events` row with a body shaped by its kind: a meeting's
-agenda, minutes, decisions and actions, the actions becoming tasks
-with one press; a submission's journal, its status with the date
-each was reached, and the reviewers' comments as a table of
-comment, response and change. The timeline is the year in SVG,
-events as bars, documents beneath them, the present as a line and
-the past shaded. A session is a `research_sessions` row with a
-timer, the `stage` cue at twenty-five minutes, and a line in the
-daily note when it stops, made if there was none. The calendar goes
-out: `shared/research-plan.ts` writes the iCalendar file, the
-browser pushes it to `PUT /api/research/calendar`, and
-`/api/research/ics/<token>` serves it to any calendar, the token
-long-lived and remade on request. `/tools/research/plan/week` is
-the weekly review. Not yet from section 17: drag between lanes, the
-Gantt view, the project page whole, and the reading queue's own
-lane.
+The model key has a bill on it and Workers AI has one quota for the
+whole site, so the assistant, the embeddings and the field room's
+transcription spend something the SITE holds rather than something
+the reader does. Sign-up is open to anybody with a Google account,
+so **"signed in" was not a gate at all**: a stranger could have
+spent the key at the throttle's rate, thirty calls a quarter of an
+hour, at the highest effort, and the month's spend on the settings
+page would never have shown it, because that figure sums the
+reader's own notes.
 
-**Stage 6 landed the next day, in its first form.** What it does:
-the questions room has three views beside the tree, the argument
-map (questions by sources, a mark per stance), the gap matrix (tags
-by sources, the empty cells counted) and the variables registry
-(rows of kind `variable` with a measure), all drawn from rows the
-studio already keeps by `shared/research-graph.ts`, which also lays
-the atlas out: a deterministic force layout in SVG, no library,
-seeded from the ids so the same rows draw the same picture.
-`/tools/research/atlas` is the graph of sources, notes, questions,
-documents and people with every link, evidence row and citation as
-a line; the citation network two hops out from a source through
-OpenAlex with hollow dots for what is not in the library; the
-literature timeline in the reader's own lanes; and people as
-`research_people` rows, an ORCID bringing what they have published
-through `GET /api/research/orcid/<id>`. Not yet from section 18:
-the Excalidraw canvas, and the argument map dragging a highlight in
-as evidence.
+`isAdmin()` decides, the one function the broker's levers already go
+through, and `/api/research/status` answers `owner` rather than `on`
+to anybody else: there, and not yours to spend. The room says so in
+a sentence instead of offering a button that would 403. **A second
+reader ever getting the assistant is a per-reader key, sealed the
+way the broker's is, and not a wider gate here.**
 
-**Stage 7 landed the same day, in its first form.** What it does:
-`/tools/research/review` is a review as a `research_reviews` row
-holding the protocol (the question in a PICO, SPIDER or plain
-frame, the criteria one a line with a minus for an exclusion and a
-STABLE id each, the databases, the dates, the languages, the
-screeners, the extraction columns and the appraisal template); a
-search log that is the saved searches with the review's id on them,
-run from the room and imported as `research_review_records` in one
-POST per database, with duplicates folded by DOI then by hash;
-screening by keyboard, `y` `x` `m` `j` `k` and a reason picked
-by number, a record becoming a library source only when it is
-included at full text and LINKED rather than added where the library
-already has it; PRISMA 2020 drawn in SVG from
-`prisma()` in `shared/research-review.ts`, exported as SVG and
-PNG; extraction as a table of the reader's own columns exporting
-CSV; appraisal as a CASP, JBI or empirical-economics checklist with
-the score derived; and synthesis as the gap matrix scoped to the
-included sources. A narrative review is the same room with the
-screening views off. Not yet from section 13: the search log and
-the extraction sheet on the writing desk as Word tables, the reader
-open beside full-text screening, extraction prefilled from reading
-cards, and a second screener's column.
+### Four things that shipped broken, and the rules they left
 
-**Stage 8 landed the same day, in its first form.** What it does:
-`/tools/research/lab` holds datasets as files in R2 that are ALSO
-library sources of type dataset, read into DuckDB in the browser
-(`next/lib/duck.ts`, self-hosted with `'wasm-unsafe-eval'` in both
-header lists) on the first ask and never through the Worker after
-the upload; a dictionary one row a column, typed on upload and
-bound to the questions room's variables; the Dhaka Stock Exchange,
-Alpha Vantage, Ken French and EM-DAT column names recognised and
-renamed; the four sanity checks of the replication template as a
-run of kind `check`; SQL over the loaded tables, kept as
-`research_transforms` and made views; twenty-four methods in
-`shared/research-stats.ts`, each held to a closed form by
-`scripts/research-stats.test.ts` (descriptives, correlation, the
-tests, OLS with HC and clustered errors, logit and probit, panel
-fixed effects, difference in differences, 2SLS with first-stage F,
-survey means, CAPM, Sharpe, Sortino and VaR, ADF, an event study,
-CSAD, Fama-MacBeth, factor regressions, degree days, rainfall
-shocks, index insurance, mean-variance and dominance); every
-result a `research_runs` row with a page at
-`/tools/research/lab/run/<id>`, its input, code, data hash,
-output whole, APA table and figure as SVG; charts as SVG text; and
-a daily market series through `GET /api/research/market/<symbol>`
-saved as a dataset with its source. Not yet from sections 14 and
-36: Univer sheets, Python cells through Pyodide and Colab, the
-origin private file system between visits, CodeMirror for the SQL,
-Observable Plot, the Word export of an APA table from the desk,
-regression tables with several models side by side, re-running a
-run from its page, the compare-to-the-paper panel, the data
-adapters beyond the market series, "climate for a place", and the
-GitHub bridge. Where no R was to hand the arithmetic test's
-references are closed forms and hand computations rather than a
-number copied from a console, which is written into that file.
-
-**Stage 9 landed the same day, in its first form.** What it does:
-`/tools/research/field` holds participants as `research_participants`
-rows by pseudonym, with a consent record and a name sealed IN THE
-BROWSER (`next/lib/seal.ts`, AES-GCM under a passphrase the site
-never sees); an interview as a source of type interview with the
-audio as its file and the participant as its author, its transcript
-a note of kind transcript whose segments live in `meta.segments`,
-from the Worker's model (`POST /api/research/transcribe`, Workers
-AI's Whisper on the dashboard-bound `AI` binding, and the room says
-so where it is off) or from a paste read by its times and speakers,
-arriving as a draft and marked checked by a person, with `[` and
-`]` nudging the player; the codebook as a tree of
-`research_codes` with a definition each; coding as selecting words
-in a segment and pressing a code, a `research_codings` row of
-offsets shown as an underline in the code's colour, with a
-translation and a memo on any of them; retrieval across the project;
-the three matrices out of the rows as heat tables and CSV; surveys as
-`research_surveys` rows whose questions are typed as lines, published
-to D1 (`survey_forms`) for the public page at
-`/tools/research/survey/<token>`, answered by strangers through the
-throttled `/api/survey/<token>` into `survey_responses`, collected by
-the owner and saved as a lab dataset; and the interview guide as a
-note with a tick per question per interview.
-`scripts/research-field.test.ts` is the coding test's arithmetic and
-section 11 of the browser test is the coding itself. Not yet from
-section 15: audio recorded in the browser and transcoded, memos as
-notes of kind memo linked from a code or a coding (the coding's own
-memo field is the first form), the quote with its translation
-inserted into a draft, the consent form as a file on the row, and
-a second screener's column.
-
-**Stage 10 landed the same day, in its first form.** What it does:
-`/tools/research/tools` is the thirty tools of the table in
-`next/lib/research-tools.ts`, one card each and one prerendered
-page each under `/tools/research/tools/<slug>`, with the
-arithmetic in `shared/research-tools.ts` held to textbook numbers
-by `scripts/research-tools.test.ts`: Cite this (any id, any of
-the nine styles, into the library), Parse a reference (Crossref's
-bibliographic search with its score, through
-`GET /api/research/lookup/ref`), Resolve an id, Find a free copy,
-Is it retracted (one DOI or the whole library), Journal finder
-(OpenAlex sources with OA, fee and DOAJ), Predatory check (DOAJ's
-record and the four questions, never a blacklist), Boolean builder
-(five syntaxes, kept as a search), Question builder (PICO, SPIDER,
-PEO, into a review with its protocol), Sample size and power (a
-proportion with design effect and finite population, a mean, two
-means, two proportions, a correlation, a regression, and power),
-Effect size converter, p and CI both ways, Which test (into the
-lab's own method), Returns, the calculators, Hijri and Gregorian
-(the tabular calendar, said to be within a day), Date arithmetic
-with either weekend, Word counter in both scripts, Abbreviations
-with the ones used before definition, Readability as facts, Self-
-overlap against the desk's documents, Table maker to Markdown,
-HTML and LaTeX, Equation editor as kept source, PRISMA drawer out
-of the review room's own figure, Quiz me with SM-2, Viva bank with
-answers kept, Ethics helper in both languages, Email templates with
-the reader's details, CV from the library, and Random and sampling
-with the seed shown. Not yet from section 19: KaTeX for the
-equation, the lab opening with the picked test's data selected,
-`ts-fsrs` in place of SM-2, and Word export of the table maker.
-
-**Stage 11 landed the same day, in its first form.** What it does:
-`/tools/research/ask` is the thirteen tasks of section 21 in
-`shared/research-assist.ts`, each saying what it needs (a
-source with its abstract and highlights, a question with its
-evidence, a document, the codebook and a segment, a review's
-PRISMA counts, a run's table, pasted text, or the library) and
-how hard the model should think; the Worker's
-`functions/_lib/assistant.ts` holds the one key and calls the
-API over raw HTTP, streaming, with the system prompt cached and
-`fallbacks: "default"`, and `POST /api/research/assistant`
-hands the same server-sent events to the browser, which prices
-the usage off the last event. Every answer's `[@key]` marks are
-grounded by `groundAnswer()`: a key the library holds is a
-chip to the source, one it does not is struck through with "not
-in your library" and a search, and the whole answer is a note of
-kind `assistant` carrying the task, the mode, the model, the
-context ids, the usage and the cost in dollars and pounds. Two
-modes: with the studio's rows and the project's brief, or fresh,
-where a hostile reviewer reads the pasted text and nothing else.
-The prompt library is the seven templates and any note of kind
-`prompt`, with the square-bracket marks filled in the room.
-Semantic search is `research_chunks` in
-`supabase/migrations/20260903040000_research_chunks.sql`, a
-pgvector column of 1024 from Workers AI's `bge-m3` through
-`POST /api/research/embed`, indexed from the room ("Index my
-library": every source's citation, one line, abstract and
-highlights, every note and every document, chunked by
-`chunkText()` and replaced whole per row, only what changed),
-and found by `match_research_chunks`, an RPC that runs as the
-reader under the same row-level security; "ask my library" is
-that search with the model reading the top twenty, and the
-board's search box lists the nearest passages beside the
-full-text hits. Settings has the switch (`prefs.assistant`, off
-until pressed) and the month's spend in pounds at the stated
-rate. Held by `scripts/research-assist.test.ts` (the grounding,
-the chunking, the cost, the placeholders) and section 13 of
-`next/research-studio.test.ts`, which streams a fake answer
-through the real parser.
-
-**The three metered services are the OWNER'S, and that is the
-change of 3 September 2026.** The model key has a bill on it and
-Workers AI has one quota for the whole site, so the assistant,
-the embeddings and the field room's transcription spend
-something the SITE holds rather than something the reader does.
-Sign-up is open to anybody with a Google account, so "signed in"
-was not a gate at all: a stranger could have spent the key at the
-throttle's rate, thirty calls a quarter of an hour, at the
-highest effort, and the month's spend on the settings page would
-never have shown it, because that figure sums the reader's own
-notes. `isAdmin()` decides now, the one function the broker's
-levers already go through, and `/api/research/status` answers
-`owner` rather than `on` to anybody else: there, and not yours to
-spend. The room says so in a sentence instead of offering a
-button that would 403. Every other room in the studio is the
-reader's own and none of this touches them. A second reader ever
-getting the assistant is a per-reader key, sealed the way the
-broker's is, and not a wider gate here.
-
-Not yet from section 21: the model
-picked by task rather than one model with an effort knob, the
-reading room's own "ask about this source" door, and insert at
-the caret rather than copy.
-
-**Stage 12 landed the same day, in its first form.** What it does:
-`/tools/research/methods` is a public room over pieces: the
-twelve lessons section 20 names first are a table in
-`next/lib/research-methods.ts`, by kind, each naming the
-workshop tools and the rooms it is the "how to" for, and
-`next/components/research/methods.tsx` draws them as cards
-and asks the public articles list which have been written. A
-piece with the tag `method` (or the topic) whose slug matches is
-a card that goes to it, with its cover and its minutes; one not
-yet written is promised rather than linked; a method piece the
-table does not plan is listed after them. A tool page and a
-room's head link the methods behind them by slug, and every card
-carries its slug as an anchor. `check-research.ts` fails on a
-method naming a tool or a room that does not exist.
-
-**AND THIRTY-ONE ADDRESSES ANSWERED 404.** The workshop's thirty
-tool pages and the twelve method lessons are dynamic segments
-that carried `export const dynamicParams = false`, which is
-Next's way of saying "only the params I named". On this
-deployment that answers 404 for EVERY param, its own prerendered
-ones included: the page is in `.open-next/cache` and the runtime
-refuses to render on demand, so it has nothing to serve.
-`/tools/research/tools/which-test` was dead from the day it
-shipped, and every card in the workshop pointed at it.
-
+**`dynamicParams = false` answers 404 for EVERY param on this
+deployment**, its own prerendered ones included: the page is in
+`.open-next/cache` and the runtime refuses to render on demand, so
+it has nothing to serve. Thirty-one addresses were dead from the
+day they shipped, the workshop's thirty tool pages and the twelve
+method lessons, with every card in the workshop pointing at one.
 It renders perfectly in `next build`, in `next dev` and in the
-browser test, which serves the prerendered files directly.
-Only workerd and the live site say otherwise, which is why
-`npm run preview` is worth more than another test. The flag is
-gone from both routes, an unknown param calls `notFound()`, and
-`check-routes.ts` fails on the flag coming back.
+browser test, which serves the prerendered files directly; only
+workerd and the live site say otherwise, which is why
+`npm run preview` is worth more than another test. The flag is gone
+from both routes, an unknown param calls `notFound()`, and
+`check-routes.ts` fails on it coming back.
 
-**AND THE TABLES DID NOT EXIST.** For a day the studio was
-seventeen rooms over an empty database: the Supabase branch went
-to MIGRATIONS_FAILED on 2 September and nothing after 30 August
-was ever applied. `research_sources` and `research_notes` built
-their search column with `array_to_string(tags, ' ')`, and that
-function is STABLE rather than immutable because it runs the
-element type's output function, so Postgres refused the generated
-column with `42P17` and the migration died on its first table.
+**A generated column may not call a STABLE function.**
+`research_sources` and `research_notes` built their search column
+with `array_to_string(tags, ' ')`, which is STABLE rather than
+immutable because it runs the element type's output function, so
+Postgres refused it with `42P17` and the migration died on its
+first table. The studio was seventeen rooms over an empty database
+for a day. Nothing here could see it, and the reason matters more
+than the fix: **every check in this repository reads the migration
+FILES.** `check-rls.ts` asks whether a table has its policies, and
+it is reading a file; the tests run against a fixture. A schema
+that cannot be created passed 88 checks, and the only symptom was
+one red tick belonging to somebody else's integration.
+`public.words_to_text` is the immutable wrapper the two columns use
+now, and `scripts/check-migrations.ts` reads the SQL for what a
+runner will refuse.
 
-Nothing here could see it, and the reason is worth more than the
-fix: **every check in this repository reads the migration FILES.**
-`check-rls.ts` asks whether a table has its policies, and it is
-reading a file; the tests run against a fixture. A schema that
-cannot be created passed 88 checks, and the only symptom was one
-red tick belonging to somebody else's integration, next to two
-green ones. `public.words_to_text` is the immutable wrapper the
-two columns use now, and `scripts/check-migrations.ts` reads the
-SQL for what a runner will refuse rather than for what it says.
-
-**A WORKER IS 3 MiB AND THIS STAGE SPENT IT.** `reiad-next` was
-2946 KiB gzipped before it and 3294 after, so every deploy of the
-branch failed while `checks` stayed green: the only symptom was a
-line in a Cloudflare dashboard that a pull request cannot show.
-What crossed it was four libraries that run only in a browser and
-were in the SERVER bundle anyway, because a client component's
-dynamic imports are in the server graph too: pdf.js at 148 KiB
-gzipped, `docx` at 112, citeproc at 95, KaTeX at 77.
+**A Worker is 3 MiB and this studio spent it.** `reiad-next` went
+from 2946 KiB gzipped to 3294, so every deploy of the branch failed
+while `checks` stayed green: the only symptom was a line in a
+Cloudflare dashboard that a pull request cannot show. What crossed
+it was four libraries that run only in a browser and were in the
+SERVER bundle anyway, **because a client component's dynamic
+imports are in the server graph too**: pdf.js at 148 KiB gzipped,
+`docx` at 112, citeproc at 95, KaTeX at 77.
 `next/components/research/rooms-client.tsx` is the `ssr: false`
-boundary for the four rooms that carry them, which is also a file
-of its own because a Server Component may not pass that flag to
-`next/dynamic`. The bundle is 2464 KiB now, under where it started,
-and `scripts/check-worker-size.ts` is what fails before a deploy
-does.
+boundary for the four rooms that carry them, and it is a file of
+its own because a Server Component may not pass that flag to
+`next/dynamic`. The bundle is 2464 KiB now, and
+`scripts/check-worker-size.ts` fails before a deploy does.
 
-**The twelve lessons are written, and they are lessons rather
-than promises.** Section 20 always said a method is a piece,
-written in the Article Studio, and that is still how one is
-replaced: a live piece carrying the slug wins over everything
-below it. What was wrong with leaving it there is that a room of
-twelve cards saying "still to write" is a room that teaches
-nobody, and the piece a stranger reads is the studio's public
-face. So each of the twelve is a file under `next/lib/methods/`,
-one lesson each in both languages, prerendered at
-`/tools/research/methods/<slug>`: article markup in the site's
-own vocabulary, a box of quick answers at the top, numbered
-steps, a checklist, a worked example with real arithmetic in it,
-and a foot naming the room or the tool where the reader does the
-thing. `next/components/research/method-lesson.tsx` is that foot.
+**A room of twelve cards saying "still to write" teaches nobody.**
+Section 20 says a method is a piece written in the Article Studio,
+and a live piece carrying the slug still wins over everything else.
+But the piece a stranger reads is the studio's public face, so each
+of the twelve is a file under `next/lib/methods/`, one lesson each
+in both languages, prerendered at
+`/tools/research/methods/<slug>`: article markup in the site's own
+vocabulary, a box of quick answers, numbered steps, a checklist, a
+worked example with real arithmetic, and a foot naming the room or
+tool where the reader does the thing
+(`next/components/research/method-lesson.tsx`).
 
-The cards now go three ways rather than two: to the piece where
-one is live, to the lesson where one is written, and to a promise
-where there is neither. `check-research.ts` asks the rest: a
-lesson the table does not plan, a planned method with no lesson
-at all, a half in one language, and a class outside the set
-`@layer article` styles, which is the one that renders as nothing
-on a page that looks finished.
+A card goes three ways: to the piece where one is live, to the
+lesson where one is written, and to a promise where there is
+neither. `check-research.ts` fails on a lesson the table does not
+plan, a planned method with no lesson, a half in one language, and
+a class outside the set `@layer article` styles, which is the one
+that renders as nothing on a page that looks finished.
 
-The imports in `next/lib/methods/index.ts` carry their `.ts`
-extension, because that check reads them under plain node with no
+**The imports in `next/lib/methods/index.ts` carry their `.ts`
+extension**, because that check reads them under plain node with no
 bundler to guess for it, and `allowImportingTsExtensions` in
 `next/tsconfig.json` is what lets the route import the same file.
 Same rule as `shared/`, one directory along.
@@ -2911,24 +2462,14 @@ the studio shows them.
 
 ## 36. The campaign plan, and what it adds to every room
 
-Added on 2 September 2026, after the first draft, from two things:
-the New Zealand campaign plan (agricultural and climate risk
-economics; Lincoln, Massey, Otago and Motu; six months from an
-orientation to a posted working paper, by replicating a published
-paper and extending it to Bangladesh) and one brief for the studio
-itself: **never having to leave this page**. Spreadsheets,
-regressions and the rest of econometrics, citing out of Google
-Scholar, saving lists of papers and opening and highlighting them,
-graphs, Python built in or connected, everything saved and nothing
-lost, everything connected so it can be found, every rough and every
-history, and the whole document written, edited and presented, in
-one place. Then everything else a year of finance, agriculture and
-economics would ask for, added rather than left.
-
-Every item below is placed in a room and is in the stages table of
-section 31, which this section amends.
-
-### Never leaving the page, item by item
+This section amends section 31 and comes from one brief: **never
+having to leave this page.** Spreadsheets, econometrics, citing out
+of Google Scholar, saving lists of papers and opening and
+highlighting them, graphs, Python built in or connected, everything
+saved and nothing lost, everything connected so it can be found,
+every rough and every history, and the whole document written,
+edited and presented, in one place. Every item below is placed in a
+room.
 
 | the ask | where it is answered |
 | --- | --- |
@@ -2938,7 +2479,7 @@ section 31, which this section amends.
 | saving lists of papers | reading lists and collections, below |
 | opening and highlighting them | the reading room, section 11 |
 | making graphs | runs with figures, section 14, plus Python's own figures below; every figure is an SVG or PNG a document can hold |
-| Python built in or connected | Pyodide in the browser AND Colab through Drive, below; both are stage 8 now rather than stage 13 |
+| Python built in or connected | Pyodide in the browser AND Colab through Drive, below; both are stage 8 rather than stage 13 |
 | everything saved, nothing lost | every write immediate, versions, the thirty-day bin, the activity log below, and the backup of section 24 |
 | well connected, easy to find | links, backlinks, the Atlas, one search over everything, and collections |
 | all roughs and history | the `rough` state, the Roughs list and the activity log below |
@@ -2948,24 +2489,20 @@ section 31, which this section amends.
 
 `research_collections`: a tree with a name, a parent and an order,
 and `collections uuid[]` on sources, notes, documents and datasets.
-The campaign's `NZ-PhD` with `Ag-Econ`, `Climate-Risk`, `Insurance`,
-`Methods` and `Target-Supervisors` under it is five rows. A Zotero
-pull brings Zotero's collections across as these, so filing done
-there is filing done here. Tags stay what they were: flat words for
-the gap matrix; a collection is a folder somebody chose.
+A Zotero pull brings Zotero's collections across as these, so filing
+done there is filing done here. Tags stay what they were: flat words
+for the gap matrix; a collection is a folder somebody chose.
 
-### The Zotero rule becomes a rule of the desk
+### A citation exists only if the real paper is in the library
 
-The campaign's first non-negotiable is that a citation exists only
-if the real paper is in the library. The studio holds it in code: a
-source carries `verified`, set only when its record came from
-Crossref, OpenAlex, Open Library or a database export, or when a
-file is attached. A citation chip that holds an unverified source
-renders with a mark, the claims audit lists every such chip, and the
-assistant's suggestions never become sources at all: they become a
-search. A reading list item that could not be found is deleted from
-the list by a press that says so, which is the campaign's Day 2 rule
-done in one place.
+Held in code rather than in discipline: a source carries
+`verified`, set only when its record came from Crossref, OpenAlex,
+Open Library or a database export, or when a file is attached. A
+citation chip holding an unverified source renders with a mark, the
+claims audit lists every such chip, and **the assistant's
+suggestions never become sources at all: they become a search.** A
+reading list item that could not be found is deleted from the list
+by a press that says so.
 
 ### The clipper: Google Scholar without leaving
 
@@ -2983,9 +2520,9 @@ capture box, and its library's export dropped on the library.
 
 ### The Lab's Sheets: a real spreadsheet
 
-The reader is strong in Excel and financial modelling, and the sheet
-model in `shared/lesson-grids.ts` is a table with holes in it, not a
-spreadsheet. So the Lab gains `/tools/research/lab/sheets`: a grid
+The sheet model in `shared/lesson-grids.ts` is a table with holes in
+it, not a spreadsheet. So the Lab gains
+`/tools/research/lab/sheets`: a grid
 with formulas, a formula bar, fills, sorts and filters, from Univer
 (Apache 2.0, the successor to Luckysheet), with `.xlsx` in and out
 through ExcelJS (MIT), because the free Univer does not carry that.
@@ -3003,9 +2540,8 @@ with a provenance line.
 
 ### Python built in, and Colab connected
 
-Pyodide moves from stage 13 to stage 8, because Python is not a
-later luxury for this reader but the campaign's own instrument: the
-Lab's notebook has Python cells beside SQL cells, with pandas,
+Pyodide is stage 8 rather than stage 13: the Lab's notebook has
+Python cells beside SQL cells, with pandas,
 numpy, scipy, statsmodels and matplotlib loaded from the site's own
 copy, and further packages by `micropip` where a pure wheel exists
 (`linearmodels` for panels, `arch` for GARCH). A Python run stores

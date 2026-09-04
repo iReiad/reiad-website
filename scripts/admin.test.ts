@@ -368,12 +368,6 @@ console.log("\nthe plan points somewhere");
   const subs = read("next/components/admin/subscribers-panel.tsx");
   const overview = read("next/components/admin/overview-panel.tsx");
   const shell = read("next/components/admin/panel.tsx");
-  /* The desk it was ported from, in `archive/`, which is what
-     that directory is for: a replacement is checkable against the
-     thing it replaced. Read and nothing else, which is the line
-     `archive/README.md` draws. */
-  const desk = read("archive/desk-react/Published.tsx");
-
   /* ADMIN.md's second rule, in the one place all three queues get
      it from. 401 is the passphrase and 403 a session without the
      right; a panel that read either as "no rows" would look
@@ -401,17 +395,17 @@ console.log("\nthe plan points somewhere");
   ok("the questions queue does not offer the filter that is public",
     !/id: "published"/.test(specs));
 
-  /* Every action the desk had. A port is finished when it does
-     what the thing it replaced did, not when it renders, and
-     those two look identical from here. */
+  /* Every action the desk had. THIS LIST IS THE RECORD of it: the
+     page it was ported from is gone, so nothing else can answer
+     "did the port keep everything". A port is finished when it does
+     what the thing it replaced did, not when it renders, and those
+     two look identical from here. */
   for (const action of [
     "Unpublish", "Publish", "History", "Draw card", "Copy link", "Delete", "Move to",
   ]) {
     ok(`Published keeps "${action}"`, pieces.includes(action),
-      `archive/desk-react/Published.tsx has it and the port does not`);
+      `the desk had it and the port does not`);
   }
-  ok("and the desk it was ported from still has them too", desk.includes("Draw card"),
-    "if this fails the comparison above has stopped meaning anything");
 
   /* Restoring is itself an overwrite and is snapshotted, which is
      the sentence that makes the button pressable. */

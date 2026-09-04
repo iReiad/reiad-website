@@ -1,74 +1,13 @@
-/* ============================================================
-   frontier.model.js: portfolio construction, end to end.
+/* frontier.model.js: portfolio construction, end to end. No DOM,
+   prices in and weights and performance out, checked by
+   `frontier.test.ts` against closed forms and identities.
 
-   No DOM. Prices in, weights and performance out, so that
-   frontier.test.ts can check every piece against a closed form
-   or an identity rather than against itself.
-
-   Everything on the page is computed here, in the browser, from
-   the daily prices in frontier.data.js. The covariance matrix,
-   the efficient frontier, the optimised weights and the
-   five-year hold-out test are all live: change a constraint and
-   the frontier is solved again, not looked up.
-
-   ------------------------------------------------------------
-   WHAT IS IMPLEMENTED
-
-   1 · Sample statistics on the estimation window. Simple daily
-       returns, the covariance matrix, correlations, and the
-       annualisation conventions stated once and used everywhere:
-       252 trading days, returns scaled by 252 and volatility by
-       its square root.
-
-   2 · Optional shrinkage of the covariance matrix towards a
-       diagonal target. Ten assets and 252 days is not a lot of
-       data for 55 free parameters, and the sample matrix is
-       known to be badly conditioned in exactly the direction the
-       optimiser leans on hardest. The dial exists because the
-       effect of moving it is one of the more useful things this
-       page can show.
-
-   3 · Long-only mean-variance optimisation, subject to weights
-       that sum to one and an optional cap per holding. Solved by
-       projected gradient ascent on
-
-           maximise  w'μ − (γ/2)·w'Σw
-
-       sweeping the risk-aversion γ from large to small, which
-       traces the whole efficient frontier without ever needing
-       an equality constraint on the target return. Every point
-       the page draws is a solved optimisation.
-
-   4 · The projection itself, onto {w : Σw = 1, 0 ≤ w ≤ cap}.
-       Bisection on the single Lagrange multiplier, which is
-       exact to machine precision and is what makes the box
-       constraint honest rather than a clip applied afterwards.
-
-   5 · A hold-out test on the years after the estimation window,
-       with both rebalancing conventions, because the choice
-       between them is a strategy decision worth several points
-       of return and is usually left unstated.
-
-   6 · The fund as it was actually built and run, which is what
-       the page loads with. Its weights came from a Solver run
-       that minimised the sum of w²σ² subject to the weights
-       summing to one, and that objective has a closed form:
-       weight proportional to one over variance. inverseVariance
-       reproduces the shipped weights to within a rounding error,
-       which is the check that the Solver converged to the
-       optimum of its own objective rather than stopped near it.
-       The frontier and the three optimised alternatives stay,
-       because a reader is entitled to ask what else was on the
-       table, but the default is the fund that was held.
-
-   7 · The reporting a fund is judged on: portfolio beta as a
-       weighted average of the holdings' betas, each holding's
-       contribution to it, and year by year the return, the
-       index, alpha against the security market line, volatility,
-       Sharpe and Treynor. Sharpe and Treynor are both quoted
-       because a fund run at half the market's beta is a fund
-       where the two measures are answering different questions.
-   ============================================================ */
+   Everything is computed live in the browser from the daily
+   prices in `frontier.data.js`: change a constraint and the
+   frontier is solved again rather than looked up. The
+   annualisation conventions are stated once and used
+   everywhere: 252 trading days, returns scaled by 252 and
+   volatility by its square root. */
 
 import {
   COMPANIES, TICKERS, HELD, DATES_2015, PRICES_2015,
@@ -133,14 +72,9 @@ export const correlationOf = (S) =>
  *
  *     Σ(δ) = (1 − δ)·S + δ·diag(S)
  *
- * At δ = 0 this is the sample matrix, which is what a textbook
- * optimisation uses and what the optimiser can most easily
- * exploit: the smallest eigenvalues of a sample covariance
- * matrix are the least reliable part of it, and a minimum
- * variance objective is drawn to exactly those directions. At
- * δ = 1 every correlation is thrown away. The useful settings
- * are in between, and the page lets the reader find out how much
- * the answer depends on that choice.
+ * δ = 0 is the sample matrix, whose smallest eigenvalues are its
+ * least reliable part and exactly where a minimum variance
+ * objective is drawn; δ = 1 throws every correlation away.
  */
 export function shrink(S, delta) {
   const d = clamp(delta, 0, 1);
@@ -180,19 +114,12 @@ export function riskContributions(w, S) {
   return { vol, marginal, component, share: component.map((c) => c / (vol || 1)) };
 }
 
-/* ------------------------------------------------------------
-   3 · The projection
-
-   Euclidean projection onto {w : Σw = 1, 0 ≤ wᵢ ≤ cap}.
-
-   For a single multiplier λ, the projection of v is
-   wᵢ(λ) = clamp(vᵢ − λ, 0, cap), and Σwᵢ(λ) falls monotonically
-   as λ rises. So the whole problem is a one-dimensional root
-   find, and bisection solves it to machine precision in fifty
-   iterations. Clipping the weights and renormalising instead,
-   which is the common shortcut, does not land on the projection
-   and quietly biases every solution towards the cap.
-   ------------------------------------------------------------ */
+/* 3 · Euclidean projection onto {w : Σw = 1, 0 ≤ wᵢ ≤ cap}.
+   `wᵢ(λ) = clamp(vᵢ − λ, 0, cap)` and `Σwᵢ(λ)` falls
+   monotonically in λ, so it is a one-dimensional root find and
+   bisection is exact to machine precision. Clipping and
+   renormalising instead, the common shortcut, does NOT land on
+   the projection and biases every solution towards the cap. */
 export function projectToSimplex(v, cap = 1) {
   const n = v.length;
   if (cap * n < 1 - 1e-12) throw new Error(`a cap of ${cap} cannot hold ${n} weights summing to one`);
@@ -321,23 +248,14 @@ export function tangency(mu, S, rf, opts = {}, precomputed = null) {
 export const equalWeight = (n) => Array(n).fill(1 / n);
 
 /**
- * The allocation the fund was built on: minimise the sum of the
- * weighted variances,
+ * The allocation the fund was built on:
  *
  *     minimise Σ wᵢ²σᵢ²   subject to   Σ wᵢ = 1
  *
- * which is a risk-based weighting rather than a return-seeking
- * one. It asks for no view on expected returns at all, only for
- * each holding's own volatility, and it hands the quiet names
- * more of the fund and the noisy ones less.
- *
- * It also has a closed form. Setting the derivative of the
- * Lagrangian to zero gives wᵢ ∝ 1/σᵢ², so the answer can be
- * written down as well as solved, and the two agree here to four
- * decimal places. That is worth stating because it means the
- * Solver run behind the original workbook converged to the true
- * optimum of the objective it was given rather than to a nearby
- * point that merely looked settled.
+ * A risk-based weighting asking for no view on expected returns.
+ * It has a closed form, wᵢ ∝ 1/σᵢ², which is what says the
+ * original Solver run converged to the true optimum rather than
+ * to a nearby point that looked settled.
  */
 export function inverseVariance(S) {
   const inv = S.map((row, a) => 1 / row[a]);
@@ -346,15 +264,11 @@ export function inverseVariance(S) {
 }
 
 /**
- * The weights the fund actually held, as they came out of the
- * optimisation at the end of 2015 and as they were carried,
- * unchanged, for the five years that followed.
- *
- * They are kept here as the fixed vector that was used rather
- * than recomputed on every page load, because these are the
- * numbers the money was in. inverseVariance() above reproduces
- * them from the same prices to within a hundredth of a
- * percentage point, which frontier.test.ts checks.
+ * The weights the fund actually held, kept as the fixed vector
+ * that was used rather than recomputed: these are the numbers
+ * the money was in. `inverseVariance()` above reproduces them to
+ * within a hundredth of a point, which `frontier.test.ts`
+ * checks.
  */
 export const AS_BUILT = {
   BAG: 0.1761, CWK: 0.1533, FRAS: 0.0937, BOWL: 0.0853, IGG: 0.1669,
@@ -387,13 +301,10 @@ export function betaContribution(weights, tickers, companies = COMPANIES) {
  * @param {string[]} tickers
  * @param {"rebalance"|"hold"} mode
  *
- * The two modes are different strategies, not two ways of
- * describing one. "rebalance" holds the weights constant, which
- * means selling what rose and buying what fell every day.
- * "hold" buys once and never trades again, so the weights drift
- * towards whatever won. Over five years the gap between them is
- * worth several points of return, and it is a decision rather
- * than an accounting convention.
+ * The two modes are different STRATEGIES: "rebalance" holds the
+ * weights constant, so it sells what rose and buys what fell;
+ * "hold" buys once and lets the weights drift. Over five years
+ * the gap is worth several points of return.
  */
 export function backtest(w, prices, tickers, { mode = "hold" } = {}) {
   const n = prices[tickers[0]].length;
@@ -455,18 +366,14 @@ export function annualReturns(nav, dates) {
 }
 
 /**
- * The measures a fund is reported on, year by year: return
- * against the index, the excess over what its market exposure
- * alone would have earned, and the two risk-adjusted ratios.
+ * The measures a fund is reported on, year by year.
  *
  *     α       = Rp − [rf + βp(Rm − rf)]
  *     Sharpe  = (Rp − rf) / σp        risk as total volatility
  *     Treynor = (Rp − rf) / βp        risk as market exposure only
  *
- * Sharpe divides by everything that moved; Treynor divides only
- * by the part the market explains. For a fund built to run at a
- * low beta the two say quite different things, which is the
- * reason to quote both rather than pick one.
+ * Both ratios are quoted because for a fund run at a low beta
+ * they say quite different things.
  */
 export function yearTable(nav, dates, portfolioBeta, {
   benchmark = BENCHMARK_ANNUAL, riskFree = RISK_FREE,

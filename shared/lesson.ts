@@ -1,39 +1,26 @@
 /* ============================================================
    lesson.ts: what an interactive part of a lesson is.
 
-   A lesson of the money school is two bodies and a bag of
-   blocks. The bodies are prose, one Bangla and one English, and
-   they carry empty mount points:
+   A money-school lesson is two prose bodies carrying empty mount
+   points:
 
        <div class="mount" data-mount="pe-lab"></div>
 
-   This file is the shape of what goes in one, the parser that
-   reads a row's `blocks` column, and the validator both
+   This file is the shape of what goes in one, the parser for a
+   row's `blocks` column, and the validator both
    `scripts/check-money.ts` and the Studio run. MONEY.md is the
-   argument for all of it.
+   argument.
 
-   ---- one definition, two languages ----
+   ONE DEFINITION, TWO LANGUAGES. Every string a reader sees is a
+   `Say`: `{ bn, en }`, so a quiz cannot disagree with itself
+   about which answer is right. The prose is two bodies because
+   prose is written rather than translated; a block is data.
 
-   Every string a reader sees is a `Say`: `{ bn, en }`. A block
-   is therefore said ONCE and shown in whichever language the
-   reader is in, which is the only arrangement where a quiz
-   cannot disagree with itself about which answer is right. The
-   prose is two bodies because prose is written rather than
-   translated; a block is data.
-
-   ---- what is data here and what is code ----
-
-   A `lab` names a MODEL and the model is code, in
-   `shared/lesson-labs.ts`. A formula stored in a database row is
-   code in a place nothing typechecks and nothing can test, and
-   the rule in CLAUDE.md about a calculator's arithmetic needing
-   an app release is the same rule seen from the other end: the
-   arithmetic is code, its inputs are data. The same goes for a
-   `figure`: the SHAPES are drawn by `next/components/lesson/
-   figure.tsx` and what a given figure says is data.
-
-   So a new BLOCK is a row in a database and reaches the Android
-   app on its next fetch. A new KIND is a release.
+   A `lab` names a MODEL and the model is CODE, in
+   `shared/lesson-labs.ts`; a formula in a database row is code
+   nothing typechecks. Same for a `figure`: the shapes are drawn
+   by `next/components/lesson/figure.tsx`. So a new BLOCK reaches
+   the Android app on its next fetch and a new KIND is a release.
    ============================================================ */
 
 /** One phrase, in both languages. Bangla first in the type as
@@ -72,11 +59,9 @@ interface BlockBase {
   note?: Say;
 }
 
-/** Answer, and be told why each option is right or wrong.
-
-    Every option carries a `why`, not only the wrong ones. A quiz
-    that explains itself only when you are wrong teaches you to
-    guess until the red goes away. */
+/** Answer, and be told why each option is right or wrong. EVERY
+    option carries a `why`, not only the wrong ones: a quiz that
+    explains itself only when you are wrong teaches guessing. */
 export interface QuizBlock extends BlockBase {
   kind: "quiz";
   questions: {
@@ -88,12 +73,10 @@ export interface QuizBlock extends BlockBase {
   }[];
 }
 
-/** Put the steps of a process in the order they happen.
-
-    The array IS the answer, in order. The component shuffles it
-    deterministically from the mount id, so the puzzle is the
-    same on the server and in the browser and the same on two
-    devices. */
+/** Put the steps of a process in the order they happen. THE
+    ARRAY IS THE ANSWER, in order; the component shuffles it
+    deterministically from the mount id, so the puzzle is the same
+    on the server, in the browser and on a second device. */
 export interface OrderBlock extends BlockBase {
   kind: "order";
   items: { text: Say; why?: Say }[];
@@ -114,13 +97,11 @@ export interface BinsBlock extends BlockBase {
   items: { text: Say; bin: string; why?: Say }[];
 }
 
-/** Sliders, a number that moves, and usually a chart.
-
-    `model` names a function in `shared/lesson-labs.ts`, which
-    owns the arithmetic AND the inputs: their ranges, their units
-    and their defaults. `preset` moves a default for this lesson,
-    `hide` takes an input off the panel and pins it, and neither
-    can invent an input the model does not have. */
+/** Sliders, a number that moves, and usually a chart. `model`
+    names a function in `shared/lesson-labs.ts`, which owns the
+    arithmetic AND the inputs, their ranges, units and defaults.
+    `preset` and `hide` cannot invent an input the model does not
+    have. */
 export interface LabBlock extends BlockBase {
   kind: "lab";
   model: string;
@@ -128,11 +109,9 @@ export interface LabBlock extends BlockBase {
   hide?: string[];
 }
 
-/** A figure with numbers in it that the reader can hover.
-
-    Data rather than a picture, so it is right in both themes,
-    readable on a phone, and a screen reader gets the same table
-    the eye gets. */
+/** A figure with numbers in it that the reader can hover. Data
+    rather than a picture, so it is right in both themes and a
+    screen reader gets the same table the eye gets. */
 export interface ChartBlock extends BlockBase {
   kind: "chart";
   shape: "line" | "bar" | "stack" | "donut";
@@ -155,13 +134,9 @@ export type FigureShape =
   | "flow" | "stack" | "scale" | "matrix" | "cycle"
   | "steps" | "timeline" | "callouts" | "venn" | "tree";
 
-/** A drawing, from data.
-
-   Ten shapes, and between them they cover what this school
-   actually has to show: a process, a thing broken into parts, a
-   trade-off, two axes, a loop, a climb, a history, a screen with
-   numbers on it, an overlap, and a hierarchy. A photograph of a
-   trading floor teaches none of those. */
+/** A drawing, from data. Ten shapes: a process, parts of a
+   whole, a trade-off, two axes, a loop, a climb, a history, a
+   screen with numbers on it, an overlap and a hierarchy. */
 export interface FigureBlock extends BlockBase {
   kind: "figure";
   shape: FigureShape;
@@ -203,31 +178,25 @@ export interface CompareBlock extends BlockBase {
   rows: { label: Say; cells: Say[]; best?: number }[];
 }
 
-/** Find what is wrong in an excerpt.
-
-    Lines a reader clicks; the ones with a `flag` are the
-    problems and the ones without are there so that finding them
-    is work. */
+/** Find what is wrong in an excerpt. Lines a reader clicks: the
+    ones with a `flag` are the problems and the ones without are
+    there so that finding them is work. */
 export interface SpotBlock extends BlockBase {
   kind: "spot";
   source: Say;
   lines: { text: Say; flag?: Say }[];
 }
 
-/** A SHEET THE READER TYPES INTO.
+/** A SHEET THE READER TYPES INTO. `model` names a table in
+    `shared/lesson-grids.ts`, which owns the rows, the columns,
+    which cells are the reader's and what the computed ones are
+    computed from: a table whose arithmetic lived in a component
+    is a table the Android app could not compute.
 
-    `model` names a table in `shared/lesson-grids.ts`, which owns
-    the rows, the columns, which cells are the reader's and what
-    the computed ones are computed from. Same arrangement as a
-    lab, and for the same reason: the Android app renders the
-    same rows and a table whose arithmetic lived in a component
-    would be a table the app could not compute.
-
-    `preset` moves an opening number for this lesson and cannot
-    invent a cell the model does not have, exactly as a lab's
-    does. There is no `hide`: a sheet with a row taken out of it
-    is a different sheet, and a total that no longer adds up is
-    worse than a row somebody did not want. */
+    `preset` cannot invent a cell the model does not have. THERE
+    IS NO `hide`: a sheet with a row taken out is a different
+    sheet, and a total that no longer adds up is worse than a row
+    somebody did not want. */
 export interface GridBlock extends BlockBase {
   kind: "grid";
   model: string;
@@ -235,11 +204,8 @@ export interface GridBlock extends BlockBase {
 }
 
 /** Something to do away from the screen, ticked off here.
-
-    It is deliberately not marked and not scored: nothing on this
-    site can see whether somebody really opened a broker's app.
-    What it can do is keep the list, so a reader coming back a
-    week later knows which three of the five they did. */
+    Deliberately not marked and not scored: nothing here can see
+    whether somebody really opened a broker's app. */
 export interface DrillBlock extends BlockBase {
   kind: "drill";
   steps: { text: Say; hint?: Say }[];
@@ -269,14 +235,10 @@ export type Blocks = Record<string, Block>;
    Reading them out of a row
    ------------------------------------------------------------ */
 
-/** The mount marker, in either attribute order.
-
-    The server's sanitiser keeps attributes in the order it found
-    them, so `class` before `data-mount` and the other way round
-    are both things a row can hold. A splitter that matched one
-    of the two would drop every block in a lesson whose author
-    typed the attributes the other way, and the page would render
-    perfectly without them. */
+/** The mount marker, IN EITHER ATTRIBUTE ORDER. The server's
+    sanitiser keeps attributes as it found them, so a splitter
+    matching one order drops every block in a lesson whose author
+    typed the other, on a page that renders perfectly. */
 export const MOUNT = /<div\s+(?:class="mount"\s+data-mount="([\w-]+)"|data-mount="([\w-]+)"\s+class="mount")\s*>\s*<\/div>/g;
 
 /** The mount ids a body carries, in order. */
@@ -299,10 +261,10 @@ export const splitBody = (html: string): { parts: string[]; ids: string[] } => {
   return { parts, ids };
 };
 
-/** The `blocks` column, parsed. A row that holds nothing, or
-    holds something that is not an object, is a lesson with no
-    blocks rather than a lesson that throws: the prose is the
-    lesson and a broken block must never take it down. */
+/** The `blocks` column, parsed. A row holding nothing, or
+    something that is not an object, is a lesson with NO BLOCKS
+    rather than a lesson that throws: the prose is the lesson and
+    a broken block must never take it down. */
 export const parseBlocks = (raw: unknown): Blocks => {
   if (!raw) return {};
   if (typeof raw === "object") return raw as Blocks;
@@ -317,12 +279,9 @@ export const parseBlocks = (raw: unknown): Blocks => {
 };
 
 /* ------------------------------------------------------------
-   Validating them
-
-   `check-money.ts` runs this over every lesson, and it is
-   written to return every problem rather than the first, because
-   a seed of eighty lessons fixed one message at a time is eighty
-   runs.
+   Validating them. `check-money.ts` runs this over every lesson,
+   and it returns EVERY problem rather than the first: eighty
+   lessons fixed one message at a time is eighty runs.
    ------------------------------------------------------------ */
 
 const isSay = (v: unknown): boolean =>
@@ -331,11 +290,10 @@ const isSay = (v: unknown): boolean =>
   && typeof (v as Say).en === "string" && (v as Say).en.trim() !== "";
 
 /** Everything wrong with one block, as sentences. Empty is a
-    pass. `models` and `shapes` are handed in rather than
-    imported so that this file stays the shape and
-    `lesson-labs.ts` stays the arithmetic: a validator that
-    imported every model would pull the whole calculator library
-    into the Android app's copy of this file. */
+    pass. `models` and `shapes` are HANDED IN rather than
+    imported: a validator importing every model pulls the whole
+    calculator library into the Android app's copy of this
+    file. */
 export function blockProblems(
   id: string, block: unknown, models: readonly string[] = [],
   grids: readonly string[] = [],
@@ -542,13 +500,10 @@ export function blockProblems(
     }
   }
 
-  /* A block's words are rendered as TEXT, by `T` in
-     `lesson/lang.tsx`, and never as HTML. A cross-link written
-     into a `why` therefore reaches the reader as the literal
-     characters of an anchor tag in the middle of a sentence, on
-     a page that renders perfectly. Eight of them shipped that
-     way before this asked. Prose carries links; a block carries
-     words. */
+  /* A block's words are rendered as TEXT by `T` in
+     `lesson/lang.tsx` and NEVER as HTML, so a tag written into a
+     `why` reaches the reader as literal characters in the middle
+     of a sentence. Prose carries links; a block carries words. */
   for (const found of markupIn(b)) at(`${found} holds markup, and a block's words are rendered as text`);
 
   return out;
@@ -557,8 +512,7 @@ export function blockProblems(
 const TAG = /<\/?[a-z][^>]*>/i;
 
 /** Every path inside a block whose string value holds a tag. A
-    walk rather than a check per kind, because the eleven kinds
-    put their words in eleven shapes and a twelfth would arrive
+    WALK rather than a check per kind, or a twelfth kind arrives
     unguarded. */
 function markupIn(value: unknown, path: string[] = []): string[] {
   if (typeof value === "string") {
@@ -574,9 +528,8 @@ function markupIn(value: unknown, path: string[] = []): string[] {
 }
 
 /** Bangla digits, from `shared/schools.ts` rather than a second
-    copy: that one had a Devanagari bug once and does not need a
-    second implementation to have it again. Re-exported so a
-    component can reach one import for both. */
+    copy. Re-exported so a component reaches one import for
+    both. */
 export { bnNum } from "./schools.ts";
 
 /** The half of a `Say` a language wants. */
@@ -584,13 +537,9 @@ export const say = (s: Say | undefined, lang: "bn" | "en"): string =>
   s ? (lang === "bn" ? s.bn : s.en) : "";
 
 /** A stable shuffle, so an `order` puzzle is the same on the
-    server, in the browser and on a second device.
-
-    Math.random() here would be a hydration mismatch on every
-    lesson that has one: the server picks one order, the browser
-    picks another, React discards the difference and prints
-    #418, which is the failure that blanked every calculator on
-    this site for a day. */
+    server, in the browser and on a second device. Math.random()
+    is a hydration mismatch on every lesson that has one: React
+    discards the difference and prints #418. */
 export function shuffled<T>(items: readonly T[], seed: string): T[] {
   let h = 2166136261;
   for (let i = 0; i < seed.length; i += 1) {
@@ -606,10 +555,9 @@ export function shuffled<T>(items: readonly T[], seed: string): T[] {
     const j = Math.floor(next() * (i + 1));
     [out[i], out[j]] = [out[j], out[i]];
   }
-  /* A shuffle that happens to return the original order is a
-     puzzle with nothing to do, and with a fixed seed it stays
-     that way for ever. One rotation is enough to break it and
-     keeps the result deterministic. */
+  /* A shuffle returning the original order is a puzzle with
+     nothing to do, and with a fixed seed it stays that way for
+     ever. One rotation breaks it and stays deterministic. */
   if (out.length > 1 && out.every((v, i) => v === items[i])) out.push(out.shift() as T);
   return out;
 }

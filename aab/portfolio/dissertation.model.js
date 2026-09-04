@@ -1,30 +1,11 @@
-/* ============================================================
-   dissertation.model.js: the statistics engine for the
-   Islamic-vs-conventional fund case study.
+/* dissertation.model.js: the statistics engine behind the
+   Islamic-vs-conventional fund case study. No DOM, numbers in
+   and numbers out, checked by `dissertation.test.ts`.
 
-   No DOM in here. Everything takes numbers and returns numbers,
-   which is the only way to check it against values a textbook
-   already agrees on. dissertation.test.ts does exactly that,
-   run `node aab/portfolio/dissertation.test.ts`.
-
-   Three groups of things live here:
-
-     1. Distribution functions, Student's t and the normal,
-        plus the NONCENTRAL t, which is the one that makes an
-        honest power calculation possible on a sample of three.
-        A normal approximation would be comfortable and wrong:
-        with two degrees of freedom the t distribution is not
-        remotely normal, and the whole point of the exercise is
-        to be truthful about what three funds can detect.
-
-     2. Test and power routines, Welch's unequal-variance
-        t-test (the test the dissertation used), the power of
-        that test, and its inverse: the smallest difference the
-        design could have found.
-
-     3. Small series helpers, drawdown, rebasing, box-plot
-        statistics, histogram re-binning.
-   ============================================================ */
+   The NONCENTRAL t is what makes an honest power calculation
+   possible on a sample of three: with two degrees of freedom the
+   t distribution is nothing like normal, and the point of the
+   exercise is to be truthful about what three funds can detect. */
 
 /* ------------------------------------------------------------
    1 · distribution functions

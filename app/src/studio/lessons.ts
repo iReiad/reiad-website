@@ -78,16 +78,9 @@ export interface Stage {
 /** Whether a stage's prose lives somewhere other than these rows,
     and where.
 
-    THE BUG THIS EXISTS FOR
-
-    The money school read 34 written out of 89 and its first
-    stages looked entirely unwritten, which was true of the rows
-    and false about the site. `build-lessons.mjs` skipped both by
-    name, so 26 rows had empty bodies because nothing had ever put
-    text in them and nothing would ever read it. The editor
-    offered to write all 26: type a paragraph, press Save, and it
-    lands in a row no page is built from, which is the "finished
-    work nobody can reach" failure arrived at from the other end.
+    A stage whose prose lives elsewhere must say so, or the editor
+    offers to write a row no page reads: type a paragraph, press
+    Save, and it lands where nothing will ever show it.
 
     Half of that is now fixed at the source rather than described
     here. `basics-1`'s eighteen term pages are written from these

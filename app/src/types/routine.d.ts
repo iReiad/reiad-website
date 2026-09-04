@@ -29,15 +29,9 @@ export interface TemplateRow {
 }
 /**
  * Today, for somebody whose day ends at `roll` rather than at
- * midnight.
- *
- * Marking something at 1am belongs to yesterday, because that is
- * what the person doing it means. The default is 4, so the small
- * hours are still the night before, and somebody who works nights
- * can genuinely set it to 11.
- *
- * Local time throughout, and deliberately: a routine is about the
- * day somebody is living in, not about UTC.
+ * midnight: marking something at 1am belongs to yesterday.
+ * LOCAL time throughout, never UTC: a routine is about the day
+ * somebody is living in.
  */
 export declare function todayFor(roll?: number, now?: Date): string;
 /** `YYYY-MM-DD` in LOCAL time. `toISOString()` is UTC and would
@@ -81,23 +75,13 @@ export declare function dayEntry(date: string): Promise<EntryRow | null>;
     everything. */
 export declare function daysBetween(from: string, to: string): Promise<EntryRow[]>;
 /**
- * Write a day.
+ * Write a day. ONE ROW PER PERSON PER DAY, so it is an upsert on
+ * `(user_id, entry_date)` and saving is one request.
  *
- * ONE ROW PER PERSON PER DAY, so this is an upsert on
- * `(user_id, entry_date)` and the whole of saving is one request.
- *
- * ---- what it sends, and the bug that shape avoids ----
- *
- * `resolution=merge-duplicates` REPLACES the conflicting row with
- * what is sent. So a caller sending only `{ marks }` would erase
- * the note somebody wrote this morning, and a caller sending only
- * `{ note }` would erase every tick. That is the one destructive
- * thing this endpoint could do, and `keepPage()` in `saved.ts`
- * says the same about the two columns of a library row.
- *
- * So the caller passes the WHOLE day as it now stands and this
- * sends the whole day. The day view holds it in state anyway,
- * because it has to draw it.
+ * `resolution=merge-duplicates` REPLACES the conflicting row, so
+ * the caller must pass the WHOLE day as it now stands: sending
+ * only `{ marks }` would erase this morning's note and only
+ * `{ note }` would erase every tick.
  */
 export declare function saveDay(routineId: string, date: string, day: {
     marks: Record<string, number>;
@@ -106,16 +90,9 @@ export declare function saveDay(routineId: string, date: string, day: {
     chose?: string | null;
 }): Promise<EntryRow | null>;
 /**
- * How many times a task has EVER been marked.
- *
- * The birds, the garden and every milestone are this function.
- * It has no window, no "recently" and no reset, which is the
- * whole of ROUTINE.md §0: a counter with a window is a streak,
- * and a person who stops for a fortnight and comes back must find
- * the flock exactly as they left it.
- *
- * If a `since` argument ever appears here, that is the moment
- * this stopped being a gift.
+ * How many times a task has EVER been marked. No window, no
+ * "recently", no reset: `ROUTINE.md` §0. A `since` argument here
+ * would make this a streak.
  */
 export declare function everMarked(taskId: string): Promise<number>;
 /** Everything a reader has ever written, newest first, for the

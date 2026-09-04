@@ -1,32 +1,10 @@
-/* ============================================================
-   streak.ts: which days somebody actually turned up.
-
-   The four courses each record WHAT has been read. None of them
-   records WHEN, and that turns out to be the one thing a person
-   setting up an account wants back: "how am I doing" is a question
-   about days, not about lessons.
-
-   So this keeps one list of dates. A day goes in when any of the
-   four courses announces progress, once, and never comes out. It
-   is about forty bytes a year.
-
-   WHAT THIS IS NOT
-
-   There is no flame, no "don't lose your streak", and nothing
-   here is ever shown as a warning. The site has no notifications
-   and is not getting any. A count of days is a fact somebody
-   asked for; a count of days with a threat attached is a
-   different product. `run()` exists because "eleven days in a
-   row" is a nice thing to be told once on a settings page, not
-   because anything should happen when it ends.
-
-   Dates are local, not UTC. Somebody in Dhaka reading at 1am has
-   turned up today, by any definition of "today" they would use.
-
-   archive/TRANSITION.md, Stage 6: this rides on the same sync as the rest
-   of the progress, as a union, so two devices give the true set
-   of days rather than whichever synced last.
-   ============================================================ */
+/* streak.ts: which days somebody actually turned up, under
+   `days-active`. A day goes in when any of the four schools
+   announces progress and never comes out.
+   No flame, no warning, no notification: a count of days with a
+   threat attached is a different product. Dates are LOCAL rather
+   than UTC, because somebody in Dhaka reading at 1am has turned
+   up today. Synced as a union, so two devices give the true set. */
 const KEY = "days-active";
 /* The four courses' own events, which they already fire. Nothing
    here has to be added to a school for this to work, which is the

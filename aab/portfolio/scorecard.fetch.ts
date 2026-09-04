@@ -1,47 +1,23 @@
 #!/usr/bin/env node
-/* ============================================================
-   scorecard.fetch.ts, the file that makes scorecard.data.js.
+/* scorecard.fetch.ts: what makes scorecard.data.js.
 
        node aab/portfolio/scorecard.fetch.ts
 
-   Downloads the Statlog German Credit data from the UCI Machine
-   Learning Repository, checks it is the file it is supposed to
-   be, and writes it out as a JavaScript module the browser can
-   import.
-
-   ------------------------------------------------------------
-   WHY THIS SCRIPT EXISTS RATHER THAN A PASTED FILE
-
-   The case study's whole claim is that it fits real models to a
-   real, public dataset. That claim is worth nothing if the data
-   in this repository cannot be traced back to the source, so
-   this script is the trace: it names the URL, it records the
-   checksum of exactly what it downloaded, and it recomputes
-   column-level totals that scorecard.test.ts checks the shipped
-   file against. If a conversion ever mangles a column, the sums
-   move and the tests fail.
-
-   It needs the network, so it is not part of any build. Run it
-   if the source ever changes, and commit what it writes, the
-   same arrangement as build-lessons.mjs and build-og.ts.
-
-   ------------------------------------------------------------
-   THE DATA
+   Downloads the Statlog German Credit data, checks the checksum
+   of exactly what it downloaded, and writes a module the browser
+   can import. It also recomputes the column-level totals
+   `scorecard.test.ts` checks the shipped file against, so a
+   mangled column moves the sums and fails a test.
+   It needs the network, so it is in no build. Run it if the
+   source changes, and commit what it writes.
 
      Hofmann, H. (1994). Statlog (German Credit Data).
      UCI Machine Learning Repository.
      https://doi.org/10.24432/C5NC77
+     Licence: CC BY 4.0
 
-   1,000 loan applications, 20 attributes, and a label saying
-   whether the loan turned out good or bad. 300 of them are bad,
-   which is a default rate no real book has, and one of several
-   reasons the page says out loud that this dataset is a teaching
-   set rather than a production one.
-
-   Licence: CC BY 4.0, which permits redistribution with
-   attribution. The attribution is in SOURCE below, on the page
-   itself, and here.
-   ============================================================ */
+   CC BY 4.0 permits redistribution WITH ATTRIBUTION. The
+   attribution is in SOURCE below, on the page itself, and here. */
 
 import { createHash } from "node:crypto";
 import { writeFile } from "node:fs/promises";

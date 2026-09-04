@@ -1,43 +1,12 @@
-/* ============================================================
-   signin.ts: the button in the corner, and the menu behind it.
-
-   ---- what this replaces, and why ----
-
-   A `<dialog>` opened with `showModal()`. Pressing the account
-   button dimmed the whole site, took the focus, and put a 400px
-   card in the middle of the screen holding either a sign-in form
-   or a name and two buttons. That is the right furniture for a
-   decision the page cannot continue without, and wrong for every
-   one of the things it was actually being used for: seeing which
-   account you are on, going to your reading list, signing out.
-   None of those is modal. All of them are a menu.
-
-   So it is a menu. It hangs off the button on a laptop, it comes
-   up from the bottom edge on a phone, Escape closes it, clicking
-   anywhere else closes it, and the page behind it is never dimmed
-   or frozen. The one thing that IS modal in feel, the sign-in
-   form itself, is the same panel: it is still a small amount of
-   typing that belongs next to the button that asked for it, and a
-   reader who opens it by accident should be able to dismiss it by
-   looking away.
-
-   ---- the rule this file has to keep ----
-
-   From archive/TRANSITION.md: nothing on the site requires an
-   account. Signed out, this is one word in a corner and every
-   page reads exactly as it did. Signed in, it is a name and a way
-   into what the account holds.
-
-   ---- where it is mounted ----
-
-   `.top-tools` is the little group at the right end of the bar,
-   and it is the same class on both bars this site has: the top
-   bar every React page renders, and the slim bar the four
-   practice books and the two error pages carry. The menu itself
-   is appended to `<body>` and positioned against the button,
-   which is what lets it escape the bar's `overflow` and its
-   stacking context without either of them having to know.
-   ============================================================ */
+/* signin.ts: the button in the corner, and the menu behind it. A
+   popover rather than `showModal()`: which account am I on, and
+   go to my reading list, are not decisions the page cannot
+   continue without.
+   Nothing on the site requires an account. Signed out this is one
+   word in a corner and every page reads as it did.
+   Mounted in `.top-tools`, which both bars carry. The menu is
+   appended to `<body>` and positioned against the button, so it
+   escapes the bar's overflow and its stacking context. */
 import { initAccount, current, sendLink, signInWithGoogle, signOut, arrivalError, getProfile, cachedProfile, } from "/account.js";
 import { startSync } from "/sync.js";
 const el = (tag, props = {}, ...kids) => {
@@ -73,50 +42,14 @@ function picture(user) {
     img.addEventListener("error", () => img.remove());
     return img;
 }
-/* ============================================================
-   Where the menu goes, and who is responsible for it
-
-   ---- the platform does the hard half ----
-
-   The menu is a `popover`. That is not a nicety: `popover="auto"`
-   is the browser's own answer to exactly this widget, and it
-   brings four behaviours that were previously four hand-written
-   listeners each with its own edge case.
-
-     the top layer      it paints above everything, with no
-                        z-index and without caring that the top
-                        bar has a stacking context of its own.
-     light dismiss      a click anywhere else closes it, including
-                        a click inside a cross-origin iframe or on
-                        the scrollbar, which a `pointerdown`
-                        listener on `document` does not catch.
-     Escape             handled, and correctly nested if anything
-                        else is ever open above it.
-     focus              moved in on open and RETURNED to the
-                        button on close, which is the part
-                        hand-written menus almost always get
-                        wrong and which a keyboard reader feels
-                        immediately.
-
-   So this file listens for `toggle` to keep `aria-expanded` and
-   the page's own attribute honest, and does not implement any of
-   the four.
-
-   ---- and the placement, in two ways ----
-
-   CSS anchor positioning is the right answer and is not yet
-   everywhere. Where it exists, `position-anchor` and
-   `position-area` in the stylesheet put the menu under the button
-   and keep it there through a scroll, with no JavaScript running
-   at all. Where it does not, the two custom properties written
-   below are the fallback, and the listeners that maintain them
-   are added ONLY in that case: a browser that can do this
-   natively should not be paying for a scroll handler.
-
-   The phone case is neither. Below 640px the menu is a sheet
-   against the bottom edge, decided by a media query, because a
-   dropdown hanging off a 36px button is not what a thumb wants.
-   ============================================================ */
+/* The menu is a `popover`, so the browser owns the top layer,
+   light dismiss, Escape and returning focus to the button: this
+   file implements none of the four and only listens for `toggle`
+   to keep `aria-expanded` honest.
+   Placement is CSS anchor positioning where it exists. The two
+   custom properties below are the fallback and their scroll
+   listener is added ONLY in that case. Below 640px it is a sheet
+   against the bottom edge, decided by a media query. */
 const ANCHORED = CSS.supports?.("anchor-name: --a") ?? false;
 function place(menu, button) {
     if (ANCHORED)

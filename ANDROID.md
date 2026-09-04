@@ -1,19 +1,14 @@
 # The Android app, and how it gets built
 
-The site is already most of an app. Four runtimes read the same
-contracts today: the Worker, the browser, the Next routes and the
-node checks, and `shared/` is the treaty between them. A native
-Android app is a fifth runtime joining the same treaty, not a
-second product. This file is the plan for it. `ARCHITECTURE.md`
-says where the site's own pieces go, `DESIGN.md` says what they
-look like, `PLAN.md` says what the site does next; this says what
+Four runtimes read the same contracts today: the Worker, the
+browser, the Next routes and the node checks, and `shared/` is the
+treaty between them. **A native Android app is a fifth runtime
+joining the same treaty, not a second product.** This says what
 the app consumes, what the server has to grow (very little), and
-in what order the app gets built so that each phase makes the next
-one smaller.
+in what order the app gets built.
 
-Written 22 August 2026, against the code as it stands. Where this
-file and the code disagree, the code is right and this file gets
-corrected, which is the rule every document here lives under.
+Where this file and the code disagree, the code is right and this
+file gets corrected.
 
 ## What "native" is for, and the two ways not to do it
 
@@ -21,31 +16,23 @@ corrected, which is the rule every document here lives under.
 display, maskable icons and three app shortcuts are in
 `aab/site.webmanifest`, and the service worker gives it offline
 hubs and cached lessons. A Trusted Web Activity would ship that
-same thing with a store listing around it. If the goal were an
-icon on a home screen, the manifest already is one. The reason to
-build native is everything a wrapped page cannot do well: instant
-cold start, offline as a designed state rather than a cache
-accident, a real video player for the courses, text that scrolls
-like the platform's own, widgets, share targets, and a UI thread
-that never pays for hydration.
+with a store listing around it. The reason to build native is
+everything a wrapped page cannot do well: instant cold start,
+offline as a designed state rather than a cache accident, a real
+video player for the courses, text that scrolls like the
+platform's own, widgets, share targets, and a UI thread that never
+pays for hydration.
 
-**Not React Native, and the trade was weighed rather than waved
-off.** The case for it is real: the site is written in React and
-TypeScript, the fluency transfers whole, and the site's hardest
-pure logic (the sync engine in `aab/src/sync.ts`, the stock model
-in `aab/tools/stock.model.js`, the shapes in `shared/`) has no
-DOM in it and would import into a JavaScript runtime nearly
-as-is, where Kotlin has to port each one under fixture tests.
-What would not transfer is the part that looks most transferable:
-the React here is server components rendering database rows into
-HTML for a stylesheet React Native cannot read, and much of the
-interactivity is plain browser modules wiring served pages. The
-choice was made with that cost in view, 22 August 2026: Kotlin,
-for no JavaScript layer between the app and the platform,
-first-class widgets and media, and one runtime to maintain for
-years. The price is the ports, and the plan treats them as
-first-class work: fixture-locked, in the risks table, never
-assumed.
+**Not React Native.** What looks most transferable is not: the
+React here is server components rendering database rows into HTML
+for a stylesheet React Native cannot read, and much of the
+interactivity is plain browser modules wiring served pages. Kotlin
+buys no JavaScript layer between the app and the platform,
+first-class widgets and media, and one runtime to maintain. **The
+price is the ports** (the sync engine in `aab/src/sync.ts`, the
+stock model in `aab/tools/stock.model.js`, the shapes in
+`shared/`), and they are first-class work: fixture-locked, in the
+risks table, never assumed.
 
 **So: Kotlin and Jetpack Compose.** One activity, Compose
 navigation, Material 3 as the substrate with this site's own
@@ -55,15 +42,12 @@ which is the same "one file until it hurts" judgement the
 stylesheet lives by.
 
 **And its own repository.** Everything the app consumes is public
-by design (the argument is the same one `content/articles.backup.json`
-rests on: every byte already answers at a public URL), so the app
-does not need to live inside this repo's privacy boundary, and it
-should not live inside its check estate either: every check here
-reads every tracked file and all of them were written for a web
-codebase. A Gradle tree is a few hundred files those checks were
-never meant to parse. The app repo holds its own fixtures,
-refreshed by script from the public endpoints, which is how its CI
-tests parity with the site without a credential.
+by design, so it does not need this repo's privacy boundary, and
+it should not live inside its check estate: every check here reads
+every tracked file and all of them were written for a web
+codebase. The app repo holds its own fixtures, refreshed by script
+from the public endpoints, which is how its CI tests parity with
+the site without a credential.
 
 ## The contracts that carry over unchanged
 
@@ -100,19 +84,15 @@ with no app release, and anything that is CODE needs one.**
 | a new storage key or sync rule | needs a release, and a migration of nothing |
 
 The first two rows are true because of one decision in
-`functions/api/site.ts`: it SPREADS the tables rather than
-mapping them field by field. Hand-picked fields would look
-identical on the day they were written and would silently drop
-whatever somebody added a year later, which is the failure this
-repository is built around. `scripts/site-api.test.ts` walks the
-source objects and fails if a field stops surviving the trip, so
-the property is held by a test rather than by intention.
+`functions/api/site.ts`: it SPREADS the tables rather than mapping
+them field by field. Hand-picked fields look identical on the day
+they are written and silently drop whatever somebody adds a year
+later. `scripts/site-api.test.ts` walks the source objects and
+fails if a field stops surviving the trip.
 
-The third row is the honest half. A block class is a renderer
-change, a calculator is arithmetic, a storage key is a contract
-with real accounts. What keeps that list short is pushing work
-into the data half wherever it will go: a lesson is prose in a
-row, not a screen; a school is a table entry, not a module.
+What keeps the release-needing list short is pushing work into the
+data half wherever it will go: a lesson is prose in a row, not a
+screen; a school is a table entry, not a module.
 
 **So the obligation runs both ways.** Anything added to those
 tables IS published at `/api/site` the moment it is added, which
@@ -147,7 +127,7 @@ touches.
 Identity is one mechanism everywhere: the Supabase access token as
 `Authorization: Bearer`, verified by the Worker against the
 project's JWKS in `functions/_lib/reader.ts`. Admin is `isAdmin()`
-against the same token. Nothing about that changes for a phone.
+against the same token.
 
 ## What the server grows, and it is small
 
@@ -161,93 +141,60 @@ plan touches the site.
    and `shared/nav.ts` at request time. It asks for half an hour
    of caching and does not get it: something at the edge answers
    `/api/*` with `no-store`, which the head of that file
-   measures. The app holds its own copy, so this costs one fetch
-   a launch. The browser gets the same tables as an ES
-   module at `/content.js` and does not call this, so it is in
-   `SERVER_ONLY` in `scripts/check-api.ts` and in `PUBLIC` in
-   `scripts/check-admin.ts`, each with the reason written out.
-   `scripts/site-api.test.ts` is the guard.
+   measures, so this costs one fetch a launch. The browser gets
+   the same tables as an ES module at `/content.js` and does not
+   call this, so it is in `SERVER_ONLY` in `scripts/check-api.ts`
+   and in `PUBLIC` in `scripts/check-admin.ts`, each with the
+   reason written out. `scripts/site-api.test.ts` is the guard.
+2. **`/.well-known/assetlinks.json`. Written.**
+   `aab/.well-known/assetlinks.json` names the package and carries
+   the debug key's fingerprint. Nothing else claims the path:
+   `run_worker_first` does not list it, no route matches it, and
+   `aab/.assetsignore` does not cover it. A dot-directory IS
+   uploaded, measured with `npx wrangler@4 deploy --dry-run`,
+   which prints the asset-manifest size: adding a second file
+   inside `aab/.well-known/` moved it and removing it put it back.
 
-   The nav table moved to `shared/nav.ts` to make it possible,
-   and the move was overdue rather than new: four checks already
-   imported it from node and a migration comment already quoted
-   its school ids. A file three runtimes read belongs in the
-   directory this repository keeps for exactly that.
-2. **`/.well-known/assetlinks.json`. Written, and one value
-   short.** `aab/.well-known/assetlinks.json` names the package
-   and carries an empty fingerprint list, which is a valid
-   statement that authorises nothing. Nothing else claims the
-   path: `run_worker_first` does not list it, no route matches
-   it, and `aab/.assetsignore` does not cover it.
+   **The package is `uk.co.reiad.library`**: the domain backwards,
+   then the site's own name. It is a permanent identifier, so it
+   is decided once, here, rather than at the first `gradle init`.
 
-   **A dot-directory IS uploaded, and that is measured rather
-   than assumed.** It was written here as a thing this repository
-   could not prove from the inside, and it can:
-   `npx wrangler@4 deploy --dry-run`, which is what `deploy.yml`
-   runs, prints the size of the asset manifest. Adding a second
-   file inside `aab/.well-known/` took it from 191 to 192 and
-   removing it put it back, so the directory is read like any
-   other. The file is here early anyway, because the deploy that
-   ships the real fingerprint is a bad moment to discover
-   otherwise.
-
-   **The package is `uk.co.reiad.library`**: the domain
-   backwards, then the site's own name. It is a permanent
-   identifier, so it is decided once, here, rather than at the
-   first `gradle init`.
-
-   **The fingerprint is there now, and it is the DEBUG key's.**
+   **The fingerprint in it is the DEBUG key's**, from
    `keystore/debug.keystore` in the app repository, committed,
-   with the password every Android debug keystore has had since
-   the beginning: `android`, alias `androiddebugkey`. That is not
-   a credential leaking. A debug key cannot sign a Play release
-   and authorises nothing beyond saying "this APK and the last one
-   are the same app".
+   with the password every Android debug keystore has had:
+   `android`, alias `androiddebugkey`. That is not a credential
+   leaking: a debug key cannot sign a Play release and authorises
+   nothing beyond saying "this APK and the last one are the same
+   app". It is committed because Android generates a debug
+   keystore PER MACHINE, so an APK built in CI and one built on a
+   laptop are signed differently and Android refuses to install
+   either over the other, and because an app link verifies against
+   ONE fingerprint.
 
-   Which is exactly the problem it solves, and there are two.
-   Android generates a debug keystore PER MACHINE, so an APK built
-   in CI and one built on a laptop are signed differently and
-   Android refuses to install either over the other: the reader
-   uninstalls first and loses whatever had not synced. And an app
-   link verifies against ONE fingerprint, so a per-machine key
-   means a shared lesson opens in a browser however carefully the
-   intent filters were written.
+   **A release key does not go in the repository.** It lives in CI
+   as a secret and its fingerprint is a second line in the array,
+   which takes several so an app link verifies for the sideloaded
+   build and the store build alike. **Make that release keystore
+   once and back it up.** The same package can never be signed by
+   another key, so losing it means an installed app cannot be
+   updated, only uninstalled and replaced, and every reader loses
+   what the device was holding.
 
-   **A release key is a different thing and does not go in the
-   repository.** When there is one it lives in CI as a secret and
-   its fingerprint is a second line in the array, because the
-   array takes several: an app link should verify for the
-   sideloaded build and the store build alike. **Make that release
-   keystore once and back it up.** Losing it is not a bad
-   afternoon: the same package can never be signed by another key,
-   so an installed app cannot be updated, only uninstalled and
-   replaced, and every reader loses what the device was holding.
-
-   Enrolling in Play later takes that same key, so the
-   fingerprint carries over and this file does not change. Letting
-   Play generate its own instead is also fine and costs one more
-   line in the array, because the array takes several: an app link
-   should verify for the sideloaded build and the store build
-   alike.
-3. **One Supabase dashboard entry**, and it is one of the two
-   things in this whole plan that cannot be done from a
-   repository: the project's auth configuration is not in the
-   database and not in the tooling, so no migration, no script
-   and no API call here reaches it. One value to add to the auth
-   allowlist: **`uk.co.reiad.library://auth`**.
+3. **One Supabase dashboard entry.** The project's auth
+   configuration is not in the database and not in the tooling, so
+   no migration, no script and no API call here reaches it. One
+   value to add to the auth allowlist:
+   **`uk.co.reiad.library://auth`**. Done on 22 August 2026.
 
    **A custom scheme rather than an App Link, and the reason is
    the dependency it removes.** The site's flow is the implicit
    one: `GET /auth/v1/authorize?provider=google&redirect_to=...`,
    with the tokens coming back in the fragment of whatever
-   `redirect_to` names, and the magic link landing the same way.
-   An `https://reiad.co.uk/...` redirect would deliver that
-   intact and would also make signing in wait on a verified App
-   Link, which waits on a fingerprint, which waits on a Play
-   Console account. A scheme the app declares needs none of that,
-   so phase 2 depends on one dashboard field and nothing else.
-   The https redirect can be added beside it later; two entries
-   are allowed and neither excludes the other.
+   `redirect_to` names. An `https://reiad.co.uk/...` redirect
+   would make signing in wait on a verified App Link, which waits
+   on a fingerprint, which waits on a Play Console account. A
+   scheme the app declares needs none of that. The https redirect
+   can be added beside it later; two entries are allowed.
 
    The app opens the authorize URL in a Custom Tab, catches the
    redirect, and stores the session; `aab/src/account.ts` is the
@@ -266,26 +213,18 @@ plan touches the site.
 ## The two things a repository cannot do
 
 Everything else in this plan is decided here, written here, or
-checked here. These two are not, and both are late rather than
-blocking, so nothing waits on them:
+checked here. Both of these are done, and neither gated phase 1,
+which is signed out:
 
-| | What | When |
-| --- | --- | --- |
-| Supabase | add `uk.co.reiad.library://auth` under Authentication, URL Configuration | before anybody signs in, so start of phase 2 |
-| assetlinks | done: the debug key's fingerprint is in it, and the key is committed at `keystore/debug.keystore` in the app repository. A release key adds a second line | |
-
-Neither is needed to build phase 1, which is signed out, which is
-why phase 1 is first. **The first row was done on 22 August
-2026**, so the only one left is the second, and the second gates
-nothing.
+| | What |
+| --- | --- |
+| Supabase | `uk.co.reiad.library://auth` under Authentication, URL Configuration |
+| assetlinks | the debug key's fingerprint, with the key committed at `keystore/debug.keystore` in the app repository. A release key adds a second line |
 
 **They are independent of each other, deliberately.** The custom
-scheme above is what keeps sign-in off the fingerprint's critical
-path: the second row is a nicety about how links behave, not a
-gate on the account. The debug keystore's fingerprint
-(`~/.android/debug.keystore`, alias `androiddebugkey`, password
-`android`) is enough to try App Links on a handset, with no store
-account involved at all, and the array takes several.
+scheme keeps sign-in off the fingerprint's critical path: the
+second row is a nicety about how links behave, not a gate on the
+account.
 
 ## The app itself
 
@@ -294,13 +233,12 @@ account involved at all, and the array takes several.
 Progress lives in a small key-value store (DataStore) whose keys
 are the site's storage keys, spelled identically, holding the same
 JSON shapes: sets as string arrays, bookmarks as `{id, title,
-stage, url?, ts}` objects, counts as strings. The temptation to
-"model this properly" in a relational schema is the temptation to
-rename a storage key, one level up: the strings and shapes are the
-sync contract with `public.progress`, where the row key IS the
-localStorage key. Room appears where there is genuinely relational
-local data: the content cache (lessons, articles, curricula), not
-the ticks.
+stage, url?, ts}` objects, counts as strings. **Modelling this
+"properly" in a relational schema is renaming a storage key, one
+level up:** the strings and shapes are the sync contract with
+`public.progress`, where the row key IS the localStorage key. Room
+appears where there is genuinely relational local data: the
+content cache, not the ticks.
 
 Device-only keys stay device-only: `theme`, `audience`,
 `tool-lang`, the workbook writings. The app keeps them under the
@@ -308,8 +246,7 @@ same names for its own sanity, not because anything syncs them.
 
 ### The sync engine, ported not reinterpreted
 
-`aab/src/sync.ts` is 500 lines that took three attempts on the
-web to get right, and the app ports its behaviour, not its
+The app ports `aab/src/sync.ts`'s behaviour, not its
 architecture. The contract, in the file's own terms: rules `set`,
 `mark` and `count` per key; adopt on sign-in (the account's rows
 overwrite the device, keys the account lacks are removed, nothing
@@ -331,10 +268,9 @@ sign-in. The push is the same PostgREST upsert with
 the column defaults to `auth.uid()` and the client cannot name
 whose rows it writes.
 
-The web's test for this engine covers signing in, resetting,
-signing out, two devices and the refresh regression; the app's
-sync tests reproduce that list case for case before the engine is
-called done.
+`aab/sync.test.ts` covers signing in, resetting, signing out, two
+devices and the refresh regression; the app's sync tests reproduce
+that list case for case before the engine is called done.
 
 ### Rendering a body: a closed vocabulary, so no WebView
 
@@ -358,16 +294,15 @@ one module, for the reason `aab/editor.js` is one module on the
 web: two renderers that disagree is the class of bug the
 three-place rule exists for.
 
-**The allowlist is a floor, not a promise, and that was measured
-rather than assumed.** `/money/basics-1/share` carries a `<b>` in
-its stored body, which the server's tag list does not include:
-the browser's sanitiser renames `B` to `STRONG` on the way in and
-some prose predates or bypassed that. So the renderer maps the
-synonyms the editor already maps (`b` to `strong`, `i` and `u` to
-`em`, a heading above `h3` down to one) and renders anything it
-still does not know as plain styled text, logged. A parser that
-trusted the documented list would have dropped a word's emphasis
-on day one and nothing would have said so.
+**The allowlist is a floor, not a promise.**
+`/money/basics-1/share` carries a `<b>` in its stored body, which
+the server's tag list does not include: the browser's sanitiser
+renames `B` to `STRONG` on the way in and some prose predates or
+bypassed that. So the renderer maps the synonyms the editor maps
+(`b` to `strong`, `i` and `u` to `em`, a heading above `h3` down
+to one) and renders anything it still does not know as plain
+styled text, logged. A parser trusting the documented list would
+have dropped a word's emphasis on day one, silently.
 
 ### Media, speech, and the platform's own things
 
@@ -434,25 +369,22 @@ Android app.
 ### Offline is a state, not a cache accident
 
 The service worker's offline story is "what you visited, plus the
-hubs". The app does better because it is allowed to want things:
-the content cache stores every curriculum and every lesson body of
-the schools a reader follows (a bounded, known corpus), the recent
-pieces list, and whatever was opened. Everything renders from the
-cache first and revalidates behind, ticks work offline exactly as
-they do on the web (they are local writes), and sync catches up
-when the network returns, which the engine above already knows how
-to do. The one deliberate refusal carries over: headlines are
-never served stale silently; the pulse board says when it is
-showing yesterday.
+hubs". The app is allowed to want things: the content cache stores
+every curriculum and every lesson body of the schools a reader
+follows (a bounded, known corpus), the recent pieces list, and
+whatever was opened. Everything renders from the cache first and
+revalidates behind, ticks work offline because they are local
+writes, and sync catches up when the network returns. **The one
+deliberate refusal carries over: headlines are never served stale
+silently**; the pulse board says when it is showing yesterday.
 
 ## The order
 
-Same shape as `PLAN.md`: ordered, and each phase makes the next
-one smaller. A phase is done when its parity tests pass against
-fixtures pulled from the live public API, and, for anything with
-progress in it, when the storage keys it writes are asserted by
-name the way `aab/schools/progress.test.ts` asserts them on the
-web.
+Ordered, and each phase makes the next one smaller. **A phase is
+done when its parity tests pass against fixtures pulled from the
+live public API**, and, for anything with progress in it, when the
+storage keys it writes are asserted by name the way
+`aab/schools/progress.test.ts` asserts them on the web.
 
 **Phase 0. The contracts, on the server.** The manifest endpoint,
 the assetlinks file, the Supabase redirect entry. The only phase
@@ -464,18 +396,15 @@ live, sufficient API.
 audience orderings, theme), the four school hubs, ladders and
 lesson pages, the three reading hubs and the article page, the
 native body renderer, the content cache, local ticks with each
-school's own semantics, checkpoints, bookmarks, the money
-glossary (its term pages are basics-1 lessons and arrive through
-the same API; the in-prose term links open in place, as they do
-on the web), and the home screen: the door's ledger and its pair
-of buttons per audience, both of which come down inside `DOOR` in
-`/api/site`, plus the board's own cards, continue and pulse. There
-is no featured card any more: it answered the audience switch with
-one tile two screens down, and the switch moves the door's buttons
-instead. No account yet: the site's own rule that everything
-works signed out makes phase 1 shippable alone, and it is the
-biggest phase because the renderer and the design system land
-here.
+school's own semantics, checkpoints, bookmarks, the money glossary
+(its term pages are basics-1 lessons and arrive through the same
+API; the in-prose term links open in place), and the home screen:
+the door's ledger and its pair of buttons per audience, both of
+which come down inside `DOOR` in `/api/site`, plus the board's own
+cards, continue and pulse. **No featured card**: the audience
+switch moves the door's buttons instead. No account yet, because
+everything works signed out; the biggest phase, because the
+renderer and the design system land here.
 
 **Phase 2. The account.** Sign-in (Custom Tab, both providers),
 the session store, the sync engine and its test suite, the account
@@ -515,55 +444,45 @@ uses; nothing course-shaped ships in the binary, the catalogue
 arrives only over the authenticated API, which is the same rule
 `scripts/check-courses.ts` enforces on the web bundle.
 
-**How it is installed, which is a decision and not a formality.**
-An APK, signed by the author's own key, carried to the handset.
-That is the whole of it until the app is worth publishing, and it
-is the right order: a store listing is a promise to strangers,
-and the first reader is the person who wrote it. What it costs is
-what sideloading always costs, and each is worth knowing rather
-than discovering: the device has to be told to allow the install,
-nothing updates itself so every build is carried over by hand,
-and an https link will not open the app until that key's
-fingerprint is in the assetlinks array. None of the three touches
-sign-in, which is on a scheme the app declares.
+**How it is installed.** An APK, signed by the author's own key,
+carried to the handset, until the app is worth publishing. What
+sideloading costs, each worth knowing rather than discovering: the
+device has to be told to allow the install, nothing updates itself
+so every build is carried over by hand, and an https link will not
+open the app until that key's fingerprint is in the assetlinks
+array. None of the three touches sign-in, which is on a scheme the
+app declares.
 
 **Phase 6.5, when it is worth publishing.** Play: the same
-keystore if it is kept, the data-safety form (what the app holds
-is the session, the ticks and, if saved, a sealed broker key
-reference; there is no analytics SDK, matching a site that has
-none), staged rollout.
+keystore if it is kept, the data-safety form (the app holds the
+session, the ticks and, if saved, a sealed broker key reference;
+no analytics SDK, matching a site that has none), staged rollout.
 
 **Phase 7, only if wanted. Notifications**, per the section above.
 
 ## What deliberately does not move
 
-The writing side. The Studio, the editor, the desk, the share-card
-drawer, the Notion import, moderation queues, subscriber
-administration: the site's own rule is that the editor is one
-module precisely because a `contenteditable` cannot be safely
-duplicated, and an Android re-implementation would be a third
-sanitiser and a second editor. The app is the reader's (and, at
-phase 6, the admin-as-reader's). An admin who needs the desk on a
-phone has it: the site works there, and the app can hand off to it
-with one intent.
+**The writing side.** The Studio, the editor, the share-card
+drawer, the Notion import, the moderation queues, subscriber
+administration. The editor is one module precisely because a
+`contenteditable` cannot be safely duplicated, and an Android
+re-implementation would be a third sanitiser and a second editor.
+An admin who needs it on a phone has the site.
 
-The portfolio case studies also stay the web's. Each one is an
-interactive model built for a desk and a hiring audience: a DCF
-with sensitivity grids, a three-statement model that recomputes as
-assumptions move, a stress engine. Porting them would be a second
-product, and their audience is not holding a phone. The app's
-portfolio screen renders the cards natively and opens a model in
-the browser, which is one intent.
+**The portfolio case studies.** Each is an interactive model built
+for a desk and a hiring audience, and their audience is not
+holding a phone. The app's portfolio screen renders the cards
+natively and opens a model in the browser, which is one intent.
 
-Also not moving: the feeds (a feed reader already reads them), the
-break-glass article renderer, and the PWA itself, which keeps
-working for everybody who is not on Android.
+Also not moving: the feeds, the break-glass article renderer, and
+the PWA itself, which keeps working for everybody who is not on
+Android.
 
 ## Tests, the same discipline
 
 The failure this repository is built around is the thing that
 renders and does not work, and a fresh codebase does not get a
-pass on that. Concretely:
+pass on it:
 
 - Every ported behaviour lands with the list of what the web
   version does written as tests first: the sync engine's case
@@ -593,32 +512,17 @@ pass on that. Concretely:
 
 ## Starting the build
 
-The plan above is the what and the why. This is the first hand of
-work, written so a build session can start without re-deriving any
-of it.
+**Phase 0 is done in this repository**: `functions/api/site.ts`,
+`aab/.well-known/assetlinks.json`, and the Supabase auth
+allowlist entry. What is left of it is the release fingerprint,
+which gates nothing.
 
-**Phase 0, in this repository.** Three small changes:
-
-1. The manifest endpoint: a handler under `functions/api/`,
-   mounted in `API_ROUTES` in `worker.js`, serialising the
-   sections, tools, pages, skills, term groups and counts out of
-   `shared/content.ts` plus the public half of the nav table in
-   `shared/nav.ts`, cached like `/api/news`, and registered in
-   `SERVER_ONLY` in `scripts/check-api.ts` with the app named as
-   its caller.
-2. `assetlinks.json` under a `.well-known/` directory in `aab/`,
-   carrying the release signing fingerprints, verified live after
-   a deploy.
-3. The app's redirect URL added to the Supabase auth allowlist,
-   in the dashboard rather than in code.
-
-**The app repository.** Suggested name `reiad-android`. Kotlin,
-one module. The dependency list, chosen to stay short: the
-Compose BOM with Material 3 and Navigation, Room, DataStore,
-Ktor client with kotlinx serialisation (one HTTP stack, not
-two), Coil for images, Media3 for the player, WorkManager for
-sync, Browser for the Custom Tab. Nothing else until a phase
-demands it.
+**The app repository** is `iReiad/reiad-android`. Kotlin, one
+module. The dependency list, chosen to stay short: the Compose BOM
+with Material 3 and Navigation, Room, DataStore, Ktor client with
+kotlinx serialisation (one HTTP stack, not two), Coil for images,
+Media3 for the player, WorkManager for sync, Browser for the
+Custom Tab. Nothing else until a phase demands it.
 
 **What the building session reads first, from this repository:**
 
@@ -637,14 +541,13 @@ demands it.
 
 **The first slice of phase 1, in order:** fetch
 `/api/schools/money` and render the ladder; fetch one lesson and
-render its body through the block parser; wire the tick (a
-button, `learn-read`); then the same for `deutsch`, where opening
-marks; then the pieces list and one piece. Each step lands with
-its parity test against the fixtures before the next starts. The
-design tokens arrive with the first screen rather than after it:
+render its body through the block parser; wire the tick (a button,
+`learn-read`); then the same for `deutsch`, where opening marks;
+then the pieces list and one piece. Each step lands with its
+parity test against the fixtures before the next starts. **The
+design tokens arrive with the first screen rather than after it:**
 a ladder drawn in framework defaults is a port that is also a
-redesign, which is the thing the site's own ports never allowed
-themselves.
+redesign.
 
 **What proves phase 1 done:** every hub, ladder, lesson and piece
 renders offline after one online visit; ticks and bookmarks
@@ -654,20 +557,15 @@ asserted by name in one test.
 
 ## What is not in here, deliberately
 
-**iOS.** Everything above is the Android plan; the contracts
-section is the part an iOS plan would share, and writing both at
-once would have made this one vaguer.
-
-**Kotlin Multiplatform.** Sharing logic between an app and a
-TypeScript site is not on offer; sharing it with a future iOS app
-is real but speculative, and the sync engine is the only piece
-worth it. Revisit if iOS becomes a plan.
+**iOS**, and **Kotlin Multiplatform** with it. Sharing logic with
+a TypeScript site is not on offer; sharing it with a future iOS
+app is speculative, and the sync engine is the only piece worth
+it. Revisit if iOS becomes a plan.
 
 **A local-first database of everything.** The app caches what a
 reader follows and opens. Mirroring the whole site would make the
 first sync a download nobody asked for and every schema change a
-migration; the corpus that must work offline (the followed
-schools) is bounded and small.
+migration; the corpus that must work offline is bounded and small.
 
 **Server-driven UI, feature flags, A/B anything.** The site does
 not experiment on its readers and the app does not start.

@@ -1,55 +1,25 @@
-# ============================================================
 # Import the four curricula into D1, from a browser.
 #
-# archive/TRANSITION.md Stage 8. The import is two commands in a terminal
-# and it has now failed twice for reasons that had nothing to do
-# with the SQL: run from the wrong folder, an empty file left
-# behind by a shell redirect, and a wrangler that imported that
-# empty file and called it a success. None of that can happen
-# here, because nobody types anything.
+#   GitHub -> Actions -> "Import the schools into D1" -> Run workflow
 #
-#   GitHub → Actions → "Import the schools into D1" → Run workflow
+# The alternative is two commands in a terminal, which has failed
+# here for reasons that had nothing to do with the SQL: the wrong
+# folder, an empty file left behind by a shell redirect, and a
+# wrangler that imported that empty file and called it a success.
+# Nobody types anything here.
 #
-# It runs the generator, refuses to continue if the file is not
-# the size it should be, and prints the row counts afterwards so
-# the run itself says whether it worked.
-#
-# ---- the one thing it needs ----
-#
-# A Cloudflare API token, stored as the repository secret
-# CLOUDFLARE_API_TOKEN. Make it in the Cloudflare dashboard:
-#
-#   My Profile → API Tokens → Create Token → Custom token
-#   Permissions: Account → D1 → Edit
-#   Account Resources: this account, and nothing else
-#
-# then paste it into GitHub under
-#   Settings → Secrets and variables → Actions → New repository secret
-#
-# That token can write this one database and nothing else, and it
-# is revocable from the same page it was made on. Without it this
-# workflow stops before it touches anything and says why.
-#
-# ---- and the one thing it needed and nobody had written down ----
+# IT NEEDS the repository secret CLOUDFLARE_API_TOKEN, with
+# Account -> D1 -> Edit and this account as its only resource.
+# Without it this stops before it touches anything and says why.
 #
 # A token scoped that narrowly cannot list the account it belongs
-# to, and wrangler asks for that list before it does anything. The
-# first real run of this workflow built the file perfectly, 314
-# queries, and then stopped on:
+# to, and wrangler asks for that list first ("Failed to
+# automatically retrieve account IDs"). `account_id` in
+# wrangler.toml is the answer; widening the token is not.
 #
-#   Failed to automatically retrieve account IDs for the logged in user
-#
-# The answer is `account_id` in wrangler.toml, which is there now.
-# Nothing about the token needs to change, and widening it to make
-# the error go away would be the wrong fix.
-#
-# ---- and one thing it deliberately does not do ----
-#
-# It does not run on a push, or on a schedule, or on anything
-# except somebody asking for it. Filling this table replaces every
-# row in it, and a job that can do that must never be able to
-# start on its own.
-# ============================================================
+# IT DOES NOT RUN ON A PUSH OR A SCHEDULE. Filling this table
+# replaces every row in it, and a job that can do that must never
+# be able to start on its own.
 
 name: Import the schools into D1
 
@@ -94,9 +64,9 @@ jobs:
         run: node scripts/import-schools.ts --out schools.sql
 
       # The failure this whole file exists for: an empty file that
-      # imports perfectly and writes nothing. 314 statements is
-      # what the generator prints; anything under 200 means it did
-      # not do its job and wrangler must not be handed the result.
+      # imports perfectly and writes nothing. 314 statements is what
+      # the generator prints; under 200 means it did not do its job
+      # and wrangler must not be handed the result.
       - name: Refuse to import an empty file
         run: |
           queries=$(grep -c '^\(INSERT\|DELETE\)' schools.sql || true)
@@ -115,9 +85,9 @@ jobs:
           npx --yes wrangler@4 d1 execute reiad \
             --${{ inputs.target }} --file=schools.sql --yes
 
-      # What the run is actually for. A tick on a job that wrote
-      # nothing is the thing that wasted two attempts, so the last
-      # thing it does is ask the database what is in it.
+      # A tick on a job that wrote nothing is what wasted two
+      # attempts, so the last thing it does is ask the database what
+      # is in it.
       - name: Say what is in there now
         env:
           CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}

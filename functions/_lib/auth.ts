@@ -1,54 +1,34 @@
-/* ============================================================
-   _lib/auth.ts, real authentication, at last.
-
-   The old Studio gate ran entirely in the browser, which I was
-   careful to describe honestly as a lock on a glass house: with
-   no server there was nothing to actually verify against.
-
-   There is a server now, so this is the real thing:
+/* _lib/auth.ts: the admin login.
 
      · the password is never stored: only PBKDF2-SHA256 at
        210,000 iterations over a random 16-byte salt
      · comparison is constant-time
      · a successful login mints a 256-bit session token, stored
-       server-side; the browser only gets an HttpOnly, Secure,
+       server-side; the browser gets an HttpOnly, Secure,
        SameSite=Strict cookie it cannot read from JavaScript
-     · sessions expire, and can be revoked from the dashboard
+     · sessions expire and can be revoked from the dashboard
      · failed attempts are throttled per caller, and the throttle
        table stores a daily-rotating salted hash rather than an IP
 
    Protected endpoints call requireAdmin(context) and get either a
-   session or a 401. Nothing sensitive is decided in the browser.
+   session or a 401.
 
-   ---- Where the 210,000 iterations actually run ----
-
-   They used to run here, and that was a bug you could not see
-   from the code: Workers on the free plan get 10ms of CPU per
-   request, and PBKDF2-SHA256 at 210,000 iterations costs about
-   30ms. Every login and every first-run setup was killed by the
-   runtime mid-request (Cloudflare error 1102), which reaches the
-   browser as an HTML error page rather than JSON, so the Studio
-   could only report "couldn't reach the server".
-
-   So the work moved to the browser, where there is no CPU limit,
-   and the server keeps a fast hash of the result:
+   THE 210,000 ITERATIONS RUN IN THE BROWSER, and must. A Worker on
+   the free plan gets 10ms of CPU per request and PBKDF2-SHA256 at
+   210,000 iterations costs about 30ms, so every login was killed
+   mid-request (Cloudflare error 1102), which reaches the browser
+   as an HTML error page rather than JSON.
 
      browser   dk = PBKDF2-SHA256(passphrase, salt, 210_000)
      server    stored = SHA-256(dk)
 
-   The security that matters is unchanged. Anyone who steals the
-   database gets SHA-256(dk), and to turn that back into the
-   passphrase they still have to run 210,000 iterations of PBKDF2
-   per guess, exactly as before. A single SHA-256 is the right
-   hash for the server's half because its input is 256 bits of
-   derived key, not a guessable human password.
-
-   What the server gives up is checking the passphrase's length
-   itself; the browser enforces the twelve-character minimum, and
-   a caller who skips the browser is only ever weakening their own
-   single-admin login. The setup endpoint still closes forever
-   after first use, and login is still throttled.
-   ============================================================ */
+   The security that matters is unchanged: anyone who steals the
+   database gets SHA-256(dk) and still has to run 210,000
+   iterations per guess. A single SHA-256 is the right hash for the
+   server's half because its input is 256 bits of derived key
+   rather than a guessable human password. What the server gives up
+   is checking the passphrase's length itself, and a caller who
+   skips the browser is only weakening their own login. */
 
 import { db, one, run, setting, setSetting } from "./db.ts";
 import type { D1Database, DbEnv } from "./db.ts";
@@ -65,11 +45,10 @@ const enc = new TextEncoder();
 /** What the four functions below need off a route's context: the
     request, and enough of the environment to reach D1.
 
-    `env` is `DbEnv` and not `DbEnv & Record<string, unknown>`,
-    which it was: an interface has no index signature, so every
-    route that declared its own bindings failed to satisfy the
-    second half and had to widen or cast to call `throttle`. All
-    four of these read `env.DB` and nothing else. */
+    `env` is `DbEnv` and not `DbEnv & Record<string, unknown>`: an
+    interface has no index signature, so every route declaring its
+    own bindings failed to satisfy the second half and had to widen
+    or cast to call `throttle`. */
 export interface AuthContext {
   request: Request;
   env: DbEnv;
@@ -112,12 +91,12 @@ async function derive(
   return toB64(bits);
 }
 
-/** "pbkdf2$iterations$salt$hash"– everything needed to verify, and
+/** "pbkdf2$iterations$salt$hash": everything needed to verify, and
     nothing that helps an attacker who reads the database.
 
     Legacy: this derives server-side and cannot complete inside the
     free plan's CPU budget. Kept only so a database written by an
-    older deploy can still be signed into (and then re-set), never
+    older deploy can still be signed into and then re-set, never
     used for anything created from here on. */
 export async function hashPassword(password: string): Promise<string> {
   const salt = crypto.getRandomValues(new Uint8Array(16));
@@ -136,8 +115,8 @@ export async function verifyPassword(password: string, stored: unknown): Promise
 
    Stored as "pbkdf2c$iterations$salt$verifier", where the browser
    produced dk = PBKDF2(passphrase, salt, iterations) and the
-   verifier is SHA-256(dk). The "c" is for client-side, and it is
-   what tells the two formats apart on read. */
+   verifier is SHA-256(dk). The "c" is for client-side and is what
+   tells the two formats apart on read. */
 
 export const CLIENT_ITERATIONS = ITERATIONS;
 
@@ -191,11 +170,11 @@ function cookieFrom(request: Request): Record<string, string> {
   return out;
 }
 
-/** `secure` is decided by the request, not hard-coded: a Secure cookie
-    is never stored over plain http, so hard-coding it would make
-    `wrangler pages dev` on http://localhost impossible to sign into.
-    Anything that isn't localhost is https in production, Cloudflare
-    redirects and HSTS see to that, so this gives up nothing real. */
+/** `secure` is decided by the request, not hard-coded: a Secure
+    cookie is never stored over plain http, so hard-coding it would
+    make `wrangler pages dev` on http://localhost impossible to
+    sign into. Anything that is not localhost is https in
+    production. */
 export function sessionCookie(
   token: string, { clear = false, secure = true }: { clear?: boolean; secure?: boolean } = {},
 ): string {

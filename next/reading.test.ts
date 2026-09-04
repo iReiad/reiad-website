@@ -1,40 +1,20 @@
-/* ============================================================
-   reading.test.ts: is a piece of writing actually readable.
+/* Is a piece of writing actually readable. `node next/reading.test.ts`.
+   Needs Playwright and a browser; without either it says which and SKIPS,
+   and a skip is not a pass.
 
-     node next/reading.test.ts
+   Every number this site states about its own typography is MEASURED
+   here. `ch` is the advance width of the "0" glyph, a fact about a font
+   rather than about a script, and this site is written in two: `66ch`
+   delivered 78 characters of English and 116 of Bangla while the panel
+   stated a third number, and every check passed. The unit is WORDS,
+   because a line the eye can sweep is nine to twelve words in any script
+   and no character count is true in two.
 
-   Needs Playwright and a browser. Without either it says which
-   and skips, and a skip is not a pass.
-
-   ---- why this file exists ----
-
-   `--measure` was `66ch` from the first version of this site, and
-   the settings panel said "about 66 characters" beside it. `ch`
-   is the advance width of the "0" glyph, which is a fact about a
-   font rather than about a script, and this site is written in
-   two. Measured here, in a browser, against the site's own rows:
-   the middle setting was delivering 78 characters of English and
-   116 of Bangla, and the panel was stating a third number.
-
-   Nothing could see that. Every check passed, the page rendered
-   perfectly, and the only symptom was that reading a Bangla piece
-   on a laptop was tiring in a way nobody could point at.
-
-   So the numbers this site states about its own typography are
-   MEASURED here rather than asserted anywhere, which is the rule
-   at the top of CLAUDE.md applied to the thing that rule is
-   hardest to apply to. The unit is WORDS, because a line the eye
-   can sweep is nine to twelve words in any script and no
-   character count is true in two.
-
-   ---- and the rest of it ----
-
-   Three more things about a reading page cannot be seen in HTML
-   and can be seen here: whether the column is centred or hiding
-   against one edge, whether anything makes the page scroll
-   sideways, and whether the chrome that goes quiet while somebody
-   reads is still legible while it is quiet.
-   ============================================================ */
+   Three more things about a reading page cannot be seen in HTML and can
+   be seen here: whether the column is centred or hiding against one edge,
+   whether anything makes the page scroll sideways, and whether the chrome
+   that goes quiet while somebody reads is still legible while it is
+   quiet. */
 
 import { Buffer } from "node:buffer";
 import { createServer, type Server } from "node:http";
@@ -112,19 +92,15 @@ const ENGLISH = strip([
 if (BANGLA.split(" ").length < 900) skip("too little Bangla prose to measure.");
 if (ENGLISH.split(" ").length < 900) skip("too little English prose to measure.");
 
-/* ---------- the page ----------
+    /* ---------- the page ----------
+       The classes are the ones the two reading routes render, and both are
+       asserted against those routes at the bottom of this file, so a
+       rename cannot leave this fixture quietly measuring a page that no
+       longer exists.
 
-   The classes are the ones the two reading routes render:
-   `next/app/[section]/[slug]/page.tsx` puts `wrap article` on the
-   piece, and the lesson route puts `term-article` inside a `wrap`.
-   Both are asserted against the routes at the bottom of this file,
-   so a rename cannot leave this fixture quietly measuring a page
-   that no longer exists.
-
-   The rail is four elements deep rather than the whole of
-   `components/sidebar.tsx`, because what is being measured is the
-   colour relationship the stylesheet draws: a mark, a label, and
-   the panel they sit on. */
+       The rail is four elements deep rather than the whole of
+       `components/sidebar.tsx`, because what is measured is the colour
+       relationship: a mark, a label, and the panel they sit on. */
 const IMG = "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg'"
   + " width='1600' height='900'%3E%3Crect width='1600' height='900'"
   + " fill='%23888'/%3E%3C/svg%3E";
@@ -156,15 +132,11 @@ const page = (lang: string, prose: string): string =>
   + `<p>${prose.slice(0, 3000)}</p><p>${prose.slice(0, 3000)}</p>`
   + `</div></article></main></div></body></html>`;
 
-/* ---------- and a lesson, which is the other reading route ----------
-
-   Two shapes, and the difference between them is the whole of
-   what section 5 asks. A money lesson is written twice and
-   `.ls-body` carries `data-langs="both"`; a lesson of the other
-   three schools is Bangla and nothing else, and carries
-   `data-langs="bn"`. `lesson/body.tsx` is what decides, and the
-   markup below is that component's, asserted against it at the
-   bottom of this file. */
+    /* ---------- and a lesson, which is the other reading route ----------
+       Two shapes: a money lesson is written twice and `.ls-body` carries
+       `data-langs="both"`, and a lesson of the other three schools is
+       Bangla and carries `data-langs="bn"`. `lesson/body.tsx` decides, and
+       the markup below is that component's. */
 const LESSON_BN = (lessons.find((l) =>
   l.school !== "money" && (l.body ?? "").trim() && !(l.body_en ?? "").trim())
   ?.body ?? "").slice(0, 4000);
@@ -322,16 +294,12 @@ for (const script of ["bn", "en"] as const) {
   await p.close();
 }
 
-/* ============================================================
-   2. THE COLUMN IS A COLUMN
-
-   Centred in the space the page actually has, which is the
-   window minus the rail, and nothing in it makes the document
-   scroll sideways. A full-bleed figure was `width: 100vw` with a
-   `50% - 50vw` margin, and 100vw is the WINDOW: it ran under the
-   rail and pushed 143px of horizontal scroll on to every article
-   that had one.
-   ============================================================ */
+    /* ---- 2. the column is a column ----
+       Centred in the space the page actually has, which is the window
+       minus the rail, and nothing in it makes the document scroll
+       sideways. `width: 100vw` with a `50% - 50vw` margin is the WINDOW:
+       it runs under the rail and pushes 143px of horizontal scroll on to
+       every article with a full-bleed figure. */
 {
   for (const width of [1440, 1180, 1000, 760, 390]) {
     const p: Page = await browser.newPage({ viewport: { width, height: 900 } });
@@ -369,19 +337,15 @@ for (const script of ["bn", "en"] as const) {
     ok(`${width}px: the column is centred in the page, not pinned to one edge`,
       off <= 24, `its centre is ${Math.round(off)}px off the reading area's`);
 
-    /* A FULL-BLEED FIGURE REACHES BOTH EDGES OF THE PAGE AND
-       NEITHER EDGE OF THE WINDOW. It used to reach the window's,
-       which on a desktop is 268px further left than the page: a
-       photograph ran under the navigation and took 143px of
-       horizontal scroll with it.
+        /* A FULL-BLEED FIGURE REACHES BOTH EDGES OF THE PAGE AND NEITHER
+           EDGE OF THE WINDOW, which on a desktop are 268px apart.
 
-       The tolerance is a scrollbar's width, and it is there
-       because `100vw` includes one and the page does not. That
-       overhang is clipped rather than scrolled (see `overflow-x:
-       clip` in @layer article), so a box measured here can end a
-       few pixels outside the page while nothing outside it is
-       ever painted. The check above is what proves the clip: if
-       it were not there this would be horizontal scroll. */
+           The tolerance is a scrollbar's width, because `100vw` includes
+           one and the page does not. That overhang is clipped rather than
+           scrolled (`overflow-x: clip` in @layer article), so a box
+           measured here can end a few pixels outside the page while
+           nothing outside it is painted. The check above proves the
+           clip. */
     const SLACK = 18;
     ok(`${width}px: a full-bleed figure reaches the page's left edge`,
       m.bleed!.l <= m.railRight + 1 && m.bleed!.l >= m.railRight - SLACK,
@@ -421,15 +385,12 @@ for (const script of ["bn", "en"] as const) {
   await p.close();
 }
 
-/* ============================================================
-   4. THE READING HUSH
-
-   The rail and the bar go quiet once the reader is past the
-   heading. Every one of these is a way of shipping a hush that
-   looks right and is wrong: one that never comes back, one that
-   cannot be woken from a keyboard, and one that leaves the
-   navigation below the contrast a reader can use.
-   ============================================================ */
+    /* ---- 4. the reading hush ----
+       The rail and the bar go quiet once the reader is past the heading.
+       Each of these is a way of shipping a hush that looks right and is
+       wrong: one that never comes back, one that cannot be woken from a
+       keyboard, and one that leaves the navigation below the contrast a
+       reader can use. */
 {
   const p: Page = await browser.newPage({ viewport: { width: 1440, height: 900 } });
   await p.goto(`http://localhost:${PORT}/`, { waitUntil: "load" });
@@ -533,25 +494,16 @@ for (const script of ["bn", "en"] as const) {
   }
 }
 
-/* ============================================================
-   5. A LESSON'S ONLY LANGUAGE IS ON THE SCREEN
+    /* ---- 5. a lesson's only language is on the screen ----
+       `@layer lesson` puts both bodies in the markup and hides one, keyed
+       on `data-read-lang`, which the boot script sets from `tool-lang`.
+       144 of the 225 written lessons have no second body, so hiding the
+       Bangla on those hides the LESSON, and the page renders no switch to
+       undo it because there is nothing to switch to.
 
-   `@layer lesson` puts both bodies in the markup and hides one,
-   keyed on `data-read-lang`, which the boot script sets from
-   `tool-lang`. 144 of the 225 written lessons have no second
-   body: every one of deutsch, english and quran. Hiding the
-   Bangla on those hides the LESSON, and the page renders no
-   switch to undo it because there is nothing to switch to, so a
-   reader who had once pressed English on a calculator opened a
-   German lesson and got a heading, a byline and a prev/next pair
-   round nothing at all.
-
-   Nothing could see it. The row was right, the route rendered
-   every word of it, `parity.test.ts` compares the server's HTML
-   and found it correct, and a screenshot of the page shows the
-   furniture. What was missing was one `display` value, which is
-   why it is MEASURED here rather than asserted anywhere.
-   ============================================================ */
+       Nothing else can see it: the row is right, the route renders every
+       word, and `parity.test.ts` finds the server's HTML correct. What is
+       missing is one `display` value. */
 {
   if (!LESSON_BN.trim()) {
     ok("there is a Bangla-only lesson to measure", false,
@@ -605,14 +557,10 @@ for (const script of ["bn", "en"] as const) {
   }
 }
 
-/* ============================================================
-   6. THE FIXTURE IS THE ROUTES' OWN MARKUP
-
-   Everything above is measured on the page written at the top of
-   this file. If a route renames the class its column carries,
-   that page goes on measuring beautifully and stops describing
-   the site.
-   ============================================================ */
+    /* ---- 6. the fixture is the routes' own markup ----
+       Everything above is measured on the page written at the top of this
+       file. If a route renames the class its column carries, that page
+       goes on measuring beautifully and stops describing the site. */
 {
   const route = (...at: string[]): string =>
     readFileSync(join(ROOT, "next", "app", ...at), "utf8");

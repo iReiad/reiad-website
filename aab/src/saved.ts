@@ -1,29 +1,10 @@
-/* ============================================================
-   saved.ts: the things an account holds that are not a tick.
-
-   A saved scenario is a filled-in calculator under a name. A
-   target is a goal with a number on it. A library row is a page
-   this reader kept, or wrote a note on, or both. All three are
-   rows in Postgres behind row-level security, all three belong to
-   exactly one person, and none of them has a copy on the device.
-
-   THAT IS THE POINT, and it is the same rule `sync.js` was
-   rewritten around. Progress has a copy here because four schools
-   have read localStorage since before there were accounts and a
-   reader with no account still gets all of it. Nothing below has
-   that history and nothing below works signed out, so a local
-   copy would be a second record to keep in step for no reader's
-   benefit. Every function here answers `null` or `[]` when nobody
-   is signed in, and the pages that call them show the sign-in
-   button instead.
-
-   ---- why there is no client library, again ----
-
-   Same answer as `account.js`: what this needs from Supabase is
-   four verbs against two tables over HTTP, which is the file you
-   are reading. The token is fetched through `token()` so that
-   refresh happens in one place.
-   ============================================================ */
+/* saved.ts: the things an account holds that are not a tick. A
+   saved scenario, a target, a library row. All three are rows in
+   Postgres behind row-level security and none has a copy on the
+   device: progress has one because four schools read localStorage
+   from before there were accounts, and nothing here has that
+   history or works signed out. Every function answers `null` or
+   `[]` signed out and the page shows the sign-in button. */
 
 import { SUPABASE_URL, SUPABASE_KEY, token, current } from "/account.js";
 
@@ -97,14 +78,9 @@ async function headers(extra?: Record<string, string>): Promise<Record<string, s
 }
 
 /**
- * One request, with the failure written down rather than thrown
- * at a page that cannot do anything about it.
- *
- * Reads answer with a fallback so a list can render empty; writes
- * throw, because a reader who pressed Save has to be told when it
- * did not save. That asymmetry is deliberate: silence is fine for
- * something nobody asked for and never fine for something
- * somebody did.
+ * One request. Reads answer with a fallback so a list can render
+ * empty; writes THROW, because a reader who pressed Save has to
+ * be told when it did not save.
  */
 async function get<T>(path: string, fallback: T): Promise<T> {
   const head = await headers();
@@ -164,14 +140,10 @@ export function listScenarios(tool?: string): Promise<Scenario[]> {
 }
 
 /**
- * Save one, and hand the stored row back.
- *
- * `inputs` is whatever shape the calculator already had for its
- * own state. The stock check passes its query string, which is
- * the format it has shared analyses in since it was written: a
- * second serialisation of the same forty fields would be a second
- * thing to keep in step with the model, and this one is already
- * proved by every link anybody has ever copied off that page.
+ * Save one, and hand the stored row back. `inputs` is whatever
+ * shape the calculator already had; the stock check passes its
+ * own query string, which is the format it has shared analyses in
+ * since it was written, so there is one encoder.
  */
 export function saveScenario(
   { tool, name, inputs, summary = "" }:
@@ -276,17 +248,11 @@ export async function libraryRow(url: string): Promise<LibraryRow | null> {
 }
 
 /**
- * Write this page's row, whatever state it was in.
- *
- * An upsert on `(user_id, url)` rather than a read and a decision:
- * one round trip instead of two, and it cannot race with the same
- * reader's phone writing the other column. `merge-duplicates` is
- * what makes the second Save on the same page an update.
- *
- * The trigger in the migration takes the row away again when both
- * facts have gone, so unsaving a page nobody annotated leaves
- * nothing behind and the reading list can be COUNTED rather than
- * filtered.
+ * Write this page's row. An upsert on `(user_id, url)`: one round
+ * trip, and it cannot race with the same reader's phone writing
+ * the other column. The trigger in the migration removes the row
+ * once both facts have gone, so the reading list can be COUNTED
+ * rather than filtered.
  */
 export async function keepPage(
   { url, title = "", kind = "piece", saved, note }:

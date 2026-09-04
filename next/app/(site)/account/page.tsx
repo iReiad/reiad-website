@@ -1,85 +1,26 @@
-/* ============================================================
-   /account
+/* /account: the one page about the reader rather than about the writing.
+   A summary and eight sections, and every `id` here is a word rather than
+   a number because the account menu in `aab/src/signin.ts` links straight
+   to `#reading-list` and `#data`: those strings are shared and are not
+   free to change.
 
-   The one page on this site that is about the reader rather than
-   about the writing, and since August 2026 the one page that has
-   to hold seven different kinds of thing without looking like a
-   settings screen from a router's admin panel.
+   TAILWIND, EXCEPT FOR THREE THINGS, and it is a decision rather than an
+   unfinished job. The account menu is `@starting-style`, `::backdrop`,
+   `:popover-open` and anchor positioning, none of which has a utility;
+   the year grid is 53 columns sized by a custom property; and anything an
+   article carries stays in the stylesheet, because the `tw` layer sits
+   BELOW `article` permanently and an article's body is HTML in a database
+   Tailwind's compiler cannot see.
 
-   ---- what changed ----
+   The class names that remain are hooks for `aab/src/account-page.ts` to
+   fill: a class inside a `createElement` call is one the scanner finds
+   only because `aab/*.js` is in its source list. JSX gets utilities; DOM
+   built in a loop gets a class.
 
-   It was a hero, three fieldsets and two exit buttons: a form,
-   with the browser's own defaults showing through. Everything an
-   account had grown since then was being added to the bottom of
-   it, so the page said "your name" at the top and "everything you
-   have ever saved" eight screens down, in the same visual weight,
-   with no way to get between them but scrolling.
-
-   It is a summary and eight sections now, with a rail of links
-   across the top that is sticky and scrolls sideways on a phone.
-   The account menu in the header links straight into those
-   sections by their fragment, which is why every `id` here is a
-   word rather than a number: `#reading-list` is in
-   `aab/signin.js` as well and the two have to agree.
-
-   ---- the first component converted to Tailwind ----
-
-   archive/TRANSITION.md Stage 14 set the arrangement up and left
-   it unused on purpose, so that the first conversion would be a
-   change to one component rather than a change to how the site is
-   styled. This is that component, and the reason it is this one
-   is that the markup below is almost entirely layout: sections, a
-   rail, cards, a grid of tiles. Utilities are good at exactly
-   that, and `@theme` in `next/styles/tailwind.css` now carries
-   the site's real tokens, so `bg-panel` and `border-hairline`
-   mean what `var(--panel)` and `var(--hairline)` mean in both
-   themes.
-
-   WHAT DELIBERATELY DID NOT CONVERT, and it is worth saying
-   because "half of it is Tailwind" looks like an unfinished job
-   rather than a decision. Three things stayed in `styles.css`:
-
-     the account menu   it is a `popover`, and its placement is
-                        `@starting-style`, `::backdrop`,
-                        `:popover-open` and CSS anchor
-                        positioning inside an `@supports`. None
-                        of those has a utility, so converting it
-                        means a line of arbitrary values that is
-                        longer and less readable than the rule it
-                        replaced.
-     the year grid      53 columns sized in a custom property,
-                        which is one CSS rule and would be one
-                        arbitrary value per axis.
-     anything an        the `tw` layer sits BELOW `article` on
-     article carries    purpose and permanently: an article's body
-                        is HTML in a database that Tailwind's
-                        compiler cannot see. The note at the top
-                        of `next/styles/tailwind.css` is the
-                        long version.
-
-   The class names that remain are hooks rather than styling, and
-   there are fewer of them than the conversion started with.
-   `ladder-list`, `kept-list`, `targets` and `saved-list` are the
-   containers `aab/src/account-page.ts` fills, and the rows it builds
-   inside them are named classes styled in `styles.css`: a class
-   name inside a `createElement` call is one Tailwind's scanner
-   finds only because `aab/*.js` is in its source list, which
-   makes it work and does not make it readable. JSX gets
-   utilities; DOM built in a loop gets a class.
-
-   Nothing here carries a class that exists only to be selected. A
-   section is addressed by its `id`, which it needs anyway for the
-   menu's fragments, and the rail is a labelled `<nav>`, which is
-   what `next/account.test.ts` asks for.
-
-   ---- and it is still filled entirely by a script ----
-
-   `/account-page.js`, from Supabase. None of it can be rendered
-   on the server and none of it should be: a page that knew who
-   you were before it reached you would be a page this site cached
-   wrong. What the server renders is the shape, so the page does
-   not reflow as each section answers.
-   ============================================================ */
+   The page is filled entirely by `/account-page.js`, from Supabase. None
+   of it can be rendered on the server: a page that knew who you were
+   before it reached you is a page this site cached wrong. What the server
+   renders is the shape, so nothing reflows as each section answers. */
 
 import type { Metadata } from "next";
 import { pageMeta } from "../../../lib/pageMeta";
@@ -109,18 +50,10 @@ export const metadata: Metadata = {
   robots: { index: false, follow: false },
 };
 
-/* ---------- the two shapes this page repeats ----------
-
-   A section and a card, written as components rather than as a
-   class name each, because that is what a utility framework gives
-   you instead of a class: the place the decision lives moves from
-   the stylesheet to here, and it is still one place.
-
-   There were four. `FORM` and `Actions` went with the two forms
-   that used them: both are components under
-   `components/account/` now and each carries its own layout,
-   which is shorter than the `[&_fieldset]:` selectors that had to
-   reach into markup a script was building. */
+    /* ---------- the two shapes this page repeats ----------
+       A section and a card, written as components rather than a class name
+       each: the place the decision lives moves from the stylesheet to
+       here, and it is still one place. */
 
 function Section({ id, title, blurb, children }: {
   id: string;
@@ -129,11 +62,9 @@ function Section({ id, title, blurb, children }: {
   children: React.ReactNode;
 }) {
   return (
-    /* `scroll-margin-top` so a link from the account menu lands
-       with the heading under the sticky rail rather than behind
-       it, and `:target` marks which of eight sections the page
-       just jumped to: the rail is at the top and the eye is
-       here. */
+        /* `scroll-margin-top` so a link from the account menu lands with
+           the heading under the sticky rail rather than behind it, and
+           `:target` marks which section the page just jumped to. */
     <section id={id}
              className="grid content-start gap-3.5
                         scroll-mt-[calc(var(--top-space)+58px)]
@@ -155,12 +86,10 @@ function Section({ id, title, blurb, children }: {
   );
 }
 
-/** One card, used by every section, so the page reads as one
-    thing rather than as six features that arrived separately.
-    `container` is named so the rules inside can ask how wide THIS
-    is: it sits beside a 268px rail on a laptop and full-width on
-    a phone, and a media query would answer a question nobody
-    asked. */
+    /** One card, used by every section, so the page reads as one thing.
+        `container` is named so the rules inside can ask how wide THIS is:
+        it sits beside a 268px rail on a laptop and full-width on a phone,
+        and a media query would answer a question nobody asked. */
 function Card({ id, className = "", children }: {
   id?: string;
   className?: string;
@@ -179,18 +108,11 @@ function Card({ id, className = "", children }: {
   );
 }
 
-/* The eight sections, in the order they are offered.
+    /* The eight sections, in the order they are offered. ONE TABLE: a
+       separate `SECTIONS` list for the rail and the `<Section>`s under it
+       agree only because somebody remembers.
 
-   ONE TABLE, and it was two: a `SECTIONS` list of ids and labels
-   for the rail, and the `<Section>`s underneath it, which
-   agreed because somebody remembered. That is the failure at the
-   top of `CLAUDE.md`, and the rail is exactly where this site has
-   already been bitten by it once.
-
-   The `id` is the fragment. The account menu in
-   `aab/src/signin.ts` links straight to `#reading-list` and
-   `#data`, so these strings are shared with that file and are not
-   free to change. */
+       The `id` is the fragment, shared with `aab/src/signin.ts`. */
 const PANELS: Panel[] = [
     {
       id: "you",
@@ -217,13 +139,11 @@ const PANELS: Panel[] = [
       node: (
         <Section id="ladders" title="Where you are"
                  blurb="Your position in each course, the chapters you have finished and the checkpoints you have ticked inside them. This is the account's copy, so it is the same on every device.">
-          {/* The ladder comes down from here, out of the
-              generated snapshot, and the ticks are read in the
-              browser. That split is the rule
-              `next/lib/progress.ts` states, and this section
-              broke it until 18 August 2026: it imported all
-              four schools' `curriculum.js` at run time to find
-              out what a bar's denominator was. */}
+              {/* The ladder comes down from here, out of the generated
+                  snapshot, and the ticks are read in the browser. That
+                  split is the rule `next/lib/progress.ts` states: importing
+                  a school's `curriculum.js` at run time to find a bar's
+                  denominator breaks it. */}
           <div className="ladder-list"><Paths ladders={SCHOOL_LADDERS} /></div>
           <p className="m-0 text-[0.82rem] text-ink-soft" id="account-synced" />
         </Section>
@@ -288,14 +208,12 @@ const PANELS: Panel[] = [
     {
       id: "preferences",
       label: "Preferences",
-      /* ============ PREFERENCES, AND THE THREE QUESTIONS ============
-         
-         One section, because they are one thing from the
-         reader's side: how this site behaves for them. The
-         reading preferences act on every page immediately
-         and are applied before the first paint on the next
-         one; the three below them are what the site is
-         allowed to do with what it knows. */
+          /* ---- preferences, and the three questions ----
+             One section, because they are one thing from the reader's
+             side: how this site behaves for them. The reading preferences
+             act on every page immediately and are applied before the first
+             paint on the next one; the three below them are what the site
+             is allowed to do with what it knows. */
       node: (
         <Section id="preferences" title="How you like to read"
                  blurb="These take effect as you press them, on every page, and follow you to your other devices.">
@@ -320,13 +238,10 @@ const PANELS: Panel[] = [
                  blurb="Only what is listed here, and only because it is useful to you. There is no analytics profile behind any of it.">
           <div className="cards grid-2"><Kept /></div>
 
-          {/* AND THE WHOLE OF IT, drawn from `shared/storage.ts`
-              rather than written out, so a key added anywhere on
-              the site appears here without anybody coming to this
-              route. The cards above count what a reader has done
-              per school; this answers the question that had no
-              answer anywhere, which is what all of it IS and
-              which parts leave this machine. */}
+              {/* AND THE WHOLE OF IT, drawn from `shared/storage.ts`
+                  rather than written out, so a key added anywhere appears
+                  here without anybody coming to this route: what all of it
+                  IS, and which parts leave this machine. */}
           <HeldHere />
 
           <div className="grid gap-[var(--gap)]
@@ -396,14 +311,11 @@ export default function AccountPage() {
         {/* ============ WHO, AND THE SHAPE OF THE YEAR ============ */}
         <header className="border-b border-hairline bg-[radial-gradient(90%_120%_at_0%_0%,var(--accent-soft),transparent_70%)] py-[clamp(28px,5vw,52px)] pb-[clamp(20px,3vw,30px)]">
           <div className="wrap grid grid-cols-[auto_1fr] items-center gap-x-5 gap-y-[18px]">
-            {/* The initial, and the provider's picture over it when
-                there is one: `account-page.ts` writes both. The
-                image is taken out of flow rather than stacked in a
-                grid cell, because the initial is a bare text node
-                and auto-placement would put it in the cell beside
-                a pinned image instead of under it. A picture that
-                fails to load removes itself and leaves the
-                letter. */}
+                {/* The initial, and the provider's picture over it when
+                    there is one. The image is taken out of flow rather
+                    than stacked in a grid cell, because the initial is a
+                    bare text node and auto-placement would put it in the
+                    cell beside a pinned image instead of under it. */}
             <span id="account-face" aria-hidden="true"
                   className="relative grid aspect-square w-[clamp(48px,12vw,62px)] place-items-center
                              overflow-hidden rounded-full bg-green font-read
@@ -428,21 +340,17 @@ export default function AccountPage() {
           </div>
         </header>
 
-        {/* Eight sections, one on screen.
+            {/* Eight sections, one on screen. `<TabPanels>` is the
+                calculators' arrangement in React: pressing one shows it,
+                the address carries which, and a link from the account menu
+                to `#reading-list` opens that panel rather than scrolling
+                to it.
 
-            It was one long page with a strip of links down it,
-            and it was eight screens of scrolling to reach the
-            last of them. `<TabPanels>` is the calculators'
-            arrangement, in React: pressing one shows it and hides
-            the rest, the address carries which, and a link from
-            the account menu straight to `#reading-list` opens
-            that panel rather than scrolling to it.
-
-            The panels are built HERE, on the server, and handed
-            over as a prop. A client component's children are
-            serialised into the payload rather than re-rendered in
-            the browser, so making the strip interactive does not
-            make eight sections of markup the browser's job. */}
+                The panels are built HERE, on the server, and handed over
+                as a prop: a client component's children are serialised
+                into the payload rather than re-rendered in the browser, so
+                making the strip interactive does not make eight sections
+                of markup the browser's job. */}
         <TabPanels label="This page" panels={PANELS}
                    className="wrap grid gap-[clamp(20px,3vw,30px)]
                               pt-[clamp(16px,2.5vw,24px)] pb-[var(--step)]" />

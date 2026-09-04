@@ -1,34 +1,21 @@
 "use client";
 
-/* ============================================================
-   diet/expect-panel.tsx: what to expect, and when.
+/* What to expect, and when. `DIET.md` sections 10 and 11. Almost
+   everybody who quits does so at a point that was predictable a fortnight
+   earlier.
 
-   `DIET.md` sections 10 and 11. A tracker tells you what
-   happened; nobody tells you what is ABOUT to happen, and almost
-   everybody who quits does so at a point that was predictable a
-   fortnight earlier.
+   SAID BEFORE THE WEEK, NOT EXPLAINED AFTER IT: the expectation is stated
+   in advance and the reader's own number goes beside it afterwards, with
+   NO VERDICT attached. A reader who sees "expected 0.2 to 0.6, saw 0.3"
+   in week two does not quit in week two.
 
-   ---- said before the week, not explained after it ----
-
-   The expectation is stated in advance and the reader's own
-   number goes beside it afterwards, with NO VERDICT attached.
-   That is what turns a disappointing number into information: a
-   reader who sees "expected 0.2 to 0.6, saw 0.3" in week two
-   does not quit in week two.
-
-   ---- and stacking is the part nothing else handles ----
-
-   `forecastChange()` takes the PREVIOUS protocol and its days,
-   because two water-losing protocols do not take the same water
-   off twice. Three days of keto then a two day fast moves the
-   scale about 3.6kg and under a quarter of it is fat.
-
-   THE CONTROL FOR THAT IS ON THE PAGE, and it has to be. This
-   panel passed `from: null` for as long as it existed, so the
-   one piece of arithmetic the plan calls the difference between
-   a forecast and an encouragement was written, tested and never
-   reached by a reader.
-   ============================================================ */
+   AND STACKING IS THE PART NOTHING ELSE HANDLES: `forecastChange()` takes
+   the PREVIOUS protocol and its days, because two water-losing protocols
+   do not take the same water off twice. Three days of keto then a two day
+   fast moves the scale about 3.6kg and under a quarter of it is fat. THE
+   CONTROL FOR THAT IS ON THE PAGE, and it has to be: passing `from: null`
+   leaves that arithmetic written, tested and never reached by a
+   reader. */
 
 import { useEffect, useMemo, useState, type CSSProperties } from "react";
 import {
@@ -397,16 +384,12 @@ export function ExpectPanel() {
   );
 }
 
-/* ============================================================
-   What the forecast was computed against.
-
-   Three facts, always, and none of them is optional: whose
-   weight, whose maintenance, and what intake was assumed. A
-   forecast is arithmetic on a deficit, so a stand-in
-   maintenance produces a stand-in answer however real the
-   kilograms beside it look, and the reader is the only person
-   who can tell the difference if they are told.
-   ============================================================ */
+    /* What the forecast was computed against: three facts, always, and
+       none optional. Whose weight, whose maintenance, and what intake was
+       assumed. A forecast is arithmetic on a deficit, so a stand-in
+       maintenance produces a stand-in answer however real the kilograms
+       beside it look, and the reader is the only person who can tell the
+       difference if they are told. */
 function Basis({ kg, mine, burn, from, what }: {
   kg: number; mine: boolean; burn: number;
   from: "learned" | "estimated" | "stand-in"; what: Protocol;
@@ -440,21 +423,15 @@ function Basis({ kg, mine, burn, from, what }: {
   );
 }
 
-/* ============================================================
-   The first week, hour by hour.
+    /* The first week, hour by hour. The weekly table above is right and
+       too coarse for the days that decide whether somebody carries on.
 
-   The weekly table above is right and too coarse for the days
-   that decide whether somebody carries on. The fat SHARE column
-   is the point of the whole thing: it starts near nothing and
-   climbs all week, and a reader who can see that at hour twelve
-   does not read a two kilo drop as two kilos of fat, and does
-   not read day four's much smaller movement as the diet having
-   stopped working.
-
-   A BAR rather than a bare percentage on that column, because
-   the shape of it climbing IS the message and a column of
-   numbers hides a shape.
-   ============================================================ */
+       The fat SHARE column is the point: it starts near nothing and climbs
+       all week, and a reader who can see that at hour twelve does not read
+       a two kilo drop as two kilos of fat, and does not read day four's
+       much smaller movement as the diet having stopped working. A BAR
+       rather than a bare percentage, because the shape of it climbing IS
+       the message and a column of numbers hides a shape. */
 function HourByHour({ what, kg, burn, lang, prior }: {
   what: Protocol; kg: number; burn: number; lang: "en" | "bn";
   prior: { protocol: Protocol; days: number; intake: number } | null;

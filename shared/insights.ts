@@ -1,55 +1,26 @@
 /* ============================================================
-   shared/insights.ts: the readings a log earns. Section 16's,
-   section 17's money, section 18's one sleep reading and
-   section 19's two about movement.
+   shared/insights.ts: the readings a log earns. `DIET.md`
+   sections 16 to 19. Nothing here recomputes a total, an hour, a
+   slope or a median step count: `shared/diet.ts` and
+   `shared/activity.ts` already hold those and are imported.
 
-   `DIET.md` sections 16, 17, 18 and 19. `shared/diet.ts` already
-   holds three of section 16's readings (`topSources`,
-   `byWeekday`, `byHour`) and `shared/activity.ts` holds the step
-   arithmetic; every one of them is imported rather than written
-   again: nothing in this file recomputes a total, an hour, a
-   slope or a median step count.
+   NO FUNCTION HERE RETURNS A VERDICT. Each returns the FIGURES a
+   sentence is made of, including the span measured and how much
+   of it was written down, so the panel can print the arithmetic
+   beside the answer.
 
-   ---- the rule every function here obeys ----
+   AN INSIGHT WITH TOO LITTLE DATA SAYS SO AND DRAWS NOTHING:
+   `null`, or its own coverage. A zero is not an empty state.
 
-   **A templated sentence is a sentence somebody has to be able
-   to check.** So no function here returns a verdict. Each one
-   returns the FIGURES the sentence is made of, including the
-   span it was measured over and how many days of that span were
-   written down, and the panel prints the arithmetic beside the
-   answer. A reader who cannot follow the sum will not believe
-   the number, and they are right not to.
-
-   **An insight with too little data says so and draws nothing.**
-   That is section 15's coverage floor applied one level up:
-   every function that can be short of data returns `null` or
-   carries its own coverage, and a caller that gets `null` prints
-   a sentence about what it will show and when. A zero is not an
-   empty state.
-
-   **A correlation is described, never explained.** Nothing here
-   returns a cause. "Your heavier days are usually Fridays" is a
-   fact; "Fridays are ruining your progress" is a judgement, and
-   the same rule covers money: cost per gram of protein is a
-   fact, "you spent too much" is not.
-
-   ---- why the library comes in as an argument ----
+   A CORRELATION IS DESCRIBED, NEVER EXPLAINED. "Your heavier
+   days are usually Fridays" is a fact; "Fridays are ruining your
+   progress" is a judgement, and the same covers money.
 
    `Item` below is the shape this file needs of a portion, and
-   `shared/foods.ts` is not imported. A `Portion` satisfies
-   `Item` structurally, so the panel hands rows straight in, and
-   the test hands in four made-up rows instead of depending on
-   the real library staying the shape a test was written
-   against.
-
-   ---- and no clock ----
-
-   `weighings()` in `shared/diet.ts` says why and this file
-   follows it: a caller owns the origin and hands in `dayOf` and
-   `today`. A file that reads a clock is a file whose tests pass
-   in one timezone.
-
-   `scripts/insights.test.ts` is the guard.
+   `shared/foods.ts` is deliberately NOT imported: a `Portion`
+   satisfies it structurally, so the test can hand in made-up
+   rows. And no clock: the caller owns the origin and hands in
+   `dayOf` and `today`. `scripts/insights.test.ts` is the guard.
    ============================================================ */
 
 import {
@@ -60,11 +31,9 @@ import {
   SLEEP_HOURS, STEP_BASE_LEAST, shiftIso, stepShift, stepsKcal,
 } from "./activity.ts";
 
-/** One row of the portion library, as this file needs it.
-
-    A `Portion` from `shared/foods.ts` satisfies this without a
-    cast or an adapter. `raw` is here for one reason and it is
-    not decoration: see `swaps()`. */
+/** One row of the portion library, as this file needs it. A
+    `Portion` satisfies it without a cast. `raw` is here for one
+    reason: see `swaps()`. */
 export interface Item {
   id: string;
   en: string;
@@ -73,9 +42,7 @@ export interface Item {
   protein: number;
   fibre: number;
   /** What one portion weighs, where the row says. A row with no
-      weight cannot be compared with another by weight, which is
-      the only honest way to compare two portions of different
-      size. */
+      weight cannot be compared with another by weight. */
   grams?: number;
   price?: number;
   currency?: "BDT" | "GBP";
@@ -87,9 +54,8 @@ export interface Item {
 }
 
 /** What resolves an entry's `source_id` to a library row.
-    Undefined for anything logged from a public database or typed
-    by hand, which is exactly the gap every coverage figure here
-    is measuring. */
+    Undefined for anything typed by hand or logged from a public
+    database, which is the gap every coverage figure measures. */
 export type Resolve = (sourceId: string) => Item | undefined;
 
 const mean = (xs: number[]): number =>
@@ -112,19 +78,14 @@ const daysBetween = (from: string, to: string): number =>
   Math.round((Date.parse(`${to}T00:00:00Z`) - Date.parse(`${from}T00:00:00Z`)) / 86400000);
 
 /** What was actually eaten. A planned row is next week's dinner
-    dated ahead, and counting it is a log that reports a meal
-    nobody has had yet. Every function here starts with this, the
-    same way `totalFor()` does. */
+    dated ahead. Every function here starts with this. */
 const eaten = (entries: Entry[]): Entry[] => entries.filter((e) => !e.planned);
 
-/** How many days a set of entries covers, counted as DISTINCT
-    DATES WRITTEN DOWN rather than as the width of the window.
-
-    A reader who logged ten days out of a hundred and twenty has
-    a rate per logged day; dividing by a hundred and twenty would
-    report a habit ten times smaller than the one they have. Every
-    "a week" figure in this file is per logged day times seven,
-    and the count is printed beside it. */
+/** How many days a set of entries covers, as DISTINCT DATES
+    WRITTEN DOWN rather than the width of the window: dividing ten
+    logged days by a hundred and twenty reports a habit ten times
+    smaller than the reader has. Every "a week" figure here is per
+    logged day times seven. */
 export const loggedDays = (entries: Entry[]): number =>
   new Set(eaten(entries).map((e) => e.date)).size;
 
@@ -134,12 +95,10 @@ export const loggedDays = (entries: Entry[]): number =>
 
 export type SlotId = "morning" | "midday" | "evening" | "late";
 
-/** Four slots rather than three meals, because this tool logs a
-    clock and not a meal name for most rows: `at_time` is the
-    column and `entryHour()` reads it. The boundaries are the
-    ordinary shape of a day in both places and nothing turns on
-    them being exactly these, which is why the panel prints the
-    hours beside the names. */
+/** Four slots rather than three meals, because most rows carry a
+    clock rather than a meal name. Nothing turns on the boundaries
+    being exactly these, which is why the panel prints the hours
+    beside the names. */
 export const SLOTS: ReadonlyArray<{ id: SlotId; from: number; to: number }> = [
   { id: "morning", from: 4, to: 11 },
   { id: "midday", from: 11, to: 16 },
@@ -158,10 +117,9 @@ export const slotOf = (hour: number): SlotId => {
 
 export interface ProteinSplit {
   slots: Array<{ id: SlotId; grams: number; share: number }>;
-  /** Grams of protein on rows that carry an hour, and grams on
-      every row. The first over the second is `coverage`, and it
-      is the number the panel prints under the split: a split
-      drawn from half the protein is a split about half a day. */
+  /** Grams of protein on rows that carry an hour, and on every
+      row. The first over the second is `coverage`: a split drawn
+      from half the protein is a split about half a day. */
   placed: number;
   total: number;
   coverage: number;
@@ -217,15 +175,14 @@ export function proteinSplit(entries: Entry[]): ProteinSplit {
 
 /** How many of a row's own portions one entry was.
 
-    The ENERGY RATIO, because `scaleTo()` in `shared/foods.ts`
-    scales every figure on a row by one factor and `kcal` is the
-    figure every entry carries. Reading `qty` and `unit` back
-    instead would be a second copy of that function's basis rule,
-    and the two would disagree the first time a unit was added.
+    THE ENERGY RATIO: `scaleTo()` scales every figure on a row by
+    one factor and `kcal` is the figure every entry carries.
+    Reading `qty` and `unit` back is a second copy of that
+    function's basis rule, and the two disagree the first time a
+    unit is added.
 
-    Null rather than one, where the row states no energy or the
-    entry does: a portion count invented for a zero is a price
-    and a saving invented with it. */
+    Null rather than one where either states no energy: a portion
+    count invented for a zero invents a price with it. */
 export const portionsOf = (e: Entry, item: Item): number | null => {
   if (!(item.kcal > 0)) return null;
   const kcal = e.kcal;
@@ -262,13 +219,9 @@ export interface Swap {
   };
 }
 
-/** From the portion library only, and arithmetic only. It never
-    suggests a different cuisine, never says a food is bad, and
-    never proposes anything not already in the reader's own log:
-    both halves of every row below came out of `entries`.
-
-    Ordered by what halving would come to, because that is the
-    figure the reader is being shown. */
+/** From the portion library only, and arithmetic only: it never
+    says a food is bad and never proposes anything not already in
+    the reader's own log. Ordered by what halving comes to. */
 export function swaps(opts: {
   entries: Entry[];
   resolve: Resolve;
@@ -318,12 +271,10 @@ export function swaps(opts: {
     if (mine !== null && seen.item.grams != null) {
       const grams = seen.item.grams * meanPortions;
       /* RAW AGAINST COOKED IS NOT A SWAP, and without this line
-         it is the swap this function finds first. A hundred
-         grams of raw rice is 365 kcal and a hundred grams of
-         cooked rice is about 130, so the biggest "saving" in
-         any Bangladeshi log is the cooking water, printed as
-         advice. Both rows are staples, both are weighed, and
-         the arithmetic is impeccable. */
+         it is the swap this function finds first: 100 g of raw
+         rice is 365 kcal against about 130 cooked, so the biggest
+         "saving" in any Bangladeshi log is the cooking water,
+         printed as advice with impeccable arithmetic. */
       const candidates = inLog.filter((other) => {
         if (other.id === seen.item.id) return false;
         if (Boolean(other.raw) !== Boolean(seen.item.raw)) return false;
@@ -366,11 +317,8 @@ export interface Fullness {
   fibre: number;
 }
 
-/** A descriptive property that ranks foods by how long they hold
-    you without ever calling one of them bad, and it is the
-    honest form of every "good food, bad food" list ever written.
-
-    It needs no log and no account: it is a fact about the
+/** Ranks foods by how long they hold you without calling one of
+    them bad. Needs no log and no account: a fact about the
     library. */
 export function per100kcal(
   items: Item[], by: "protein" | "fibre" = "protein", n = 8,
@@ -403,12 +351,10 @@ export interface WeekVsOwn {
   span: number;
 }
 
-/** Never against anybody else's. There is no leaderboard and no
-    cohort, so the comparison is the reader's own earlier days
-    and the panel says which ones.
-
-    Null under either floor, because a week of two logged days
-    against a fortnight of three is arithmetic on noise. */
+/** Never against anybody else's: no leaderboard and no cohort,
+    so the comparison is the reader's own earlier days. Null under
+    either floor, because a week of two logged days against a
+    fortnight of three is arithmetic on noise. */
 export function weekVsOwn(opts: {
   days: Day[];
   dayOf: (iso: string) => number;
@@ -449,9 +395,8 @@ export function weekVsOwn(opts: {
    ------------------------------------------------------------ */
 
 /** Either side of the target, in kcal a day, before a week stops
-    counting as held. A hundred rather than nothing, because no
-    week's mean lands on a target exactly and a band of zero puts
-    every week in the same group. */
+    counting as held. A band of zero puts every week in the same
+    group, because no week's mean lands on a target exactly. */
 export const HELD_BAND = 100;
 
 export type Adhered = "under" | "held" | "over";
@@ -475,10 +420,9 @@ export interface AdherenceGroup {
   weeks: number;
   meanKcal: number;
   meanGap: number;
-  /** Weighted by the days each week's trend actually spanned,
-      rather than a mean of ratios: a block whose two weighings
-      are four days apart is not worth the same as one spanning
-      seven. Null where no week in the group had a trend. */
+  /** Weighted by the days each week's trend spanned rather than
+      a mean of ratios: two weighings four days apart are not
+      worth a block spanning seven. */
   kgPerWeek: number | null;
 }
 
@@ -493,11 +437,9 @@ export interface Adherence {
   comparable: boolean;
 }
 
-/** The one place the log and the weight meet: weeks where the
-    target was held, plotted against what the trend did. That is
-    the evidence for whether the target is right.
-
-    Null under three usable weeks, because two points make a line
+/** Weeks where the target was held, plotted against what the
+    trend did: the evidence for whether the target is right. Null
+    under three usable weeks, because two points make a line
     through anything. */
 export function adherence(opts: {
   days: Day[];
@@ -601,12 +543,10 @@ export function adherence(opts: {
    6. What this reader's own deficit actually does
    ------------------------------------------------------------ */
 
-/** A month before a calibration constant is offered at all.
-    `learnedBurn()` will answer after a fortnight, which is the
-    right floor for a maintenance figure and the wrong one for a
-    ratio of two rates: the second is a division, and a division
-    by a fortnight of water weight is a number with a decimal
-    point and no content. */
+/** A month before a calibration constant is offered at all. A
+    fortnight is the right floor for a maintenance figure and the
+    wrong one for a RATIO of two rates: dividing by a fortnight of
+    water weight is a decimal point with no content. */
 export const CALIBRATE_AFTER_DAYS = 28;
 
 /** Below this, in kcal a day, the gap is not distinguishable
@@ -618,13 +558,11 @@ export interface Calibration {
   days: number;
   logged: number;
   meanIntake: number;
-  /** What the equations say this body burns, worked out from
-      height, weight, age and an activity answer, and NOT from
-      any of the weight readings below. That independence is the
-      whole of what makes this a calibration rather than a
-      circle: `learnedBurn()` derives maintenance FROM the trend,
-      so checking a prediction made with it against the trend
-      would return one, every time, for everybody. */
+  /** What the equations say this body burns, from height,
+      weight, age and an activity answer, and NOT from the weight
+      readings below. THAT INDEPENDENCE IS THE CALIBRATION:
+      `learnedBurn()` derives maintenance FROM the trend, so
+      checking it against the trend returns one every time. */
   estimatedBurn: number;
   /** Estimated burn minus mean intake. Positive is a deficit. */
   gap: number;
@@ -639,15 +577,13 @@ export interface Calibration {
 }
 
 /** "The last time you held about 500 under, the trend fell 0.4
-    kg a week, not the 0.5 the arithmetic predicted." That is a
-    personal calibration constant, and it is better than any
-    equation because it is measured on the only body in question.
+    kg a week, not the 0.5 the arithmetic predicted": a personal
+    calibration constant, measured on the only body in question.
 
-    WHAT THE GAP IS MADE OF IS NOT KNOWABLE FROM HERE, and this
-    returns no opinion about it. Under-logging, a wrong activity
-    answer and adaptive thermogenesis all move it the same way
-    and this figure holds all three at once, which is the same
-    thing `learnedBurn()` says about itself. */
+    WHAT THE GAP IS MADE OF IS NOT KNOWABLE FROM HERE.
+    Under-logging, a wrong activity answer and adaptive
+    thermogenesis all move it the same way and this holds all
+    three at once. */
 export function calibration(opts: {
   learned: { days: number; logged: number; meanIntake: number; trendKgPerWeek: number } | null;
   estimatedBurn: number;
@@ -682,15 +618,13 @@ export function calibration(opts: {
    ------------------------------------------------------------ */
 
 /** Out of date by more than this and the figure is shown greyed
-    with its date, not silently. Six months is section 17's "more
-    than a few months", written down once so the panel and the
-    test read the same number. */
+    with its date, never silently. Written down once so the panel
+    and the test read the same number. */
 export const STALE_MONTHS = 6;
 
 /** Whole months between two `YYYY-MM` stamps, or null where
-    either is not one. Null rather than nought: an unparseable
-    date is not a fresh price, and treating it as one is how an
-    undated figure gets drawn as a dated one. */
+    either is not one. NULL RATHER THAN NOUGHT: an unparseable
+    date is not a fresh price. */
 export function monthsSince(pricedOn: string | undefined, now: string): number | null {
   const at = /^(\d{4})-(\d{2})$/.exec(pricedOn ?? "");
   const to = /^(\d{4})-(\d{2})$/.exec(now);
@@ -709,11 +643,10 @@ export interface Spend {
   /** What the priced part of the log came to, in `currency`. */
   cost: number;
   currency: "BDT" | "GBP";
-  /** The share of the window's ENERGY that carried a price, on
-      the same footing as section 15's coverage: a cost worked
-      out from a third of the food is a cost about a third of the
-      food, and the panel prints the share rather than the total
-      alone. Under `COVERAGE_FLOOR` it draws nothing. */
+  /** The share of the window's ENERGY that carried a price: a
+      cost worked out from a third of the food is a cost about a
+      third of the food. Under `COVERAGE_FLOOR` it draws
+      nothing. */
   coverage: number;
   kcalPriced: number;
   kcalAll: number;
@@ -731,12 +664,10 @@ export interface Spend {
 
 /** What the log cost, from the library's own prices.
 
-    ONE CURRENCY AT A TIME. A row priced in taka and a row priced
-    in pounds cannot be added, so a row in the other currency is
-    not counted and falls into the uncovered share, which is
-    where a reader can see it. Converting them would put an
-    exchange rate into a diet tool, and an undated rate is worse
-    than an undated price. */
+    ONE CURRENCY AT A TIME: a row in the other currency is not
+    counted and falls into the uncovered share, where a reader can
+    see it. Converting would put an exchange rate into a diet
+    tool, and an undated rate is worse than an undated price. */
 export function spend(opts: {
   entries: Entry[];
   resolve: Resolve;
@@ -788,21 +719,16 @@ export interface AgainstBudget {
   spentPerDay: number;
   /** Spent minus budget, per day. Positive is above. */
   diffPerDay: number;
-  /** What the WHOLE log would come to a day if the part with no
-      price cost the same per calorie as the part with one.
-
-      A projection, and the panel labels it as one. It is here
-      because a budget covers all the food and `spentPerDay`
-      covers the priced share, so comparing those two directly
-      would report a reader as under budget by exactly the amount
-      this site does not have a price for. */
+  /** What the WHOLE log would come to a day if the unpriced part
+      cost the same per calorie as the priced part. A PROJECTION,
+      and the panel labels it as one: a budget covers all the
+      food, so comparing it against `spentPerDay` reports every
+      reader as under by whatever has no price. */
   wholeLogPerDay: number | null;
 }
 
-/** Spend against intake, which is the one thing section 17 asks
-    a food budget to do. It is never a judgement: this returns
-    two numbers and their difference, and no word for the
-    difference. */
+/** Spend against intake: two numbers and their difference, and
+    no word for the difference. */
 export function againstBudget(s: Spend, weekly: number): AgainstBudget | null {
   if (!(weekly > 0) || s.days === 0) return null;
   const perDay = weekly / 7;
@@ -816,24 +742,19 @@ export function againstBudget(s: Spend, weekly: number): AgainstBudget | null {
 }
 
 /** The `subject` a `metric` target carries when its number is
-    measured out of the food log rather than typed in by the
-    reader.
+    measured out of the food log rather than typed in.
 
-    Section 30, and it is NOT a fourth kind: a food budget is the
-    third kind gaining a source, which is exactly what a weight
-    goal does the moment `diet_days` exists. It is in the
-    `subject` column of rows that already exist, so never rename
-    it. */
+    NOT a fourth kind of target: the third gaining a source. IT IS
+    IN THE `subject` COLUMN OF ROWS THAT ALREADY EXIST, so never
+    rename it. */
 export const FOOD_BUDGET = "diet:food-budget";
 
 export interface BudgetTarget {
   /** What the reader is aiming to spend in a week, in the
       target's own currency. */
   weekly: number;
-  /** What the week came to, PROJECTED OVER THE WHOLE LOG.
-      Never a bill, and every caller has to say so: the priced
-      share alone is short by exactly the food this site has no
-      price for, which would report every reader as under. */
+  /** What the week came to, PROJECTED OVER THE WHOLE LOG. Never
+      a bill, and every caller has to say so. */
   spentWeek: number;
   /** Signed. Negative is under the budget. */
   diffWeek: number;
@@ -843,15 +764,13 @@ export interface BudgetTarget {
   coverage: number;
 }
 
-/** A food budget, measured, which is what makes it a target of
-    the account's rather than a number the reader keeps typing
-    back in.
+/** A food budget, MEASURED, which is what makes it a target of
+    the account's rather than a number the reader keeps typing in.
 
     Null where it cannot be measured honestly: no budget, no
-    logged day, or under section 15's coverage floor. A caller
-    that gets null draws NO BAR, because a bar drawn from a
-    figure this site cannot stand behind looks exactly like one
-    it can. */
+    logged day, or under the coverage floor. A caller that gets
+    null draws NO BAR: a bar from a figure this site cannot stand
+    behind looks exactly like one it can. */
 export function budgetTarget(s: Spend, weekly: number): BudgetTarget | null {
   const against = againstBudget(s, weekly);
   if (!against || against.wholeLogPerDay === null) return null;
@@ -870,12 +789,7 @@ export interface TagCost {
 
 /** What a kind of food costs per calorie and per gram of
     protein, out of the library rather than out of a log.
-
-    This is what puts a figure on the two sentences section 17
-    says should carry one: keto costs more per calorie, and a
-    higher protein target costs more unless it is met from dal,
-    eggs and small fish. Both are arithmetic on a price table,
-    both are descriptive, and neither names a shop. */
+    Descriptive arithmetic on a price table, naming no shop. */
 export function costByTag(items: Item[], currency: "BDT" | "GBP"): TagCost[] {
   const by = new Map<string, { energy: number[]; protein: number[] }>();
   for (const i of items) {
@@ -900,9 +814,7 @@ export function costByTag(items: Item[], currency: "BDT" | "GBP"): TagCost[] {
 export interface ProteinPrice {
   rows: number;
   /** The cheapest row per 100 g of protein in this library, and
-      what it costs. Almost always a pulse, an egg or a small
-      fish, which is what section 17 says and what makes "the
-      cheapest protein you will actually eat" a real question. */
+      what it costs. */
   cheapest: Item;
   cheapestPer100g: number;
   medianPer100g: number;
@@ -913,12 +825,9 @@ export interface ProteinPrice {
 }
 
 /** What meeting a protein floor costs, at the cheap end of a
-    library and in the middle of it.
-
-    The other of section 17's two priced recommendations. It says
-    nothing about which row to eat: the cheapest row in a table
-    is not the one somebody will actually eat, which is the whole
-    reason that phrase is in the plan. */
+    library and in the middle of it. It says nothing about which
+    row to eat: the cheapest row in a table is not the one
+    somebody will actually eat. */
 export function proteinPrice(items: Item[], currency: "BDT" | "GBP"): ProteinPrice | null {
   const rows = items
     .filter((i) => i.price != null && i.currency === currency && i.protein > 0)
@@ -939,11 +848,10 @@ export function proteinPrice(items: Item[], currency: "BDT" | "GBP"): ProteinPri
    8. Days after a short night
    ------------------------------------------------------------ */
 
-/** The line a night is under, in hours. `SLEEP_HOURS` in
-    `shared/activity.ts` draws the habit row against the same
-    seven and is imported rather than restated: two numbers for
-    one line is a page calling a night short beside a row calling
-    it long. */
+/** The line a night is under, in hours. Imported from
+    `shared/activity.ts` rather than restated: two numbers for one
+    line is a page calling a night short beside a row calling it
+    long. */
 export const SHORT_NIGHT_HOURS = SLEEP_HOURS;
 
 /** The fewest pairs on each side of the line. Five, because a
@@ -973,44 +881,31 @@ export interface AfterSleep {
   afterRest: { days: number; meanKcal: number };
   /** After a short night minus after the rest. Positive is more. */
   diff: number;
-  /** Section 18's sentence is "days after short nights average so
-      much above target", and these are the figures it is made
-      of. Null where the caller has no target, which is every
-      reader who has not answered the goal page. */
+  /** The figures behind "days after short nights average so much
+      above target". Null where the caller has no target. */
   targetKcal: number | null;
   overTarget: number | null;
   restOverTarget: number | null;
 }
 
-/** Section 18's one sleep reading, and the whole of what an
-    hours field earns.
+/** The one sleep reading, and the whole of what an hours field
+    earns.
 
-    A ROW'S HOURS ARE THE NIGHT THAT ENDED ON THAT ROW'S
-    MORNING, so they pair with that row's OWN intake. Short
-    sleep raises ghrelin and lowers leptin overnight and what it
-    moves is the day that follows the night: the reader woke from
-    it that morning and ate their way through that day, which is
-    this row.
+    A ROW'S HOURS ARE THE NIGHT THAT ENDED ON THAT ROW'S MORNING,
+    so they pair with that row's OWN intake: what short sleep
+    moves is the day that follows the night. `weightKg` on a row
+    is that morning's weighing, so the whole row hangs off one
+    morning; Apple Health, Fitbit and Oura all date a night to the
+    morning it ended and `shared/csv.ts` maps them that way; and a
+    form reads "last night".
 
-    Three things settle that and they point the same way.
-    `weightKg` on a row is that morning's weighing, so the whole
-    row hangs off one morning and its sleep has to mean the same
-    night or the row means two things at once. Every importer
-    agrees: Apple Health, Fitbit and Oura all date a night to the
-    morning it ended, and `shared/csv.ts` maps `sleep`, `hours
-    slept` and `time asleep` out of exactly those. And a form
-    reads "last night", which is that same night again, so a
-    typed row and an imported row agree by construction rather
-    than by anybody remembering.
+    OFFSET IT BY A DAY IN EITHER DIRECTION AND IT MEASURES THE
+    WRONG PAIR while looking entirely correct, which is why the
+    convention is asserted from both sides in
+    `scripts/insights.test.ts` and printed on the panel.
 
-    OFFSET IT BY A DAY IN EITHER DIRECTION AND IT IS MEASURING
-    THE WRONG PAIR while looking entirely correct, which is why
-    the convention is written here, asserted from both sides in
-    `scripts/insights.test.ts`, and printed on the panel.
-
-    It returns two means and no word for the difference between
-    them: section 16's rule, and section 18 is explicit that this
-    is never turned into a sleep score. */
+    Two means and no word for the difference: never a sleep
+    score. */
 export function afterShortNights(opts: {
   days: Day[];
   /** The day's target, where the page has one. */
@@ -1079,14 +974,11 @@ export interface Movement {
   changePct: number | null;
   /** What that change is worth in energy a day, at the weight
       handed in. A band, and most of its width is the stride
-      length: `STEPS_PER_KM` in `shared/activity.ts` says so.
-      Null with no weight, because what a walk costs depends on
-      the body doing it. */
+      length. Null with no weight. */
   kcal: Range | null;
   /** What the trend did across the near window: kg a week with
-      its own interval, and whether that interval spans zero,
-      which is `stall()`'s own test for flat. Null under three
-      weighings, which is `slopePerWeek()`'s refusal. */
+      its interval, and whether that interval spans zero, which is
+      `stall()`'s own test for flat. */
   rate: Range | null;
   flat: boolean;
   weighings: number;
@@ -1099,30 +991,23 @@ export interface Movement {
   intakeChange: number | null;
 }
 
-/** Section 19's fourth stall, as three facts rather than as a
-    verdict: "your trend is flat and your log has not changed,
-    and your steps have fallen from about 8,000 a day to about
-    4,500 over the same three weeks."
+/** The fourth stall, as three facts rather than a verdict: "your
+    trend is flat, your log has not changed, and your steps have
+    fallen from about 8,000 a day to about 4,500 over the same
+    three weeks."
 
-    The point is the SAME WINDOW. `stepShift()` already compares
-    one window of walking against the one before it and
-    `slopePerWeek()` already fits a rate; what is invisible
-    without putting them side by side is movement falling quietly
-    during a deficit, which is most of what adaptive
-    thermogenesis is in practice and the easiest of the four
-    stalls to answer.
+    The point is the SAME WINDOW: movement falling quietly during
+    a deficit is invisible until the two are side by side, and it
+    is the easiest of the four stalls to answer.
 
     NOTHING HERE CONCLUDES. `flat` is a statement about an
-    interval, not about a reader, and no field says what caused
-    what. */
+    interval, not about a reader. */
 export function movement(opts: {
   days: Day[];
   todayISO: string;
   /** The fittable weighings, marked days already removed, in the
-      caller's own day numbers, with the function that made them.
-      The weighings and not the trend, for the reason
-      `slopePerWeek()` gives: an average lags and would
-      understate a real loss. */
+      caller's own day numbers. THE WEIGHINGS AND NOT THE TREND:
+      see `slopePerWeek()`. */
   weights: Point[];
   dayOf: (iso: string) => number;
   /** The trend's weight today, for the energy band. */
@@ -1186,10 +1071,9 @@ export function movement(opts: {
 export type MeasureId = "waist" | "hip" | "chest" | "thigh" | "arm" | "neck";
 
 /** Every site a day row can carry, and how to read one off it. A
-    TABLE RATHER THAN SIX BRANCHES, so a seventh site is a line
-    here and nothing else. Three of the six have no form offering
-    them yet, and a site with fewer than two readings is simply
-    absent rather than drawn empty. */
+    TABLE RATHER THAN SIX BRANCHES, so a seventh is a line here.
+    A site with fewer than two readings is absent rather than
+    drawn empty. */
 export const MEASURES: ReadonlyArray<{
   id: MeasureId; of: (d: Day) => number | undefined;
 }> = [
@@ -1201,11 +1085,9 @@ export const MEASURES: ReadonlyArray<{
   { id: "neck", of: (d) => d.neckCm },
 ];
 
-/** What a tape measure resolves on one person, in centimetres.
-    Under it the number is the measuring rather than the body.
-    `stall()` uses the same centimetre as its recomposition
-    threshold and should read this constant the next time
-    `shared/diet.ts` is opened. */
+/** What a tape measure resolves on one person, in centimetres:
+    under it the number is the measuring rather than the body.
+    `stall()` uses the same centimetre. */
 export const TAPE_RESOLUTION_CM = 1;
 
 /** Four weeks, which is section 19's own example and the width a
@@ -1241,17 +1123,11 @@ export interface Tape {
   weighings: number;
 }
 
-/** The tape beside the scale, which is section 19's reading that
-    justifies the whole measurement set.
-
-    A flat weight with a falling waist is a change in what the
-    weight is made of rather than a stall, and it is the one kind
-    the tool can settle on its own. `stall()` already returns
-    that as a kind and only INSIDE a detected stall: three flat
-    weeks, nine weighings and half the days logged. This is the
-    same two facts side by side whether or not one was detected,
-    because a reader who is not stalled still cannot see this out
-    of a weight.
+/** The tape beside the scale. A flat weight with a falling waist
+    is a change in what the weight is made of rather than a stall.
+    `stall()` returns that as a kind, but only INSIDE a detected
+    stall; this is the same two facts side by side whether or not
+    one was detected.
 
     Two numbers per site and no word for the pair. */
 export function tape(opts: {

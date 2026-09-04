@@ -35,13 +35,10 @@ export interface Profile {
     [key: string]: unknown;
 }
 /**
- * Supabase sends the reader back to whatever page they started on,
- * with the tokens in the URL fragment. The fragment is used rather
- * than the query string on purpose: a fragment is never sent to a
- * server, so the token cannot end up in a log.
- *
- * It is taken out of the address bar immediately, so a copied link
- * or a screenshot does not carry a working session in it.
+ * Supabase returns the tokens in the URL FRAGMENT rather than the
+ * query string, because a fragment is never sent to a server and
+ * so cannot end up in a log. It is taken out of the address bar
+ * immediately, so a copied link carries no working session.
  */
 /** Whatever went wrong on the way back, kept for the panel to
     show. Silently doing nothing is the one response to a failed
@@ -68,58 +65,30 @@ export declare function cachedProfile(): Profile | null;
 /**
  * This reader's profile, out of Postgres.
  *
- * THE FILTER IS THE WHOLE FUNCTION, and it was missing.
- *
- * `profiles` is the ONE table on this project whose select policy
- * is `using (true)`, and deliberately: a comment shows its
- * author's name to people who are not signed in. Every other
- * table is `auth.uid() = user_id`, so an unfiltered read there
- * returns your own rows and nothing else, which is why this was
- * the only call that could go wrong and did.
- *
- * Without `id=eq.<me>`, PostgREST returned whichever row the
- * planner reached first out of the whole table. With one account
- * that was always the right one. With two it was a coin toss, and
- * worse than a coin toss: a non-HOT update moves a row to the end
- * of the heap, so SAVING your profile was the thing that made the
- * next read return somebody else's. The account page painted
- * their answers as yours, `setup_at` came back null so the setup
- * form reappeared, and pressing Save again wrote the right row and
- * guaranteed the same wrong read. "It saves and goes back to how
- * it was", forever, by construction.
- *
- * It cached that row as this device's profile too, and
- * `saveProfile` merges its patch on to the cache, so the next
- * partial save could have written another person's answers into
- * your row.
- *
- * The irony is worth keeping: `saveProfile` below carries
- * `id=eq.<me>` and explains at length that it does so even though
- * the policy makes it unnecessary. Here the policy genuinely does
- * not protect you, and there was no filter at all.
+ * THE FILTER IS THE WHOLE FUNCTION. `profiles` is the ONE table
+ * here whose select policy is `using (true)`, because a comment
+ * shows its author's name to somebody signed out. Without
+ * `id=eq.<me>` PostgREST answers with whichever row the planner
+ * reaches first, and a non-HOT update moves a row to the end of
+ * the heap, so SAVING your profile is what makes the next read
+ * return somebody else's. Never remove it.
  */
 export declare function getProfile(): Promise<Profile | null>;
 /**
- * Write some of the profile. Takes the same column names the row
- * came back with, and writes only the ones it was given.
+ * Write some of the profile, only the columns it was given.
  *
- * The row filter is `id=eq.<me>` even though the policy already
- * makes it impossible to touch anyone else's: without a filter,
- * PostgREST would send an UPDATE across the whole table, and the
- * only thing standing between that and everybody's profile would
- * be the policy. Two locks on a door that is never meant to open.
+ * `id=eq.<me>` even though the policy already makes it impossible
+ * to touch anyone else's: without a filter PostgREST sends an
+ * UPDATE across the whole table and the policy is the only thing
+ * standing in front of everybody's profile.
  */
 export declare function saveProfile(patch: Partial<Profile>): Promise<boolean>;
 export declare const setDisplayName: (name: string) => Promise<boolean>;
 /**
- * Called once by signin.js. Synchronous on purpose: it picks up a
- * redirect, reads who the reader is out of the token, and returns.
- * Anything that needs the network happens after, in the background,
- * and tells the page through the account:changed event.
- *
- * This used to await the /user call, which meant the header could
- * not say who you were until Supabase answered. Behind a service
- * worker precaching sixty files that was half a minute of looking
- * signed out while being signed in.
+ * Called once by signin.js. SYNCHRONOUS on purpose: it picks up a
+ * redirect, reads who the reader is out of the token and returns.
+ * Anything needing the network happens after and tells the page
+ * through `account:changed`. Awaiting `/user` here is half a
+ * minute of looking signed out while being signed in.
  */
 export declare function initAccount(): Reader | null;

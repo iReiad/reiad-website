@@ -1,43 +1,21 @@
 "use client";
 
-/* ============================================================
-   diet/keto-panel.tsx: keto, while it is happening.
+/* Keto, while it is happening. `DIET.md` section 7.
 
-   `DIET.md` section 7. Keto's first three weeks lie to you, and
-   a tracker that does not say so is worse than no tracker: a
-   triumphant week one, a disappointing week two, and a quit in
-   week three by somebody who has decided it stopped working. It
-   never started. The first number was mostly water.
+   The clock is a position on an arc that already exists: `hourlyArc()`,
+   `bandAt()` and `forecastChange()` in `shared/diet.ts`. Nothing here is
+   a second model of the same thing.
 
-   ---- the clock is a position on an arc that already existed ----
+   `diet_phases.started_on` is a DATE, so a phase started today is between
+   nought and twenty-four hours old: the hour is counted from the START of
+   that day in the reader's own timezone, said as a stage with a mechanism
+   attached rather than as a stopwatch, and every quantity is a range
+   because `forecastChange()` returns one.
 
-   `hourlyArc()`, `bandAt()` and `forecastChange()` in
-   `shared/diet.ts` are the arc, and every figure below is one of
-   their answers read at the hour this reader is actually at.
-   Nothing here is a second model of the same thing, which is the
-   rule this tool keeps being saved by.
-
-   ---- and it must not imply a precision the model has not got ----
-
-   `diet_phases.started_on` is a DATE, so a phase started today is
-   somewhere between nought and twenty-four hours old. The hour is
-   counted from the START of that day in the reader's own
-   timezone, it is said as a stage with a mechanism attached
-   rather than as a stopwatch, and every quantity is a range
-   because `forecastChange()` returns one. The fat share is
-   printed only where `fatShareKnown` allows it, for the reason
-   written out beside that field.
-
-   ---- the electrolytes are the part that can hurt somebody ----
-
-   Section 7 puts three numbers on the page and one sentence
-   beside them: anybody on blood pressure medication or with
-   kidney disease asks a doctor first, because for those two
-   groups the advice is actively wrong. That sentence sits next to
-   the numbers rather than in a footer, and it is why this section
-   renders signed out as well as signed in. `journal-panel.tsx`
-   points a reader here from the symptom table.
-   ============================================================ */
+   The electrolytes are the part that can hurt somebody, so the sentence
+   about blood pressure medication and kidney disease sits beside the
+   numbers rather than in a footer, and that section renders signed out as
+   well as signed in: `journal-panel.tsx` points a reader here. */
 
 import { useCallback, useEffect, useMemo, useState, type CSSProperties } from "react";
 import {
@@ -78,15 +56,11 @@ const STAND_IN_BURN = 2500;
     panel what they intend to eat. */
 const ASSUMED_DEFICIT = 500;
 
-/** What this page offers as a phase, out of the one table in
-    `shared/diet.ts` rather than a second copy of the names.
-
-    Five rather than all thirteen, and the five are the ones a
-    keto reader actually moves between: the diet itself, the fast
-    people stack on top of it, ordinary eating either side, and
-    the two ways of stopping without stopping. What a reader
-    switches TO matters as much as what they were on, because a
-    slope never crosses a boundary. */
+    /** What this page offers as a phase, out of the one table in
+        `shared/diet.ts` rather than a second copy of the names. Five
+        rather than thirteen: the ones a keto reader actually moves
+        between. What a reader switches TO matters as much as what they
+        were on, because a slope never crosses a boundary. */
 const OFFERED: Protocol[] = ["keto", "fast", "standard", "maintain", "break"];
 
 /** The two marks, and there are two on purpose.
@@ -394,14 +368,11 @@ export function KetoPanel() {
         />
       </section>
 
-      {/* THE LINE, BESIDE THE NUMBERS. Section 31, and this page
-          needs a stronger one than most: the three amounts above
-          are the ones that are actively wrong for two groups of
-          people, and a very low carbohydrate week changes glucose
-          control within days. The wording follows `MEDS` in
-          `words.ts` and the note on the goal page, because a
-          reader meeting the same warning twice in two spellings
-          reads it as two different warnings. */}
+          {/* THE LINE, BESIDE THE NUMBERS. The three amounts above are the
+              ones actively wrong for two groups of people. The wording
+              follows `MEDS` in `words.ts` and the note on the goal page,
+              because a reader meeting the same warning twice in two
+              spellings reads it as two different warnings. */}
       <Note tone="warn">
         <TBlock
           en={<p>This is general education and not medical advice. A very low
@@ -425,18 +396,10 @@ export function KetoPanel() {
   );
 }
 
-/* ============================================================
-   The clock.
-
-   One question: what is happening RIGHT NOW, and what comes
-   next. The band names a MECHANISM rather than a feeling,
-   because the feeling is what the reader already has.
-
-   Counted from the start of the day the phase names, in the
-   reader's own timezone, and said so: a phase started today is
-   between nought and twenty-four hours old and the page must not
-   pretend to know which.
-   ============================================================ */
+    /* The clock: what is happening RIGHT NOW, and what comes next. The
+       band names a MECHANISM rather than a feeling, because the feeling is
+       what the reader already has. Counted from the start of the day the
+       phase names, in the reader's own timezone, and said so. */
 function Clock({ running, now, kg, mine, burn, from, lang }: {
   running: Phase | null;
   now: number | null;
@@ -662,21 +625,15 @@ function Clock({ running, now, kg, mine, burn, from, lang }: {
   );
 }
 
-/* ============================================================
-   Starting one, and ending one.
+    /* Starting a phase, and ending one. Without a row, the slope that will
+       not cross a boundary, the learned maintenance, the settling window
+       and the clock above are all code nobody reaches.
 
-   A phase is what makes every phase-aware reading in this tool
-   real: the slope that will not cross a boundary, the learned
-   maintenance that never spans one, the settling window, and the
-   clock above. Without a row, all four are code nobody reaches.
-
-   ENDING IS STARTING THE NEXT ONE, and that is the data model
-   rather than a shortcut: `stretches()` reads a phase as running
-   until the next one begins, so saying what you are doing now IS
-   saying that the last thing stopped. `diet_phases.ended_on` is
-   for a phase that ends without a successor, which needs a
-   writer `diet-api.ts` has not got yet.
-   ============================================================ */
+       ENDING IS STARTING THE NEXT ONE, and that is the data model rather
+       than a shortcut: `stretches()` reads a phase as running until the
+       next one begins. `diet_phases.ended_on` is for a phase that ends
+       without a successor, which needs a writer `diet-api.ts` has not
+       got. */
 function Phases({ running, phases, today, saving, onStart }: {
   running: Phase | null;
   phases: Phase[];
@@ -783,20 +740,12 @@ function Phases({ running, phases, today, saving, onStart }: {
   );
 }
 
-/* ============================================================
-   The adaptation window, drawn.
-
-   Section 7: the first fourteen days of a keto phase are excluded
-   from the trend's slope, and the tool says on screen what is
-   happening. A reader in the first fortnight should be able to
-   SEE that they are in it, and see what it means for their own
-   numbers: which of their own weighings the slope is not allowed
-   to look at, and the date the window closes.
-
-   `outsideAdaptation()` and `readable()` are the two functions
-   that decide it, so both are asked here rather than a third
-   description of the same rule being written.
-   ============================================================ */
+    /* The adaptation window, drawn. The first fourteen days of a keto
+       phase are excluded from the trend's slope, and the tool says so on
+       screen: which of the reader's own weighings the slope may not look
+       at, and the date the window closes. `outsideAdaptation()` and
+       `readable()` are the two functions that decide it, so both are asked
+       here rather than a third description of the same rule. */
 function Window({ running, today, points, phases, rate, lang }: {
   running: Phase | null;
   today: number;
@@ -899,17 +848,12 @@ function Window({ running, today, points, phases, rate, lang }: {
   );
 }
 
-/* ============================================================
-   Net carbs, against two marks rather than one.
-
-   Total carbohydrate less fibre, because fibre is carbohydrate
-   the body cannot break down. Section 7 puts the usual limit at
-   under 20 to 50 g and calls it individual, so it is a SETTING:
-   `diet_profile` has no column for one yet, and inventing a
-   single number here would be a limit the reader would then
-   believe. Both marks are drawn instead, and which one is yours
-   is a decision this page does not make for you.
-   ============================================================ */
+    /* Net carbs, against two marks rather than one: total carbohydrate
+       less fibre, because fibre is carbohydrate the body cannot break
+       down. The usual limit is under 20 to 50 g and is individual, so
+       `diet_profile` has no column for it and inventing a single number
+       here would be a limit the reader would then believe. Both marks are
+       drawn instead. */
 function NetCarbs({ day, signedIn, lang }: {
   day: Day | undefined;
   signedIn: boolean;
@@ -1034,15 +978,10 @@ function NetCarbs({ day, signedIn, lang }: {
   );
 }
 
-/* ============================================================
-   The three, and the sentence that has to be beside them.
-
-   Section 7. This renders signed out as well as signed in,
-   because it is the section a reader is sent here for: the
-   symptom table on `/tools/diet/journal` says there is a note
-   about this on the keto page, and for a while there was no keto
-   page.
-   ============================================================ */
+    /* The three, and the sentence that has to be beside them. This renders
+       signed out as well as signed in, because it is the section a reader
+       is sent here for: the symptom table on `/tools/diet/journal` says
+       there is a note about this on the keto page. */
 function Salts() {
   return (
     <div className="dt-salts">
@@ -1121,19 +1060,13 @@ function Salts() {
   );
 }
 
-/* ============================================================
-   A ketone reading, and what it does not say.
+    /* A ketone reading, and what it does not say. A number off a blood
+       meter belongs in the log beside the weight and answers "am I in
+       ketosis", which a reader cannot otherwise answer.
 
-   `diet_days.ketones_mmol` was a column nothing wrote. A number
-   off a blood meter belongs in the log beside the weight, and it
-   is worth having for one reason: it answers "am I in ketosis",
-   which is a real question a reader cannot otherwise answer.
-
-   IT IS NOT A SCORE, and the note is beside the field rather
-   than in a help article. Deeper ketosis is not faster fat loss.
-   The deficit is what decides the fat, and a reader chasing 3.0
-   is chasing a measure of how much fuel is in the blood.
-   ============================================================ */
+       IT IS NOT A SCORE, and the note is beside the field rather than in a
+       help article: deeper ketosis is not faster fat loss. The deficit is
+       what decides the fat. */
 function Ketones({
   days, line, rate, today, todayRow, signedIn, ready, saving, onWrite, lang,
 }: {

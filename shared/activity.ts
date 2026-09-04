@@ -1,44 +1,24 @@
 /* ============================================================
-   activity.ts: what the reader's own movement is worth, and
-   where their own log points.
+   activity.ts: what the reader's own movement is worth. `DIET.md`
+   sections 19 and 11. A second file rather than more of
+   `shared/diet.ts` because everything there that looks forward
+   assumes an activity factor holds, and steps are the largest
+   variable in what somebody burns and the one that quietly falls
+   during a deficit.
 
-   `DIET.md` sections 19 and 11. `shared/diet.ts` is the body, the
-   trend and the goal engine; this is the half that reads
-   MOVEMENT, and it is a second file rather than more of the first
-   for one reason. Everything in `diet.ts` that looks forward runs
-   off a maintenance figure which assumes an activity factor
-   holds, and section 19 says plainly that it does not: steps are
-   the largest variable in what somebody burns and the one that
-   quietly falls during a deficit.
+   NO FUNCTION HERE RETURNS A NUMBER IT CANNOT KNOW: every figure
+   is a `Range`, and the two error bars, what a kilometre costs
+   per kilogram and how many steps a kilometre is, are kept apart
+   until the last multiplication.
 
-   ---- the rules it inherits, and one it adds ----
+   NOTHING HERE IS A TARGET. No exercise calorie database, and
+   exercise calories are never added to the target: `sooner()`
+   answers what a change in activity does to the FORECAST, which
+   is a different question from what somebody may eat.
 
-   NO FUNCTION HERE RETURNS A NUMBER IT CANNOT KNOW. Every figure
-   comes back as a `Range`, the same shape `diet.ts` returns, and
-   the two error bars are kept apart until the last
-   multiplication: what a kilometre of walking costs per kilogram,
-   and how many steps a kilometre is. The second is where "a step
-   count from a phone is itself an estimate" is written down, and
-   it is most of the width of everything below.
-
-   NOTHING HERE IS A TARGET, and that is the rule this file adds.
-   Section 19: "No exercise calorie database, and exercise
-   calories are never added to the target." What `sooner()`
-   answers is what a change in activity would do to the FORECAST,
-   which is a different question from what somebody may eat, and
-   the page drawing it has to say so in those words.
-
-   IT COUNTS SHOWING UP. `habits()` hands its run of days to
-   `streak()` rather than counting one of its own, because that
-   function already carries the argument for why a run counts days
-   rather than targets met, and why `best` has to sit beside
-   `current`.
-
-   AND A HABIT WITH NO DATA IS NOT A FAILED HABIT. Every reading
-   below has three answers rather than two, and the third one is
-   the point: `null` is the column being empty, which is a
-   sentence saying there is nothing to read yet, never a fortnight
-   of noughts.
+   A HABIT WITH NO DATA IS NOT A FAILED HABIT. Every reading below
+   has THREE answers, and `null` is the column being empty rather
+   than a fortnight of noughts.
 
    `scripts/activity.test.ts` is the guard.
    ============================================================ */
@@ -52,19 +32,16 @@ import {
 /* two small things, said once                                */
 /* ---------------------------------------------------------- */
 
-/** Low to high, whichever way round they arrived.
-
-    A `Range` whose `low` sits above its `high` is a band drawn
-    backwards, and half the functions here can produce one: a FALL
-    in steps is a negative number of calories, so the end that was
-    the top of the band becomes the bottom of it. */
+/** Low to high, whichever way round they arrived. Half the
+    functions here can produce a band backwards: a FALL in steps
+    is a negative number of calories, so the top of the band
+    becomes the bottom. */
 const ordered = (a: number, b: number, mid: number): Range =>
   ({ low: Math.min(a, b), mid, high: Math.max(a, b) });
 
-/** The middle of a list, which is the right average for a step
-    count. One twenty-five thousand step day in a month of four
-    thousands moves a mean by a fifth and moves this by nothing,
-    and that day is a wedding rather than a change of habit. */
+/** The MEDIAN, which is the right average for a step count: one
+    25,000 step day in a month of 4,000s moves a mean by a fifth
+    and moves this by nothing. */
 export const median = (values: number[]): number | null => {
   if (!values.length) return null;
   const sorted = [...values].sort((a, b) => a - b);
@@ -72,15 +49,11 @@ export const median = (values: number[]): number | null => {
   return sorted.length % 2 ? sorted[half] : (sorted[half - 1] + sorted[half]) / 2;
 };
 
-/** An ISO date, `by` days from another.
-
-    UTC, which is arithmetic rather than a timezone decision:
-    `2026-08-22` is a day and not an instant, and stepping it in
-    local time is wrong by an hour twice a year. `shiftDate` in
-    `next/lib/diet-api.ts` is the same three lines and should
-    become an import of this one the next time that file is
-    opened, for the reason the top of CLAUDE.md gives about a
-    second copy. */
+/** An ISO date, `by` days from another. UTC, which is arithmetic
+    rather than a timezone decision: a date is a day and not an
+    instant, and stepping it in local time is wrong by an hour
+    twice a year. `shiftDate` in `next/lib/diet-api.ts` is a
+    second copy and should become an import of this. */
 export const shiftIso = (iso: string, by: number): string => {
   const [y, m, d] = iso.split("-").map(Number);
   return new Date(Date.UTC(y, m - 1, d + by)).toISOString().slice(0, 10);
@@ -90,39 +63,26 @@ export const shiftIso = (iso: string, by: number): string => {
 /* what a step is worth                                       */
 /* ---------------------------------------------------------- */
 
-/** The net cost of walking, per kilogram carried per kilometre.
+/** The NET cost of walking, per kilogram carried per kilometre:
+    0.40 to 0.50 kcal per kg per km for an adult at an ordinary
+    pace.
 
-    0.40 to 0.50 kcal per kg per km is where the measured cost of
-    walking sits for an adult at an ordinary pace, and it is the
-    same figure said the other common way round, 0.04 to 0.05 kcal
-    per kg per hundred metres.
-
-    NET RATHER THAN GROSS, and the distinction is load bearing.
-    Resting burn is already in `restingBurn()` and already inside
-    the learned maintenance, so adding the gross cost of an hour's
-    walking on top of a whole day's maintenance counts that hour's
-    resting burn twice. Gross is roughly double this, which is
-    exactly the size of error section 19 warns about in published
-    exercise figures. */
+    NET RATHER THAN GROSS, and the distinction is load bearing:
+    resting burn is already inside the learned maintenance, so
+    adding the gross cost of an hour's walking counts that hour's
+    resting burn twice. Gross is roughly double. */
 export const KCAL_PER_KG_KM: Range = { low: 0.40, mid: 0.45, high: 0.50 };
 
-/** How many steps make a kilometre.
-
-    A stride is personal, and this range is most of the width of
-    every figure below: 1,300 is the middle for an adult walking,
-    a long stride is nearer 1,200 and a short one nearer 1,450. A
-    phone's own counting error rides on top of it, which is why
-    the page says out loud that a step count is an estimate rather
-    than a measurement. */
+/** How many steps make a kilometre. A stride is personal and this
+    range is most of the width of every figure below: 1,300 in the
+    middle, 1,200 for a long stride and 1,450 for a short one. A
+    phone's own counting error rides on top. */
 export const STEPS_PER_KM: Range = { low: 1200, mid: 1300, high: 1450 };
 
 /** What a change of `steps` a day is worth in calories, for a
-    body of this weight.
-
-    THE TWO RANGES MULTIPLY AT THEIR ENDS. The cheapest kilometre
-    and the shortest stride together are the low end, and taking
-    the mid of each and calling the product the answer would be a
-    point estimate wearing a band. */
+    body of this weight. THE TWO RANGES MULTIPLY AT THEIR ENDS:
+    the mid of each multiplied together is a point estimate
+    wearing a band. */
 export function stepsKcal(steps: number, weightKg: number): Range {
   const at = (perKgKm: number, perKm: number): number =>
     perKgKm * weightKg * (steps / perKm);
@@ -133,13 +93,9 @@ export function stepsKcal(steps: number, weightKg: number): Range {
   );
 }
 
-/** The same change said as weight, per week, at `KCAL_PER_KG`.
-
-    Which is the standard approximation and is right for fat and
-    wrong for water, exactly as it is everywhere else in this
-    tool. It is used here for a difference between two forecasts
-    rather than for a reading off a scale, which is the use it
-    survives. */
+/** The same change said as weight, per week, at `KCAL_PER_KG`:
+    the standard approximation, used here for a difference between
+    two forecasts rather than a reading off a scale. */
 export function stepsKgPerWeek(steps: number, weightKg: number): Range {
   const kcal = stepsKcal(steps, weightKg);
   const per = (k: number): number => (k * 7) / KCAL_PER_KG;
@@ -166,19 +122,13 @@ export interface Outlook {
   readings: number;
 }
 
-/** If this carries on, where does it get to.
+/** If this carries on, where does it get to. A BAND AND NEVER A
+    DATE, widening the further out it is asked.
 
-    A BAND AND NEVER A DATE. The band is the rate's own error bar
-    multiplied by the distance, so it widens the further out it is
-    asked, which is the honest shape: the arithmetic cannot get
-    more certain about April than about next week.
-
-    It refuses on the same test `projection()` refuses on, and for
-    the same reason: a rate of "0.3 kg a week either way" is a
-    rate that has not been measured, and carrying it forward eight
-    weeks produces a confident sentence out of data that cannot
-    tell loss from gain. `slopePerWeek()` returns null under three
-    readings, which is the other refusal and needs no code here. */
+    Refuses on the same test `projection()` refuses on: a rate of
+    "0.3 kg a week either way" carried forward eight weeks is a
+    confident sentence out of data that cannot tell loss from
+    gain. */
 export function outlook(opts: { points: Point[]; weeks: number }): Outlook | null {
   const { points, weeks } = opts;
   const weekly = slopePerWeek(points);
@@ -204,14 +154,10 @@ export function outlook(opts: { points: Point[]; weeks: number }): Outlook | nul
 /* and what a change in activity would do to it               */
 /* ---------------------------------------------------------- */
 
-/** More movement always SUBTRACTS from the weekly change, and the
-    direction is the same whichever way the reader is going: it
-    makes a loss faster and a gain slower.
-
-    Interval arithmetic, so the ends cross: `[a,b] - [c,d]` is
-    `[a-d, b-c]`. Writing it as `low - low` looks right and
-    narrows the band every time, which is the flattering
-    direction. */
+/** More movement always SUBTRACTS from the weekly change: a loss
+    faster and a gain slower. Interval arithmetic, so THE ENDS
+    CROSS, `[a,b] - [c,d]` is `[a-d, b-c]`; `low - low` looks
+    right and narrows the band every time. */
 const slower = (weekly: Range, extra: Range): Range => ({
   low: weekly.low - extra.high,
   mid: weekly.mid - extra.mid,
@@ -226,30 +172,20 @@ export interface Sooner {
   /** The difference, in weeks. */
   saved: Range;
   /** What the extra steps are worth a day, and as weight a week.
-      Both are here because the sentence needs all three numbers
-      and computing one of them twice is how two of them disagree
-      by a rounding. */
+      Both, because the sentence needs all three and computing one
+      twice is how two disagree by a rounding. */
   kcal: Range;
   kgPerWeek: Range;
 }
 
-/** What `steps` more a day would do to the time to a goal.
-
-    Null when either projection refuses, which covers the two
-    cases worth refusing: a rate whose band spans zero, and a
-    change so large it takes a gain plan through zero and out the
-    other side. Both are the arithmetic saying it cannot answer,
-    and a page that filled either in with a number would be making
-    one up.
+/** What `steps` more a day would do to the time to a goal. Null
+    when either projection refuses: a rate whose band spans zero,
+    or a change so large it takes a gain plan through zero.
 
     `saved` is subtracted at MATCHED ENDS rather than crossed,
-    which is the one place here that is deliberately not interval
+    which is the one place here deliberately not interval
     arithmetic: the two projections are built from the same
-    weighings, so the honest reading is "at the optimistic end of
-    your own rate it is this many weeks, and at the pessimistic
-    end this many". Crossing them would report the optimistic end
-    of one against the pessimistic end of the other, which is a
-    comparison of two different readers. */
+    weighings, so crossing them compares two different readers. */
 export function sooner(opts: {
   currentKg: number;
   goalKg: number;
@@ -279,10 +215,8 @@ export function sooner(opts: {
     less shows up against it rather than moving it. */
 export const STEP_BASE_DAYS = 56;
 
-/** And the fewest days it may be read from. Under this the
-    habit's mark is `null` and the panel says what it is waiting
-    for: a middle drawn from three days is a number about three
-    days. */
+/** And the fewest days it may be read from. Under this the mark
+    is `null` and the panel says what it is waiting for. */
 export const STEP_BASE_LEAST = 7;
 
 export interface StepBase {
@@ -318,15 +252,10 @@ export interface StepShift {
   beforeDays: number;
 }
 
-/** Steps over one window against the window before it.
-
-    This is the whole of section 19's stall: "Your trend is flat
-    and your log has not changed. Your steps have fallen from
-    about 8,000 a day to about 4,500 over the same three weeks."
-    Two numbers and no verdict, the shape `changed()` in
-    `shared/routine.ts` already uses, and for the same reason:
-    both halves are the same length, so a quiet fortnight makes a
-    smaller number rather than a broken chain. */
+/** Steps over one window against the window before it. Two
+    numbers and no verdict, and BOTH HALVES ARE THE SAME LENGTH,
+    so a quiet fortnight makes a smaller number rather than a
+    broken chain. */
 export function stepShift(days: Day[], todayISO: string, window = 14): StepShift {
   const between = (from: string, to: string): number[] => days
     .filter((d) => d.date >= from && d.date <= to && d.steps != null)
@@ -347,31 +276,22 @@ export function stepShift(days: Day[], todayISO: string, window = 14): StepShift
 /* the habits, which are all read off columns already logged  */
 /* ---------------------------------------------------------- */
 
-/** Seven daily things, and every one of them is a column of
-    `diet_days` that something already writes.
-
-    THAT IS THE TEST AND IT IS NOT NEGOTIABLE. `DIET.md` section
-    30 sets it for a target and it holds here: if the site cannot
-    measure a thing out of something it already holds, the bar
-    would be a decoration. So there is no new form, no checklist
-    to tick, and an eighth habit has to name the column it is read
-    from before it is an eighth habit. */
+/** Seven daily things, and every one is a column of `diet_days`
+    something already writes. THAT IS THE TEST: if the site cannot
+    measure a thing out of what it already holds, the bar is a
+    decoration. An eighth habit names its column first. */
 export type HabitId =
   | "weighed" | "logged" | "protein" | "fibre" | "water" | "steps" | "sleep";
 
 /** Why a habit has no mark, when it has none. `lean` wants the
     tape or a body fat estimate; `history` wants more days with a
-    step count in them. Both are things a reader can do something
-    about, which is why they are told apart. */
+    step count. Both are things a reader can act on. */
 export type HabitNeeds = null | "lean" | "history";
 
-/** What one day says about one habit.
-
-    THREE ANSWERS RATHER THAN TWO. `null` is the column carrying
-    nothing that day, and it must not become `false`: `sleep_hours`
-    is a column nothing writes yet, so a two-valued reading would
-    draw a fortnight of missed nights for a field that has never
-    been offered. */
+/** What one day says about one habit. THREE ANSWERS RATHER THAN
+    TWO: `null` is the column carrying nothing and must not become
+    `false`, or a field nothing writes yet draws as a fortnight of
+    missed nights. */
 type Reading = (d: Day) => boolean | null;
 
 export interface Habit {
@@ -383,8 +303,8 @@ export interface Habit {
   needs: HabitNeeds;
   /** Over the WHOLE history: the current run, the best there has
       ever been, and the total. Never a percentage of a target,
-      and `best` is here because a number that can only fall is a
-      number people stop looking at. */
+      and `best` because a number that can only fall is one people
+      stop looking at. */
   run: Streak;
   /** In the last `of` days: how many held, and how many carry the
       reading at all. `read` of zero is nothing to read, not a
@@ -399,23 +319,18 @@ export interface Habit {
     a different thing from the button. */
 export const GLASS_ML = 250;
 
-/** Eight of them, and it is a CONVENTION rather than a
-    requirement. Section 15 has water "logged, not calculated",
-    which is the tool declining to compute somebody's need, so the
-    number here is offered as an argument to be changed and the
-    page says whose number it is. */
+/** Eight, and a CONVENTION rather than a requirement: water is
+    logged, not calculated, so this is an argument to be changed
+    and the page says whose number it is. */
 export const GLASSES = 8;
 
-/** The low end of section 15's fibre reference, 25 to 30 g a day.
+/** The low end of the fibre reference, 25 to 30 g a day.
     `WATCHED` in `next/components/diet/nutrition-panel.tsx` states
-    the same pair, and that table should read this constant the
-    next time it is opened. */
+    the same pair and should read this constant. */
 export const FIBRE_FLOOR_G = 25;
 
-/** Seven hours. Section 18 has one optional field, hours, and is
-    firm that it is "never turned into a sleep score", so this is
-    a line a night is either above or not, and nothing here ranks
-    a night or scores a week. */
+/** Seven hours: a line a night is either above or not. Nothing
+    here ranks a night or scores a week. */
 export const SLEEP_HOURS = 7;
 
 /** A fortnight, which is the window everything else in this tool
@@ -442,10 +357,8 @@ export function habits(opts: {
   } = opts;
 
   const base = stepBase(days, todayISO);
-  /* The FLOOR rather than the middle of the band: `proteinFloor()`
-     returns 1.6 g per kg of lean mass at its low end and up to
-     2.2 at its high, and a habit is a line to be over rather than
-     a range to sit in. */
+  /* The FLOOR rather than the middle of the band: a habit is a
+     line to be over rather than a range to sit in. */
   const protein = leanKg != null && leanKg > 0
     ? proteinFloor(leanKg, ratePct).low : null;
   const water = glasses * GLASS_ML;
@@ -479,14 +392,10 @@ export function habits(opts: {
     },
   ];
 
-  /* THE WINDOW IS WALKED BY DATE AND THE RUN BY ROW, and they are
-     genuinely different sets. A date with no row at all is a day
-     the reader did not weigh and did not log, which is a `false`
-     for those two and a `null` for the five that need a column;
-     a run, on the other hand, can only ever be made of days that
-     exist. Counting the window over the rows instead reported
-     "5 of the last 14" as "5 of 5" for anybody with nine days
-     missing, which is the flattering direction. */
+  /* THE WINDOW IS WALKED BY DATE AND THE RUN BY ROW, which are
+     different sets: a date with no row is a day nobody weighed
+     and nobody logged. Counting the window over the rows reports
+     "5 of the last 14" as "5 of 5". */
   const at = new Map(days.map((d) => [d.date, d]));
   const span: Day[] = [];
   for (let i = 0; i < window; i += 1) {
@@ -497,11 +406,9 @@ export function habits(opts: {
   return kinds.map(({ id, mark, needs, read }) => {
     const answers = span.map(read);
     /* `streak()` decides a day is in the run when SOMETHING is on
-       it, so a held day is handed over as a day with a note. What
-       is being counted is the dates; the field is how this file
-       says "this day counts" in that function's own vocabulary,
-       and reimplementing the run to avoid it would lose the
-       argument written above `streak()` about what a run is for. */
+       it, so a held day is handed over as a day with a note: the
+       field is this file saying "this day counts" in that
+       function's own vocabulary. */
     const held = days.filter((d) => read(d) === true)
       .map((d) => ({ date: d.date, note: "." }));
     return {

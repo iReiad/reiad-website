@@ -1,43 +1,11 @@
-/* ============================================================
-   editor.ts: the writing surface, on its own.
-
-   Everything in this file used to live inside studio.js, which was
-   fine while there was one Studio. There are two for a while now,
-   the page at /studio.html and the React one at /studio/, and a
-   `contenteditable` with a sanitiser, a slash menu, markdown rules
-   and a figure toolbar is the last thing on this site that should
-   exist twice. Each of those has already been the site of a bug
-   nobody would find by reading, and every one of those bugs is
-   written down below where it happened.
-
-   ---- what belongs here, and what does not ----
-
-   Here: anything that touches the caret, the selection, or the
-   HTML the writer is producing. That is not React's work. React is
-   a function of state, and a `contenteditable` is a piece of the
-   DOM the browser and the user are both editing behind React's
-   back; controlling it from a component is how you get a cursor
-   that jumps to the end of the line every time somebody types.
-
-   Not here: the fields, the preview, the meters, the pre-flight
-   panel, the sheets, the publish button. Those are chrome, they
-   are a function of state, and they are exactly what a component
-   tree is good at.
-
-   ---- how it is used ----
-
-       const ed = createEditor({
-         root: document.getElementById("editor"),
-         onChange: () => redraw(),
-         lang: () => "bn",
-         toast, pickPhoto: () => input.click(),
-       });
-
-   The root element is handed in rather than looked up, which is
-   the whole of what made this file possible: `studio.js` reached
-   for `#editor` at module scope, so importing any part of it meant
-   importing a page.
-   ============================================================ */
+/* editor.ts: the writing surface, on its own. Anything touching
+   the caret, the selection or the HTML the writer produces lives
+   here and never inside a component: a `contenteditable` is DOM
+   the browser and the writer are both editing behind React's
+   back. The fields, the preview and the publish button are chrome
+   and belong in the component tree.
+   The root element is handed in rather than looked up, so
+   importing this does not import a page. */
 
 import { encodeImage } from "/photo.js";
 
@@ -79,19 +47,10 @@ const ATTRS: Record<string, string[]> = {
   DIV: ["data-mount"],
 };
 
-/* The class names the stylesheet actually knows about: the same list
-   _lib/sanitise.ts enforces server-side.
-
-   Without this the two sanitisers disagreed, and the browser's was
-   the stricter one: a <div class="note"> became a plain paragraph and
-   figure.wide lost its class on the way out of the editor. Which
-   meant the server's support for these was unreachable from the one
-   tool that writes to it, and every callout imported from Notion
-   arrived flattened.
-
-   check-css.ts reads this list out of this file by name. Renaming
-   the constant is fine; moving it somewhere the check cannot see is
-   how the two lists drift apart again. */
+/* The class names the stylesheet knows about: the same list
+   `_lib/sanitise.ts` enforces server-side, and the two must not
+   drift. `check-css.ts` reads this list out of the BUILT file by
+   name, so it may not stop being a `new Set([...])` literal. */
 export const KEEP_CLASSES: Set<string> = new Set([
   /* photos: how big, what shape, and which part to keep */
   "wide", "full", "duo", "lead-photo",
@@ -549,15 +508,11 @@ export function createEditor({
       caret where the writing goes. `data-fill` marks that spot; it
       never survives sanitize().
 
-      This builds the nodes and places them itself rather than going
-      through execCommand, which is the one place in this file where
-      that is worth doing. execCommand normalises what it inserts
-      against what is already there, and its idea of normal is not
-      ours: a checklist inserted next to a numbered list had its
-      items folded into that list and its class dropped, so the block
-      silently did not appear. The cost is that this insertion is not
-      on the browser's undo stack; the block is one Backspace from
-      gone either way. */
+      It builds and places the nodes itself rather than going
+      through execCommand, which normalises what it inserts
+      against what is there: a checklist next to a numbered list
+      had its items folded in and its class dropped. The cost is
+      that this insertion is not on the browser's undo stack. */
   function insertBlockHtml(html: string): void {
     root.focus();
     const fragment = document.createRange().createContextualFragment(html);
@@ -596,16 +551,10 @@ export function createEditor({
   const exec = (cmd: string, value: string | null = null) =>
     document.execCommand(cmd, false, value ?? undefined);
 
-  /* ---------- the blocks a long read is made of ----------
-
-     `label` is what the slash menu and the toolbar show, `hint` is
-     the line under it, and `html` is what lands at the caret with
-     `data-fill` marking where the writing starts.
-
-     These exist because the travel piece needed all five and none
-     of them could be made from inside the Studio: they were typed
-     as raw HTML into the file by hand, which is exactly the thing
-     this tool is for not doing. */
+  /* The blocks a long read is made of. `label` is what the slash
+     menu and the toolbar show, `hint` the line under it, and
+     `html` what lands at the caret with `data-fill` marking where
+     the writing starts. */
   const BLOCKS: Block[] = [
     { label: "Heading", hint: "Section heading", run: () => exec("formatBlock", "h2") },
     { label: "Sub-heading", hint: "Under a heading", run: () => exec("formatBlock", "h3") },
@@ -682,18 +631,11 @@ export function createEditor({
   });
 
   /* A caption still holding the prompt is selected whole, so the
-     first thing typed replaces it rather than joining it.
-
-     TWO EVENTS, and `focusin` alone was the bug. It fires on
-     mousedown, and the browser then puts the caret where the
-     pointer landed on mouseup, which collapses the selection this
-     just made. So clicking into a caption, which is how everybody
-     reaches one, left the prompt in place and the writer typed
-     into the middle of it. `focusin` is still here because it is
-     the one that serves Tab and programmatic focus.
-
-     A drag is left alone: a selection that is not collapsed was
-     chosen on purpose. */
+     first thing typed replaces it. TWO EVENTS, and `focusin`
+     alone is not enough: it fires on mousedown and the browser
+     then collapses the selection on mouseup. `focusin` stays
+     because it is the one that serves Tab and programmatic focus.
+     A drag is left alone: an uncollapsed selection was chosen. */
   const takeCaption = (node: EventTarget | null): void => {
     const cap = node instanceof Element ? node.closest("figcaption") : null;
     if (cap && (cap.textContent ?? "").startsWith(CAPTION_HINT)) {

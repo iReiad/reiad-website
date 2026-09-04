@@ -1,31 +1,18 @@
 #!/usr/bin/env node
-/* ============================================================
-   frontier.test.ts, checks on the portfolio-construction engine.
+/* frontier.test.ts: checks on the portfolio-construction engine.
 
        node aab/portfolio/frontier.test.ts
 
-   An optimiser that has converged to the wrong point returns a
-   perfectly plausible set of weights. A backtest with an
-   off-by-one in it returns a perfectly plausible return. Neither
-   announces itself, so everything here is checked against a
-   closed form, an identity that has to hold whatever the code
-   does, or a number computed somewhere else entirely.
-
-   The strongest of them are the identities. The variance of the
-   realised portfolio return series has to equal w'Σw computed
-   from the covariance matrix, exactly, because they are two
-   expressions for the same thing. An equally weighted buy-and-
-   hold portfolio has to end at the average of the price
-   relatives, exactly. The minimum-variance weights have to equal
-   Σ⁻¹1 / (1'Σ⁻¹1) whenever that solution is interior. If any of
-   those three drift, something upstream is broken.
-
-   The last section is a different kind of check: the fund as it
-   was actually built, run again from daily prices, against the
-   figures it reported at the time. Weights, portfolio beta, the
-   final value of the ten million, and every year's return and
-   volatility all have to come back.
-   ============================================================ */
+   An optimiser converged to the wrong point returns perfectly
+   plausible weights, so everything is checked against a closed
+   form, an identity or a number computed elsewhere. The
+   identities are the strongest: the variance of the realised
+   return series must equal w'Σw exactly, an equally weighted
+   buy-and-hold must end at the average of the price relatives
+   exactly, and the minimum-variance weights must equal
+   Σ⁻¹1 / (1'Σ⁻¹1) whenever that solution is interior.
+   The last section runs the fund as it was actually built
+   against the figures it reported at the time. */
 
 import {
   returnsOf, returnMatrix, stdev, covariance, correlationOf, shrink,

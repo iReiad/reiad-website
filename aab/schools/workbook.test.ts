@@ -1,44 +1,21 @@
 #!/usr/bin/env node
-/* ============================================================
-   workbook.test.ts: both practice books, against the markup a
+/* workbook.test.ts: both practice books, against the markup a
    learner actually gets.
 
        node aab/schools/workbook.test.ts
 
-   `hub.test.ts` next door exists because a hub that renders and
-   is not finished looks exactly like one that is. This is the
-   same test for the books, and it was written after both of them
-   turned out to be exactly that.
+   A book that renders and is not finished looks exactly like one
+   that is, and both of these were exactly that: one keyed on a
+   DOM vocabulary the component does not render, and the other
+   dereferenced `document.getElementById("tage")` at module scope
+   on a route that has no such element. Every check below is a
+   thing the book must do that neither book did.
 
-   ---- what it caught, once ----
-
-   The English module keyed on a vocabulary the page does not
-   have. It looked for `.wb-day`, `[data-wb-write]` and
-   `[data-wb-done]`; `components/workbook.tsx` renders both books
-   with the German one. Nothing saved, nothing revealed an answer,
-   nothing ticked.
-
-   And the German module did not run. Both files opened with
-   `document.getElementById("tage")` and dereferenced it on the
-   next line, and the route that replaced the generated page had
-   no element with that id.
-
-   Every check below is one of those: a thing the book must do
-   that neither book did, and that no other check on this site
-   would have noticed, because both pages rendered perfectly.
-
-   ---- how ----
-
-   `hub.test.ts`'s harness, verbatim in shape: the component
-   bundled with esbuild, rendered in process, and driven in
-   `linkedom` with the twenty lines of storage and events the
-   modules touch stubbed. No browser, no network, about a second.
-
-   Without linkedom it says so and skips, which is not a pass.
-
-   `aab/tsconfig.test.json` is what typechecks the annotations
-   below, and `scripts/check-types.ts` runs it.
-   ============================================================ */
+   `hub.test.ts`'s harness: the component bundled with esbuild,
+   rendered in process, driven in `linkedom` with storage and
+   events stubbed. Without linkedom it says so and SKIPS, which
+   is not a pass. `aab/tsconfig.test.json` typechecks the
+   annotations below. */
 
 import { registerHooks } from "node:module";
 import { dirname, join } from "node:path";

@@ -1,59 +1,35 @@
-/* ============================================================
-   studio-publish.test.ts: a pasted photo actually reaches /media.
+/* studio-publish.test.ts: a pasted photo actually reaches /media.
 
      CHROMIUM_PATH=/path/to/chrome node aab/studio-publish.test.ts
 
-   ---- the bug ----
+   A pasted photo is a `data:` URL until publish, and READING ONE
+   BACK WITH `fetch()` IS GOVERNED BY connect-src, NOT img-src, so
+   under this site's policy every read-back is refused before it
+   leaves the browser. `hostPhotosIn` catches that, counts a
+   failed upload and leaves the photo embedded, which looks like
+   nothing going wrong: R2 stays empty, `cover` stays empty and
+   every shared link shows the default card. `aab/src/photo.ts`
+   decodes instead, and this fails if that is ever "simplified"
+   back to a fetch.
 
-   A photo pasted into the Studio is held as a `data:` URL until
-   publish, when `hostPhotosIn()` reads the bytes back and uploads
-   them to R2. It read them with `fetch()`, which is correct,
-   obvious, and silently forbidden: **fetching a `data:` URL is
-   governed by connect-src, not img-src.** This site's policy says
-   `img-src 'self' data:`, so a pasted photo displays perfectly,
-   and connect-src never mentioned `data:`, so every read-back was
-   refused before it left the browser.
-
-   `hostPhotosIn` catches that, counts a failed upload and leaves
-   the photo embedded, which is its designed fallback and looks
-   like nothing going wrong. The symptoms surface three removes
-   away: R2 stays empty, every article's `cover` stays empty, and
-   so every link shared to WhatsApp or LinkedIn shows the site's
-   default card. `aab/src/photo.ts` decodes instead, and this file
-   is what fails if that is ever "simplified" back to a fetch.
-
-   ---- why a browser and not a check ----
-
-   The failure only exists when the real Content-Security-Policy is
-   applied: a static server that sends none passes the broken code.
-   So the policy is READ OUT OF `aab/_headers` rather than copied
-   here, and the run starts by asking the browser to demonstrate
+   IT NEEDS A REAL BROWSER because the failure only exists under
+   the real policy: a server that sends none passes the broken
+   code. The policy is READ OUT OF `aab/_headers` rather than
+   copied, and the run starts by asking the browser to demonstrate
    both halves of it, so a policy widened to allow `data:` under
-   connect-src fails here rather than quietly making this test
-   about nothing.
+   connect-src fails here rather than making this test about
+   nothing.
 
-   ---- what it drives ----
-
-   `/studio/index.html` is a Next.js route now, so there is no file
-   under `aab/` at that address. Starting Next to get a header and
-   a footer would make a test of the upload path depend on a
-   renderer that has its own tests, so the server answers that one
-   address with the two things the bundle needs: the stylesheet and
-   the element it mounts into. Everything below happens inside that
-   element. `app/studio.test.ts` does the same for the same reason,
-   and links `/fallback.css` for the same reason too: nothing has
+   The subject is the BUILT bundle at `/studio/app.js` and the
+   served `/photo.js` and `/share-card.js` it imports: a test of
+   the TypeScript beside them would pass on a stale build. The
+   server answers `/studio/index.html` with the stylesheet and the
+   mount element, and links `/fallback.css`, because nothing has
    been served at `/styles.css` since the stylesheet moved into
    Next and started carrying a content hash.
 
-   The subject is the BUILT bundle at `/studio/app.js` and the
-   served `/photo.js` and `/share-card.js` it imports at runtime.
-   Those are what deploy; a test of the TypeScript beside them
-   would pass on a stale build.
-
-   A skip here names which way it failed to start, because a skip
-   is never a pass. `aab/tsconfig.test.json` typechecks this file
-   and `scripts/check-types.ts` runs that config.
-   ============================================================ */
+   A skip names which way it failed to start, because a skip is
+   never a pass. */
 
 import { createServer } from "node:http";
 import { readFile } from "node:fs/promises";
@@ -492,20 +468,13 @@ const firstUrl = uploads[0] ? `/media/${uploads[0].key}` : "(nothing was uploade
 check("no data: URL survives into the database", (body.match(/src="data:/g) ?? []).length, 0);
 check("the photo is a /media path instead", (body.match(/src="\/media\//g) ?? []).length, 1);
 
-/* AND THE TWO ATTRIBUTES THAT NEVER USED TO ARRIVE.
-
-   `hostPhotosIn` has set both on every photo it hosts since it was
-   written, and the browser's own sanitiser stripped both on the
-   way out, because `ATTRS.IMG` in `aab/editor.js` allowed four
-   attributes and `ALLOWED.img` in `functions/_lib/sanitise.ts`
-   allowed six. Two dead lines, and every photo in every article
-   loading eagerly while the markup said it should not.
-
-   Checked HERE rather than in a unit test because the trip is the
-   point: the attribute has to survive being written, sanitised in
-   the browser, sent, and sanitised again on the server.
-   `check-css.ts` now compares the two tables so they cannot drift
-   apart again. */
+/* `loading` AND `decoding`, which `hostPhotosIn` sets and the
+   browser's sanitiser used to strip because `ATTRS.IMG` in
+   `aab/editor.js` and `ALLOWED.img` in
+   `functions/_lib/sanitise.ts` disagreed. Checked HERE because
+   THE TRIP is the point: the attribute has to survive being
+   written, sanitised in the browser, sent, and sanitised again on
+   the server. `check-css.ts` compares the two tables. */
 check("the hosted photo is left lazy, as hostPhotosIn asked",
   (body.match(/loading="lazy"/g) ?? []).length, 1);
 check("and asynchronously decoded",

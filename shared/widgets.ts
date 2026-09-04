@@ -1,76 +1,37 @@
 /* ============================================================
    The front page is a board the reader arranges.
 
-   ---- what was wrong with it ----
+   THIS CATALOGUE IS DATA. A WIDGET'S DRAWING IS CODE. So a widget
+   renamed here is renamed on a phone at the next fetch, and one
+   taken off the list leaves the picker with nothing published.
+   What a widget DRAWS is a component on each side, so both sides
+   SKIP a kind they cannot draw rather than leaving a hole: a
+   blank rectangle with a title on it is worse than a board with
+   one fewer thing on it.
 
-   The home page was a list of places to go, and so was the app's:
-   a door, then a card per school, then a card per tool. Every
-   card said the same thing in the same voice, which is "here is
-   a link", and none of them said anything a reader did not
-   already know. A page like that is a menu, and a menu is what
-   you read once.
-
-   Everything worth putting there was already being computed
-   somewhere else: how far through a school somebody is, what
-   they were reading, what today's log comes to, which target is
-   moving, what was published this week. It was all one page
-   deeper.
-
-   ---- the split, and it is CLAUDE.md's own ----
-
-   **This catalogue is DATA. A widget's drawing is CODE.**
-
-   So the list below reaches the Android app with no release: a
-   widget renamed here is renamed on a phone at the next fetch,
-   and one taken off the list disappears from the picker without
-   anybody publishing anything. What a widget DRAWS is a
-   component on each side, which is why a new entry here needs a
-   release on the side that has not got its renderer yet, and why
-   both sides SKIP a kind they cannot draw rather than leaving a
-   hole. A blank rectangle with a title on it is worse than a
-   board with one fewer thing on it.
-
-   That is the same contract the article block classes have: the
-   class is allowed in three places, and a class nothing styles
-   is caught rather than shipped.
-
-   ---- nothing here is invented ----
-
-   Every kind is a reading this site already takes. That is
-   deliberate and it is the test a new one has to pass: if the
-   figure does not exist anywhere else, the widget is a feature
-   wearing a widget's clothes, and it should be built as a
-   feature first and put on the board second.
+   NOTHING HERE IS INVENTED. Every kind is a reading this site
+   already takes, and that is the test a new one has to pass: a
+   figure that exists nowhere else is a feature wearing a widget's
+   clothes.
    ============================================================ */
 
 /** How much room a widget takes, in a phone home screen's own
-    three steps.
+    three steps. `small` is half the row and roughly square,
+    `wide` is the row at a reading's height, `tall` is the row
+    with room for a LIST in it. A kind draws differently at each
+    size it offers, which makes this a size rather than a stretch.
 
-    `small` is half the row and roughly square, and two smalls
-    sit side by side. `wide` is the row at a reading's height.
-    `tall` is the row with room for a LIST in it, and it is the
-    difference between a headline widget showing one story and
-    showing the morning's four: the kind draws differently at
-    each size it offers, which is what makes this a size rather
-    than a stretch.
-
-    ---- `half` and `full` are still read, for ever ----
-
-    They were the first two sizes and they are inside real
-    accounts under `home-board`, so `parsePlaced` reads them as
-    `small` and `wide` on the way in. They are never written
-    back: `storedOf` writes the three above, and a board saved
-    today round-trips through them. Removing the aliases would
-    not break anything visibly, it would quietly empty the board
-    of everybody who arranged it before this shipped, which is
-    the storage-key rule at the top of CLAUDE.md. */
+    `half` AND `full` ARE STILL READ, FOR EVER. They are inside
+    real accounts under `home-board`, so `parsePlaced` reads them
+    as `small` and `wide` on the way in and `storedOf` never
+    writes them back. Removing them breaks nothing visibly: it
+    quietly empties the board of everybody who arranged one before
+    the rename. */
 export type WidgetSize = "small" | "wide" | "tall";
 
-/** What has to be true before a widget has anything to say.
-
-    A widget that needs an account says so, so the picker can put
-    it under a line explaining that rather than offering it and
-    then drawing "sign in" where a figure should be. */
+/** What has to be true before a widget has anything to say, so
+    the picker can say so rather than offering one that draws
+    "sign in" where a figure should be. */
 export type WidgetNeeds = "account" | "school" | "network";
 
 export interface WidgetKind {
@@ -90,13 +51,9 @@ export interface WidgetKind {
 }
 
 /* ------------------------------------------------------------
-   The catalogue.
-
-   Ordered as the picker shows them: what a reader came back for
-   first, what they are working on second, what is new third, and
-   the places to go last, because a link is the least interesting
-   thing a board can hold and it is what the old page was made
-   entirely of.
+   The catalogue, ordered as the picker shows them: what a reader
+   came back for, what they are working on, what is new, and the
+   places to go last.
    ------------------------------------------------------------ */
 
 export const WIDGETS: readonly WidgetKind[] = [
@@ -175,27 +132,20 @@ export const WIDGETS: readonly WidgetKind[] = [
   },
 ];
 
-/** What a reader who has arranged nothing gets.
+/** What a reader who has arranged nothing gets. Data rather than
+    a constant in two renderers, because it is the first screen of
+    both the app and the site.
 
-    Data rather than a constant in two renderers, for the reason
-    the top of this file gives and for one more: this is the
-    first screen of the app and of the site, so it is the one
-    layout that is worth being able to change without waiting for
-    anybody to install anything.
-
-    The door is not on it, because the door is not a widget: it
-    is the page saying who it is, and a board with no heading on
-    it is a settings screen. */
+    The door is not on it: the door is the page saying who it is,
+    and a board with no heading is a settings screen. */
 export const HOME_DEFAULT: readonly string[] = [
   "continue:wide",
   "progress:wide",
   "pulse:tall",
   "market:tall",
-  /* Full width, both of them, as of the day their tiles started
-     carrying pictures. At half a board a deck of them is one
-     column, which is six schools stacked two thousand pixels
-     tall; across the whole board it is four to a row and the
-     board reads as a shelf. */
+  /* Full width, both: at half a board a deck of picture tiles is
+     one column six schools tall, and across the whole board it is
+     four to a row and reads as a shelf. */
   "schools:tall",
   "tools:tall",
 ];
@@ -212,15 +162,11 @@ const SIZES: readonly WidgetSize[] = ["small", "wide", "tall"];
     ever, written never: see the note on `WidgetSize`. */
 const SIZE_ALIASES: Record<string, WidgetSize> = { half: "small", full: "wide" };
 
-/** `"progress:half"` as a pair, or null.
-
-    Written as one string because that is what a synced key holds
-    and because a layout has to survive a round trip through a
-    version of this site that is older than the widget somebody
-    added on their phone. An unreadable entry is DROPPED rather
-    than being an error: a reader whose board came back one card
-    short can add it again, and one whose board would not load at
-    all has lost the page. */
+/** `"progress:half"` as a pair, or null. One string, because
+    that is what the synced key holds and a layout has to survive
+    a round trip through an older build. AN UNREADABLE ENTRY IS
+    DROPPED rather than being an error: a board one card short can
+    be fixed, a board that will not load cannot. */
 export function parsePlaced(entry: string, known: Iterable<string>): Placed | null {
   const [id, size] = entry.split(":");
   const ids = new Set(known);
@@ -232,12 +178,9 @@ export function parsePlaced(entry: string, known: Iterable<string>): Placed | nu
 }
 
 /** A stored layout as a list of placings, with anything this
-    build cannot draw left out.
-
-    `drawable` is what the CALLER can render, which is not the
-    same as what the catalogue holds: the site and the app run
-    different releases, and the whole reason the catalogue is
-    data is that one of them will be ahead. */
+    build cannot draw left out. `drawable` is what the CALLER can
+    render, which is not what the catalogue holds: the site and
+    the app run different releases. */
 export function layoutOf(
   stored: readonly string[] | null | undefined,
   drawable: Iterable<string>,
@@ -265,26 +208,15 @@ export function storedOf(placed: readonly Placed[]): string[] {
 /** Everything the stored board holds that THIS build could not
     draw, put back where it was.
 
-    `layoutOf` drops an entry whose kind is not drawable, and that
-    is right: a hole with a title on it is worse than a board with
-    one fewer thing on it. What is not right is writing the result
-    back, and both sides can make that mistake, which is why the
-    answer is here rather than in either renderer.
+    `layoutOf` drops a kind it cannot render, which is right, and
+    A BUILD THAT CANNOT DRAW A KIND MUST NOT DELETE IT: the site
+    draws four of the twelve and the app draws more, so saving
+    without this takes a phone's widgets out of the account.
 
-    The site draws four of the twelve and the app draws more. So a
-    reader who arranged the schools, the tools and the newest
-    writing on their phone and then pressed সাজান once on the web
-    had all three deleted, out of the account and off the phone,
-    with nothing looking broken: the board they were looking at
-    was correct.
-
-    A DRAWABLE KIND MISSING FROM `next` IS A DECISION. The reader
-    could see it and could take it off, so it stays off. Only what
-    this build never showed them comes back.
-
-    Position is approximate on purpose: an entry returns to the
-    index it held, clamped. Losing the widget is the failure;
-    losing its exact place is not. */
+    A DRAWABLE KIND MISSING FROM THE LAYOUT IS A DECISION: the
+    reader could see it and took it off, so it stays off. Only
+    what this build never showed them comes back, at the index it
+    held, clamped. */
 export function keepUndrawn(
   previous: readonly string[] | null | undefined,
   next: readonly string[],

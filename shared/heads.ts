@@ -1,37 +1,19 @@
 /* ============================================================
-   What a hub page SAYS about itself.
+   What a hub page SAYS about itself: the eyebrow, the headline
+   and the lede of every page that is a list rather than a piece
+   of writing. HERE rather than in each React page, because copy
+   is DATA and reaches the Android app with no release.
+   `functions/api/site.ts` sends it and `check-app-surface.ts`
+   fails on a table added here that nothing sends.
 
-   The eyebrow, the headline and the lede of the pages that are a
-   list of things rather than a piece of writing. Every one of
-   them was written into its own React page, which made it a
-   sentence only a browser could reach: the Android app drew each
-   of these hubs with a bare title and no words at all, exactly
-   the way its front page did before `DOOR` moved here.
+   A NUMBER IN A LEDE IS A SLOT: it carries `{n}` and names the
+   `COUNTS` key that fills it, and the endpoint resolves it before
+   it leaves. `check-content.ts` fails on a `{n}` with no key and
+   on a key with no `{n}`.
 
-   That is this site's own rule about the app, one page along:
-   copy is DATA, and data reaches a phone with no release.
-   `functions/api/site.ts` sends this and
-   `check-app-surface.ts` fails on a table added here that
-   nothing sends.
-
-   ---- and a number in a lede is a SLOT ----
-
-   `/skills` says how many schools are open. That number is a
-   count of the data and must not be typed into a sentence, which
-   is the rule at the top of `CLAUDE.md`. So a lede carries `{n}`
-   and names the `COUNTS` key that fills it, the way `DOOR.facts`
-   already does, and the endpoint resolves it before it leaves.
-   `check-content.ts` fails on a `{n}` with no key and on a key
-   with no `{n}`.
-
-   ---- what is NOT here ----
-
-   A page whose screen the app does not draw. A head carried and
-   never rendered is a field somebody later mistakes for a
-   feature, which is the reason `TEMPLATES` is held back from the
-   manifest and the reason `ManifestSurfaceTest` in the app fails
-   on one. `/about` and `/contact` join this table on the day
-   their screens exist.
+   NOT HERE: a page whose screen the app does not draw. A head
+   carried and never rendered is a field somebody later mistakes
+   for a feature.
    ============================================================ */
 
 import { COUNTS } from "./content.ts";

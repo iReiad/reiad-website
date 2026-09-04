@@ -1,45 +1,27 @@
-/* ============================================================
-   sw.test.ts: the one file whose name never changes.
+/* sw.test.ts: the one file whose name never changes.
 
-   THE BUG THIS EXISTS FOR
-
-   Every script on this site is kept current by one of two
-   mechanisms, and both key off the URL. A Next chunk carries a
-   content hash, so a new build is a new address the cache has
-   never seen. A served module is in `PRECACHE`, so
-   `scripts/check-sw.ts` fails the moment its bytes change without
-   `VERSION` moving, and the bump empties the shell.
-
-   `/studio/app.js` is neither. `app/vite.config.ts` builds it to
-   one file at a STABLE PATH, so that `sw.js` and the route that
-   loads it keep naming something real, and at 232 KB precaching
-   it would cost a quarter of a megabyte to every reader who never
+   Every script here is kept current by its URL: a Next chunk
+   carries a content hash, and a served module is in `PRECACHE`,
+   where `scripts/check-sw.ts` fails if its bytes change without
+   `VERSION` moving. `/studio/app.js` is NEITHER. It is built to
+   one file at a STABLE PATH so `sw.js` and the route that loads
+   it keep naming something real, and at 232 KB precaching it
+   would cost a quarter of a megabyte to every reader who never
    opens the Studio.
 
-   Which left it on the stale-while-revalidate branch, where the
-   cache answers and the network refreshes for next time. For a
-   file that changes name that is exactly right. For one that does
-   not, it means THE STUDIO IS ALWAYS ONE BUILD BEHIND: publish a
-   change, open the page, get the previous build; reload, get the
-   new one. Every check passed and the deploy was correct.
+   That leaves it on stale-while-revalidate, which for a file that
+   never changes name means THE STUDIO IS ALWAYS ONE BUILD
+   BEHIND. Nothing that reads files can see it: the bytes are
+   right and the worker is right about the rule it applies.
 
-   Nothing that reads files could see it. The bytes in `aab/` were
-   right, the worker was right about the rule it was applying, and
-   the only way to ask the question is to install the worker in a
-   browser and change a file underneath it.
-
-   WHAT IT DOES
-
-   Serves the real `sw.js` over a local server with two scripts
-   beside it, installs it, fetches both, changes both on the
-   server, and fetches again. The Studio's bundle has to come back
-   new. An ordinary script has to come back stale, because that is
-   the branch it is on and a test that could not tell the two
-   apart would pass with the worker deleted.
+   So this serves the real `sw.js` with two scripts beside it,
+   installs it, fetches both, changes both on the server and
+   fetches again. The Studio's bundle has to come back NEW and an
+   ordinary script has to come back STALE, because a test that
+   could not tell them apart would pass with the worker deleted.
 
    Needs Playwright and a browser; says so and skips without,
-   which is not a pass.
-   ============================================================ */
+   which is not a pass. */
 
 import { createServer, type Server } from "node:http";
 import { readFileSync } from "node:fs";

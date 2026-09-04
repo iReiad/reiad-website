@@ -1,9 +1,5 @@
 # Deploying, and switching the dynamic half on
 
-The database exists and is wired up. This file is about the other half of the
-story: **what this project actually is on Cloudflare**, because that was wrong
-for a while and it broke every automatic build.
-
 ---
 
 ## What this is
@@ -23,19 +19,10 @@ The deploy command is therefore:
 npx wrangler deploy
 ```
 
-### The gap that broke CI
-
-For a while the live Worker was built from a `worker.js` that existed only on
-a laptop. It was never committed, so:
-
-- `npx wrangler deploy` in CI failed with *"Missing entry-point to Worker
-  script or to assets directory"*: the repo had no `main` and no `[assets]`
-- `npx wrangler pages deploy` failed with *"The Pages project does not
-  exist"*, because it genuinely doesn't
-
-Both files are in the repository now, so a clone of this repo deploys the site
-that is actually running. If you ever see either error again, that is the thing
-that has drifted.
+Two errors mean the repository and the live Worker have drifted apart:
+*"Missing entry-point to Worker script or to assets directory"* is a repo
+with no `main` and no `[assets]`, and *"The Pages project does not exist"*
+is `pages deploy` being reached for.
 
 ---
 
@@ -44,19 +31,12 @@ that has drifted.
 **A push to `main` runs `.github/workflows/deploy.yml`**, which runs the
 checks, dry runs the deploy and then uploads `worker.js` and `aab/`. That is
 the whole of it, and it is in the repository rather than in a dashboard on
-purpose: see the section below on the day this Worker stopped deploying and
-nothing said so.
+purpose.
 
-By hand, from a clone, the same upload:
-
-```sh
-npx wrangler deploy
-```
-
-`npm run deploy` runs exactly that. It is in `package.json` because the
-`next/` workspace has such a script and this one did not, so a build command
-filled in with the familiar one failed on `Missing script: "deploy"` while
-the repository looked fine.
+`npm run deploy` runs `npx wrangler deploy`. It is in `package.json`
+because the `next/` workspace has such a script and this one did not, so a
+build command filled in with the familiar one failed on
+`Missing script: "deploy"` while the repository looked fine.
 
 ### Workers Builds is off for this Worker, deliberately
 
@@ -67,9 +47,7 @@ how busy a build queue is.
 
 `reiad-next` keeps its Workers Build and should keep it. It has a real
 build step, OpenNext, and it gives every push a branch preview URL with the
-real database binding, which is what `check-preview.ts` reads and what
-Stage 11 verified routes against before anything forwarded a reader to
-them.
+real database binding, which is what `check-preview.ts` reads.
 
 If you ever want the dashboard back instead, the settings that work are
 deploy command `npx wrangler deploy`, build command empty, root directory
@@ -78,19 +56,19 @@ deploy command `npx wrangler deploy`, build command empty, root directory
 ### When the build fails and the site looks fine
 
 A Worker that fails to deploy keeps serving its last good upload, so
-nothing on reiad.co.uk changes colour when the build stops working. That is
-worth saying out loud because it happened for a whole day: from 16 August
-the deploy stopped at the first thing wrangler reads.
+nothing on reiad.co.uk changes colour when the build stops working.
+
+**No pattern in `run_worker_first` may be covered by another pattern in
+it.** Wrangler checks that before it reads `worker.js` or looks at `aab/`,
+and it stops rather than warning:
 
 ```
 ✘ [ERROR] Invalid routes in `run_worker_first`:
     '/cooking/index.html': rule '/cooking/*' makes it redundant
 ```
 
-**No pattern in `run_worker_first` may be covered by another pattern in
-it.** Wrangler checks that before it reads `worker.js` or looks at `aab/`,
-and it stops rather than warning. `node scripts/check-routes.ts` runs the same
-test now, so it fails on a laptop instead of in a build log nobody opens.
+`node scripts/check-routes.ts` runs the same test, so it fails on a laptop
+instead of in a build log nobody opens.
 
 The quickest way to tell a broken build from a broken site, without the
 dashboard:
@@ -122,8 +100,7 @@ the GitHub secret alone.
 That is the whole of what it can do: upload a Worker to this account and
 write this one database. It cannot read R2, it cannot read a secret already
 set on the Worker, and it is revocable from the page it was made on. It
-does *not* need Cloudflare Pages permissions, and if you added those while
-chasing the `pages deploy` errors, they can come back off.
+does *not* need Cloudflare Pages permissions.
 
 **The D1 and R2 bindings need no permission of their own.** They are
 declared in `wrangler.toml` by id and by name and the upload attaches them.
@@ -136,9 +113,8 @@ does anything:
 Failed to automatically retrieve account IDs for the logged in user
 ```
 
-The answer is `account_id` in `wrangler.toml`, which has been there since
-the import hit the same wall. Widening the token to make that error go away
-would be the wrong fix.
+The answer is `account_id` in `wrangler.toml`. Widening the token to make
+that error go away would be the wrong fix.
 
 ---
 
@@ -187,8 +163,7 @@ npx wrangler r2 bucket create reiad-media
 ```
 
 (`./setup.sh` does this as step 4.) Without the binding, `/api/media` answers
-`not-configured` and the Studio falls back to embedding photos in the page,
-exactly as it did before.
+`not-configured` and the Studio falls back to embedding photos in the page.
 
 `/media/*` is in `run_worker_first`, and it has to be. Nothing in `aab/`
 matches that prefix, and with `not_found_handling` set the asset router
@@ -259,19 +234,15 @@ node scripts/check-sw.ts                # precached file changed without a VERSI
 
 ---
 
-## Housekeeping: that API token
+## Credentials
 
-The account-scoped token pasted into a chat earlier (`square-waterfall-a740`)
-should be deleted if it hasn't been already, **My Profile → API Tokens**. A
-chat transcript is not somewhere a live credential should live. The build needs
-only its own token with Workers Scripts: Edit.
+**A credential that has been through a chat transcript is burnt.** Rotate
+it rather than reasoning about who saw it.
 
-The same rule caught `NOTION_TOKEN` once: an integration token was pasted into
-a chat to get the import working. Rotate anything that has been through a
-transcript, **notion.so/my-integrations → the integration → Secrets →
-Rotate**: then `npx wrangler secret put NOTION_TOKEN` with the new value.
+- `CLOUDFLARE_API_TOKEN`: **My Profile → API Tokens**, delete and remake.
+- `NOTION_TOKEN`: **notion.so/my-integrations → the integration → Secrets →
+  Rotate**, then `npx wrangler secret put NOTION_TOKEN` with the new value.
 
-R2 **is** used now, for article photos (see above). The Worker reaches the
-bucket through the `MEDIA` binding, not through an access key, so there are
-still no R2 keys that need to exist. If any were created while setting this
-up, they can go: **R2 → Manage API tokens**.
+The Worker reaches R2 through the `MEDIA` binding rather than an access
+key, so there are no R2 keys that need to exist. If any were created while
+setting this up, they can go: **R2 → Manage API tokens**.

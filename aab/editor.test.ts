@@ -1,59 +1,29 @@
-/* ============================================================
-   editor.test.ts: `aab/editor.js`, driven in a real browser.
+/* editor.test.ts: `aab/editor.js`, driven in a real browser.
 
      node aab/editor.test.ts
 
    The editor is the one part of this site that cannot be checked
    by reading it: a contenteditable, a sanitiser, markdown input
-   rules, a slash menu and a figure toolbar, all of them working on
-   a selection the browser owns. Every bug found in it so far was
-   found here and by nothing else.
+   rules, a slash menu and a figure toolbar, all working on a
+   selection the browser owns.
 
-   ---- it mounts its own surface, and that is the point ----
+   IT MOUNTS ITS OWN SURFACE. The server below answers `/` with a
+   shell holding one `#editor` and the checks mount
+   `createEditor()` into it, so no address can go stale under it.
+   What is NOT here, deliberately: the Studio's chrome, which is
+   `app/src/studio/**` and `app/studio.test.ts`. Two files
+   asserting the same thing is how one asserts it wrongly.
 
-   This file was `studio.test.ts` and it drove a PAGE: `/studio.html`
-   first, then `/studio/index.html` when that was archived. The
-   second address stopped existing too, because the Studio's shell
-   is a Next route now, and 68 checks spent that time failing on a
-   404 rather than on the module they were written for.
-
-   So there is no page here. The server below answers `/` with a
-   shell holding one `#editor`, and the checks mount
-   `createEditor()` into it. An address can go stale; a shell this
-   file writes cannot.
-
-   What is NOT here, deliberately: the Studio's chrome. The fields,
-   pre-flight, the three previews, the drafts and the Open sheet
-   are `app/src/studio/**`, and `app/studio.test.ts` drives the
-   built bundle against them. Two files asserting the same thing is
-   how one of them ends up asserting it wrongly.
-
-   ---- what it has caught ----
-
-     · the browser's sanitiser was stricter than the server's, so a
-       note box became a plain paragraph and figure.wide lost its
-       class on the way out, which made the server's support for
-       those classes unreachable from the one tool that writes to it
-     · the markdown rules did nothing in an empty editor, because
-       the first characters typed have no block to belong to, which
-       is the first line of every new article
-     · formatBlock silently does nothing without a block to replace,
-       so "##" worked on the second line and not the first, while
-       the list rules worked on both and hid it
-
-   OPTIONAL: it needs Playwright and a browser, and nothing about
-   building or deploying the site depends on it. It skips when
-   either is missing and says which, because a skip is not a pass.
+   OPTIONAL: it needs Playwright and a browser, and it SKIPS when
+   either is missing, saying which, because a skip is not a pass.
 
        cd app && npm install
        CHROMIUM_PATH=/path/to/chrome node aab/editor.test.ts
 
-   `aab/tsconfig.test.json` is what typechecks the annotations
-   below, and `scripts/check-types.ts` runs it. A `!` inside a
-   `page.evaluate` callback is the repo's usual "this element is in
-   the markup": the callback runs in the browser and cannot reach a
-   helper out here.
-   ============================================================ */
+   `aab/tsconfig.test.json` typechecks the annotations below. A
+   `!` inside a `page.evaluate` callback is the repo's usual "this
+   element is in the markup": the callback runs in the browser and
+   cannot reach a helper out here. */
 
 import { createServer } from "node:http";
 import { readFile } from "node:fs/promises";
@@ -101,32 +71,25 @@ if (!chromium) {
 
 /* ---------- the surface, and the policy it runs under ---------- */
 
-/* The real policy, read out of `aab/_headers` rather than copied,
-   because a copy is a second list and this repository has been
-   bitten by one of those more than once.
-
-   It is here because a harness that drops the CSP cannot tell you
-   whether an image or a fetch is allowed: the page looks identical
-   either way, and the editor's photo path is governed by exactly
-   this line. Thrown rather than defaulted to nothing, because a
-   harness serving an empty policy would answer every check below
-   and none of them would be about the policy. */
+/* The real policy, READ OUT OF `aab/_headers` rather than
+   copied. A harness that drops the CSP cannot tell you whether an
+   image or a fetch is allowed, and the editor's photo path is
+   governed by exactly this line. Thrown rather than defaulted to
+   nothing: an empty policy answers every check below and none of
+   them would be about the policy. */
 const declared = (await readFile(join(ROOT, "_headers"), "utf8"))
   .match(/Content-Security-Policy: (.+)/)?.[1];
 if (!declared) throw new Error("aab/_headers carries no Content-Security-Policy");
 const CSP = declared.trim();
 
-/* The class is load-bearing, not decoration. `.paste-area` is what
-   gives the surface its 320px min-height, and without it the
-   editor is one line tall: the caret lands outside every block,
-   `formatBlock` has nothing to replace and every markdown rule
-   below silently does nothing. Which is the exact failure those
-   rules were written for. The rest matches `app/src/studio/
-   Editor.tsx`, so this surface is the one a writer gets.
-
-   `/fallback.css`, not `/styles.css`. Nothing has been served at
-   the second since the stylesheet moved into Next: it carries a
-   content hash now, which a hand-written shell cannot know. */
+/* THE CLASS IS LOAD-BEARING. `.paste-area` gives the surface its
+   320px min-height, and without it the editor is one line tall:
+   the caret lands outside every block, `formatBlock` has nothing
+   to replace and every markdown rule below silently does nothing.
+   The rest matches `app/src/studio/Editor.tsx`.
+   `/fallback.css`, not `/styles.css`: nothing has been served at
+   the second since the stylesheet moved into Next and started
+   carrying a content hash. */
 const SHELL = '<!DOCTYPE html><html lang="en"><head><meta charset="utf-8">'
   + '<title>editor.test.ts</title>'
   + '<link rel="stylesheet" href="/fallback.css"></head>'
@@ -304,11 +267,9 @@ const settle = (ms = 280): Promise<void> => page.waitForTimeout(ms);
     return { names: Object.keys(module).sort(), buildPage: module.buildPage === undefined };
   });
 
-  /* `buildPage()` was `studio.js`'s own article renderer, the
-     second one on this site, and it drifted from the server's
-     twice. The file that held it is in `archive/`; what this
-     asserts is that it did not follow the editor into the module
-     both Studios share. */
+  /* `buildPage()` was a second article renderer on this site and
+     it drifted from the server's twice. This asserts it did not
+     follow the editor into the module both Studios share. */
   check("the second article renderer did not come with the editor", shape.buildPage);
   check("and nothing else here renders a page either",
     !shape.names.some((n) => /^(build|render)/.test(n)), shape.names.join(", "));
@@ -942,17 +903,11 @@ await set("<p><br></p>");
 }
 
 /* AND THE SAME THING WITH A REAL CLICK, which is how everybody
-   actually reaches a caption.
-
-   The two checks above dispatch `focusin` themselves, so they pass
-   whether or not the handler survives a click, and they did while
-   it did not: `focusin` fires on mousedown, and the browser then
-   places the caret where the pointer landed on mouseup, collapsing
-   the selection the handler had just made. The prompt stayed put
-   and the writer typed into the middle of it.
-
-   A check that synthesises the event it is testing cannot see
-   that. This one presses the mouse. */
+   reaches a caption. The two checks above dispatch `focusin`
+   themselves, so they pass whether or not the handler survives a
+   click: `focusin` fires on mousedown and the browser then places
+   the caret on mouseup, collapsing the selection. A check that
+   synthesises the event it is testing cannot see that. */
 {
   await page.evaluate(async () => {
     const m = await import("/editor.js");

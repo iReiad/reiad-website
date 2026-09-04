@@ -1,45 +1,19 @@
 #!/usr/bin/env node
-/* ============================================================
-   check-material.ts: one design system, all around.
+/* check-material.ts: one design system, all around.
 
        node scripts/check-material.ts
        node scripts/check-material.ts --list   what is on it
 
-   ---- what this is for ----
+   `@layer glow` is the material and four lists in it say which
+   kind of glass each class is. Lists rot: the first version of the
+   material reached exactly ONE of the 203 surface-like classes in
+   this stylesheet and nothing failed.
 
-   `@layer glow` is the material: every button, chip, card and
-   pane carries a light that follows the pointer, and four lists
-   in that layer say which kind of glass each class is.
-
-   Lists rot. The first version of the material reached exactly
-   ONE of the 203 surface-like classes in this stylesheet, because
-   it was scoped to an attribute that only components carry, and
-   nothing failed. A design system nothing enforces is a design
-   system that describes the day it was written.
-
-   So this asks two questions, and both are about the WHOLE
-   stylesheet rather than about the material layer alone.
-
-   1. IS ANYTHING INTERACTIVE MISSING FROM THE SYSTEM?
-
-      A class whose rule carries `:hover`, `:focus-visible`,
-      `aria-pressed` or `cursor: pointer` is a thing a reader
-      presses. It belongs to one of the four kinds, or it is in
-      `NOT_A_SURFACE` here with the reason. There is no third
-      option, and that is the whole point: the next control
-      somebody writes fails this until it has been placed.
-
-   2. WOULD THE MATERIAL TAKE A SURFACE'S OWN GRADIENT AWAY?
-
-      A later cascade layer REPLACES a background-image rather
-      than merging with one. So a class that is in a list AND
-      paints its own gradient loses it silently: the page still
-      renders, the element still has a background colour, and the
-      thing that vanished is a wash nobody will think to look for.
-
-      `--surface-image` is the way through, and this fails on a
-      listed class that paints a gradient without setting it.
-   ============================================================ */
+   Nine questions, each headed at the block that asks it, and each
+   about the WHOLE stylesheet rather than the material layer alone.
+   Anything that fails is either placed on a kind or named in
+   `NOT_A_SURFACE` or `NOT_GLASS` with its reason; there is no
+   third option, and an exemption whose class has gone fails too. */
 
 import { readFileSync } from "node:fs";
 import { join, dirname } from "node:path";
@@ -51,21 +25,18 @@ const LIST = process.argv.includes("--list");
 
 /* ---------- interactive, and deliberately not on the material ----------
 
-   Keyed by class AND carrying a reason, for the same reason
-   `GONE` in `check-pointers.ts` is keyed by two things: "this is
-   a container" is a true sentence about several of them, and a
-   NEW one is not covered by somebody else's entry.
-
-   Most of these are ROWS of controls rather than controls. They
-   match the interactivity test because a descendant hovers, and
-   lighting the row instead of the thing in it is the one way this
-   system reads as broken rather than absent. */
+   Keyed by class AND carrying a reason, for the reason `GONE` in
+   `check-pointers.ts` is keyed by two things. Most of these are
+   ROWS of controls rather than controls: they match the
+   interactivity test because a descendant hovers, and lighting the
+   row instead of the thing in it is the one way this system reads
+   as broken rather than absent. */
 /* ---------- a modifier on a class that IS placed ----------
 
    `.btn-solid` is never rendered without `.btn`, so it inherits
-   the kind rather than needing one. Keyed to its BASE rather
-   than listed as an exception, so that taking `.btn` off the
-   material fails all five of these instead of passing quietly. */
+   the kind. Keyed to its BASE rather than listed as an exception,
+   so taking `.btn` off the material fails all five of these
+   instead of passing quietly. */
 const VARIANT_OF = new Map<string, string>([
   ["btn-solid", "btn"],
   ["btn-soft", "btn"],
@@ -194,88 +165,66 @@ let bad = 0;
 
 /* ---------- surface-shaped, and deliberately not glass ----------
 
-   Question 7 asks whether anything with a ground and an edge is off
-   the material. These are the answers that are "no, and here is
-   why". Four reasons, and each one is a different argument:
+   Question 7's "no, and here is why". Four arguments:
 
-   A MARK IS NOT A SURFACE. An icon disc, a tick, a flag, a live
-   dot: a thing the size of a full stop, drawn to be read at a
-   glance. A cut edge and a bottom bevel on a 14 pixel circle is
-   detail nobody can resolve and a compositing cost per instance.
+   A MARK IS NOT A SURFACE. A cut edge and a bottom bevel on a 14
+   pixel circle is detail nobody can resolve and a compositing cost
+   per instance.
 
-   A CELL IN A GRID IS THE GRID'S. A heat map is sixty cells in a
-   block and a correlation matrix is a hundred. Glass on each is the
-   cage the rail already taught us about, one order of magnitude
-   worse: the BLOCK is the surface and the cells are its contents.
+   A CELL IN A GRID IS THE GRID'S. Glass on each of a hundred cells
+   is the cage the rail already taught us about: the BLOCK is the
+   surface and the cells are its contents.
 
-   A FILL IS WHAT IS IN A GROOVE, not another groove. It sits inside
-   one, at the accent, and giving it its own cut edge would draw a
-   channel inside a channel.
+   A FILL IS WHAT IS IN A GROOVE, not another groove: its own cut
+   edge would draw a channel inside a channel.
 
-   A TEXT FIELD ANSWERS DIFFERENTLY. Its affordance is the caret and
-   the focus ring, and a lit resting rim on a box you type into is a
-   box that looks like a button. The element-level `input`,
-   `select` and `textarea` rules are not classes and are not on the
-   material either, so these three would be the exception rather
-   than the rule. */
+   A TEXT FIELD ANSWERS DIFFERENTLY. Its affordance is the caret
+   and the focus ring, and a lit resting rim on a box you type into
+   is a box that looks like a button. */
 
 const NOT_GLASS = new Map<string, string>([
-  /* A LAYER OF A SCENE IS NOT A SURFACE. `.art-veil` is the
-     corners of a picture going down, and the 1px rim on it is the
-     inside of that picture's own frame rather than a bevel on a
-     piece of glass. Everything in `@layer deck` between
-     `.art-sky` and `.art-spec` is one of ten layers in a room; a
-     material on any of them would be a second piece of glass
-     inside the first. */
+  /* A LAYER OF A SCENE IS NOT A SURFACE. Everything in `@layer
+     deck` between `.art-sky` and `.art-spec` is one of ten layers
+     in a room; a material on any of them would be a second piece
+     of glass inside the first. */
   ["art-veil", "a layer of a scene: the inside of a picture's frame, not a surface"],
-  /* A MARK, one order of magnitude down from the dot in a
-     calculator's tab strip: the 8px disc carrying one row's
-     colour down a list of two hundred rows in the Research
-     Studio. A bevel on it is detail nobody can resolve. */
+  /* A MARK: the 8px disc carrying one row's colour down a list of
+     two hundred rows. A bevel on it is detail nobody can
+     resolve. */
   ["rs-row-dot", "a mark: the 8px dot carrying one row's colour, one per row of a list"],
-  /* A HIGHLIGHT IS A MARK ON THE PAGE, not a thing on it. A
-     rectangle of the meaning's colour multiplied over the words,
-     so they show through; a bevel on it would be a box drawn on
-     somebody's paper. The outline on the one that is current is
-     the same outline a focus ring is. */
+  /* A HIGHLIGHT IS A MARK ON THE PAGE, not a thing on it: a
+     rectangle of the meaning's colour multiplied over the words so
+     they show through, and a bevel would be a box drawn on
+     somebody's paper. */
   ["rs-mark", "a mark: a highlight's rectangle over the words it marks, multiplied so they show through"],
-  /* A CITATION CHIP IS A TINT ON WORDS in a line of prose, the
-     way a highlight is on a page: it is read, never pressed, and a
-     bevel on a run of words inside a sentence is a box drawn
-     through the line. */
+  /* A CITATION CHIP IS A TINT ON WORDS in a line of prose: read,
+     never pressed, and a bevel on a run of words inside a sentence
+     is a box drawn through the line. */
   ["cite", "a mark: a citation chip's tint on the words it renders, inline in prose"],
-  /* THE ONE SURFACE ON THIS SITE THAT IS MEANT TO BE PAPER.
-     It is the sheet somebody hands across a desk in a ten minute
-     appointment, and a clinician reading a translucent panel with
-     a light moving across it would be reading a website rather
-     than a record. Its print rules take the rail, the bar and the
+  /* THE ONE SURFACE ON THIS SITE THAT IS MEANT TO BE PAPER: the
+     sheet somebody hands across a desk in a ten minute
+     appointment. Its print rules take the rail, the bar and the
      footer away for the same reason. Plain on purpose, and the
      purpose is that it stops looking like this site. */
   ["dt-sheet", "a printable record: deliberately not glass, because it is handed to a clinician"],
-  /* A MARK, and twenty-four of them: one column per hour of the
-     day. A bevel on a two pixel wide bar is invisible, and the
-     row reads as a shape rather than as twenty-four small
-     panes. */
+  /* A MARK, and twenty-four of them, one per hour. A bevel on a
+     two pixel wide bar is invisible, and the row reads as a shape
+     rather than as twenty-four small panes. */
   ["dt-hourbar", "a mark: one of 24 columns, as narrow as 2px, read as a shape"],
-  /* A MARK, six pixels tall: it is the fat share drawn as a
-     line, and a bevel on it would be detail nobody can resolve.
-     The groove kind exists for a track somebody aims at, and
-     nobody aims at this. */
+  /* A MARK, six pixels tall. The groove kind exists for a track
+     somebody aims at, and nobody aims at this. */
   ["dt-hours-bar", "a mark: 6px tall, read at a glance beside its own number, never pressed"],
   /* A MARK, ten pixels tall and fourteen of them in a row: a
      bevel on one is detail nobody can resolve, and the strip
      reads as a calendar rather than as fourteen small panes. */
   ["dt-strip-day", "a mark: 10px tall, fourteen in a row, and a cut edge on one is invisible"],
-  /* A MARK, seven pixels across and round: it is the page's own
-     colour beside the page's own name, in a strip of eleven. A
-     bevel and a moving light on a dot that size is not detail
-     anybody can resolve, and eleven of them lit would turn a
-     strip into a string of bulbs. */
+  /* A MARK, seven pixels across and round, in a strip of eleven.
+     Eleven of them lit would turn a strip into a string of
+     bulbs. */
   ["dt-tab-dot", "a mark: a 7px dot carrying one page's colour, eleven in a row"],
-  /* A MARK, four pixels tall: how far into a season today is,
-     read beside the words that say the same thing. A bevel on it
-     is detail nobody can resolve, and the groove kind is for a
-     track somebody aims at. */
+  /* A MARK, four pixels tall, read beside the words that say the
+     same thing. The groove kind is for a track somebody aims
+     at. */
   ["dt-season-bar", "a mark: a 4px bar showing how far into a season today is"],
   /* A LABEL, at the smallest size on the page, sitting inside a
      card that is already on the material. Lighting a caption
@@ -290,14 +239,11 @@ const NOT_GLASS = new Map<string, string>([
   ["card-tick",           "a mark: the done tick in the corner of a lesson card"],
   ["gt-disc",             "a mark: the gate tile's icon disc"],
 
-  /* THE SIX MARKS A FIGURE IS DRAWN OUT OF. A lesson's figures
-     are HTML rather than SVG, because every label in one is two
-     labels, so the pieces of the drawing are elements: a beam, a
-     dot, a swatch, a numbered disc, a circle. Every one of them
-     is a line or a shape a few pixels across, inside a figure
-     that is already on the material, and a cut edge on a nine
-     pixel dot is detail nobody can resolve. MONEY.md says why
-     the figures are HTML at all. */
+  /* THE SIX MARKS A FIGURE IS DRAWN OUT OF. A lesson's figures are
+     HTML rather than SVG, because every label in one is two
+     labels, so the pieces of the drawing are elements: each is a
+     line or a shape a few pixels across, inside a figure that is
+     already on the material. MONEY.md says why they are HTML. */
   ["ls-fig-beam",   "a mark: the 4px beam of a see-saw, drawn inside a figure that is glass"],
   ["ls-fig-circle", "a mark: one of two overlapping circles in a venn, aria-hidden"],
   ["ls-fig-dot",    "a mark: an 11px dot on a timeline, one per point"],
@@ -360,31 +306,23 @@ const setsSurfaceShadow = new Set<string>();
 
 for (const [layer, sel, body] of all) {
   if (layer === "glow") continue;
-  /* AND NOT THE RELIEF, WHICH NAMES FIGURES RATHER THAN
-     SURFACES. `@layer relief` says how far an icon, a disc or a
-     plate stands off the glass it is drawn on, so every class in
-     it is by definition a thing ON a surface rather than one. It
-     reads `:hover` on the way to saying so, which made this
-     report a rail icon and a lesson's drawing as pressable
-     surfaces with no kind, and the honest answer to that is not
-     three more exemptions: it is that a relief is the other half
-     of this system rather than an unplaced part of it.
-     `check-relief.ts` is what holds that half. */
+  /* AND NOT THE RELIEF, WHICH NAMES FIGURES RATHER THAN SURFACES.
+     `@layer relief` says how far an icon or a disc stands off the
+     glass it is drawn on, so every class in it is a thing ON a
+     surface rather than one. It reads `:hover` on the way to
+     saying so. `check-relief.ts` holds that half. */
   if (layer === "relief") continue;
   const acts = /:hover|:focus-visible|aria-pressed|cursor:\s*pointer/.test(body)
     || /:hover|aria-pressed/.test(sel);
   /* A gradient inside `&::before` belongs to a pseudo-element,
-     which `@layer glow` never touches: it sets background-image
-     on the element itself. `.id-card` draws graph paper that way
-     and was reported until this stripped them. A nested STATE
-     block (`&:hover`) is left in, because a later layer does win
-     over one of those. */
+     which `@layer glow` never touches: it sets background-image on
+     the element itself. A nested STATE block (`&:hover`) is left
+     in, because a later layer does win over one of those. */
   /* A DESCENDANT block is somebody else's: `& .tracker-tag { box-shadow }`
      inside `.tracker` styles the tag, and reading it as the tracker's
-     reported a surface whose shadow the material was never going to touch.
-     A STATE block (`&:hover`, `&.btn-solid`) is the same subject and stays,
-     because a later layer does win over one of those. Innermost first,
-     repeatedly, so a block inside a block comes out too. */
+     reports a surface whose shadow the material was never going to touch.
+     A STATE block (`&:hover`, `&.btn-solid`) is the same subject and stays.
+     Innermost first, repeatedly, so a block inside a block comes out too. */
   let own = body, before = "";
   while (own !== before) {
     before = own;
@@ -445,22 +383,16 @@ for (const [cls, layer] of [...paintsGradient].sort()) {
 
 /* ---------- 2b. would the material take a surface's own SHADOW away? ----
 
-   The same trap as the gradient, one property along, and worse.
-   The material sets box-shadow to draw the edge, a later layer
-   REPLACES rather than merges, and what a surface loses is not a
-   decorative wash: it is its hover lift and its focus ring.
-   Fourteen focus rings and thirteen lifts were one careless
-   declaration away from vanishing, and a focus ring that is gone
-   is an accessibility failure nobody can see in a screenshot.
+   The same trap as the gradient one property along, and worse: a
+   later layer REPLACES box-shadow, and what a surface loses is not
+   a decorative wash but its hover lift and its focus ring.
+   Fourteen rings and thirteen lifts were one declaration away from
+   vanishing, and a focus ring that is gone is an accessibility
+   failure nobody can see in a screenshot.
 
-   `--surface-shadow` is the way through: the material's list ends
-   `var(--surface-shadow, none)`, so a lift composes with the edge
-   rather than replacing it, and a focus ring now sits BESIDE the
-   edge rather than instead of it.
-
-   A rule that groups a material class with one that is not gets
-   BOTH, deliberately: the token for the surface, the shorthand for
-   the class the material never paints. */
+   `--surface-shadow` is the way through, so a ring sits BESIDE the
+   edge rather than instead of it. A rule that groups a material
+   class with one that is not gets BOTH, deliberately. */
 
 for (const [cls, layer] of [...castsShadow].sort()) {
   if (!placed.has(cls) || setsSurfaceShadow.has(cls)) continue;
@@ -475,29 +407,18 @@ for (const [cls, layer] of [...castsShadow].sort()) {
 
 /* ---------- 2c. do a surface's three lists agree on how many? ----
 
-   THE BUG THIS EXISTS FOR, and it was visible only under a
-   pointer.
+   The material paints four things and writes a background-size and
+   a background-position list beside them, both positional: slot
+   two is the surface's. A surface painting TWO layers into
+   `--surface-image` (a scrim over a photograph, which is every
+   card wearing a picture) pushes every later slot along by one, so
+   the grain's offset lands on the photograph. Nothing shows at
+   rest, because that offset is unset until the pointer arrives.
 
-   The material paints four things: the specular, the surface's
-   own `--surface-image`, the grain and the glow. Beside that it
-   writes a background-size list and a background-position list,
-   and both are positional: slot two is the surface's.
-
-   A surface whose `--surface-image` is ONE layer keeps that true.
-   A surface painting TWO (a scrim over a photograph, which is
-   every card wearing a picture) pushes every later slot along by
-   one, so the grain's own offset landed on the photograph and the
-   last layer wrapped round to the first value. Nothing showed at
-   rest, because the grain's offset is unset until the pointer
-   arrives; on hover `glow.tsx` writes the element's page offset
-   into it and the picture jumped by that offset and tiled, in
-   the middle of the card, under the cursor.
-
-   So the rule is one sentence: a class that paints N layers into
-   `--surface-image` declares N entries in `--surface-size` and N
-   in `--surface-pos`. Commas at the top level are the count;
-   commas inside `var(...)`, `oklch(...)` or a gradient are not.
-   ============================================================ */
+   So: a class that paints N layers into `--surface-image` declares
+   N entries in `--surface-size` and N in `--surface-pos`. Commas
+   at the top level are the count; commas inside `var(...)`,
+   `oklch(...)` or a gradient are not. */
 
 /** Top-level commas plus one: how many layers a list is. */
 function layers(value: string): number {
@@ -561,18 +482,13 @@ function layers(value: string): number {
 
 /* ---------- 3. the ladder is a ladder ----------
 
-   The five kinds are a physical progression, not five rows
-   somebody tuned: as a surface gets THICKER it should get less
-   polished and less clear, because that is what more material
-   does to a light. Read down the polish column and the system is
-   there in one line.
-
-   A sixth kind, or a retune of one, that breaks the ordering
-   breaks the idea rather than one number, and it is invisible:
-   every value is plausible on its own. So the order is asserted
-   rather than remembered. `plate` is excluded because it does not
-   follow the pointer, so its depth is describing a still light
-   and is not on the same scale. */
+   The five kinds are a physical progression: as a surface gets
+   THICKER it must get less polished and less clear, because that
+   is what more material does to a light. A retune that breaks the
+   ordering breaks the idea rather than one number, and it is
+   invisible, because every value is plausible on its own. `plate`
+   is excluded because it does not follow the pointer, so its depth
+   describes a still light and is not on the same scale. */
 {
   const kinds: Array<[string, number, number, number]> = [];
   for (const [layer, sel, body] of all) {
@@ -582,24 +498,22 @@ function layers(value: string): number {
     const c = /--clarity:\s*([\d.]+)/.exec(body);
     if (!d || !p || !c) continue;
     /* The kinds whose light HOLDS STILL are out of the ordering:
-       a plate and a pane are placed by what they are for rather
-       than by how far a moving light carries in them.
+       they are placed by what they are for rather than by how far
+       a moving light carries in them.
 
        `--follows: 0` is how that is said. It was `--glow-w: 0`
-       written beside each of their depths, and the derived size
-       formula later in the same layer overrode both at equal
-       specificity, so neither ever held still: a `.stat`
-       measured 156px of moving light. The formula multiplies by
-       this factor now, so there is one place that decides. */
+       beside each of their depths, and the derived size formula
+       later in the same layer overrode both at equal specificity,
+       so neither ever held still. The formula multiplies by this
+       factor now, so there is one place that decides. */
     if (/--follows:\s*0/.test(body)) continue;
     const name = (/\.([a-z][a-z0-9-]*)/.exec(sel) ?? [, "?"])[1];
     kinds.push([name, Number(d[1]), Number(p[1]), Number(c[1])]);
   }
 
-  /* THREE, not four. A pane joined the still kinds when the
-     flare was finally fixed on the class block rather than on
-     the attribute, so what is left on the ordering is the chip,
-     the control and the card: the three you press. */
+  /* THREE, not four: a pane holds still too, so what is left on
+     the ordering is the chip, the control and the card, the three
+     you press. */
   if (kinds.length < 3) {
     bad += 1;
     console.error(`\n  x only ${kinds.length} following kind(s) found in @layer glow, expected 3.`);
@@ -626,10 +540,9 @@ function layers(value: string): number {
 for (const [cls, why] of NOT_A_SURFACE) {
   /* Stale means GONE, not "no longer matches the interactivity
      test". Several of these are rows whose hover lives on a
-     descendant selector rather than on a bare rule, which is
-     exactly why they needed an entry: they read as interactive to
-     a person and not to a regex. The honest staleness test is
-     whether the stylesheet still has the class at all. */
+     descendant selector, which is exactly why they needed an
+     entry: they read as interactive to a person and not to a
+     regex. */
   if (new RegExp(`\\.${cls}[\\s,{:.)>~+]`).test(bare)) continue;
   bad += 1;
   console.error(`\n  x NOT_A_SURFACE names .${cls}, which the stylesheet no longer has.`);
@@ -640,11 +553,11 @@ for (const [cls, why] of NOT_A_SURFACE) {
 
 /* ---------- 5. a name in a kind list that reaches nothing ----------
 
-   `.prog-track` was in the groove's list for one commit. It is not
-   a class this stylesheet has, nothing failed, and the kind read as
-   though it covered a surface that does not exist. That is the
-   stale pointer `check-pointers.ts` catches in comments, happening
-   inside the design system itself. */
+   `.prog-track` was in the groove's list for one commit and is not
+   a class this stylesheet has. Nothing failed, and the kind read
+   as though it covered a surface that does not exist: the stale
+   pointer `check-pointers.ts` catches in comments, happening
+   inside the design system. */
 
 {
   const outside = all.filter(([layer]) => layer !== "glow");
@@ -662,16 +575,14 @@ for (const [cls, why] of NOT_A_SURFACE) {
 
 /* ---------- 6. placed on a kind and never painted ----------
 
-   The taxonomy is said in three lists and they are genuinely
-   different sets: the paint rule is every class on the system, the
-   hover rule is only the four that follow the pointer, and each
-   kind block is one kind. So a class can be given a --depth by its
-   kind and left out of the paint rule, in which case it carries
-   four numbers and no background-image, and looks exactly like a
-   surface nobody got round to.
-
-   The paint rule is the one that sets background-image from --spec.
-   Everything with a kind has to be in it. */
+   The taxonomy is three lists and they are genuinely different
+   sets: the paint rule is every class on the system, the hover
+   rule only the ones that follow the pointer, and each kind block
+   is one kind. So a class can get four numbers from its kind and
+   be left out of the paint rule, which is a surface with the
+   numbers and none of the light. The paint rule is the one that
+   sets background-image from --spec; everything with a kind has to
+   be in it. */
 
 {
   const painted = new Set<string>();
@@ -706,30 +617,26 @@ for (const [cls, why] of NOT_A_SURFACE) {
 /* ---------- 7. surface-shaped and off the system ----------
 
    Question 1 asks whether anything INTERACTIVE is missing, and for
-   a year that was the whole of it. It let a progress track sit at
-   --depth: 0 on four schools' pages while every other surface
-   around it was glass, because nobody presses a progress bar and
-   the check could not see it.
+   a year that was the whole of it: a progress track sat at
+   --depth: 0 on four schools' pages, because nobody presses a
+   progress bar.
 
    A surface here is a class whose own rule gives it both a ground
    and an edge: a background that is not `none`, plus a border, a
-   radius or a shadow. That is the shape a reader reads as a piece
-   of the material whether or not they ever touch it.
+   radius or a shadow.
 
-   NESTED BLOCKS ARE STRIPPED FIRST, all of them. A rule saying
-   `& .track { background: ... }` is describing a descendant, and
-   counting it made every bare flex wrapper on the site look like a
-   surface: the first run of this reported 57 where there were 39. */
+   NESTED BLOCKS ARE STRIPPED FIRST, all of them. `& .track {
+   background: ... }` describes a descendant, and counting it made
+   every bare flex wrapper look like a surface: 57 reported where
+   there were 39. */
 
 {
   const shaped = new Map<string, string>();
   for (const [layer, sel, body] of all) {
     if (layer === "glow") continue;
-    /* Innermost-first, repeatedly, because one pass leaves the
-       outer half of a nested block behind and a rule with two
-       nested blocks keeps the second. `.contact-form` and
-       `.signin-form` are flex wrappers whose FIELDS carry the
-       ground, and a single pass reported both. */
+    /* Innermost-first, repeatedly: one pass leaves the outer half
+       of a nested block behind, and a rule with two nested blocks
+       keeps the second. */
     let own = body, prev = "";
     while (own !== prev) { prev = own; own = own.replace(/&[^{}]*\{[^{}]*\}/g, ""); }
     const ground = /(^|[;{\s])background(-color|-image)?\s*:\s*(?!none|transparent|inherit|0)/.test(own);
@@ -763,32 +670,21 @@ for (const [cls, why] of NOT_GLASS) {
 
 /* ---------- 9. does a still kind say so where it is applied? ----------
 
-   THE BUG THIS EXISTS FOR, THREE TIMES OVER.
-
    A kind that holds still is written `--follows: 0`, and the
    derived size formula multiplies by it. Two ways to get that
    wrong, and both shipped:
 
-   1. `--glow-w: 0px` beside the depth. The formula is LATER in
-      the same layer at the same specificity, so it wins, and the
-      surface goes on throwing light while the comment above it
-      says it does not. The plate had this for as long as the
-      formula existed and a `.stat` measured 156px. The groove
-      had it too and was missed when the plate was fixed: every
-      track, meter and segmented control carried 73.6px.
+   1. `--glow-w: 0px` beside the depth. The formula is LATER in the
+      same layer at the same specificity, so it wins and the
+      surface goes on throwing light while the comment above says
+      it does not. A `.stat` measured 156px.
 
    2. `--follows: 0` on `[data-glow="pane"]` instead of on the
-      class block. THE MATERIAL IS APPLIED BY CLASS. That
-      attribute only carries the light's size for the handful of
-      components that set it directly, so a rule there reaches
-      almost nothing: `.rail` and `.topbar` measured 220px each,
-      through two releases, after the flare had been reported
-      twice and declared fixed once.
+      class block. THE MATERIAL IS APPLIED BY CLASS, so a rule
+      there reaches almost nothing: `.rail` and `.topbar` measured
+      220px each through two releases.
 
-   Neither is visible in a diff and neither fails anything else:
-   the page renders, the colours are right, and the only symptom
-   is a light that follows the pointer across something nobody
-   presses. So the question is asked here instead. */
+   Neither is visible in a diff and neither fails anything else. */
 
 const STILL: Array<{ member: string; kind: string; why: string }> = [
   { member: "topbar", kind: "pane",

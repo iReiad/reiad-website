@@ -46,14 +46,10 @@ export interface LibraryRow extends Row {
 /** Every scenario saved for one calculator, newest first. */
 export declare function listScenarios(tool?: string): Promise<Scenario[]>;
 /**
- * Save one, and hand the stored row back.
- *
- * `inputs` is whatever shape the calculator already had for its
- * own state. The stock check passes its query string, which is
- * the format it has shared analyses in since it was written: a
- * second serialisation of the same forty fields would be a second
- * thing to keep in step with the model, and this one is already
- * proved by every link anybody has ever copied off that page.
+ * Save one, and hand the stored row back. `inputs` is whatever
+ * shape the calculator already had; the stock check passes its
+ * own query string, which is the format it has shared analyses in
+ * since it was written, so there is one encoder.
  */
 export declare function saveScenario({ tool, name, inputs, summary }: Pick<Scenario, "tool" | "name" | "inputs"> & {
     summary?: string;
@@ -75,17 +71,11 @@ export declare function removeTarget(id: string): Promise<boolean>;
     with three states and two of them identical. */
 export declare function libraryRow(url: string): Promise<LibraryRow | null>;
 /**
- * Write this page's row, whatever state it was in.
- *
- * An upsert on `(user_id, url)` rather than a read and a decision:
- * one round trip instead of two, and it cannot race with the same
- * reader's phone writing the other column. `merge-duplicates` is
- * what makes the second Save on the same page an update.
- *
- * The trigger in the migration takes the row away again when both
- * facts have gone, so unsaving a page nobody annotated leaves
- * nothing behind and the reading list can be COUNTED rather than
- * filtered.
+ * Write this page's row. An upsert on `(user_id, url)`: one round
+ * trip, and it cannot race with the same reader's phone writing
+ * the other column. The trigger in the migration removes the row
+ * once both facts have gone, so the reading list can be COUNTED
+ * rather than filtered.
  */
 export declare function keepPage({ url, title, kind, saved, note }: Pick<LibraryRow, "url"> & Partial<Pick<LibraryRow, "title" | "kind" | "saved" | "note">>): Promise<LibraryRow | null>;
 /** Everything kept, newest first. `only` narrows it to the

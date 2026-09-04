@@ -1,45 +1,20 @@
-/* ============================================================
-   diet/lang.tsx: both languages in the HTML, one on the screen.
+/* Both languages in the HTML, one on the screen.
 
-   The site is Bangla-first everywhere and the tools are the one
-   place with a real switch. This tool is the largest body of
-   explanatory prose outside the schools, so the rule bites
-   hardest here: a Bangla reader should never have to read
-   English to find out that something exists in their own
-   language.
+   A component that read the preference and returned one string cannot
+   work: the preference lives in localStorage, which the server cannot
+   see, so the server would render English, the browser would hydrate
+   Bangla, and React would throw #418 and discard the difference. That is
+   the failure that left every calculator on this site blank for a day.
 
-   ---- why both are rendered and the stylesheet chooses ----
+   So both languages are in the markup and `@layer diet` shows one, keyed
+   on `data-tool-lang`, which `shell.tsx` sets from `tool-lang` before the
+   first paint. The switch writes that attribute and the page changes in
+   the same frame, with no request and no re-render. It works with
+   JavaScript off, and a screen reader gets one language because the other
+   is `display: none` rather than hidden with opacity.
 
-   The obvious build is a component that reads the preference and
-   returns one string. It cannot work here, and the reason is the
-   one `next/components/scripts.tsx` exists for.
-
-   The preference lives in localStorage, which the server cannot
-   see. So the server would render English, the browser would
-   hydrate and render Bangla, and React would throw #418 and
-   discard the difference: exactly the failure that left every
-   calculator on this site blank for a day.
-
-   So both languages are in the markup and `@layer diet` shows
-   one, keyed on `data-tool-lang`, which `shell.tsx` sets from
-   the same `tool-lang` key before the first paint. The switch
-   writes that attribute and the page changes in the same frame,
-   with no request, no re-render and no flash. It also works with
-   JavaScript off, and a screen reader gets one language because
-   the other is `display: none` rather than hidden with opacity.
-
-   The cost is that both languages ship. For a tool whose text is
-   labels and short explanations that is a few kilobytes, and it
-   buys the only version of this that is correct.
-
-   ---- and the switch is not a second preference ----
-
-   `tool-lang` is what the stock check has read since long before
-   there were accounts, and `prefs.ts` writes it from the account
-   page. One choice, one key, carried between devices by
-   `sync.ts` under `reader-prefs`. A reader who set the stock
-   check to Bangla arrives here already in Bangla.
-   ============================================================ */
+   `tool-lang` is the key the stock check has read since long before
+   accounts, and `prefs.ts` writes the same one: one choice, one key. */
 
 "use client";
 
@@ -56,14 +31,11 @@ import { DIET_WORDS } from "@reiad/shared/diet-words";
 export function T({ en, bn, k }: {
   en?: ReactNode;
   bn?: ReactNode;
-  /** A key of `DIET_WORDS` in `shared/diet-words.ts`, which is
-      where a phrase belongs once more than one runtime says it:
-      the Android app draws these same figures and would
-      otherwise carry a second copy of every sentence.
-
-      Both halves still go into the DOM and the stylesheet still
-      picks, so this changes where the words come from and
-      nothing about how the page behaves with no JavaScript. */
+      /** A key of `DIET_WORDS` in `shared/diet-words.ts`, which is where a
+          phrase belongs once more than one runtime says it: the Android
+          app draws these same figures and would otherwise carry a second
+          copy of every sentence. Both halves still go into the DOM and the
+          stylesheet still picks. */
   k?: string;
 }) {
   const said = k ? DIET_WORDS[k] : undefined;
@@ -103,25 +75,18 @@ const read = (): ToolLang => {
   return document.documentElement.getAttribute("data-tool-lang") === "bn" ? "bn" : "en";
 };
 
-/** The language, for the few strings that CANNOT be rendered
-    twice and hidden.
+    /** The language, for the few strings that CANNOT be rendered twice and
+        hidden: `<option>`, whose text is drawn by the operating system,
+        and `aria-label`, `title` and `placeholder`, which are attributes
+        rather than nodes.
 
-    `<option>` is the whole list of them: its text is drawn by
-    the operating system, so a span inside it is not a span, it
-    is characters. The same goes for an `aria-label`, a `title`
-    and a `placeholder`, which are attributes rather than nodes.
+        It returns "en" on the server AND on the first client render, which
+        is not a default but the contract: matching what the server sent is
+        what stops React discarding the page. The real value arrives in an
+        effect, and the cost is a flash inside two `<select>` boxes, which
+        is why `T` is the one to reach for first.
 
-    It returns "en" on the server AND on the first client render,
-    which is not a default, it is the contract: matching what the
-    server sent is what stops React discarding the page. The real
-    value arrives in an effect, one frame later, and the cost is
-    a flash inside two `<select>` boxes. Everything that can be
-    rendered twice uses `T` and has no flash at all, which is why
-    that is the one to reach for first.
-
-    It listens, because the switch is a sibling rather than a
-    parent: pressing it writes the attribute, and every reader of
-    this hook has to hear about it. */
+        It listens, because the switch is a sibling rather than a parent. */
 export function useToolLang(): ToolLang {
   const [lang, setLang] = useState<ToolLang>("en");
   useEffect(() => {
@@ -140,23 +105,17 @@ export function useToolLang(): ToolLang {
 export const digits = (n: number | string, lang: ToolLang): string =>
   lang === "bn" ? bnNum(n) : String(n);
 
-/** The switch.
+    /** The switch. It renders with no pressed state on the server and
+        takes one from the attribute on mount: the attribute is the state,
+        the stylesheet has already answered it, and giving the server a
+        guess would reintroduce the hydration mismatch this file exists to
+        avoid.
 
-    It renders with no pressed state on the server and takes one
-    from the attribute on mount. That is deliberate rather than
-    lazy: the attribute is the state, the stylesheet has already
-    answered it before this component exists, and giving the
-    server a guess at which half to mark would reintroduce the
-    hydration mismatch this whole file exists to avoid.
-
-    WHICH LEFT IT LOOKING BROKEN FOR A PAINT. Neither half was
-    lit until an effect ran, so a Bangla reader's first sight of
-    their own switch was two grey buttons. `@layer diet` lights
-    it off `:root[data-tool-lang]`, which the boot script has
-    already set, so the drawing is right before this component
-    exists and `aria-pressed` catches up. `data-half` is what the
-    stylesheet needs to tell the two apart without depending on
-    child order. */
+        `@layer diet` lights it off `:root[data-tool-lang]`, which the boot
+        script has already set, so the drawing is right before this
+        component exists and `aria-pressed` catches up. `data-half` is what
+        lets the stylesheet tell the two apart without depending on child
+        order. */
 export function LangSwitch() {
   const [lang, setLang] = useState<ToolLang | null>(null);
 

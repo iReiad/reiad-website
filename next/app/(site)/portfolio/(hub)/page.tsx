@@ -1,18 +1,10 @@
-/* ============================================================
-   /portfolio
+/* /portfolio: the portfolio index.
 
-   Ported out of `aab/portfolio.html` with archive/TRANSITION.md Stage 11.3,
-   words unchanged: this is the portfolio index.
-
-   The numbers are not here and must not be. Every figure on this
-   page is computed in the browser by `/app.js`
-   from the `.model.js` and `.data.js` files beside it, which stay
-   exactly where they are with their tests running on every
-   commit. What moved is the page around the numbers, which is the
-   whole of section 2b's rule about the case studies: their value
-   is that the figures are right and provably unchanged, so they
-   are the last thing a port is allowed to touch.
-   ============================================================ */
+   The numbers are not here and must not be. Every figure on this page is
+   computed in the browser by `/app.js` from the `.model.js` and `.data.js`
+   files beside it, which stay where they are with their tests running on
+   every commit: the case studies' value is that the figures are right and
+   provably unchanged. */
 
 import type { Metadata } from "next";
 import { pageMeta } from "../../../../lib/pageMeta";
@@ -39,15 +31,11 @@ export default function Page() {
 
       <main id="main">
         <div className="wrap">
-          {/* ============================================================
-           HERO
-
-           The terms row under the buttons is the part a client
-           actually scans for. Price basis, response time, ownership
-           and NDA are the four questions that decide whether the
-           email gets written, and they were previously spread over
-           three sections and an FAQ near the bottom of the page.
-           ============================================================ */}
+              {/* ---- hero ----
+               The terms row under the buttons is the part a client
+               actually scans for: price basis, response time, ownership
+               and NDA are the four questions that decide whether the email
+               gets written. */}
           <div className="hero">
             {/* Out of `shared/heads.ts`, which is what the
                 Android app draws this hub from too. */}
@@ -71,19 +59,16 @@ export default function Page() {
               </li>
             </ul>
           </div>
-          {/* ============ THE WORK, IN NUMBERS ============
-           Every figure here is stated somewhere it can be checked:
-           the fund-months and the five-year hold are printed on the
-           pages they describe, and the business day is the promise
-           made in the process section and the FAQ.
+              {/* ---- the work, in numbers ----
+               Every figure here is stated somewhere it can be checked: the
+               fund-months and the five-year hold are printed on the pages
+               they describe, and the business day is the promise made in
+               the process section and the FAQ.
 
-           The case-study count is NOT typed here. It said four while
-           seven existed, because it was written when four was true
-           and nothing made it look again. It is a [data-count] slot
-           now, filled by app.js from COUNTS in content.js, which
-           counts the cards rather than remembering them. The 7 in
-           the markup is only the no-JavaScript fallback. Add a case
-           study to PAGES and this number moves on its own. */}
+               The case-study count is NOT typed here: it is a
+               [data-count] slot filled by app.js from COUNTS in
+               content.js, which counts the cards rather than remembering
+               them. The 7 in the markup is the no-JavaScript fallback. */}
           <div className="strip" aria-label="The work on this page, in numbers">
             <div>
               <span className="n" data-count="caseStudies">7
@@ -110,22 +95,16 @@ export default function Page() {
               </span>
             </div>
           </div>
-          {/* ============================================================
-           SELECTED WORK
+              {/* ---- selected work ----
+               The reason someone is on the page, so it comes first, and
+               each card carries the facts that make it checkable: the
+               forecast horizon, the sample size, the number of views. The
+               lead card is the three-statement model because the DCF is
+               built on top of it.
 
-           This section used to sit third, under two lists describing
-           the services. It is the reason someone is on the page, so
-           it comes first now, and each card carries the facts that
-           make it checkable: the forecast horizon, the sample size,
-           the number of views. The lead card is the three-statement
-           model because the DCF is built on top of it, so it is the
-           one to read first.
-
-           These are real and finished. If a fifth lands, copy the
-           card markup, keep the four facts honest, and add it to
-           PAGES in content.js so the menu and the search palette
-           pick it up too.
-           ============================================================ */}
+               If a fifth lands, keep the four facts honest and add it to
+               PAGES in content.js so the menu and the search palette pick
+               it up too. */}
           <section id="work">
             <SectionLabel>Selected work
             </SectionLabel>
@@ -136,37 +115,27 @@ export default function Page() {
           show that a model works.
         
             </p>
-            {/* The seven, out of `next/lib/work.ts`, whose rows come
-                from `PAGES` in `shared/content.ts`. They were written
-                out here as seven blocks of markup carrying their own
-                charts, which is a second copy of a list the site
-                already holds: this page said four while seven
-                existed, for that reason, and the front page could
-                not show them at all without a third copy.
+                {/* The seven, out of `next/lib/work.ts`, whose rows come
+                    from `PAGES` in `shared/content.ts`. Written out here
+                    as seven blocks of markup they are a second copy of a
+                    list the site already holds, which is how this page
+                    said four while seven existed.
 
-                The lead is the first row rather than a URL named
-                here, because `PAGES` already lists the
-                three-statement model first and the DCF is built on
-                top of it. */}
+                    The lead is the first row rather than a URL named here,
+                    because `PAGES` already lists the three-statement model
+                    first. */}
             <WorkCard study={STUDIES[0]} lead />
             <div className="grid-3 work-grid">
               {STUDIES.slice(1).map((study) => (
                 <WorkCard key={study.url} study={study} />
               ))}
             </div>
-            {/* ============ THE REST OF IT ============
-             The case studies above are the work that has a page of
-             its own. This is everything else on the site that is
-             also the work, and it stays a row list rather than
-             becoming seven more cards: a client scanning the
-             section should be able to tell the difference between
-             "here is a model you can drive" and "here is more of
-             what I do, if you want it".
-
-             A separate archive page was the other option and is not
-             worth it yet. It would be these four rows and the seven
-             cards above, on a page of their own, with nothing on it
-             that this section does not already say. */}
+                {/* ---- the rest of it ----
+                 The case studies above are the work that has a page of its
+                 own; this is everything else that is also the work, and it
+                 stays a row list rather than becoming seven more cards: a
+                 client scanning should be able to tell "here is a model
+                 you can drive" from "here is more of what I do". */}
             <div className="work-more">
               <h2>Also on this site
               </h2>
@@ -230,16 +199,11 @@ export default function Page() {
               </div>
             </div>
           </section>
-          {/* ============================================================
-           SERVICES
-
-           One section, not two. This page used to describe the three
-           services near the top and then describe the same three
-           again further down under "what you actually receive",
-           which read as padding and made the page feel longer than
-           its content. The description and the deliverables belong
-           in the same card.
-           ============================================================ */}
+              {/* ---- services ----
+               One section, not two: describing the three services near the
+               top and the same three again under "what you actually
+               receive" reads as padding. The description and the
+               deliverables belong in the same card. */}
           <section id="services">
             <SectionLabel>What I do
             </SectionLabel>
@@ -352,15 +316,11 @@ export default function Page() {
         
             </p>
           </section>
-          {/* ============================================================
-           WHO IS DOING THE WORK
-
-           New, and the largest gap this page had. A services page
-           with no named credentials asks a stranger to send
-           commercial data to an email address on trust. The detail
-           lives on the About page; this is the short version, with
-           the route there.
-           ============================================================ */}
+              {/* ---- who is doing the work ----
+               A services page with no named credentials asks a stranger to
+               send commercial data to an email address on trust. The
+               detail lives on the About page; this is the short version,
+               with the route there. */}
           <section id="who">
             <SectionLabel>Who does the work
             </SectionLabel>

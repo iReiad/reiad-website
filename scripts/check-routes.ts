@@ -1,35 +1,22 @@
 #!/usr/bin/env node
-/* ============================================================
-   check-routes.ts, catch broken URLs before deploying.
+/* check-routes.ts: broken URLs, before deploying.
 
        node scripts/check-routes.ts
 
-   Cloudflare's asset routing is the one part of this site that
-   can't be tested with a local file server, and it has already
-   broken the site once: a "pretty URL" rule in _redirects sent
-   the extensionless spelling of an address to the `.html` one
-   while Cloudflare itself redirects the `.html` one back, so the
-   two bounced off each other forever and the page never loaded in
-   any browser. Every rule in that file points one way now.
-
-   This walks every public URL through the same rules Pages
-   applies and fails loudly on a loop, a dead end, or a link
-   pointing at a file that isn't there.
+   Cloudflare's asset routing cannot be tested with a local file
+   server. This walks every public URL through the same rules Pages
+   applies and fails on a loop, a dead end, or a link to a file
+   that is not there.
 
    Pages' asset behaviour, in order:
      1. _redirects rules, in file order, first match wins
      2. otherwise /foo.html is 308-redirected to /foo
      3. /foo serves foo.html, /dir serves dir/index.html
 
-   And one step in front of all three, since Stage 11: a path in
-   `run_worker_first` never reaches the asset router at all. It is
-   answered by a Worker, and whether a file exists at that address
-   is not a question anybody asks. Both halves are read out of the
-   real files rather than typed here, so this catches the mistake
-   that shape of routing invites: a route added to `NEXT_ROUTES`
-   and not to `run_worker_first`, where the asset router answers
-   first and the Worker is never called.
-   ============================================================ */
+   And in front of all three: a path in `run_worker_first` never
+   reaches the asset router at all. Both halves are read out of the
+   real files rather than typed here, which is what catches a route
+   added to `NEXT_ROUTES` and not to `run_worker_first`. */
 
 import { readFileSync, existsSync, readdirSync, statSync } from "node:fs";
 import { dirname, join, relative, sep } from "node:path";
@@ -47,22 +34,12 @@ import { STUFEN } from "../shared/curricula/deutsch.ts";
 import { TERMS } from "../shared/curricula/english.ts";
 import { DHAPS } from "../shared/curricula/quran.ts";
 
-/* `AAB` is what this walks and `ROOT` is the repository, and the
-   two were the same directory until this file moved out of it.
-
-   It moved because of what it checks two hundred lines down:
-   every file in `aab/` is uploaded and served, so a check living
-   there was a check published at its own URL. The rule
-   that kept that from happening was a line in `.assetsignore`,
-   and a rule you have to remember is the thing this repository
-   keeps replacing. A check that is not in the served directory
-   cannot be served, which retires the question rather than
-   guarding it.
-
-   `.assetsignore` still carries the `check-*` rules, and they
-   still matter: they are what stops a check that has NOT moved
-   out from being served. See the DEV_ONLY section below, which
-   fails on any such file no rule covers. */
+/* `AAB` is what this walks and `ROOT` is the repository. Every
+   file in `aab/` is uploaded and served, so a check living there
+   is a check published at its own URL; one outside the served
+   directory cannot be. `.assetsignore` still carries the `check-*`
+   rules for the files that have NOT moved out, and the DEV_ONLY
+   section below fails on any such file no rule covers. */
 const ROOT = join(dirname(fileURLToPath(import.meta.url)), "..");
 const AAB = join(ROOT, "aab");
 const MAX_HOPS = 10;
@@ -70,14 +47,12 @@ const MAX_HOPS = 10;
 /* ---------- what a Worker answers ---------- */
 
 /* The patterns in `run_worker_first`, straight out of wrangler.toml.
-   A `*` there matches any number of characters, including slashes.
+   A `*` there matches any number of characters, slashes included.
 
-   The comment lines inside that array are stripped first, and they
-   have to be. They quote patterns in prose, and one of them once
-   named a pattern that was deliberately ABSENT. Reading the block
-   without stripping them picked that up as a rule, so this file
-   believed the Worker answered paths wrangler had been told
-   nothing about. */
+   The comment lines inside that array are stripped first, and have
+   to be: they quote patterns in prose, one of them a pattern that
+   is deliberately ABSENT, so reading the block without stripping
+   picks that up as a rule. */
 const WORKER_FIRST = (
   readFileSync(join(ROOT, "wrangler.toml"), "utf8")
     .match(/run_worker_first\s*=\s*\[([\s\S]*?)\]/)?.[1] ?? ""
@@ -90,11 +65,10 @@ const globs = (pattern: string, path: string): boolean =>
     .test(path);
 
 /** Does a Worker answer this, whatever is or is not in `aab/`?
-
-    Both halves have to be true, and that is the point. A path in
-    the allowlist that the asset router still gets to first is
-    answered by a file; a path the Worker would claim that is not
-    in `run_worker_first` never reaches it. */
+    Both halves have to be true: a path in the allowlist the asset
+    router still gets to first is answered by a file, and a path
+    the Worker would claim that is not in `run_worker_first` never
+    reaches it. */
 const workerAnswers = (path: string): boolean =>
   WORKER_FIRST.some((pattern) => globs(pattern, path)) && nextOwns(path);
 
@@ -123,11 +97,10 @@ function step(path: string): Step {
   const rule = rules.find((r) => r.from === path);
   if (rule) return { redirect: rule.to, why: `_redirects` };
 
-  /* After the redirect rules rather than before them, which is
-     what the site actually does: `/insights/dsex.html` is a
-     Worker path AND carries a 301, and the 301 is what fires,
-     because the handler declines a slug with no row and the asset
-     router is what answers next. */
+  /* After the redirect rules rather than before, which is what the
+     site does: `/insights/dsex.html` is a Worker path AND carries
+     a 301, and the 301 fires, because the handler declines a slug
+     with no row. */
   if (workerAnswers(path)) return { file: "(a Worker renders this)" };
 
   if (path.endsWith(".html")) {
@@ -159,10 +132,9 @@ function trace(start: string): Trace {
     if (s.file) return { status: "ok", chain, file: s.file };
     if (s.missing) return { status: "MISSING", chain };
     /* A step that is neither a file nor missing is a redirect, and
-       `step()` sets exactly one of the three. Said out loud rather
-       than assumed, because the loop below would otherwise walk
-       `undefined` round MAX_HOPS times and report a broken URL as
-       "too many hops". */
+       `step()` sets exactly one of the three. Said out loud,
+       because the loop below would otherwise walk `undefined` and
+       report a broken URL as "too many hops". */
     if (!s.redirect) return { status: "MISSING", chain };
     path = s.redirect;
   }
@@ -191,25 +163,15 @@ const targets = new Set(["/", ...pages, ...rules.map((r) => r.from)]);
 
 /* ---------- every root-absolute link, from wherever it is written
 
-   THREE HTML FILES ARE LEFT. This walked `pages`, which is
-   every `.html` under `aab/`, and that was the whole site when
-   it was written; since Stage 11.7 it is `404.html`,
-   `offline.html` and the preview harness. The other 250 pages
-   are Next.js routes, and their links are written in `next/app`
-   and `next/components`.
+   THREE HTML FILES ARE LEFT: `404.html`, `offline.html` and the
+   preview harness. The other 250 pages are Next.js routes and
+   their links are written in `next/app` and `next/components`, so
+   walking `pages` alone checked three pages out of 250.
 
-   So the dead-link half of this file was checking three pages out
-   of two hundred and fifty. Proved before fixing, the way
-   `PLAN.md` says: a link to a page that does not exist, added to
-   a route, passed; the same link in `404.html` failed.
-
-   A route writes its links as JSX, so only the literal ones can
-   be read: `href="/money"` is checkable and
-   `href={lesson.url}` is not, and pretending otherwise would mean
-   a check that guesses. The literals are most of them, and the
-   computed ones are computed by `shared/schools.ts`, which
-   `check-schools.ts` already holds to the ladder.
-   ---------------------------------------------------------- */
+   A route writes its links as JSX, so only the literal ones can be
+   read: `href="/money"` is checkable and `href={lesson.url}` is
+   not. The computed ones come from `shared/schools.ts`, which
+   `check-schools.ts` holds to the ladder. */
 
 /** Every internal link found, against the first page or route
     that named it, so a failure can say where to go and change it. */
@@ -241,10 +203,8 @@ const tsx = [];
   try { entries = readdirSync(dir); } catch { return; }
   for (const entry of entries) {
     if (entry === "node_modules" || entry === ".next") continue;
-    /* The node-side files beside the app are not pages, and the
-       addresses in them are a fixture's rather than this site's:
-       `hydrate-fixture.ts` serves one component on a server of its
-       own, at paths nothing here answers. Same line
+    /* The node-side files beside the app are not pages, and their
+       addresses are a fixture's rather than this site's. Same line
        `next/tsconfig.json` draws in its `exclude`. */
     if (entry.endsWith(".test.ts") || entry === "dev-worker.ts"
       || entry === "hydrate-fixture.ts") continue;
@@ -267,23 +227,13 @@ let failures = 0;
 
 /* No pattern in `run_worker_first` may be covered by another one.
 
-   This is not tidiness. Wrangler rejects an overlapping list at
-   parse time, before it reads the Worker or looks at aab/, and the
-   deploy stops:
-
-     Invalid routes in `run_worker_first`:
-       '/cooking/index.html': rule '/cooking/*' makes it redundant
-
-   Nothing about that is visible from the site, because a Worker
-   that fails to deploy is a Worker still serving its last good
-   upload. Six overlapping entries arrived across Stage 11 and the
-   live Worker sat on a version from before Stage 11.1 for the rest
-   of the day, still answering every request, while thirteen pushes
-   built nothing.
+   Wrangler rejects an overlapping list at parse time and the
+   deploy stops, which is invisible from the site: a Worker that
+   fails to deploy is a Worker still serving its last good upload,
+   so it goes on answering every request while nothing builds.
 
    The test below is the one wrangler runs: a rule covers another
-   when it matches it and is not the same string. `globs` already
-   reads a `*` the way the asset router does. */
+   when it matches it and is not the same string. */
 for (const pattern of WORKER_FIRST) {
   const covering = WORKER_FIRST.find(
     (other) => other !== pattern && globs(other, pattern),
@@ -295,63 +245,32 @@ for (const pattern of WORKER_FIRST) {
 }
 
 /* An article's slug becomes a URL, and only some strings can.
-   worker.js matches /insights/([a-z0-9-]+) and static assets are
-   no more forgiving, so a slug with a capital or a space cannot
-   resolve however it is published, but it still reaches feed.xml
-   and the sitemap.
+   worker.js matches /insights/([a-z0-9-]+), so a slug with a
+   capital or a space cannot resolve however it is published, and
+   it still reaches feed.xml and the sitemap: a live entry with the
+   slug "German Alphabets" put a raw space into the sitemap
+   submitted to search engines.
 
-   That is exactly what happened: a live entry with the slug
-   "German Alphabets" put a URL containing a raw space into the
-   sitemap submitted to search engines.
-
-   ---- where the slugs are now ----
-
-   This read `liveArticles()` out of `content.js`, which held
-   every article when it was written and holds NONE of them since
-   the writing became rows. So the loop ran over an empty list and
-   reported nothing, on a site with live articles, which is a
-   check that had stopped asking its own question.
-
-   Two things answer it instead, and both are needed:
-
-     `functions/api/articles/[[slug]].ts` strips anything outside
-     `[a-z0-9-]` before it writes, and rejects what is left if it
-     is empty. Nothing published through the Studio can be wrong.
-
-     `content/articles.backup.json` is the nightly export of the
-     live rows, and it is what this reads. It covers what the
-     write path cannot: a slug that arrived by a migration, by
-     wrangler, or by hand.
-
-   The backup is committed, so this still needs no network. If it
-   is missing entirely that is worth saying rather than passing
-   quietly. */
+   The slugs are rows now, so this reads
+   `content/articles.backup.json`, the committed nightly export, so
+   it still needs no network. That covers what the write path in
+   `functions/api/articles/[[slug]].ts` cannot: a slug that arrived
+   by a migration, by wrangler, or by hand. A backup missing
+   entirely is worth saying rather than passing quietly. */
 /* ---------- what gets uploaded ----------
 
    Everything in aab/ is an asset, so everything in aab/ is a
-   public URL. The checks, the tests, the two school builders and
-   the TypeScript sources of four served modules were all being
-   published: about 300 KB at addresses like /check-routes.ts
-   and /schema.sql, which nobody had asked for and nobody
-   maintained as pages.
-
-   aab/.assetsignore is what stops that, and this is what stops
-   .assetsignore going stale. A new check or a new test added
+   public URL: the checks, the tests and the TypeScript sources of
+   four served modules were all being published, about 300 KB at
+   addresses like /check-routes.ts. `aab/.assetsignore` stops that,
+   and this stops `.assetsignore` going stale: a new check added
    beside the others starts being published the moment it is
-   committed, and nothing about the site looks any different, so
-   the failure is exactly the kind this repository writes down:
-   silent, and only wrong later. Every path below has to be
-   covered by a rule in that file. */
-/* `.mjs` OR `.ts`, and the second half is not hypothetical. The
-   checks and the tests are being converted to TypeScript, which
-   node runs directly, and a rule that only knew `.mjs` would go
-   quiet at exactly the moment the files it guards changed name.
-   The whole point of this block is that the failure is silent.
-
-   `.d.ts` is here for the same reason. A declaration describes
-   JavaScript for the typechecker and answers nothing a browser
-   asks for, and the four case-study models each have one beside
-   them now. */
+   committed, with nothing about the site looking different. */
+/* `.mjs` OR `.ts`: a rule that only knew `.mjs` would go quiet at
+   exactly the moment the files it guards changed name, and the
+   whole point of this block is that the failure is silent. `.d.ts`
+   for the same reason: a declaration answers nothing a browser
+   asks for. */
 const DEV_ONLY = new RegExp(
   "(^|/)(check-[^/]*\\.(mjs|ts)|build-[^/]*\\.(mjs|ts)|[^/]*\\.test\\.(mjs|ts))$"
   + "|\\.d\\.ts$|^src/|\\.sql$|scorecard\\.fetch\\.(mjs|ts)$");
@@ -427,42 +346,25 @@ for (const url of [...targets].sort()) {
   console.error(`        ${t.chain.join(" → ")}`);
 }
 
-/* ============================================================
-   A redirect must point at a page that EXISTS, not at one whose
-   shape a route pattern recognises.
-
-   `workerAnswers()` above answers "a Worker renders this" for any
-   path matching a route pattern, which is the right answer for
-   the question it is asked and is not the whole question. A
-   pattern says an address is well formed. It cannot say there is
-   anything behind it.
-
-   Two rules got through it on the day #28 landed:
-
-     /deutsch/stufe-4/arbeitsbuch.html -> /deutsch/stufe-4/arbeitsbuch
-     /english/term-2/workbook.html     -> /english/term-2/workbook
-
-   Neither stage declares a `workbook` in `shared/curricula/`, so
-   neither ever had a practice book. Each rule pointed an address
-   that was never live at one that does not exist, both traced
-   clean here, and both 404ed on the deployed site.
+/* A redirect must point at a page that EXISTS, not at one whose
+   shape a route pattern recognises. `workerAnswers()` answers "a
+   Worker renders this" for any path matching a pattern, which is
+   the right answer to a different question: a pattern says an
+   address is well formed, not that there is anything behind it.
+   Two rules pointed at practice books no stage declares; both
+   traced clean here and both 404ed on the deployed site.
 
    The ladder is the data and this reads it, which is the rule at
-   the top of `CLAUDE.md`: a list of things that exist comes from
-   the data, never from a shape that looks right.
-   ============================================================ */
+   the top of `CLAUDE.md`. */
 {
   const BOOKS = new Set<string>();
   const LADDERS = { money: MONEY, deutsch: STUFEN, english: TERMS, quran: DHAPS };
   for (const [school, ladder] of Object.entries(LADDERS)) {
     for (const rung of ladder) {
-      /* `workbook` ONLY, and `uebung` deliberately not. They read
-         like alternatives and are not the same kind of thing: a
-         `workbook` is an object with a slug and therefore a page,
-         a `uebung` is a STRING, the note a stage carries instead
-         of having a book. Stufe 4 has one, which is exactly why
-         it has no practice book and why the rule pointing at one
-         was wrong.
+      /* `workbook` ONLY, and `uebung` deliberately not. A
+         `workbook` is an object with a slug and therefore a page;
+         a `uebung` is a STRING, the note a stage carries INSTEAD
+         of having a book.
 
          `in` rather than a cast, because the four ladders are four
          types and the money school's `Stage` declares neither. */
@@ -471,10 +373,8 @@ for (const url of [...targets].sort()) {
     }
   }
   /* Only the practice books, because they are the one address on
-     this site whose existence is a FIELD rather than a row: a
-     stage without a `workbook` has no page, and nothing else here
-     can tell. Lessons and stages come out of D1, which this check
-     cannot reach. */
+     this site whose existence is a FIELD rather than a row.
+     Lessons and stages come out of D1, which this cannot reach. */
   const BOOKISH = /^\/(deutsch|english|quran|money)\/[a-z0-9-]+\/(arbeitsbuch|workbook|uebung)$/;
   for (const rule of rules) {
     if (!BOOKISH.test(rule.to) || BOOKS.has(rule.to)) continue;
@@ -486,30 +386,21 @@ for (const url of [...targets].sort()) {
   }
 }
 
-/* ============================================================
-   A PAGE THAT WAS A DIRECTORY IS STILL AT ITS DIRECTORY ADDRESS.
+/* A PAGE THAT WAS A DIRECTORY IS STILL AT ITS DIRECTORY ADDRESS.
 
    Cloudflare's `html_handling` serves `deutsch/index.html` at
-   `/deutsch/`, WITH the slash. So for every page that was a file
-   called `index.html`, the directory form was its canonical
-   address: it is what the sitemap resolved to, what a crawler
-   indexed, and what anybody who bookmarked one has.
+   `/deutsch/`, WITH the slash, so for every page that was an
+   `index.html` the directory form was its canonical address: what
+   the sitemap resolved to, what a crawler indexed, what a
+   bookmark holds. Dropping `.html` from every address left
+   `/deutsch/` matching no route pattern, and 21 addresses 404ed on
+   a site where every internal link still worked, because nothing
+   here links the directory form.
 
-   Task #28 dropped `.html` from every address and wrote a 301 for
-   `/deutsch/index.html`, which is the other spelling of the same
-   page. Nothing covered `/deutsch/`. It matched no route pattern,
-   fell to the asset router, whose copy of the file had left in the
-   same commit, and 21 addresses 404ed on a site where every
-   internal link still worked: four school hubs and seventeen
-   stage ladders. Every check here passed, because nothing on this
-   site links the directory form. The readers who had it were the
-   ones who had been here longest.
-
-   The list is not typed out. A rule whose source ends
-   `/index.html` IS the statement that the page was a directory,
-   so `_redirects` names them, and the next one added gets checked
-   without anybody remembering to come here.
-   ============================================================ */
+   The list is not typed out: a rule whose source ends
+   `/index.html` IS the statement that the page was a directory, so
+   `_redirects` names them and the next one is checked without
+   anybody coming here. */
 {
   for (const rule of rules) {
     const dir = /^(.*)\/index\.html$/.exec(rule.from);
@@ -525,30 +416,20 @@ for (const url of [...targets].sort()) {
   }
 }
 
-/* ============================================================
-   EVERY LINK IN THE SITE'S OWN CHROME RESOLVES.
+/* EVERY LINK IN THE SITE'S OWN CHROME RESOLVES.
 
-   `shared/nav.ts` is the one table the rail, the footer and /skills
-   are all drawn from, so an address in it is on all 251 pages.
-   Nothing checked it. This file walks `aab/` for links, and the
-   chrome stopped being a file when the rail became a component,
-   so the most-linked addresses on the site were the least
-   checked ones.
+   `shared/nav.ts` is the one table the rail, the footer and
+   /skills are drawn from, so an address in it is on all 251 pages
+   and this file's walk of `aab/` cannot see any of them.
 
-   `/skills/courses` is what that cost. `run_worker_first` in
-   wrangler.toml carried `/skills/courses/*` and not the bare
-   path, and a `*` matches what comes AFTER the slash: the hub's
-   own address was never forwarded to the Worker, the asset
-   router answered, there is no file, and the entry in the rail
-   pointed at this site's 404 page. `/skills/courses/` made it
-   worse by 308ing into the same place, while
-   `/skills/courses/index.html` and every course under it
-   answered perfectly, which is why it read as "the course is
-   gone" rather than as a routing bug.
+   `/skills/courses` is what that cost: `run_worker_first` carried
+   `/skills/courses/*` and not the bare path, and a `*` matches
+   what comes AFTER the slash, so the hub's own address was never
+   forwarded, the asset router answered, and the rail pointed at
+   this site's 404 page while every course under it worked.
 
-   Fragments are dropped before the walk: `/skills#reviews` is
-   the `/skills` page and the fragment is a place on it.
-   ============================================================ */
+   Fragments are dropped before the walk: `/skills#reviews` is the
+   `/skills` page and the fragment is a place on it. */
 {
   const seen = new Set<string>();
   for (const group of NAV) {
@@ -567,45 +448,27 @@ for (const url of [...targets].sort()) {
   }
 }
 
-/* ============================================================
-   A PAGE WITH NO LAYOUT IS A PAGE WITH NO STYLESHEET
+/* A PAGE WITH NO LAYOUT IS A PAGE WITH NO STYLESHEET.
 
    The stylesheet is imported at the top of `shell.tsx`, so Next
-   compiles it, hashes it and emits the `<link>` itself. A route
-   that mounts no shell therefore links no stylesheet, and the
-   shell is mounted by a LAYOUT: `siteLayout()` in
-   `components/page.tsx` is what nearly every one of them is.
-
-   Next answers a missing root layout by generating an empty one
-   rather than by failing, so the page renders. It renders as
-   bare HTML: no rail, no bar, no footer, default link colours,
-   and every inline SVG at its intrinsic size.
-
-   That shipped. `/tools/routine` had no `layout.tsx` for four
-   pull requests and every check passed, because every other
-   check reads MARKUP and the markup was right. Nothing here can
-   see a stylesheet that was never linked; what it can see is the
-   file that would have linked it.
-   ============================================================ */
+   emits the `<link>` itself; a route mounting no shell links no
+   stylesheet, and the shell is mounted by a LAYOUT. Next answers a
+   missing root layout by generating an empty one rather than by
+   failing, so the page renders as bare HTML: no rail, no bar, no
+   footer, and every inline SVG at its intrinsic size. Every other
+   check reads MARKUP, and the markup is right. */
 /* ---- AND A PAGE INSIDE TWO OF THEM IS THE SAME BUG UP ----
 
-   Layouts NEST. A `layout.tsx` at `/admin/` wraps everything
-   under it, so a second one at `/admin/research/` renders the
-   whole shell twice: two rails, two top bars, two footers, two
-   boot scripts writing the same three attributes on `<html>`,
-   and `margin-left: var(--rail-w)` applied to two nested
-   `.shell-col`s.
+   Layouts NEST, so a `layout.tsx` at `/admin/` plus one at
+   `/admin/research/` renders the whole shell twice: two rails, two
+   bars, two footers, two boot scripts writing the same three
+   attributes, and `margin-left: var(--rail-w)` on two nested
+   `.shell-col`s. IT RENDERS PERFECTLY, because the rail and the
+   bar are `position: fixed` and the copies sit on top of each
+   other. What the page loses is 268px of width.
 
-   IT RENDERS PERFECTLY. The rail and the bar are `position:
-   fixed`, so the two copies sit exactly on top of each other and
-   a screenshot shows one of each. What the page loses is width:
-   268px of it, off the left, on the one route that most needed
-   the room. It was found by measuring the element rather than by
-   looking at it.
-
-   `/portfolio/(hub)/` and `/tools/(hub)/` are what a section
-   whose own page needs a shell does instead: the group holds the
-   page and its layout, and a child route brings its own. */
+   `/portfolio/(hub)/` and `/tools/(hub)/` are what a section whose
+   own page needs a shell does instead. */
 {
   const app = join(NEXT, "app");
   /** A layout that mounts the site shell, as against one that
@@ -656,18 +519,13 @@ for (const url of [...targets].sort()) {
 /* ---- `dynamicParams = false` is a 404 on this deployment ----
 
    A route with a dynamic segment and that flag answers 404 for
-   EVERY param on Cloudflare, including the ones its own
-   `generateStaticParams` names: the prerendered page sits in
-   `.open-next/cache` and the runtime refuses to render on demand,
-   so it has nothing to serve. `/tools/research/tools/which-test`
-   was dead from the day it shipped, and the workshop's thirty
-   cards all pointed at it.
-
-   It renders perfectly in `next build`, in `next dev` and in the
-   browser test, which serves the prerendered files directly. Only
-   workerd and the live site say otherwise. Prerendering still
-   happens without the flag; an unknown param renders on demand
-   and calls `notFound()`. */
+   EVERY param on Cloudflare, its own `generateStaticParams` names
+   included: the prerendered page sits in `.open-next/cache` and
+   the runtime refuses to render on demand, so it has nothing to
+   serve. It renders perfectly in `next build`, in `next dev` and
+   in the browser test, which serves the prerendered files
+   directly. Prerendering still happens without the flag; an
+   unknown param renders on demand and calls `notFound()`. */
 {
   const walk = (dir: string): string[] =>
     readdirSync(dir, { withFileTypes: true }).flatMap((e) =>

@@ -1,65 +1,31 @@
 /* ============================================================
    art.ts: which drawing a thing wears, and in what colour.
 
-   `shared/nav.ts` names a subject for every school, tool and desk,
-   which answers the question for the ~20 things the rail lists. It
-   cannot answer it for the 200 that are rows: a piece written next
-   month, a lesson inside a stage, a headline off the market feed.
-   Somebody would have to choose a picture for each one, which
-   means the newest thing on the site is always the one without a
-   picture.
+   `shared/nav.ts` names a subject for the twenty things the rail
+   lists. It cannot answer for the two hundred that are ROWS, so
+   this DERIVES one out of what the row already carries: otherwise
+   the newest thing on the site is always the one with no picture.
 
-   So this DERIVES one. Every input is something the row already
-   carries, so a piece published a year from now arrives with a
-   drawing and a colour and nobody has to remember anything. That
-   is the rule at the top of CLAUDE.md, one level along: a list of
-   things that exist elsewhere is built from the data, and so is
-   the CARD that draws one.
+   IT IS A DECISION, NOT A RANDOM. The same piece must get the
+   same drawing on the front page, on its hub, in the palette and
+   after a rebuild, so the hash is a plain FNV-1a over a stable
+   string and NOTHING in it may be a date, a count or a position
+   in a list.
 
-   ---- it is a decision, not a random ----
+   In order: a tag or topic that NAMES a subject wins outright;
+   then the DESK's own pool; then the hash, out of the six that
+   suit prose.
 
-   The same piece must get the same drawing on the front page, on
-   its hub, in the search palette and after a rebuild, or the site
-   flickers between two pictures of the same thing. So the hash is
-   a plain FNV-1a over a stable string, written out here rather
-   than imported, and NOTHING in it may be a date, a count, or a
-   position in a list: a piece that moves down its hub keeps its
-   picture.
-
-   ---- what actually decides ----
-
-   In order, and the order is the point:
-
-     1. the piece SAYS what it is about. A tag or a topic that
-        names a subject wins outright, because a recipe should
-        get the pan whatever else is true of it.
-     2. its DESK has a subject. A piece with no useful tag on the
-        travel desk gets the ridge.
-     3. the hash picks, out of the six that suit prose.
-
-   ---- and the colour ----
-
-   The section's own colour, most of the time. `MOSTLY` is how
-   often, and it is high on purpose: a hub whose cards are eight
-   different colours is a fruit bowl, and a hub whose cards are
-   all one colour is a spreadsheet. Roughly two in three keeps the
-   section legible as a colour while giving a page enough variety
-   to look like a place rather than a table.
-
-   Green is what a thing falls back to and green is the site's
-   own, so it stays the colour this site is, which is the whole
-   reason `TURN` does not include it: adding it to the list of
-   variations would make the variation invisible half the time.
+   The colour is the section's own `MOSTLY`, which is high on
+   purpose: eight colours is a fruit bowl and one colour is a
+   spreadsheet. Green is the fallback and so is absent from
+   `TURN`: listing it would make the variation invisible.
    ============================================================ */
 
 /** The twelve drawings, and THE list of them.
-
     `next/components/card-art.tsx` holds the markup and
     `shared/nav.ts` names one per rail entry; both take the
-    vocabulary from here rather than writing it out again. It was
-    written out twice for one release, and a thirteenth subject
-    would have had to be added in three places with nothing
-    failing if it were added in two. */
+    vocabulary from here, so a thirteenth is one edit. */
 export const ART_SUBJECTS = [
   "chart", "coins", "sheets", "book", "pan", "ridge",
   "cards", "arch", "bubbles", "gauge", "calendar", "plate",
@@ -67,13 +33,9 @@ export const ART_SUBJECTS = [
 
 export type ArtSubject = typeof ART_SUBJECTS[number];
 
-/** What a word in a tag, a topic or a title means.
-
-    Both languages, because a Bangla piece is tagged in Bangla and
-    a picture chosen off an English word only would leave every
-    Bangla piece on the fallback. Matched as a substring on a
-    lowercased haystack, so `বিনিয়োগ` inside a longer word still
-    counts. */
+/** What a word in a tag, a topic or a title means. Both
+    languages, or every Bangla piece falls back. Matched as a
+    substring on a lowercased haystack. */
 const MEANS: Array<[ArtSubject, string[]]> = [
   ["chart", ["market", "stock", "share", "equity", "index", "trade", "price",
              "বাজার", "শেয়ার", "দাম", "সূচক"]],
@@ -100,25 +62,19 @@ const MEANS: Array<[ArtSubject, string[]]> = [
 ];
 
 /** What a piece of writing gets when nothing else decided. Six of
-    the twelve, and the four school subjects are deliberately not
-    among them: an English article about interest rates should
-    never come out wearing the Quranic arch. */
+    the twelve: the four school subjects are deliberately out, so
+    an article about interest rates cannot wear the Quranic
+    arch. */
 const PROSE: ArtSubject[] = ["book", "sheets", "chart", "coins", "ridge", "gauge"];
 
 /** WHAT A DESK'S PIECES ARE ALLOWED TO LOOK LIKE, with the desk's
     own subject repeated to weight it.
 
-    Falling straight through to the desk's subject was the first
-    version and it made a hub of twenty pieces twenty copies of
-    one drawing, which is worse than no drawing: a list where
-    every picture is identical is a list where the pictures carry
-    no information at all and cost twenty paints to say so.
-
-    A pool rather than a free hash, because the hash on its own
-    would put a candlestick chart on a recipe. Every entry in a
-    pool is a picture that would be FINE on that desk, and the
-    weighting is what keeps the desk recognisable: three in six
-    kitchen pieces wear the pan. */
+    A POOL rather than the desk's subject flat, which makes a hub
+    of twenty pieces twenty copies of one drawing; and a pool
+    rather than a free hash, which would put a candlestick chart
+    on a recipe. Every entry is a picture that would be fine on
+    that desk, and the weighting keeps the desk recognisable. */
 const POOLS: Record<string, ArtSubject[]> = {
   cooking: ["pan", "pan", "pan", "plate", "pan", "book"],
   travel: ["ridge", "ridge", "ridge", "arch", "ridge", "book"],
@@ -130,10 +86,8 @@ const POOLS: Record<string, ArtSubject[]> = {
 };
 
 /** The colours a card can turn to, as token names rather than
-    values, so a theme change moves them with everything else.
-    Green is absent on purpose: it is what the section falls back
-    to, so listing it here would make two thirds of the variation
-    invisible. */
+    values, so a theme change moves them too. Green is absent on
+    purpose: it is the fallback. */
 const TURN = ["teal", "blue", "violet", "plum", "rose", "gold"];
 
 /** How often a card keeps its section's own colour, out of 100. */
@@ -141,20 +95,15 @@ const MOSTLY = 66;
 
 /** FNV-1a, 32 bit, AND A FINALISER, which is not optional here.
 
-    `>>> 0` after each multiply keeps it in 32 bits: without it the
-    value drifts into the range where a double stops being exact
-    and the same slug hashes differently on different engines,
-    which is the one thing this must never do.
+    `>>> 0` after each multiply keeps it in 32 bits, or the value
+    drifts out of exact-double range and the same slug hashes
+    differently on different engines.
 
-    THE THREE LINES AFTER THE LOOP ARE THE BUG THIS FUNCTION WAS
-    WRITTEN WITHOUT. FNV-1a avalanches badly in its LOW bits, and
-    every use here is a `% n` against a small n, which reads
-    exactly those bits. Fourteen consecutive slugs picked index 0
-    or 5 out of a pool of six, so a hub of fourteen pieces drew
-    fourteen copies of one picture and the pool looked wrong. The
-    xorshift-multiply finaliser (the lowbias32 constants) spreads
-    the entropy down into the bits that are actually consulted;
-    without it this is a hash of the last character. */
+    THE THREE LINES AFTER THE LOOP ARE NOT DECORATION. FNV-1a
+    avalanches badly in its LOW bits and every use here is a `% n`
+    against a small n, which reads exactly those bits: without the
+    xorshift-multiply finaliser, fourteen consecutive slugs pick
+    index 0 or 5 out of a pool of six. */
 function hash(text: string): number {
   let h = 0x811c9dc5;
   for (let i = 0; i < text.length; i += 1) {
@@ -168,25 +117,18 @@ function hash(text: string): number {
 }
 
 /** A hash as a fraction of one, WHICH IS NOT THE SAME AS A
-    MODULO and is the second half of the same bug.
-
-    `h % 6` and `h % 100` both read the low end of the number, and
-    the low end is where a 32-bit hash is weakest even after a
-    finaliser: two in three came out as the section's own colour
-    where two in three was asked for, and it measured 72 per cent
-    over four thousand slugs, which is thirty times the noise.
-    Dividing by 2^32 reads the TOP bits, which are the strongest,
-    and it measures 66. */
+    MODULO. `h % 100` reads the low end, where a 32-bit hash is
+    weakest even after a finaliser: "two in three" measured 72 per
+    cent over four thousand slugs. Dividing by 2^32 reads the TOP
+    bits and measures 66. */
 const frac = (h: number) => h / 4294967296;
 
 /** One of `n`, evenly. */
 const pick = (h: number, n: number) => Math.floor(frac(h) * n);
 
-/** What the site knows about a thing that wants a picture.
-
-    Every field is optional and the function answers with any
-    subset, including none of them, because two of the callers
-    (a market headline, a search result) have a title and nothing
+/** What the site knows about a thing that wants a picture. Every
+    field is optional and any subset answers, because a market
+    headline and a search result have a title and nothing
     else. */
 export interface ArtSource {
   /** A stable identifier: a slug, a lesson id, a URL. This is
@@ -205,10 +147,8 @@ export interface ArtSource {
 }
 
 /** The subject named for a rail key, if the rail names one.
-
-    Passed in rather than imported so this file stays free of
-    `nav.ts`: the rail imports the TYPE from here, and a circular
-    import between the two would be a real one. */
+    PASSED IN rather than imported: `nav.ts` imports the type from
+    here, so importing it back would be a real cycle. */
 export type SubjectOfSection = (key: string) => ArtSubject | undefined;
 
 function fromWords(haystack: string): ArtSubject | undefined {

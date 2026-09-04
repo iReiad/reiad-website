@@ -1,36 +1,21 @@
 #!/usr/bin/env node
-/* ============================================================
-   progress.test.ts: the money school's ticks.
+/* The money school's ticks.
+     node next/progress.test.ts
+   No browser and no build: the module is `localStorage` and arithmetic.
 
-       node next/progress.test.ts
+   WHAT IT GUARDS ABOVE ALL: reading never writes. A `readSet` that treats
+   anything not in the caller's list as foreign and saves the survivors
+   needs that list to be the school's complete set, and no caller passes
+   it: a lesson page passes one id, a card passes one id, and the hub
+   passes one stage's lessons once per stage. So opening a lesson prunes a
+   reader's ticks to that lesson, and the hub lets its stages take turns
+   overwriting each other.
 
-   No browser and no build: the module is `localStorage` and
-   arithmetic, so a shim is enough and this can run beside the
-   other checks rather than only where Playwright does.
-
-   ---- what it is really guarding ----
-
-   One thing above all: READING NEVER WRITES.
-
-   `readSet` used to take the ids the caller had on screen, treat
-   anything else in storage as foreign, and save the survivors. It
-   needed that list to be the school's complete set, and not one
-   caller passed that: a lesson page passed one id, a card passed
-   one id, and the school hub passed one stage's lessons, once per
-   stage. So opening a lesson pruned a reader's ticks to that
-   lesson, and the hub let its stages take turns overwriting each
-   other.
-
-   Nothing caught it. Every existing check reads HTML or runs the
-   OTHER three schools' engine, which never had the fault, and the
-   percentage a reader saw was correct right up until the moment
-   it was wrong for good. With an account the empty set then went
-   up, because a device is a mirror and this was indistinguishable
-   from somebody un-ticking forty lessons by hand.
-
-   The first block below is that bug, written as the thing a
-   reader would notice.
-   ============================================================ */
+   Nothing else catches it: every other check reads HTML or runs the OTHER
+   three schools' engine, and the percentage is correct right up until it
+   is wrong for good. With an account the empty set then goes up, because
+   a device is a mirror. The first block below is that bug, written as the
+   thing a reader would notice. */
 
 /* A module, said out loud. Nothing imports this file and every
    import in it is dynamic, so there is no module syntax for node

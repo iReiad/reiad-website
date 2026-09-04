@@ -1,40 +1,25 @@
 #!/usr/bin/env node
-/* ============================================================
-   progress.test.ts: what the three schools' progress modules do.
+/* progress.test.ts: what the three schools' progress modules do.
 
        node aab/schools/progress.test.ts
 
-   `schools/progress.js` replaced three copies of the same 300
-   lines, one per school. The house rule for that kind of change
-   is in CLAUDE.md and it is not "it renders": a port is finished
-   when it does what the thing it replaced did, and the list of
-   what that was gets written down as a test. This is that list.
-
-   It is not a test of localStorage. Two things here are worth a
-   check every time, and both of them are the kind that breaks
-   silently:
+   Two things here break silently and are why this file exists:
 
      THE KEYS. `deutsch-read`, `english-day`, `quran-done` and
      the rest are in real browsers and in real accounts, and
-     `aab/sync.js` maps them by name. Renaming one does not move
-     somebody's ticks, it loses them, so every key each school
-     writes is asserted by name below. The engine is handed them
-     by the school precisely so that this test can read them off
-     the storage rather than off the source.
+     `aab/sync.js` maps them by name. Renaming one loses
+     somebody's ticks, so every key each school writes is
+     asserted BY NAME, read off the storage rather than off the
+     source.
 
-     THE SHAPES. Three hubs read `stats.live`, `stats.days`,
-     `stats.next`. A shared function that starts returning a
-     differently-shaped object breaks a page and no check that
-     reads HTML would see it, because the HTML is fine and the
-     number in it is a dash.
+     THE SHAPES. Three hubs read `stats.live`, `stats.days` and
+     `stats.next`; a differently shaped return breaks a page that
+     no check reading HTML would see, because the HTML is fine
+     and the number in it is a dash.
 
-   No browser is needed and none is started: localStorage and the
-   handful of DOM calls the module makes are stubbed below, which
-   is the whole of what it touches.
-
-   `aab/tsconfig.test.json` is what typechecks the annotations
-   below, and `scripts/check-types.ts` runs it.
-   ============================================================ */
+   No browser: localStorage and the few DOM calls are stubbed.
+   `aab/tsconfig.test.json` typechecks the annotations below and
+   `scripts/check-types.ts` runs it. */
 
 import { registerHooks } from "node:module";
 import { dirname, join } from "node:path";
@@ -70,16 +55,12 @@ const hasKeys = (name: string, obj: object, keys: string[]): void => ok(name,
   keys.every((k) => k in obj),
   `missing ${keys.filter((k) => !(k in obj)).join(", ")} from ${JSON.stringify(obj)}`);
 
-/* ------------------------------------------------------------
-   what the two modules under test are, as far as tsc can know
-
+/* What the two modules under test are, as far as tsc can know.
    Both are fetched from a computed address, `/${n}/progress.js`,
-   which is the address the browser fetches them from and is not a
-   specifier tsc can resolve. So the shapes below are this file's
-   claim about them, and `exported()` is what turns a claim into a
-   check: a school that renames one of these fails here, by name,
-   rather than as "not a function" thirty lines later.
-   ------------------------------------------------------------ */
+   which tsc cannot resolve, so the shapes below are a CLAIM and
+   `exported()` turns it into a check: a school that renames one
+   fails here by name rather than as "not a function" thirty
+   lines later. */
 
 /** One page of a school, and whether it has been written yet. */
 interface Lesson {

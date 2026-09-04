@@ -1,25 +1,16 @@
 #!/usr/bin/env node
-/* ============================================================
-   scorecard.test.ts, checks on the PD modelling pipeline.
+/* scorecard.test.ts: checks on the PD modelling pipeline.
 
        node aab/portfolio/scorecard.test.ts
 
-   A model that is wrong does not crash. It returns a number,
-   the number looks reasonable, and nothing anywhere says
-   otherwise. This file is the only thing standing between that
-   and the page, so nothing here checks a function against
-   itself.
-
-   Where an outside authority has a closed form, that is the
-   test. Logistic regression on a single binary predictor has to
-   return the log odds ratio of the two-by-two table, exactly,
-   and its standard error has to be Woolf's formula, exactly.
-   The area under the ROC curve is computed three separate ways
-   here, by trapezoid, by the Mann-Whitney statistic and through
-   DeLong's structural components, and all three have to agree.
-   A boosted tree's leaf value has to be the closed-form
-   minimiser of the penalised objective it claims to minimise.
-   ============================================================ */
+   A model that is wrong does not crash: it returns a plausible
+   number. So NOTHING HERE CHECKS A FUNCTION AGAINST ITSELF.
+   Logistic regression on one binary predictor must return the
+   log odds ratio of the two-by-two table exactly, with Woolf's
+   standard error; the AUC is computed three ways (trapezoid,
+   Mann-Whitney, DeLong's components) and all three must agree;
+   and a boosted leaf must be the closed-form minimiser of the
+   penalised objective it claims to minimise. */
 
 import {
   normCdf, twoSided, sigmoid, rng, solve, invert,

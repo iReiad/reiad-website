@@ -25,14 +25,11 @@
    a console warning and a full re-render. It is collected as an
    error here.
 
-   ---- the desk's lesson, carried ----
+   ---- the fixture ----
 
-   `archive/desk-research/threads.test.ts` drove the desk this
-   studio replaced. Its fixture answered every GET with the
-   reader's own rows, PostgREST-shaped, and the reason it was a
-   real test is that it never merged a jsonb column: a page that
-   dropped a source on every keystroke passed a kinder fake. The
-   same fixture is here.
+   It answers every GET with the reader's own rows, PostgREST-
+   shaped, and never merges a jsonb column: a page that dropped a
+   source on every keystroke would pass a kinder fake.
    ============================================================ */
 
 import { createServer } from "node:http";

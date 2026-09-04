@@ -1,50 +1,29 @@
 "use client";
 
-/* ============================================================
-   account/pref-swatch.tsx: what pressing this would look like.
+/* What pressing this would look like: every appearance option carries a
+   picture of itself, because a row of chips reading "Frost", "Paper",
+   "Soft", "Deep" asks a reader to imagine eleven materials from names.
 
-   The appearance panel used to be rows of chips reading "Frost",
-   "Paper", "Soft", "Deep", "Narrow", "Wide", which is a reader
-   being asked to imagine eleven materials and three blurs from
-   their names. Every option carries a picture of itself now.
+   THE PICTURE IS MADE OF THE SAME TOKENS THE SITE IS: a finish swatch is
+   a real piece of the material, painted from `--glass-fill`,
+   `--glass-grain` and `--glass-blur` exactly as the top bar is, so it
+   cannot drift from the thing it previews and a finish added tomorrow
+   draws here without this file learning its name. What makes that
+   possible is `[data-finish]` in `@layer tokens`: a finish is declared on
+   `:root[data-glass="x"]` AND on `[data-finish="x"]`, so an element can
+   wear a material the document is not wearing.
 
-   ---- the picture is made of the same tokens the site is ----
+   A SWATCH IS A WINDOW, NOT A SQUARE, because half of what a finish does
+   is to what is BEHIND it and a blur is only visible on an edge. So every
+   glass swatch is two layers: a lit ground with a hard edge across it,
+   and the material over that.
 
-   Not a screenshot, not an icon: the finish swatch is a real
-   piece of the material, painted from `--glass-fill`,
-   `--glass-grain` and `--glass-blur` exactly as the top bar is.
-   So it cannot drift from the thing it previews, and a finish
-   added tomorrow draws here without this file learning its name.
-
-   The one stylesheet change that made it possible is
-   `[data-finish]` in `@layer tokens`: a finish is declared on
-   `:root[data-glass="x"]` AND on `[data-finish="x"]`, so an
-   element can wear a material the document is not wearing.
-
-   ---- and a swatch is a window, not a square ----
-
-   Half of what a finish does is to what is BEHIND it. A face
-   over nothing shows a texture and no glass, and a blur over a
-   flat ground shows nothing at all, because a blur is only
-   visible on an edge. So every glass swatch is two layers: a lit
-   ground with a hard edge across it, and the material over that.
-
-   ---- three of them cannot be previewed from tokens ----
-
-   VEIL is drawn by mixing the alpha in by hand rather than by
-   setting `--glass-veil` on the swatch. `--glass-base` names that
-   token and is declared on `:root`, and a custom property
-   substitutes on the element it is declared on, so a scoped veil
-   would change nothing. The mix is the same arithmetic one step
-   later.
-
-   SOUND has no picture. The chip plays the cue instead, which is
-   the only honest preview of a sound, and the bars say which of
-   the two it is.
-
-   THEME is drawn rather than applied, because applying it would
-   mean three copies of the page.
-   ============================================================ */
+   Three cannot be previewed from tokens. VEIL is mixed by hand, because
+   `--glass-base` is declared on `:root` and a custom property substitutes
+   on the element it is declared on, so a scoped veil would change
+   nothing. SOUND plays the cue instead, which is the only honest preview
+   of a sound. THEME is drawn rather than applied, because applying it
+   would mean three copies of the page. */
 
 import type { CSSProperties, ReactNode } from "react";
 import type { Prefs } from "/prefs.js";

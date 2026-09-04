@@ -1,27 +1,14 @@
-/* ============================================================
-   scorecard.js: the dashboard around the PD pipeline.
+/* scorecard.js: the dashboard around the PD pipeline.
+   `scorecard.model.js` does the statistics; this turns it into
+   something you can argue with.
 
-   scorecard.model.js does the statistics and is checked on its
-   own; this turns it into something you can argue with.
-
-   Two things are worth knowing about how it renders.
-
-   A full refit is around two hundred milliseconds: two models,
-   an encoder, a calibration and every metric. That is too slow
-   for a slider that is being dragged, so the fit is memoised on
-   the settings that actually change it. The decline cut-off, the
-   one control a reader moves most, changes the decision and not
-   the model, so it reuses the fit and responds instantly.
-
-   The cross-validation refits everything ten times over and the
-   permutation importance scores the test set once per column.
-   Both are scheduled rather than run inline, and a new input
-   cancels the pending pass instead of queueing behind it.
-
-   Charts are hand-drawn inline SVG, no library, same as the rest
-   of the site.
-   ============================================================ */
-
+   A FULL REFIT IS ABOUT 200ms, too slow for a slider being
+   dragged, so the fit is memoised on the settings that change
+   it: the decline cut-off changes the decision rather than the
+   model and reuses the fit. Cross-validation and permutation
+   importance are scheduled rather than run inline, and a new
+   input cancels the pending pass instead of queueing behind it.
+   Charts are hand-drawn inline SVG. */
 import {
   SOURCE, SCHEMA, ROWS, CHECKS, DEFAULTS, DRIVERS, GROUPS,
   run, crossValidate, toCsv, confusion, fairness, costCurve,

@@ -1,32 +1,20 @@
 "use client";
 
-/* ============================================================
-   How far you are, per school, on the front page.
+/* How far you are, per school, on the front page.
 
-   ---- a count, and deliberately not a bar ----
+   A COUNT, AND DELIBERATELY NOT A BAR. A bar needs a denominator, and how
+   many lessons a school HAS comes down with that school's ladder: this
+   page reads no ladder, and reading four would make the one page whose
+   job is to be instant wait on four queries. A bar drawn against a
+   guessed number would disagree with the school's own hub two taps away.
+   The Android app's version makes the same choice.
 
-   A bar needs a denominator, and how many lessons a school HAS
-   comes down with that school's ladder: this page reads no
-   ladder, and reading four would make the one page whose whole
-   job is to be instant wait on four queries.
-
-   So it says the true thing it can say. A bar drawn against a
-   number this page guessed would be a bar that disagrees with the
-   school's own hub two taps away, which is the failure at the top
-   of `CLAUDE.md` wearing a progress bar. The Android app's
-   version of this widget makes the same choice for the same
-   reason, and the two agreeing is the point.
-
-   ---- and it subscribes ----
-
-   Anything drawing a number out of the progress keys subscribes,
-   and `subscribe()` listens for three things. The third,
-   `sync:done`, is the one that is easy to leave out and the one
-   that matters for a signed-in reader: `aab/sync.js` writes the
-   account's rows straight into localStorage, which fires neither
-   of the other two. Without it this is drawn against what storage
-   held BEFORE the exchange, and stays there.
-   ============================================================ */
+   AND IT SUBSCRIBES. `subscribe()` listens for three things, and the
+   third, `sync:done`, is the one easy to leave out and the one that
+   matters for a signed-in reader: `aab/sync.js` writes the account's rows
+   straight into localStorage, which fires neither of the other two, so
+   without it this is drawn against what storage held BEFORE the exchange
+   and stays there. */
 
 import { useSyncExternalStore } from "react";
 import { LADDER_SCHOOLS, NAV } from "@reiad/shared/nav";

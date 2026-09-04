@@ -1,47 +1,25 @@
-/* ============================================================
-   keep.test.ts: the Save and the note under a byline, in a
-   browser.
-
+/* The Save and the note under a byline, in a browser.
      node next/keep.test.ts
+   Needs Playwright and a browser; without either it says which and SKIPS,
+   and a skip is not a pass.
 
-   Needs Playwright and a browser. Without either it says which and
-   skips, and a skip is not a pass.
+   Nine things the row has to do, and a port is finished when it does what
+   the thing it replaced did rather than when it renders, so all nine are
+   written down below.
 
-   `archive/modules/keep.ts` was 220 lines and it did nine things: it
-   worked out which page it was on, put a row under the byline of
-   a piece and under the meta line of a lesson, drew nothing at
-   all signed out, drew nothing until the account had answered
-   about that page, wrote both controls through ONE row, kept the
-   Save from touching the note and the note from touching the
-   Save, said what it had done and then stopped saying it, said
-   what went wrong when a write failed, and appeared and
-   disappeared as somebody signed in and out without a reload.
-   `components/keep.tsx` is that now, and a port is finished when
-   it does what the thing it replaced did rather than when it
-   renders, so all nine are written down below.
+   WHY A BROWSER: none of it exists until React has hydrated and two
+   effects have run, and both routes that render it are dynamic, so
+   `interactive.test.ts` cannot serve either. `hydrate-fixture.ts` is the
+   smaller way in and hydrates the component against the server's own
+   markup, which is where this shape has gone wrong before.
 
-   ---- why a browser ----
-
-   None of it exists until React has hydrated and two effects have
-   run. Both routes that render it, a piece and a lesson, are
-   dynamic, so `interactive.test.ts` cannot serve either;
-   `hydrate-fixture.ts` is the smaller way in and hydrates the
-   component against the server's own markup, which is where this
-   shape has gone wrong before.
-
-   ---- and why Supabase is a Playwright route ----
-
-   `/account.js` and `/saved.js` are the REAL modules, served off
-   disk at the addresses the site serves them from, because
-   `runtimeModule()` is a real `import()` resolved against the
-   origin the page came from. So the session is a real session,
-   the upsert is the real upsert, and the only thing standing in
-   is Postgres: `library` is answered from memory, including the
-   trigger that takes a row away once both of its facts have gone.
-   What the browser SENT is kept, so a check can say that pressing
-   a button wrote something rather than only that the word on it
-   changed.
-   ============================================================ */
+   AND WHY SUPABASE IS A PLAYWRIGHT ROUTE: `/account.js` and `/saved.js`
+   are the REAL modules, served off disk at the addresses the site serves
+   them from, because `runtimeModule()` is a real `import()` resolved
+   against the page's origin. So the session and the upsert are real and
+   the only thing standing in is Postgres: `library` is answered from
+   memory, including the trigger that takes a row away once both of its
+   facts have gone. What the browser SENT is kept. */
 
 import { existsSync, readFileSync } from "node:fs";
 import { dirname, join } from "node:path";

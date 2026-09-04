@@ -111,12 +111,9 @@ async function fromD1(id: string, d1: SqliteD1, from: string) {
       (nothing)              content/schools.backup.json
       SCHOOL_DB=/tmp/x.db    that SQLite copy of D1
 
-    There is no longer a third one. `SCHOOL_FILES` built from the
-    `content/<stage>.js` modules, and those are in
-    `archive/schools/` now: a build from them would have undone
-    whatever was last saved in the Studio, which is the whole
-    reason they stopped being the source. Its only caller was
-    `schools-build.test.mjs`, archived beside them. */
+    There is no longer a third one: `SCHOOL_FILES` built from the
+    `content/<stage>.js` modules, and a build from them would have
+    undone whatever was last saved in the Studio. */
 export async function sourceFor(
   id: string, { sqlite = process.env.SCHOOL_DB }: { sqlite?: string } = {},
 ) {

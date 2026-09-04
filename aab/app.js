@@ -1,44 +1,19 @@
-/* ============================================================
-   app.ts, sitewide behaviour for reiad.co.uk  (ES module)
-
-   1. Theme        tri-state (system / light / dark), swapped
-                   inside a View Transition so it cross-fades.
-   2. Palette      Ctrl/Cmd+K search, built at runtime as a
-                   native <dialog>, pages don't need the markup,
-                   and any legacy <div id="palette"> is upgraded.
-   3. Shortcuts    "?" opens the sheet.
-   4. Speculation  <script type="speculationrules"> prerenders the
-                   link you're about to click, so navigation is
-                   instant.
-   What left, August 2026: the overlay menu, the Skills hover
-   panel, the measured header height and the kinetic headline.
-   All four belonged to a header bar this site no longer has; the
-   menu is a rail rendered on the server by
-   `next/components/sidebar.tsx`. See section 2b. The Insights
-   card list went the same way and section 5 says where to.
-
-   Loaded with <script type="module" src="/app.js">, so it defers
-   automatically and never blocks paint.
-   NOTE: root-absolute URLs need a web server, preview with
-   `python3 -m http.server`, not file://
-   ============================================================ */
+/* app.ts: sitewide behaviour. The theme (tri-state, swapped
+   inside a View Transition), the Ctrl/Cmd+K palette built at
+   runtime as a native <dialog>, the "?" shortcut sheet, and the
+   speculation rules that prerender a hovered link.
+   Loaded as `<script type="module">`, so it defers and never
+   blocks paint. Root-absolute URLs need a server, not file://. */
 import { searchIndex, SEARCH_GROUPS, COUNTS } from "/content.js";
 import { countView } from "/api.js";
 import { allPieces, pieceHref } from "/pieces.js";
 import { initAudience, audienceBoost } from "/audience.js";
 import { initTilt } from "/tilt.js";
 import { initStreak } from "/streak.js";
-/* Imported for its side effect, which is the point of it: reading
-   `reader-prefs` and putting the type scale and the measure on
-   <html>. Every Next.js route already does that before the first
-   paint in the boot script in `next/components/shell.tsx`, so on
-   a route this changes nothing and costs one no-op.
-
-   The six pages that are NOT routes are why it is here: the four
-   practice books, 404 and offline carry their own inline boot
-   script, and none of them knows about preferences. Without this
-   a reader who set Comfortable would find the four pages they
-   read offline were the only ones that ignored it. */
+/* Imported for its side effect: it reads `reader-prefs` and puts
+   the type scale and the measure on <html>. A no-op on a route,
+   where `shell.tsx`'s boot script has already done it, and the
+   only thing doing it on the pages that are files. */
 import "/prefs.js";
 /* ============================================================
    1. THEME
@@ -63,17 +38,10 @@ function applyTheme(mode) {
            screen. */
         ?.setAttribute("content", dark ? "#0E1512" : "#FCF9F4");
 }
-/* The stored choice first, the attribute second.
-
-   The attribute is written before the first paint by the boot
-   script at the top of every page and is the quicker of the two
-   to read, but it is the one that can go missing. A page rendered
-   by the Next.js Worker hydrates, and React restoring an element
-   to the way it rendered it takes an attribute a script added
-   with it. Reading the DOM then answered "system", which is not
-   what anybody chose, and the line below applies it: a reader who
-   had asked for light, on a laptop set to dark, watched the page
-   go dark a moment after it loaded, every time. */
+/* THE STORED CHOICE FIRST, the attribute second. Hydration
+   restores an element to the way React rendered it, which takes
+   an attribute a boot script added with it, so reading the DOM
+   answers "system" and the line below applies it. */
 function currentTheme() {
     try {
         const stored = localStorage.getItem(THEME_KEY);
@@ -316,25 +284,10 @@ function initPalette() {
             dialog.close();
     });
 }
-/* ============================================================
-   2b. THE `el` HELPER, and what used to be under it
-
-   A full-screen overlay menu, built here in JavaScript from
-   `content.js`, plus a hover panel under the header's "Skills"
-   link. Both are gone, with the header that held them: the menu
-   is a rail down the left of every page, rendered on the server
-   by `next/components/sidebar.tsx` out of `shared/nav.ts`, and
-   it is in the HTML before this file runs.
-
-   That is not a tidier arrangement, it is a different one. The
-   old menu did not exist for a reader with JavaScript off, did
-   not exist for a crawler, and was built from a list that had to
-   agree with the seven links written into every page's header.
-   None of those three problems has anywhere left to happen.
-
-   `el()` stays because the shortcuts sheet below still builds
-   itself, and so does the palette.
-   ============================================================ */
+/* 2b. The `el` helper, for the shortcuts sheet and the palette,
+   which are the two things on this page that build themselves.
+   The menu is a rail rendered on the server by
+   `next/components/sidebar.tsx` out of `shared/nav.ts`. */
 const el = (tag, props = {}, ...kids) => {
     const node = Object.assign(document.createElement(tag), props);
     node.append(...kids.filter((k) => Boolean(k)));
@@ -401,31 +354,12 @@ function initShortcuts() {
         }
     });
 }
-/* ============================================================
-   3c. THE NUMBERS THE SITE SAYS ABOUT ITSELF
-
-   Every [data-count] on the page is filled from COUNTS in
-   content.js, which counts the data rather than remembering it.
-
-   THE BUG THIS EXISTS FOR
-
-   The portfolio page said "four case studies" while seven
-   existed. The stock check was described as thirty-eight ratios
-   on one page, thirty-odd on four others and "more than
-   thirty-six" in Bangla, for a model that scores forty-four.
-   Every one of those was correct on the day it was typed. A
-   number in a sentence is a copy of the data, and copies drift.
-
-   The number in the markup stays as the fallback, so a reader
-   with no JavaScript still gets a sentence with a number in it
-   rather than a gap, and check-content.ts fails the build if
-   that fallback drifts too far from the truth.
-
-   Bangla digits inside a [lang="bn"] element, Latin everywhere
-   else: "৮টা ধাপ" in a Bangla sentence and "8 stages" in an
-   English one are the same fact, and a Bangla sentence with a
-   Latin numeral in the middle of it reads as a machine wrote it.
-   ============================================================ */
+/* 3c. THE NUMBERS THE SITE SAYS ABOUT ITSELF. Every
+   [data-count] is filled from COUNTS in content.js, which COUNTS
+   the data rather than remembering it. The number left in the
+   markup is the no-JavaScript fallback and `check-content.ts`
+   fails the build when it drifts. Bangla digits inside a
+   [lang="bn"] element, Latin everywhere else. */
 const BN_DIGITS = "০১২৩৪৫৬৭৮৯";
 const toBangla = (n) => String(n).replace(/\d/g, (d) => BN_DIGITS[Number(d)]);
 /* COUNTS is deliberately not annotated in `shared/content.ts`, so
@@ -479,27 +413,9 @@ function initSpeculation() {
     });
     document.head.append(rules);
 }
-/* ============================================================
-   5. THE INSIGHTS CARDS ARE GONE, AND SO IS THEIR HOST
-
-   `#article-cards` was filled here, from `pieces.js`, on the
-   Insights index and on the home page. Neither exists as a file
-   any more and neither route renders that id: the hub draws its
-   own cards on the server from `next/lib/hub.ts`, and the home
-   page has `<FeaturedCard>`, `<ContinueCard>` and `<PulseCard>`.
-   `archive/insights.html` and `archive/index.html` are the last
-   two documents on this site that carry the id, and nothing
-   serves them.
-
-   So this built cards into an element that is never on the page,
-   which costs nothing and reads as a live feature. What it took
-   with it: `piecesIn` and `pieceHref` off `pieces.js`, `tiltIn`
-   off `tilt.js` and `formatDate` off `content.js`, none of which
-   this file has another use for.
-
-   `allPieces()` stays and is imported below. It feeds the
-   palette, which is on every page.
-   ============================================================ */
+/* 5. No card list here. The hub draws its own on the server from
+   `next/lib/hub.ts` and the home page has its own components.
+   `allPieces()` stays: it feeds the palette, on every page. */
 /* ============================================================
    Small shared helpers (the Studio imports these)
    ============================================================ */

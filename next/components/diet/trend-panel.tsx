@@ -1,34 +1,21 @@
 "use client";
 
-/* ============================================================
-   diet/trend-panel.tsx: the long view.
+/* The long view. `DIET.md` sections 4, 10 and 28.
 
-   `DIET.md` sections 4, 10 and 28.
+   The chart is an SVG drawn from the rows: no library and no canvas, and
+   a chart that needs a megabyte of JavaScript is blank in the second
+   everybody judges a page in. Four rules, each a way charts lie:
 
-   ---- the chart is an SVG, drawn from the rows ----
-
-   No library and no canvas. The data is small, the shape is a
-   path, and a chart that needs a megabyte of JavaScript is a
-   chart that is blank in the second everybody judges a page in.
-
-   Four rules it obeys, and each is a way charts lie:
-
-   1. A TABLE UNDERNEATH, in a `<details>`, named by
-      `aria-describedby`. That is the whole of chart
-      accessibility and it takes ten lines. A trend line that
-      exists only as a path is a page a screen reader cannot read
-      at all.
-   2. NOTHING IS ENCODED IN COLOUR ALONE. The scale is thin and
-      faint, the trend is heavy, a settling window is a hatch,
-      and a marked day is a ring rather than a dot, with a column
-      of its own in the table.
-   3. THE Y AXIS DOES NOT START AT ZERO AND SAYS SO. A weight
-      chart starting at zero is unreadable; one with a clipped
-      axis and no label exaggerates every wobble.
-   4. The scale readings are drawn behind the trend, because
-      hiding them would make the tool look like it was flattering
-      the reader.
-   ============================================================ */
+   1. A TABLE UNDERNEATH, in a `<details>`, named by `aria-describedby`.
+      A trend line that exists only as a path is a page a screen reader
+      cannot read at all.
+   2. NOTHING IS ENCODED IN COLOUR ALONE: the scale is thin and faint, the
+      trend heavy, a settling window a hatch, and a marked day a ring with
+      a column of its own in the table.
+   3. THE Y AXIS DOES NOT START AT ZERO AND SAYS SO. Starting at zero is
+      unreadable; a clipped axis with no label exaggerates every wobble.
+   4. The scale readings are drawn behind the trend, because hiding them
+      would make the tool look like it was flattering the reader. */
 
 import { useEffect, useMemo, useState } from "react";
 import {
@@ -426,20 +413,18 @@ export function TrendPanel() {
   );
 }
 
-/** THREE FLAT WEEKS, AND WHICH OF THE FOUR IT IS.
+    /** THREE FLAT WEEKS, AND WHICH OF THE FOUR IT IS. Almost everything
+        here is a reason not to worry, and that is the point: a reader who
+        believes they have stalled and has not is the commonest reason
+        people stop. One of the four is not a stall at all, one is the
+        target having moved, one is a measurement problem said WITHOUT
+        accusing anybody, and the last is that some flat months have no
+        fix.
 
-    `DIET.md` section 4. Almost everything here is a reason not to
-    worry, and that is the point: a reader who believes they have
-    stalled and has not is the commonest reason people stop. One
-    of the four is not a stall at all, one is the target having
-    moved rather than the reader having failed, one is a
-    measurement problem said WITHOUT accusing anybody, and the
-    last is the honest answer that some flat months have no fix.
-
-    A tool that always has an answer is making some of them up,
-    so what is likeliest is offered as likeliest, everything else
-    consistent is listed beside it, and water is always listed
-    because it cannot be ruled out. */
+        A tool that always has an answer is making some of them up, so what
+        is likeliest is offered as likeliest, everything else consistent is
+        listed beside it, and water is always listed because it cannot be
+        ruled out. */
 function Stalled({ it }: { it: Stall }) {
   const WORDS: Record<StallKind, { en: string; bn: string; then: string; thenBn: string }> = {
     recomposition: {

@@ -1,51 +1,26 @@
 #!/usr/bin/env node
-/* ============================================================
-   courses.test.ts: the third-party course player, driven.
+/* courses.test.ts: the third-party course player, driven.
 
        node aab/courses.test.ts
 
-   The house rule in CLAUDE.md: a thing is finished when it does
-   what it was asked to do, not when it renders, and those two
-   look identical from the outside. This section was asked for
-   seven things, and each one is a heading below:
+   Seven things the section was asked for, one heading each: the
+   shelf, a programme's courses, the sidebar, ticks, the current
+   lesson, a per-module bar, mark-complete-and-continue, and the
+   deep link to the first incomplete lesson.
 
-     · a shelf of programmes, and one programme listing its own
-       courses
-     · a sidebar with every module and lesson in it
-     · a tick on the ones that are done
-     · the current lesson marked
-     · a percentage bar per module
-     · "mark complete and continue", going to the next lesson,
-       and to the module summary at the end of a module
-     · the course index deep-linking to the first incomplete
-       lesson
+   Two things it must NOT do. A PROGRAMME MAY NOT APPEAR IN A
+   TICK: the address gained a segment and `courses-read` did not,
+   so every id asserted below is `<course>/<module>/<lesson>`.
+   And no timer, no postMessage listener and no play/pause
+   detection near the Drive player, which exposes none of that.
 
-   And the thing the programme must NOT do: appear in a tick.
-   The address gained a segment and `courses-read` did not,
-   because renaming a key does not move somebody's ticks, it
-   loses them. Every id asserted below is `<course>/<module>/
-   <lesson>`, the same string as before the programme existed.
-
-   And the one thing it must NOT do, which is the reason the
-   section exists in the shape it does: no timer, no postMessage
-   listener and no play/pause detection anywhere near the Drive
-   player, because the Drive player exposes none of that and
-   anything pretending otherwise would be marking lessons complete
-   on a guess.
-
-   No browser and no network. `linkedom` is a DOM, `/account.js`
+   No browser and no network: `linkedom` is the DOM, `/account.js`
    and `fetch` are stubbed, and the catalogue is a fixture built
-   the same way `forBrowser()` builds the real one. It runs in
-   about a second.
-
-   Without linkedom installed it says so and skips, which is not a
-   pass. `npm install` at the root is the whole of the fix.
-
+   the way `forBrowser()` builds the real one. Without linkedom it
+   says so and SKIPS, which is not a pass.
    The fixture's shape is read out of `aab/src/courses.ts` rather
    than written out again, so a field the module gains is a field
-   this file has to supply. `aab/tsconfig.test.json` is what
-   typechecks that, and `scripts/check-types.ts` runs it.
-   ============================================================ */
+   this file has to supply. */
 
 import { registerHooks } from "node:module";
 import { readFileSync } from "node:fs";
@@ -123,16 +98,9 @@ function need<T>(found: T | null | undefined, what: string): T {
   return found;
 }
 
-/* ============================================================
-   The fixture
-
-   Two modules, one of them pending, so that every branch the page
-   has is reachable: a video lesson, a reading, a lesson with an
-   attachment, a module that ends, and a module with nothing in it.
-
-   Two programmes above them, because one programme cannot show
-   that a card, a bar or an address belongs to the right one.
-   ============================================================ */
+/* The fixture: two modules, one pending, so every branch is
+   reachable. TWO programmes above them, because one cannot show
+   that a card, a bar or an address belongs to the right one. */
 
 /** The programme every deep address below sits in, written once:
     it is four segments to a lesson now and a typo in one of them
@@ -601,17 +569,10 @@ console.log("\n--- the lesson page ---");
   ok("a transcript is offered",
     all(doc, ".course-files a").some((a) => a.textContent === "Transcript"));
 
-  /* ---- captions ----
-
-     Every video in this catalogue ships with two files beside it:
-     a `.en.txt`, which is the transcript and is offered as a link,
-     and a `.en.srt`, which is the same words with timings on them.
-     Only the first was carried through the importer for a while,
-     so the player had a captions button that turned nothing on.
-
-     They are two things, not one thing twice, and the test says
-     so: the transcript stays a link in the Files list and the
-     captions become a track inside the player. */
+  /* Captions. A video ships a `.en.txt` transcript and a
+     `.en.srt` with timings, and they are TWO THINGS: the
+     transcript stays a link in the Files list and the captions
+     become a `<track>` inside the player. */
   const track = doc.querySelector(".course-video video track");
   ok("a video carries a caption track", Boolean(track));
   ok("the track is captions, not chapters or metadata",
@@ -641,18 +602,10 @@ console.log("\n--- the lesson page ---");
       && !bare.querySelector(".course-video video track"));
   }
 
-  /* ---- when the pass is refused ----
-
-     The page said "that video could not be opened, if you have
-     just signed in, reload" for every failure there is. One of
-     them was a Worker with no Google credential, which was saying
-     so in the response, in a sentence naming the secret to set.
-     Reloading could never fix that, and the page recommended it,
-     so the real reason went unread for an afternoon while the
-     obvious suspects were checked instead.
-
-     The rule this asserts: whatever the server said is what the
-     reader is shown. */
+  /* When the pass is refused: WHATEVER THE SERVER SAID IS WHAT
+     THE READER IS SHOWN. A generic "try reloading" hides the one
+     failure that matters, a Worker with no Google credential,
+     which names the secret to set in its own response. */
   {
     const { document: sad } = await visit(
       `${AT}/week-one/welcome`, new Map(),

@@ -1,52 +1,25 @@
 "use client";
 
-/* ============================================================
-   courses/trail.tsx: the whole path, down to the lesson.
+/* The whole path, down to the lesson. Every other section's trail is the
+   server's; this one cannot be, because the catalogue is admin-only and
+   `check-courses.ts` refuses a value import of it into `next/`. The shape
+   is the URL's and is known at once; the names arrive with a fetch.
 
-   Every other section's trail is the server's, out of
-   `lib/crumbs.ts` and the one table in `lib/nav.ts`. This section
-   cannot be: the catalogue is admin-only, so a route here has no
-   names to render and `check-courses.ts` refuses a value import
-   of it into anything under `next/`. The shape is the URL's and
-   is known at once; the names arrive with a fetch.
+   A single `…` crumb rewritten with `last.textContent = text` after the
+   fetch is why this exists: that `<li>` holds the separator, the popover
+   of what else is at that level, and the label, so `textContent` replaces
+   all three with one text node and the arrow disappears, with the course
+   and module levels missing entirely.
 
-   ---- what this replaces ----
+   THE SHAPE IS KNOWN BEFORE ANYTHING IS FETCHED: `usePathname()` runs on
+   the server render of a client component too, so the full trail, with
+   every href and a name read out of each slug, is in the first HTML and
+   the fetch only upgrades the words.
 
-   A single `…` crumb, and `setHere()` in `aab/src/courses.ts`
-   rewriting it after the fetch with:
-
-       last.textContent = text;
-
-   That `<li>` holds three things: the separator, the popover of
-   what else is at that level, and the label. `textContent` on it
-   replaces all three with one text node, so the arrow in front of
-   the last crumb disappeared and the trail read
-
-       › দক্ষতা › কোর্সOptional familiar with data analytics…
-
-   with the course and module levels missing entirely, because
-   there was only ever one crumb to rename.
-
-   ---- the shape is known before anything is fetched ----
-
-   `usePathname()` runs on the server render of a client component
-   too, so the full trail, with every href and a name read out of
-   each slug, is in the first HTML. The fetch only upgrades the
-   words. A reader on a slow connection gets a complete, working
-   trail immediately rather than an ellipsis that may never
-   resolve.
-
-   ---- and each arrow opens its own level ----
-
-   The arrow before a crumb opens what else is at that level: the
-   other programmes, the other courses of this programme, the
-   other modules of this course, the other lessons of this module.
-   That is what the arrow already does for schools and stages, and
-   one fetch of the shelf plus one of
-   `/api/courses/<programme>/<course>` carries all four, so it
+   AND EACH ARROW OPENS ITS OWN LEVEL. One fetch of the shelf plus one of
+   `/api/courses/<programme>/<course>` carries all four levels, so it
    costs nothing extra to be the fastest way sideways through a
-   certificate rather than only the way back up.
-   ============================================================ */
+   certificate. */
 
 import { useEffect, useState } from "react";
 import { usePathname } from "next/navigation";

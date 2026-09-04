@@ -1,70 +1,36 @@
-/* ============================================================
-   _lib/food.ts: two public food databases, read as one shape.
+/* _lib/food.ts: two public food databases, read as one shape.
+   DIET.md section 12. Open Food Facts for packaged products and
+   barcodes, FoodData Central for the raw and generic foods.
 
-   `DIET.md` section 12. The diet tool does not build a food
-   database and does not pretend one is unnecessary, so a food is
-   SEARCHED: Open Food Facts for packaged products and barcodes,
-   FoodData Central for the raw and generic foods home cooking is
-   made of. This file is the whole of what the site knows about
-   either of them.
+   THE BROWSER NEVER CALLS EITHER ONE. Four reasons, all load
+   bearing: the CSP does not change, and `scripts/check-csp.ts`
+   would rightly fail either hostname written into a browser
+   module; two shapes become one in one place; a search for
+   "chicken" is the same search for everybody, so it is cached at
+   the edge and neither upstream sees this site's readers one at a
+   time; and the FoodData Central key stays a wrangler secret, with
+   `canReachFdc()` degrading honestly without it.
 
-   ---- the browser never calls either one ----
-
-   `/tools/diet` asks `/api/diet/food` and nothing else, exactly
-   as `/tools/live` asks `/api/broker/*` rather than Trading 212.
-   Four reasons and all four are load bearing:
-
-     the CSP does not change. `scripts/check-csp.ts` scans every
-     string in `aab/` and `next/` and would rightly fail either
-     hostname below written into a browser module.
-
-     one normaliser. Two sources with two shapes become one shape
-     in one place, rather than two parsers inside a component.
-
-     caching and rate limits. A search for "chicken" is the same
-     search for everybody, so it is cached at the edge and
-     neither upstream sees this site's readers one at a time.
-
-     the FoodData Central key stays a wrangler secret, and the
-     section degrades honestly without it the way the Drive
-     section does: `canReachFdc()` first, and a status endpoint
-     that says which sources are connected.
-
-   ---- everything is per 100 grams, and that is not a detail ----
-
-   Both upstreams state their numbers per 100 g and neither
-   states a portion this site could trust: Open Food Facts'
-   `serving_size` is free text somebody typed, "1 biscuit
-   (12.5g)" and "2 rotis", and mixing a per-serving row into a
+   EVERYTHING IS PER 100 GRAMS. Neither upstream states a portion
+   this site could trust: Open Food Facts' `serving_size` is free
+   text somebody typed, and mixing a per-serving row into a
    per-100 g list is how a log silently doubles. So `qty` is 100,
-   `unit` is "g" and `grams` is 100 on every hit here, and the
-   portion is the reader's to say. The curated portion library in
-   section 22 is the one that carries real portions.
+   `unit` is "g" and `grams` is 100 on every hit, and the portion
+   is the reader's to say.
 
    Macros are grams, minerals are MILLIGRAMS, energy is kcal. An
    upstream unit this file does not recognise leaves a GAP rather
    than a guess: a number in the wrong unit is worse than no
    number, because nothing about the page looks different.
 
-   ---- completeness, and why every result carries one ----
+   `source` is printed on every result and `completeness` says how
+   much of the record is there, because one upstream is
+   crowdsourced and the other is a laboratory and a reader has to
+   tell them apart at a glance.
 
-   Open Food Facts is crowdsourced, so half its rows are a name,
-   a barcode and a calorie count. FoodData Central is a
-   laboratory. Both are useful and a reader has to be able to
-   tell them apart at a glance, so `source` is printed on every
-   result and `completeness` says how much of the record is
-   actually there. `NUTRIENT_FIELDS` is the list it counts and it
-   is exported, because `food.test.ts` asserts the arithmetic
-   rather than trusting it.
-
-   ---- what is NOT here ----
-
-   No reader's data, ever. This module takes a query and answers
-   with somebody else's public rows: it holds no bearer, writes
-   nothing and reads nothing belonging to an account, which is
-   what makes its answers safe to keep in a cache everybody
-   shares.
-   ============================================================ */
+   NO READER'S DATA, EVER. This holds no bearer, writes nothing and
+   reads nothing belonging to an account, which is what makes its
+   answers safe to keep in a cache everybody shares. */
 
 import { barcodeOf, isBarcode } from "../../shared/foods.ts";
 import type { Place } from "../../shared/diet.ts";
@@ -81,12 +47,9 @@ export { isBarcode };
     database is the only thing that makes either usable. */
 export type FoodSource = "off" | "fdc";
 
-/** One food, as both upstreams are read into it.
-
-    `id` is `<source>:<upstream id>` so that a row copied into a
-    reader's log can be traced back to where it came from, which
-    is what section 12 means by a found food being copied rather
-    than referenced. */
+/** One food, as both upstreams are read into it. `id` is
+    `<source>:<upstream id>` so a row copied into a reader's log
+    can be traced back to where it came from. */
 export interface FoodHit {
   id: string;
   source: FoodSource;
@@ -116,15 +79,12 @@ export interface FoodHit {
   completeness: number;
 }
 
-/** What one upstream came back with.
-
-    Four answers because they are four different sentences on the
-    page, and collapsing any pair of them tells a reader
-    something untrue. `ok` with no hits is "this database does
-    not have it"; `failed` is "could not ask"; `unconfigured` is
-    "there is no key for this one"; and `skipped` is "the other
-    one answered, so this was never asked", which the barcode
-    route is the only caller of. */
+/** What one upstream came back with. Four answers because they are
+    four different sentences on the page, and collapsing any pair
+    tells a reader something untrue: `ok` with no hits is "this
+    database does not have it"; `failed` is "could not ask";
+    `unconfigured` is "there is no key for this one"; `skipped` is
+    "the other one answered". */
 export type SourceState = "ok" | "failed" | "unconfigured" | "skipped";
 
 export interface UpstreamAnswer {
@@ -174,12 +134,11 @@ const obj = (value: unknown): Record<string, unknown> =>
 const text = (value: unknown): string =>
   (typeof value === "string" ? value.trim() : "");
 
-/** A finite number, or nothing.
-
-    Numeric STRINGS are accepted because Open Food Facts is typed
-    in by hand and a field that came back as "12.5" is a real
-    figure a stricter reader would drop. Anything else, including
-    an empty string and a NaN, is a gap. */
+/** A finite number, or nothing. Numeric STRINGS are accepted
+    because Open Food Facts is typed in by hand and a field that
+    came back as "12.5" is a real figure a stricter reader would
+    drop. Anything else, an empty string and a NaN included, is a
+    gap. */
 const num = (value: unknown): number | undefined => {
   if (typeof value === "number") return Number.isFinite(value) ? value : undefined;
   if (typeof value === "string" && value.trim() !== "") {
@@ -201,16 +160,14 @@ const maybeRound = (value: number | undefined, places: number): number | undefin
 
 /* ---------- completeness ---------- */
 
-/** The nine fields a complete record carries.
+/** The nine fields a complete record carries. Exported because
+    `food.test.ts` asserts the arithmetic against it, and because a
+    tenth field added to `FoodHit` without being added here would
+    quietly stop counting.
 
-    Exported because `food.test.ts` asserts the arithmetic
-    against it, and because a tenth field added to `FoodHit`
-    without being added here would quietly stop counting.
-
-    `kcal` is one of the nine even though every hit has one: a
-    row with calories and nothing else scores 1 of 9 rather than
-    0, because it is the one number the log actually needs and a
-    zero would say the row is useless when it is not. */
+    `kcal` is one of the nine even though every hit has one: a row
+    with calories and nothing else scores 1 of 9 rather than 0,
+    because it is the one number the log needs. */
 export const NUTRIENT_FIELDS = [
   "kcal", "protein", "carbs", "fat", "fibre",
   "sodium", "iron", "calcium", "satfat",
@@ -280,12 +237,10 @@ const kcalFromKj = (kj: number | undefined): number | undefined =>
 const mgFromG = (grams: number | undefined): number | undefined =>
   (grams === undefined ? undefined : grams * 1000);
 
-/** One Open Food Facts product, or nothing.
-
-    Three ways a row is dropped and each one is a row a reader
-    could not use: no id to trace it by, no name to read, and no
-    calories to log. A row with `energy-kcal_100g: 0` is kept:
-    water is a real food and zero is a real answer. */
+/** One Open Food Facts product, or nothing. Three ways a row is
+    dropped and each is a row a reader could not use: no id to
+    trace it by, no name to read, no calories to log. A row with
+    `energy-kcal_100g: 0` is kept: water is a real food. */
 export function offHit(product: unknown): FoodHit | null {
   const p = obj(product);
   const n = obj(p.nutriments);
@@ -337,14 +292,11 @@ const soldIn = (product: unknown, place: Place): boolean => {
 };
 
 /**
- * A search answer, read into hits, the reader's own country
- * first.
+ * A search answer, read into hits, the reader's own country first.
  *
  * `place` ORDERS and never filters. Open Food Facts' Bangladeshi
- * coverage is thin, so filtering to a country would empty the
- * list for exactly the reader who most needs a result, and a
- * search that finds nothing teaches nobody that the shelf is
- * somewhere else.
+ * coverage is thin, so filtering to a country would empty the list
+ * for exactly the reader who most needs a result.
  */
 export function offHits(payload: unknown, place: Place): FoodHit[] {
   const products = obj(payload).products;
@@ -363,10 +315,9 @@ export function offHits(payload: unknown, place: Place): FoodHit[] {
 /* ---------- FoodData Central ----------
 
    A nutrient is named by NUMBER rather than by name, because the
-   names carry their own commentary ("Fatty acids, total
-   saturated") and are the half most likely to be reworded.
-   `unitName` is read beside every one of them: the same nutrient
-   comes back in G on one row and MG on the next. */
+   names carry their own commentary and are the half most likely to
+   be reworded. `unitName` is read beside every one: the same
+   nutrient comes back in G on one row and MG on the next. */
 
 const FDC = {
   kcal: "208",
@@ -480,18 +431,16 @@ export type QueryKind = "barcode" | "packaged" | "generic";
 /**
  * What the reader appears to be looking for.
  *
- * A one-word brand ("Nutella") cannot be told from a one-word
- * food ("chicken") by looking at the string, and this does not
- * try. What it reads are the marks a generic food name does not
- * carry: a trademark sign, an ampersand, a possessive, and a
- * quantity off a packet ("500g", "330 ml"). A capital letter
- * after the first character catches the rest of the multi-word
- * brands, and survives a phone that capitalises the first letter
- * of everything.
+ * A one-word brand ("Nutella") cannot be told from a one-word food
+ * ("chicken") by looking at the string, and this does not try.
+ * What it reads are the marks a generic food name does not carry:
+ * a trademark sign, an ampersand, a possessive, a quantity off a
+ * packet. A capital letter after the first character catches the
+ * multi-word brands and survives a phone that capitalises the
+ * first letter of everything.
  *
- * A keyboard that capitalises every word will read "Basmati
- * Rice" as packaged, and that costs nothing, because this
- * decides an ORDER and never a filter: both sources are in the
+ * It decides an ORDER and never a filter, so a keyboard that
+ * capitalises every word costs nothing: both sources are in the
  * answer either way, each with its own name on it.
  */
 export function queryKind(query: string): QueryKind {
@@ -508,16 +457,13 @@ export function queryKind(query: string): QueryKind {
  * The two blocks, in the order this query deserves.
  *
  * FoodData Central leads a generic query because it is a
- * government laboratory: "chicken breast" wants a measured
- * composition, not whichever supermarket own-brand somebody
- * uploaded first. Open Food Facts leads a barcode or a brand
- * because it is the one of the two keyed on barcodes and the one
- * that holds British supermarket products at all.
+ * government laboratory. Open Food Facts leads a barcode or a
+ * brand because it is the one keyed on barcodes and the one that
+ * holds British supermarket products at all.
  *
- * Inside a block the upstream's own order is kept. That order is
- * its relevance ranking, and re-sorting by completeness would
- * put a well filled irrelevant row above the thing the reader
- * typed.
+ * Inside a block the upstream's own order is kept: that order is
+ * its relevance ranking, and re-sorting by completeness would put
+ * a well filled irrelevant row above the thing the reader typed.
  */
 export function merge(off: FoodHit[], fdc: FoodHit[], kind: QueryKind): FoodHit[] {
   const [first, second] = kind === "generic" ? [fdc, off] : [off, fdc];
@@ -540,8 +486,8 @@ export function merge(off: FoodHit[], fdc: FoodHit[], kind: QueryKind): FoodHit[
 /* ---------- asking ----------
 
    `{ status, data }` and never a throw, the same shape
-   `_lib/broker.ts` answers with and for the same reason: a 404
-   and a timeout are answers a caller has to tell apart, not
+   `_lib/broker.ts` answers with and for the same reason: a 404 and
+   a timeout are answers a caller has to tell apart, not
    exceptions. Status 0 is "did not answer at all". */
 
 interface Answer {
@@ -574,10 +520,10 @@ export async function searchOff(query: string, place: Place): Promise<UpstreamAn
 /**
  * One product by barcode.
  *
- * A 404 here is an ANSWER and not a failure: Open Food Facts
- * says 404 for a barcode it has never seen, and reporting that
- * as a dead upstream would put the wrong sentence on the page
- * and hide a working database behind it.
+ * A 404 here is an ANSWER and not a failure: Open Food Facts says
+ * 404 for a barcode it has never seen, and reporting that as a
+ * dead upstream would hide a working database behind the wrong
+ * sentence.
  */
 export async function lookupOff(code: string): Promise<UpstreamAnswer> {
   const answer = await ask(`${OFF_PRODUCT}/${encodeURIComponent(code)}.json`);
@@ -599,9 +545,7 @@ export async function lookupOff(code: string): Promise<UpstreamAnswer> {
  * The key rides in the `X-Api-Key` HEADER. The documented
  * `&api_key=` query parameter works too and is deliberately not
  * used: a credential in a query string is a credential in every
- * proxy log and in every cache key that is ever built out of a
- * URL, which is the argument `CLAUDE.md` makes about the course
- * player's ticket.
+ * proxy log and in every cache key built out of a URL.
  */
 export async function searchFdc(env: FdcEnv, query: string): Promise<UpstreamAnswer> {
   if (!canReachFdc(env)) return { state: "unconfigured", hits: [] };
@@ -614,9 +558,9 @@ export async function searchFdc(env: FdcEnv, query: string): Promise<UpstreamAns
 
 /**
  * A barcode in FoodData Central, which keys on `gtinUpc` rather
- * than answering a lookup: the search endpoint matches it, so
- * this is a search with the digits as the query and the rows
- * that do not carry that exact barcode dropped.
+ * than answering a lookup: the search endpoint matches it, so this
+ * is a search with the digits as the query and the rows that do
+ * not carry that exact barcode dropped.
  */
 export async function lookupFdc(env: FdcEnv, code: string): Promise<UpstreamAnswer> {
   const answer = await searchFdc(env, code);

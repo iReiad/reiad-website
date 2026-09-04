@@ -1,62 +1,27 @@
 "use client";
 
-/* ============================================================
-   diet/recipe-panel.tsx: build the dish once, then a portion of
-   it is one tap for ever.
+/* Build the dish once, then a portion of it is one tap for ever.
+   `DIET.md` sections 13 and 14: a food diary is abandoned because of
+   FRICTION rather than motivation.
 
-   `DIET.md` section 13, and the argument under the whole of it:
-   a food diary is abandoned because of FRICTION rather than
-   motivation. A home-cooked dinner is six searches and six
-   amounts the first time and it should be one tap the tenth.
+   THE INGREDIENT PICKER IS THE FOOD PICKER. `loggedFrom()` returns the
+   shape this list holds, so there is nothing to adapt and no second
+   search to keep in step.
 
-   ---- the ingredient picker is the food picker ----
+   THE TOTAL IS A FLOOR, NEVER A FIGURE: `next/lib/recipes.ts` is the
+   arithmetic and what this file does is SAY it. An ingredient stating no
+   energy is named, the totals it belongs to read "at least", and a reader
+   is never shown a confident number for a pot missing a third of itself.
 
-   `food-picker.tsx` already searches this site's own portion
-   library and the two open databases through the Worker, prints
-   the source on every result, and makes the reader say HOW MUCH
-   before anything is written. An ingredient is exactly that:
-   `loggedFrom()` returns the shape this list holds, so there is
-   nothing to adapt and there is no second search to keep in
-   step.
+   A saved recipe is one `diet_foods` row with its ingredients in `parts`
+   and its yield in `serves`. Logging it writes ONE `diet_entries` row
+   carrying its own numbers, so editing the recipe later does not rewrite
+   what was eaten last month.
 
-   ---- and the total is a floor, never a figure ----
-
-   `next/lib/recipes.ts` is the arithmetic and its header is the
-   argument. What this file has to do is SAY it: an ingredient
-   that states no energy is named, the totals it belongs to read
-   "at least", and a reader is never shown a confident number
-   for a pot that is missing a third of itself. An error in the
-   flattering direction is the failure this whole tool is built
-   around.
-
-   ---- a saved recipe is a row, and a logged portion is not ----
-
-   The recipe is one `diet_foods` row with its ingredients in
-   `parts` and its yield in `serves`. Logging it writes ONE
-   `diet_entries` row carrying its own numbers, so editing the
-   recipe later does not rewrite what was eaten last month.
-
-   ---- and a pot is the same builder with a different answer ----
-
-   `DIET.md` section 14. A pot of curry for five and "I had some"
-   is not a portion, and forcing it into one is why people stop
-   logging in week two. So the one builder below asks a second
-   question, which is the whole difference: is this a dish you
-   will cook again, or one pot for this week?
-
-   A recipe answers with a YIELD and hands out portions for ever.
-   A pot answers with WHO ATE, or with nothing at all, and hands
-   out a SHARE: a half, a third, two ladles out of ten. It sits
-   on the hob for a week so the same dish tomorrow is two taps,
-   and a household of four eating one curry is four different
-   intakes and one piece of data entry, which is the only version
-   of this that anybody sustains.
-
-   TWO SECTIONS AND ONE BUILDER, deliberately. Three copies of
-   the same twelve lines is the failure this repository keeps
-   naming, and the difference between the two is one field, one
-   verb and how much you say you took.
-   ============================================================ */
+   TWO SECTIONS AND ONE BUILDER, deliberately: the difference between a
+   recipe and a pot is one field, one verb and how much you say you took.
+   A recipe answers with a YIELD and hands out portions for ever; a pot
+   answers with who ate, or with nothing, and hands out a SHARE. */
 
 import { useEffect, useMemo, useState } from "react";
 import type { Entry } from "@reiad/shared/diet";
@@ -320,15 +285,11 @@ export function RecipePanel() {
   const save = async (): Promise<void> => {
     if (!w || !buildable || !draft.en) return;
     setSaving("saving");
-    /* THE ROW STATES ITS FIGURES FOR THE WHOLE POT, which is
-       what `qty` and `unit` mean everywhere else in this tool:
-       the numbers are for `qty` of `unit`. Anything reading this
-       row later, including the Android app, can then scale it
-       with the same `scaleTo()` a library row goes through.
-
-       A recipe states them for its yield in portions and a pot
-       states them for one pot, which is the only honest reading
-       of a dish nobody cut into a fixed number of parts. */
+        /* THE ROW STATES ITS FIGURES FOR THE WHOLE POT, which is what
+           `qty` and `unit` mean everywhere else in this tool, so anything
+           reading the row later, the Android app included, scales it with
+           the same `scaleTo()` a library row goes through. A recipe states
+           them for its yield in portions and a pot for one pot. */
     const asRecipe = kind === "recipe" && made.food !== null;
     const figures = asRecipe ? made.food : whole;
     /* `OwnFood` does not name the three price columns yet, and
@@ -348,16 +309,13 @@ export function RecipePanel() {
         ? potMacros(made.food)
         : whole?.macros ?? {},
       source: kind,
-      /* Counted rather than remembered: what is on the page comes
-         from the log, and these two are the row's own cache of it
-         so that something reading `diet_foods` alone can order by
-         them without fetching a year of entries. A recipe has
-         been cooked no times on the day it is written.
+          /* Counted rather than remembered: what is on the page comes from
+             the log, and these two are the row's own cache of it so
+             something reading `diet_foods` alone can order by them.
 
-         ON A POT `last_used` IS THE DAY IT WENT ON THE HOB, and
-         then the day it was last taken from. Both answer the one
-         question the pot list asks, which is whether this is
-         still somebody's dinner. */
+             ON A POT `last_used` IS THE DAY IT WENT ON THE HOB, and then
+             the day it was last taken from: both answer whether this is
+             still somebody's dinner. */
       uses: 0,
       last_used: kind === "pot" ? today : undefined,
       /* ALL THREE OR NONE, and none wherever one part carried no
@@ -373,15 +331,13 @@ export function RecipePanel() {
     setRows(await getOwnFoods(w));
   };
 
-  /**
-   * One entry, out of a dish, dated now.
-   *
-   * ONE WRITER FOR BOTH, because a portion of a recipe and a
-   * share of a pot differ in the row they produce and in nothing
-   * that happens afterwards. `row` is null wherever the
-   * arithmetic refused, and a refusal writes nothing rather than
-   * a guess: the pot lists say why, above the button.
-   */
+      /**
+       * One entry, out of a dish, dated now. ONE WRITER FOR BOTH, because
+       * a portion of a recipe and a share of a pot differ in the row they
+       * produce and in nothing afterwards. `row` is null wherever the
+       * arithmetic refused, and a refusal writes nothing rather than a
+       * guess: the pot lists say why, above the button.
+       */
   const write = async (dish: Dish, row: Omit<Entry, "date"> | null): Promise<void> => {
     const id = dish.id;
     if (!w || !id || !row) return;

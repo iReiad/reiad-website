@@ -1,28 +1,13 @@
 /* ============================================================
-   look.ts: what a rendered piece looks like, per section.
+   look.ts: what a rendered piece looks like, per section. The
+   three reading sections share a page shell and differ in a
+   handful of small ways: the mount, the class on the body, the
+   card a piece without a photo falls back to, how "8 min read" is
+   written, and the line at the foot.
 
-   The three reading sections share a page shell and differ in a
-   handful of small ways: the mount they are served at, the class
-   on the body, the card a piece without a photo falls back to, how
-   "8 min read" is written, and the line at the foot.
-
-   ---- why this is its own file ----
-
-   It was written three times. `functions/insights/[slug].ts` had
-   it as `LOOK`, `archive/studio.js` had it as `PAGE_STYLE`, and the
-   comment above each one said "change one, change both". That
-   instruction is a promise a comment cannot keep: the two had
-   already drifted once on the disclaimer's punctuation, which is
-   invisible until you diff two rendered pages.
-
-   Stage 10 of archive/TRANSITION.md makes it worse by adding a fourth
-   reader, the Next.js route, whose whole acceptance test is that
-   it renders the same head tags as the Worker does. Two copies
-   cannot pass that test for long, so there is one.
-
-   Nothing in here touches a database or a request. It is a table
-   and four functions over it, so the Worker, the Next route and a
-   test can all read it.
+   ONE TABLE, because the Worker and the Next route have to render
+   the same head tags and two copies drift. Nothing here touches a
+   database or a request, so a test can read it too.
    ============================================================ */
 
 export interface Look {
@@ -139,17 +124,12 @@ export const dateLabel = (article: Pick<Article, "lang" | "published_at">): stri
 
 /** One stylesheet, one request, every face this site uses.
  *
- * `Caveat` is the newest and the narrowest: it is loaded for
- * exactly one thing, which is WHAT A READER WROTE THEMSELVES. The
- * note on a routine day and the line beside "something I chose",
- * and nothing else, ever. Handwriting everywhere is a theme;
- * handwriting on the one handwritten thing is the difference
- * between a page that looks like a notebook and a page that has
- * your writing in it.
- *
- * One weight of it, because a handwritten note has one. The
- * fallback in `--font-hand` is the serif rather than the sans, so
- * a blocked webfont is a quieter page rather than a broken one.
+ * `Caveat` is loaded for exactly one thing: WHAT A READER WROTE
+ * THEMSELVES, which is the note on a routine day and the line
+ * beside "something I chose", and nothing else ever. One weight,
+ * because a handwritten note has one, and the fallback in
+ * `--font-hand` is the serif so a blocked webfont is a quieter
+ * page rather than a broken one.
  */
 export const FONTS =
   "https://fonts.googleapis.com/css2?family=Spectral:wght@400;500;600"

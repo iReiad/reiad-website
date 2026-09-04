@@ -1,54 +1,27 @@
-/* ============================================================
-   sync.test.ts: progress belongs to the account.
+/* sync.test.ts: progress belongs to the account.
 
      node aab/sync.test.ts
 
-   THE SENTENCE THIS HOLDS `aab/src/sync.ts` TO:
+   THE SENTENCE THIS HOLDS `aab/src/sync.ts` TO: the account is
+   the record, and nothing is ever pulled out of the browser into
+   it. `CLAUDE.md` states it as four states and this is one
+   section per state, plus the three edges that turned out to
+   matter.
 
-     THE ACCOUNT IS THE RECORD, AND NOTHING IS EVER PULLED OUT OF
-     THE BROWSER INTO IT.
+   IT STARTS ITS OWN SERVER, and finds Playwright, which is a
+   devDependency of `app/` rather than of the root. A test that
+   needs a server somebody starts by hand is a test that does not
+   run, and this one missed a real regression that way. A skip
+   names which of the two ways it failed to start.
 
-   Everything below follows from it. `CLAUDE.md` states the same
-   thing as four states, and this file is one section per state
-   plus the three edges that turned out to matter.
+   The page is served with the Content-Security-Policy READ OUT OF
+   `aab/_headers`: a harness that drops the policy cannot tell you
+   whether a request was made or refused, and every exchange here
+   is a `fetch` to Supabase under `connect-src`.
 
-   ---- why it starts its own server ----
-
-   It did not. It asked for one on :8899, printed
-   `cd aab && python3 -m http.server 8899` and exited 0 when there
-   was none, which is every run nobody had read that line before.
-   A test that needs a server somebody starts by hand is a test
-   that does not run, and this one did not run for long enough to
-   miss a real regression: `refreshUser()` began writing a null
-   user over a live session on 19 August 2026, and the four
-   failures and the uncaught throw that followed sat unseen
-   because the file skipped.
-
-   The same went for Playwright. It asked for the bare specifier,
-   which resolves from the root, and Playwright is a devDependency
-   of `app/`. Both are found now, and a skip names which of the
-   two ways it failed to start.
-
-   ---- and why the policy is real ----
-
-   The page is served with the Content-Security-Policy read out of
-   `aab/_headers` rather than a copy of it. A harness that drops
-   the policy cannot tell you whether a request was made or
-   refused, and every exchange here is a `fetch` to Supabase under
-   `connect-src`.
-
-   ---- /404.html, and not the home page ----
-
-   The home page has not been a file in `aab/` since Stage 11.5, so
-   a static server over this directory answers it 404. `404.html`
-   is one of the two pages that are not routes and cannot be, it
-   loads `/app.js` like every other page, and `app.js` imports
-   `signin.js`, which imports `sync.js` and starts it. That is the
-   whole of what these checks need a page for.
-
-   `aab/tsconfig.test.json` typechecks the annotations below and
-   `scripts/check-types.ts` runs it.
-   ============================================================ */
+   It drives `/404.html`, not the home page, which is not a file
+   in `aab/`. `404.html` loads `/app.js`, which imports
+   `signin.js`, which imports `sync.js` and starts it. */
 
 import { createServer } from "node:http";
 import { readFile, stat } from "node:fs/promises";
@@ -381,9 +354,9 @@ console.log("\nsigning in on a browser that already has progress");
      records one. */
   check("nothing the browser already held went up",
     [...f.state.rows.keys()].includes("deutsch-read"), false);
-  /* `archive/first-sync.js` is the dialog this replaced. It had to
-     ask, once per account per browser, because it treated the two
-     as equal copies. Nothing has to be asked now. */
+  /* The version this replaced asked, once per account per
+     browser, because it treated a browser and an account as equal
+     copies. Nothing has to be asked now. */
   check("nothing was asked of the reader", await f.p.locator("dialog.first-sync").count(), 0);
   noErrors(f);
   await f.ctx.close();
@@ -488,24 +461,13 @@ console.log("\na tick made on another device");
   await f.ctx.close();
 }
 
-/* ============================================================
-   7b. a MAP is reconciled entry by entry, not taken whole
-
-   `where-read`, `tools-used` and the two practice books are maps
-   rather than one value, and a `mark` would take the newer whole
-   object: a phone that read one article would throw away every
-   position a laptop had, and the sentences somebody typed into
-   the German book on one machine would be gone the first time
-   they opened it on another. Nothing would look broken. They
-   would simply find themselves back at the top of pieces they
-   were half way through, and an empty box where they had
-   written.
-
-   Both halves are checked here: the union, and the tiebreak when
-   the SAME entry was written on both. The practice book is the
-   one where the entry carries no stamp of its own, so the map's
-   own `ts` dates it: see `stamp()` in `aab/src/sync.ts`.
-   ============================================================ */
+/* 7b. A MAP IS RECONCILED ENTRY BY ENTRY, never taken whole: a
+   `mark` on `where-read` or a practice book would take the newer
+   whole object, so a phone that read one article throws away
+   every position a laptop had. Both halves are checked, the union
+   and the tiebreak when the SAME entry was written on both. A
+   practice book entry carries no stamp of its own, so the map's
+   `ts` dates it: see `stamp()` in `aab/src/sync.ts`. */
 console.log("\na piece read on one device and a page written on another");
 {
   const f = await make({
@@ -522,15 +484,11 @@ console.log("\na piece read on one device and a page written on another");
   await open(f);
 
   /* NOW THE PHONE READS A THIRD PIECE while this device reads a
-     second, and neither has seen the other's. That is the shape
-     that separates the two rules, and the first draft of this
-     test did not have it: after the first exchange both sides
-     already knew about `a`, so a `mark` taking the device's whole
-     map kept everything and passed. A test that passes under the
-     rule it was written to rule out is not a test.
-
-     The account's stamp is deliberately OLDER, so a `mark` would
-     take this device's map whole and drop `c` and `tag-3`. */
+     second, and neither has seen the other's: that is the shape
+     that separates the two rules, and without it a `mark` keeps
+     everything and passes. The account's stamp is deliberately
+     OLDER, so a `mark` would take this device's map whole and
+     drop `c` and `tag-3`. */
   f.state.rows.set("where-read", {
     key: "where-read",
     value: {
@@ -606,19 +564,12 @@ console.log("\nthe same page, written on two devices");
   await f.ctx.close();
 }
 
-/* ============================================================
-   8b. a reload does not eat what the reader just did
-
-   The Android app shipped this bug and a person met it as
-   "settings and cards rearranging are NOT working": `base` lived
-   only in memory, so the first exchange after every fresh start
-   ADOPTED, and adopt writes the account's copy of every mark
-   over the device's. The site had the same window, one page-load
-   wide. `base` is stored now ("sync-base", keyed to the account),
-   so a reload resumes the conversation instead of starting one,
-   and the board a reader arranged a moment before reloading is
-   theirs, locally and on the account.
-   ============================================================ */
+/* 8b. A RELOAD DOES NOT EAT WHAT THE READER JUST DID. `base`
+   living only in memory means the first exchange after every
+   fresh start ADOPTS, and adopt writes the account's copy of
+   every mark over the device's. It is stored under "sync-base",
+   keyed to the account, so a reload resumes the conversation
+   rather than starting one. */
 console.log("\na reload right after arranging the board");
 {
   const f = await make({
@@ -655,19 +606,13 @@ console.log("\na reload right after arranging the board");
   await f.ctx.close();
 }
 
-/* ============================================================
-   9. what came down is announced
-
-   `sync.js` writes the account's rows straight into localStorage,
-   which fires neither the same-tab event nor `storage`, because
-   `storage` only fires in OTHER tabs. `sync:done` is the third
-   thing `subscribe()` listens for and the one that is easy to
-   leave out: without it every meter on the page is drawn against
-   what storage held BEFORE the exchange and stays there.
-
-   `/account.html` drew a course target at "0 of 60" beside a bar
-   of the same school reading "9 of 60" for exactly this reason.
-   ============================================================ */
+/* 9. WHAT CAME DOWN IS ANNOUNCED. `sync.js` writes the account's
+   rows straight into localStorage, which fires neither the
+   same-tab event nor `storage`, because `storage` only fires in
+   OTHER tabs. `sync:done` is the third thing `subscribe()`
+   listens for and the easiest to leave out: without it every
+   meter is drawn against what storage held BEFORE the exchange
+   and stays there. */
 console.log("\nwhat arrives is announced");
 {
   const f = await make({
@@ -694,28 +639,12 @@ console.log("\nwhat arrives is announced");
   await f.ctx.close();
 }
 
-/* ============================================================
-   10. a refresh it cannot read does not sign anybody out
-
-   THE REGRESSION THIS SECTION EXISTS FOR, 19 August 2026.
-
-   `refreshUser()` built a reader field by field until that day,
-   so an answer with nothing usable in it produced an object with
-   undefined fields: wrong, but truthy. Factoring the three copies
-   of that mapping into one `person()` made the same answer
-   produce null, and the null was written straight over a live
-   session.
-
-   What that costs is not a wrong name in a corner. `current()`
-   goes null, so `saveProfile` throws "Not signed in.", `sync.js`
-   stops pushing, and a reader who is signed in watches their
-   ticks stop reaching the account with nothing on screen to say
-   so. Four sections of this file went red at once and it was
-   still shipped, because the file was skipping.
-
-   There is exactly one thing that ends a session on purpose and
-   it is `signOut()`.
-   ============================================================ */
+/* 10. A REFRESH IT CANNOT READ DOES NOT SIGN ANYBODY OUT.
+   Writing `person()`'s null over a live session takes `current()`
+   to null, so `saveProfile` throws, `sync.js` stops pushing, and
+   a signed-in reader watches their ticks stop reaching the
+   account with nothing on screen to say so. There is exactly one
+   thing that ends a session on purpose and it is `signOut()`. */
 console.log("\na refresh that cannot be read");
 {
   const f = await make({
@@ -776,18 +705,10 @@ console.log("\nsigning out");
   await f.ctx.close();
 }
 
-/* ============================================================
-   12. changing the name
-
-   Driven through `/account.js` rather than through the account
-   page's form, and that is deliberate rather than a shortcut:
-   this harness is a static server over `aab/`, and
-   `/account.html` has not been a file here since Stage 11.5. What
-   this is really testing is the profile path the whole file
-   shares, and that is a module. `next/admin.test.ts` is the
-   pattern for driving a rendered page and needs a build this file
-   does not.
-   ============================================================ */
+/* 12. Changing the name, driven through `/account.js` rather
+   than the account page's form: this harness is a static server
+   over `aab/` and the account page is a route. What is under test
+   is the profile path, which is a module. */
 console.log("\nchanging the display name");
 {
   const f = await make({

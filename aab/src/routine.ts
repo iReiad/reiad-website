@@ -1,28 +1,10 @@
-/* ============================================================
-   routine.ts: the browser's half of the routine.
-
-   Three tables in Postgres behind row-level security, all three
-   belonging to exactly one person, and no copy on the device.
-   That is the same rule `saved.ts` follows and for the same
-   reason: `progress` has a local copy because four schools have
-   read localStorage since before there were accounts, and
-   nothing here has that history or works signed out, so a second
-   copy would be a second record to keep in step for nobody.
-
-   `shared/routine.ts` is the shapes and the one calculation.
-   This is the wire.
-
-   ---- what it will not do ----
-
-   NOTHING HERE COUNTS CONSECUTIVE ANYTHING. `ROUTINE.md` §0 is
-   the rule and it belongs in this file as much as in a
-   component: every counter is "how many times ever", and the day
-   one of them becomes "how many times lately" it has started
-   being a streak, whatever it is called.
-
-   `everMarked()` below is the shape all of them take. It only
-   ever grows because it only ever counts.
-   ============================================================ */
+/* routine.ts: the browser's half of the routine. Three tables in
+   Postgres behind row-level security, no copy on the device, for
+   the reason `saved.ts` gives. `shared/routine.ts` is the shapes
+   and the one calculation; this is the wire.
+   NOTHING HERE COUNTS CONSECUTIVE ANYTHING (`ROUTINE.md` §0):
+   every counter is "how many times ever", and one that becomes
+   "how many times lately" has started being a streak. */
 
 import { SUPABASE_URL, SUPABASE_KEY, token, current } from "/account.js";
 
@@ -103,15 +85,9 @@ async function get<T>(path: string, fallback: T): Promise<T> {
 
 /**
  * Today, for somebody whose day ends at `roll` rather than at
- * midnight.
- *
- * Marking something at 1am belongs to yesterday, because that is
- * what the person doing it means. The default is 4, so the small
- * hours are still the night before, and somebody who works nights
- * can genuinely set it to 11.
- *
- * Local time throughout, and deliberately: a routine is about the
- * day somebody is living in, not about UTC.
+ * midnight: marking something at 1am belongs to yesterday.
+ * LOCAL time throughout, never UTC: a routine is about the day
+ * somebody is living in.
  */
 export function todayFor(roll = 4, now = new Date()): string {
   const d = new Date(now);
@@ -237,23 +213,13 @@ export function daysBetween(from: string, to: string): Promise<EntryRow[]> {
 }
 
 /**
- * Write a day.
+ * Write a day. ONE ROW PER PERSON PER DAY, so it is an upsert on
+ * `(user_id, entry_date)` and saving is one request.
  *
- * ONE ROW PER PERSON PER DAY, so this is an upsert on
- * `(user_id, entry_date)` and the whole of saving is one request.
- *
- * ---- what it sends, and the bug that shape avoids ----
- *
- * `resolution=merge-duplicates` REPLACES the conflicting row with
- * what is sent. So a caller sending only `{ marks }` would erase
- * the note somebody wrote this morning, and a caller sending only
- * `{ note }` would erase every tick. That is the one destructive
- * thing this endpoint could do, and `keepPage()` in `saved.ts`
- * says the same about the two columns of a library row.
- *
- * So the caller passes the WHOLE day as it now stands and this
- * sends the whole day. The day view holds it in state anyway,
- * because it has to draw it.
+ * `resolution=merge-duplicates` REPLACES the conflicting row, so
+ * the caller must pass the WHOLE day as it now stands: sending
+ * only `{ marks }` would erase this morning's note and only
+ * `{ note }` would erase every tick.
  */
 export async function saveDay(
   routineId: string,
@@ -302,16 +268,9 @@ export async function saveDay(
    ============================================================ */
 
 /**
- * How many times a task has EVER been marked.
- *
- * The birds, the garden and every milestone are this function.
- * It has no window, no "recently" and no reset, which is the
- * whole of ROUTINE.md §0: a counter with a window is a streak,
- * and a person who stops for a fortnight and comes back must find
- * the flock exactly as they left it.
- *
- * If a `since` argument ever appears here, that is the moment
- * this stopped being a gift.
+ * How many times a task has EVER been marked. No window, no
+ * "recently", no reset: `ROUTINE.md` §0. A `since` argument here
+ * would make this a streak.
  */
 export async function everMarked(taskId: string): Promise<number> {
   /* Counted by the database rather than fetched and counted here:

@@ -1,33 +1,19 @@
-/* ============================================================
-   middleware.ts: the headers a page from here must carry.
+/* The headers a page from here must carry. Two things, neither optional.
 
-   Two things, and neither is optional.
+   THE SECURITY HEADERS. `aab/_headers` is read by Cloudflare's static
+   asset server and applies to files in `aab/`; a response from a Worker
+   is not a static asset, and this is a different Worker again. Without
+   this an article moves from a page with a CSP to a page with none and
+   looks identical either way. `headers()` in next.config.ts is the
+   documented place and does not survive the trip: under
+   @opennextjs/cloudflare the response comes back with none of them.
+   Middleware runs in the Worker itself and does.
 
-   ---- the security headers ----
-
-   `aab/_headers` is read by Cloudflare's static asset server. It
-   sets the frame policy, the sniffing policy, HSTS and the whole
-   Content-Security-Policy on every file in `aab/`. A response from
-   a Worker is not a static asset, so none of it applies, and this
-   is a different Worker again. Without this an article would move
-   from a page with a CSP to a page with none, and look identical
-   either way.
-
-   `headers()` in next.config.ts is the documented place for this
-   and does not survive the trip: under @opennextjs/cloudflare the
-   response came back with none of them. Middleware runs in the
-   Worker itself and does.
-
-   ---- the caching ----
-
-   Next's default for a dynamic route is
-   `private, no-cache, no-store, max-age=0, must-revalidate`,
-   which is right for a dashboard and wrong for an article: it
-   means every reader of a popular piece rebuilds it. The Worker's
-   own route says one minute at the edge and ten more while it
-   revalidates, and a piece rendered here should not suddenly cost
-   more to read than the same piece rendered there.
-   ============================================================ */
+   THE CACHING. Next's default for a dynamic route is
+   `private, no-cache, no-store, max-age=0, must-revalidate`, which is
+   right for a dashboard and wrong for an article: it means every reader
+   of a popular piece rebuilds it. The Worker's own route says one minute
+   at the edge and ten more while it revalidates. */
 
 import { NextResponse, type NextRequest } from "next/server";
 import { SECURITY_HEADERS } from "@reiad/shared/headers";
@@ -37,24 +23,20 @@ import { SECURITY_HEADERS } from "@reiad/shared/headers";
    functions/insights/[slug].ts sends. */
 const ARTICLE_CACHE = "public, max-age=60, stale-while-revalidate=600";
 
-/* ---- and the pages that are one person's ----
+    /* ---- and the pages that are one person's ----
+       `public` invites every shared cache between here and the reader to
+       keep a copy and hand it to the next request for the same address,
+       and `stale-while-revalidate` lets one serve a copy up to ten minutes
+       past its own expiry.
 
-   `public` invites every shared cache between here and the reader
-   to keep a copy and hand it to the next request for the same
-   address, and `stale-while-revalidate` lets one serve a copy up
-   to ten minutes past its own expiry. Both were being sent for
-   /admin, /account and /studio.
+       THE FAILURE THIS EXISTS FOR: /admin rendered its heading and its two
+       credential cards and none of the panels, for days, in one browser
+       and not another. Clearing every byte of site data did not fix it,
+       which is what ruled out the service worker: what a shared cache
+       holds is not the browser's to clear.
 
-   THE FAILURE THIS EXISTS FOR. /admin rendered its heading and
-   its two credential cards and none of the panels above or below
-   them, for days, in one browser and not another. Clearing every
-   byte of site data did not fix it, which is what finally ruled
-   out the service worker: what a shared cache holds is not the
-   browser's to clear.
-
-   A page whose whole content depends on who is asking cannot be
-   cached by anything that does not know who is asking, and no
-   cache in the middle does. */
+       A page whose whole content depends on who is asking cannot be cached
+       by anything that does not know who is asking. */
 const PRIVATE_CACHE = "private, no-store";
 
 /* Matched on the path so that a route added under one of these
@@ -72,23 +54,16 @@ export function middleware(request: NextRequest) {
     res.headers.set(key, value);
   }
 
-  /* ---- whose Cache-Control this is ----
+      /* ---- whose Cache-Control this is ----
+         Only a PAGE's. Two kinds of response set their own and must keep
+         it. Next's assets under `/_next/` are content-hashed and already
+         immutable, so a one-minute line would be a downgrade.
 
-     Only a PAGE's. Two kinds of response set their own and must
-     keep it.
-
-     Next's assets under `/_next/` are content-hashed and already
-     immutable, so a one-minute line would be a downgrade.
-
-     And a route handler under `/api/` has an opinion about
-     caching that this file cannot have: one endpoint wants half
-     an hour at the edge and the next wants nothing kept at all,
-     and which is which is a fact about the endpoint. Overwriting
-     it here would make a handler's own `no-store` publicly
-     cacheable for a minute, silently, on a response that looks
-     exactly right. Nothing under `/api/` existed here until the
-     practice books needed one, which is why this could sit
-     latent. */
+         And a route handler under `/api/` has an opinion about caching
+         that this file cannot have: one endpoint wants half an hour at the
+         edge and the next wants nothing kept at all. Overwriting it here
+         would make a handler's own `no-store` publicly cacheable for a
+         minute, silently, on a response that looks exactly right. */
   const path = request.nextUrl.pathname;
   if (!path.startsWith("/_next/") && !path.startsWith("/api/")) {
     res.headers.set("Cache-Control",

@@ -1,16 +1,7 @@
-/* ============================================================
-   stress.model.js, described.
-
-   Hand-written, and it covers ONLY what `stress.test.ts` imports:
-   the module is plain JavaScript the page loads at runtime, and
-   nothing compiles it. Every signature below was read off that
-   file, which is the source of truth; a field this does not name
-   may still exist there.
-
-   `app/src/types/README.md` is the same practice one directory
-   along and says why it is preferred to silencing an untyped
-   import.
-   ============================================================ */
+/* stress.model.js, described. Hand-written, and it covers ONLY
+   what `stress.test.ts` imports: nothing compiles the module, so
+   that file is the source of truth and a field this does not
+   name may still exist there. */
 
 /** Which Basel correlation function a segment is treated under.
     Not cosmetic: it decides the whole capital treatment. */

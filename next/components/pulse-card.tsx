@@ -1,52 +1,28 @@
 "use client";
 
-/* ============================================================
-   pulse-card.tsx: the writing, one piece at a time.
+/* The writing, one piece at a time: a card on the front page that cycles
+   through the latest live pieces and links to the one it is showing.
 
-   A card on the front page that cycles through the latest live
-   pieces: title, a line of the dek, which desk it came from, and
-   the whole card is a link to the piece it is showing. Every few
-   seconds it moves to the next one, with the dots underneath
-   saying where in the list it is.
+   IT IS THE SITE'S OWN CARD, a `<GoCard>` with its picture across the
+   top, so a piece looks like itself on the front page, on the reading hub
+   and anywhere else it is listed.
 
-   ---- it is the site's own card, not a card of its own ----
+   The picture is the piece's own where there is one: a cover is the share
+   card the Studio draws from the piece's lead photo, so nothing is
+   borrowed and nothing needs crediting. `coverOf` accepts only the two
+   path shapes `safeCover` writes on the server, because that value
+   becomes a request. Where a piece has no cover it wears its DESK's
+   drawing.
 
-   This was `.gate-tile` wearing a photograph as its whole ground,
-   with light text over it: a form nothing else on the site used,
-   for a thing (a piece of writing) that `/insights` already draws
-   as a `<GoCard>`. It is a `<GoCard>` here too now, with its
-   picture across the top, so a piece looks like itself on the
-   front page, on the reading hub and anywhere else it is listed.
+   WHAT IT DOES WHEN IT CANNOT: the list comes from /api/articles after
+   hydration, and until it arrives, or wherever it never does, the card is
+   a plain door to /insights. The server renders exactly that fallback, so
+   a reader with no JavaScript keeps a working card and hydration adopts
+   it unchanged.
 
-   ---- and the picture is the piece's own where there is one ----
-
-   A cover is the share card the Studio draws from the piece's
-   lead photo, so nothing is borrowed and nothing needs crediting:
-   the row in D1 is the source, exactly as it is for the title.
-   `coverOf` accepts only the two path shapes `safeCover` on the
-   server writes, because that value becomes a request and this
-   card should never be the thing that makes an odd one.
-
-   Where a piece has no cover it wears its DESK's drawing, which
-   is the same drawing that desk's own card wears everywhere else.
-
-   ---- what it does when it cannot ----
-
-   The list comes from /api/articles after hydration. Until it
-   arrives, and wherever it never does (the database not bound, a
-   bad connection, a test rig with no Worker), the card is a
-   plain door to /insights that says what Insights is. The
-   server renders exactly that fallback, so a reader with no
-   JavaScript keeps a working card and hydration adopts it
-   unchanged.
-
-   ---- and when it should not ----
-
-   The cycle pauses while the pointer is over the card (nobody
-   wants a link that changes under their finger), stops entirely
-   for a reader who asked for reduced motion, and does not tick
-   in a hidden tab.
-   ============================================================ */
+   The cycle pauses while the pointer is over the card, stops entirely for
+   a reader who asked for reduced motion, and does not tick in a hidden
+   tab. */
 
 import { useEffect, useRef, useState, type ReactNode } from "react";
 import { NAV, accentFor } from "@reiad/shared/nav";

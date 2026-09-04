@@ -1,49 +1,11 @@
-/* ============================================================
-   parity.test.ts: does the Next.js route render the same
-   article as the Worker does?
-
+/* Does the Next.js route render the same article as the Worker, and do
+   the hubs and school pages agree with the database?
      cd next && npm run build && npx opennextjs-cloudflare build
      node next/parity.test.ts
-
-   OPTIONAL, like the browser tests: it needs the OpenNext build
-   to have run, and it skips with a note if `.open-next/worker.js`
-   is not there.
-
-   It starts the built Worker on workerd through `wrangler dev`,
-   with a local D1 seeded with a handful of rows, asks it for an
-   article, and compares what comes back against what
-   `functions/insights/[slug].ts` would have produced for the same
-   row. No network, no deploy, no Cloudflare account.
-
-   Since Stage 11.1 it also drives the three reading hubs, which
-   have no Worker-side twin to be compared against and are held to
-   the database instead: the cards, their addresses, the count
-   above them, and the draft that must appear on none of them.
-
-   And since Stage 11.7 it drives a lesson of each of the four
-   schools. Those DO have a twin, and it is not a renderer: it is
-   the committed page a builder wrote from the same row, so the
-   comparison is against the file, fact by fact, with the prose
-   held byte for byte. It is the one route here whose replacement
-   can be checked against the thing it replaces.
-
-   ---- "byte-identical", and what that had to become ----
-
-   archive/TRANSITION.md's Stage 10 says the share card, the structured
-   data and the canonical link must be "byte-identical to what the
-   Worker produced". Two of those three can be exactly that and
-   are checked as strings here. The third cannot: React writes
-   `<meta content="..." property="og:title"/>` where a template
-   string writes `<meta property="og:title" content="...">`, and
-   no amount of care changes that, because the renderer decides
-   attribute order and self-closing, not the author.
-
-   So the bar is: every fact is identical, checked one tag at a
-   time, and the article's own HTML is identical as a string. That
-   is the thing the sentence was protecting. A page that says the
-   same things in a different byte order is fine; a page that
-   quietly drops og:image:type is not, and this fails on it.
-   ============================================================ */
+   Needs the OpenNext build and SKIPS without `.open-next/worker.js`; a
+   skip is not a pass. Byte-identical head markup is not the bar and
+   cannot be: React decides attribute order and self-closing. Every fact
+   is compared one tag at a time, the article's own HTML as a string. */
 
 import { spawn, execFileSync } from "node:child_process";
 import { existsSync, mkdtempSync, rmSync, writeFileSync } from "node:fs";
@@ -81,23 +43,16 @@ interface Article {
 }
 
 const ARTICLE: Article = {
-  /* Not the slug of anything real. `dse-basics` was the obvious
-     choice and is wrong: it is one of the pieces still committed
-     as a file, so seeding it into D1 made the check below that
-     those pieces fall through to the asset router pass for the
-     wrong reason. A fixture that collides with real data tests
-     the fixture. */
+      /* Not the slug of anything real: a fixture that collides with real
+         data tests the fixture. */
   slug: "rate-cycle",
   section: "insights",
   lang: "en",
   title: 'How the "DSEX" actually works & why it matters',
   dek: "What the index measures, how a BO account works, and the questions to ask first.",
   tag: "Equities · Beginner",
-  /* Pipe-separated, which is what the column actually holds:
-     `/api/articles` splits on it and so does the hub route. This
-     said `JSON.stringify([...])` for as long as nothing read the
-     field, and a fixture in a format the site does not use tests
-     the fixture. */
+      /* Pipe-separated, which is what the column holds: `/api/articles`
+         and the hub route both split on it. */
   topics: "Equities|Beginner",
   body: '<p>The DSEX is a free-float weighted index.</p>\n'
     + '<figure class="lead-photo"><img src="/media/dse/9f2a1c.webp" alt="The board" '
@@ -120,14 +75,9 @@ const d1 = (sql: string) => execFileSync(
   { cwd: here, stdio: "pipe" },
 );
 
-/* Three more rows, for the hubs. One piece in each Bangla
-   section, so that the card, its address and the count above it
-   are drawn from something; and one draft, which is the row that
-   must not appear anywhere.
-
-   Slugs nothing will ever be called, on the same reasoning as
-   `rate-cycle` above: a fixture that collides with a real piece
-   tests the fixture. */
+    /* Three more rows for the hubs: one live piece per Bangla section, so
+       the cards and the count are drawn from something, and one draft,
+       which must appear nowhere. Slugs nothing real is called. */
 const KITCHEN: Article = {
   ...ARTICLE,
   slug: "parity-kitchen", section: "cooking", lang: "bn",
@@ -148,9 +98,8 @@ const DRAFT: Article = {
   title: "Not published yet", published_at: "",
 };
 
-/* `Object.keys` is typed `string[]`, because a value may carry
-   keys its type does not name. Nothing else writes these four
-   rows, so here it cannot. */
+    /* `Object.keys` is typed `string[]`, because a value may carry keys
+       its type does not name. */
 const columns = Object.keys(ARTICLE) as Array<keyof Article>;
 const row = (article: Article) => columns
   .map((c) => (typeof article[c] === "number" ? article[c] : `'${String(article[c]).replace(/'/g, "''")}'`))
@@ -164,35 +113,18 @@ for (const article of [ARTICLE, KITCHEN, DESK, DRAFT]) {
   d1(`INSERT OR REPLACE INTO articles (${columns.join(", ")}) VALUES (${row(article)})`);
 }
 
-/* ---------- and the schools, out of the real snapshot ----------
-
-   archive/TRANSITION.md Stage 11.7. Unlike the articles above, these are
-   NOT invented: the lesson route has to render what the committed
-   page renders, and the committed page was built from
-   `content/schools.backup.json`. Seeding anything else would
-   compare the route against a fixture rather than against the
-   thing it is replacing.
-
-   Four stages rather than seventeen, one per school, because the
-   whole export is a megabyte of prose and `wrangler d1 execute`
-   takes it one statement at a time. The four are chosen to cover
-   the four shapes: the money school's terms answer at an address
-   that is not their stage's, the German and English schools end a
-   stage by pointing at a practice book, and the Quranic Arabic
-   school labels its lessons by day and puts Arabic under the
-   title. */
+    /* ---------- and the schools, out of the real snapshot ----------
+       Seeded from `content/schools.backup.json` rather than invented, and
+       four stages rather than seventeen: the whole export is a megabyte
+       and `wrangler d1 execute` takes it one statement at a time. The four
+       cover the four shapes a school page has. */
 const { readSnapshot } = await import("../scripts/schools-snapshot.ts");
 const snapshot = readSnapshot();
 
-/* `basics-2` is the money school's first GENERATED stage and is
-   what its lesson page is compared against. `basics-1` is the
-   eighteen original terms at /money/terms/, which the builder has
-   never written and which are compared for less: see the block
-   below that asks them only what a wrong answer would cost. The
-   other three are the first written stage of each language
-   school. `start`, the starter guide, is here since Stage 11.8:
-   it is eight pages now rather than eight accordions, and the
-   money school's hub is rendered from its rows. */
+    /* `basics-2` is the money school's first generated stage; `basics-1`
+       is the eighteen original terms at /money/terms/, compared for less
+       below. The other three are the first written stage of each language
+       school. */
 const SEEDED = ["start", "basics-1", "basics-2", "basics-3", "stufe-1", "dhap-1", "term-1"];
 
 d1(`CREATE TABLE IF NOT EXISTS school_stages (
@@ -201,13 +133,10 @@ d1(`CREATE TABLE IF NOT EXISTS school_stages (
 d1(`CREATE TABLE IF NOT EXISTS school_sections (
       school TEXT, stage TEXT, ident TEXT, position INTEGER, title TEXT, meta TEXT,
       PRIMARY KEY (school, stage, ident))`);
-/* `body_en` and `blocks` are columns rather than fields inside
-   `meta` for the reason MONEY.md gives: `stagesOf()` selects
-   `meta` for every lesson of a school to draw a ladder, and a
-   megabyte of prose would ride along to render a list of titles.
-   They are seeded here because without them this test renders
-   every money lesson as its Bangla half with empty gaps where
-   the blocks go, and passes. */
+    /* `body_en` and `blocks` are columns rather than fields inside `meta`:
+       `stagesOf()` selects `meta` for every lesson of a school to draw a
+       ladder. Without them here every money lesson renders as its Bangla
+       half with empty gaps where the blocks go, and passes. */
 d1(`CREATE TABLE IF NOT EXISTS school_lessons (
       school TEXT, stage TEXT, slug TEXT, section TEXT, position INTEGER,
       title TEXT, minutes INTEGER, status TEXT, meta TEXT, body TEXT,
@@ -221,16 +150,10 @@ const insert = (table: string, cols: string[], r: Row) =>
   `INSERT OR REPLACE INTO ${table} (${cols.join(", ")}) `
   + `VALUES (${cols.map((c) => q(r[c])).join(", ")});`;
 
-/* Every stage of every school, because a ladder needs its
-   neighbours: the last lesson of a stage points at the next one,
-   and a stage list with holes in it points at the wrong place.
-   The prose is what is limited to the four.
-
-   Written to one file and executed once, rather than a statement
-   at a time. `wrangler d1 execute --command` is a whole node
-   process per call and these are seventy rows: the first version
-   of this spent four minutes seeding a test that then took forty
-   seconds to run. */
+    /* Every stage of every school, because a ladder needs its neighbours:
+       a stage list with holes in it points at the wrong place. Written to
+       one file and executed once: `wrangler d1 execute --command` is a
+       whole node process per call and these are seventy rows. */
 const statements = [
   ...snapshot.stages.map((r) =>
     insert("school_stages", ["school", "slug", "position", "title", "status", "meta"], r)),
@@ -251,11 +174,9 @@ execFileSync("npx",
 
 /* ---------- the Worker on workerd ---------- */
 
-/* Its own process group, so that stopping it stops all of it.
-   `wrangler dev` runs workerd as a child of its own, and a
-   SIGTERM to wrangler alone leaves that grandchild holding the
-   port: the next run of this test then dies on "Address already
-   in use", which reads like a broken test and is a leftover. */
+    /* Its own process group, so stopping it stops workerd too. `wrangler
+       dev` runs workerd as a child of its own, and a SIGTERM to wrangler
+       alone leaves that grandchild holding the port. */
 const dev = spawn(
   "npx",
   ["wrangler", "dev", "--local", "--port", String(PORT), "--persist-to", state],
@@ -270,8 +191,8 @@ let gone: number | string | null = null;
 dev.on("exit", (code, signal) => { gone = code ?? signal ?? "gone"; });
 
 const stop = () => {
-  /* The whole group, so workerd goes with wrangler. A child with
-     no pid has already gone, and there is nothing to signal. */
+      /* The whole group, so workerd goes with wrangler. A child with no
+         pid has already gone. */
   try {
     if (dev.pid) process.kill(-dev.pid, "SIGTERM");
     else dev.kill("SIGTERM");
@@ -280,21 +201,12 @@ const stop = () => {
 };
 process.on("exit", stop);
 
-/* Ready, or one of three ways of not being ready, told apart.
-
-   THE BUG THIS SHAPE FIXES, and it is worse than the one it
-   replaces because it was quiet. The old loop gave up on any line
-   matching `Error: `, and `wrangler dev` prints exactly that,
-   harmlessly, wherever there is no outbound network: it cannot
-   fetch the `Request.cf` object, says so with a stack, and then
-   starts perfectly forty seconds later. So in the container this
-   stage is being written in, and in any sandbox like it, this
-   test printed "did not start", exited 0, and looked from the
-   outside exactly like 49 passing checks.
-
-   A real failure is the process being gone, or wrangler's own
-   `[ERROR]` marker, which it brackets and a thrown stack does
-   not. Everything else is waited out. */
+    /* Ready, or one of three ways of not being ready. Do NOT give up on a
+       line matching `Error: `: `wrangler dev` prints exactly that,
+       harmlessly, wherever there is no outbound network, and then starts
+       perfectly forty seconds later. A real failure is the process being
+       gone, or wrangler's own bracketed `[ERROR]` marker, which a thrown
+       stack does not have. Everything else is waited out. */
 const ready = async () => {
   for (let i = 0; i < 180; i++) {
     if (/Ready on http/.test(log)) return "ready";
@@ -325,13 +237,9 @@ const ORIGIN = "https://reiad.co.uk";
 const { render } = await import("../functions/insights/[slug].ts");
 const { SECURITY_HEADERS } = await import("../shared/headers.ts");
 
-/* Asked for at the address the piece actually has.
-
-   `pieceUrl()` in content.js builds `/insights/<slug>.html`, and
-   that is the canonical link, the sitemap entry, every internal
-   link and everything anybody has shared. The first version of
-   this test asked for the extensionless form, which nothing on
-   this site uses, and passed while every real URL answered 404. */
+    /* Asked for at the address the piece actually has: `pieceUrl()` builds
+       `/insights/<slug>.html`, which is the canonical link, the sitemap
+       entry and every internal link. The extensionless form answers 404. */
 const res = await fetch(`http://127.0.0.1:${PORT}/insights/${ARTICLE.slug}.html`);
 const fromNext = await res.text();
 const fromWorker = render(ARTICLE, ORIGIN);
@@ -341,12 +249,10 @@ const fromWorker = render(ARTICLE, ORIGIN);
 let passed = 0;
 const failures: string[] = [];
 
-/* Compared after decoding, because the two renderers escape
-   differently and neither is wrong. React writes `&#x27;` where a
-   template string writes an apostrophe, and `&amp;` where the
-   template writes a bare `&` inside an attribute (React is the
-   more correct of the two there). A browser parses them to the
-   same string, and the same string is the thing being checked. */
+    /* Compared after decoding, because the two renderers escape
+       differently and neither is wrong: React writes `&#x27;` and `&amp;`
+       where a template string writes the bare character, and a browser
+       parses both to the same string. */
 const NAMED: Record<string, string> = {
   amp: "&", lt: "<", gt: ">", quot: '"', apos: "'", nbsp: "\u00a0",
 };
@@ -378,34 +284,15 @@ const meta = (html: string, key: string, attr = "property"): string | null => {
   const m = html.match(re);
   return m ? (m[1] ?? m[2]) : null;
 };
-/** The money school's own name, as it is now, wherever a
-    committed page still says what it was. Stage 11.8 renamed
-    "শেখার লাইব্রেরি" to "টাকা ও শেয়ার": the school stopped being
-    the site's second half and became one entry in the skills
-    list. Substituting rather than skipping means the rest of a
-    page title is still compared character for character. */
-/** An address as it is now, wherever a committed page says where
-    it used to be.
-
-    The money school moved from /learn/ to /money/ on 17 August
-    2026: 251 addresses, the folder, the school id in D1 and the
-    modal term reader, which was `/learn/learn.js` and is
-    `/money/reader.js` because it was never named for what it does.
-    There is no redirect; the old addresses are gone, which is what
-    a move is.
-
-    The pages in `archive/schools-pages/` are the historical
-    artifact and still say the old thing, so both sides of every
-    comparison below are normalised through here. What that leaves
-    being checked is the part worth checking: that the route says
-    the same THING at its new address, rung for rung and link for
-    link. Real drift still fails.
-
-    The second half is task #28, which took `.html` off every route
-    address. A hub, a ladder and a practice book all lost it and a
-    LESSON deliberately did not, so only those three shapes are
-    normalised: stripping the suffix everywhere would stop this
-    test noticing if a lesson link lost one. */
+    /** The money school's own name, as it is now, wherever a committed
+        page still says what it was. Substituting rather than skipping
+        keeps the rest of a page title compared character for character. */
+    /** An address as it is now, wherever a committed page says where it
+        used to be. The money school moved from /learn/ to /money/ and
+        there is no redirect: the old addresses are gone. Only the hub,
+        ladder and practice-book shapes lose `.html` here; a LESSON keeps
+        its suffix, and stripping it everywhere would stop this test
+        noticing a lesson link that lost one. */
 const moved = (v: string | null): string | null => {
   if (typeof v !== "string") return v;
   return v
@@ -418,26 +305,13 @@ const moved = (v: string | null): string | null => {
 const renamed = (v: string | null): string | null =>
   (typeof v === "string" ? v.replaceAll("\u09b6\u09c7\u0996\u09be\u09b0 \u09b2\u09be\u0987\u09ac\u09cd\u09b0\u09c7\u09b0\u09bf", "\u099f\u09be\u0995\u09be \u0993 \u09b6\u09c7\u09af\u09bc\u09be\u09b0") : v);
 
-/* ---------- sentences that were changed on purpose ----------
-
-   The committed pages are what the site said on 16 August 2026,
-   and holding today's copy to them word for word means the copy
-   can never change again, which is not what this test is for: it
-   is for a PORT that changed the words without meaning to.
-
-   So a deliberate change is written down here, keyed by what the
-   old page said, and every other word is still held exactly. Two
-   claims were narrowed on 19 August 2026 and both were wrong
-   rather than merely wordy:
-
-     "\u09ac\u09bf\u09a8\u09be\u09ae\u09c2\u09b2\u09cd\u09af\u09c7, \u09b2\u0997\u0987\u09a8 \u099b\u09be\u09dc\u09be" promised a whole site free forever
-     where only the education is, and every "\u0986\u09aa\u09a8\u09be\u09b0 \u09a8\u09bf\u099c\u09c7\u09b0
-     \u09ac\u09cd\u09b0\u09be\u0989\u099c\u09be\u09b0\u09c7\u0987 \u09a5\u09be\u0995\u09c7" told a reader their progress lives in
-     this browser, which stopped being true when the account
-     became the record.
-
-   A pair whose left side no longer appears anywhere is dead
-   weight and should be deleted, not kept. */
+    /* ---------- sentences that were changed on purpose ----------
+       Holding today's copy to the committed pages word for word would mean
+       it can never change again, which is not what this is for: it is for
+       a PORT that changed the words without meaning to. A deliberate
+       change goes here, keyed by what the old page said, and every other
+       word is still held exactly. A pair whose left side no longer appears
+       anywhere is dead weight: delete it rather than keep it. */
 const REWRITTEN = [
   ["\u09ac\u09bf\u09a8\u09be\u09ae\u09c2\u09b2\u09cd\u09af\u09c7, \u09ac\u09be\u0982\u09b2\u09be\u09af\u09bc, \u0986\u09b0 \u0995\u09cb\u09a8\u09cb \u09b2\u0997\u0987\u09a8 \u099b\u09be\u09dc\u09be\u0964",
    "\u09ac\u09bf\u09a8\u09be\u09ae\u09c2\u09b2\u09cd\u09af\u09c7, \u09ac\u09be\u0982\u09b2\u09be\u09af\u09bc\u0964"],
@@ -454,10 +328,9 @@ const REWRITTEN = [
    "\u0996\u09be\u09a4\u09be\u09af\u09bc \u09af\u09be \u09b2\u09c7\u0996\u09c7\u09a8 \u09b8\u09c7\u099f\u09be \u09a5\u09be\u0995\u09c7 \u0986\u09aa\u09a8\u09be\u09b0 \u09a8\u09bf\u099c\u09c7\u09b0 \u09ac\u09cd\u09b0\u09be\u0989\u099c\u09be\u09b0\u09c7, \u0986\u09aa\u09a8\u09be\u09b0 \u09a1\u09bf\u09ad\u09be\u0987\u09b8\u09c7\u0987\u0964 \u0995\u09cb\u09a5\u09be\u0993 \u09aa\u09be\u09a0\u09be\u09a8\u09cb \u09b9\u09af\u09bc \u09a8\u09be\u0964 \u0985\u09a8\u09cd\u09af \u09ab\u09cb\u09a8\u09c7 \u0996\u09c1\u09b2\u09b2\u09c7 \u0998\u09b0\u0997\u09c1\u09b2\u09cb \u0996\u09be\u09b2\u09bf \u09aa\u09be\u09ac\u09c7\u09a8, \u0986\u09b0 \u09ac\u09cd\u09b0\u09be\u0989\u099c\u09be\u09b0\u09c7\u09b0 \u09a1\u09c7\u099f\u09be \u09ae\u09c1\u099b\u09b2\u09c7 \u09b2\u09c7\u0996\u09be\u0997\u09c1\u09b2\u09cb\u0993 \u099a\u09b2\u09c7 \u09af\u09be\u09ac\u09c7, \u09a4\u09be\u0987 \u0997\u09c1\u09b0\u09c1\u09a4\u09cd\u09ac\u09aa\u09c2\u09b0\u09cd\u09a3 \u0995\u09bf\u099b\u09c1 \u09b2\u09bf\u0996\u09b2\u09c7 \u09a8\u09bf\u099c\u09c7\u09b0 \u0996\u09be\u09a4\u09be\u09a4\u09c7\u0993 \u09b2\u09bf\u0996\u09c7 \u09b0\u09be\u0996\u09c1\u09a8\u0964 \u0995\u09cb\u09a8 \u09a6\u09bf\u09a8\u0997\u09c1\u09b2\u09cb \u09b9\u09af\u09bc\u09c7\u099b\u09c7, \u09b8\u09c7\u0987 \u09b9\u09bf\u09b8\u09be\u09ac\u099f\u09be \u0986\u09b2\u09be\u09a6\u09be: \u09b8\u09c7\u099f\u09be \u099c\u09ae\u09be \u09a5\u09be\u0995\u09c7 \u0986\u09aa\u09a8\u09be\u09b0 \u0985\u09cd\u09af\u09be\u0995\u09be\u0989\u09a8\u09cd\u099f\u09c7\u0964"],
 ];
 
-/* NFC on both sides before the substitution, because Bangla has
-   two spellings of the same letter: `\u09dc` is one code point and
-   `\u09a1\u09bc` is two, they render identically, and a table written
-   in one form matches nothing written in the other. */
+    /* NFC on both sides before the substitution, because Bangla spells the
+       same letter as one code point or as two: they render identically,
+       and a table written in one form matches nothing in the other. */
 const rewritten = (v: string | null): string | null => (typeof v !== "string" ? v
   : REWRITTEN.reduce((s, [was, now]) => s.replaceAll(was.normalize("NFC"), now),
                      v.normalize("NFC")));
@@ -513,19 +386,10 @@ for (const key of ["twitter:card", "twitter:image", "description"]) {
 check("the title", tagText(fromWorker, "title"), tagText(fromNext, "title"));
 check("the language",
   attr(fromWorker, /<html lang="([^"]+)"/), attr(fromNext, /<html lang="([^"]+)"/));
-/* NOT "both link the same href", which is what this asked until
-   19 August 2026 and which stopped being answerable when Stage A
-   made the stylesheet Next's: Next emits it under a content hash
-   and a response a Worker builds cannot know the hash. The check
-   went on comparing `/styles.css` against null and failing, on
-   every branch and on main, for long enough that nobody could
-   tell a new failure from this one.
-
-   What is worth asking is that each of them links A stylesheet,
-   and that the Worker's names a file that exists. It did not:
-   `/styles.css` has been a 404 since Stage A, so the fallback
-   renderer and the subscription page were unstyled, and this was
-   the only thing in the repository that knew. */
+    /* NOT "both link the same href": Next emits the stylesheet under a
+       content hash and a response a Worker builds cannot know the hash.
+       What is worth asking is that each links A stylesheet, and that the
+       Worker's names a file that exists. */
 {
   const workerCss = attr(fromWorker, /<link rel="stylesheet" href="(\/[^"]+\.css)"/);
   const nextCss = attr(fromNext, /<link rel="stylesheet" href="([^"]+\.css)"/);
@@ -555,10 +419,9 @@ check("the eyebrow",
   tagText(fromNext, 'span class="eyebrow mono"'));
 check("the standfirst",
   tagText(fromWorker, 'p class="lede"'), tagText(fromNext, 'p class="lede"'));
-/* Case-insensitively: React serialises the attribute as it was
-   written in the JSX, so this one comes back `dateTime`. HTML
-   attribute names are case-insensitive and every parser reads the
-   two identically, which is why this is a note and not a bug. */
+    /* Case-insensitively: React serialises the attribute as it was written
+       in the JSX, so this comes back `dateTime`, and HTML attribute names
+       are case-insensitive. */
 check("the date",
   attr(fromWorker, /<time datetime="[^"]*">([^<]+)<\/time>/i),
   attr(fromNext, /<time datetime="[^"]*">([^<]+)<\/time>/i));
@@ -568,16 +431,8 @@ check("and the machine-readable date on it",
 ok("the reading time", fromNext.includes("9 min read"));
 ok("the piece carries its slug for the scripts",
   fromNext.includes(`data-slug="${ARTICLE.slug}"`));
-/* The thread, and it asks MORE than it did. It was an empty
-   `<section id="comments" data-slug data-section>` that an inline
-   module read those two attributes off and filled, so all this
-   could check was that the empty box had the attributes on it.
-
-   `components/comments.tsx` takes them as props, so they are not
-   in the markup any more and there is something better to ask
-   for: the thread's own heading, server-rendered, which is the
-   client component's first paint arriving in the HTML rather than
-   a tick after it. */
+    /* The thread's own heading, server-rendered: the client component's
+       first paint arriving in the HTML rather than a tick after it. */
 ok("the comment thread is there", /id="comments"/.test(fromNext));
 ok("and its heading is server-rendered rather than written in later",
   /class="comment-title"[^>]*>Comments</.test(fromNext),
@@ -587,43 +442,27 @@ ok("the section's own footer line",
 
 /* ---- what a reader loads ---- */
 
-/* Named, rather than written out as a `<script>` tag. A module
-   the page runs before React has hydrated is a module whose work
-   React then undoes, so a route names what it is going to load in
-   a preload link and loads it once the hydration is over. See
-   `components/scripts.tsx`, which is the whole story, and
-   `interactive.test.ts`, which is what holds it in a browser.
-   Either spelling counts here: the question is whether the page
-   loads the module, not which tag says so. */
+    /* Named in a preload link rather than written out as a `<script>` tag.
+       A module the page runs before React has hydrated is a module whose
+       work React then undoes: see `components/scripts.tsx`. Either
+       spelling counts here: the question is whether the page loads it. */
 const loads = (html: string, src: string): boolean =>
   new RegExp(`<script[^>]*src="${src}"`).test(html)
   || new RegExp(`<link[^>]*rel="(?:modulepreload|preload)"[^>]*href="${src}"`).test(html)
   || new RegExp(`<link[^>]*href="${src}"[^>]*rel="(?:modulepreload|preload)"`).test(html);
 
 ok("the site's own script is loaded", loads(fromNext, "\\/app\\.js"));
-/* No `/read-aloud.js`. The speech control is
-   `components/read-aloud.tsx` as of the day this line changed, so
-   there is nothing to load and the Worker's own renderer does not
-   offer one either: it cannot mount a component, which is the same
-   trade it already takes for the comment thread. */
+    /* No `/read-aloud.js`: the speech control is
+       `components/read-aloud.tsx`, and the Worker's own renderer cannot
+       mount a component. */
 ok("and nothing asks for a module that has been archived",
   !loads(fromNext, "\\/read-aloud\\.js") && !loads(fromWorker, "\\/read-aloud\\.js"));
-/* ---- the cost, which was measured and then accepted ----
-
-   The App Router ships its own runtime and router to every page,
-   hydrating a tree with no interactivity in it, and there is no
-   supported switch to turn that off. That is 170 KB gzipped on a
-   page of prose, against the 31 KB of the site's own scripts.
-
-   It was measured and accepted on 16 August 2026: the site is
-   going to grow a lot, one framework is worth more than the
-   kilobytes, and the pages that come next are the ones React
-   actually earns its keep on. The reasoning is under Stage 10 in
-   archive/TRANSITION.md.
-
-   Accepted is not unwatched. This is a budget: it fails if the
-   number grows, so an added dependency that drags the client
-   bundle up shows here rather than on somebody's phone. */
+    /* ---- the client bundle, which is a budget ----
+       The App Router ships its own runtime and router to every page and
+       there is no supported switch to turn it off: 170 KB gzipped against
+       the 31 KB of the site's own scripts. This fails if the number grows,
+       so a dependency that drags the bundle up shows here rather than on
+       somebody's phone. */
 const CHUNK_BUDGET = 8;
 {
   const chunks = new Set(fromNext.match(/\/_next\/static\/chunks\/[a-z0-9_-]+\.js/g) ?? []);
@@ -636,66 +475,49 @@ const CHUNK_BUDGET = 8;
     "the headline is not in the server-rendered HTML");
 }
 
-/* ---- the contract worker.js falls back on ----
-
-   A slug this route has no row for must answer 404, because that
-   is the only thing `fromNext()` in worker.js can read as "not
-   mine". It used to mean "serve the committed file", and there
-   are no committed pieces left as of Stage 11.2; it still means
-   two things that matter. `_redirects` holds a 301 for
-   `/insights/dsex`, a term that moved to `/money/terms/`, and it
-   only ever fires because this route declines the slug. And
-   anything else gets the site's own 404 page rather than a
-   framework one. */
+    /* ---- the contract worker.js falls back on ----
+       A slug this route has no row for must answer 404, because that is
+       the only thing `fromNext()` in worker.js can read as "not mine".
+       `_redirects` holds a 301 for `/insights/dsex` that fires only
+       because this route declines, and anything else gets the site's own
+       404 page rather than a framework one. */
 {
   const missing = await fetch(`http://127.0.0.1:${PORT}/insights/not-a-piece-here.html`);
   ok("a slug with no row answers 404, so the front Worker can answer",
     missing.status === 404, `status ${missing.status}`);
 
-  /* Named rather than described, because a name in a test is
-     harder to lose than a category. `dsex` is the sharper of the
-     two: it is a redirect rule that fires only if this route
-     declines, so a route that started answering it would take a
-     301 off the site silently. */
+      /* Named rather than described, because a name is harder to lose than
+         a category. `dsex` is a redirect rule that fires only if this route
+         declines, so a route that started answering it would take a 301 off
+         the site silently. */
   for (const declined of ["dsex", "dse-basics"]) {
     const answer = await fetch(`http://127.0.0.1:${PORT}/insights/${declined}.html`);
     ok(`${declined} is handed back to the front Worker`,
       answer.status === 404, `status ${answer.status}`);
   }
 
-  /* And a piece answering at the wrong mount is the same case:
-     moving one from Insights to the kitchen must not leave it live
-     at both addresses. */
+      /* And a piece answering at the wrong mount is the same case: moving
+         one must not leave it live at both addresses. */
   const wrongMount = await fetch(`http://127.0.0.1:${PORT}/cooking/${ARTICLE.slug}`);
   ok("and so does a piece asked for at the wrong mount",
     wrongMount.status === 404, `status ${wrongMount.status}`);
 }
 
-/* ---------- the three reading hubs ----------
-
-   archive/TRANSITION.md Stage 11.1. There is nothing on the Worker's side
-   to compare these against: the hub it replaces is a committed
-   HTML file with an empty grid in it, filled in the browser after
-   a fetch, so a diff of the two would be a diff of one page
-   against a hole. What can be checked, and is the thing that
-   matters, is the hub against the database it was handed: every
-   live piece of that section has a card at its own address, the
-   number in the sentence is the number of cards, a draft is
-   nowhere, and a piece does not appear on another section's
-   index. All of it in the HTML, before any JavaScript runs.
-
-   `scripts/check-preview.ts` asks the same questions of a
-   deployed branch preview, for the environments where this file
-   cannot run. */
+    /* ---------- the three reading hubs ----------
+       Nothing on the Worker's side to compare against, so they are held to
+       the database they were handed: every live piece of the section has a
+       card at its own address, the number in the sentence is the number of
+       cards, a draft is nowhere, and a piece does not appear on another
+       section's index. All of it in the HTML, before any JavaScript runs.
+       `scripts/check-preview.ts` asks the same of a branch preview. */
 
 const hub = async (path: string): Promise<{ status: number; html: string }> => {
   const answer = await fetch(`http://127.0.0.1:${PORT}${path}`);
   return { status: answer.status, html: await answer.text() };
 };
 
-/* `check()` above reports its two sides as "worker" and "next",
-   which is the right pair for an article and a wrong one here:
-   there is no worker side. Same comparison, honest labels. */
+    /* `check()` labels its two sides "worker" and "next", and there is no
+       worker side here. Same comparison, honest labels. */
 const says = (name: string, want: string, got: string | null): void => ok(name, decode(got) === want,
   `wanted ${JSON.stringify(want)}\n      got    ${JSON.stringify(got)}`);
 
@@ -712,10 +534,8 @@ const says = (name: string, want: string, got: string | null): void => ok(name, 
   ok("the draft has none", !insights.html.includes(DRAFT.slug));
   ok("and neither has the kitchen's piece", !insights.html.includes(KITCHEN.slug));
 
-  /* The chips are counted from the cards, so "Everything · 1" is
-     the same claim as "one card was drawn". A hub that says one
-     number and shows another is the failure CLAUDE.md opens
-     with. */
+      /* The chips are counted from the cards, so "Everything · 1" is the
+         same claim as "one card was drawn". */
   ok("the topic chips are in the HTML, counted from the cards",
     insights.html.includes("Everything") && insights.html.includes("Equities"));
   ok("and the pieces promised but not written are teasers",
@@ -743,29 +563,20 @@ const says = (name: string, want: string, got: string | null): void => ok(name, 
   ok("and its own share card",
     meta(desk.html, "og:image") === "https://reiad.co.uk/og/travel.png");
 
-  /* An address this site has never produced. The hub lives at
-     /insights, one segment up, and `[section]/[slug]` must read
-     this as an article called `index` rather than as a hub. */
+      /* An address this site has never produced: `[section]/[slug]` must
+         read this as an article called `index` rather than as a hub. */
   const nowhere = await hub("/insights/index.html");
   ok("and /insights/index.html is handed back to the asset router",
     nowhere.status === 404, `status ${nowhere.status}`);
 }
 
-/* ---------- the addresses task #28 moved, which only decline ----------
-
-   A rule in `aab/_redirects` fires because the Worker DECLINES,
-   and `fromNext()` in worker.js falls through on 404 and on
-   nothing else. Most old addresses match no route at all, so
-   there is nothing to ask; these are the ones a route pattern
-   still claims and a lookup then has to refuse, one per shape.
-
-   404 rather than 500 is the whole assertion. `getArticle` and
-   `getLesson` both reach D1, and a route that threw instead of
-   returning null would answer 500, which falls through to
-   nothing: the reader would get the error rather than the
-   redirect, and every check in this repository would still pass.
-   It cannot be asked anywhere but here, because it needs the
-   binding. */
+    /* ---------- the addresses task #28 moved, which only decline ----------
+       A rule in `aab/_redirects` fires because the Worker DECLINES, and
+       `fromNext()` falls through on 404 and on nothing else. 404 rather
+       than 500 is the whole assertion: `getArticle` and `getLesson` both
+       reach D1, and a route that threw would answer 500, which falls
+       through to nothing, and every other check would still pass. It needs
+       the binding, so it cannot be asked anywhere but here. */
 {
   console.log("\nthe old addresses, which have to decline rather than throw");
   for (const [path, what] of [
@@ -782,17 +593,13 @@ const says = (name: string, want: string, got: string | null): void => ok(name, 
   }
 }
 
-/* ---------- the hand-written pages ----------
-
-   Stage 11.5. Prose, ported markup for markup, so there is
-   nothing to compare against a database and nothing the Worker
-   renders. What is worth holding is that each address answers,
-   with its own title and its own canonical link: the mistake this
-   catches is a page whose route exists and whose head was copied
-   from the one beside it. */
-/* `nav` is the address the rail marks, which is not always the
-   page's own: the stock check has its own item under Tools since
-   Stage 11.8, and before that it marked the Tools link. */
+    /* ---------- the hand-written pages ----------
+       Prose, with nothing to compare against a database. What is worth
+       holding is that each address answers with its own title and its own
+       canonical link: the mistake this catches is a page whose head was
+       copied from the one beside it. */
+    /* `nav` is the address the rail marks, which is not always the page's
+       own: the stock check has its own item under Tools. */
 const HAND_WRITTEN: Array<[path: string, title: string, nav: string | null]> = [
   ["/about", "About · Reiad's Library", "/about"],
   ["/contact", "Contact · Reiad's Library", "/contact"],
@@ -817,12 +624,9 @@ for (const [path, title, nav] of HAND_WRITTEN) {
   says(`${path} states its own canonical link`, `https://reiad.co.uk${path}`,
     attr(page.html, /<link rel="canonical" href="([^"]+)"/));
   if (nav) {
-    /* Order-agnostic on purpose. This used to require `href`
-       immediately after `<a `, which was true of hand-written
-       markup and is not true of React: it writes `class` first,
-       so the marked link stopped matching the moment the nav
-       became a component, and the check went quiet rather than
-       red. */
+        /* Order-agnostic on purpose: React writes `class` before `href`, so
+           a pattern requiring `href` immediately after `<a ` goes quiet
+           rather than red. */
     ok(`${path} marks ${nav} in the rail`,
       new RegExp(`<a [^>]*href="${nav}"[^>]*aria-current="page"`).test(page.html)
       || new RegExp(`<a [^>]*aria-current="page"[^>]*href="${nav}"`).test(page.html),
@@ -833,11 +637,10 @@ for (const [path, title, nav] of HAND_WRITTEN) {
   }
 }
 
-/* Every case study is reachable from the portfolio index, and the
-   index is the only thing that says so. A card pointing at a page
-   that does not answer, or a page nothing links, is the failure
-   `check-content.ts` watches from the other side; this is the
-   half that can only be seen once the pages are being served. */
+    /* Every case study is reachable from the portfolio index. A card
+       pointing at a page that does not answer is what `check-content.ts`
+       watches from the other side; this is the half that can only be seen
+       once the pages are being served. */
 {
   const index = await hub("/portfolio");
   const cards = [...index.html.matchAll(/href="(\/portfolio\/[a-z-]+)"/g)]
@@ -862,97 +665,61 @@ for (const [path, title, nav] of HAND_WRITTEN) {
     "no robots tag: this page is somebody's name and their progress");
 }
 
-/* ---------- the four schools ----------
-
-   Stage 11.7. This is the one route in this file with a real
-   twin: 251 committed pages, generated from the same rows the
-   route now reads. So the comparison is against the page itself,
-   fact by fact, and against the prose byte for byte.
-
-   Byte-identical HTML is not the bar and cannot be, for the
-   reason the note at the top of this file gives: React decides
-   attribute order and self-closing, not the author. What is held
-   is everything a reader or a scraper would notice, plus the two
-   things a school page carries that an article does not: the
-   data attributes its progress script reads, and the script
-   itself. A page that renders beautifully and files a reader's
-   ticks under a key nothing reads has lost their progress. */
+    /* ---------- the four schools ----------
+       The one route here with a real twin: committed pages generated from
+       the same rows the route reads. Byte-identical HTML is not the bar,
+       for the reason at the top of this file. What is held is everything a
+       reader or a scraper would notice, plus the two things a school page
+       carries that an article does not: the data attributes its progress
+       script reads, and the script itself. A page that files a reader's
+       ticks under a key nothing reads has lost their progress. */
 {
-  /* The pages these are compared against are in
-     `archive/schools-pages/` as of Stage 11.7 step 3, not in
-     `aab/`. That is the point of the comparison rather than a
-     problem with it: the archive is where a replaced page goes so
-     that whoever has to check the replacement really does what it
-     did can still read it, which is exactly what these checks are
-     doing. `archive/README.md` says so.
-
-     When the archive is eventually pruned these lose their other
-     side, and the honest thing then is to delete them rather than
-     to weaken them into checks of nothing. */
+      /* When these committed pages are eventually pruned these checks lose
+         their other side, and the honest thing then is to delete them
+         rather than weaken them into checks of nothing. */
   const { readFileSync } = await import("node:fs");
   const committed = (rel: string): string =>
     readFileSync(join(here, "..", "archive", "schools-pages", rel), "utf8");
 
-  /* The inside of a tag, by class, whichever order its attributes
-     are in. The builders write `class="x"` first and React does
-     not promise to. */
+      /* The inside of a tag, by class, whichever order its attributes are
+         in: the builders write `class` first and React does not promise
+         to. */
   const byClass = (html: string, tag: string, cls: string): string | null => html.match(
     new RegExp(`<${tag}[^>]*class="[^"]*\\b${cls}\\b[^"]*"[^>]*>([\\s\\S]*?)</${tag}>`, "i")
   )?.[1] ?? null;
 
-  /* Every school script the page loads, sorted.
-
-     Not the first one: the money school writes `/money/reader.js`
-     into every page of the school and its ladder pages add
-     `/money/stage.js` on top, so "the script" is two of them
-     there and one everywhere else. Order is not compared because
-     the builder puts the shared one first and a React shell puts
-     it last, and both are module scripts.
-
-     Nor is the tag. The Worker's own renderer writes a `<script>`
-     tag and the route names the same file in a `modulepreload`
-     link, because a module that runs before React has hydrated is
-     a module whose work React undoes: `components/scripts.tsx`
-     says why at length. What both sides have to agree on is WHICH
-     modules the page loads. */
-  /* `learn` is still in this pattern and the mount is `money`. It
-     has to be: the committed pages in `archive/schools-pages/` load
-     `/learn/learn.js`, and a pattern that could not see it would
-     extract nothing from the old side and compare "" against the
-     route's real answer, which passes for the wrong reason on the
-     day somebody deletes the script. Extract both spellings, then
-     let `moved()` map the old on to the new. */
+      /* Every school script the page loads, sorted. Not the first one: the
+         money school writes two. Order is not compared, and nor is the tag:
+         the Worker writes a `<script>` and the route names the same file in
+         a `modulepreload`, because a module that runs before hydration is a
+         module whose work React undoes. What both sides have to agree on is
+         WHICH modules the page loads. */
+      /* `learn` is still in this pattern and the mount is `money`, because
+         the older pages load `/learn/learn.js`: a pattern that could not
+         see it would extract "" from the old side and pass for the wrong
+         reason. Extract both spellings, then let `moved()` map old on to
+         new. */
   const schoolScripts = (html: string): string => [...html.matchAll(
     /(?:<script type="module" src|<link rel="modulepreload" href)="(\/(?:learn|money|deutsch|quran|english)\/[a-z-]+\.js)"/g)]
     .map((m) => moved(m[1]) ?? "").sort().join(" ");
 
-  /* Text, with the tags taken out and the whitespace flattened.
-     Indentation is the one difference that is guaranteed and
-     means nothing: the builders write a page a person can read
-     and React writes one it does not occur to it to indent. */
+      /* Text, with the tags out and the whitespace flattened: indentation
+         is the one difference that is guaranteed and means nothing. */
   const words = (html: string | null): string | null => (html === null ? null : decode(
     html.replace(/<[^>]+>/g, " ").replace(/\s+/g, " ").trim()));
 
-  /** How one fact is pulled out of a page. Both sides of every
-      comparison below go through the same one, which is what
-      makes the comparison a comparison. */
+      /** How one fact is pulled out of a page. Both sides of every
+          comparison go through the same one, which is what makes the
+          comparison a comparison. */
   type Extract = (html: string) => string | null;
 
   /* One lesson per school, and each is the shape that school is
      the only one to have. */
-  /* The money school is not in this loop and was until the
-     rewrite. `archive/schools-pages/learn/` holds it as it was
-     BEFORE: six-minute lessons, one language, `ধাপ` where the
-     school now says `পর্যায়`, and twenty-one lessons in a stage
-     that has twenty-five. Comparing the route against those
-     asks "has the content changed", and the answer is yes,
-     deliberately, in every one of those places.
-
-     That is the case this file already anticipated: a comparison
-     whose other side has gone. What replaces it is not nothing.
-     It is the block below, which asks what a money lesson has to
-     do NOW, and asks it of the shape the other three schools do
-     not have: two bodies and the blocks between them. */
+      /* The money school is not in this loop: the committed pages hold it
+         as it was before the rewrite, so comparing against them asks "has
+         the content changed" and the answer is yes, deliberately. What
+         replaces it is the block below, which asks what a money lesson has
+         to do now. */
   for (const [path, file, note] of [
     ["/deutsch/stufe-1/anfang.html", "deutsch/stufe-1/anfang.html",
       "a Teil, with German under the title"],
@@ -967,10 +734,9 @@ for (const [path, title, nav] of HAND_WRITTEN) {
 
     const was = committed(file);
     const now = page.html;
-    /* Labelled for what the two sides actually are. `check()`
-       says "worker" and "next", which is the right pair for an
-       article and a wrong one here: the thing on the other side
-       of this comparison is a committed file. */
+        /* Labelled for what the two sides actually are: the thing on the
+           other side of this comparison is a committed file, not a
+           worker. */
     const same = (what: string, extract: Extract): void => {
       const a = rewritten(moved(decode(extract(was))));
       const b = moved(decode(extract(now)));
@@ -979,10 +745,8 @@ for (const [path, title, nav] of HAND_WRITTEN) {
         `page:  ${JSON.stringify(a)}\n      route: ${JSON.stringify(bn)}`);
     };
 
-    /* `renamed` on the two that carry the school's own name: see
-       the note where it is defined. Stage 11.8 renamed the money
-       school and every committed page of it still says what it
-       was called. */
+        /* `renamed` on the two that carry the school's own name: see the
+           note where it is defined. */
     same("the title", (h) => renamed(tagText(h, "title")));
     same("the description", (h) => meta(h, "description", "name"));
     same("the canonical link", (h) => attr(h, /<link rel="canonical" href="([^"]+)"/));
@@ -991,9 +755,9 @@ for (const [path, title, nav] of HAND_WRITTEN) {
     }
     same("the language", (h) => attr(h, /<html lang="([^"]+)"/));
 
-    /* The eyebrow, the heading, the blurb and the meta line: the
-       four things above the prose, and the only four a reader
-       reads before deciding whether they are in the right place. */
+        /* The eyebrow, the heading, the blurb and the meta line: the four
+           things a reader reads before deciding whether they are in the
+           right place. */
     same("the eyebrow", (h) => words(byClass(h, "span", "eyebrow")));
     same("the heading", (h) => words(tagText(h, "h1")));
     same("the one-liner", (h) => words(byClass(h, "p", "one-liner")));
@@ -1012,9 +776,9 @@ for (const [path, title, nav] of HAND_WRITTEN) {
     same("where the backlinks point", (h) => links(h, "backlink"));
     same("where the prev/next pair points", (h) => links(h, "prev-next"));
 
-    /* The progress attributes, by name and by value. Three
-       schools call them three things and every one of those names
-       is already a key in somebody's browser. */
+        /* The progress attributes, by name and by value. Three schools call
+           them three things and every one of those names is already a key
+           in somebody's browser. */
     for (const name of ["data-lesson-id", "data-teil-id", "data-part-id",
                         "data-stage", "data-stufe", "data-dhap", "data-term"]) {
       same(`the ${name} attribute`,
@@ -1024,10 +788,8 @@ for (const [path, title, nav] of HAND_WRITTEN) {
     same("the scripts the page loads", schoolScripts);
     same("the body class", (h) => attr(h, /<body class="([^"]*)"/));
 
-    /* And the prose itself, byte for byte, because that is the
-       thing the database holds and the thing a rebuild was
-       supposed to be carrying. Compared as the row has it rather
-       than as either page indents it. */
+        /* And the prose byte for byte, because that is what the database
+           holds and what a rebuild was supposed to be carrying. */
     const stage = path.split("/")[2] === "terms" ? "basics-1" : path.split("/")[2];
     const slug = (path.split("/").pop() ?? "").replace(/\.html$/, "");
     const found = snapshot.lessons.find(
@@ -1038,21 +800,14 @@ for (const [path, title, nav] of HAND_WRITTEN) {
       "the stored body is not in the page, character for character");
   }
 
-  /* ---- a stage's contents page, which is the other half ----
-
-     Stage 11.7 step 2. Seventeen of the 251, and the page a
-     reader navigates a school by. Every number on it is counted
-     from the lessons rather than declared, which is the rule at
-     the top of CLAUDE.md, so the facts list is compared word for
-     word: a route that counted differently from the builder would
-     be a page telling a reader there are fourteen lessons where
-     the ladder shows thirteen. */
-  /* The money school's stage is out of this loop for the reason
-     given above its lesson: `learn/basics-2/index.html` is the
-     ladder before the rewrite, twenty-one rungs against
-     twenty-five. What holds its stage page now is
-     `check-money.ts` on the ladder and the block below on the
-     page. */
+      /* ---- a stage's contents page, which is the other half ----
+         Every number on it is counted from the lessons rather than
+         declared, so the facts list is compared word for word: a route that
+         counted differently would tell a reader there are fourteen lessons
+         where the ladder shows thirteen. */
+      /* The money school's stage is out of this loop for the reason given
+         above its lesson. What holds it now is `check-money.ts` on the
+         ladder and the block below on the page. */
   for (const [path, file, note] of [
     ["/deutsch/stufe-1", "deutsch/stufe-1/index.html",
       "a Stufe, with a practice book above the cards"],
@@ -1075,11 +830,9 @@ for (const [path, title, nav] of HAND_WRITTEN) {
         `page:  ${JSON.stringify(a)}\n      route: ${JSON.stringify(bn)}`);
     };
 
-    /* The school's own name is the third clause of the title, and
-       the money school's changed at Stage 11.8: it was "শেখার
-       লাইব্রেরি" on every committed page and it is "টাকা ও শেয়ার".
-       Compared with that substitution rather than skipped, so the
-       other two thirds of the title are still held exactly. */
+        /* The school's own name is the third clause of the title and it
+           changed; compared with that substitution rather than skipped, so
+           the other two thirds are still held exactly. */
     same("the title", (h) => renamed(tagText(h, "title")));
     same("the description", (h) => meta(h, "description", "name"));
     same("the canonical link", (h) => attr(h, /<link rel="canonical" href="([^"]+)"/));
@@ -1094,9 +847,8 @@ for (const [path, title, nav] of HAND_WRITTEN) {
     same("what the stage says about itself",
       (h) => words(byClass(h, "dl", "stage-facts")));
 
-    /* Every card, in order, with its address. A ladder that has
-       lost a rung or reordered two is the failure this whole
-       stage exists to avoid. */
+        /* Every card, in order, with its address: a ladder that has lost a
+           rung or reordered two is the failure this exists to avoid. */
     same("every lesson card, in order", (h) => {
       const cards = [...h.matchAll(/class="cell lesson-card[^"]*"\s+href="([^"]+)"/g)]
         .map((m) => m[1]);
@@ -1107,12 +859,10 @@ for (const [path, title, nav] of HAND_WRITTEN) {
       return [...cards, ...other].join(" ");
     });
 
-    /* The bar and the "continue" button, for the three schools
-       whose ladder is still a script reading a data attribute.
-       The money school's is React since Stage 11.8: it counts the
-       ids the route rendered, so there is no attribute to compare
-       and the committed page's is the thing that went away.
-       Checked here rather than skipped silently. */
+        /* The bar and the "continue" button, for the three schools whose
+           ladder is still a script reading a data attribute. The money
+           school's is React and counts the ids the route rendered, so there
+           is no attribute to compare. */
     if (path.startsWith("/money/")) {
       ok(`${path}: the bar counts what the route rendered`,
         /class="meter"/.test(now) && !/data-stage-progress/.test(now),
@@ -1129,10 +879,9 @@ for (const [path, title, nav] of HAND_WRITTEN) {
       return inside === null ? null
         : [...inside.matchAll(/href="([^"]+)"/g)].map((m) => m[1]).join(" ");
     });
-    /* The money school's ladder page loaded `/money/stage.js` on
-       top of `/money/reader.js`; the second of those is the modal
-       term reader and stayed, the first drew the bar and is
-       gone. */
+        /* The money school's ladder page loaded `/money/stage.js` on top of
+           `/money/reader.js`: the second is the modal term reader and
+           stayed, the first drew the bar and is gone. */
     if (path.startsWith("/money/")) {
       says(`${path}: the scripts the page loads`, "/money/reader.js", schoolScripts(now));
     } else {
@@ -1154,19 +903,12 @@ for (const [path, title, nav] of HAND_WRITTEN) {
       !dhap.html.includes("buch-cta") && !dhap.html.includes("wb-cta"));
   }
 
-  /* ---- the trail says every level, on the pages that have most ----
-
-     A school page is the deepest thing on this site and had the
-     shortest trail: the bar read Home > Skills > German three
-     levels down, so the ladder a reader had walked was not in it
-     and the only way back up was the rail. `[slug]` IS the stage
-     and the layout that reads it is the deepest one that can,
-     because a layout cannot see a child's params.
-
-     Only this file can check it. The 251 school routes are
-     dynamic and need the database, so the browser test that
-     covers the trail everywhere else serves prerendered HTML and
-     cannot reach one. */
+      /* ---- the trail says every level, on the pages that have most ----
+         `[slug]` IS the stage, and the layout that reads it is the deepest
+         one that can, because a layout cannot see a child's params. Only
+         this file can check it: the 251 school routes are dynamic and need
+         the database, and the browser test that covers the trail everywhere
+         else serves prerendered HTML. */
   {
     const stage = await hub("/deutsch/stufe-1");
     ok("a stage page names the stage in the trail",
@@ -1187,23 +929,13 @@ for (const [path, title, nav] of HAND_WRITTEN) {
       "the lesson lost the stage crumb");
   }
 
-  /* ---- the eighteen originals, which are a different thing ----
-
-     `/money/terms/*.html` is not a generated page and never has
-     been: `build-lessons.mjs` says so at the top and steps around
-     them. They were written by hand before the money school had a
-     builder, and they carry their own title, their own eyebrow,
-     one backlink to the library rather than two to a stage, and no
-     prev/next pair at all. The ladder names them, `basics-1` holds
-     them, and the rows are in D1, so the route renders them like
-     every other lesson.
-
-     That is a CHANGE to those eighteen pages rather than a port of
-     them, and comparing the two fact by fact would only be
-     measuring a decision that has not been taken yet. archive/TRANSITION.md
-     Stage 11.7 step 2 is where it gets taken. What is worth holding
-     now is the part where a wrong answer costs a reader something:
-     the address, and the key their ticks are filed under. */
+      /* ---- the eighteen originals, which are a different thing ----
+         `/money/terms/*.html` was written by hand before the money school
+         had a builder: their own title and eyebrow, one backlink rather
+         than two, no prev/next pair. Comparing them fact by fact would only
+         measure a decision nobody has taken. What is worth holding is where
+         a wrong answer costs a reader something: the address, and the key
+         their ticks are filed under. */
   {
     const page = await hub("/money/terms/share.html");
     ok("a term of basics-1 answers at /money/terms/, not at its stage's folder",
@@ -1211,29 +943,22 @@ for (const [path, title, nav] of HAND_WRITTEN) {
     says("and says that address is its own",
       "https://reiad.co.uk/money/terms/share.html",
       attr(page.html, /<link rel="canonical" href="([^"]+)"/));
-    /* The one that silently loses a year of somebody's progress.
-       Every other lesson on the site files a tick under
-       `<stage>/<slug>`; these eighteen file it under the slug
-       alone, because they did so before `basics-1` existed. */
+        /* The one that silently loses a year of somebody's progress: every
+           other lesson files a tick under `<stage>/<slug>` and these
+           eighteen file it under the slug alone. */
     says("and files progress under the bare slug, as it always has",
       "share", attr(page.html, /data-lesson-id="([^"]*)"/));
   }
 
-  /* ---- the money school as it is now: two bodies and blocks ----
-
-     What replaced the archived-page comparison. Everything here
-     is a way the page can render perfectly and be wrong, which is
-     what the rest of this file is about.
-
-     `case-study` is the one asked, because it is the richest: it
-     carries seven blocks across five kinds, and the two bodies
-     mount them in the same order or `check-money.ts` would not
-     have let it through. */
+      /* ---- the money school as it is now: two bodies and blocks ----
+         Everything here is a way the page can render perfectly and be
+         wrong. `case-study` is the one asked because it is the richest:
+         seven blocks across five kinds, mounted in the same order by both
+         bodies. */
   {
-    /* By relative path, like `schools-snapshot.ts` above and not
-       like the route: node refuses to strip types under
-       `node_modules`, and `@reiad/shared` resolves to the copy
-       npm made there. */
+        /* By relative path, not like the route: node refuses to strip types
+           under `node_modules`, and `@reiad/shared` resolves to the copy npm
+           made there. */
     const { splitBody, parseBlocks } = await import("../shared/lesson.ts");
     const row = snapshot.lessons.find(
       (l) => l.school === "money" && l.stage === "basics-3" && l.slug === "case-study");
@@ -1247,19 +972,17 @@ for (const [path, title, nav] of HAND_WRITTEN) {
       const en = splitBody(String(row.body_en));
       const blocks = parseBlocks(row.blocks);
 
-      /* Both halves reach the page. The stylesheet chooses which
-         one is seen, keyed on an attribute the boot script sets
-         before the first paint, so a language that is missing
-         from the HTML is a language no switch can reach. */
+          /* Both halves reach the page. The stylesheet chooses which one is
+             seen, keyed on an attribute the boot script sets before the
+             first paint, so a language missing from the HTML is a language
+             no switch can reach. */
       ok("both bodies are in the HTML, each in its own element",
         html.includes('class="ls-bn" lang="bn"') && html.includes('class="ls-en" lang="en"'),
         "one of the two language wrappers is missing");
 
-      /* And in pieces, because the body is cut at its mounts.
-         `includes(body)` was the old assertion and it cannot hold
-         once a block sits in the middle of the prose; every chunk
-         still has to be there, and a dropped one is a paragraph a
-         reader never sees. */
+          /* And in pieces, because the body is cut at its mounts:
+             `includes(body)` cannot hold once a block sits in the middle of
+             the prose, and a dropped chunk is a paragraph nobody sees. */
       for (const [n, part] of bn.parts.entries()) {
         const chunk = part.trim();
         if (chunk.length < 40) continue;
@@ -1273,10 +996,9 @@ for (const [path, title, nav] of HAND_WRITTEN) {
           html.includes(chunk), "a chunk of the stored English body is not in the page");
       }
 
-      /* One block per mount, mounted where the marker was, and
-         the marker itself gone. A `data-mount` left in the output
-         is a block that did not render into a gap that still
-         looks deliberate. */
+          /* One block per mount, mounted where the marker was, and the
+             marker gone: a `data-mount` left in the output is a block that
+             did not render into a gap that still looks deliberate. */
       says("as many blocks as the body mounts",
         String(bn.ids.length),
         String((html.match(/class="ls-block"/g) ?? []).length));
@@ -1291,39 +1013,29 @@ for (const [path, title, nav] of HAND_WRITTEN) {
           html.includes(`data-kind="${String((b as { kind: string }).kind)}"`)),
         "a block rendered without the kind its stylesheet keys on");
 
-      /* The two things the route decides rather than the body:
-         how much the lesson matters, and whether there is a
-         second language to switch to. */
+          /* The two things the route decides rather than the body: how much
+             the lesson matters, and whether there is a second language. */
       ok("the lesson says how much it matters",
         html.includes("lesson-stars"), "no stars on a lesson whose row has them");
       ok("and offers the language switch, because it has both",
         html.includes('class="ls-lang"'), "no switch on a lesson with two bodies");
     }
 
-    /* The other half of that last one. A switch that does nothing
-       is worse than no switch: it says the English is missing
-       rather than not written, and three schools have no English
-       half at all. */
+        /* A switch that does nothing is worse than no switch: it says the
+           English is missing rather than not written, and three schools have
+           no English half at all. */
     const german = await hub("/deutsch/stufe-1/anfang.html");
     ok("and a lesson with one body is offered no switch",
       german.status === 200 && !german.html.includes('class="ls-lang"'),
       "a school with no English half drew a language switch");
   }
 
-  /* ---- the three hand-written pages ----
-
-     Stage 11.7 step 3, and there were five. The money school's
-     hub and its full index left this list at Stage 11.8: both are
-     rendered from the rows now, and what they are held to is
-     below rather than here, because there is no committed page
-     left to compare them against.
-
-     The three that remain are prose, copied verbatim into
-     `lib/school-hubs.ts` rather than rewritten as JSX.
-     `check-next.ts` holds the copy to the original, so what is
-     worth checking here is the part that is NOT copied: the head
-     Next writes, the shell around the writing, and the scripts
-     that make the ladder live. */
+      /* ---- the three hand-written pages ----
+         Prose, copied verbatim into `lib/school-hubs.ts` rather than
+         rewritten as JSX. `check-next.ts` holds the copy to the original,
+         so what is worth checking here is the part that is NOT copied: the
+         head Next writes, the shell around the writing, and the scripts
+         that make the ladder live. */
   for (const [path, file] of [
     ["/deutsch", "deutsch/index.html"],
     ["/quran", "quran/index.html"],
@@ -1352,23 +1064,11 @@ for (const [path, title, nav] of HAND_WRITTEN) {
     same("the body class", (h) => attr(h, /<body class="([^"]*)"/));
     same("the scripts the page loads", schoolScripts);
 
-    /* The WRITING, whole and word for word. Not the markup, and
-       the difference is the whole of why this check works again.
-
-       It compared the two bodies as strings until 19 August 2026,
-       which was right on the day it was written and stopped being
-       right twice over: the cards became `<InfoCard>` and the
-       grids became Tailwind utilities, both deliberately, in
-       stages that came after these pages were archived. So the
-       check was failing on a redesign it was never asking about,
-       on main as well as on every branch, and three permanent
-       failures are three a new one hides behind.
-
-       Tags out, comments out, whitespace collapsed. What is left
-       is what a reader reads, and that is the thing a port must
-       not change: eight hundred lines of hand-converted Bangla is
-       eight hundred chances to lose a word that nobody reviewing
-       a diff of markup would catch. All three still match exactly. */
+        /* The WRITING, whole and word for word, and NOT the markup: tags
+           out, comments out, whitespace collapsed. Eight hundred lines of
+           hand-converted Bangla is eight hundred chances to lose a word
+           that nobody reviewing a diff of markup would catch. Comparing the
+           markup instead fails on every deliberate redesign. */
     const body = (h: string): string | null => h.match(
       /<main id="main">\s*<div class="wrap"[^>]*>([\s\S]*)<\/div>\s*<\/main>/)?.[1] ?? null;
     const prose = (h: string | null): string => (h ?? "")
@@ -1377,14 +1077,12 @@ for (const [path, title, nav] of HAND_WRITTEN) {
       .replace(/&nbsp;/g, " ")
       .replace(/\s+/g, " ")
       .trim();
-    /* Both sides, and WHERE they part. "a word of the writing
-       differs" was the whole message, which tells you that
-       something is wrong and nothing about what: on a hub of
-       nine hundred words that is a bisection by hand. */
+        /* Both sides, and WHERE they part. "a word of the writing differs"
+           is a bisection by hand on a hub of nine hundred words. */
     {
-      /* `prose()` answers "" for a page with no `<main>`, so both
-         sides are strings whatever the two pages turned out to
-         be; the check below is what says the old one had one. */
+          /* `prose()` answers "" for a page with no `<main>`, so both sides
+             are strings whatever the pages turned out to be; the check below
+             is what says the old one had one. */
       const a = rewritten(prose(moved(body(was)))) ?? "";
       const b = prose(moved(body(now))).normalize("NFC");
       const wa = a.split(" ");
@@ -1398,28 +1096,23 @@ for (const [path, title, nav] of HAND_WRITTEN) {
         + `\n      route: ${JSON.stringify(wb.slice(i, i + 14).join(" "))}`);
     }
 
-    /* The ladder's fallback list survives, which is the half a
-       reader with no JavaScript gets and the half a search engine
-       reads. */
+        /* The ladder's fallback list survives, which is the half a reader
+           with no JavaScript gets and the half a search engine reads. */
     ok(`${path}: the no-JavaScript ladder is in the HTML`,
       /class="(?:leiter-fallback|ladder|stufe-liste|contents-stage)/.test(now)
       || path.endsWith("contents.html"),
       "no ladder fallback in the served page");
   }
 
-  /* A lesson the ladder does not have is handed back to the asset
-     router, which is what keeps all 251 committed pages answering
-     while NEXT_ROUTES says nothing about the schools. */
+      /* A lesson the ladder does not have is handed back to the asset
+         router. */
   const nothing = await hub("/money/terms/not-a-lesson.html");
   ok("a slug the ladder does not name falls through",
     nothing.status === 404, `status ${nothing.status}`);
 
-  /* The starter guide was `inline` until Stage 11.8: its eight
-     steps were accordion sections of the hand-written hub and had
-     never had pages, and this check held the route to 404ing one.
-     They are pages, so the same check now holds the opposite, and
-     it is the same failure it always guarded against: the route
-     and the ladder disagreeing about what exists. */
+      /* The starter guide's eight steps are pages now, so this holds the
+         route to rendering them. Same failure it always guarded against:
+         the route and the ladder disagreeing about what exists. */
   const step = await hub("/money/start/first-buy.html");
   ok("a step of the starter guide is a page of its own", step.status === 200,
     `status ${step.status}`);
@@ -1433,12 +1126,9 @@ for (const [path, title, nav] of HAND_WRITTEN) {
     if (hubPage.status === 200) {
       const h = hubPage.html;
 
-      /* Every stage, and every step of the starter guide. Counted
-         rather than sampled: the whole reason this page stopped
-         being prose is that a hand-written hub listed eight
-         stages while the ladder had eight and the count agreed by
-         luck. Seventeen is eight steps plus seven ladder rungs
-         plus the two doors at the foot. */
+          /* Every stage, and every step of the starter guide. Counted
+             rather than sampled: seventeen is eight steps plus seven ladder
+             rungs plus the two doors at the foot. */
       const stages = snapshot.stages.filter((r) => r.school === "money");
       for (const stage of stages.slice(1)) {
         ok(`/money/ links its ${stage.slug} rung`,
@@ -1467,14 +1157,12 @@ for (const [path, title, nav] of HAND_WRITTEN) {
       `status ${contents.status}`);
 
     if (contents.status === 200) {
-      /* The complete list is complete. Every lesson of the school
-         with prose in it, by name: this is the one page whose
-         entire value is that nothing is missing from it, and it
-         was a hand-written string until Stage 11.8. */
-      /* Only the stages this fixture seeded prose for. The
-         database has sixty written lessons and this local copy has
-         the three stages it needs; asking for the other four
-         would be asking the route to invent them. */
+          /* The complete list is complete: every lesson of the school with
+             prose in it, by name. This is the one page whose entire value
+             is that nothing is missing from it. */
+          /* Only the stages this fixture seeded prose for: the database has
+             sixty written lessons and this local copy has the three it
+             needs. */
       const written = snapshot.lessons
         .filter((r) => r.school === "money" && r.body && SEEDED.includes(String(r.stage)));
       const missing = written.filter((r) => !contents.html.includes(`>${r.title}<`));
@@ -1505,11 +1193,9 @@ console.log("The article says everything the Worker's does, each hub says what\n
   + "the database gave it, each school page says what the page it replaced\n"
   + "said, and every address answers.\n");
 
-/* Said out loud, because falling off the end is not the same
-   thing here. `wrangler dev` starts workerd as a child of its
-   own, and SIGTERM to the one this test spawned does not always
-   take the grandchild with it: the pipes stay open, the event
-   loop stays awake, and a run that has printed its result sits
-   there until something kills it. Which is a hung job in CI, on
-   a green test. */
+    /* Said out loud, because falling off the end is not the same thing
+       here: `wrangler dev` starts workerd as a child of its own, SIGTERM
+       does not always take the grandchild with it, the pipes stay open,
+       and a run that has printed its result hangs. Which is a hung job in
+       CI, on a green test. */
 process.exit(0);

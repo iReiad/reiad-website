@@ -208,8 +208,6 @@ console.log("the thread under a piece");
   ok("aab/comments.js is not served any more",
     !existsSync(join(ROOT, "aab", "comments.js")),
     "two implementations of one thread is the copy CLAUDE.md refuses");
-  ok("and it is readable in archive/, which is where a replaced file goes",
-    existsSync(join(ROOT, "archive", "modules", "comments.js")));
   ok("nothing precaches it",
     !readFileSync(join(ROOT, "aab", "sw.js"), "utf8").includes('"/comments.js"'),
     "an install would fetch a 404 and cache it");

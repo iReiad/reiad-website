@@ -1,55 +1,27 @@
 "use client";
 
-/* ============================================================
-   routine/log.tsx: one thing you did today, and the button for it.
+/* One thing you did today, and the button for it. `.chip` is not a flex
+   container, so three bare children inside one run together.
 
-   The today card on the dashboard is the fastest place to log a
-   task: the day page is the long form, this is the row of things
-   you actually tick. It was three bare children inside a chip:
+   THE MARK IS A DRAWING, NOT A LETTER. `○` at chip size beside Bangla is
+   `০`: the state of the button was carried by a character that reads as a
+   digit in the language the button is labelled in. It is a drawn ring
+   that fills.
 
-       <span>{m >= 1 ? "✓" : "○"}</span>
-       <span lang="bn">{t.bn}</span>
-       <em className="mono">{ever}</em>
+   THE TALLY SAYS WHAT IT IS. That trailing numeral is how many days the
+   task has EVER been marked, so it sits behind a hairline in the mono
+   face, and it is only drawn when there is something to count: a zero
+   beside a task you have never done is a reproach, and this page has no
+   flames and nothing counting down.
 
-   and `.chip` is not a flex container, so all three ran together:
-
-       ০ইংরেজি + জার্মান১
-
-   Three separate problems in one string, which is why this is a
-   component rather than a `gap` added to the chip.
-
-   ---- 1. the mark was a letter ----
-
-   `○` at chip size, beside Bangla, is `০`. The state of the
-   button was being carried by a character that reads as a digit
-   in the language the button is labelled in. It is a drawn ring
-   that fills now, which is the same idea as the tick on the day
-   page and cannot be read as a number in any language.
-
-   ---- 2. the tally said nothing about itself ----
-
-   That trailing numeral is how many days this task has EVER been
-   marked, and jammed against the words it reads as part of them.
-   Behind a hairline and in the mono face it reads as a count, and
-   it is only drawn when there is something to count: a zero
-   beside a task you have never done is a reproach, and this page
-   deliberately has no flames and nothing counting down.
-
-   ---- 3. and the words are Bangla ----
-
-   `.chip` sets `uppercase` and `0.05em` of tracking, which are
-   right for a mono label and wrong for a Bangla phrase: Bangla
-   has no case, so the transform does nothing, and the tracking
-   pulls apart conjuncts that should sit together. `.crumbs`
-   already turns both off for Bangla and this does the same.
-
-   ---- what the screen reader gets ----
+   AND THE WORDS ARE BANGLA. `.chip` sets `uppercase` and `0.05em` of
+   tracking, which are right for a mono label and wrong for a Bangla
+   phrase: Bangla has no case, so the transform does nothing, and the
+   tracking pulls apart conjuncts that should sit together.
 
    The visible parts are `aria-hidden` and the button carries one
-   sentence: the task, whether it is done, and how many days it
-   has been. A ring, a phrase and a numeral read out as three
-   fragments is not a label.
-   ============================================================ */
+   sentence: a ring, a phrase and a numeral read out as three fragments is
+   not a label. */
 
 import { ChipButton } from "../ui/chip";
 

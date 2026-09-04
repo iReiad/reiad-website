@@ -1,53 +1,27 @@
 "use client";
 
-/* ============================================================
-   engage.tsx: what a reader can do besides read.
+/* What a reader can do besides read: a row of three reactions, and a
+   moderated question box with the questions already answered above it.
 
-   Two things under a piece: a row of three reactions, and a
-   moderated question box with the questions already answered
-   above it.
+   IT IS ALLOWED TO NOT EXIST. `backendReady()` first, and nothing is
+   drawn if the answer is no: this site runs without its database, every
+   article still reads, and a reaction row that cannot record anything is
+   worse than no row.
 
-   ---- it is allowed to not exist ----
+   ONE REACTION PER READER PER PIECE, held by `reacted:<slug>` in
+   localStorage. Not an account, not a cookie, not a fingerprint: the
+   server records a number and this records that the browser has already
+   added to it. Clearing storage lets somebody press again, which is the
+   right trade for asking nothing of them.
 
-   `backendReady()` first, and nothing is drawn if the answer is
-   no. That is not defensiveness: this site runs without its
-   database, every article still reads, and a reaction row that
-   cannot record anything is worse than no row.
+   THERE IS NO `countView()` HERE. The shell counts a view; a component
+   about reactions does not, and one that called it at its top level as
+   well posted `signals/view` twice per load on one section and once on
+   the others, so nothing in the numbers was comparable.
 
-   ---- one reaction per reader per piece ----
-
-   `reacted:<slug>` in localStorage, and it is the whole of the
-   rule. Not an account, not a cookie, not a fingerprint: what is
-   recorded on the server is a number, and what is recorded here
-   is that this browser has already added to it. A reader who
-   clears their storage can press again, and that is the right
-   trade for asking nothing of them.
-
-   ---- what this replaces ----
-
-   `archive/modules/engage.js`, 186 lines, dynamically imported by
-   `app.js` on `/insights/` paths and appending itself into the
-   article it found by selector.
-
-   AND IT COUNTED EVERY VIEW TWICE. `initDynamic()` in `app.js`
-   calls `countView()` for every page on the site and then imports
-   this module, whose top level called `countView()` again, so an
-   insights piece posted `signals/view` twice per load and a
-   cooking or travel piece posted it once. The numbers were not
-   just high, they were high for one section and not the others,
-   which is worse: nothing in them was comparable. There is no
-   `countView()` here. The shell counts a view; a component about
-   reactions does not.
-
-   ---- and it is insights-only, which is not this file's doing ----
-
-   `app.js` imported this on `/insights/` and nowhere else, so a
-   cooking or travel piece has never had reactions or a question
-   box. The route decides that now, in the same place and the same
-   way, because a port that quietly turned the feature on for two
-   more sections would not be a port. Whether they should have it
-   is a decision somebody can take on purpose.
-   ============================================================ */
+   AND IT IS INSIGHTS-ONLY, which the ROUTE decides, in the same place and
+   the same way `app.js` did. Whether the other two sections should have
+   it is a decision somebody can take on purpose. */
 
 import { useCallback, useEffect, useState, type FormEvent } from "react";
 import { Button } from "./ui/button";
@@ -201,17 +175,14 @@ function Ask({ slug }: { slug: string }) {
         </p>
       ) : (
         <form className="ask-form" onSubmit={send}>
-          {/* THE BOXES ARE THE LIBRARY'S, which is the one thing
-              here that is not what the module did. It wrapped a
-              bare `<input>` in a `<label>` with a `<span>` in it,
-              which is the eleventh-hand-written-input shape
-              `ui/field.tsx` exists to end: `check-components.ts`
-              is a ratchet and a new one of those may not be
-              added. What was a placeholder standing in for a
-              label is a label now, and the two things a reader is
-              owed, that the name may be published and the email
-              never is, are hints rather than grey text that
-              disappears the moment they type. */}
+              {/* THE BOXES ARE THE LIBRARY'S: a bare `<input>` wrapped in
+                  a `<label>` with a `<span>` in it is the hand-written
+                  input shape `ui/field.tsx` exists to end, and
+                  `check-components.ts` is a ratchet. What was a
+                  placeholder standing in for a label is a label, and the
+                  two things a reader is owed, that the name may be
+                  published and the email never is, are hints rather than
+                  grey text that disappears the moment they type. */}
           <TextArea
             id="ask-body" name="body" rows={3} required
             label="Your question"

@@ -1,27 +1,16 @@
-/* ============================================================
-   _lib/quiz.ts: a Coursera quiz export, turned into questions.
+/* _lib/quiz.ts: a Coursera quiz export, turned into questions.
 
-   ---- why this cannot be `sanitiseHTML` ----
-
-   A quiz page arrives as a saved Coursera document and every
-   answer in it lives inside a `<form>`. `sanitiseHTML()` drops
-   `form` WHOLE, contents and all, and it is right to: an article
-   out of the Studio has no business carrying a form, and the
-   Studio's sanitiser and the server's have to agree.
-
-   So running it over a quiz leaves the questions and deletes
-   every option, which is exactly what the page did: "Question 2",
-   a rule, "Question 3", a rule. Nothing looked broken. The words
-   that were missing were the ones nobody had counted.
-
-   The fix is not to widen the allowlist. That would let a form
+   IT CANNOT BE `sanitiseHTML`. Every answer in a quiz page lives
+   inside a `<form>`, and that function drops `form` WHOLE,
+   contents and all, which is right for an article: running it over
+   a quiz leaves the questions and deletes every option, and the
+   page looked finished. Widening the allowlist would let a form
    into every article on the site to serve one page that is not an
-   article. This reads the structure FIRST, keeps what it
-   understands, and sanitises only the prose it hands on. What
-   reaches the browser is data, not somebody else's markup, and
-   the browser builds its own inputs from it.
+   article. So this reads the structure FIRST and sanitises only
+   the prose it hands on: what reaches the browser is data, and the
+   browser builds its own inputs from it.
 
-   ---- the shape it is reading ----
+   The shape it reads:
 
        <h3>Question 1</h3>
        <co-content>  ...the prompt: <p>, <img>, sometimes <h2>  </co-content>
@@ -34,24 +23,16 @@
          ...
        </form>
        <hr/>
-       <h3>Question 2</h3>
-       ...
 
    `type` is the one thing worth reading off the input: `radio` is
-   pick one and `checkbox` is "select all that apply", and a page
-   that offers radios for a select-all question is quietly telling
-   the reader the wrong thing about the question.
+   pick one and `checkbox` is select-all, and offering radios for a
+   select-all question tells the reader the wrong thing about it.
 
-   ---- what is NOT in the file ----
-
-   The answers. There is no `checked`, no `correct`, no data
-   attribute, nothing: Coursera marks a quiz on its own server and
-   the export is the paper, not the marking scheme. So this cannot
-   score, and nothing here pretends to. A reader answers, the
-   answer is kept, and that is the whole of the promise. Inventing
-   a "correct" would mean guessing, and a wrong tick on a right
-   answer is worse than no tick at all.
-   ============================================================ */
+   THE ANSWERS ARE NOT IN THE FILE. No `checked`, no `correct`,
+   nothing: Coursera marks on its own server and the export is the
+   paper, not the marking scheme. So this cannot score and nothing
+   here pretends to. A wrong tick on a right answer is worse than
+   no tick. */
 
 import { sanitiseHTML } from "./sanitise.ts";
 
@@ -71,11 +52,9 @@ export interface QuizQuestion {
   options: string[];
 }
 
-/** Tags out, entities decoded, whitespace collapsed.
-
-    Only ever run over one option, which is a `<label>` holding an
-    `<input>`, a `<co-content>`, a `<span>` and a `<br>`. Dropping
-    the tags leaves the sentence. */
+/** Tags out, entities decoded, whitespace collapsed. Only ever run
+    over one option, which is a `<label>` holding an `<input>`, a
+    `<co-content>`, a `<span>` and a `<br>`. */
 function textOf(html: string): string {
   return html
     .replace(/<[^>]*>/g, " ")
@@ -115,9 +94,9 @@ function optionsIn(block: string): { options: string[]; multiple: boolean } {
  * Every question in a quiz export.
  *
  * Returns an empty array for anything that is not one, which is
- * the honest answer for a file whose shape this does not
- * recognise: the caller falls back to rendering it as a reading,
- * so an unparseable quiz is still readable rather than blank.
+ * the honest answer for a shape this does not recognise: the
+ * caller falls back to rendering it as a reading, so an
+ * unparseable quiz is still readable rather than blank.
  */
 export function parseQuiz(html: string): QuizQuestion[] {
   const text = String(html ?? "").replace(/\r\n?/g, "\n");

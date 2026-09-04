@@ -1,24 +1,14 @@
 #!/usr/bin/env node
-/* ============================================================
-   stress.test.ts, checks on the credit stress-testing engine.
+/* stress.test.ts: checks on the credit stress-testing engine.
 
        node aab/portfolio/stress.test.ts
 
-   The engine behind the stress-testing case study computes
-   things that are impossible to eyeball: a conditional default
-   probability deep in the tail of a normal distribution, a
-   capital requirement that has been in the Basel framework for
-   twenty years, an expected credit loss that has to satisfy an
-   accounting identity, and a bisection that has to invert the
-   whole model.
-
-   So none of it is checked against itself. Where an outside
-   authority has published a number, that number is the test:
-   Basel's own illustrative risk weights, the normal
-   distribution's published quantiles, and the algebraic
-   identities each formula has to satisfy whether or not it was
-   coded correctly.
-   ============================================================ */
+   Everything here is impossible to eyeball, so NONE of it is
+   checked against itself. Where an outside authority has
+   published a number, that number is the test: Basel's own
+   illustrative risk weights, the normal distribution's published
+   quantiles, and the algebraic identities each formula has to
+   satisfy whether or not it was coded correctly. */
 
 import {
   normCdf, normInv, conditionalPd, anchorZ, correlation, maturityAdjustment,

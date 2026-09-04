@@ -12,9 +12,14 @@ the clinic numbers and the explanation of every one of them, on
 one set of pages, with a switch at the top that turns the whole
 thing into Bangla.
 
-This file is the plan. It is prose, and a `check-diet` script under `scripts/`
-is what will hold the parts of it that can be broken silently,
-the way `scripts/admin.test.ts` holds `ADMIN.md`.
+This file is the plan, and `scripts/check-diet.ts` holds the parts
+of it that can be broken silently. It READS this file for three
+vocabularies: the glossary's terms in `§23`, the journal tags in
+`§11`, and the nouns in `§14`'s "Every ... entry in the library"
+sentence. `scripts/diet.test.ts`, `scripts/insights.test.ts` and
+`scripts/activity.test.ts` read it for the figures and the
+headings of `§16` to `§19`. **Those sentences are code: reword one
+and a test fails.**
 
 ---
 
@@ -74,11 +79,10 @@ sentence applied to one thing at a time.
 
 BMI is mass over height squared. It cannot tell muscle from fat,
 it reads a lean 180cm rower as overweight, and it says nothing
-about where the fat is, which is the part that matters.
-
-It is in the tool for one reason: everybody has been given one by
-a doctor and will look for it. So it is shown, and shown with its
-limits next to it rather than in a footnote.
+about where the fat is, which is the part that matters. It is in
+the tool because everybody has been given one by a doctor and will
+look for it, and it is shown with its limits next to it rather
+than in a footnote.
 
 ### The cut-offs are not the same for everyone, and this matters here
 
@@ -94,17 +98,15 @@ recommends lower action points for Asian populations:
 
 A tool serving Bangladesh that quietly used 25 would tell a large
 number of its readers they are fine when their own health service
-would not. **The threshold follows the `place` in the profile,
-and the page says which set it is using and why.** This is the
-single most important honest detail in the whole tool and it
-costs one table.
+would not. **The threshold follows the `place` in the profile, and
+the page says which set it is using and why.**
 
-The NHS says the same thing for the same reason, in its own
-words, for people of South Asian, Chinese, Black African and
-African-Caribbean background. So the setting is not "which
-country are you in", it is asked as ancestry with the country as
-the default, because a Bangladeshi reader in Manchester needs the
-lower cut-off and the UK default would give them the higher one.
+The NHS says the same for people of South Asian, Chinese, Black
+African and African-Caribbean background, so the setting is not
+"which country are you in": **it is asked as ancestry** with the
+country as the default, because a Bangladeshi reader in Manchester
+needs the lower cut-off and the UK default would give them the
+higher one.
 
 ### Waist to height is the better single number
 
@@ -749,14 +751,12 @@ date it will arrive, so a reader can see it coming.
 ## 10. Changing what you are doing, and what that does to the forecast
 
 `§9` is the arc of ONE protocol held steadily, and almost nobody
-does that. People start keto, add a fast three days in, stop for
-a wedding, come back, add training, take a week off ill. Every
-one of those is a step in body water, and a tool that fits a line
-straight through them reports a rate nobody is running.
+does that. People start keto, add a fast three days in, stop for a
+wedding, come back, add training, take a week off ill. Every one
+of those is a step in body water, and **a tool that fits a line
+straight through them reports a rate nobody is running.**
 
-**This is the section that stops the tool lying encouragingly.**
-
-### The worked example, because it is the one people actually do
+### The worked example
 
 Three days of keto, then two days of a complete fast. An 80 kg
 reader whose maintenance is about 2,500.
@@ -787,14 +787,11 @@ and sodium water instead, which is a different quantity with a
 different rebound.
 
 So stacking two water-losing protocols produces a bigger apparent
-loss ONCE and then one rebound, not two of either. The fat loss
+loss ONCE and then one rebound, not two of either. **The fat loss
 is exactly the deficit and is entirely unaffected by the
-stacking, which is the sentence the whole section exists to be
-able to say.
-
-`forecastChange()` in `shared/diet.ts` takes the previous
-protocol and its days for that reason, and leaving it out is the
-difference between a forecast and an encouragement.
+stacking.** `forecastChange()` in `shared/diet.ts` takes the
+previous protocol and its days for that reason, and leaving it out
+is the difference between a forecast and an encouragement.
 
 ### What the tool does about it
 
@@ -835,8 +832,7 @@ afterwards.
 
 Four facts and no advice. It does not say the fast is a good idea
 or a bad one: it says what the number on the scale will do and
-which part of it is real, which is the only thing this tool can
-honestly know and exactly the thing nobody is told.
+which part of it is real.
 
 ### And afterwards, the reconciliation
 
@@ -925,18 +921,16 @@ footer.
 ### What is not here
 
 No "you are doing great". No encouragement written by a machine,
-no badges, no celebration of a number. The stage card is a
-status, and **a status that praises you is a status people stop
-reading**, which would take the four honest sentences above down
-with it.
+no badges, no celebration of a number. **A status that praises you
+is a status people stop reading**, which would take the four
+honest sentences above down with it.
 
 ---
 ## 12. Food found rather than typed
 
 `§1` says this tool does not build a food database, and that
-stays true: this repository will not hold one and this site will
-not maintain one. But a tool that makes somebody type "chicken
-curry, 380" from memory is a tool they use for four days.
+stays true. But a tool that makes somebody type "chicken curry,
+380" from memory is a tool they use for four days.
 
 **So food is searched, and the search reaches three places.**
 
@@ -946,20 +940,17 @@ curry, 380" from memory is a tool they use for four days.
 | **Open Food Facts** | an open, crowdsourced database of packaged food with a public API and barcodes | UK supermarket products, packaged food in both countries, and the barcode path | crowdsourced, so an entry can be wrong, incomplete or duplicated. Bangladeshi coverage is thin |
 | **USDA FoodData Central** | the US government's food composition database, public domain, free API | raw and generic foods, which is what home cooking is made of, and the only one of the three with dependable micronutrients | American names and American portions |
 
-Ranked in that order, always, and **the source is printed on
-every result**. A reader has to be able to tell a figure this
-site checked from a figure a stranger typed into a public
-database from a figure out of a government laboratory. Almost no
-app shows this, and it is the difference between a number and a
-rumour.
+Ranked in that order, always, and **the source is printed on every
+result**: a reader has to be able to tell a figure this site
+checked from one a stranger typed into a public database from one
+out of a government laboratory.
 
 ### Barcodes
 
-A packaged product in Britain has one and Open Food Facts is
-keyed on it. The browser's own `BarcodeDetector` reads it from
-the camera where the browser has it, and where it does not, the
-number is typed in, which is thirteen digits and still faster
-than searching.
+Open Food Facts is keyed on the barcode. The browser's own
+`BarcodeDetector` reads it from the camera where the browser has
+it, and where it does not the number is typed in: thirteen digits,
+still faster than searching.
 
 **No image leaves the device.** The frame is decoded in the
 browser and only the digits are sent. There is no library, no
@@ -993,12 +984,11 @@ The moment a result is used, its numbers are written into the
 reader's own row, and a food used twice becomes their own item.
 
 **The log must not depend on a third party still being there next
-year.** A diet history that changed silently because somebody
-edited a public database entry would be worse than one that went
-missing, because nothing would announce it. The row keeps the
-source, the upstream id and the date it was fetched, so a stale
-figure can be found and refreshed deliberately rather than
-drifting.
+year.** A history that changed silently because somebody edited a
+public database entry would be worse than one that went missing,
+because nothing would announce it. The row keeps the source, the
+upstream id and the date it was fetched, so a stale figure can be
+found and refreshed deliberately rather than drifting.
 
 ### Everything is editable, and free entry never goes away
 
@@ -1021,7 +1011,7 @@ anonymously, by the Worker, on this site's behalf.
 ## 13. Three taps, or it does not get logged
 
 Everything above is worth nothing if logging dinner takes ninety
-seconds. **The reason food diaries get abandoned is friction, not
+seconds. **Food diaries get abandoned through friction, not lost
 motivation**, and the fix is that most people eat the same forty
 things.
 
@@ -1302,9 +1292,9 @@ of something.
 
 ### The honesty problem, first
 
-Micronutrients cannot be estimated from a number of calories.
-They come from knowing what was actually eaten, and this tool has
-a curated portion library rather than a food database, `§22`. So:
+Micronutrients cannot be estimated from a number of calories: they
+come from knowing what was actually eaten, and this tool has a
+curated portion library rather than a food database (`§22`). So:
 
 **Every micronutrient figure is shown with its coverage.** "Iron:
 about 9 mg, from 62% of today's food." The other 38% was free
@@ -1318,9 +1308,9 @@ sparse to read rather than drawing a bar.
 
 ### What is worth tracking, and why each one is on the list
 
-Not everything. A list of forty nutrients is a list nobody reads.
-These earn their place because they are the ones that actually go
-wrong for this tool's two readerships, on the diets it supports.
+A list of forty nutrients is a list nobody reads. These are the
+ones that actually go wrong for this tool's two readerships, on
+the diets it supports.
 
 | | why it is here |
 | --- | --- |
@@ -1338,28 +1328,28 @@ wrong for this tool's two readerships, on the diets it supports.
 
 Keto raises saturated fat intake for most people who try it, and
 what that does to a lipid panel varies enormously between
-individuals. The tool does not tell anybody what to eat. It does
-two smaller things: it tracks saturated fat as a share of total
-fat where the portion library knows it, and it puts a lipid panel
-in `§20` so that the answer for **this** reader can be a
-measurement rather than an argument on the internet.
+individuals. The tool does not tell anybody what to eat: it tracks
+saturated fat as a share of total fat where the portion library
+knows it, and it puts a lipid panel in `§20` so that the answer
+for **this** reader is a measurement rather than an argument on
+the internet.
 
-That is the pattern for every contested nutrition question here.
-Where the evidence is genuinely split, the tool logs the thing
-that would settle it for this person and declines to settle it in
-general.
+**That is the pattern for every contested nutrition question
+here.** Where the evidence is genuinely split, the tool logs the
+thing that would settle it for this person and declines to settle
+it in general.
 
 ### What it will not do
 
 No RDA scoring out of 100, no letter grades, no green ticks for
-"complete". Those imply a precision the data does not have and
+"complete": those imply a precision the data does not have and
 turn eating into a test. Each nutrient shows a figure, a range to
 aim for, and its coverage.
 
-No supplement recommendations. It can say "this has been under
-the range most days for three weeks", which is a fact about the
-log. What to do about it is a conversation with a clinician, and
-the page says that.
+No supplement recommendations. It can say "this has been under the
+range most days for three weeks", which is a fact about the log.
+What to do about it is a conversation with a clinician, and the
+page says that.
 
 ---
 
@@ -1903,19 +1893,18 @@ explaining a chart.
 
 ## 22. Two countries, one tool
 
-**Units.** Kilograms and centimetres by default. The UK also uses
-stone and pounds, and feet and inches, so both are offered and
-the choice is stored. Stone is displayed as `12 st 4 lb`, never
-as a decimal, because `12.3 st` is a number no British person has
-ever said out loud.
+**Units.** Kilograms and centimetres by default, with stone,
+pounds, feet and inches offered and the choice stored. Stone is
+displayed as `12 st 4 lb`, **never as a decimal**: `12.3 st` is a
+number no British person has ever said out loud.
 
 **Energy** is kcal in both places, which is what everyone
 actually uses, with kJ available because UK labels carry it.
 
 **Food.** No database. A **portion library** instead: a short list
-per place of the things people actually eat, each with energy,
-macros, the micronutrients in `§15` where they are known, and a
-price with a date on it from `§17`.
+per place, each row with energy, macros, the micronutrients in
+`§15` where they are known, and a price with a date on it from
+`§17`.
 
 - Bangladesh: cooked rice by cup, roti, dal, hilsa and other
   small fish, chicken curry, egg, sugared tea, muri, khichuri,
@@ -1947,10 +1936,9 @@ requires no database at all. Bangladeshi packaging is less
 consistent and often absent, which is the reason the portion
 library leans local and the label reader leans British.
 
-**The reader's own foods outrank both.** Anything entered twice
-is offered as a saved item, with the reader's own numbers, and a
-reader's own item always sorts above the library's. After a
-month, most logging is three taps on things the reader defined.
+**The reader's own foods outrank both.** Anything entered twice is
+offered as a saved item, with the reader's own numbers, sorting
+above the library's.
 
 **Ramadan** changes the eating window rather than the arithmetic,
 and `§18` is where it is handled.
@@ -1960,9 +1948,9 @@ and `§18` is where it is handled.
 ## 23. Two languages, one switch
 
 The site's rule is that a Bangla reader should never have to read
-English to find out that something exists in their own language.
-This tool will be the largest body of explanatory prose on the
-site outside its schools, so the rule bites hardest here.
+English to find out that something exists in their own language,
+and this tool is the largest body of explanatory prose on the site
+outside its schools.
 
 **One switch, at the top of every page in the tool, and it
 changes everything on the page**: the labels, the food names, the
@@ -2001,10 +1989,9 @@ Any figure, on any page, opens a short panel: the formula, the
 inputs it was given, where those came from, and how wide its
 error is.
 
-That is the stock check's personality applied here, and it is the
-only honest way to show somebody a number about their own body
-that they did not compute. **The alternative is asking a reader
-to trust a website**, which is precisely what `§1` refuses to do
+That is the only honest way to show somebody a number about their
+own body that they did not compute. **The alternative is asking a
+reader to trust a website**, which is what `§1` refuses to do
 anywhere else in this file.
 
 ---
@@ -2095,10 +2082,8 @@ arrives with a memory and leaves with a guess.
   calculator from self-reported data, so that nobody reads it as
   a clinical record.
 
-It is the least glamorous feature in this file and it is
-plausibly the most useful one. It is also nearly free: every
-number on it already exists, and the whole page is a print
-stylesheet and a layout.
+Nearly free: every number on it already exists, and the whole page
+is a print stylesheet and a layout.
 
 **It never leaves the reader's control.** No email, no share
 link, no upload. A print dialogue and a page, and if they want a
@@ -2110,9 +2095,8 @@ file, the export in `§30` already exists.
 
 ### The first ninety seconds
 
-A first screen of thirty fields is a tool nobody finishes setting
-up. **Four questions, and then a number**: height, weight, age
-and which formula to use. That is enough for a BMI, a BMR, an
+**Four questions, and then a number**: height, weight, age and
+which formula to use. That is enough for a BMI, a BMR, an
 estimated maintenance and a first target, and the reader has
 something true before they have decided to trust anything.
 
@@ -2140,8 +2124,8 @@ arriving at all**: a reader with three years of data elsewhere is
 being asked to abandon it.
 
 A CSV importer with column mapping, which is all this needs.
-MyFitnessPal, Cronometer and LoseIt all export CSV; Apple Health
-and Google Fit export weight; a Withings, Renpho or Xiaomi scale
+MyFitnessPal, Cronometer and LoseIt export CSV; Apple Health and
+Google Fit export weight; a Withings, Renpho or Xiaomi scale
 exports a file of readings. Anything else is a file, a preview of
 the first rows, and a screen that maps columns to fields.
 
@@ -2160,14 +2144,11 @@ erase that removes all of it. `§30`. **The importer reads the
 exporter's format**, so this tool can be left and returned to,
 which is the only real test of whether an export is honest.
 
-**Built, and the test had been failing quietly.**
-`aab/src/account-page.ts` has written all six diet tables into
-that file since the day those tables existed, and the importer
-read CSV and nothing else, so a reader could take their whole
-account away and bring none of it back. Both halves worked
+`aab/src/account-page.ts` writes all six diet tables into that
+file, `shared/bundle.ts` reads it back, and `/tools/diet/import`
+takes a `.json` beside a `.csv`. For a while the exporter wrote
+six and the importer read CSV and nothing else: both halves worked
 perfectly on their own, which is exactly why nothing said so.
-`shared/bundle.ts` reads it now and `/tools/diet/import` takes a
-`.json` beside a `.csv`.
 
 **Two of the six come back, and the schema is what decides
 which.** `diet_days` and `diet_entries` are the tables carrying
@@ -2272,11 +2253,11 @@ public.diet_labs      -- the clinic numbers, and their units
   user_id, taken_on, marker, value, unit, ref_low, ref_high
 ```
 
-Six tables and every one of them earns it: a day is a day, a
-meal is a list, a food is reusable, a phase is a span, a lab
-result has a unit and a reference range, and a profile is one
-row. Folding any pair together would mean nulls in most columns
-of most rows, which is the shape that makes a query lie.
+Six tables: a day is a day, a meal is a list, a food is reusable,
+a phase is a span, a lab result has a unit and a reference range,
+and a profile is one row. Folding any pair together would mean
+nulls in most columns of most rows, which is the shape that makes
+a query lie.
 
 **A plan is not a seventh table.** A planned meal is an entry
 with a future date and `planned` set, which means the week's plan,
@@ -2302,10 +2283,9 @@ somebody else's database is the Worker's.**
 thing in a route and another in a check. The portion library is
 data beside it, one file per place.
 
-**Sex** is stored because the equations need it and there is no
-honest way around that. It is asked for as "which formula should
-this use", with both answers explained, and it is not used for
-anything else.
+**Sex** is stored because the equations need it. It is asked for
+as "which formula should this use", with both answers explained,
+and it is not used for anything else.
 
 **`meds` and the cycle field are the most sensitive rows in this
 database.** They are optional, they are never required to use the
@@ -2317,9 +2297,8 @@ person leaving should take all of it.
 
 ## 28. How a number is written, and how a chart is read
 
-The site already has rules about counting things. This tool
-generates more numbers per screen than anything else on it, so
-the rules need saying once here.
+This tool generates more numbers per screen than anything else on
+the site, so the rules need saying once here.
 
 **Precision follows the measurement, never the float.** Weight to
 0.1 kg, because that is what a scale reads. Calories to the
@@ -2470,174 +2449,159 @@ the site already has.
 
 ## 32. Stages
 
-Each stage ships. None of them ships a placeholder: an empty
-panel that will one day hold something reads exactly like a
-broken one, which is the rule `/admin` already exists under.
+Each stage ships. **None of them ships a placeholder**: an empty
+panel that will one day hold something reads exactly like a broken
+one.
 
-**The order is chosen so the tool is usable at stage 6 and every
-stage after it adds a reason to come back**, rather than so that
-the architecture is tidy. A plan that puts every foundation
-first is a plan that has nothing to show for four weeks.
+The order is chosen so the tool is usable at stage 6 and every
+stage after it adds a reason to come back, rather than so that the
+architecture is tidy.
 
 | | | |
 | --- | --- | --- |
 | 1 | **the arithmetic** | `shared/`, a unit test per formula. BMI both ways, WHtR, Navy, Deurenberg, Mifflin, Katch, the time-weighted EMA and the learned maintenance. Nothing renders |
 | 2 | **the migration** | the six tables and their policies |
-| 3 | **the shell and the switch** | the routes, the tab panels, the language switch on `tool-lang`, and the glossary. `§23`. Everything after this is bilingual by construction rather than by retrofit |
+| 3 | **the shell and the switch** | the routes, the tab panels, the language switch on `tool-lang`, and the glossary. `§23` |
 | 4 | **`/tools/diet/you`** | measurements in, composition out. The first page that shows a number, and the first that shows a range |
 | 5 | **`/tools/diet`, first pass** | log a weight, log an intake by hand, draw the trend. The server-rendered chart from `§28` |
 | 6 | **`/tools/diet/goal`** | the engine, the floors, the waist-first goal, the projection with its interval. **The tool is worth using from here** |
-| 7 | **the food log** | `§12` and `§13`: search across the three sources, the source label on every result, snapshot on use, barcode, your usuals, copy yesterday |
+| 7 | **the food log** | `§12` and `§13` |
 | 8 | **`/tools/diet/trend`** | learned maintenance, the under-logging gap, stalls, the four kinds |
 | 9 | **`/tools/diet/expect`** | `§9`: the arc, the expectation before the week, the actual beside it afterwards, the unlock table |
-| 10 | **phases and settling** | `§10`: a slope that never crosses a boundary, the stacking arithmetic, and the sentence said before a fast rather than after it. The arithmetic landed with stage 1; this is the page half |
-| 11 | **the stage card and the journal** | `§11`: where you are, one next thing, the tags, hunger, and the symptom table |
+| 10 | **phases and settling** | `§10`. The arithmetic landed with stage 1; this is the page half |
+| 11 | **the stage card and the journal** | `§11` |
 | 12 | **the dashboard** | `§24`: the widgets, the arrangement, and the empty state of every one of them |
 | 13 | **the portion library** | both places, both languages, the reader's own items, recipes, meals, and the label reader |
-| 14 | **the log corrections** | `§14`: the oil calibration, the shared pot, cooked against raw, ranges for eating out, hand portions |
+| 14 | **the log corrections** | `§14` |
 | 15 | **nutrition and insights** | `§15` and `§16`, coverage first, and nothing drawn under half |
-| 16 | **cost** | `§17`: prices with dates, cost per gram of protein, the budget plot |
-| 17 | **the calendar** | `§18`: marks, the cycle, the seasons, Ramadan |
-| 18 | **movement** | `§19`: steps, and the recomposition reading that needs the tape |
-| 19 | **health** | `§20` and `§21`: the clinic numbers, the units question, the medicines list |
+| 16 | **cost** | `§17` |
+| 17 | **the calendar** | `§18` |
+| 18 | **movement** | `§19` |
+| 19 | **health** | `§20` and `§21` |
 | 20 | **the plan and the shopping list** | `§13`, which needs the library and the prices to exist first |
-| 21 | **getting in and out** | `§26`: onboarding, the CSV importer with its preview, the export wiring in `§30`, and the offline queue |
+| 21 | **getting in and out** | `§26`, and the export wiring in `§30` |
 | 22 | **maintenance and gaining** | `§6`, last only because it is the phase that comes after all of the above |
-| 23 | **the doctor's page** | `§25`, which is a print stylesheet over numbers that all already exist |
+| 23 | **the doctor's page** | `§25`, a print stylesheet over numbers that all already exist |
 
-**Two things are deliberately not staged at the end**: the
-language switch, because retrofitting a second language is twice
-the work and never finishes, and the empty states, because they
-are what every stage before the last one actually looks like.
+**Two things are deliberately NOT staged at the end**: the language
+switch, because retrofitting a second language is twice the work
+and never finishes, and the empty states, because they are what
+every stage before the last one actually looks like.
 
 ---
 
 ## 33. What must be checked
 
-A check for every place in this file where a rule could be
-quietly broken and the page would still render. That list is
-long because most of this file is about numbers that look fine
-when they are wrong.
+A check for every place in this file where a rule could be quietly
+broken and the page would still render. The list is long because
+most of this file is about numbers that look fine when they are
+wrong.
 
-**`scripts/diet.test.ts`**, the arithmetic, needing no browser
-and no database, so it runs in CI: every formula in
-`shared/diet.ts`, every floor in `§5` asserted from the wrong
-side including the gaining direction in `§6`, the sign of the
-learned burn from both directions, **no slope ever fitted across
-a phase boundary and a stacked protocol shedding less water than
-a fresh one** (`§10`, which a naive implementation gets wrong in
-the flattering direction), and the cut-off table read back out of
-this file so the prose and the code cannot drift.
+**`scripts/diet.test.ts`**, the arithmetic, needing no browser and
+no database, so it runs in CI: every formula in `shared/diet.ts`,
+every floor in `§5` asserted from the wrong side including the
+gaining direction in `§6`, the sign of the learned burn from both
+directions, **no slope ever fitted across a phase boundary and a
+stacked protocol shedding less water than a fresh one** (`§10`,
+which a naive implementation gets wrong in the flattering
+direction), and the cut-off table read back out of this file so the
+prose and the code cannot drift.
 
 **`scripts/check-diet.ts`**, for the rules that are about pages
-rather than about numbers. It is in `check-all.ts` beside every
-other check. Each line below carries its own mark, and the last
-two are ones this list did not ask for: a check that turns up a
-rule nobody had written down belongs beside the ones that were
-asked for.
+rather than about numbers, in `check-all.ts` beside every other
+check:
 
-- ✓ the floors are the ones `scripts/diet.test.ts` asserts, and
-  no route recomputes a formula rather than importing it. The
-  floors are read out of `target()`'s own body rather than
-  listed, so a sixth bound is asked about with nobody coming
-  here, and the formulas are compared by SHAPE, with the names
-  taken out and the numbers left in. It found three sentences on
-  the goal page writing a constant out as a number: the rate cap
-  as 1%, the absolute floor as 1200 and 1500, and the
-  underweight cut-off as 18.5. Those are the sentences whose
-  whole job is to say the tool changed your number, which makes
-  them the worst place in the tool for a figure that cannot
-  change with it.
-- ✓ the Asian cut-off table is used whenever ancestry says so.
-  Four shapes of not using it, and none of them looks wrong on
-  the page: a fixed ancestry handed to `bmiBand()`, `BMI_CUTS`
-  read by name, a body built with a literal ancestry, and a
-  cut-off written into a comparison, which is `bmiBand()`
-  retyped with one of the two tables missing. And `§2`'s other
-  half, that the page says which set it used: a band on its own
-  is one word for two readers who are owed different ones.
-- ✓ every food in both libraries carries a source and a price
-  date, and every rice, grain and pasta row names its state. The
-  nouns come out of `§14`'s own sentence, the price is three
-  columns that arrive together or not at all, a row in both
-  kitchens carries none of them because one number cannot be two
-  currencies, and the state has to be in the NAME in both
-  languages rather than only in the flag the arithmetic reads. A
-  row with no second weight to be confused with, `muri`, is
-  named in the check with the reason, and that exemption fails
-  when it goes stale.
-- ✓ the generated sentences in `§16` and the stage card in `§11`
+- **The floors are the ones `scripts/diet.test.ts` asserts, and no
+  route recomputes a formula rather than importing it.** The floors
+  are read out of `target()`'s own body rather than listed, so a
+  sixth bound is asked about with nobody coming here, and the
+  formulas are compared by SHAPE, with the names taken out and the
+  numbers left in. It found three sentences on the goal page
+  writing a constant out as a number: the rate cap as 1%, the
+  absolute floor as 1200 and 1500, and the underweight cut-off as
+  18.5. Those are the sentences whose whole job is to say the tool
+  changed your number, which makes them the worst place in the tool
+  for a figure that cannot change with it.
+- **The Asian cut-off table is used whenever ancestry says so.**
+  Four shapes of not using it, none of which looks wrong on the
+  page: a fixed ancestry handed to `bmiBand()`, `BMI_CUTS` read by
+  name, a body built with a literal ancestry, and a cut-off written
+  into a comparison, which is `bmiBand()` retyped with one of the
+  two tables missing. And `§2`'s other half, that the page says
+  which set it used: a band on its own is one word for two readers
+  who are owed different ones.
+- **Every food in both libraries carries a source and a price date,
+  and every rice, grain and pasta row names its state.** The nouns
+  come out of `§14`'s own sentence, the price is three columns that
+  arrive together or not at all, a row in both kitchens carries
+  none of them because one number cannot be two currencies, and the
+  state has to be in the NAME in both languages rather than only in
+  the flag the arithmetic reads. `muri` has no second weight to be
+  confused with and is named in the check with the reason; that
+  exemption fails when it goes stale.
+- **The generated sentences in `§16` and the stage card in `§11`
   come only from the listed templates, and the list contains no
-  second person judgement. **The list is derived, never kept.**
-  Hundreds of the tool's own sentences written out again inside
-  a check would be right on the day they were typed and wrong at
-  the next commit, so a template here is what the compiler calls
-  one: a template literal with an interpolation and prose in it,
-  plus a sentence a condition chooses between two written-out
-  ones. `node scripts/check-diet.ts --templates` prints the
-  list. What IS written down in the check is the vocabulary of
-  judgement, with the section naming each: that is a rule rather
-  than a copy of anything. The stage card is not built yet and
-  will need no second rule when it is, because the corpus is
-  every generated sentence in the tool.
-- ✓ the fixed journal tag set is the one in `§11` and has not
-  grown a forty-first tag, and the day marks are the ones the
+  second person judgement. The list is DERIVED, never kept.**
+  Hundreds of the tool's own sentences written out again inside a
+  check would be right on the day they were typed and wrong at the
+  next commit, so a template here is what the compiler calls one: a
+  template literal with an interpolation and prose in it, plus a
+  sentence a condition chooses between two written-out ones.
+  `node scripts/check-diet.ts --templates` prints the list. What IS
+  written down is the vocabulary of judgement, with the section
+  naming each: a rule rather than a copy.
+- **The fixed journal tag set is the one in `§11`** and has not
+  grown a thirteenth tag, and the day marks are the ones the
   migration names. Neither column has a CHECK constraint, so the
   check IS the constraint.
-- ✓ **no widget in `§24` is defined without an empty state.**
-- ✓ **no page prints a target without the disclaimer beside it**,
-  in both languages.
-- ✓ both language files cover the same keys, so a Bangla reader
-  never meets an English fallback string. `§23`. Every `<T>` has
-  both halves, and no `aria-label`, `title` or `placeholder` is
-  an English string literal.
-- ✓ the glossary defines every term the pages use, and every
+- **No widget in `§24` is defined without an empty state.**
+- **No page prints a target without the disclaimer beside it**, in
+  both languages.
+- **Both language files cover the same keys**, so a Bangla reader
+  never meets an English fallback string (`§23`). Every `<T>` has
+  both halves, and no `aria-label`, `title` or `placeholder` is an
+  English string literal.
+- **The glossary defines every term the pages use**, and every
   entry is linked to from somewhere.
-- ✓ and one the list did not ask for: every `diet_*` column in
-  `§27` is either filled by the tool or named as not built yet
-  with the section that will build it. A column nothing can fill
-  breaks nothing, which is why it needed a check rather than a
-  paragraph.
-- ✓ and a second the list did not ask for: what happens after a
-  goal is reached is said ONCE, on the goal page. `§6` puts it
-  there and only there, and it is the one sentence in the tool
-  that argues for the tool.
-- ✓ and a third: `shared/insights.ts` holds no prose. It opens
-  by saying that no function in it returns a verdict, which is
-  what makes every reading checkable: it hands back the figures
-  and a panel chooses the words, in both languages, where the
-  template check above can read them. A sentence built in the
-  arithmetic is a sentence in one language, on no list, that
-  neither the check nor the language switch can reach.
+- **Every `diet_*` column in `§27` is either filled by the tool or
+  named as not built yet** with the section that will build it. A
+  column nothing can fill breaks nothing, which is why it needed a
+  check rather than a paragraph.
+- **What happens after a goal is reached is said ONCE**, on the
+  goal page. `§6` puts it there and only there, and it is the one
+  sentence in the tool that argues for the tool.
+- **`shared/insights.ts` holds no prose.** No function in it
+  returns a verdict, which is what makes every reading checkable:
+  it hands back the figures and a panel chooses the words, in both
+  languages, where the template check above can read them. A
+  sentence built in the arithmetic is a sentence in one language,
+  on no list, that neither the check nor the language switch can
+  reach.
 
-**A `diet.test` under `next/`**, in a real browser, the way
-`next/admin.test.ts` drives `/admin`:
+**`next/diet.test.ts`**, in a real browser:
 
-- every page renders and every number is computed rather than
-  placeholder. A panel that renders and computes nothing looks
-  exactly like one that works, which is what
-  `next/interactive.test.ts` exists for and this tool is the
-  largest surface on the site for it.
-- **the language switch changes every string on the page**, not
-  the headings only. This is the check that catches the retrofit
-  the stage list is ordered to avoid.
-- the chart's table alternative and its `aria-describedby`,
-  because `§28` is only true if something says so.
+- every page renders and **every number is computed rather than
+  placeholder**. A panel that renders and computes nothing looks
+  exactly like one that works.
+- **the language switch changes every string on the page**, not the
+  headings only. This is the check that catches the retrofit the
+  stage list is ordered to avoid.
+- the chart's table alternative and its `aria-describedby`, because
+  `§28` is only true if something says so.
 - **the stopwatch from `§13`**: a repeat dinner in three
   interactions, a barcode in four, a new dish in under a minute.
 - a searched food is copied into the reader's own row rather than
-  referenced, and the row keeps its source and fetch date. `§12`.
-- the importer shows its preview before it writes anything, and
-  an import can be undone as one operation. `§26`.
-- the offline queue is never read back as data. `§26`.
+  referenced, and the row keeps its source and fetch date (`§12`).
+- the importer shows its preview before it writes anything, and an
+  import can be undone as one operation (`§26`).
+- the offline queue is never read back as data (`§26`).
 
 **And two that belong to the site rather than the tool:**
 
-- ✓ the export in `§30` contains all six tables and the erase
-  removes all six. `aab/src/account-page.ts` does both, and the
-  confirm text names the diet log, the medicines and the cycle
-  rather than folding them into "everything": a confirm that
-  lists five of six things is a reader agreeing to something
-  else.
+- the export in `§30` contains all six tables and the erase removes
+  all six. `aab/src/account-page.ts` does both, and **the confirm
+  text names the diet log, the medicines and the cycle** rather
+  than folding them into "everything": a confirm that lists five of
+  six things is a reader agreeing to something else.
 - `COUNTS` in `shared/content.ts` if any page says how many tools
   this site has, because a sentence that counts must count.

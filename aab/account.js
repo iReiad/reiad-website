@@ -1,46 +1,9 @@
-/* ============================================================
-   account.ts: who a reader is.
-
-   NOT auth.js. That one guards the Studio and the desk, it is a
-   cookie set by this site's own Worker, and there is exactly one
-   person it will ever let in. This is the other thing entirely:
-   ordinary readers, signing in to keep their progress and to leave
-   a comment with a name on it. The two never meet, and neither
-   grants anything the other does.
-
-   ---- why there is no Supabase client library here ----
-
-   The official one is about forty kilobytes and would have to be
-   fetched from a CDN or bundled, and this site has no build step
-   on a reading page and loads no third-party JavaScript there.
-   What it does for us is three POSTs and a redirect, which is
-   what this file is. If that stops being true, if refresh
-   rotation or MFA or anything else grows teeth, this is the
-   moment to reconsider, and the whole surface is the six
-   functions below.
-
-   ---- what a session is ----
-
-   Supabase hands back an access token (a JWT, short-lived) and a
-   refresh token (long-lived). Both go in localStorage, which is
-   where the official client puts them too. The access token is
-   what a request to our own Worker will carry later, so the Worker
-   can verify it against Supabase's public keys without ever
-   holding a password or a secret.
-
-   ---- it was two declarations before it was one module ----
-
-   Two hand-written declarations described this file, one under
-   `aab/src/` and one at `app/src/types/account.d.ts`, and they
-   disagreed: one said `saveProfile` answers a boolean and the
-   other a `Profile`, and the code answers a boolean. A
-   declaration that is wrong is worse than none, because the
-   compiler then agrees with the mistake. Neither is written by
-   hand now: this file emits the second, and
-   `aab/src/tsconfig.json` maps `/account.js` at the source.
-
-   archive/TRANSITION.md, Stage 5 and Stage 13.
-   ============================================================ */
+/* account.ts: who a reader is. Ordinary readers signing in to
+   keep progress and to comment. NOT `auth.ts`, which guards the
+   Studio with this site's own Worker cookie and grants nothing
+   here. No Supabase client library on purpose: three POSTs and a
+   redirect, and a reading page loads no third-party JavaScript.
+   Edit this; `aab/account.js` beside it is built. */
 /* Public by design, both of them. The publishable key identifies
    the project and grants nothing on its own: every table it can
    reach is behind row-level security. The key that does grant
@@ -81,14 +44,8 @@ function write(next) {
 }
 /**
  * One reader out of one Supabase user record, and the ONLY place
- * that mapping is written.
- *
- * It was written three times, in `readToken`, in `shape` and in
- * `refreshUser`, and they agreed because somebody remembered.
- * That is the failure the top of `CLAUDE.md` is about, and it bit
- * the moment a fourth field was wanted: the picture Google sends
- * would have reached two of the three paths, so it would have
- * appeared after a `/user` call and vanished on the next reload.
+ * that mapping is written: three copies agreed because somebody
+ * remembered, and a fourth field reached two of the three.
  */
 function person(u) {
     if (!u?.id)
@@ -108,18 +65,11 @@ function person(u) {
 /**
  * Read the name, email and picture out of the access token.
  *
- * THIS IS NOT VERIFICATION, and the difference matters. A JWT is a
- * signed statement, and checking that signature is the server's
- * job: our Worker will do it against Supabase's public keys before
- * it trusts a single byte. This only reads a token that Supabase
- * handed to this browser seconds ago, to put a name in a corner.
- * Nothing is authorised on the strength of it.
- *
- * It exists because the alternative was asking the network who you
- * are before the header could say. On a good connection that is a
- * blink. On a phone in Dhaka, behind a service worker precaching
- * sixty files, it was thirty-one seconds of a page that looked
- * like the sign-in had failed. It had not.
+ * THIS IS NOT VERIFICATION. Checking the signature is the
+ * Worker's job, against Supabase's public keys. This reads a
+ * token Supabase handed this browser seconds ago to put a name in
+ * a corner, and NOTHING is authorised on the strength of it. It
+ * exists so the header does not have to wait on the network.
  */
 function readToken(access) {
     try {
@@ -171,13 +121,10 @@ async function post(path, body, bearer) {
    Coming back from a sign-in
    ============================================================ */
 /**
- * Supabase sends the reader back to whatever page they started on,
- * with the tokens in the URL fragment. The fragment is used rather
- * than the query string on purpose: a fragment is never sent to a
- * server, so the token cannot end up in a log.
- *
- * It is taken out of the address bar immediately, so a copied link
- * or a screenshot does not carry a working session in it.
+ * Supabase returns the tokens in the URL FRAGMENT rather than the
+ * query string, because a fragment is never sent to a server and
+ * so cannot end up in a log. It is taken out of the address bar
+ * immediately, so a copied link carries no working session.
  */
 /** Whatever went wrong on the way back, kept for the panel to
     show. Silently doing nothing is the one response to a failed
@@ -269,25 +216,12 @@ export async function refreshUser() {
         if (!res.ok)
             throw new Error(String(res.status));
         const user = await res.json();
-        /* A REFRESH NEVER DOWNGRADES. `person()` answers null for a
-           record with no `id`, and writing that null over a session
-           that already had a reader in it signs them out of a page
-           they were signed in to: `current()` goes null, `saveProfile`
-           throws "Not signed in.", and sync stops pushing ticks
-           without saying anything.
-    
-           That is not hypothetical and it is not a test artifact.
-           This function returned a user built field by field until 19
-           August 2026, so an unusable answer produced an object with
-           undefined fields, which is wrong but truthy. Factoring the
-           three copies into `person()` made the same answer produce
-           null, and `aab/sync.test.ts` went from 27 passing to four
-           failures and an uncaught throw within the hour.
-    
-           So an answer this cannot read leaves the session alone, the
-           same as a network error one line below. There is exactly
-           one thing that ends a session on purpose, and it is
-           `signOut()`. */
+        /* A REFRESH NEVER DOWNGRADES. Writing `person()`'s null over
+           a live session signs the reader out of a page they were
+           signed in to: `current()` goes null, `saveProfile` throws
+           and sync stops pushing ticks, silently. An answer this
+           cannot read leaves the session alone, like a network error
+           below. `signOut()` is the only thing that ends a session. */
         const fresh = person(user);
         if (session && fresh)
             write({ ...session, user: fresh });
@@ -312,15 +246,8 @@ export async function signOut() {
     }
     catch { /* already gone */ }
 }
-/* ============================================================
-   The profile row
-
-   The one thing this site stores about a person beyond what
-   Supabase needs to sign them in: the name shown beside anything
-   they write. Row-level security means these two calls can only
-   ever read and write the caller's own row, whatever this file
-   asks for.
-   ============================================================ */
+/* The profile row: the one thing stored about a person beyond
+   what Supabase needs to sign them in. */
 const REST = `${SUPABASE_URL}/rest/v1`;
 async function restHeaders() {
     const access = await token();
@@ -336,18 +263,9 @@ async function restHeaders() {
    column added to the table for some other reason does not start
    arriving in the browser without anyone deciding it should. */
 const PROFILE_FIELDS = "display_name,following,pace,setup_at";
-/* The last profile seen, kept on this device.
-
-   The home page needs to know which courses somebody follows
-   BEFORE it draws anything, and a home page must not wait on a
-   wire. Waiting on this one would be worse than most: the band it
-   decides is the first thing on the page, so the whole page would
-   visibly rearrange itself a second after it loaded.
-
-   So the answer is remembered, and the copy in Postgres is what
-   corrects it. Nothing here is private in a way the session next
-   to it is not: it is a name, three or four course ids, and a
-   word for how often. It goes when the session goes. */
+/* The last profile seen, kept on this device, because the home
+   page decides its first band on it and must not wait on a wire.
+   Postgres corrects it, and it goes when the session goes. */
 const PROFILE_STORE = "reiad-profile";
 /** What this device last knew, without asking anyone. */
 export function cachedProfile() {
@@ -371,35 +289,13 @@ function cacheProfile(row) {
 /**
  * This reader's profile, out of Postgres.
  *
- * THE FILTER IS THE WHOLE FUNCTION, and it was missing.
- *
- * `profiles` is the ONE table on this project whose select policy
- * is `using (true)`, and deliberately: a comment shows its
- * author's name to people who are not signed in. Every other
- * table is `auth.uid() = user_id`, so an unfiltered read there
- * returns your own rows and nothing else, which is why this was
- * the only call that could go wrong and did.
- *
- * Without `id=eq.<me>`, PostgREST returned whichever row the
- * planner reached first out of the whole table. With one account
- * that was always the right one. With two it was a coin toss, and
- * worse than a coin toss: a non-HOT update moves a row to the end
- * of the heap, so SAVING your profile was the thing that made the
- * next read return somebody else's. The account page painted
- * their answers as yours, `setup_at` came back null so the setup
- * form reappeared, and pressing Save again wrote the right row and
- * guaranteed the same wrong read. "It saves and goes back to how
- * it was", forever, by construction.
- *
- * It cached that row as this device's profile too, and
- * `saveProfile` merges its patch on to the cache, so the next
- * partial save could have written another person's answers into
- * your row.
- *
- * The irony is worth keeping: `saveProfile` below carries
- * `id=eq.<me>` and explains at length that it does so even though
- * the policy makes it unnecessary. Here the policy genuinely does
- * not protect you, and there was no filter at all.
+ * THE FILTER IS THE WHOLE FUNCTION. `profiles` is the ONE table
+ * here whose select policy is `using (true)`, because a comment
+ * shows its author's name to somebody signed out. Without
+ * `id=eq.<me>` PostgREST answers with whichever row the planner
+ * reaches first, and a non-HOT update moves a row to the end of
+ * the heap, so SAVING your profile is what makes the next read
+ * return somebody else's. Never remove it.
  */
 export async function getProfile() {
     const head = await restHeaders();
@@ -424,14 +320,12 @@ export async function getProfile() {
     }
 }
 /**
- * Write some of the profile. Takes the same column names the row
- * came back with, and writes only the ones it was given.
+ * Write some of the profile, only the columns it was given.
  *
- * The row filter is `id=eq.<me>` even though the policy already
- * makes it impossible to touch anyone else's: without a filter,
- * PostgREST would send an UPDATE across the whole table, and the
- * only thing standing between that and everybody's profile would
- * be the policy. Two locks on a door that is never meant to open.
+ * `id=eq.<me>` even though the policy already makes it impossible
+ * to touch anyone else's: without a filter PostgREST sends an
+ * UPDATE across the whole table and the policy is the only thing
+ * standing in front of everybody's profile.
  */
 export async function saveProfile(patch) {
     const head = await restHeaders();
@@ -458,15 +352,11 @@ export async function saveProfile(patch) {
 }
 export const setDisplayName = (name) => saveProfile({ display_name: name });
 /**
- * Called once by signin.js. Synchronous on purpose: it picks up a
- * redirect, reads who the reader is out of the token, and returns.
- * Anything that needs the network happens after, in the background,
- * and tells the page through the account:changed event.
- *
- * This used to await the /user call, which meant the header could
- * not say who you were until Supabase answered. Behind a service
- * worker precaching sixty files that was half a minute of looking
- * signed out while being signed in.
+ * Called once by signin.js. SYNCHRONOUS on purpose: it picks up a
+ * redirect, reads who the reader is out of the token and returns.
+ * Anything needing the network happens after and tells the page
+ * through `account:changed`. Awaiting `/user` here is half a
+ * minute of looking signed out while being signed in.
  */
 export function initAccount() {
     collectFromHash();

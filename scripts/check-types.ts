@@ -1,94 +1,26 @@
 #!/usr/bin/env node
-/* ============================================================
-   check-types.ts: the node-side TypeScript, typechecked.
+/* check-types.ts: the node-side TypeScript, typechecked.
 
        node scripts/check-types.ts
 
-   Node has stripped TypeScript types on its own since 22.18, so
-   `node scripts/check-css.ts` runs with no build step, no loader
-   and no configuration. That is what makes converting `scripts/`
-   to TypeScript cheap.
+   Node has stripped TypeScript types on its own since 22.18, so a
+   `.ts` under `scripts/` runs with no build step. STRIPPING IS NOT
+   CHECKING: a `.ts` that nothing typechecks is a `.js` wearing
+   annotations, which is worse than the `.mjs` it replaced because
+   a reader now believes them. So a conversion is finished when
+   this passes with the file in it.
 
-   IT IS ALSO THE TRAP, and it is the reason this file exists.
-   Stripping is not checking. Node removes the annotations and
-   runs what is left, so a `.ts` file that nothing typechecks is a
-   `.js` file wearing annotations: every one of them could be
-   wrong and the script would behave exactly the same. That is
-   strictly worse than the `.mjs` it replaced, because a reader
-   now believes them.
+   `CONFIGS` is every directory of node-side TypeScript here, with
+   the `node_modules` each one needs. A config whose installs are
+   absent SAYS SO AND SKIPS, naming what to run and where: a skip
+   is not a pass. `checks.yml` runs `npm ci` at the ROOT and
+   nowhere else, so the ones needing `next/node_modules` or
+   `app/node_modules` never run there.
 
-   So the conversion is not finished when a file is renamed. It is
-   finished when this passes with the file in it, which is why
-   this runs in `check-all.ts` beside every other check rather
-   than being something somebody remembers to do.
-
-   `scripts/tsconfig.json` is the settings and says why each is
-   what it is.
-
-   ---- and the same trap one directory along ----
-
-   `next/tsconfig.test.json` is here for the same reason and it
-   took a red deploy to find. The browser tests beside the app
-   were in `next/tsconfig.json` at first, which sounded better than
-   a second config: `next build` typechecks that one, so the build
-   would hold them to their types for free.
-
-   It holds the PRODUCTION BUILD to the tests' imports as well.
-   Playwright is a devDependency of `app/` and Cloudflare's build
-   installs `next/` and nothing else, so `next build` compiled
-   here, where `app/` happens to be installed, and failed on the
-   deploy with two missing modules. They are excluded there and
-   checked here, which is where a check on our own source belongs.
-
-   ---- and that one needs `next/node_modules`, which CI has not ----
-
-   `checks.yml` runs `npm ci` at the ROOT and nowhere else, for
-   the reason written beside it: the root package.json is not a
-   dependency of the site, it is there for the three `--check`
-   steps and for linkedom. So `@cloudflare/workers-types` and
-   every React type the components lean on are absent, and this
-   config cannot be run there.
-
-   It says so and moves on, rather than failing on a runner that
-   was never going to have them or passing quietly as if it had
-   looked. A SKIP IS NOT A PASS: the line names what to run and
-   where, the same way every optional test in `CLAUDE.md` does.
-
-   ---- and two more directories with the same hole in them ----
-
-   `functions/tsconfig.test.json` and `app/tsconfig.test.json`.
-   Wrangler's esbuild reads no tsconfig at all, and
-   `app/tsconfig.json` is the BUILD, whose `include` is `src`, so
-   the tests in both directories typechecked nowhere. The Worker's
-   three lean on the root install and therefore run in CI; the
-   app's two need `app/node_modules` for Playwright's types, and
-   the skip below names that directory rather than next/.
-
-   ---- and the second half: no JavaScript here at all ----
-
-   `tsconfig.json` cannot say that. `checkJs` would, but it
-   applies to every `.js` the imports REACH, and the checks import
-   `worker.js`, the stock model and the money school's icons, and
-   through worker.js most of `functions/`. Turning it on reports
-   194 errors in `aab/tools/stock.model.js` alone: files this
-   config is not the one converting, and a list nobody reads.
-
-   So the directory is walked here instead. It is a smaller
-   question and it is the one worth asking: a `.js` in `scripts/`
-   typechecks nowhere, and the whole of the four chunks was
-   getting rid of them.
-
-   ---- what it has already caught ----
-
-   `kindOf()` in `lib/coursera.ts` returned `"file"`, and no file
-   in a Coursera export is ever a `file`: `splitName()` answers
-   `attachment` for one. Two vocabularies with four words in
-   common, conflated under one name, and the arrow between them
-   was the function whose return type nothing checked. A LESSON is
-   one of five kinds and a FILE is one of seven; `LessonKind` in
-   `shared/courses.ts` is the first and is imported rather than
-   written out a second time.
-   ============================================================ */
+   The second half is that no JavaScript is left in `scripts/` or
+   `shared/`. `checkJs` cannot say that: it applies to every `.js`
+   the imports REACH, which is `worker.js`, the stock model and
+   most of `functions/` through it. */
 
 import { execFileSync } from "node:child_process";
 import { existsSync, readdirSync, readFileSync } from "node:fs";
@@ -106,24 +38,20 @@ interface Config {
   config: string;
   /** Every directory whose `node_modules` this config needs, and
       it is a LIST because two of them need more than one.
-
       `next/tsconfig.json` maps the bare `playwright` specifier
       into `app/node_modules`, so the browser tests beside the app
-      need both installs. Declaring only `next/` made this FAIL,
-      loudly and about the wrong thing, on a machine that had one
-      and not the other: forty errors reading "Cannot find module
-      'playwright'" for an install nobody had said was required.
-      CI never saw it because CI has neither. */
+      need both installs: declaring only `next/` made this fail
+      loudly and about the wrong thing on a machine that had one
+      and not the other. */
   needs?: string[];
 }
 
 const CONFIGS: Config[] = [
   { what: "scripts/", config: join(HERE, "tsconfig.json") },
-  /* `build-og.ts` alone, because it is the one generator here
-     that drives a browser and playwright is a devDependency of
-     `app/`. It is excluded from the config above so that one
-     keeps running on the root install, which is the only one
-     CI does. */
+  /* `build-og.ts` alone, because it is the one generator here that
+     drives a browser and playwright is a devDependency of `app/`.
+     It is excluded from the config above so that one keeps running
+     on the root install, which is the only one CI does. */
   {
     what: "scripts/ (the share-card generator)",
     config: join(HERE, "tsconfig.browser.json"),
@@ -155,8 +83,7 @@ const CONFIGS: Config[] = [
   },
   /* The one entry whose `needs` is not its own directory. Most of
      these run in linkedom off the root install; three drive a real
-     browser, and playwright is a devDependency of `app/`, so the
-     config cannot resolve it without that install. */
+     browser, and playwright is a devDependency of `app/`. */
   {
     what: "aab/ (the browser-side tests)",
     config: join(ROOT, "aab", "tsconfig.test.json"),
@@ -172,22 +99,15 @@ const NOT_CODE = new Set(["fixtures", "node_modules"]);
 /** What must not exist in each, and why the two differ.
 
     `scripts/`: any JavaScript. Node strips the types with no build
-    step, so a `.js` here typechecks nowhere and there is nothing
-    to trade for keeping one.
+    step, so a `.js` here typechecks nowhere.
 
     `shared/`: JavaScript AND declarations, because both are
     COMPILED OUTPUT there. Those files are read directly by three
     runtimes, Next through `transpilePackages`, the Worker through
     wrangler's esbuild, and plain node through type stripping, so
-    nothing needs a compile step. It was briefly the other way
-    round: four sources with a committed `.js` and `.d.ts` beside
-    each, twelve files where there are four, plus a build script
-    and a check to catch somebody editing the output instead of
-    the input.
-
-    A stray `tsc` with no `--noEmit` puts them straight back, in
-    place and untracked, where the next `git add -A` commits them.
-    `.gitignore` stops that by accident; this stops it on purpose. */
+    nothing needs a compile step. A stray `tsc` with no `--noEmit`
+    puts them back, in place and untracked, where the next
+    `git add -A` commits them. */
 const TYPESCRIPT_ONLY: Array<{ dir: string; bad: RegExp; what: string }> = [
   { dir: "scripts", bad: /\.(js|mjs|cjs|jsx)$/, what: "JavaScript" },
   { dir: "shared", bad: /\.(js|mjs|cjs|jsx)$|\.d\.ts$/, what: "compiled output" },
@@ -218,15 +138,9 @@ if (stray.length) {
 
    That file opens with a count and then a list, and the list is
    the only description of `shared/` there is. It said "six files
-   and a directory" while nine were there: `nav.ts` and
-   `routine.ts` were added by two changes that had no reason to
-   read it, which is how every stale tracker in this repository
-   was written.
-
-   It is here rather than in a check of its own because this is
-   already the check that walks `shared/` and already exists to
-   say that directory is what it claims to be. Naming a file is
-   enough; `check-pointers.ts` is what holds the other direction,
+   and a directory" while nine were there. Here rather than in a
+   check of its own because this already walks `shared/`. Naming a
+   file is enough; `check-pointers.ts` holds the other direction,
    that a name in there resolves. */
 const README = join(ROOT, "shared", "README.md");
 const described = readFileSync(README, "utf8");
@@ -276,8 +190,7 @@ console.log(`types: no stray output in ${TYPESCRIPT_ONLY.map((t) => `${t.dir}/`)
 for (const { what, where } of skipped) {
   /* One `npm install` per directory, joined, because a skip whose
      remedy is not a command you can paste is a skip nobody acts
-     on: "cd next and app" was the line this printed before, for
-     the one config that needs two installs. */
+     on. */
   const install = where.map((d) => `(cd ${d} && npm install)`).join(" && ");
   console.log(`       SKIPPED ${what}: ${where.join(" and ")} `
     + `${where.length > 1 ? "have" : "has"} no node_modules, so the types`

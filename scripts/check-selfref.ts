@@ -1,60 +1,37 @@
 #!/usr/bin/env node
-/* ============================================================
-   check-selfref.ts: a custom property set to itself is a cycle,
+/* check-selfref.ts: a custom property set to itself is a cycle,
    and the browser throws the whole declaration out.
 
        node scripts/check-selfref.ts
        node scripts/check-selfref.ts --list   # every --accent a component writes
 
-   THE BUG THIS EXISTS FOR
-
-   `school-hub.tsx` held `const ACCENT = { live: "var(--accent)" }`
-   and handed that string to a card, which writes its accent into
-   `--accent`. The declaration was `--accent: var(--accent)`: a
-   cycle, thrown out, so `--accent` was the guaranteed-invalid
-   value on the card and everything inside it. `--panel` is mixed
-   from `--accent`, so fourteen cards on /money
-   computed a background of `rgba(0, 0, 0, 0)`, and the rail, the
-   icon tile and the chip lost their grounds with it. Wanting the
-   page's accent means NOT SETTING the property.
-
+   `--accent: var(--accent)` is invalid at computed value time, so
+   `--accent` becomes the guaranteed-invalid value on that element
+   and everything inside it: `--panel` is mixed from it, so
+   fourteen cards computed a background of `rgba(0, 0, 0, 0)`.
+   Wanting the page's accent means NOT SETTING the property.
    `--radius-sm: var(--radius-sm)` in `@theme` was the same
-   sentence in CSS, and it made every corner on the site square.
-   Six more of them, five fonts and `--shadow-lift`, survived that
-   fix and put the whole site in the browser's default face.
-   `tailwind.css` says so where it happened.
+   sentence in CSS, and made every corner on the site square.
 
-   `@theme inline` is the ONE place the shape is correct, and it
-   is the fix for all seven rather than an exception to the rule:
-   an inline key is emitted into the utility that uses it and
-   never into `:root`, so there is no declaration to be a cycle.
-   The block is skipped whole.
+   `@theme inline` is the ONE place the shape is correct: an inline
+   key is emitted into the utility that uses it and never into
+   `:root`, so there is no declaration to be a cycle. That block is
+   skipped whole.
 
-   WHAT IT READS
+   It reads a value in `next/styles/*.css` and any string in
+   `next/**` or `aab/src/**` that becomes one, written as the
+   property or as an `accent`. Anything in `next/components/**`
+   naming `var(--accent)` at all is flagged: the string either
+   restates what inheritance already does or feeds `--accent` back
+   into itself, and nothing here can tell which.
 
-   The two places the declaration can be written: a value in
-   `next/styles/*.css`, and a string in `next/**` or `aab/src/**`
-   that becomes one, whether written as the property (`"--x":
-   "var(--x)"`, `setProperty("--x", "var(--x)")`) or as an
-   `accent`, which five components write into `--accent`.
+   A self-reference reached through a FALLBACK is a cycle too and
+   is NOT flagged: it is the one shape where the author reaches for
+   something else first. What is flagged is a value whose FIRST
+   `var()` is the property being set.
 
-   Anything in `next/components/**` naming `var(--accent)` at all
-   is flagged: a component renders inside whatever accent the page
-   is wearing, so the string either restates what inheritance
-   already does or feeds `--accent` back into itself, and nothing
-   here can tell which from a literal.
-
-   A self-reference reached through a FALLBACK, `--x: var(--y,
-   var(--x))`, is not flagged. CSS counts a fallback in the
-   dependency graph too, so it is a cycle as well, but it is the
-   one shape where the author is reaching for something else
-   first. What is flagged is a value whose FIRST `var()` is the
-   property being set, which is the declaration saying itself.
-
-   Comments are stripped before any of it, in both languages.
-   Both files quote the broken declaration in prose, and a check
-   that reads its own warning as the bug is a check nobody keeps.
-   ============================================================ */
+   Comments are stripped first, in both languages: a check that
+   reads its own warning as the bug is a check nobody keeps. */
 
 import { readFileSync, readdirSync } from "node:fs";
 import { dirname, join, relative } from "node:path";
@@ -88,10 +65,9 @@ const STYLES = join("next", "styles");
 const sheets = readdirSync(join(ROOT, STYLES)).filter((f) => f.endsWith(".css")).sort();
 
 /** The same CSS with every `@theme inline { ... }` block blanked,
-    offsets and lines intact. Those keys never reach `:root`, so a
-    key naming the site token of the same name is the passthrough
-    rather than a cycle. `@theme` without `inline` is not skipped:
-    that one does emit, and is where all seven bugs were. */
+    offsets and lines intact: those keys never reach `:root`.
+    `@theme` without `inline` is not skipped, and is where all
+    seven bugs were. */
 function skipInlineTheme(css: string): string {
   let out = css;
   for (const m of css.matchAll(/@theme\s+inline\s*\{/g)) {

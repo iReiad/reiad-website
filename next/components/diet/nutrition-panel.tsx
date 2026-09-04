@@ -1,49 +1,25 @@
 "use client";
 
-/* ============================================================
-   diet/nutrition-panel.tsx: beyond calories, and how honest it
-   can be.
+/* Beyond calories, and how honest it can be. `DIET.md` sections 15, 16.
 
-   `DIET.md` sections 15 and 16.
+   Micronutrients cannot be estimated from a number of calories: they come
+   from knowing what was actually eaten, and this tool has a curated
+   portion library rather than a food database. So EVERY FIGURE IS SHOWN
+   WITH ITS COVERAGE, and under about half the panel says the day is too
+   sparse to read rather than drawing a bar. A confident number missing a
+   third of the day is more dangerous than no number.
 
-   ---- the honesty problem is the whole design ----
+   NO SCORES: no RDA out of 100, no letter grades, no green ticks for
+   "complete". A figure, a range to aim for, and the coverage.
 
-   Micronutrients cannot be estimated from a number of calories.
-   They come from knowing what was actually eaten, and this tool
-   has a curated portion library rather than a food database. So
-   EVERY FIGURE IS SHOWN WITH ITS COVERAGE, and under about half
-   the panel says the day is too sparse to read rather than
-   drawing a bar.
-
-   A confident number that is missing a third of the day is more
-   dangerous than no number.
-
-   ---- and no scores ----
-
-   No RDA out of 100, no letter grades, no green ticks for
-   "complete". Those imply a precision the data does not have and
-   turn eating into a test. A figure, a range to aim for, and the
-   coverage.
-
-   ---- nineteen figures, in four groups, or nobody reads any ----
-
-   A wall of nineteen is worse than a wall of five, because a
-   reader came for ONE of them. `NUTRIENTS` in `shared/foods.ts`
-   is the list, in the order it is drawn, grouped so the eye has
-   somewhere to land. That table is not inline here on purpose:
-   the Android app reads the same reference intakes, and a watch
-   list said twice is a watch list that will disagree with
-   itself.
-
-   A NUTRIENT WITH NO DATA TODAY IS STILL DRAWN, saying it is
-   not known. A list that hides what it cannot measure teaches a
-   reader that the list is complete.
-
-   TWO OF THEM CARRY NO RANGE and that is the honest shape.
-   Carbohydrate and fat are the split the reader CHOSE, so
-   printing a range beside them would tell somebody on keto they
-   were failing at the thing they had decided to do.
-   ============================================================ */
+   `NUTRIENTS` in `shared/foods.ts` is the list and the order, grouped so
+   the eye has somewhere to land; it is not inline here because the
+   Android app reads the same reference intakes. A NUTRIENT WITH NO DATA
+   TODAY IS STILL DRAWN, saying it is not known, because a list that hides
+   what it cannot measure teaches a reader that the list is complete. Two
+   of them carry no range: carbohydrate and fat are the split the reader
+   CHOSE, and a range beside them would tell somebody on keto they were
+   failing at the thing they decided to do. */
 
 import { useEffect, useMemo, useState, type CSSProperties } from "react";
 import {
@@ -59,19 +35,15 @@ import { T, digits, useToolLang } from "./lang";
 import { Term } from "./glossary";
 import { InsightsPanel } from "./insights-panel";
 
-/** How far back this page reads.
+    /** How far back this page reads: a month for the first three readings
+        and four months for the rest, out of ONE pair of requests. A
+        deficit calibration wants a few months, and a week against an
+        average wants more than a fortnight to be an average of.
 
-    A MONTH FOR SECTION 16'S FIRST THREE READINGS and four months
-    for the rest of them, out of ONE pair of requests. "The top
-    handful of foods over the last month" is what the plan says
-    and the window is part of the reading, but a deficit
-    calibration wants a few months and a week against an average
-    wants more than a fortnight to be an average of.
-
-    Four months rather than a year because `getEntries` takes the
-    OLDEST 2000 rows: a heavy logger asking for a year would lose
-    the recent end of it and nothing about the page would look
-    different. */
+        Four months rather than a year because `getEntries` takes the
+        OLDEST 2000 rows: a heavy logger asking for a year would lose the
+        recent end of it and nothing about the page would look
+        different. */
 const WINDOW = 120;
 const MONTH = 30;
 
@@ -165,18 +137,14 @@ export function NutritionPanel() {
     [days, today],
   );
 
-  /* WHEN the calories land. The claim that most over-target days
-     are made in the evening is a general one, and this is the
-     only reading that can confirm or contradict it from the
-     reader's own log.
+      /* WHEN the calories land: the only reading that can confirm or
+         contradict the claim that most over-target days are made in the
+         evening, from the reader's own log.
 
-     THE HOUR IS `entryHour()` AND NOT A REGEX OVER `meal`. This
-     read the meal label, which is where the board used to stamp
-     the clock and is not where it stamps it now: `at_time` is
-     the column, `meal` is a meal name, and a second copy of that
-     rule here found nothing for every row written since the
-     change. One function knows both spellings and it is in
-     `shared/diet.ts` for exactly this reason. */
+         THE HOUR IS `entryHour()` AND NOT A REGEX OVER `meal`: `at_time`
+         is the column and `meal` is a meal name, so a second copy of that
+         rule finds nothing for every row written since the change. One
+         function knows both spellings. */
   const hours = useMemo(() => {
     const timed = month.filter((e) => !e.planned && entryHour(e) !== null)
       .map((e) => ({ hour: entryHour(e) as number, kcal: e.kcal ?? 0 }));

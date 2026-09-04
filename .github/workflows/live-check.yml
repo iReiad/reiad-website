@@ -1,40 +1,22 @@
-# ============================================================
 # The live smoke test.
 #
 # `scripts/check-live.ts` asks the deployed site the handful of
 # questions that cannot be answered from a file: whether the NEXT
-# service binding is really in effect, whether the second Worker's
-# own JavaScript is really being served, and whether the pieces
-# that fall through to the asset router still do.
+# service binding is in effect, whether the second Worker's own
+# JavaScript is being served, and whether the pieces that fall
+# through to the asset router still do. It needs no secret: every
+# URL it asks for is one a reader can ask for.
 #
-# It runs here rather than locally because it needs to reach
-# reiad.co.uk, and because a red tick on a commit is harder to
-# ignore than a check nobody remembered to run. It needs no
-# secret: every URL it asks for is one a reader can ask for.
+# On every push, because the questions are about the deployed site
+# rather than about the commit. A failure here does not mean the
+# push broke something; it means the site is not doing what the
+# repository says.
 #
-# On every push, because the questions it asks are about the
-# deployed site rather than about the commit, and the moment
-# somebody is pushing is the moment they want to know. A failure
-# here does not mean the push broke something; it means the site
-# is not doing what the repository says, which is worth a red
-# tick either way.
-#
-# ---- except on main, and that is not a weakening ----
-#
-# On main this RACED the deploy and lost. deploy.yml uploads and
-# then asks the same questions, in a step whose comment says why;
-# this workflow starts at the same moment and has no upload to
-# wait for, so it answered in 12 seconds about a site the deploy
-# spent 45 more seconds replacing. #153 merged with a widened
-# img-src, deploy went green, and this went red for a header
-# production had not been given yet.
-#
-# So main is excluded, for the same reason and in the same words
-# checks.yml is: deploy.yml already runs it there, after the
-# upload, which is the only moment the answer is about what was
-# just deployed. Everywhere else this is the only thing asking,
-# and it stays.
-# ============================================================
+# MAIN IS EXCLUDED, because there this races the deploy and loses:
+# it has no upload to wait for, so it answers in seconds about a
+# site the deploy is still replacing. deploy.yml runs the same
+# script after its upload, which is the only moment the answer is
+# about what was just deployed.
 
 name: Live site check
 
@@ -53,10 +35,10 @@ concurrency:
 jobs:
   check:
     runs-on: ubuntu-latest
-    # It asks a couple of dozen URLs and each one has its own
-    # deadline, so this is generous. It is here because the first
-    # version had neither and sat on a runner for six minutes
-    # waiting on a request nothing was going to answer.
+    # It asks a couple of dozen URLs and each has its own deadline,
+    # so this is generous. It is here because a job with neither sat
+    # on a runner for six minutes waiting on a request nothing was
+    # going to answer.
     timeout-minutes: 5
     steps:
       - uses: actions/checkout@v5

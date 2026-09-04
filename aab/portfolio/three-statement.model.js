@@ -1,79 +1,24 @@
-/* ============================================================
-   three-statement.model.js: the engine.
+/* three-statement.model.js: the engine. No DOM, numbers in and
+   numbers out, checked by the balance-check test.
 
-   A real three-statement model: an income statement, a balance
-   sheet and a cash flow statement that are LINKED, so that a
-   change to one assumption flows through all three and the
-   balance sheet still balances afterwards. That last part is the
-   whole discipline, a model whose balance check is a hardcoded
-   zero is a spreadsheet with three tabs, not a model.
+   The three statements are LINKED, so a change to one assumption
+   flows through all three and the balance sheet still balances.
+   THE BALANCE CHECK IS A GENUINE TEST rather than decoration:
+   substituting the roll-forwards gives
+   `A(t) − LE(t) = A(t−1) − LE(t−1)`, so a non-zero means either
+   the opening balance sheet does not balance or this file has a
+   bug.
 
-   No DOM in this file, on purpose. The maths is testable on its
-   own (see the balance-check test), and the page in
-   three-statement.html is only a way of looking at it.
+   Two conventions, stated because a model that hides them cannot
+   be checked: interest is charged on OPENING debt, not closing,
+   which is what keeps it out of the classic circular reference;
+   and the revolver is a cash sweep rather than a covenant model,
+   charged on its opening balance too. */
 
-   ------------------------------------------------------------
-   HOW THE THREE STATEMENTS LINK
-
-     income statement → net income
-       → balance sheet: retained earnings
-       → cash flow:     top line of operating cash flow
-
-     working capital days → AR / inventory / AP on the balance
-       sheet, and the CHANGE in them is a cash flow item
-
-     capex → PP&E on the balance sheet, and depreciation flows
-       back into the income statement next year
-
-     debt schedule → interest expense on the income statement,
-       repayments in financing cash flow
-
-     everything → cash, which is the balance sheet's plug from
-       the bottom of the cash flow statement
-
-   ------------------------------------------------------------
-   WHY THE BALANCE CHECK IS ALWAYS ZERO (unless you break it)
-
-   Write A for assets and L+E for liabilities plus equity. For any
-   forecast year t, substituting the roll-forwards above gives
-
-     A(t) − LE(t) = A(t−1) − LE(t−1)
-:
-the difference is carried, not created. So if the OPENING
-   balance sheet balances, every forecast year balances, whatever
-   the assumptions. That makes the check a genuine test: if it
-   ever prints a non-zero, either the opening balance sheet the
-   user typed doesn't balance, or this file has a bug. It is not
-   decoration.
-
-   ------------------------------------------------------------
-   THE TWO SIMPLIFICATIONS, STATED
-
-   1. Interest is charged on OPENING debt, not on an average or a
-      closing balance. Charging it on closing debt makes interest
-      depend on cash, which depends on interest: the classic
-      circular reference. Real models resolve that with iterative
-      calculation; here the opening-balance convention keeps it
-      deterministic and is a normal convention in practice.
-
-   2. The revolver funds any shortfall below the minimum cash
-      balance, and its interest is likewise charged on the opening
-      balance. It is a cash sweep, not a covenant model.
-
-   Both are the kind of thing worth being explicit about, because
-   a model that hides its conventions can't be checked.
-   ============================================================ */
-
-/* ------------------------------------------------------------
-   The company.
-
-   A representative Bangladeshi listed manufacturer, cement and
-   building materials, the profile of a mid-cap on the DSE main
-   board. The figures are illustrative and internally consistent,
-   NOT the filed accounts of any real company: publishing invented
-   numbers under a real company's name would be inventing that
-   company's financial records. Everything is in BDT lakh.
-   ------------------------------------------------------------ */
+/* The company: a representative Bangladeshi listed manufacturer.
+   The figures are illustrative and internally consistent, NOT
+   the filed accounts of any real company. Everything is in BDT
+   lakh. */
 export const COMPANY = {
   name: "Padma Cement & Building Materials PLC",
   short: "Padma Cement",

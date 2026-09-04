@@ -1,30 +1,18 @@
-/* ============================================================
-   check-sw.ts, did a precached file change without a VERSION bump?
-
-   This exists because the same mistake has now been made twice.
-   sw.js precaches the shell, and a precached file is answered from
-   the cache that holds it; only a new VERSION empties that cache.
-   Change app.js or styles.css without bumping VERSION and every
-   returning visitor keeps the old copy, silently, indefinitely,
-   and invisibly to whoever made the change, because their own
-   browser has no service worker in the way during development.
-
-   It happened at v3 (page views went uncounted for as long as the
-   old app.js survived) and again at v9, when the stock check was
-   fixed three times and not one of those fixes reached anyone.
-
-   HOW IT WORKS
-
-   Every file in sw.js's PRECACHE list is hashed and the hashes are
-   recorded in sw-manifest.json alongside the VERSION they belong
-   to. Run this before committing:
+/* check-sw.ts: did a precached file change without a VERSION bump?
 
        node scripts/check-sw.ts            verify
        node scripts/check-sw.ts --update   record the current state
 
-   If any precached file has changed since the manifest was written
-   and VERSION has not moved, it fails and says which files.
-   ============================================================ */
+   A precached file is answered from the cache that holds it, and
+   only a new VERSION empties that cache. Change one without
+   bumping VERSION and every returning visitor keeps the old copy,
+   silently and indefinitely, and invisibly to whoever made the
+   change, because their own browser has no service worker in the
+   way during development.
+
+   Every file in sw.js's PRECACHE list is hashed and the hashes are
+   recorded in sw-manifest.json alongside the VERSION they belong
+   to. */
 
 import { createHash } from "node:crypto";
 import { readFile, writeFile } from "node:fs/promises";
@@ -32,17 +20,14 @@ import { existsSync, readdirSync, statSync } from "node:fs";
 import { fileURLToPath } from "node:url";
 import { dirname, join, relative, sep } from "node:path";
 
-/* `AAB` is the served directory and `HERE` used to be it. Every
-   file in `aab/` is uploaded and answers at a public URL, so a
-   check living there is a check published, kept private only by a
-   line in `.assetsignore` somebody has to remember to add. A check
-   outside the served directory cannot be served.
+/* `AAB` is the served directory and `HERE` used to be it: every
+   file in `aab/` answers at a public URL, so a check living there
+   is a check published.
 
    `sw-manifest.json` stays in `aab/`, and that is not an
-   oversight: it is data the service worker's own check reads
-   about files in that directory, it is committed beside them, and
-   moving it would change a path in the one place a stale-cache
-   bug is least welcome. */
+   oversight: it is data about files in that directory, committed
+   beside them, and moving it would change a path in the one place
+   a stale-cache bug is least welcome. */
 const ROOT = join(dirname(fileURLToPath(import.meta.url)), "..");
 const AAB = join(ROOT, "aab");
 const MANIFEST = join(AAB, "sw-manifest.json");
@@ -65,22 +50,18 @@ if (!block) {
 }
 const paths = [...block.matchAll(/"([^"]+)"/g)].map((m) => m[1]);
 
-/* ------------------------------------------------------------
-   And the entries that are addresses rather than files.
+/* ---- And the entries that are addresses rather than files.
 
-   archive/TRANSITION.md Stage 11.7. Six of the pages this worker
-   precaches are built by a Worker out of the database, so there
-   is nothing in aab/ to hash. That is not a hole in the check:
-   a rendered page changes when a row changes and no VERSION
-   could ever have tracked that, which is what network-first is
-   for. The hash was always about scripts and stylesheets, and
-   those are still files and still hashed.
+   Six of the pages this worker precaches are built by a Worker out
+   of the database, so there is nothing in aab/ to hash. That is
+   not a hole: a rendered page changes when a row changes and no
+   VERSION could ever have tracked that, which is what
+   network-first is for.
 
-   What CAN go wrong here is an address in the list that nothing
-   serves, because an install that fetches a 404 caches a 404 and
-   the reader who finds out is the one with no connection. So
-   each one is held to being a route worker.js forwards.
-   ------------------------------------------------------------ */
+   What CAN go wrong is an address in the list that nothing serves,
+   because an install that fetches a 404 caches a 404 and the
+   reader who finds out is the one with no connection. So each is
+   held to being a route worker.js forwards. ---- */
 const renderedBlock = sw.match(/const RENDERED = \[([\s\S]*?)\];/)?.[1] ?? "";
 const rendered = [...renderedBlock.matchAll(/"([^"]+)"/g)].map((m) => m[1]);
 
@@ -97,32 +78,21 @@ if (rendered.length) {
   }
 }
 
-/* ------------------------------------------------------------
-   A precached module whose import is not precached
+/* ---- A precached module whose import is not precached
 
-   `app.js` imports `pieces.js`, and the note beside that line in
-   `sw.js` says why it is in the list: "a shell without it is an
+   `app.js` imports `pieces.js`, and a shell without it is an
    app.js whose import resolves to nothing: the menu, the palette
    and every list of writing die together on the first offline
-   visit."
+   visit. That reasoning was written down and then applied by hand
+   every time, and went wrong again when the two practice books
+   became callers of `/schools/workbook.js`: the callers stayed
+   precached and the engine was not.
 
-   That reasoning was written down and then had to be applied by
-   hand every time, which is the failure this repository keeps
-   naming. It went wrong again on 18 August 2026: the two practice
-   books became four lines each over `/schools/workbook.js`, the
-   callers stayed precached and the engine was not, so an offline
-   visit would have got a printed book with none of the learner's
-   writing in it. Nothing here would have said so, and it was
-   caught by reading the `pieces.js` comment rather than by any
-   check.
-
-   A STATIC import only. `signin.js` is imported lazily by
-   `app.js` inside a try, which is why the entry above it says an
-   offline visit without it is "a page with no sign-in button
-   rather than a broken one". A dynamic import that fails is a
-   feature switching off; a static one that fails takes the module
-   with it.
-   ------------------------------------------------------------ */
+   A STATIC import only. `signin.js` is imported lazily inside a
+   try, so an offline visit without it is a page with no sign-in
+   button rather than a broken one. A dynamic import that fails is
+   a feature switching off; a static one takes the module with
+   it. ---- */
 const precached = new Set(paths);
 const unreachable = [];
 
@@ -135,25 +105,16 @@ for (const p of paths) {
     continue;      // the missing-file check below says so properly
   }
   /* The three static forms: a side-effect `import "/a.js"`, an
-     `import … from "/a.js"`, and an `export … from "/a.js"`. Both
-     of the `from` kinds may span lines, so the gap is `[^;]` and
-     not `.`.
+     `import ... from "/a.js"`, and an `export ... from "/a.js"`.
+     Both `from` kinds may span lines, so the gap is `[^;]` and not
+     `.`.
 
-     The first version of this was looser and found two things
-     that are not imports at all, which is why it is written out
-     rather than approximated:
-
-       `import("/engage.js").catch(…)` in app.js, a DYNAMIC import
-       inside a catch, which is the shape that is allowed to fail.
-       That line went with the module in #149 and the rule it
-       taught did not: the next one of those must not be precached
-       either;
-
-       `export const schoolFor = (path = "/money/") =>`, an export
-       whose DEFAULT PARAMETER is a path.
-
-     Adding either to PRECACHE would have been two files served to
-     every reader for no reason, on the word of a check. */
+     Written out rather than approximated, because a looser version
+     found two things that are not imports: a DYNAMIC import inside
+     a catch, which is the shape that is allowed to fail, and an
+     export whose DEFAULT PARAMETER is a path. Adding either to
+     PRECACHE would be a file served to every reader for no reason,
+     on the word of a check. */
   const specs = [
     ...src.matchAll(/(?:^|\n)\s*import\s+["'](\/[^"']+)["']/g),
     ...src.matchAll(/(?:^|\n)\s*(?:import|export)\s[^;]*?\bfrom\s*["'](\/[^"']+)["']/g),
@@ -163,21 +124,18 @@ for (const p of paths) {
   }
 }
 
-/* ============================================================
-   The pattern for a file whose name never changes
+/* THE PATTERN FOR A FILE WHOSE NAME NEVER CHANGES.
 
-   `STABLE_BUNDLE` in sw.js is network-first because `/studio/app.js`
-   is the one script on this site that is neither content-hashed
-   nor precached, so nothing else could tell a new build from an
-   old one and the Studio was always a load behind.
+   `STABLE_BUNDLE` in sw.js is network-first because
+   `/studio/app.js` is the one script here that is neither
+   content-hashed nor precached, so nothing else could tell a new
+   build from an old one and the Studio was always a load behind.
 
-   A pattern is a promise about a directory, and a directory can
-   move: `aab/desk/` did, when `/admin` took its panels over. A
-   pattern matching nothing costs a reader nothing, which is
-   exactly why it would sit here through the next rename, quietly
-   putting the thing it was written for back on the cache-first
-   branch.
-   ============================================================ */
+   A pattern is a promise about a directory and a directory can
+   move. A pattern matching nothing costs a reader nothing, which
+   is exactly why it would sit here through the next rename,
+   quietly putting the thing it was written for back on the
+   cache-first branch. */
 const stable = sw.match(/const STABLE_BUNDLE = ([^;]+);/)?.[1];
 if (!stable) {
   console.error("could not find STABLE_BUNDLE in sw.js");
@@ -218,33 +176,24 @@ if (unreachable.length) {
   process.exit(1);
 }
 
-/* ============================================================
-   A worker that caches an error is worse than no cache
+/* A WORKER THAT CACHES AN ERROR IS WORSE THAN NO CACHE.
 
-   `fetch` rejects on a network failure and on NOTHING else: a
-   500, a 404 and a 302 all resolve, so a navigation handler that
-   writes every answer it gets into the cache writes those too,
-   and hands them back from its own offline branch later.
-
-   THE FAILURE THIS EXISTS FOR. On 21 August 2026 two Workers
-   rolled out a minute apart and half a dozen pages answered 500
-   while they did. Every reader who loaded one had that error page
-   stored. A cached error outlives the minute that caused it, and
-   nothing here could see it: the page renders, the worker
-   installs, every other check passes.
+   `fetch` rejects on a network failure and on NOTHING else: a 500,
+   a 404 and a 302 all resolve, so a navigation handler that writes
+   every answer into the cache writes those too and hands them back
+   from its own offline branch later. A cached error outlives the
+   minute that caused it, and nothing else can see it: the page
+   renders, the worker installs, every other check passes.
 
    Asserted as a fact about the SOURCE rather than by driving a
-   worker, because registering one and forcing a 500 through it
-   needs a browser, a served origin and an install cycle to catch
-   one condition. This is the condition.
-   ============================================================ */
+   worker, because reproducing it needs a browser, a served origin
+   and an install cycle. */
 {
   /* Per PUT, not per file. Asking whether `response.ok` appears
      anywhere in sw.js is a check that cannot fail: there are two
-     places that write to a cache, the other one was already
-     guarded, and removing the guard from the navigation branch
-     left the file still containing the words. This looks at the
-     two hundred characters before each put. */
+     places that write to a cache and the other was already
+     guarded, so removing this guard leaves the file still
+     containing the words. */
   const unguarded = [...sw.matchAll(/\bc(?:ache)?\.put\(/g)]
     .filter((m) => !/response\.ok/.test(sw.slice(Math.max(0, m.index - 200), m.index)));
   if (unguarded.length) {
@@ -259,37 +208,29 @@ if (unreachable.length) {
   }
 }
 
-/* ============================================================
-   A payload is not a file, and the cache-first branch treats
+/* A PAYLOAD IS NOT A FILE, and the cache-first branch treats
    everything that is not HTML as one.
 
-   Next fetches a React Server Component payload at the route's
-   own address with `_rsc` on it, on every client-side navigation
-   and every prefetch. It describes ONE route under ONE build, it
-   varies on four router headers, and a prefetch payload is
-   partial on purpose. Cached and served first, one captured
-   under an earlier build answers a navigation under the next.
-
-   THE FAILURE THIS EXISTS FOR. /admin drew its heading and its
-   two credential cards and none of its thirteen panels, for
-   days. The HTML, the chunks and the stylesheet on the server
-   were all correct, and every check said so, because every check
-   reads what the server sends. What it took to see was the page
-   driven in a browser with no worker in the way.
+   Next fetches a React Server Component payload at the route's own
+   address with `_rsc` on it, on every client-side navigation and
+   every prefetch. It describes ONE route under ONE build, varies
+   on four router headers, and a prefetch payload is partial on
+   purpose, so one captured under an earlier build answers a
+   navigation under the next: /admin drew its heading and none of
+   its thirteen panels for days, with the HTML, the chunks and the
+   stylesheet on the server all correct.
 
    Asserted against the source for the reason the guard above is:
-   the condition needs a registered worker, a served origin and
-   two builds to reproduce, and this is the condition.
-   ============================================================ */
+   the condition needs a registered worker, a served origin and two
+   builds to reproduce. */
 {
-  /* Comments STRIPPED, and the first version of this check did
-     not strip them: it looked for the string `_rsc` before the
-     first respondWith, and the paragraph explaining the exclusion
-     says `_rsc` in it, so deleting the exclusion left the check
-     passing on its own explanation. Proved by deleting it.
+  /* Comments STRIPPED. The first version looked for the string
+     `_rsc` before the first respondWith, and the paragraph
+     explaining the exclusion says `_rsc` in it, so deleting the
+     exclusion left the check passing on its own explanation.
 
-     And before the first respondWith, because an exclusion
-     written after the worker has answered is not an exclusion. */
+     And before the first respondWith, because an exclusion written
+     after the worker has answered is not an exclusion. */
   const code = sw.replace(/\/\*[\s\S]*?\*\//g, "").replace(/\/\/.*$/gm, "");
   const head = code.slice(0, code.indexOf("respondWith"));
   const missing = ([
@@ -312,11 +253,10 @@ if (unreachable.length) {
   }
 }
 
-/** Each precached path against the first sixteen hex characters
-    of its SHA-256. Written to `sw-manifest.json` beside the
-    VERSION the hashes belong to, which is the whole mechanism:
-    a file that changed under a VERSION that did not is what this
-    check is looking for. */
+/** Each precached path against the first sixteen hex characters of
+    its SHA-256, written to `sw-manifest.json` beside the VERSION
+    the hashes belong to: a file that changed under a VERSION that
+    did not is what this check looks for. */
 type Hashes = Record<string, string>;
 
 const hashes: Hashes = {};
@@ -341,22 +281,17 @@ if (missing.length) {
 if (update) {
   /* ---- --update may RECORD a bump. It may not EXCUSE one ----
 
-     This wrote the manifest at whatever VERSION sw.js currently
-     said and exited 0, without ever looking at the manifest it was
-     overwriting. So the sequence that feels natural while working,
-     edit a precached file and then run `--update` because the
-     check just complained, is the sequence that disarms the check:
-     the new hashes are recorded under the OLD version, every later
-     run compares clean, and every returning reader keeps the file
-     they already had.
+     This wrote the manifest at whatever VERSION sw.js said and
+     exited 0, without looking at the manifest it was overwriting.
+     So the sequence that feels natural, edit a precached file and
+     then run `--update` because the check complained, is the one
+     that disarms the check: the new hashes go in under the OLD
+     version, every later run compares clean, and every returning
+     reader keeps the file they had.
 
-     That is not hypothetical. `/fallback.css` changed in #181 and
-     shipped under v164 because `--update` was run as a reflex on
-     every commit that day, and `check-all` was green each time.
-
-     So `--update` now refuses the one case it must: content moved,
-     version did not. Bumping first and recording second is the
-     order the changelog at the top of sw.js already describes. */
+     So `--update` refuses the one case it must: content moved,
+     version did not. Bump first and record second, which is the
+     order the changelog at the top of sw.js describes. */
   const prior = existsSync(MANIFEST)
     ? JSON.parse(await readFile(MANIFEST, "utf8")) as Manifest
     : null;

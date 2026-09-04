@@ -1,54 +1,18 @@
-/* ============================================================
-   check-pointers.ts: does a comment naming a file name one that
+/* check-pointers.ts: does a comment naming a file name one that
    exists?
 
      node scripts/check-pointers.ts
 
-   THE BUG THIS EXISTS FOR, nineteen times over
+   A great many comments here say where to go and look, and that
+   half rots silently: converting `scripts/` to TypeScript left
+   twenty-five names resolving to nothing, two of which promised a
+   check nobody had ever written. None of it fails anything, which
+   is exactly why they survive.
 
-   This repository writes long comments on purpose, and the long
-   ones are the good ones: they say what will fail, what must never
-   be renamed, why an order is load-bearing. A great many of them
-   also say **where to go and look**, and that half rots silently.
-
-   Converting `scripts/` to TypeScript over four changes renamed
-   thirty-six files, and every rename left pointers behind. A scan
-   found twenty-five names that resolved to nothing:
-
-   - `share-card.ts` sent a reader to `scripts/check-modules.mjs`,
-     which has never existed under any extension.
-   - `SETUP.md` had `node aab/check-routes.mjs` as an instruction
-     to run: wrong in the directory AND the extension.
-   - `README.md` told anybody regenerating the site to run
-     `scripts/build-styles.mjs`, three days after it was deleted.
-   - `CLAUDE.md` gave two build commands for files that went with
-     the practice books when those became routes.
-   - and two comments promised a `check-workbook.mjs` that has
-     never existed, which is worse than a stale pointer: the next
-     person reads "a check holds these two together", believes it,
-     and stops looking.
-
-   None of it fails anything. A stale pointer costs nothing until
-   somebody follows it, which is exactly why it survives.
-
-   ---- what it does not read, and why ----
-
-   `archive/` is not a source. It is frozen history: a page that
-   has been replaced goes there so whoever has to check the
-   replacement can still read it, and a file there naming a file
-   that was deleted afterwards is what history looks like rather
-   than a mistake. It IS a resolution target, so a live comment
-   pointing INTO the archive resolves.
-
-   ---- and the list of names that are gone on purpose ----
-
-   `GONE` below is keyed by file AND name, not by name alone. A
-   comment that says "`build-styles.mjs` is gone" is correct and a
-   NEW comment naming it somewhere else is not, and a list keyed
-   by name alone would let the second through. Each entry carries a
-   reason, because "it is probably fine" is how a list stops
-   meaning anything.
-   ============================================================ */
+   `GONE` below is keyed by file AND name, not by name alone: "x is
+   gone" is a correct sentence and a NEW comment naming x somewhere
+   else is not. Each entry carries its reason, and an entry that
+   has stopped being needed fails too. */
 
 import { execFileSync } from "node:child_process";
 import { existsSync, readdirSync, readFileSync } from "node:fs";
@@ -66,15 +30,6 @@ interface Gone {
 }
 
 const GONE: Gone[] = [
-  /* The service worker's changelog is HISTORY: v217 is a version
-     that shipped, and what it shipped was nine drawings rendered
-     into `/art/` by a generator. The generator is gone, because
-     the drawings are inline components now and a raster cannot
-     answer a theme, but the entry has to keep saying what that
-     version actually did or the log stops being a log. */
-  { file: "aab/sw.js", name: "scripts/build-card-art.ts",
-    why: "a shipped version's changelog: it named the generator that drew "
-      + "the rasters, and next/components/card-art.tsx replaced both" },
   /* Named in the past tense, in the paragraph explaining why a
      test whose subject is a module should not be named after a
      page: it was `aab/studio.test.ts`, it spent its life failing
@@ -94,8 +49,6 @@ const GONE: Gone[] = [
   { file: "scripts/admin.test.ts", name: "next/app/(site)/admin/layout.tsx",
     why: "asserted absent: a layout there would wrap /admin/research too, "
       + "so the panel's own is in (panel)/ and this is the check for it" },
-  { file: "aab/sw.js", name: "scripts/check-modules.mjs",
-    why: "the same, said where the reader it misled would be" },
 
   /* Deleted on 18 August 2026 when Next took the Tailwind
      compiler over. All three name it as gone. */
@@ -113,17 +66,9 @@ const GONE: Gone[] = [
      which is the worse way to be wrong. */
   { file: "MIGRATION.md", name: "check-workbook.mjs",
     why: "the record of a name two comments carried and nothing answered to" },
-  { file: "next/lib/workbook.ts", name: "check-workbook.mjs",
-    why: "names the old pointer beside check-next.ts, which holds it now" },
-  { file: "next/components/workbook.tsx", name: "check-workbook.mjs",
-    why: "names the old pointer beside workbook.test.ts, which held it all along" },
-  { file: "scripts/check-next.ts", name: "check-workbook.mjs",
-    why: "the check itself, saying which name used to be given for it" },
 
-  /* The rule tripping over its own example, which is the right
-     outcome and is left as one: CLAUDE.md explains why GONE is
-     keyed by file and name using this name, and an entry is what
-     that costs. */
+  /* Deleted when Next took the Tailwind compiler over. All three
+     name it as gone. */
   { file: "CLAUDE.md", name: "build-styles.mjs",
     why: "the example in the rule that this list exists for" },
 
@@ -158,12 +103,9 @@ const GONE: Gone[] = [
   { file: ".github/workflows/backup.yml", name: "content/articles.backup.raw.json",
     why: "written and removed by the same job; never committed" },
 
-  /* The module the closed door turned back, on the morning the
-     door was shut. It was never committed: the pointer glow is
-     `next/components/glow.tsx`, and naming the file that would
-     have been is the whole of both paragraphs. */
-  { file: "CLAUDE.md", name: "aab/src/glow.ts",
-    why: "the module not built the old way; the name is the argument" },
+  /* A plan names what it planned to delete, and the deletion
+     happened. Reading it for what the site looks like now is the
+     mistake its own header warns against. */
   { file: "scripts/check-closed.ts", name: "aab/src/glow.ts",
     why: "the same, in the check that refused it" },
 
@@ -183,10 +125,9 @@ const GONE: Gone[] = [
   { file: "next/postcss.config.mjs", name: "aab/tailwind.css",
     why: "names the committed output as gone, which is why this config exists" },
 
-  /* Six ports, each ending in a section that asserts the module it
-     replaced is not served any more. The old address IS what is
-     being asserted, and the line under each one names the
-     `archive/modules/` copy that answers instead. */
+  /* The module the closed door turned back. It was never
+     committed: the pointer glow is `next/components/glow.tsx`, and
+     naming the file that would have been is the argument. */
   { file: "next/comments.test.ts", name: "aab/comments.js",
     why: "asserts the replaced module is not served, by its address" },
   { file: "next/insights-hub.test.ts", name: "aab/hub.js", why: "the same" },
@@ -195,11 +136,9 @@ const GONE: Gone[] = [
   { file: "next/read-aloud.test.ts", name: "aab/read-aloud.js", why: "the same" },
   { file: "next/research.test.ts", name: "aab/about.js", why: "the same" },
 
-  /* Precached, so editing a comment in one costs every returning
-     visitor a refetch of the whole shell. Free to fix on the day
-     it becomes aab/src/*.ts, and that is when it will be. The two
-     curriculum modules and app.js were on this list until they
-     became generated, which is exactly that day. */
+  /* The stylesheet moved to `next/styles/`. These three are the
+     moved-from column of that stage, and one built file that went
+     with the compiler it needed. */
   { file: "aab/tools/stock.model.js", name: "stock.test.mjs", why: "precached" },
 
   /* The one pointer here that must NEVER resolve. `admin.test.ts`
@@ -213,18 +152,9 @@ const GONE: Gone[] = [
 
 const allowed = new Set(GONE.map((g) => `${g.file} ${g.name}`));
 
-/** This file, which is the one place naming a file that is gone is
-    the whole job: the table above is a list of them, and the
-    header quotes four more as the examples the check exists for.
-
-    So it is exempt from ITS OWN names and from nothing else. Not
-    skipped as a source, which would be the easy version and the
-    wrong one: a pointer in here to a file that later moves is the
-    same defect as anywhere, and this is where a reader would be
-    least expecting it.
-
-    It failed on itself in CI for exactly this, having passed on a
-    laptop where it was still untracked and so was not yet read. */
+  /* Six ports, each ending in a section that asserts the module it
+     replaced is not served any more. The old address IS what is
+     being asserted. */
 const SELF = "scripts/check-pointers.ts";
 const goneNames = new Set(GONE.map((g) => g.name));
 
@@ -233,14 +163,9 @@ const goneNames = new Set(GONE.map((g) => g.name));
 const tracked = execFileSync("git", ["ls-files"], { cwd: ROOT, encoding: "utf8" })
   .split("\n").filter(Boolean);
 
-/* `archive/` is history and is read by nothing. The build outputs
-   are somebody else's code carrying somebody else's comments.
-
-   The two nightly snapshots under `content/` are DATA. A generated
-   file carries the comment its generator wrote, so the file that
-   has to be right is the generator: `articles.backup.json` holds a
-   `note` naming `functions/_lib/backup.ts`, and correcting the
-   snapshot would last until the next run overwrote it. */
+  /* Precached, so editing a comment in one costs every returning
+     visitor a refetch of the whole shell. Free to fix on the day
+     it becomes aab/src/*.ts. */
 const NOT_A_SOURCE =
   /^(archive\/|next\/\.next\/|next\/\.open-next\/|next\/node_modules\/|node_modules\/|content\/[\w-]+\.backup\.json$)/;
 
@@ -269,56 +194,34 @@ const NAMES = new RegExp(
   + "\\.(?:mjs|cjs|js|jsx|ts|tsx))(?![\\w-])",
   "g");
 
-/** And any name carrying one of this repository's own directories.
+/* What is not read. The build outputs are somebody else's code
+   carrying somebody else's comments.
 
-    The list above catches a script somebody is told to RUN. It
-    caught none of the twelve found on 21 August 2026, which were
-    all of the other kind: a comment naming the MODULE that does
-    something. `worker.js` and the Notion route both named
-    `functions/_lib/sync.ts` by an old extension, quoting an
-    import that had stopped resolving; `_lib/look.js` and
-    `_lib/headers.js` in `insights/[slug].js` named a directory
-    those two files left months ago; the other eight were `.js`
-    in a comment about a file that is `.ts` now.
-
-    Converting a module renames it, and every comment naming it
-    goes stale in the same commit. That is the same failure the
-    header above describes, and the reason it was not caught is
-    that the pattern asked about a shape of NAME rather than about
-    a path into this repository.
-
-    A leading directory is what makes a bare name safe to check:
-    `sync.ts` in prose could be anybody's, `functions/_lib/sync.ts`
-    is ours.
-
-    Square brackets are in the class because a route's filename has
-    them: `functions/api/comments/[[id]].ts`. Without them thirteen
-    of the seventeen handlers in this repository were invisible
-    here, and the last stale pointer the first sweep left behind
-    was to exactly such a file. `*` stays OUT, so a glob like
-    `aab/*.js` matches nothing and is never asked about, which is
-    right: a glob describes a set rather than pointing at a file. */
+   The two nightly snapshots under `content/` are DATA. A generated
+   file carries the comment its generator wrote, so the file that
+   has to be right is the generator: correcting the snapshot would
+   last until the next run overwrote it. */
 const PATHS = new RegExp(
   "(?<![\\w/.-])((?:aab|app|functions|next|scripts|shared|supabase|content)"
   + "/[\\w./()\\[\\]-]+\\.(?:mjs|cjs|js|jsx|ts|tsx|css|json|sql|md))(?![\\w-])",
   "g");
 
-/** Two paths that are not a pointer at a file in this repository.
-    `node_modules/` is installed rather than committed, so whether
-    it resolves depends on whether somebody has run `npm install`,
-    and a check whose answer depends on that is a check that fails
-    in CI for a reason nobody can read. `.next/` is a build. */
+/* An IGNORE FILE is not prose that points at something: every line
+   in one is a path expected NOT to be in the repository, and the
+   answer depends on what has been BUILT rather than on what is
+   committed. `.gitignore` names the `next-env.d.ts` that `next
+   build` writes, so this passed on a laptop and failed in CI on a
+   fresh clone.
+
+   That file is named here WITHOUT its directory, and has to be: a
+   path into this repository is what `PATHS` below asks about, so
+   writing it out would fail this check on the commit that adds the
+   exemption. Which it did. */
 const NOT_A_POINTER = /(^|\/)(node_modules|\.next|\.open-next)\//;
 
-/** Every file in the repository, by basename, so a comment can
-    name one without giving its path.
-
-    Walked off DISK rather than taken from `git ls-files`, and the
-    difference is a real one: a file that has been written and not
-    yet committed exists, and an index-only answer fails on the
-    very commit that adds the thing a new comment points at. This
-    check did that to itself twice while being written. The index
-    still decides what is READ, which is a different question. */
+/** Names shaped like one of ours. A comment naming `react.dev` or
+    `index.html` is not this: what rots is the name of a script
+    somebody is being sent to run or to read. */
 const byBase = new Map<string, string[]>();
 (function index(dir: string): void {
   for (const entry of readdirSync(dir, { withFileTypes: true })) {
@@ -333,22 +236,27 @@ const byBase = new Map<string, string[]>();
   }
 })(ROOT);
 
-/** Does this name reach a file? Relative to the file it was
-    written in, then repo-relative, then by basename alone.
+/** And any name carrying one of this repository's own directories.
 
-    The first two ask the FILESYSTEM and only the third asks the
-    index, and the order is not incidental: a file that has been
-    written and not yet committed exists, and a check that said
-    otherwise would fail on the commit that adds the thing a new
-    comment is pointing at. This one did, on itself, the first
-    time it ran. */
+    The list above catches a script somebody is told to RUN, and
+    caught none of the twelve found in one sweep, which were all
+    the other kind: a comment naming the MODULE that does
+    something, by an extension it no longer has. A leading
+    directory is what makes a bare name safe to check: `sync.ts` in
+    prose could be anybody's, `functions/_lib/sync.ts` is ours.
+
+    Square brackets are in the class because a route's filename has
+    them, and without them thirteen of the seventeen handlers here
+    were invisible. `*` stays OUT, so a glob like `aab/*.js`
+    matches nothing and is never asked about: a glob describes a
+    set rather than pointing at a file. */
 const resolves = (name: string, from: string): boolean => {
   const clean = name.replace(/^\//, "");
   if (existsSync(join(ROOT, dirname(from), name))) return true;
-  /* Not a name that starts with a dot: `../x.ts` is an import and
-     belongs to the line above, and joined on to ROOT it would ask
-     about a file OUTSIDE the repository, where a hit is a pass
-     nobody meant. */
+/** Two paths that are not a pointer at a file in this repository.
+    `node_modules/` is installed rather than committed, so whether
+    it resolves depends on whether somebody has run `npm install`.
+    `.next/` is a build. */
   if (clean.includes("/") && !clean.startsWith(".") && existsSync(join(ROOT, clean))) {
     return true;
   }
@@ -361,15 +269,14 @@ const resolves = (name: string, from: string): boolean => {
 /* ---------- the walk ---------- */
 
 const dead: Array<{ file: string; name: string }> = [];
-/** A name that resolves HERE and would not on a fresh clone.
+/** Every file in the repository, by basename, so a comment can
+    name one without giving its path.
 
-    The check reads the filesystem first, deliberately, so a file
-    written and not yet committed counts as existing. The cost of
-    that is a pointer at something BUILT: `next build` writes a
-    `next-env.d.ts` nobody commits, `.gitignore` named it, and this
-    check passed on a laptop and failed in CI on the same commit.
-    Asking the index as well is what turns that into a failure on
-    the machine that can fix it. */
+    Walked off DISK rather than taken from `git ls-files`: a file
+    written and not yet committed exists, and an index-only answer
+    fails on the very commit that adds the thing a new comment
+    points at. The index still decides what is READ, which is a
+    different question. */
 const built: Array<{ file: string; name: string }> = [];
 const inIndex = new Set(tracked);
 const used = new Set<string>();

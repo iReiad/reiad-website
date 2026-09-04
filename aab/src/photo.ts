@@ -1,49 +1,11 @@
-/* ============================================================
-   photo.ts: turning whatever an <img> is pointing at into bytes
-   this site can store.
-
-   Two surfaces need this and used to have only one copy of it.
-   The Studio needs it on publish, to move pasted photos out of
-   the article body and into R2. The desk needs it to repair a
-   piece that was published while that was broken, without making
-   somebody reopen the editor.
-
-   ---- the data: URL case, which is the whole point ----
-
-   A photo pasted into the editor is held as a `data:` URL until
-   publish. Reading it back with fetch() looks obviously correct
-   and is silently forbidden: **fetching a `data:` URL is governed
-   by connect-src, not by img-src.** This site's policy says
-   `img-src 'self' data:`, so a pasted photo DISPLAYS perfectly,
-   and connect-src never mentioned `data:`, so every read-back was
-   blocked before it left the browser:
-
-     Refused to connect to 'data:image/webp;base64,...' because it
-     violates the following Content Security Policy directive
-
-   The caller caught that, counted a failed upload and left the
-   photo embedded, which is the designed fallback and looks like
-   nothing at all going wrong. The symptoms appeared three removes
-   away: R2 stayed empty, every article's `cover` stayed empty, and
-   so every link shared to WhatsApp or LinkedIn showed the site's
-   default card instead of the piece's own photo.
-
-   So a data: URL is decoded here rather than fetched. Adding
-   `data:` to connect-src would also work and is the wrong fix:
-   this needs no network at all, and a policy should not be
-   widened to permit a request that never had to be made.
-
-   `aab/studio-publish.test.ts` drives a real publish under the
-   real policy, read out of `_headers`, and fails loudly if this
-   regresses.
-   ---- this file is TypeScript, and the .js beside it is built ----
-
-   archive/TRANSITION.md Stage 13. Edit `aab/src/photo.ts`; the committed
-   `aab/photo.js` is what the browser fetches, and
-   `node scripts/build-modules.ts --check` fails if it is edited
-   in its built form.
-
-   ============================================================ */
+/* photo.ts: turning whatever an <img> points at into bytes this
+   site can store. Both Studios and the desk use it.
+   A `data:` URL is DECODED here, never fetched: `fetch()` on one
+   is governed by connect-src rather than img-src, so every
+   read-back was blocked silently, R2 stayed empty and every
+   shared link showed the default card. Do not "simplify" it back
+   to a fetch: `aab/studio-publish.test.ts` drives a real publish
+   under the real policy. Edit this; `aab/photo.js` is built. */
 
 /** px on the long side: plenty for a blog, and it caps the bytes. */
 export const MAX_EDGE = 1600;

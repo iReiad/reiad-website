@@ -1,13 +1,7 @@
-/* ============================================================
-   frontier.js: the dashboard around the portfolio.
-
-   frontier.model.js does the optimisation and is checked on its
-   own; this draws it. One state object, a full re-solve on every
-   change, and the same deferred pattern as the other heavy pages
-   for the one view that costs more than a frame.
-
-   Charts are hand-drawn inline SVG, no library.
-   ============================================================ */
+/* frontier.js: the charts and the interaction for the
+   portfolio-construction case study. `frontier.model.js` holds
+   the arithmetic; everything here is recomputed from one call so
+   the views cannot disagree. */
 
 import {
   COMPANIES, HELD, TICKERS, DATES_2015, DATES_OOS, BENCHMARK_ANNUAL, CHECKS,

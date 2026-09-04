@@ -1,44 +1,24 @@
-/* ============================================================
-   nav-tree.tsx: the whole site, from the bar, on any page.
+/* The whole site, from the bar, on any page. The rail is a column and a
+   column has room for one level, so four pages are one press from
+   anywhere and the other 247 are two or three.
 
-   The rail is a column and a column has room for one level, so
-   getting to Stufe 3 means opening the German hub to find the
-   link to it. Four pages of the site are one press from anywhere
-   and the other 247 are two or three.
+   The same table read as a tree, with the stages each school is made of
+   underneath. `lib/school-stages.ts` is that second level, counted out of
+   the schools' own rows by `scripts/build-school-tree.ts` rather than
+   listed by hand, and generated rather than queried because half this
+   site's routes are prerendered where there is no database to ask.
 
-   This is the same table read as a tree: five groups, sixteen
-   destinations, and under each school the stages it is actually
-   made of. `lib/school-stages.ts` is that second level, counted
-   out of the schools' own rows by `scripts/build-school-tree.ts`
-   rather than listed by hand, and generated rather than queried
-   because half this site's routes are prerendered where there is
-   no database to ask. Its header says the rest.
+   NO JAVASCRIPT, deliberately: `popover="auto"` brings the top layer,
+   light dismiss, Escape and the focus return, so none of the four is
+   implemented here. This is chrome on 251 pages, and a menu that needs a
+   bundle to open does not open until the bundle arrives. `[popover]`
+   rather than `<details>`, because a details element cannot escape the
+   bar's own stacking context and the bar is a fixed pill with `overflow`
+   and a `z-index`.
 
-   ---- no JavaScript, deliberately ----
-
-   `popover="auto"` brings the top layer, light dismiss, Escape
-   and the focus return, so this component implements none of the
-   four and ships no client code. It is the argument
-   `src/signin.ts` already made for the account menu, and it
-   matters more here: this is chrome on 251 pages, and a menu
-   that needs a bundle to open is a menu that does not open until
-   the bundle arrives.
-
-   It is `[popover]` rather than `<details>` for one reason worth
-   keeping: a details element inside the bar cannot escape the
-   bar's own stacking context, and the bar is a fixed pill with
-   `overflow` and a `z-index` of its own. The top layer is above
-   all of it by definition.
-
-   ---- the tree is not a copy of the rail ----
-
-   It reads the same `NAV`, so nothing can drift, but it shows
-   what the rail cannot: every group at once rather than the
-   reader's ordering, and the level below each destination.
-   `unlisted` is skipped for the reason it exists: a link in the
-   chrome to a page that answers 403 is a promise the site
-   cannot keep.
-   ============================================================ */
+   It reads the same `NAV`, so nothing can drift. `unlisted` is skipped
+   for the reason it exists: a link in the chrome to a page that answers
+   403 is a promise the site cannot keep. */
 
 import { stageUrl, type SchoolStage } from "@reiad/shared/schools";
 import { NAV, type NavGroup, type NavItem } from "@reiad/shared/nav";
@@ -60,17 +40,13 @@ function TreeItem({ item, here }: { item: NavItem; here: string | null }) {
   const stages = stagesFor(item.key);
 
   return (
-    /* The colour goes on the ITEM, not on the link inside it.
-
-       Each destination wears its own, from the same table the
-       rail reads, so the tree is sixteen places rather than
-       sixteen words. It has to be here because the stages are a
-       SIBLING of the link: on the link, `--accent` scoped the
-       label and left the four stages under it wearing the
-       group's green, so the German ladder was hung off a green
-       rule under a blue heading. `styles.css` re-derives the
-       whole set on `[style*="--accent"]`, which is what makes one
-       declaration enough. */
+        /* The colour goes on the ITEM, not on the link inside it, because
+           the stages are a SIBLING of the link: on the link, `--accent`
+           scopes the label and leaves the stages under it wearing the
+           group's green, so the German ladder hangs off a green rule under
+           a blue heading. The stylesheet re-derives the whole set on
+           `[style*="--accent"]`, which is what makes one declaration
+           enough. */
     <li className="tree-item"
         style={item.accent ? ({ "--accent": item.accent } as React.CSSProperties) : undefined}>
       <a className="tree-link" href={item.href}

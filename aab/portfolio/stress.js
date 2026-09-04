@@ -1,30 +1,13 @@
-/* ============================================================
-   stress.js: the dashboard around the stress test.
+/* stress.js: the dashboard around the stress test.
+   `stress.model.js` holds the arithmetic.
 
-   Same split as the other case studies. stress.model.js holds
-   the arithmetic and is checked on its own by stress.test.ts;
-   this turns it into something you can argue with.
-
-   ------------------------------------------------------------
-   ONE THING IS DIFFERENT HERE, AND IT IS WORTH EXPLAINING
-
-   The other pages recompute everything on every input event.
-   This one cannot: a full run is three milliseconds, but the
-   sensitivity grid is twenty-five runs, the reverse stress test
-   is forty, and the tornado is eight. Doing all of that between
-   two frames of a dragged slider drops the frame.
-
-   So the render is in two halves. The headline run, the tiles,
-   the tables and every chart that comes from one run go through
-   immediately. The three expensive views are scheduled, and a
-   new input cancels the pending one rather than queueing behind
-   it. Drag a slider and the page keeps up; let go and the grid
-   catches up a moment later, marked as stale while it does.
-
-   Charts are hand-drawn inline SVG, no library, same as
-   everywhere else on this site: they inherit the theme's
-   colours, they are a few hundred bytes each, and they print.
-   ============================================================ */
+   THE RENDER IS IN TWO HALVES, because the sensitivity grid is
+   twenty-five runs, the reverse stress test forty and the
+   tornado eight: doing all of that between two frames of a
+   dragged slider drops the frame. The headline run and every
+   chart from it go through immediately; the three expensive
+   views are scheduled, and a new input CANCELS the pending one
+   rather than queueing behind it. Charts are inline SVG. */
 
 import {
   BOOK, SEGMENTS, MACRO, SCENARIOS, DEFAULTS, DRIVERS,

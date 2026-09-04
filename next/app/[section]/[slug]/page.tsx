@@ -1,39 +1,22 @@
-/* ============================================================
-   Two pages answer at `/<first>/<second>`, and this file is the
-   one route Next can be given for them.
-
-   A section is insights, cooking or travel and the page is an
-   article; a school is money, deutsch, quran or english and the
-   page is a stage's ladder. `isSchool()` is the whole test and the
-   two can never collide. The ladder's body is
-   `components/stage-page.tsx`, which was a route of its own while
-   its address ended in `index.html`.
-
-   ---- the article ----
+/* Two pages answer at `/<first>/<second>`, and this file is the one route
+   Next can be given for them. A section is insights, cooking or travel
+   and the page is an article; a school is money, deutsch, quran or
+   english and the page is a stage's ladder. `isSchool()` is the whole
+   test and the two can never collide.
 
    A server component, and only a server component: there is no
-   "use client" anywhere in this app and there should not be one on
-   a reading page.
+   "use client" anywhere in this app and there should not be one on a
+   reading page. That is not the same as shipping no JavaScript: the App
+   Router sends its runtime and router to every page whatever the tree
+   contains and there is no supported way to stop it. What being
+   server-only buys is that none of that cost grows with this file.
 
-   That is not the same as shipping no JavaScript, and it is worth
-   being exact about the difference because the plan originally
-   asked for the second thing. The App Router sends its runtime and
-   router to every page whatever the tree contains, about 170 KB
-   gzipped, and there is no supported way to stop it. That cost was
-   measured and accepted; see Stage 10 in archive/TRANSITION.md. What being
-   server-only buys is that none of the cost grows with this file,
-   and that the page is complete before any of it runs.
-
-   ---- the body, and why it is set as HTML ----
-
-   `article.body` has been through `sanitize()` twice before it
-   reaches this line: once in the editor on the way in, and once
-   by `functions/_lib/sanitise.ts` on the server before the row was
-   written. It is stored as HTML and there is no version of it that
-   is not. Parsing it into React elements here would be a third
-   implementation of the article's vocabulary, which is the exact
-   thing the three-place rule in CLAUDE.md exists to prevent.
-   ============================================================ */
+   `article.body` has been through `sanitize()` twice before it reaches
+   this line, in the editor and again on the server. It is stored as HTML
+   and there is no version of it that is not: parsing it into React
+   elements here would be a third implementation of the article's
+   vocabulary, which the three-place rule in CLAUDE.md exists to
+   prevent. */
 
 import type { Metadata } from "next";
 import { notFound } from "next/navigation";
@@ -116,37 +99,30 @@ export default async function ReadingPage({ params }: Params) {
           <span>{look.minutes(article.minutes)}</span>
         </p>
 
-        {/* ONE ROW, WITH THE BYLINE, NOT TWO BANDS UNDER IT.
+            {/* ONE ROW, WITH THE BYLINE, NOT TWO BANDS UNDER IT. Keeping a
+                piece and hearing it are facts about the piece in the same
+                way its length is, so they belong on the line that already
+                states those.
 
-            Both of these drew a block of their own, so a
-            signed-in reader met a Save row, then a Listen row and
-            a speed slider, and then the piece. Keeping a piece
-            and hearing it are facts about the piece in the same
-            way its length is, so they belong on the line that
-            already states those.
+                Each still renders nothing when it is not available:
+                `<Keep>` needs an account and `<ReadAloud>` needs a browser
+                that can speak, so an empty row costs a reader nothing.
 
-            Each still renders nothing at all when it is not
-            available: `<Keep>` needs an account and `<ReadAloud>`
-            needs a browser that can speak, so an empty row is an
-            empty flex container and costs a reader nothing.
-
-            `<Keep>`'s address is the canonical one rather than
-            the one the reader happens to be at: this route
-            answers at both forms of it, and `public.library` is
-            one row per person per PAGE. */}
+                `<Keep>`'s address is the canonical one rather than the one
+                the reader happens to be at: this route answers at both
+                forms, and `public.library` is one row per person per
+                PAGE. */}
         <div className="piece-tools">
           <Keep url={`${look.mount}${article.slug}.html`}
                 title={article.title} kind="piece" />
           <ReadAloud />
-          {/* How far down this piece the reader had got, and one
-              control back to it, which is there only when there
-              is somewhere to go. It records either way, so it is
-              rendered on every piece rather than conditionally.
+              {/* How far down this piece the reader had got, and one
+                  control back to it, which is there only when there is
+                  somewhere to go. It records either way, so it is rendered
+                  on every piece rather than conditionally.
 
-              The canonical address, like `<Keep>` above and for
-              the same reason: this route answers at both forms of
-              it and a position filed under two spellings is two
-              positions. */}
+                  The canonical address, like `<Keep>` above: a position
+                  filed under two spellings is two positions. */}
           <Where url={`${look.mount}${article.slug}.html`} />
         </div>
 
@@ -154,16 +130,13 @@ export default async function ReadingPage({ params }: Params) {
 
         <div className="note">{look.note}</div>
 
-        {/* Reactions and the question box, before the prev/next
-            pair, which is where `archive/modules/engage.js`
-            inserted itself.
+            {/* Reactions and the question box, before the prev/next pair.
 
-            INSIGHTS ONLY, because that is what `app.js` did: it
-            imported that module on `/insights/` and nowhere else,
-            so a cooking or travel piece has never had either.
-            Said here rather than inside the component, so that
-            turning it on for the other two is a line in a route
-            and a decision somebody took. */}
+                INSIGHTS ONLY, because that is what `app.js` did: it
+                imported the module on `/insights/` and nowhere else, so a
+                cooking or travel piece has never had either. Said here
+                rather than inside the component, so turning it on for the
+                other two is a line in a route. */}
         {article.section === "insights" ? <Engage slug={article.slug} /> : null}
 
         <div className="prev-next">
@@ -178,15 +151,10 @@ export default async function ReadingPage({ params }: Params) {
         </div>
       </article>
 
-      {/* The thread. A client component as of #147, where it was
-          an empty section filled by `/comments.js` through an
-          inline module at the bottom of this file.
-
-          Still allowed to fail and still allowed to be empty: a
-          piece with a broken thread reads perfectly and has no
-          thread, which is rule 8 in archive/TRANSITION.md. Approved
-          comments are readable by anybody; signing in is only
-          needed to add one. */}
+          {/* The thread, a client component. Still allowed to fail and
+              still allowed to be empty: a piece with a broken thread reads
+              perfectly and has no thread. Approved comments are readable
+              by anybody; signing in is only needed to add one. */}
       <section className="wrap wrap-narrow comments" id="comments">
         <Comments slug={article.slug} section={article.section} />
       </section>

@@ -1,31 +1,16 @@
-/* ============================================================
-   workbook.ts: the practice books, read on the server.
+/* The practice books, read on the server.
 
-   ---- one shape, two vocabularies ----
+   ONE SHAPE, TWO VOCABULARIES. The German book and the English book are
+   the same page: a day has a pattern, lines to read aloud, prompts with
+   an answer key, and one piece of free writing. What differs is the
+   nouns, so the components below know nothing about German or English and
+   the two adapters at the bottom are the only place either vocabulary
+   appears. A third book is a third adapter.
 
-   The German book and the English book are the same page. A day
-   has a pattern, lines to read aloud, prompts to translate with
-   an answer key, and one piece of free writing, in both, and the
-   furniture around them is the same furniture.
-
-   What differs is the nouns. German says `fuss`, `schluessel`,
-   `sammlung`, `schau`, `sagEs`, `vonHerzen`; English says `foot`,
-   `sounds`, `collect`, `watch`, `say`, `heart`. That is the same
-   thing `aab/schools/progress.js` found when three schools turned
-   out to be one program written three times with the words
-   changed, and the answer here is the answer there: ONE shape,
-   and each school hands its own words in.
-
-   So the components below know nothing about German or English.
-   The two adapters at the bottom of this file are the only place
-   either vocabulary appears, and a third book would be a third
-   adapter rather than a third set of components.
-
-   The books are read on the server and never sent to a browser as
-   data. A book is a large object and every prompt in it has its
-   answer beside it: shipping it as a prop would hand a reader the
-   whole key whether or not they pressed the button.
-   ============================================================ */
+   The books are read on the server and never sent to a browser as data: a
+   book is a large object with every answer beside its prompt, and
+   shipping it as a prop would hand a reader the whole key whether or not
+   they pressed the button. */
 
 /** A pair of lines to read aloud: what you say, what it means.
 
@@ -106,21 +91,15 @@ export const bn = (n: number | string): string =>
 export const bnWord = (n: number): string =>
   ({ 30: "ত্রিশ", 60: "ষাট", 90: "নব্বই" } as Record<number, string>)[n] ?? bn(n);
 
-/* ============================================================
-   The books, and the two adapters
+    /* ---- the books, and the two adapters ----
+       Imported rather than read from a path, because they live inside this
+       package: Turbopack will not resolve above its own root, which is the
+       constraint that made `shared/` an npm package, and moving them was
+       cheaper than a second package for one consumer.
 
-   Imported rather than read from a path, because they live inside
-   this package now. They were under `aab/` while a `.mjs` builder
-   was the only thing that read them, and Turbopack will not
-   resolve above its own root: the same constraint that made
-   `shared/` an npm package. Moving them was cheaper than a second
-   package for one consumer.
-
-   The book files themselves are UNTOUCHED apart from the move.
-   Six thousand lines of German and English prose is not something
-   to rewrite in order to rename four fields, and the adapters do
-   that in twenty.
-   ============================================================ */
+       The book files themselves are UNTOUCHED apart from the move: six
+       thousand lines of prose is not something to rewrite in order to
+       rename four fields, and the adapters do that in twenty. */
 
 /* The extensions are written out, and they are not decoration.
 
@@ -251,18 +230,12 @@ export const BOOKS: Record<string, WorkbookBook> = {
  */
 export const bookFor = (slug: string): WorkbookBook | null => BOOKS[slug] ?? null;
 
-/** How many days a book holds.
-
-    `curriculum.js` declares the same number in `workbook.days`
-    because the hub draws a progress bar from it and must not pull
-    five thousand lines of days down to count them.
-    `check-next.ts` holds the two against each other, which is the
-    third copy inside `next/` that it watches. It said
-    `check-workbook.mjs` until 19 August 2026, and that file has
-    never existed under any extension: what this comment promised
-    for a year was a check nobody had written, and a declaration
-    that drifts from its days reaches a reader as a wrong progress
-    bar. */
+    /** How many days a book holds. `curriculum.js` declares the same
+        number in `workbook.days`, because the hub draws a progress bar
+        from it and must not pull five thousand lines of days down to count
+        them. `check-next.ts` holds the two against each other: a
+        declaration that drifts from its days reaches a reader as a wrong
+        progress bar. */
 export const dayCount = (slug: string): number => bookFor(slug)?.days.length ?? 0;
 
 /** Which language tag a target-language line carries. */

@@ -1,60 +1,35 @@
-/* ============================================================
-   workbook.tsx: a day of a practice book, as a component.
+/* A day of a practice book, as a component: the markup a builder emitted,
+   rendered by a route, which is what gives these pages the rail, the
+   drawer, the audience switch and their school's accent.
 
-   The four books were the last pages on this site built as
-   template literals in a `build-*.mjs`. This is the markup they
-   emitted, rendered by a route instead, which is what gives them
-   the rail, the drawer, the audience switch and their school's
-   accent: all four were missing, and the reason was only ever
-   that a generated file has no React in it.
+   THE CLASS NAMES ARE THE OLD ONES, DELIBERATELY. A port must not also be
+   a redesign, so `@layer deutsch` styles this exactly as before and
+   anything that looks different afterwards is a bug in the port.
 
-   ---- the class names are the old ones, deliberately ----
+   AND THE STORAGE KEYS ARE THE OLD ONES, LOAD-BEARINGLY.
+   `data-schrift` is what `/deutsch/arbeitsbuch.js` reads, and its value
+   is a key into `deutsch-schrift` in a real learner's browser holding
+   real writing. `schriftKey()` below produces the same string the builder
+   did, character for character: renaming one does not move somebody's
+   paragraph, it loses it.
 
-   A port must not also be a redesign, which is the rule that made
-   every earlier port judgeable. Keeping `buch-tag`, `tag-teil` and
-   the rest means `@layer deutsch` styles this exactly as before,
-   so anything that looks different afterwards is a bug in the
-   port rather than a decision somebody made halfway through.
-   Converting that layer to Tailwind is its own step and
-   `MIGRATION.md` says so.
-
-   ---- and the storage keys are the old ones, load-bearingly ----
-
-   `data-schrift` is what `/deutsch/arbeitsbuch.js` reads, and its
-   value is a key into `deutsch-schrift` in a real learner's
-   browser holding real writing. `schriftKey()` below produces the
-   same string the builder did, character for character. Renaming
-   one does not move somebody's paragraph, it loses it.
-
-   That module keeps running, unchanged: it queries
-   `textarea[data-schrift]`, `.buch-tag` and `.antwort-schalter`,
-   and it does not care whether a route or a builder put them
-   there. There is no "use client" here and there does not need to
-   be one, which is the arrangement every interactive page on this
-   site already uses.
-   ============================================================ */
+   That module keeps running unchanged: it queries `textarea[data-schrift]`,
+   `.buch-tag` and `.antwort-schalter`, and does not care what put them
+   there. There is no "use client" here and there need not be. */
 
 import type { WorkbookBook, WorkbookDay } from "../lib/workbook";
 import { bn, targetLang } from "../lib/workbook";
 import { SectionLabel } from "./ui/label";
 import { Button } from "./ui/button";
 
-/** The key a textarea saves under.
-
-    `<stufe slug>/<name>`, and the name carries the day number, so
-    "tag-1-tausche-1" is a name and not a description. The builder
-    made this string and so does this, and what holds them together
-    is `aab/schools/workbook.test.ts`: it renders this component
-    into a real DOM, types into a box, and asserts the writing came
-    back under `area.dataset.schrift` and under the school's own
-    outer key. That is the guarantee, and it is why a rename here
-    is a failing test rather than a learner's lost writing.
-
-    It said `check-workbook.mjs` until 19 August 2026, which has
-    never existed under any extension. The check was real and the
-    pointer named the wrong file, which is the worse of the two
-    ways to be wrong: the next person follows it, finds nothing,
-    and concludes there is no guarantee. */
+    /** The key a textarea saves under: `<stufe slug>/<name>`, where the
+        name carries the day number. The builder made this string and so
+        does this, and what holds them together is
+        `aab/schools/workbook.test.ts`: it renders this component into a
+        real DOM, types into a box, and asserts the writing came back under
+        `area.dataset.schrift` and under the school's own outer key. A
+        rename here is a failing test rather than a learner's lost
+        writing. */
 export const schriftKey = (slug: string, name: string): string => `${slug}/${name}`;
 
 /** How many of their own sentences a learner writes per day. Eight

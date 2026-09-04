@@ -1,55 +1,25 @@
-/* ============================================================
-   check-app-surface.ts: does a table this site holds reach the
+/* check-app-surface.ts: does a table this site holds reach the
    app, or is it written down that it does not?
 
      node scripts/check-app-surface.ts
      node scripts/check-app-surface.ts --list
 
-   THE RULE THIS EXISTS FOR
+   `ANDROID.md` promises that anything which is DATA reaches the
+   Android app with no app release, because the endpoints
+   serialise the tables whole. That promise has one failure mode
+   and it is silent: a fifteenth table is added, the site uses it,
+   every check passes, and the app never hears about it.
 
-   `ANDROID.md` promises one thing above all others: **anything
-   that is DATA reaches the Android app with no app release.** Add
-   a school, a tool, a case study, a term, a count, a menu entry,
-   and the app has it the next time it asks, because the app
-   renders whatever the tables say and `/api/site` serialises
-   those tables whole.
+   So every `export const NAME` in SHOUTING_CASE in the files
+   `SOURCES` names must either be imported by one of `ENDPOINTS`
+   or be named in `NOT_FOR_APP` with a reason. Both lists are read
+   from this file rather than assumed, because both have grown.
 
-   That promise has exactly one failure mode, and it is silent.
-   Somebody adds a fifteenth table to `shared/content.ts`, the
-   site starts using it, every check passes, the site is correct,
-   and the app never hears about it. No error, no red, no symptom
-   until somebody opens the app months later and wonders why the
-   new thing is missing.
-
-   It is the same shape as the failure at the top of `CLAUDE.md`,
-   one runtime along: the menu said in four places, agreeing
-   because somebody remembered. The prose in `ANDROID.md` was that
-   arrangement. This is the check.
-
-   ---- what it asks ----
-
-   Every `export const NAME` in the files `SOURCES` names whose
-   name is a data table (SHOUTING_CASE) must either be imported by
-   one of the endpoints in `ENDPOINTS`, which is what sends it to
-   the app, or be named in `NOT_FOR_APP` below with a reason.
-
-   Both lists are read from this file rather than assumed, because
-   both have grown: `shared/nav.ts` arrived in `SOURCES` when the
-   menu moved out of `next/lib/`, and `functions/api/tools.ts`
-   arrived in `ENDPOINTS` when the calculators' 366 phrases became
-   something the app fetches rather than bundles.
-
-   The reason is the point, exactly as it is in `GONE`,
-   `SERVER_ONLY`, `NOT_GLASS` and every other list in this
-   repository: "the app does not need this" is a true sentence
-   about several of these and is not an argument for the next one.
-
-   ---- and the stale half ----
-
-   An exemption for a table that has been deleted, or that the
-   endpoint now sends anyway, is also a failure. A list is worth
-   having only while it is true.
-   ============================================================ */
+   The reason is the point, exactly as in `GONE` and every other
+   list here: "the app does not need this" is a true sentence about
+   several of these and is not an argument for the next one. An
+   exemption for a table that has gone, or that the endpoint now
+   sends anyway, fails too. */
 
 import { readFileSync } from "node:fs";
 import { dirname, join } from "node:path";
@@ -121,12 +91,10 @@ const SOURCES = [
   "shared/content.ts",
   "shared/nav.ts",
   "shared/tool-strings.ts",
-  /* The routine tool's tables. It arrived here when the
-     Android app turned out to be carrying a Kotlin copy of
-     the four moods, the six seasons and the five plants,
-     which is exactly the shape of thing this check exists to
-     find: a table the site holds, the app draws, and nothing
-     sends. */
+  /* The routine tool's tables. It arrived here when the Android
+     app turned out to be carrying a Kotlin copy of the four
+     moods, the six seasons and the five plants: a table the site
+     holds, the app draws, and nothing sends. */
   "shared/routine.ts",
   /* The Research Studio's vocabularies and words, which the app
      will draw the rooms with. */
@@ -145,20 +113,17 @@ const SOURCES = [
   /* The diet tool's own readouts. Copy is data, so a
      sentence reworded on the site is reworded on a phone. */
   "shared/diet-words.ts",
-  /* What the front page can be made of. The catalogue is
-     data and each side's DRAWING is code, so a kind added
-     here and not sent is a widget the site offers and the
-     phone has never heard of, on two boards that both look
-     finished. */
+  /* What the front page can be made of. The catalogue is data and
+     each side's DRAWING is code, so a kind added here and not sent
+     is a widget the site offers and the phone has never heard of,
+     on two boards that both look finished. */
   "shared/widgets.ts",
-  /* The portion library and the nutrient panel. A food row
-     is the most literal case this check has of a table that
-     goes stale: eighty-three rows in two languages, each
-     carrying a citation, and a second copy in the app would
-     have parted company the first time somebody added a
-     dish. `shared/diet.ts` is deliberately NOT here beside
-     it, because that file is arithmetic and the app's own
-     port of it needs a release when a formula changes. */
+  /* The portion library and the nutrient panel: eighty-three rows
+     in two languages, each carrying a citation, and a second copy
+     in the app would have parted company the first time somebody
+     added a dish. `shared/diet.ts` is deliberately NOT here beside
+     it, because that file is arithmetic and the app's own port of
+     it needs a release when a formula changes. */
   "shared/foods.ts",
 ];
 const tables = SOURCES.flatMap((path) => tablesIn(path).map((name) => ({ name, path })));
@@ -169,15 +134,12 @@ const tables = SOURCES.flatMap((path) => tablesIn(path).map((name) => ({ name, p
    A payload key can be renamed for the app's convenience, and the
    question here is whether the table LEAVES this repository at
    all, which is what an import answers. */
-/* More than one endpoint answers the app now, and the question
-   this check asks is whether a table leaves the repository AT
-   ALL, so it reads every one of them rather than the first.
-
-   It was one path until `shared/tool-strings.ts` arrived, and a
-   second endpoint listed nowhere would have made every table in a
-   new file read as held back. The failure that shape produces is
-   this check reporting a problem that is not one, which is worse
-   than useless: it teaches a reader to add an exemption. */
+/* More than one endpoint answers the app, and the question here is
+   whether a table leaves the repository AT ALL, so every one is
+   read rather than the first. A second endpoint listed nowhere
+   would make every table in a new file read as held back, which is
+   this check reporting a problem that is not one: worse than
+   useless, because it teaches a reader to add an exemption. */
 const ENDPOINTS = [
   "functions/api/site.ts",
   "functions/api/tools.ts",

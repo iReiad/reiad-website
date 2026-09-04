@@ -1,49 +1,25 @@
 "use client";
 
-/* ============================================================
-   admin/panel.tsx: one page, two credentials.
+/* One page, two credentials. `ADMIN.md` §1 is the reasoning; the one
+   sentence everything here depends on is that the passphrase and the
+   account are NOT two ways of proving the same thing. The passphrase
+   (`functions/_lib/auth.ts`, a session cookie over D1) opens the site's
+   own content; the account (`functions/_lib/admins.ts`, a reader id)
+   opens Supabase rows that row-level security answers with the reader's
+   own JWT. A cookie is not a JWT and D1 has no notion of a Supabase
+   reader, so neither can stand in for the other.
 
-   `ADMIN.md` §1 is the reasoning and it is worth not restating
-   here, except for the one sentence everything in this file
-   depends on:
+   TWO RULES IT MUST NOT BREAK:
 
-     The passphrase and the account are NOT two ways of proving
-     the same thing. They authorise different data, held in
-     different places, reachable only by different means.
+   1. NEVER MINT ONE FROM THE OTHER. A button turning an account sign-in
+      into a passphrase session makes the passphrase pointless, and one
+      going the other way is a service-role key by another name.
+   2. NEVER SHOW A LOCKED PANEL AS AN EMPTY ONE. A panel missing its
+      credential says so, with the one thing to press: an empty list looks
+      exactly like a working panel with nothing in it.
 
-   The passphrase (`functions/_lib/auth.ts`, a session cookie over
-   D1) opens the site's own content. The account
-   (`functions/_lib/admins.ts`, a reader id) opens rows in
-   Supabase that row-level security answers with the reader's own
-   JWT. A cookie is not a JWT and D1 has no notion of a Supabase
-   reader, so neither can stand in for the other, and that is a
-   fact about the storage rather than a policy.
-
-   So this page shows what the credentials in hand can honestly
-   reach, and names what the missing one would add.
-
-   ---- the two rules it must not break ----
-
-   1. NEVER MINT ONE FROM THE OTHER. A button that turned an
-      account sign-in into a passphrase session would make the
-      passphrase pointless, and one going the other way would be a
-      service-role key by another name. This project holds no
-      service-role key and this panel is not a reason to start.
-
-   2. NEVER SHOW A LOCKED PANEL AS AN EMPTY ONE. A panel missing
-      its credential says so, with the one thing to press. An
-      empty list where a credential is missing looks exactly like
-      a working panel with nothing in it, which is the failure the
-      desk's own browser test existed for and this page inherited.
-
-   All seven stages of ADMIN.md §6 are here: the route, the shell,
-   the two sign-ins and Health; the account half; the three
-   moderation queues; the rest of the desk; the three the desk
-   never had; and People, which is the one needing both at once.
-
-   `next/admin.test.ts` drives this page in a browser, and it is
-   what says a panel does something rather than merely rendering.
-   ============================================================ */
+   `next/admin.test.ts` drives this page in a browser, and it is what says
+   a panel does something rather than merely rendering. */
 
 import { useEffect, useState } from "react";
 import { runtimeModule } from "../account/runtime";
@@ -86,26 +62,18 @@ const CREDENTIALS = {
     opens: "what belongs to a reader: the course section, the live portfolio's "
       + "admin half, and the private routine templates.",
     press: "Sign in to your account",
-    /* THE SITE'S OWN SIGN-IN BUTTON, pressed where it already is.
+        /* THE SITE'S OWN SIGN-IN BUTTON, pressed where it already is.
+           `signInWithGoogle()` in `aab/src/account.ts` sends
+           `location.pathname` as the return address, so a control that
+           walks the reader to /account first lands them there and leaves
+           them there. The sign-in has to happen HERE.
 
-       `signInWithGoogle()` in `aab/src/account.ts` sends
-       `location.pathname` as the return address, so a control
-       that walks the reader to /account first means signing in
-       from /admin lands them on /account and leaves them there.
-       The sign-in has to happen HERE.
-
-       This was `popovertarget="account-menu"` and that was wrong
-       in a way worth writing down, because it looked right and
-       shipped: `#account-menu` does not exist until the top bar's
-       button is pressed, since `open()` in `aab/src/signin.ts`
-       builds it on demand. A `popovertarget` naming an element
-       that is not there does nothing, so the fallback fired every
-       single time and the button behaved exactly like the link it
-       replaced. The check written beside it asserted the
-       ATTRIBUTE and so passed throughout.
-
-       `.account-btn` is that button, and clicking it is the one
-       sign-in this site has rather than a second copy of it. */
+           NOT `popovertarget="account-menu"`: `#account-menu` does not
+           exist until the top bar's button is pressed, since `open()` in
+           `aab/src/signin.ts` builds it on demand, and a `popovertarget`
+           naming an element that is not there does nothing. `.account-btn`
+           is that button, and clicking it is the one sign-in this site
+           has. */
     trigger: ".account-btn",
   },
 } as const;
@@ -214,26 +182,20 @@ export function AdminPanel() {
     );
   }
 
-  /* ---- neither credential: a sign-in page, and that is all ----
+      /* ---- neither credential: a sign-in page, and that is all ----
+         Rendering the whole shell to anybody describes a private surface:
+         a stranger learns what this site keeps and where, without holding
+         anything.
 
-     This used to render the whole shell to anybody: Health, both
-     gate cards with an inventory of what each one opens, and
-     thirteen panel headings under them. Every one of those is a
-     description of a private surface, and a stranger reading it
-     learns what this site keeps and where, without holding
-     anything.
+         The rule that a locked panel must never look like an empty one
+         still stands, and it is about somebody ALREADY through the door:
+         which of their two credentials is missing, and what it would open.
 
-     ADMIN.md's rule that a locked panel must never look like an
-     empty one still stands, and it is about somebody who is
-     ALREADY through the door: which of their two credentials is
-     missing, and what it would open. It was never an argument
-     for showing the door's shape to the street.
-
-     The browser panel stays, and it is the one thing that
-     should: it reports what this VISITOR's own device is
-     holding, tells a stranger nothing about the site, and is the
-     way out of a stale cache for somebody who cannot load the
-     page well enough to sign in. */
+         The browser panel stays, and it is the one thing that should: it
+         reports what this VISITOR's own device is holding, tells a
+         stranger nothing about the site, and is the way out of a stale
+         cache for somebody who cannot load the page well enough to sign
+         in. */
   if (!pass && !account) {
     return (
       <div className="ad-page">

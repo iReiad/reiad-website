@@ -1,37 +1,14 @@
-/* ============================================================
-   dsex.model.js: the statistics engine.
+/* dsex.model.js: the statistics engine. No DOM, numbers in and
+   numbers out, so every function is checkable against a
+   hand-computable case rather than against itself.
 
-   No DOM. Every function here takes numbers and returns numbers,
-   which is what makes them testable against hand-computable
-   cases rather than against themselves.
-
-   ------------------------------------------------------------
-   ABOUT THE DATA, READ THIS FIRST
-
-   The series shipped with this page is SIMULATED. It is not the
-   Dhaka Stock Exchange's index history, and it is not presented
-   as such anywhere on the page.
-
-   The reason is the same one that governs the company in the
-   other two case studies: publishing invented numbers under a
-   real index's name would be inventing that index's record, and
-   anyone who checked would find it doesn't match. A portfolio
-   piece that fails that check is worse than no portfolio piece.
-
-   What is real here is the METHOD, rolling volatility, drawdown
-   decomposition, holding-period distributions, tail measures,
-   and the method is what a client is buying. So the page also
-   takes a CSV of actual prices and runs exactly the same
-   analysis over it. DSE publishes daily index history; paste it
-   in and every number on the page is about the real series.
-
-   The simulation is deterministic (seeded), so the same numbers
-   appear for every visitor and in every test run. It is built to
-   have the properties that make this analysis worth doing,
-   volatility clustering, fat tails, long drawdowns, because a
-   demonstration on tidy Gaussian noise would be a demonstration
-   of nothing.
-   ============================================================ */
+   THE SERIES SHIPPED WITH THIS PAGE IS SIMULATED and is nowhere
+   presented as the Dhaka Stock Exchange's own history:
+   publishing invented numbers under a real index's name would be
+   inventing that index's record. What is real is the METHOD, and
+   the page takes a CSV of actual prices and runs the identical
+   analysis over it. The simulation is SEEDED, so every visitor
+   and every test run sees the same numbers. */
 
 export const TRADING_DAYS = 252;
 
@@ -218,19 +195,11 @@ export function drawdownEpisodes(prices, dates, top = 5) {
     }));
 }
 
-/* ------------------------------------------------------------
-   Holding periods
-
-   The part that actually answers "how long do I need to hold?".
-   For a horizon of k trading days, take every overlapping window
-   of that length and look at the distribution of outcomes.
-
-   Overlapping windows are used deliberately: the question is
-   "if I had started on any given day", and every given day is a
-   real starting point someone had. They are not independent
-   samples and this is not a significance test: it is a record
-   of what actually happened.
-   ------------------------------------------------------------ */
+/* Holding periods: for a horizon of k trading days, every
+   OVERLAPPING window of that length. Overlapping deliberately,
+   because the question is "if I had started on any given day".
+   They are not independent samples and this is not a
+   significance test. */
 export function holdingPeriod(prices, days) {
   if (days < 1 || prices.length <= days) {
     return { days, count: 0, positive: NaN, best: NaN, worst: NaN,
@@ -413,23 +382,12 @@ export function analyse(series, { volWindow = 60 } = {}) {
   };
 }
 
-/* ============================================================
-   The simulated series
-
-   Deterministic, so every visitor and every test sees the same
-   numbers. Built to have the three properties that make this
-   analysis worth doing at all:
-
-     · volatility clustering, quiet months and violent months,
-       via a GARCH(1,1) variance process
-     · fat tails, a jump component, so the worst days are far
-       worse than a normal distribution allows
-     · long drawdowns, a slow-burn bear phase, because the
-       holding-period question only bites when recovery is slow
-
-   Calibrated to be PLAUSIBLE for a frontier equity index, not to
-   reproduce any particular one.
-   ============================================================ */
+/* The simulated series. DETERMINISTIC, so every visitor and
+   every test sees the same numbers. Built to have the three
+   properties this analysis needs: volatility clustering
+   (GARCH(1,1)), fat tails (a jump component) and long drawdowns.
+   Calibrated to be PLAUSIBLE for a frontier equity index, never
+   to reproduce a particular one. */
 
 /** mulberry32, small, fast, and identical everywhere. */
 export function rng(seed) {
@@ -567,14 +525,10 @@ export function parseCsv(text, { dateCol = 0, priceCol = 1 } = {}) {
 }
 
 /**
- * Split one CSV row, respecting quotes.
- *
- * A naive split on /[,;\t]/ breaks the single most common shape a
- * real export has: a quoted number with a thousands separator, as
- * in `2024-01-02,"6,180.10"`. Splitting inside the quotes turned
- * 6,180.10 into 6: a silent 1000× error in the price series, which
- * is the worst kind, because every statistic downstream still looks
- * like a number.
+ * Split one CSV row, RESPECTING QUOTES. A naive split on
+ * /[,;\t]/ turns `2024-01-02,"6,180.10"` into 6, a silent 1000×
+ * error that every statistic downstream still renders as a
+ * number.
  */
 export function splitRow(line) {
   const cells = [];
