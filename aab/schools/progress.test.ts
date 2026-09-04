@@ -55,16 +55,12 @@ const hasKeys = (name: string, obj: object, keys: string[]): void => ok(name,
   keys.every((k) => k in obj),
   `missing ${keys.filter((k) => !(k in obj)).join(", ")} from ${JSON.stringify(obj)}`);
 
-/* ------------------------------------------------------------
-   what the two modules under test are, as far as tsc can know
-
+/* What the two modules under test are, as far as tsc can know.
    Both are fetched from a computed address, `/${n}/progress.js`,
-   which is the address the browser fetches them from and is not a
-   specifier tsc can resolve. So the shapes below are this file's
-   claim about them, and `exported()` is what turns a claim into a
-   check: a school that renames one of these fails here, by name,
-   rather than as "not a function" thirty lines later.
-   ------------------------------------------------------------ */
+   which tsc cannot resolve, so the shapes below are a CLAIM and
+   `exported()` turns it into a check: a school that renames one
+   fails here by name rather than as "not a function" thirty
+   lines later. */
 
 /** One page of a school, and whether it has been written yet. */
 interface Lesson {

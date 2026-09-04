@@ -47,29 +47,19 @@ registerHooks({
   },
 });
 
-/* The hub bodies, rendered from the component the route uses, so
-   this is the markup a reader actually gets.
-
-   Node strips TypeScript types on its own but cannot transform
-   JSX, so the component is bundled first. esbuild does it in
-   about eighty milliseconds.
-
-   Bare specifiers, resolved from the root, where `linkedom` is
-   and for the same reason: the workflow runs `npm ci` at the root
-   and nowhere else. Reaching into `next/node_modules` worked on a
-   laptop and failed on the runner, which is the shape of mistake
-   the root package.json was created to stop. */
+/* The hub bodies, rendered from the component the route uses.
+   Node strips types but cannot transform JSX, so the component
+   is bundled first. Bare specifiers resolve FROM THE ROOT, where
+   `linkedom` is: CI runs `npm ci` at the root and nowhere else,
+   so reaching into `next/node_modules` works on a laptop and
+   fails on the runner. */
 const { build } = await import("esbuild");
 
-/* The renderer is bundled WITH the component, and that is not
-   tidiness either: the result is imported as a `data:` URL, and a
-   data module cannot resolve a bare specifier, so anything left
-   external throws at import rather than at build. One bundle, one
-   React, nothing to resolve at run time.
-
+/* The renderer is bundled WITH the component: the result is
+   imported as a `data:` URL, and a data module cannot resolve a
+   bare specifier, so anything left external throws at import.
    `resolveDir` is `next/`, so the component's neighbours resolve
-   beside it and react resolves by walking up to the root, which
-   is where the checks' own copy lives. */
+   beside it and react resolves by walking up to the root. */
 const bundled = await build({
   stdin: {
     contents: `export { SchoolHubPage } from "./components/school-hub-page";
@@ -84,19 +74,11 @@ const bundled = await build({
   mainFields: ["module", "main"],
   conditions: ["import", "default"],
   jsx: "automatic",
-  /* `@reiad/shared` IS INSTALLED IN `next/` AND NOWHERE ELSE.
-
-     `next/.npmrc` sets `install-links=true` so npm copies the
-     package in rather than symlinking, and CI runs `npm ci` at
-     the root and nowhere else, so `next/node_modules` does not
-     exist on a runner. This bundle resolved it on a laptop that
-     had run `npm install` in `next/` and could not on the
-     machine that matters, which is the shape of failure the root
-     package.json was created to stop one level up.
-
-     An alias rather than a second install: a `file:` dependency
-     is copied by version, so a root copy would go stale the
-     first time `shared/` changed and this test would be checking
+  /* `@reiad/shared` IS INSTALLED IN `next/` AND NOWHERE ELSE,
+     and `next/node_modules` does not exist on a CI runner. An
+     ALIAS rather than a second install: a `file:` dependency is
+     copied by version, so a root copy would go stale the first
+     time `shared/` changed and this test would be checking
      yesterday's table. Pointing at the source cannot. */
   alias: { "@reiad/shared": join(ROOT, "shared") },
   logLevel: "silent",
@@ -180,15 +162,10 @@ for (const school of ["deutsch", "english", "quran"]) {
   ok(`${school}: the ladder built its rungs (${rungs.length})`, rungs.length > 0);
 
   /* `span.progress-ring > svg`, which is `<Ring>` in
-     components/deck.tsx node for node. It was `svg.ring` with the
-     rotation on a transform attribute, and that shape existed only
-     because two layers both defined `.ring` and the school's copy
-     lost. One shape now, and the rotation is the stylesheet's in
-     both places.
-
-     `progress-ring` rather than `ring` because `ring` is a Tailwind
-     utility, and this test is what says the rename reached the
-     module as well as the component. */
+     components/deck.tsx node for node, with the rotation in the
+     stylesheet. `progress-ring` rather than `ring`, which is a
+     Tailwind utility, and this is what says the rename reached
+     the module as well as the component. */
   const rings = document.querySelectorAll("span.progress-ring > svg").length;
   ok(`${school}: the shared ring drew one per rung (${rings})`, rings === rungs.length && rings > 0);
 

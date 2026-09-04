@@ -1,36 +1,12 @@
-/* ============================================================
-   A lesson of one of the four schools, rendered from its row.
+/* A lesson of one of the four schools, rendered from its row.
 
-   archive/TRANSITION.md Stage 11.7. 251 of the 253 HTML files left in
-   `aab/` are school pages, generated on a laptop from a committed
-   export of the database and committed themselves. A lesson's
-   words therefore exist in three places at once: the row the
-   Studio writes, the snapshot, and the built page. Editing a
-   lesson changes the first and nothing a reader sees until
-   somebody re-exports, re-runs four builders and commits 251
-   files. This is the route that makes the row the page.
-
-   ---- why the segments are named [section]/[slug]/[lesson] ----
-
-   Because App Router will not have two different dynamic names at
-   one level of a tree, and `/insights/<slug>` already claims
-   `[section]/[slug]`. `[school]/[stage]/[lesson]` beside it is
-   "You cannot use different slug names for the same dynamic
-   path", at build time, for the whole app. So the two routes
-   share the first two names and this one reads them as the school
-   and the stage. The awkwardness is in the folder names alone:
-   nothing below calls a school a section.
-
-   ---- what answers here, and what does not ----
-
-   Nothing, yet. `NEXT_ROUTES` in `worker.js` does not list any
-   school address, so every one of the 251 files still answers and
-   this route is reachable only on the branch preview Cloudflare
-   builds for the pull request. That is the arrangement Stage 11
-   has used since 11.1 and the reason `check-preview.ts` exists:
-   a route can be written, deployed against the real database and
-   asked real questions before anything forwards a reader to it.
-   ============================================================ */
+   THE SEGMENTS ARE NAMED [section]/[slug]/[lesson] because App Router
+   will not have two different dynamic names at one level of a tree, and
+   `/insights/<slug>` already claims `[section]/[slug]`.
+   `[school]/[stage]/[lesson]` beside it fails the whole app's build with
+   "You cannot use different slug names for the same dynamic path". The
+   awkwardness is in the folder names alone: nothing below calls a school
+   a section. */
 
 import type { Metadata } from "next";
 import { notFound } from "next/navigation";
@@ -73,15 +49,12 @@ export async function generateMetadata({ params }: { params: Params }): Promise<
       description,
       url,
       siteName: "Reiad's Library",
-      /* THE LESSON'S OWN CARD, where one has been drawn.
-
-         Every lesson in a stage used to share the stage's
-         standing card, so a reader pasting three lessons from one
-         stage into a chat pasted the same picture three times.
-         `meta.card` is the drawn one, stored by
-         `/api/schools/<school>/<stage>/<lesson>` and made by the
-         card queue on /admin, and the stage's card is what a
-         lesson nobody has drawn one for still gets. */
+          /* THE LESSON'S OWN CARD, where one has been drawn. Sharing the
+             stage's standing card means three lessons from one stage
+             pasted into a chat are the same picture three times.
+             `meta.card` is the drawn one, stored by
+             `/api/schools/<school>/<stage>/<lesson>`; the stage's card is
+             what a lesson nobody has drawn one for still gets. */
       images: [{
         url: typeof it.card === "string" && it.card
           ? (it.card.startsWith("http") ? it.card : `${origin}${it.card}`)
@@ -170,15 +143,12 @@ export default async function LessonPage({ params }: { params: Params }) {
               rather than not written. */}
           {bodyEn.trim() ? <ReadLangSwitch /> : null}
 
-          {/* The same row a piece carries under its byline, and
-              the same questions, so a reader who learned them on
-              an article does not have to find them again here.
-              `<Keep>` renders nothing signed out, and nothing at
-              all on a lesson that has not been written: there is
-              nothing to keep. `<Where>` records either way, which
-              is why it is not inside that condition, and draws
-              its one control only when there is somewhere to go
-              back to. */}
+              {/* The same row a piece carries under its byline, and the
+                  same questions. `<Keep>` renders nothing signed out, and
+                  nothing at all on a lesson that has not been written.
+                  `<Where>` records either way, which is why it is not
+                  inside that condition, and draws its one control only
+                  when there is somewhere to go back to. */}
           {soon ? null : (
             <div className="piece-tools">
               <Keep url={it.url} title={String(it.bn)} kind="lesson" />
@@ -192,32 +162,28 @@ export default async function LessonPage({ params }: { params: Params }) {
               <p>{look.words.soon[1]}</p>
             </>
           ) : (
-            /* The lesson's own HTML, written in the Studio and
-               sanitised on the way into the row by
-               `functions/_lib/sanitise.ts`. Rendered rather than
-               escaped for the same reason an article's body is:
-               it is the writing.
+                /* The lesson's own HTML, sanitised on the way into the row
+                   by `functions/_lib/sanitise.ts`. Rendered rather than
+                   escaped for the same reason an article's body is: it is
+                   the writing.
 
-               Both bodies go in, and the blocks between them:
-               `components/lesson/body.tsx` cuts each body at its
-               mount markers and interleaves. The prose is
-               rendered twice, once per language, and each block
-               once, because a block holds state and two of them
-               would be two quizzes. */
+                   Both bodies go in, and the blocks between them:
+                   `components/lesson/body.tsx` cuts each body at its mount
+                   markers and interleaves. The prose is rendered twice,
+                   once per language, and each block once, because a block
+                   holds state and two would be two quizzes. */
             <LessonBody bn={body} en={bodyEn} blocks={blocks}
                         lesson={String(it.id)} school={school} />
           )}
 
-          {/* The tick, and only for the school whose progress is
-              React. The other three keep their own module, which
-              reads the data attributes on the <article> above and
-              has since these were files.
+              {/* The tick, and only for the school whose progress is React.
+                  The other three keep their own module, which reads the
+                  data attributes on the <article> above.
 
-              It is a button and not an arrival. The money school
-              used to mark a lesson read the moment the page
-              opened, which counted every reader who arrived,
-              saw it was the wrong lesson and left. Opening moves
-              the bookmark; finishing is something you say. */}
+                  It is a button and not an arrival: marking a lesson read
+                  the moment the page opens counts every reader who
+                  arrived, saw it was the wrong lesson and left. Opening
+                  moves the bookmark; finishing is something you say. */}
           {school === "money" && !soon ? (
             <LessonTick
               school={school} id={it.id} title={String(it.bn)} stage={stage.slug}
@@ -257,16 +223,15 @@ export default async function LessonPage({ params }: { params: Params }) {
 
         </div>
       </main>
-      {/* The school's own script, and the one every school
-          shares. Rendered by the page rather than by the shell,
-          because the ladder page beside this one loads a
-          different pair and the shell cannot tell them apart.
+          {/* The school's own script, and the one every school shares.
+              Rendered by the page rather than by the shell, because the
+              ladder page beside this one loads a different pair.
 
-          `/checkpoints.js` goes on every lesson of every school,
-          including the money school's, whose page-level tick is
-          React and whose checkpoints are not: a checkpoint lives
-          inside a body that arrived as HTML from the database,
-          which React renders and does not own. */}
+              `/checkpoints.js` goes on every lesson of every school,
+              including the money school's, whose page-level tick is React
+              and whose checkpoints are not: a checkpoint lives inside a
+              body that arrived as HTML from the database, which React
+              renders and does not own. */}
       <SiteScripts srcs={[
         ...(look.script ? [look.script] : []),
         ...(soon ? [] : ["/checkpoints.js"]),
