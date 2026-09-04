@@ -26,27 +26,17 @@ furniture. This is the target shape and the order of the moves.
 The main Worker is the front door. `[assets] directory = "./aab"`
 means every file in `aab/` answers at its own public URL, and
 `NEXT_ROUTES` in `worker.js` is the list of addresses it forwards
-to the Next Worker instead.
+to the Next Worker instead. A Next route's HTML still links about
+twenty browser modules that are files in `aab/`, served by the
+other Worker: `aab/` is the only directory anything is served
+from.
 
-So a Next route renders HTML that links to `/styles.css`,
-`/tailwind.css` and about twenty browser modules, **all of which
-are files in `aab/`, served by the other Worker.** That is the
-answer to "why is Tailwind in `aab/`": `aab/` is the only directory
-anything is served from.
+### What pins a file there
 
-### What actually pins it there
-
-Not habit. `aab/sw.js` precaches twelve files **by exact path**:
-
-```
-/offline.html  /styles.css  /tailwind.css  /app.js  /content.js
-/api.js  /pieces.js  /signin.js  /account.js  /sync.js
-/account-page.js  /streak.js
-```
-
-A service worker cannot precache a hashed filename it has not been
-told about, and Next hashes everything it bundles. Every move below
-has to answer that before it can happen, which is why the order
+`aab/sw.js` precaches by **exact path**, and a service worker
+cannot precache a hashed filename it has not been told about.
+Next hashes everything it bundles, so every move below has to
+answer `PRECACHE` before it can happen. That is why the order
 matters more than the destination.
 
 ## The target
@@ -83,50 +73,15 @@ aab/                       sw.js, 404.html, offline.html, fallback.css
 ```
 
 `aab/` ends at four files, and `fallback.css` is the one that
-already arrived. Not zero, and the four are the point:
-they have to answer when the Worker, the route and the network are
-all unavailable, which is exactly when a route cannot.
+already arrived. Not zero, and the four are the point: they have
+to answer when the Worker, the route and the network are all
+unavailable, which is exactly when a route cannot.
 
 ## The order, and why each step is where it is
 
 ### Stage A. The stylesheet moves into Next  **done**
 
-The one the question was about, and the one everything else is
-easier after.
-
-Done on 18 August 2026. `aab/styles.css` is
-`next/styles/site.css`, `aab/src/styles/tailwind.css` is
-`next/styles/tailwind.css`, and `next/styles/globals.css` imports
-them in that order, which is where the cascade order lives now:
-it was two `<link>` tags whose sequence was the whole of it, kept
-by a comment. `components/shell.tsx` imports the one file and Next
-emits a hashed stylesheet.
-
-Tailwind is compiled by Next, through `@tailwindcss/postcss`.
-`scripts/build-styles.mjs` and the committed `aab/tailwind.css`
-are both gone: a build step and a check that guarded somebody
-editing its output, for a compiler the framework already has.
-
-`aab/fallback.css` answers the question this stage was blocked
-on, and it is the whole stylesheet with its comments removed
-rather than the subset first attempted: 248 KB against the 416
-those two pages loaded before. A subset was wrong four times over
-before it was looked at, and `scripts/build-fallback.ts` says
-how at length.
-
-`next/styles/globals.css` imports the tokens, the article layer and
-Tailwind in that order, and the root layout imports it. Next emits
-one hashed stylesheet and the `<link>` in `shell.tsx` goes away.
-
-The layer order gets **easier**, not harder. Today it depends on
-`styles.css` loading before `tailwind.css`, enforced by a comment
-in `shell.tsx` and nothing else. As one import list it is a
-sequence of lines in one file.
-
-What has to be answered first: `aab/fallback.css`, a small
-hand-written stylesheet for `404.html` and `offline.html`, which
-cannot use a hashed asset. It carries the tokens and the type, and
-nothing else. `sw.js` precaches that instead of the two big ones.
+Done on 18 August 2026.
 
 | moved | to |
 | --- | --- |
@@ -135,23 +90,35 @@ nothing else. `sw.js` precaches that instead of the two big ones.
 | the two `<link>` tags | one `@import` list in `next/styles/globals.css` |
 | `aab/tailwind.css`, built and committed | nothing: Next compiles it |
 
+Tailwind is compiled by Next through `@tailwindcss/postcss`.
+`scripts/build-styles.mjs` is gone with the committed output it
+wrote: a build step and a check guarding somebody editing that
+output, for a compiler the framework already has.
+
+`next/styles/globals.css` imports the tokens, the article layer
+and Tailwind in that order, and the root layout imports it. The
+cascade order is that import list; it used to be two `<link>`
+tags kept in sequence by a comment.
+
+`aab/fallback.css` is what unblocked the stage: the whole
+stylesheet with its comments removed, 248 KB against the 416
+those two file-served pages loaded before, precached in place of
+the two big ones. `scripts/build-fallback.ts` says why a subset
+was wrong four times over.
+
 Splitting `site.css` into a file per layer is worth doing and is
-not this stage. It is 10,449 lines in one file and it was 10,449
-lines in one file before it moved; doing both at once would have
-made the move unreviewable.
+not this stage.
 
 ### Stage B. The browser modules
 
-Thirty-two at the top level of `aab/`, twenty of which a route
+Twenty-five at the top level of `aab/`, most of which a route
 loads through `<SiteScripts>`. Each is one of three things and the
 answer differs:
 
 - **A component in disguise.** It renders markup the server could
-  have rendered. `crumbs.js` is the clearest: it reads
-  `location.pathname` and `document.title` to rebuild a trail the
-  route already knows, and it guesses its own mount point wrongly
-  on the course pages. These become components and the module is
-  deleted.
+  have rendered. These become components and the module is
+  deleted, which is what happened to the crumb trail:
+  `next/components/ui/crumbs.tsx` is what draws it now.
 - **Genuinely post-hydration.** A `contenteditable`, a chart drawn
   from a broker's numbers, a player. These stay modules, move to
   `next/scripts/`, and Next serves them.
@@ -159,9 +126,8 @@ answer differs:
   imported by the Studio as well. These are the last to move, and
   they move to `shared/` rather than into the app.
 
-Fourteen of the thirty-two have TypeScript sources in `aab/src/`
-already. The other eighteen get converted as they move, which is
-the rule this repository already runs on.
+Anything without a TypeScript source in `aab/src/` gets converted
+as it moves, which is the rule this repository already runs on.
 
 ### Stage C. The two remaining old-system pages
 
@@ -171,9 +137,7 @@ the rule this repository already runs on.
 - **The Studio** is a separate Vite workspace (`app/`) with its
   own buttons, inputs and pills. It keeps its build (a Studio is an
   app, not a page) but imports `next/components/ui`, which is plain
-  React with no Next imports and needs none. The desk was the other
-  page in that workspace and is `/admin` now, a route like every
-  other page of this site.
+  React with no Next imports and needs none.
 
 ### Stage D. `aab/` becomes what it says
 
@@ -185,17 +149,8 @@ by then that is what it is.
 
 **An article body is HTML in a database.** Tailwind's compiler
 cannot see it, so `@layer article` stays hand-written CSS above the
-utilities, permanently. Stage A moves the file; it does not change
-this.
+utilities, permanently.
 
 **A storage key is a fact about somebody's browser.** `learn-read`,
 `deutsch-schrift`, `courses-answers` and the rest are in real
 accounts. Nothing in this plan renames one.
-
-## What this is not
-
-It is not a rewrite. Every stage above leaves the site working, and
-each one is small enough to review. The reason to write the whole
-shape down is that the stages only make sense against it: moving a
-stylesheet is a chore on its own and the first step of something on
-this page.

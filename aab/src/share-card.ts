@@ -1,70 +1,14 @@
-/* ============================================================
-   share-card.ts: the picture a pasted link shows.
-
-   THE BUG THIS FILE EXISTS FOR
-
-   A photo in an article showed up on the Studio's share preview
-   and then, on the published piece, WhatsApp and LinkedIn drew the
-   site's default card instead. Nothing was wrong with the tag. The
-   photo was a WebP, because every photo here is re-encoded to WebP
-   on the way in, and the scrapers behind Facebook, WhatsApp and
-   LinkedIn will not read one: they ask for the image, fail, and
-   fall back to whatever else they can find.
-
-   The other half of the problem is shape. A card is 1200x630. A
-   photo is whatever the camera made it, and a portrait photo in a
-   landscape slot gets cropped by whoever is drawing the card, in
-   whichever direction they feel like.
-
-   So the card is drawn here, once, when a piece is published: a
-   real 1200x630 JPEG, cropped around the part of the photo the
-   writer said to keep, uploaded like any other photo and stored as
-   the article's cover.
-
-   ---- and it is drawn as this site, not as a photograph ----
-
-   A cropped photo with nothing else on it is somebody's
-   photograph. A card that arrives in a chat should look like the
-   place it came from before anybody reads the title, so the card
-   carries the site's own material: the accent rail down the left
-   edge that every `<GoCard>` has, the accent-lit ground the
-   scenes stand on, a shaft of light across it, the hairline rim,
-   the piece's kicker in the mono face and its title in the serif.
-
-   A piece with no photograph gets all of that and no photograph,
-   which means EVERY piece can have a card of its own now. It used
-   to be the section's standing card for anything unillustrated.
-
-   ---- it is always the dark one, and that is not a shortcut ----
-
-   Every other picture on this site answers the theme. A JPEG in
-   somebody's chat window cannot: it is drawn once, at publish,
-   and looked at by a thousand people whose settings this site
-   will never see. So the palette is read with `<html>` held at
-   dark for the length of one synchronous style read, which is
-   also why it is READ rather than typed: the card follows the
-   tokens, so a change to the site's greens changes the cards
-   without anybody remembering this file.
-
-   It lives in its own file because two places need it. The Studio
-   draws one on publish; the desk draws one for a piece published
-   before any of this existed, without making anyone open the
-   editor to fix a picture.
-
-   ---- this file is TypeScript, and the .js beside it is built ----
-
-   archive/TRANSITION.md Stage 13, and the first module to move. Edit
-   `aab/src/share-card.ts`; `node scripts/build-modules.ts`
-   writes `aab/share-card.js`, which is what the browser fetches
-   and what is committed. `scripts/build-modules.ts` rebuilds and
-   compares, so an edit to the output alone fails a check rather
-   than being quietly overwritten by the next build.
-
-   The output is committed for the reason section 7 of
-   archive/TRANSITION.md gives: the site deploys by uploading `aab/` with
-   no build step in CI, and adding one would put a build command
-   in a dashboard that cannot be seen from this repository.
-   ============================================================ */
+/* share-card.ts: the picture a pasted link shows, drawn once at
+   publish as a real 1200x630 JPEG. JPEG because the scrapers
+   behind WhatsApp, Facebook and LinkedIn will not read the WebP
+   every photo here is stored as, and 1200x630 because otherwise
+   each of them crops a photo whichever way it likes.
+   It is drawn as this site rather than as a photograph, and
+   always in the DARK palette: a JPEG in a chat window cannot
+   answer a theme. The palette is READ off `<html>` held at dark
+   for one synchronous style read, so a change to the site's
+   greens reaches the cards with nobody remembering this file.
+   Edit this; `aab/share-card.js` beside it is built. */
 
 export const SHARE_W = 1200;
 export const SHARE_H = 630;
@@ -103,23 +47,11 @@ export interface CardWords {
   title?: string;
   /** The tag, in the mono face above the title. */
   kicker?: string;
-  /** Which desk it is on: `insights`, `cooking`, `travel`. The
-      card takes that section's own colour, so a kitchen piece
-      shares as rose and a travel piece as plum.
-
-      Resolved out of the RAIL rather than out of a table here,
-      and that is the point. `shared/nav.ts` is the one place a
-      section's colour is written down, the rail renders every
-      section with that colour inline on the link, and this page
-      has a rail on it: reading it is reading the one table
-      through the markup it already produced. A copy of six
-      colours in this file would be the failure CLAUDE.md opens
-      with, and putting `nav.ts` on the wire as a served module to
-      carry a hue would cost a module, a precache entry and a
-      service worker bump.
-
-      Falls back to the site's own green, which is what a piece on
-      a desk the rail does not list should share as anyway. */
+  /** Which desk it is on. The card takes that section's colour,
+      resolved out of the RAIL rather than a table here:
+      `shared/nav.ts` is the one place a section's colour is
+      written down and the rail renders it inline on every link.
+      Falls back to the site's own green. */
   section?: string;
   /** The token directly, for anything that already has it and
       for a caller with no rail to read. */
@@ -264,59 +196,19 @@ function wrap(
   return lines;
 }
 
-/* ============================================================
-   THE ROOM, at 1200 by 630
+/* THE ROOM, at 1200 by 630: the same ten layers, in the same
+   order, that `next/components/card-art.tsx` puts behind every
+   card here. Sky, weave, halo, rays, far, floor, stage, near,
+   spec, veil, then the card's own furniture: the scrim, the
+   accent rail every `<GoCard>` carries and the hairline rim.
+   A canvas has no cascade, so one line of CSS there is six here. */
 
-   `next/components/card-art.tsx` puts ten layers behind every
-   card on this site and `@layer relief` lights them. A pasted
-   link used to get none of it: a flat two-stop gradient, one
-   ring motif and a floor, which read as a template rather than
-   as this place.
-
-   Same ten layers, same order, same argument for each. What
-   differs is only that a canvas has no cascade, so a gradient
-   that is one line of CSS there is six here.
-
-     sky     the ground and the horizon
-     weave   the tooth of the material
-     halo    the bloom the subject throws behind it
-     rays    shafts of light from the top left
-     far     the MOTIF: what is behind this subject
-     floor   the plane it all stands on
-     stage   the subject, and its reflection
-     near    motes in front of it, out of focus
-     spec    the highlight crossing the glass
-     veil    the corners going down
-
-   And then the card's own furniture on top: the scrim that seats
-   the words, the accent rail every `<GoCard>` carries down its
-   left edge, and the hairline rim.
-   ============================================================ */
-
-/* ============================================================
-   NO TWO CARDS THE SAME, and it is not a random number
-
-   The room is ten layers and the subject is one of twelve, which
-   is a lot of variety on paper and none at all in a feed: a
-   reader who follows this site sees the same room with a
-   different thing standing in it, at the same angle, under the
-   same four shafts of light, with the same five motes in the same
-   five places.
-
-   So the COMPOSITION is derived, out of the piece's own id. Same
-   hash `shared/art.ts` picks the subject and the colour with, and
-   the same reason: a card has to be the same card every time it
-   is drawn, or republishing a piece moves its picture. A random
-   number would be a card that changed under a link somebody had
-   already shared.
-
-   Eleven numbers come out of it: where the light falls, how high
-   the horizon is, how hard the floor converges, where the halo
-   sits, how the wall behind is offset and scaled, and where the
-   motes are. None of them changes what the card IS, which is why
-   they are safe to move: a card with its horizon 40px higher is
-   the same card from a slightly different chair.
-   ============================================================ */
+/* NO TWO CARDS THE SAME, and never a random number: the
+   composition is DERIVED from the piece's own id, through the
+   same hash `shared/art.ts` picks the subject with. A card has to
+   be the same card every time it is drawn, or republishing moves
+   the picture under a link somebody has already shared. Eleven
+   numbers come out of it and none changes what the card IS. */
 
 /** FNV-1a with the finaliser, which is `shared/art.ts`'s hash and
     has to be: two files disagreeing about what an id hashes to
@@ -423,20 +315,10 @@ async function drawingOf(
       + `viewBox="0 0 520 400" fill="none">${svg}</svg>`;
 
     /* THROUGH AN `<img>`, NOT `createImageBitmap` ON THE BLOB.
-
-       That is the obvious way and it does not work: Chrome
-       answers `InvalidStateError: The source image could not be
-       decoded` for an SVG blob, because an SVG is a document
-       rather than a bitmap format and the bitmap decoder has
-       never handled one. An `HTMLImageElement` renders it,
-       which is why every library that does this uses one.
-
-       The cost is that this needs a document, and the note at
-       the top of this file about one day running in a worker is
-       now about everything here EXCEPT the drawings. Wrapped in
-       the same try: a card with a room and nothing standing in
-       it is a good card, and a card that failed to publish is
-       not. */
+       Chrome answers `InvalidStateError: The source image could
+       not be decoded` for an SVG blob: an SVG is a document
+       rather than a bitmap format. Wrapped in the same try, since
+       a card with an empty room still publishes. */
     const url = URL.createObjectURL(new Blob([doc], { type: "image/svg+xml" }));
     try {
       const img = new Image(w, h);
@@ -699,13 +581,9 @@ function drawWords(
 }
 
 /**
- * Draw the card: a 1200x630 JPEG.
- *
- * `src` has to be a path this site serves. The bytes are read back
- * through fetch, so a `data:` URL works too and somebody else's
- * URL will not. An empty `src` is allowed and means a card with
- * no photograph on it, which is a card this site can now draw for
- * every piece rather than only for the illustrated ones.
+ * Draw the card: a 1200x630 JPEG. `src` has to be a path this
+ * site serves (a `data:` URL works, somebody else's URL will
+ * not), and an empty one means a card with no photograph.
  */
 export async function shareCardBlob(
   { src, focus = "centre" }: { src: string; focus?: Focus },
@@ -825,17 +703,11 @@ export const cardShape = (url: string | null | undefined): { type: string; sized
     || isDrawnCard(String(url ?? "").replace("https://reiad.co.uk", "")),
 });
 
-/* ============================================================
-   Where a drawing comes from
-
-   `shared/art-svg.ts` holds the twelve subjects and the six walls
-   and is deliberately not compiled into `aab/`: it is 34 KB and
-   nobody needs it except whoever is publishing. `GET
-   /api/admin/art` hands it over behind `isAdmin()`.
-
-   Cached in this module for the life of the page, because a desk
-   drawing forty missing cards in a row should ask once.
-   ============================================================ */
+/* `shared/art-svg.ts` holds the twelve subjects and the six
+   walls and is deliberately NOT compiled into `aab/`: 34 KB
+   nobody needs but whoever is publishing. `GET /api/admin/art`
+   hands it over behind `isAdmin()`, cached here for the life of
+   the page so a desk drawing forty cards asks once. */
 
 /** What the endpoint answers with. */
 interface ArtTable {
@@ -873,20 +745,13 @@ export async function drawingFor(
   };
 }
 
-/** What a PIECE wears, in one request.
-
-    The choice is `shared/art.ts`'s and is made in the Worker,
-    because a browser bundle cannot import that file and a second
-    copy of the rule here would be two hubs drawing different
-    cards for the same row. Everything is optional and every
-    failure is `{}`, which the card reads as "the room with
-    nothing standing in it".
-
-    Not cached, unlike `artTable()`: the answer depends on which
-    piece is being asked about. The drawings inside it are the
-    same 34 KB every time and are the reason a caller drawing
-    forty cards should use `artTable()` and `drawingFor()`
-    instead. */
+/** What a PIECE wears, in one request. The choice is
+    `shared/art.ts`'s and is made in the WORKER: a browser bundle
+    cannot import that file, and a second copy of the rule here
+    would be two hubs drawing different cards for one row. Every
+    failure is `{}`, which the card reads as an empty room.
+    Not cached: a caller drawing forty cards should use
+    `artTable()` and `drawingFor()` instead. */
 export async function drawingForPiece(src: {
   id?: string; section?: string; title?: string; tags?: Array<string | undefined>;
 }): Promise<{ subject?: string; motif?: string }> {

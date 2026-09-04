@@ -1,29 +1,9 @@
-/* ============================================================
-   pieces.ts: what has been written, wherever it is kept.
-
-   THE SPLIT THIS CLOSES
-
-   A piece of writing on this site exists as a committed HTML file
-   with an entry in content.js, or as a row in D1 written by the
-   Studio, or both. At its own URL that is settled: the worker
-   serves the row if there is one and falls back to the file.
-
-   The lists that point AT the URL were another matter. The
-   Insights page merged the database in; the kitchen and travel
-   hubs did not, so a piece published through the Studio into the
-   kitchen was readable at its address and invisible on the one
-   page a reader would use to find it. The counts came from
-   content.js, so a hub could say one number and show another. And
-   three separate places built the link as `/insights/<slug>.html`
-   whatever section the piece was actually in, which is a card
-   pointing at a 404.
-
-   One question, one answer, one place. Everything that lists
-   writing calls this file, and the shape it returns is the same
-   whichever store the piece came from.
-
-   archive/TRANSITION.md, Stage 1.
-   ============================================================ */
+/* pieces.ts: what has been written, wherever it is kept. A piece
+   is a row in D1 or an entry in `content.js`, and everything that
+   LISTS writing asks here rather than merging its own: three
+   places used to build the link as `/insights/<slug>.html`
+   whatever section the piece was in, which is a card pointing at
+   a 404. The shape returned is the same whichever store answered. */
 
 import { SECTIONS, findSection, livePieces, pieceUrl, type FilePiece, type Section } from "/content.js";
 import { getArticles } from "/api.js";

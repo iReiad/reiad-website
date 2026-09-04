@@ -216,7 +216,7 @@ In D1, like every other lesson on this site, written through
 what SEEDED those rows and is not a second copy anything reads:
 nothing imports it at runtime, no builder reads it, and a
 correction typed there changes nothing until it is seeded again.
-It is kept for the reason `archive/schools/` is kept: whoever has
+It is kept for the reason a snapshot is kept: whoever has
 to check the replacement needs to be able to read the original.
 
 ```sh

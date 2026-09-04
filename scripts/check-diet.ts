@@ -1,119 +1,14 @@
 #!/usr/bin/env node
-/* ============================================================
-   check-diet.ts: the diet tool's rules that are about PAGES
-   rather than about numbers.
+/* check-diet.ts: DIET.md's page rules, the ones neither
+   scripts/diet.test.ts (the arithmetic) nor next/diet.test.ts
+   (the browser) can see. Eleven questions, each headed below.
 
-       node scripts/check-diet.ts
+       node scripts/check-diet.ts [--templates]
 
-   `DIET.md` section 33 asks for two guards and they cover
-   different halves. `scripts/diet.test.ts` is the arithmetic:
-   every formula, every floor, asserted from the wrong side.
-   `next/diet.test.ts` drives the built pages in a browser. This
-   is the third thing, and it exists because most of what section
-   33 lists cannot be caught by either: a page that prints a
-   target with no disclaimer beside it, a widget whose empty
-   state is a zero, a Bangla reader meeting an English string,
-   a glossary that defines a word nothing links to, and a column
-   in the migration that no part of the tool can ever put a value
-   in. Every one of those renders perfectly.
-
-   Eleven questions, and each one is a rule DIET.md states and
-   nothing else holds:
-
-   1. EVERY PAGE THAT PRINTS A TARGET PRINTS THE MEDICAL ADVICE
-      LINE BESIDE IT. Section 31's first bullet, and the one with
-      a reader on the other end of it.
-
-   2. BOTH LANGUAGES COVER THE SAME KEYS. Section 23: the switch
-      changes EVERYTHING on the page. A `<T>` with an empty half
-      is a blank where a sentence should be, and an `aria-label`
-      written as an English string literal is a control that
-      never translates, because an attribute is not a node and
-      cannot be rendered twice.
-
-   3. NO WIDGET WITHOUT AN EMPTY STATE. Section 24: "Not a
-      spinner, not an empty box, not a zero: a sentence saying
-      what it will show and when."
-
-   4. THE GLOSSARY DEFINES EVERY TERM THE PAGES USE, and every
-      entry is reachable. Both halves, because a definition
-      nothing links to is a page nobody arrives at and a term
-      nothing defines is the tool written for people who already
-      know.
-
-   5. THE FIXED SETS ARE FIXED. The journal tags in section 11
-      and the day marks the migration names beside the column.
-      Neither has a CHECK constraint, so this check IS the
-      constraint: a tag the migration does not know about fails
-      here rather than in Postgres, which is the whole reason
-      section 33 asks for it.
-
-   6. EVERY `diet_*` COLUMN IS REACHED, or is named as not built
-      yet with the section that will build it. This is the one
-      that stops the schema drifting away from the tool.
-
-   7. WHAT HAPPENS AFTER A GOAL IS REACHED IS SAID ONCE, on the
-      goal page. Section 6 puts it there and only there: said
-      twice it is a slogan, and said away from the projection it
-      is a scare.
-
-   8. THE FLOORS ARE THE MODULE'S, AND NOTHING RETYPES A
-      FORMULA. Section 5 and section 33's first bullet. Every
-      bound `target()` clamps with is asserted by
-      `scripts/diet.test.ts`; the sentence that tells a reader
-      which bound bound them draws its number from the constant
-      rather than writing it out; and no page carries the SHAPE
-      of a formula `shared/diet.ts` already exports.
-
-   9. THE ASIAN CUT-OFFS ARE USED WHENEVER ANCESTRY SAYS SO.
-      Section 2, which calls it the single most important honest
-      detail in the tool. A band read with a fixed ancestry, a
-      cut-off written into a comparison, or a band drawn without
-      `bmiBand()` all tell a South Asian reader they are fine
-      where their own health service would not.
-
-   10. THE PORTION LIBRARY CARRIES A SOURCE, A DATED PRICE AND A
-      STATE. Sections 12, 14 and 17. Raw rice is 365 kcal per
-      100 g and cooked is about 130, and a row that does not say
-      which it is is the error section 14 calls the most common
-      in the whole of calorie counting.
-
-   11. THE GENERATED SENTENCES JUDGE NOBODY. Section 31's last
-      bullet: a tool that writes free prose about somebody's
-      eating will eventually write something cruel. The list of
-      templates is DERIVED from the panels rather than kept here,
-      and `--templates` prints it.
-
-   ---- what "reached" means, and why it is not "written" ----
-
-   `fromDay()` in `next/lib/diet-api.ts` writes every day column
-   on every save, so "is it written" is a question the API layer
-   answers yes to for columns nothing can ever fill:
-   `sleep_hours: d.sleepHours ?? null` is a null with a mapping
-   over it. So this derives the name a CALLER would have to use
-   out of that mapping, and asks whether any caller uses it. A
-   column nothing in the tool names is a column that will hold
-   null for ever, and the site is correct, every check passes,
-   and a feature is missing where nobody can see it is missing.
-
-   ---- and the vocabularies are read, never retyped ----
-
-   The tags come out of DIET.md, the marks out of the migration,
-   the columns out of the migration, the terms out of the
-   glossary, the floors out of `target()`'s own body, the
-   cut-offs out of `BMI_CUTS`, the nouns that must name a state
-   out of DIET.md, and the templates out of the panels. Retyping
-   any of them here would make this file one more place the same
-   list is said, which is the failure the top of CLAUDE.md is
-   about happening to the thing that catches it.
-
-   Three tables here are NOT that, and the difference is the
-   test. `UNUSED`, `NO_STATE` and `JUDGEMENT` say nothing the
-   repository already holds: two are exemptions with a reason
-   each, and both fail when the thing they exempt has gone, and
-   the third is the vocabulary of judgement, which is a rule
-   rather than a copy of anything.
-   ============================================================ */
+   Every vocabulary is READ (DIET.md, the migration, the glossary,
+   `target()`'s body, `BMI_CUTS`, the panels) rather than retyped
+   here. `UNUSED`, `NO_STATE` and `JUDGEMENT` are the three
+   exceptions and each entry carries its reason. */
 
 import { readFileSync, readdirSync } from "node:fs";
 import { dirname, join, relative } from "node:path";
@@ -137,11 +32,8 @@ const API = "next/lib/diet-api.ts";
 const WORDS = "shared/diet-words.ts";
 
 /** Every migration that touches a diet table, found rather than
-    named. A migration's filename is the primary key of a row in
-    `supabase_migrations.schema_migrations` and may never be
-    renamed, so a second one adding a column is how this schema
-    will grow, and a check reading one file by name would go on
-    reporting on the schema of August. */
+    named: a migration may never be renamed, so a second one
+    adding a column is how this schema grows. */
 const MIGRATIONS = "supabase/migrations";
 const migrationFiles = readdirSync(join(ROOT, MIGRATIONS)).sort()
   .filter((f) => f.endsWith(".sql")
@@ -180,15 +72,9 @@ const uncommented = (src: string): string =>
 const TOOL_FILES = [...filesUnder(COMPONENTS), ...filesUnder(ROUTES)];
 const SOURCE = new Map(TOOL_FILES.map((f) => [f, read(f)]));
 
-/* ------------------------------------------------------------
-   The one JSX reader everything below shares
-
-   It walks rather than matching, because every prop worth
-   looking at here holds JSX: `en={<p>...</p>}` has a `>` in it
-   that a regex for the end of a tag would stop on, and the
-   result would be a check that reads half an attribute list and
-   reports the other half missing.
-   ------------------------------------------------------------ */
+/* The one JSX reader everything below shares. It walks rather
+   than matching: every prop worth looking at holds JSX, and
+   `en={<p>...</p>}` has a `>` a regex would stop on. */
 
 interface Tag { file: string; line: number; attrs: string }
 
@@ -246,14 +132,9 @@ function attr(attrs: string, key: string): string | null {
       if (c === quote) quote = "";
       continue;
     }
-    /* AN APOSTROPHE IN PROSE IS NOT A STRING. `en={(<p>somebody's
-       periods</p>)}` opened a string here and swallowed the rest
-       of the file looking for a closing quote, so a `TBlock`
-       whose English half contains one reported as having no
-       English half. Both real cases inside these braces open in
-       EXPRESSION position, after an operator or a bracket, so
-       that is the test. A double quote and a backtick cannot
-       appear in JSX text unescaped, so they need no test. */
+    /* AN APOSTROPHE IN PROSE IS NOT A STRING: `en={(<p>somebody's
+       periods</p>)}`. Both real cases open in EXPRESSION position,
+       after an operator or a bracket, so that is the test. */
     const expr = last === "" || "=(,:[{&|?!<>+-*/;".includes(last);
     if (c === '"' || c === "`" || (c === "'" && expr)) { quote = c; continue; }
     if (c === "{") depth += 1;
@@ -266,23 +147,12 @@ function attr(attrs: string, key: string): string | null {
   return null;
 }
 
-/* ------------------------------------------------------------
-   1. Every page that prints a target prints the disclaimer
+/* ---- 1. Every page that prints a target prints the disclaimer
 
-   Section 31: "Every page that prints a target prints, next to
-   it, that this is general education and not medical advice."
-
-   A page is a route directory plus every diet component it
-   reaches, because the disclaimer and the number are almost
-   never in the same file: the number is in a panel and the
-   sentence is under it, and either could hold either.
-
-   A TARGET is what `shared/diet.ts` calls one. `target()` is the
-   day's calories, `proteinFloor()` is the one macro with a
-   floor, and `projection()` is the number a reader will plan
-   around. All three are somebody being told to aim at
-   something, which is the test section 31 sets.
-   ------------------------------------------------------------ */
+   Section 31. A page is a route directory plus every diet
+   component it reaches, because the number and the sentence are
+   almost never in the same file. A TARGET is `target()`,
+   `proteinFloor()` or `projection()`. ---- */
 
 const TARGET_FUNCTIONS = ["target", "proteinFloor", "projection"];
 const SAYS_EN = /general education and not medical advice/;
@@ -330,32 +200,15 @@ for (const page of pages) {
     "body.tsx and goal-panel.tsx both have one to copy.");
 }
 
-/* ------------------------------------------------------------
-   2. Both languages cover the same keys
+/* ---- 2. Both languages cover the same keys
 
-   Section 23: one switch, and it changes EVERYTHING on the page.
-   Three shapes of that going wrong, and they fail differently.
-
-   A `<T>` or `<TBlock>` with an empty half is a blank on the
-   page for exactly one of the two readers, and it is invisible
-   to whoever wrote it, because nobody writes a page in the
-   language they are not testing in.
-
-   A `<T k="...">` says its two halves once, in
-   `shared/diet-words.ts`, so the phone draws the same sentence
-   with no app release. What goes wrong THERE is a key that
-   reaches nothing: `lang.tsx` renders `[dt.foo]` rather than
-   throwing, which on a page of finished sentences reads as a
-   placeholder somebody meant to come back to. So a key has to
-   be in the table, and a key in the table has to be drawn: a
-   rename that stops halfway breaks one of those two.
-
-   An `aria-label`, a `title` or a `placeholder` is an ATTRIBUTE
-   rather than a node, so it cannot be rendered twice and hidden:
-   `lang.tsx` says so where `useToolLang()` is defined, and that
-   hook is already in scope in every file this finds. A literal
-   with Bangla in it passes, because "Language / ভাষা" is both.
-   ------------------------------------------------------------ */
+   Section 23: one switch changes EVERYTHING on the page. Three
+   shapes of that going wrong. A `<T>`/`<TBlock>` with an empty
+   half is a blank for exactly one reader. A `<T k="...">` naming
+   a key `shared/diet-words.ts` lacks renders as `[dt.foo]` rather
+   than throwing, so both directions are checked. And an
+   `aria-label`, `title` or `placeholder` is an ATTRIBUTE, so it
+   cannot be rendered twice: a literal with Bangla in it passes. ---- */
 
 const BANGLA = /[ঀ-৿]/;
 const EMPTY = /^(\{?\s*(""|''|``|null|undefined|<>\s*<\/>)?\s*\}?|""|''|``)$/;
@@ -376,13 +229,9 @@ for (const file of TOOL_FILES) {
     const key = attr(tag.attrs, "k");
     if (key !== null) {
       keyed += 1;
-      /* Every key-shaped literal in it, because a key may be
-         chosen at runtime: the body page picks between two
-         sentences on which method measured the fat. Every branch
-         is still a string written here, so every branch is still
-         checkable. The `dt.` shape is what tells a key from the
-         `"navy"` the condition compares against, and the reverse
-         walk below is what keeps that shape true. */
+      /* Every key-shaped literal, because a key may be chosen at
+         runtime. The `dt.` shape is what tells a key from a value
+         a condition compares against. */
       const names = [...key.matchAll(/["'\`]([^"'\`]*)["'\`]/g)]
         .map((m) => m[1]).filter((name) => name.startsWith("dt."));
       if (!names.length) {
@@ -445,11 +294,8 @@ for (const file of TOOL_FILES) {
   }
 }
 
-/* And the other way round. A key nothing draws is a sentence
-   written, translated and served to the phone for a page that
-   never asks for it, and more often it is the far half of a
-   rename: the table was renamed, the page was not, and the page
-   now prints the key. */
+/* And the other way round. A key nothing draws is usually the far
+   half of a rename, and the page then prints the key. */
 for (const name of Object.keys(DIET_WORDS)) {
   if (!name.startsWith("dt.")) {
     fail(`${WORDS} holds ${name}, which is not shaped like a key`,
@@ -463,20 +309,11 @@ for (const name of Object.keys(DIET_WORDS)) {
     "translated and still served to the app.");
 }
 
-/* ------------------------------------------------------------
-   3. No widget without an empty state
+/* ---- 3. No widget without an empty state
 
-   Section 24: "Every widget is legible with no data. Not a
-   spinner, not an empty box, not a zero: a sentence saying what
-   it will show and when." `widgets.tsx` repeats it fifteen lines
-   above the component, and a board of empty panels reads exactly
-   like a broken page, which is the rule `/admin` already exists
-   under.
-
-   `<Waiting>` is that sentence, and a `<Widget>` that never
-   offers one has no state to be legible in: whatever it draws
-   with no data, it draws a zero or nothing.
-   ------------------------------------------------------------ */
+   Section 24: "Not a spinner, not an empty box, not a zero: a
+   sentence saying what it will show and when." `<Waiting>` is
+   that sentence, and a `<Widget>` without one draws a zero. ---- */
 
 if (!/export function Waiting\b/.test(read(`${COMPONENTS}/widgets.tsx`))) {
   fail(`${COMPONENTS}/widgets.tsx no longer exports Waiting`,
@@ -502,20 +339,11 @@ for (const file of TOOL_FILES) {
   }
 }
 
-/* ------------------------------------------------------------
-   4. The glossary, both halves
+/* ---- 4. The glossary, both halves
 
-   `glossary.tsx` opens by saying "every entry is linked to from
-   the first use of its term, and a definition somebody arrives
-   at by anchor has to be findable on its own". Two ways that
-   stops being true and they are different failures: an entry
-   nothing links to is a page nobody reaches, and a term used and
-   never defined is section 23's whole complaint, a tool written
-   for people who already know.
-
-   The vocabulary is read out of DIET.md rather than retyped,
-   for the reason at the top of this file.
-   ------------------------------------------------------------ */
+   An entry nothing links to is a page nobody reaches; a term used
+   and never defined is the tool written for people who already
+   know. The vocabulary is read out of DIET.md. ---- */
 
 const glossary = read(`${COMPONENTS}/glossary.tsx`);
 const entries = [...glossary.matchAll(/id:\s*"([\w-]+)",\s*en:\s*"([^"]*)"/g)]
@@ -527,14 +355,9 @@ const everywhere = filesUnder("next/components").concat(filesUnder("next/app"))
   .map((f) => read(f)).join("\n");
 
 /* A LINK IS EITHER THE ADDRESS OR THE COMPONENT THAT BUILDS IT.
-   `<Term id="bmi">` in `glossary.tsx` writes the href out of the
-   id, so the literal `diet/glossary#bmi` appears nowhere and this
-   rule read every entry as unlinked. Reading only the raw string
-   would push the tool back to writing addresses out by hand,
-   which is the thing `Term` exists to stop.
-
-   Both spellings count, and a `<Term>` naming an id the glossary
-   does not define is its own failure below. */
+   `<Term id="bmi">` writes the href out of the id, so the literal
+   `diet/glossary#bmi` appears nowhere: reading only the raw string
+   would push the tool back to writing addresses by hand. */
 const termUses = new Set(
   [...everywhere.matchAll(/<Term\s[^>]*\bid=["']([a-z0-9-]+)["']/g)].map((m) => m[1]),
 );
@@ -559,11 +382,8 @@ for (const id of termUses) {
     "reader at the top of the glossary with nothing highlighted.");
 }
 
-/* Section 23's list, read out of the paragraph that states it.
-   The terms are written as prose there, so this takes the
-   sentence after the bold line and splits it: a term added to
-   that list is a term this check starts asking about, with
-   nobody having to come here. */
+/* Section 23's list, read out of the paragraph that states it, so
+   a term added there is asked about with nobody coming here. */
 const diet = read("DIET.md");
 const listed = diet
   .split("**A glossary, in both, linked from the first use of each term.**")[1]
@@ -597,20 +417,12 @@ for (const term of terms) {
     `Add a TERMS entry in ${COMPONENTS}/glossary.tsx, in both languages.`);
 }
 
-/* ------------------------------------------------------------
-   5. The fixed sets
+/* ---- 5. The fixed sets
 
-   The journal tags are section 11's twelve, chosen because they
-   recur, and short because a list of forty tags is a list nobody
-   uses. The marks are the four the migration names beside the
-   column.
-
-   NEITHER HAS A CHECK CONSTRAINT, which is why this is here
-   rather than in Postgres: `marks text[]` and `tags text[]` take
-   whatever they are given. So a thirteenth tag is not a 400, it
-   is a value in the array that nothing counts and nothing draws,
-   and the page looks finished.
-   ------------------------------------------------------------ */
+   Section 11's twelve journal tags and the migration's four day
+   marks. NEITHER HAS A CHECK CONSTRAINT: `marks text[]` and
+   `tags text[]` take whatever they are given, so a thirteenth tag
+   is not a 400, it is a value nothing counts and nothing draws. ---- */
 
 const tagBlock = diet
   .split("plus a short fixed set of tags:")[1]?.split("\n\n")
@@ -663,27 +475,17 @@ if (!markNames.length) {
   }
 }
 
-/* ------------------------------------------------------------
-   6. Every diet_* column is reached
+/* ---- 6. Every diet_* column is reached
 
-   The one that stops the schema drifting away from the tool. A
-   column nothing can fill breaks nothing: the migration is
+   A column nothing can fill breaks nothing: the migration is
    correct, the API layer maps it, every check passes, and the
-   feature it was added for is missing where nobody can see it is
-   missing. That is this file's opening failure wearing the
-   schema's hat.
+   feature is missing where nobody can see it is missing.
 
-   UNUSED is what is genuinely still to be built, keyed by
+   `UNUSED` is what is genuinely still to be built, keyed by
    column, each naming the DIET.md section that will build it. A
-   whole table that has no caller is keyed `<table>.*`, and that
-   wildcard CANNOT go stale silently: the moment the table's
-   writer is imported anywhere the exemption fails as stale and
-   every one of its columns is asked individually.
-
-   `debt` is not a reason. A column added for a feature nobody
-   has started is debt, and it goes in the same commit as the
-   feature or it goes out of the migration.
-   ------------------------------------------------------------ */
+   whole table with no caller is keyed `<table>.*`, and that
+   wildcard fails as stale the moment the table gains a writer.
+   `debt` is not a reason. ---- */
 
 const UNUSED: Record<string, string> = {
   /* The profile. Four of these are the onboarding questions and
@@ -703,21 +505,15 @@ const UNUSED: Record<string, string> = {
   /* What was eaten. */
   "diet_entries.fetched_on": "section 12, so a stale figure can be found and refreshed",
 
-  /* The phase a reader is on. `/tools/diet/keto` starts one and
-     ends one, and it ends one by STARTING THE NEXT: a phase runs
-     until the next begins, which is the end `stretches()` already
-     reads, so a second statement of the same end would be one too
-     many. `ended_on` is for a phase that ends with nothing after
-     it, and that needs an `endPhase()` in `diet-api.ts`. */
+  /* A phase runs until the next begins, which is the end
+     `stretches()` already reads. `ended_on` is for a phase that
+     ends with nothing after it, and needs an `endPhase()`. */
   "diet_phases.ended_on": "section 10, a phase that ends with nothing after it",
 
   /* Two tables with no caller at all. */
-  /* THE WILDCARD IS GONE, and its going is what this check is
-     for. `diet_foods` had no writer at all, so one exemption
-     covered the table; the recipe maker landed a writer and the
-     exemption went stale in the same commit, which is the check
-     asking about every column one at a time instead. Four of
-     them are still nobody's. */
+  /* THE WILDCARD IS GONE, and its going is what this check is for:
+     `diet_foods` gained a writer and the table-wide exemption went
+     stale in the same commit. Four columns are still nobody's. */
   "diet_foods.price": "section 17, what a dish you cooked yourself actually cost",
   "diet_foods.currency": "section 17, the same figure in taka or in pounds",
   "diet_foods.priced_on": "section 17, and an undated price is worse than none",
@@ -726,11 +522,9 @@ const UNUSED: Record<string, string> = {
 
 const used = new Set<string>();
 
-/** The columns of one table, in the order the migration declares
-    them. Deliberately dumb, and the same shape `check-rows.ts`
-    reads `aab/schema.sql` with: the block between the
-    parentheses, first word of every line that is not a
-    constraint. */
+/** The columns of one table, in declaration order. Deliberately
+    dumb, and the same shape `check-rows.ts` reads `aab/schema.sql`
+    with: first word of every line that is not a constraint. */
 function columnsOf(table: string): string[] {
   const re = new RegExp(`create table if not exists public\\.${table} \\(([\\s\\S]*?)\\n\\);`, "i");
   const block = migration.match(re)?.[1];
@@ -758,10 +552,8 @@ const mapping = new Map<string, string>();
 for (const m of api.matchAll(/(\w+):\s*[A-Za-z_$][\w$]*\.(\w+)/g)) mapping.set(m[1], m[2]);
 
 /** Every function in `diet-api.ts`, exported or not, with its
-    body. Not the exports alone: `saveDay` hands the request to
-    `writeDay`, which is private because the queue has to be able
-    to retry without queueing again, and a check that read only
-    the exports would have declared `diet_days` unwritable. */
+    body: `saveDay` hands the request to the private `writeDay`, so
+    reading only the exports declares `diet_days` unwritable. */
 const functions = [...api.matchAll(/^(export\s+)?(?:async\s+)?function\s+(\w+)\s*\(/gm)]
   .map((m) => {
     const rest = api.slice(m.index ?? 0);
@@ -798,23 +590,18 @@ const follow = (name: string): void => {
 };
 imported.forEach(follow);
 
-/** A declaration is not a value. `Day` in `shared/diet.ts` names
-    every day column as an optional property, so a corpus that
-    kept the interfaces would report every unfilled column as
-    filled: the type is exactly what makes an empty column look
-    finished. */
+/** A declaration is not a value. `Day` names every day column as
+    an optional property, so keeping the interfaces would report
+    every unfilled column as filled. */
 const withoutTypes = (src: string): string => uncommented(src)
   .replace(/\b(?:export\s+)?interface\s+\w+[^{]*\{[\s\S]*?\n\}/g, " ")
   .replace(/\b(?:export\s+)?type\s+\w+\s*=[\s\S]*?\n\};?/g, " ");
 
 /** The `shared/` functions that BUILD one of these rows, and
-    nothing else out of those files. `loggedFrom()` in
-    `shared/foods.ts` is what puts the macros on an entry, so a
-    corpus of the components alone calls that column unfilled;
-    the whole file is worse, because `meal:` is also a word in
-    that file's table of portion names, and a units table is not
-    somebody logging a dinner. A function whose return type is
-    one of the row shapes is the honest middle. */
+    nothing else out of those files: `loggedFrom()` puts the macros
+    on an entry, but `meal:` is also a word in that file's table of
+    portion names. A function whose return type is one of the row
+    shapes is the honest middle. */
 const rowBuilders = (src: string): string => {
   const out: string[] = [];
   for (const m of src.matchAll(/function\s+\w+\s*\([\s\S]*?\)\s*:\s*([^{;]*)\{/g)) {
@@ -827,10 +614,8 @@ const rowBuilders = (src: string): string => {
 };
 
 /** What supplies a value: an object literal key, a shorthand, or
-    an assignment. A text search rather than anything cleverer,
-    for the reason `check-rows.ts` gives: a page that fills a
-    column some other way will not be caught, and a page that
-    never mentions the field will be, which is the way it
+    an assignment. A text search, for the reason `check-rows.ts`
+    gives: a page that never mentions the field is the way it
     actually happens. */
 const sharedModules = [...new Set(
   TOOL_FILES.flatMap((f) => [...(SOURCE.get(f) as string)
@@ -912,20 +697,11 @@ for (const key of Object.keys(UNUSED)) {
     "outlived what it exempted reads as covering something and covers nothing.");
 }
 
-/* ------------------------------------------------------------
-   7. The honest sentence is said once, on the goal page
+/* ---- 7. The honest sentence is said once, on the goal page
 
-   Section 6 puts it in exactly one place: "on the goal page,
-   once, where the projection ends". Both halves are the rule.
-
-   Said TWICE it stops being a fact and becomes a slogan, and
-   said on a page where nobody is looking at how long this will
-   take it is a scare rather than the reason maintenance is a
-   built phase here. It is also the one sentence in this tool
-   that argues for the tool, which is what makes it the one most
-   likely to get copied on to a second panel by somebody who
-   liked it.
-   ------------------------------------------------------------ */
+   Section 6: "on the goal page, once, where the projection ends".
+   Both halves are the rule. Said twice it is a slogan; said away
+   from the projection it is a scare. ---- */
 
 const REGAIN_EN = /strongest predictor of not doing so is continuing to weigh/;
 const REGAIN_BN = /লক্ষ্যে পৌঁছানোর পরেও/;
@@ -953,44 +729,26 @@ if (saysRegain.length !== 1) {
     "one sentence in the tool that argues for the tool.");
 }
 
-/* ------------------------------------------------------------
-   8. The floors are the module's, and nothing retypes a formula
+/* ---- 8. The floors are the module's, and nothing retypes a formula
 
-   Section 5's floors are the one part of this tool that can hurt
-   somebody, and there are three ways they stop being true with
-   every page still rendering.
-
-   The first is that nothing pins them. `scripts/diet.test.ts` is
-   what asserts each one from the wrong side, so this asks that
-   the test still names every one, and it reads the list of them
-   out of `target()`'s own body rather than keeping one.
-
-   The second is CLAUDE.md's opening rule wearing this section's
-   hat: a page that TELLS a reader a floor and types the number
-   into the sentence is right on the day it is written. Change
-   `floorKcal` and the sentence goes on saying 1200 for ever, on
-   the one screen in the tool whose whole job is to say that the
-   tool changed your number. The `surplus` line already
-   interpolates its constant and is what the rest have to be.
-
-   The third is a route that recomputes a formula instead of
-   importing it. `body.tsx` opens by saying nothing there is
-   recomputed and this is what holds it: every one-expression
-   formula `shared/diet.ts` exports is reduced to its SHAPE, the
-   names taken out and the numbers left in, and a page carrying
-   that shape has a BMI or a Katch written out by hand.
-   ------------------------------------------------------------ */
+   Three ways section 5's floors stop being true with every page
+   still rendering. Nothing pins them, so this asks that
+   `scripts/diet.test.ts` still names every one, reading the list
+   out of `target()`'s own body. A sentence that TYPES a floor goes
+   on saying 1200 for ever, on the one screen whose job is to say
+   the number changed; the `surplus` line interpolates its constant
+   and is what the rest have to be. And a route that recomputes a
+   formula instead of importing it: every one-expression formula
+   `shared/diet.ts` exports is reduced to its SHAPE, and a page
+   carrying that shape has a BMI or a Katch written out by hand. ---- */
 
 const dietSrc = read("shared/diet.ts");
 const dietTest = read("scripts/diet.test.ts");
 
-/** One exported function's body, brace-balanced.
-
-    Not the `\n}` the API layer above is read with, and the
-    difference matters here: `target()` takes an object literal
-    written over six lines, so the first line closing a brace is
-    the end of its ARGUMENT and the body would come back empty
-    with nothing in this file noticing. */
+/** One exported function's body, brace-balanced. Not the `\n}` the
+    API layer is read with: `target()` takes an object literal over
+    six lines, so the first line closing a brace is the end of its
+    ARGUMENT and the body would come back empty. */
 function bodyOf(src: string, name: string): string {
   const at = src.search(new RegExp(`^export function ${name}\\s*\\(`, "m"));
   if (at < 0) return "";
@@ -1023,12 +781,10 @@ function blockAt(src: string, from: number): string {
   return src.slice(open);
 }
 
-/** The numbers behind one name in `shared/diet.ts`. A constant
-    is its own value and a `Range` is its three; a floor that
-    depends on the reader, which is `floorKcal(sex)`, is every
-    number its one-line body can return, because calling it would
-    mean this file writing out the `Sex` union and that is a
-    second copy of a vocabulary. */
+/** The numbers behind one name in `shared/diet.ts`. A floor that
+    depends on the reader, `floorKcal(sex)`, is every number its
+    one-line body can return: calling it would mean writing out the
+    `Sex` union, which is a second copy of a vocabulary. */
 const exported: Record<string, unknown> = { ...DIET };
 const isRecord = (v: unknown): v is Record<string, unknown> =>
   typeof v === "object" && v !== null;
@@ -1099,15 +855,10 @@ for (const name of floorNames) {
 
 const BN_DIGIT = new Map([...bnNum("0123456789")].map((d, i) => [d, String(i)]));
 
-/** Every number a sentence states, in either script, with
-    whether a percent sign follows it.
-
-    Tokens rather than a substring search: 1 is one floor and
-    1200 is another, and finding the first inside the second is
-    how a check reports the sentence that is right. The percent
-    is what keeps a rate floor honest without catching every "1
-    cup": a rate is a percentage of bodyweight and is written as
-    one. */
+/** Every number a sentence states, in either script, with whether
+    a percent sign follows. Tokens rather than a substring search:
+    1 is one floor and 1200 is another. The percent keeps a rate
+    floor honest without catching every "1 cup". */
 interface Said { value: number; percent: boolean }
 function numbersIn(text: string): Said[] {
   const said: Said[] = [];
@@ -1140,8 +891,7 @@ for (const file of TOOL_FILES) {
     floorLines += 1;
     /* `${MAX_SURPLUS_KCAL}` is the fix, so what an interpolation
        fills in comes out before the numbers are counted.
-       `unfilled()` under question 11 is the balanced one and this
-       needs it for the same reason: an interpolation here holds a
+       `unfilled()` is balanced because an interpolation can hold a
        conditional with braces of its own. */
     const said = unfilled(blockAt(table, from));
     /* Grouped by the constant rather than by the number, because
@@ -1216,28 +966,16 @@ for (const file of TOOL_FILES) {
   }
 }
 
-/* ------------------------------------------------------------
-   9. The Asian cut-offs are used whenever ancestry says so
+/* ---- 9. The Asian cut-offs are used whenever ancestry says so
 
-   Section 2 calls this the single most important honest detail
-   in the whole tool, and it costs one table. `BMI_CUTS` is that
-   table and `bmiBand()` is the only thing that should read it.
-
-   The failure is quiet in the worst way: a page that decides a
-   band on the general cut-offs tells a South Asian reader they
-   are in the healthy range where their own health service would
-   not, and the page renders, the arithmetic is right, and
-   nothing in the tool disagrees with it. Four shapes of it: a
-   fixed ancestry handed to `bmiBand()` or read off `BMI_CUTS`; a
-   body built with a literal ancestry rather than the reader's; a
-   cut-off written into a comparison, which is `bmiBand()`
-   retyped with one of the two tables missing; and a page that
-   draws a band without going through `bmiBand()` at all.
-
-   And section 2's own second half: the page says WHICH set it
-   used. A band with no cut-off named beside it is one word for
-   two readers who are owed different ones.
-   ------------------------------------------------------------ */
+   Section 2's single most important honest detail. `BMI_CUTS` is
+   the table and `bmiBand()` the only thing that should read it: a
+   page deciding a band on the general cut-offs tells a South Asian
+   reader they are healthy where their own health service would
+   not, and nothing in the tool disagrees with it. Four shapes: a
+   fixed ancestry; a body built with a literal ancestry; a cut-off
+   written into a comparison; a band drawn without `bmiBand()`.
+   And section 2's second half: the page says WHICH set it used. ---- */
 
 const ancestries = Object.keys(BMI_CUTS);
 
@@ -1250,11 +988,10 @@ for (const [place, cuts] of Object.entries(BMI_CUTS)) {
   }
 }
 
-/** The band vocabulary is in `words.ts`, keyed by `bmiBand()`'s
-    own tokens, which is what makes indexing it the signature of
-    a page that draws a band. Both names are checked to exist,
-    because a rename would otherwise leave this question asking
-    about nothing and reporting that everything is fine. */
+/** The band vocabulary is in `words.ts`, keyed by `bmiBand()`'s own
+    tokens, so indexing it is the signature of a page drawing a
+    band. Both names are checked to exist, because a rename would
+    leave this asking about nothing and reporting all is well. */
 const BAND_TABLE = "BAND_WORDS";
 const CUTS_TABLE = "CUTS_WORDS";
 const words = read(`${COMPONENTS}/words.ts`);
@@ -1293,14 +1030,9 @@ for (const file of TOOL_FILES) {
     }
   }
 
-  /* A cut-off in a comparison is bmiBand() written out with one
-     of the two tables missing, and it is the shape that carries
-     no clue about ancestry at all.
-
-     Only in a file that says BMI somewhere, because 25 and 30
-     are also a number of days and a number of grams. No file in
-     this tool compares against any of the five today, so the
-     rule is as wide as it can be without reaching those. */
+  /* A cut-off in a comparison is bmiBand() written out with one of
+     the two tables missing. Only in a file that says BMI somewhere,
+     because 25 and 30 are also a number of days and of grams. */
   if (/\bbmi\b/i.test(src)) {
     for (const [cut, what] of cutNames) {
       const token = String(cut).replace(".", "\\.");
@@ -1331,34 +1063,17 @@ for (const file of TOOL_FILES) {
   }
 }
 
-/* ------------------------------------------------------------
-   10. The portion library: a source, a dated price, and a state
+/* ---- 10. The portion library: a source, a dated price, a state
 
-   `shared/foods.ts` states all three at the top of itself and
-   nothing held any of them.
-
-   A SOURCE, because a number with no source is a number this
-   tool invented, and section 12 puts that label in front of the
-   reader on every figure.
-
-   A DATE ON A PRICE, because section 17 is blunt about it: an
-   undated price is worse than none. `price`, `currency` and
-   `pricedOn` are three parts of one fact, so a row carries all
-   three or none. A row in both kitchens carries none, because
-   one number cannot be two currencies, and a row in one kitchen
-   carries them, because the cost per gram of protein table is
-   the whole reason section 17 exists and a row with no price
-   falls silently out of it.
-
-   A STATE, which is the one that has already gone wrong here:
-   raw rice is 365 kcal per 100 g and cooked is about 130,
-   section 14 calls that the most common single error in the
-   whole of calorie counting, and the swap finder offered one for
-   the other because both were tagged the same way. `raw` is what
-   the arithmetic reads and THE NAME is what the reader reads, so
-   a row in scope carries both, in both languages. The nouns come
-   out of section 14's own sentence.
-   ------------------------------------------------------------ */
+   A SOURCE, because a number with no source is one this tool
+   invented. A DATE ON A PRICE: section 17, an undated price is
+   worse than none, so `price`, `currency` and `pricedOn` are three
+   parts of one fact and a row carries all three or none (a row in
+   both kitchens carries none: one number cannot be two
+   currencies). A STATE: raw rice is 365 kcal per 100 g and cooked
+   about 130, which section 14 calls the most common single error
+   in calorie counting, so a row in scope says which in `raw` AND
+   in the name, in both languages. ---- */
 
 const nouns = diet.replace(/\s+/g, " ")
   .match(/\*\*Every ([^*]*?) entry in the library/)?.[1] ?? "";
@@ -1455,45 +1170,23 @@ for (const id of Object.keys(NO_STATE)) {
     "exempted reads as covering something and covers nothing.");
 }
 
-/* ------------------------------------------------------------
-   11. The generated sentences, and the one thing none may say
+/* ---- 11. The generated sentences, and the one thing none may say
 
-   Section 31's last bullet: "The generated sentences in section
-   16 come from a listed set of templates, and that list is what
-   a check reads. A tool that writes free prose about somebody's
-   eating will eventually write something cruel."
+   Section 31: the templates are a listed set and that list is what
+   a check reads. THE LIST IS DERIVED, NEVER KEPT: a template here
+   is what the compiler calls one, plus a sentence a condition
+   chooses between two written-out ones. `--templates` prints it.
 
-   THE LIST IS DERIVED, NEVER KEPT. This tool's own sentences
-   written out again in this file would be right on the day they
-   were typed and wrong at the next commit, which is CLAUDE.md's
-   opening failure happening to the thing that catches that
-   failure. So a template here is what the compiler calls one: a
-   template literal with an interpolation and prose in it, plus a
-   sentence a condition chooses between two written-out ones,
-   which carries no interpolation and is generated all the same.
+   NO SECOND PERSON JUDGEMENT, in either language: a correlation is
+   described and never explained, so "your heavier days are usually
+   Fridays" is a fact and "Fridays are ruining your progress" is a
+   judgement. `JUDGEMENT` below is that vocabulary, which is a rule
+   rather than a copy of anything.
 
-       node scripts/check-diet.ts --templates
-
-   prints the list.
-
-   Two rules over it.
-
-   NO SECOND PERSON JUDGEMENT, in either language. Section 1: a
-   tracker that shames you is one somebody deletes on the day
-   they most need it. Section 16: a correlation is described and
-   never explained, so "your heavier days are usually Fridays" is
-   a fact and "Fridays are ruining your progress" is a judgement.
-   The vocabulary below is the judgement rather than the data,
-   which is why it is written out here with its reason on each
-   line: it is a rule, not a copy of anything.
-
-   AND THE ARITHMETIC RETURNS FIGURES, NEVER WORDS.
-   `shared/insights.ts` opens by saying that no function in it
-   returns a verdict, and a sentence built there is a sentence in
-   one language, on no list, that neither this check nor the
-   language switch can reach. It holds no prose today and this is
-   what keeps it that way.
-   ------------------------------------------------------------ */
+   AND THE ARITHMETIC RETURNS FIGURES, NEVER WORDS. A sentence
+   built in `shared/insights.ts` is a sentence in one language, on
+   no list, that neither this check nor the language switch can
+   reach. ---- */
 
 const LIST_TEMPLATES = process.argv.includes("--templates");
 

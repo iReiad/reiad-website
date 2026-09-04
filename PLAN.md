@@ -62,8 +62,8 @@ anything structural.
    guessing three things off `location.pathname` and
    `document.title` and getting the mount point wrong on the
    course pages. The module was to stay for `404.html` and
-   `offline.html`; it is in `archive/modules/` instead and
-   neither page has a trail at all.
+   `offline.html`; it went instead, and neither page has a trail
+   at all.
 2. **The lesson footer.** "Mark complete and continue" and the
    status chip are different heights and share no baseline. One
    control height governs both.

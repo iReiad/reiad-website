@@ -1,22 +1,9 @@
-/* ============================================================
-   auth.ts: the Studio's front door.
-
-   This used to do the checking itself, in the browser, and I was
-   careful to describe that honestly: with no server there was
-   nothing to verify against, so it kept the tool away from
-   passers-by and no more.
-
-   There is a server now. This file no longer decides anything:
-   it collects a passphrase, hands it to /api/auth, and shows what
-   comes back. The password is checked server-side against a
-   PBKDF2 hash, the session lives in an HttpOnly cookie this code
-   cannot read, and every admin endpoint re-checks it. The lock is
-   real, and the code that enforces it is not shipped to visitors.
-
-   If the database isn't connected yet, it falls back to the old
-   browser-side gate so the Studio still opens on a purely static
-   deployment, with a line on screen saying which mode you're in.
-   ============================================================ */
+/* auth.ts: the Studio's front door. It decides nothing: it
+   collects a passphrase, hands it to /api/auth and shows what
+   comes back. The hash comparison, the HttpOnly session cookie
+   and the re-check on every admin endpoint are the server's.
+   With no database it falls back to the old browser-side gate so
+   the Studio still opens, and says on screen which mode it is in. */
 
 import { auth, type ApiReply } from "/api.js";
 import { AUTH } from "/auth-config.js";

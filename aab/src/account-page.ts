@@ -1,35 +1,9 @@
-/* ============================================================
-   account-page.ts: what is left of the account page.
-
-   Nine sections of this page were drawn from here and are
-   components under `next/components/account/` now. Four jobs
-   remain, and each is here for a reason rather than because it
-   has not been got to yet:
-
-     1. WHICH HALF OF THE PAGE SHOWS. `#account-out` and
-        `#account-in` are two branches of one route, and which one
-        a reader gets is not a fact the server has: it is a token
-        in this browser. Both start hidden and this reveals one.
-     2. THE EXCHANGE, and the sentence about it. `sync()` writes
-        the account's rows on to this device, and every component
-        that counts anything redraws on the `sync:done` it fires.
-        Something has to start it, once, and this is the only
-        script the page loads.
-     3. TAKE A COPY. One button, one blob, and it needs the whole
-        account at once, which no single component has.
-     4. LEAVING: sign out, and erase everything.
-
-   THE ORDER IN (2) IS LOAD-BEARING AND IS THE OPPOSITE OF WHAT IT
-   WAS. This page used to count localStorage immediately and
-   correct itself when the network answered, because localStorage
-   was a real second record that might be ahead of the account. It
-   is the account's MIRROR now, so anything drawn before the
-   exchange is the last visit's numbers, about to move.
-
-   THE RULE THE PAGE IS STILL BUILT AROUND, wherever the drawing
-   lives: nothing is asked for that the site does not then use,
-   and nothing is shown that the site cannot measure.
-   ============================================================ */
+/* account-page.ts: the four jobs left on /account after nine
+   sections became components under `next/components/account/`.
+   Which half of the page shows, the `sync()` exchange every
+   counter redraws off, take-a-copy, and leaving. The exchange
+   must run before anything counts: localStorage is the account's
+   mirror, so a number drawn first is the last visit's. */
 
 import {
   current, signOut, getProfile, token,

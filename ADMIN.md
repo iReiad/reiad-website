@@ -19,12 +19,9 @@ counts them.** Nothing on this page is a figure typed into a
 sentence, and nothing is a figure cached at a build.
 
 The second rule is the one this repository keeps rediscovering: a
-page that renders is not a page that works. The desk's own browser
-test, now `archive/desk-react/desk.test.ts`, exists because the
-first React desk shipped as three thin panels missing the search
-boxes, the filter counts and most of the actions, and it looked
-finished. Every panel below gets a line in a test that says what
-it must be able to do.
+page that renders is not a page that works. Every panel below gets
+a line in `next/admin.test.ts` that says what it must be able to
+do.
 
 ## 1. Two credentials, and "together" does not mean "either"
 
@@ -298,18 +295,11 @@ on `/tools/live` until they can move with their tests: a second
 write path against a broker nobody wants to call from a test is
 how a site ends up with two that disagree.
 
-Stage 5 is where `/desk` stops being served and goes to
-`archive/`, under the two conditions `CLAUDE.md` sets: nothing
-serves it and nothing imports it. Its browser test is repointed at
-the new panels rather than deleted, because every check in it is a
-feature the old desk had.
-
 ### What stage 5 shipped, and what it left behind on purpose
 
-`/desk` is retired. The route, the twelve sources it was built
-from and its browser test are in `archive/desk-react/`, the Vite
-bundle at `/desk/app.js` is deleted rather than archived because
-it was minified output nobody can read, and `aab/_redirects` sends
+`/desk` is retired. Its browser test was repointed at the new
+panels rather than deleted, because every check in it is a feature
+the old desk had, and `aab/_redirects` sends
 all four spellings of the address to `/admin` with a 301. The
 address is a rule rather than a route now, so it is absent from
 `run_worker_first` in `wrangler.toml` and from `NEXT_ROUTES` in
@@ -386,5 +376,4 @@ is one write and cannot half-succeed, and nothing is typed that
 could have been picked. Its threads are rows of
 `research_questions`, carried across in the migration that
 dropped the old table, and the old address is a 301 in
-`aab/_redirects`. The component and its test are in
-`archive/desk-research/`.
+`aab/_redirects`.

@@ -1,29 +1,10 @@
-/* ============================================================
-   saved.ts: the things an account holds that are not a tick.
-
-   A saved scenario is a filled-in calculator under a name. A
-   target is a goal with a number on it. A library row is a page
-   this reader kept, or wrote a note on, or both. All three are
-   rows in Postgres behind row-level security, all three belong to
-   exactly one person, and none of them has a copy on the device.
-
-   THAT IS THE POINT, and it is the same rule `sync.js` was
-   rewritten around. Progress has a copy here because four schools
-   have read localStorage since before there were accounts and a
-   reader with no account still gets all of it. Nothing below has
-   that history and nothing below works signed out, so a local
-   copy would be a second record to keep in step for no reader's
-   benefit. Every function here answers `null` or `[]` when nobody
-   is signed in, and the pages that call them show the sign-in
-   button instead.
-
-   ---- why there is no client library, again ----
-
-   Same answer as `account.js`: what this needs from Supabase is
-   four verbs against two tables over HTTP, which is the file you
-   are reading. The token is fetched through `token()` so that
-   refresh happens in one place.
-   ============================================================ */
+/* saved.ts: the things an account holds that are not a tick. A
+   saved scenario, a target, a library row. All three are rows in
+   Postgres behind row-level security and none has a copy on the
+   device: progress has one because four schools read localStorage
+   from before there were accounts, and nothing here has that
+   history or works signed out. Every function answers `null` or
+   `[]` signed out and the page shows the sign-in button. */
 
 import { SUPABASE_URL, SUPABASE_KEY, token, current } from "/account.js";
 

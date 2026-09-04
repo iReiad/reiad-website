@@ -1,71 +1,31 @@
 #!/usr/bin/env node
-/* ============================================================
-   check-css.ts, catch a school's styles leaking into the
-   whole site.
+/* check-css.ts: a school's styles leaking into the whole site,
+   and everything else this stylesheet can get wrong as text.
 
        node scripts/check-css.ts
 
-   THE BUG THIS EXISTS FOR
+   A school's layer comes after `components`, so it beats it
+   EVERYWHERE rather than only on that school's pages: `.tag`
+   meaning Tag in German put a bordered box round the label on
+   every card on the site. So every selector at the TOP LEVEL of a
+   school's layer must be anchored by a class that belongs to that
+   school; nested `& .thing` rules cannot escape their parent.
 
-   styles.css is one file in cascade order:
+   Only the schools are checked. `money`, `check` and `work` hold
+   furniture that really is sitewide; flagging those is flagging
+   the design. A school mounted at its own path has no such excuse.
 
-       tokens … components … money, deutsch, check, about …
-
-   A school's layer therefore beats `components` everywhere, not
-   only on that school's pages. So a class name the school
-   invents, but that the site already uses for something else,
-   silently restyles the whole site.
-
-   Not hypothetical. The German school called one day of its
-   practice book `.tag`– Tag, German for day, and `.tag` is what
-   this site has always called the small label above an article
-   card. One rule:
-
-       .tag { border: 1px solid …; padding: 30px; border-radius: 16px }
-
-   put an empty bordered box around the label on every card on the
-   site: the home page bento, the Insights list, About, Services,
-   Credentials. It shipped, because check-routes looks at links,
-   check-sw looks at caches, and nothing looked at CSS.
-
-   WHAT IT CHECKS
-
-   Every selector at the top level of a school's layer, the ones
-   that match anywhere, as opposed to nested `& .thing` rules,
-   which cannot escape their parent, must be anchored by at
-   least one class that belongs to that school. "Belongs" means
-   it appears in that school's markup and nowhere else.
-
-       .merke.warn                 ok, .merke is German-only
-       .deutsch-hero .lede         ok, .deutsch-hero is German-only
-       .buch-tag textarea          ok, .buch-tag is German-only
-       .tag                        FLAGGED, .tag is the whole
-                                   site's, so this rule is not
-                                   about German at all
-
-   ONLY THE SCHOOLS ARE CHECKED, and deliberately so. `money`
-   holds the site's .hero, .band, .note and .section-label, which
-   really are sitewide and really do live there; `check` and
-   `work` share their furniture with the case studies on purpose.
-   Flagging those would be flagging the design. A school mounted
-   at its own path has no such excuse: nothing under /deutsch/
-   should be styling the home page.
-
-   Deliberately dumb, a regex over the stylesheet and a scan of
-   the markup, no CSS parser and no browser. It has to finish in
-   a second, next to the other checks, or it will not get run.
-   ============================================================ */
+   Deliberately dumb: a regex over the stylesheet and a scan of the
+   markup, no parser and no browser. It has to finish in a second
+   or it will not get run. */
 
 import { existsSync, readFileSync, readdirSync, statSync, writeFileSync } from "node:fs";
 import { dirname, join, relative } from "node:path";
 import { fileURLToPath } from "node:url";
 
 /* `AAB` is the served directory and `ROOT` is the repository.
-   They were the same until this file moved out: every file in
-   `aab/` is uploaded and answers at a public URL, so a check
-   living there is a check published, kept private only by a line
-   in `.assetsignore`. A check outside the served directory cannot
-   be served. */
+   Every file in `aab/` answers at a public URL, so a check living
+   there is a check published. */
 const REPO = join(dirname(fileURLToPath(import.meta.url)), "..");
 const ROOT = join(REPO, "aab");
 
@@ -74,32 +34,19 @@ const SCHOOLS = [
   { layer: "deutsch", owns: ["deutsch/"] },
   { layer: "quran", owns: ["quran/"] },
   { layer: "english", owns: ["english/"] },
-  /* One layer and two folders. It owned `reads.js` too until
-     Stage 11.1, which is when both index pages became Next.js
-     routes and that module stopped having anything to draw. Most
-     of what this layer styles is rendered by `next/components/`
-     now, which this check cannot see; what it still catches is the
-     reads layer leaking into the rest of the site. */
+  /* One layer and two folders. Most of what this layer styles is
+     rendered by `next/components/` now, which this check cannot
+     see; what it still catches is the reads layer leaking. */
   { layer: "reads", owns: ["cooking/", "travel/", "../next/"] },
 ];
 
 const css = readFileSync(join(REPO, "next", "styles", "site.css"), "utf8");
 
-/* ============================================================
-   Before anything else: do the braces balance.
-
-   A stylesheet with one brace too many is not a stylesheet with
-   one small error in it. A browser recovers by discarding until
-   it finds its footing again, so a stray `}` two thousand lines
-   up silently drops a layer's worth of rules, and every check
-   below this one goes on passing because they all read the file
-   as text.
-
-   This is here because it happened, deleting a dead block whose
-   last line also opened the next rule. The check is four lines
-   and it is the difference between a failed build and a page
-   that renders with a third of its design missing.
-   ============================================================ */
+/* Before anything else: do the braces balance? A browser recovers
+   from a stray `}` by discarding until it finds its footing, so
+   one two thousand lines up silently drops a layer's worth of
+   rules and every check below goes on passing, because they all
+   read the file as text. */
 {
   const clean = css.replace(/\/\*[\s\S]*?\*\//g, "");
   let depth = 0, line = 1, worst = 0;
@@ -119,17 +66,11 @@ const css = readFileSync(join(REPO, "next", "styles", "site.css"), "utf8");
 }
 
 /** The body of `@layer <name> { … }`, brace-matched. */
-/** A layer's WHOLE body, which is every block that opens it.
-
-    A cascade layer may be opened as many times as it likes and
-    the browser concatenates them, and this stylesheet does:
-    `@layer deck` opens twice, `@layer work` seven times, `@layer
-    shell` twice. This returned the FIRST block only, so every
-    rule in every later block was outside both ratchets below: the
-    entire front page's stylesheet, which lives in `deck`'s second
-    block, was never checked for a dead rule or for a class two
-    layers both define, for the whole of the redesign that wrote
-    it. Nothing failed, and nothing could. */
+/** A layer's WHOLE body, which is every block that opens it. A
+    cascade layer may be opened as many times as it likes and this
+    stylesheet does: `deck` twice, `work` seven times. Returning the
+    FIRST block only put every later block outside both ratchets
+    below, including the whole front page. */
 function layerBody(name: string): string | null {
   const parts: string[] = [];
   let from = 0;
@@ -191,42 +132,29 @@ function walk(dir: string): void {
 walk(ROOT);
 
 /* And the Next.js app, which is not in `aab/` and renders into
-   these same layers. Since Stage 11.1 the markup carrying
-   `.read-card` and `.read-hero` is a component rather than a
-   page, and a check that could not see it reported every rule in
-   the reads layer as styling nothing at all: which is a leak, as
-   far as this file can tell, and is not. */
+   these same layers. Without it every rule in the reads layer
+   reports as styling nothing, which is a leak as far as this file
+   can tell and is not. */
 for (const outside of ["../next/app", "../next/components", "../next/lib"]) {
   if (existsSync(join(ROOT, outside))) walk(join(ROOT, outside));
 }
 
-/* And the Studio, which is a Vite workspace whose OUTPUT is
-   committed into `aab/` and therefore already walked. The source
-   is here for the dead-rule count at the foot of this file: a
-   class a component writes appears in the built bundle as a
-   minified string, which is enough for a substring test and not
-   enough to trust. */
+/* And the Studio, whose OUTPUT is committed into `aab/` and so
+   already walked. The source is here for the dead-rule count: a
+   class a component writes appears in the bundle as a minified
+   string, which is enough for a substring test and not to trust. */
 if (existsSync(join(ROOT, "../app/src"))) walk(join(ROOT, "../app/src"));
 
 const markup = new Map(
   files.filter((f) => f !== "check-css.ts").map((f) => [f, readFileSync(join(ROOT, f), "utf8")])
 );
 
-/* And the schools' prose, which is not a file any more.
-
-   archive/TRANSITION.md Stage 11.7. Until 247 committed pages left `aab/`,
-   every class a lesson's body carries was in this repository as
-   HTML and this file found it by walking. The bodies are rows in
-   D1 now, rendered by a route, and the only copy of them that a
-   check running on a laptop with no network can read is
-   `content/schools.backup.json`, which is the same answer
-   `content/articles.backup.json` already is to the same question.
-
-   Without this, 32 rules in the four school layers reported
-   themselves as styling nothing at all: `.shobdo-list`,
-   `.word-grid` and thirty others, every one of them on a page a
-   reader can see. A check that cannot see the markup does not
-   report less, it reports wrongly. */
+/* And the schools' prose, which is rows in D1 rather than files.
+   `content/schools.backup.json` is the only copy a check running
+   on a laptop with no network can read. Without it, 32 rules in
+   the four school layers report as styling nothing at all, every
+   one of them on a page a reader can see: a check that cannot see
+   the markup does not report less, it reports wrongly. */
 {
   /* `usedIn()` walks `files` and looks the name up in `markup`, so
      a source has to be in both. */
@@ -238,14 +166,12 @@ const markup = new Map(
   if (existsSync(snapshot)) {
     const rows = JSON.parse(readFileSync(snapshot, "utf8")) as
       { lessons?: Array<{ school?: string; body?: string }> };
-    /* One entry PER SCHOOL rather than one for the file, because
-       ownership here is decided by the path a class was found
-       under: a class in one file holding all four schools' prose
-       would belong to none of them, and every rule in every
-       school layer would flag. The names are not real paths and
-       do not need to be; they start with the school's own folder,
-       which is what `owns` matches on, and they read as an
-       explanation when the check prints where a class is used. */
+    /* One entry PER SCHOOL, because ownership is decided by the
+       path a class was found under: one file holding all four
+       schools' prose would belong to none of them and every rule
+       in every school layer would flag. The names are not real
+       paths; they start with the school's own folder, which is
+       what `owns` matches on. */
     for (const school of ["money", "deutsch", "quran", "english"]) {
       const prose = (rows.lessons ?? [])
         .filter((l) => l.school === school)
@@ -255,14 +181,6 @@ const markup = new Map(
     }
   }
 
-  /* The three hand-written hubs used to be an HTML string each in
-     `school-hubs.ts`, and this read them because no other file
-     could see the classes inside. They are `components/
-     school-hub-page.tsx` now, which `walk()` above already reads,
-     and the prose left in `school-hub-content.ts` carries inline
-     markup and no class at all. So there is nothing here to read
-     any more, and a reader for a field that no longer exists is
-     worse than none: it would report every hub class as unused. */
 }
 
 /** Files using a class in a class attribute, not in prose or a
@@ -289,14 +207,10 @@ for (const { layer, owns } of SCHOOLS) {
   const isMine = (cls: string): boolean => {
     if (!mine.has(cls)) {
       /* A class NAMED for the school is the school's, whoever
-         writes it. That used to be the same question as "which
-         folder is it in", because each hub was an HTML string
-         under its own key. `components/school-hub-page.tsx`
-         renders all three now, so `deutsch-hero` appears in a
-         file that also says `english-hero`, and the folder test
-         reported the German hero rule as styling the English
-         book. The name is the ownership; the folder was only ever
-         a proxy for it. */
+         writes it. `components/school-hub-page.tsx` renders all
+         three hubs, so `deutsch-hero` sits in a file that also
+         says `english-hero` and the folder test read the German
+         hero rule as styling the English book. */
       if (cls.startsWith(`${layer}-`)) { mine.set(cls, true); return true; }
       const users = usedIn(cls);
       mine.set(cls, users.length > 0 && users.every((f) => owns.some((p) => f.startsWith(p))));
@@ -306,11 +220,10 @@ for (const { layer, owns } of SCHOOLS) {
 
   for (const sel of topLevelSelectors(body)) {
     /* A selector is safe when something in it can only mean this
-       school: the body class the school's pages carry, or a class
-       used nowhere else. Anything else matches the rest of the
-       site, including a selector with no class at all, which is
-       how a bare `header { position: sticky }` came to pin the
-       practice book's day header over the site's own. */
+       school. Anything else matches the rest of the site,
+       including a selector with no class at all: a bare
+       `header { position: sticky }` pinned the practice book's day
+       header over the site's own. */
     if (sel.includes(`body.${layer}`)) continue;
     const classes = [...sel.matchAll(/\.([a-zA-Z][\w-]*)/g)].map((m) => m[1]);
     if (classes.some(isMine)) continue;
@@ -329,30 +242,16 @@ for (const { layer, owns } of SCHOOLS) {
   }
 }
 
-/* ============================================================
-   THE ARTICLE VOCABULARY
+/* THE ARTICLE VOCABULARY
 
-   The Studio can put a small set of blocks into any piece: a box
-   of quick answers, a note in the margin, numbered steps, a
-   checklist, a row of figures, and the four ways of sizing a
-   photo. They are plain HTML with a class on it, and that class
-   has to survive two sanitisers and mean one thing everywhere.
-
-   Three ways that goes wrong, all of them quietly:
-
-     1. The two allowlists drift. The browser's is the stricter
-        one, so the server ends up supporting a block that nothing
-        can produce, and every callout imported from Notion
-        arrives flattened.
-     2. A class is allowed through but styled nowhere, so the
-        block ships as a bare list.
-     3. A class is already taken. `.glance` was written for this
-        and collided with the About page's own `.glance`, which is
-        a grid: the box of quick answers came out as two columns
-        with the label in one of them, in the editor and on the
-        page. Later layers win everywhere, not only on their own
-        pages, which is the same bug this whole file exists for.
-   ============================================================ */
+   A block the Studio can put into a piece is plain HTML with a
+   class on it, and that class has to survive two sanitisers and
+   mean one thing everywhere. Three ways it goes wrong, all
+   quietly: the two allowlists drift, so the server supports a
+   block nothing can produce; a class is allowed through and styled
+   nowhere, so the block ships as a bare list; or the class is
+   already taken, and a later layer wins everywhere rather than
+   only on its own pages. */
 
 const classList = (file: string, name: string): string[] => {
   const src = readFileSync(join(ROOT, file), "utf8");
@@ -392,29 +291,14 @@ if (studioClasses.length && serverClasses.length) {
   }
 }
 
-/* ============================================================
-   The same two sanitisers, and the other half of their vocabulary
-
-   The check above compares the CLASSES they allow. They also each
-   carry a table of the ATTRIBUTES an element may keep, and nothing
-   compared those, so they had drifted:
-
-     aab/editor.js              IMG: src, alt, width, height
-     functions/_lib/sanitise.ts img: src, alt, width, height,
-                                     loading, decoding
-
-   `hostPhotosIn` in `aab/src/photo.ts` sets `loading="lazy"` and
-   `decoding="async"` on every photo it hosts. The browser's own
-   sanitiser stripped both on the way out, so neither had ever
-   reached the database and every photo in every article loaded
-   eagerly while the markup said it should not. Two dead lines in
-   one file and a server allowlist supporting something nothing
-   could produce, which is the class version of this bug written
-   out one paragraph up.
-
-   A class check cannot see it. `class` is not in either table in
-   the same sense: it is governed by the lists above.
-   ============================================================ */
+/* The same two sanitisers, and the other half of their vocabulary:
+   the ATTRIBUTES an element may keep. Nothing compared those, so
+   they had drifted. `hostPhotosIn` sets `loading="lazy"` and
+   `decoding="async"`; the browser's sanitiser stripped both, so
+   neither had ever reached the database and every photo loaded
+   eagerly while the markup said it should not. `class` is not in
+   either table in the same sense: it is governed by the lists
+   above. */
 
 /** One table of tag to attributes, by variable name, lowercased so
     the browser's `IMG` and the server's `img` are one key. */
@@ -435,10 +319,8 @@ const attrTable = (file: string, name: string): Map<string, string[]> => {
 };
 
 /* The two asymmetries that are deliberate, each with the reason.
-   Anything not here is drift. Keyed by tag and attribute, for the
-   same reason `GONE` in check-pointers.ts is keyed by two things:
-   "the server allows class" is a true sentence and a NEW
-   disagreement about class somewhere else is not. */
+   Anything not here is drift. Keyed by tag AND attribute, for the
+   reason `GONE` in check-pointers.ts is keyed by two things. */
 const AGREED: Record<string, string> = {
   "a/class": "governed by the class lists above, not by these tables",
   "figure/class": "the same",
@@ -495,19 +377,11 @@ if (browserAttrs.size && serverAttrs.size) {
 
 /** The selectors a layer states unconditionally: depth zero, and
     NOT inside an `@media`, `@supports` or `@container`.
-
-    `topLevelSelectors()` above deliberately reaches inside a
-    top-level at-rule, because a school can leak from inside a
-    media query just as easily as outside one. This asks a
-    different question, "what does this layer say this class IS",
-    and there a conditional rule is not an answer:
-
-        @media (prefers-reduced-motion: reduce) {
-          .ring-fill { transition: none }
-        }
-
-    is an adjustment to somebody else's ring, and counting it as a
-    definition made three layers look like they each owned one. */
+    `topLevelSelectors()` deliberately reaches inside a top-level
+    at-rule, because a school can leak from inside a media query.
+    This asks a different question, "what does this layer say this
+    class IS", and a conditional rule is not an answer: counting
+    one made three layers look like they each owned a ring. */
 function bareSelectors(body: string): string[] {
   const clean = body.replace(/\/\*[\s\S]*?\*\//g, "");
   const out: string[] = [];
@@ -526,15 +400,11 @@ function bareSelectors(body: string): string[] {
 }
 
 /** A selector list, split on the commas that separate selectors.
-
-    NOT `sel.split(",")`. A comma inside `:is()`, `:where()`,
+    NOT `sel.split(",")`: a comma inside `:is()`, `:where()`,
     `:not()` or `:has()` separates arguments of ONE compound
     selector, and reading it as a list turns
     `:is(.card, .cell, .work-card):hover .artwork` into a bare
-    `.cell` rule. The moment `layerBody` started reading a layer's
-    later blocks, that one line reported `.cell`, `.news-card` and
-    `.lesson-card` as classes two layers both define, which is a
-    failure about a rule that does not exist. */
+    `.cell` rule. */
 function selectorList(sel: string): string[] {
   const out: string[] = [];
   let depth = 0, buf = "";
@@ -568,36 +438,23 @@ const MATERIAL = new Map([
   ["glow", "the light inside the glass, which every surface carries"],
 ]);
 
-/* ============================================================
-   A RELIEF LAYER, which is the same exception earned differently
+/* A RELIEF LAYER, which is the same exception earned differently.
 
-   `@layer relief` names classes other layers define for the same
-   reason `@layer glow` does: a thing drawn on a surface sits
-   above it, and that is true of an icon in a button, a disc on a
-   card and a sparkline on a case study, which are four layers
-   apart. A copy of the rule in each of those layers is four
-   places for it to drift.
-
-   The material earns its exception by setting NOTHING but the
-   light. A relief cannot make that promise, because moving a
-   thing is the whole of what it does. So it earns the exception
-   the other way round:
+   `@layer relief` names classes other layers define because a
+   thing drawn on a surface sits above it, and that is true of an
+   icon in a button and a sparkline on a case study, four layers
+   apart. The material earns its exception by setting NOTHING but
+   the light; a relief cannot promise that, because moving a thing
+   is the whole of what it does. So:
 
      a relief layer may move a thing and may never lay it out.
 
    `translate`, `rotate` and `scale` COMPOSE with whatever
-   `transform` the owning layer already set, which is the entire
-   reason those three exist as separate properties in the spec.
-   `transform` REPLACES it. So `transform` is the one word this
-   layer may never say, and it is worth being precise about what
-   it would cost: `.art-floor` in `@layer deck` is a plane laid
-   down with `perspective(360px) rotateX(68deg)`, and one
-   `transform` here naming that class would stand every floor on
-   this site back up, with every rule still reading correctly.
-
-   Nothing about size, position, colour or type either, for
-   exactly the reason `position` is off the material's list.
-   ============================================================ */
+   `transform` the owning layer set; `transform` REPLACES it. So
+   `transform` is the one word this layer may never say: one line
+   of it naming `.art-floor` would stand every floor on this site
+   back up with every rule still reading correctly. Nothing about
+   size, position, colour or type either. */
 const RELIEF = new Map([
   ["relief", "how far a thing drawn ON a surface stands off it"],
 ]);
@@ -613,15 +470,11 @@ const RELIEF_PROPS = new Set([
 ]);
 
 /* `position` was on this list for one draft and it is the reason
-   the list is worth having. The material set `position: relative`
-   for a pseudo-element it stopped using, and a later layer saying
-   `relative` overrides `fixed` on `.rail` and on `.topbar`: the
-   rail and the bar dropped out of their fixed positions into the
-   flow and pushed every page 1300 pixels down. Both still
-   rendered, both still had their colours, and every check passed.
-
-   Position is geometry. So is isolation, so is z-index, so is
-   display. None of them is the light. */
+   the list is worth having: the material set `position: relative`,
+   and a later layer saying `relative` overrides `fixed` on `.rail`
+   and `.topbar`, which pushed every page 1300 pixels down with
+   every check passing. Position is geometry, and so are isolation,
+   z-index and display. None of them is the light. */
 const MATERIAL_PROPS = new Set([
   "background-image", "background-size", "background-position", "transition",
   /* The edge follows the border radius, which a gradient cannot. Safe only
@@ -634,18 +487,15 @@ const MATERIAL_PROPS = new Set([
   "--depth", "--polish", "--clarity", "--standing",
   "--glow-w", "--glow-h", "--glow-i", "--glow-stop", "--glow-a", "--glow-fade",
   /* The ground's own texture, which this layer sets to `none` on
-     everything drawn ON a surface. It is the material's by
-     definition: the weave is what the sheet is made of, and a row
-     on the sheet repainting it is two gratings stacking into
-     dirt rather than one piece of cloth. */
+     everything drawn ON a surface: a row on the sheet repainting
+     it is two gratings stacking into dirt. */
   "--glass-grain",
-  /* Whether the light FOLLOWS the pointer on this surface, which
-     is a fact about the light and not about the thing under it:
-     the size formula multiplies by it, so a plate and a pane
-     come out at nothing and are not tracked at all. It replaced
-     a `--glow-w: 0` written beside each of their depths, which
-     the derived formula later in the same layer overrode at
-     equal specificity. */
+  /* Whether the light FOLLOWS the pointer, which is a fact about
+     the light rather than the thing under it: the size formula
+     multiplies by it, so a plate and a pane come out at nothing
+     and are not tracked. It replaced a `--glow-w: 0` beside each
+     of their depths, which the derived formula later in the same
+     layer overrode at equal specificity. */
   "--follows",
   "--lit", "--rim", "--gpx", "--gpy", "--glass-face", "--glass-under", "--rim-a", "--rim-b", "--rim-face-a", "--rim-face-b",
   "--spec", "--gx", "--gy", "--tx", "--ty",
@@ -654,13 +504,10 @@ const MATERIAL_PROPS = new Set([
 ]);
 
 for (const cls of new Set([...studioClasses, ...serverClasses])) {
-  /* Material layers are filtered here for the same reason they
-     are in the wider loop below, and the reason is the same one
-     word for word: a material layer may set the light and nothing
-     else, and this file proves that rather than trusting it. An
-     article block carrying the site's own weave and a still light
-     is the design system reaching the prose, which is what "one
-     system all around" has to mean if it means anything. */
+  /* Material layers are filtered here for the same reason as in
+     the wider loop below: a material layer may set the light and
+     nothing else, and this file proves that rather than trusting
+     it. */
   const layers = definedIn(cls).filter((l) => !MATERIAL.has(l) && !RELIEF.has(l));
   if (!layers.length) {
     // Some are modifiers on a selector that names the tag as well,
@@ -682,84 +529,52 @@ for (const cls of new Set([...studioClasses, ...serverClasses])) {
   }
 }
 
-/* ============================================================
-   The same question, asked about every class rather than only
-   the twenty-one an article may carry.
+/* The same question, asked about every class rather than only the
+   twenty-one an article may carry.
 
-   The loop above has caught a class that means two things since
-   the Studio was written, but only for article blocks, because
-   those were the ones a writer could put on a page by accident.
-   That was too narrow. Twelve classes were defined in two layers
-   at once in August 2026 and none of them was an article block:
+   Twelve classes were defined in two layers at once and none was
+   an article block: `.ladder` was the money school's stack of
+   stages and the stock check's row of rates, and `check` comes
+   after `money`, so every school's ladder had been drawing with
+   the stock check's gap for as long as both existed. Nobody typed
+   a wrong rule. Each was right in its own layer, and a layer is
+   exactly what makes "in its own layer" false.
 
-     .ladder      the money school's stack of stages, and the
-                  stock check's row of interest rates. `check`
-                  comes after `money`, so every school's ladder
-                  had been drawing with the stock check's gap for
-                  as long as both existed.
-     .ring        34px and green here, 44px and var(--accent)
-                  there. The schools drew deck's, and the copy
-                  that lost sat in the file looking authoritative.
-     .contents-*  three names live in both `money` and `deck` on
-                  the same page.
-
-   Nobody typed a wrong rule. Each was right in its own layer, and
-   a layer is exactly the thing that makes "in its own layer"
-   false. So the rule is now the simple one: a bare `.cls { … }`
-   belongs to one layer, whatever the class is.
-
-   ALLOWED holds the pairs that are deliberate, and every entry
-   needs a reason next to it. It is not a suppression list for
-   whatever happens to be failing today: a genuine collision gets
-   renamed, and this is only for a name two layers really do
-   share on purpose.
-   ============================================================ */
+   ALLOWED holds the pairs that are deliberate, each with a reason.
+   It is not a suppression list for whatever is failing today: a
+   genuine collision gets renamed. */
 
 const ALLOWED = new Map([
   /* deck adds a margin and a width to the money school's resume
      card rather than restating it. Different properties, and the
      card is one card. */
   [".resume", "money+deck, deck adjusts the card money defines"],
-  /* `components` says what the account popover IS: a popover with
-     its dialog defaults cleared and its own geometry. `shell`
-     names it in ONE grouped rule that gives all six pieces of
-     fixed chrome the same glass ground, which is the same kind of
-     cross-cutting a material layer does and cannot redefine what
-     the popover is. */
+  /* `components` says what the account popover IS; `shell` names
+     it in ONE grouped rule giving all six pieces of fixed chrome
+     the same glass ground, which is cross-cutting and cannot
+     redefine what the popover is. */
   [".acc-menu", "components+shell, shell gives the six chrome surfaces one glass ground"],
 ]);
 
-/* ============================================================
-   A MATERIAL LAYER, which is the one exception that generalises
+/* A MATERIAL LAYER, which is the one exception that generalises.
 
-   `@layer glow` names a hundred classes that other layers define,
-   and it has to: the light inside the glass is a property of what
-   a thing IS rather than of what it looks like, so it cuts across
-   every layer the way a theme does. Under the rule above that is
-   a hundred failures, and the retreat when it first fired was to
-   scope the material to an attribute, which left 203 surface-like
-   classes with one of them on the design system.
-
-   The rule the check was protecting is still right: a later layer
-   silently redefining a class is how `.ladder` drew with the
-   stock check's gap on every school page. What makes a material
-   layer different is that it CANNOT do that, and the difference
-   is checkable rather than a promise:
+   `@layer glow` names a hundred classes other layers define, and
+   it has to: the light is a property of what a thing IS rather
+   than of what it looks like, so it cuts across every layer the
+   way a theme does. What makes it different from the collision the
+   rule above guards against is that it CANNOT do that damage, and
+   that is checkable rather than promised:
 
      a material layer may set the light and nothing else.
 
-   Not a colour, not a size, not a font, not a radius, not a
-   border, not a position in a grid. If `@layer glow` ever sets
-   one of those, this fails and the exception is withdrawn for the
-   whole layer rather than for the one rule that broke it.
+   Not a colour, size, font, radius, border or grid position. If
+   `@layer glow` ever sets one, this fails and the exception is
+   withdrawn for the whole layer rather than the one rule.
 
-   `transition` is on the list and is the uncomfortable one, for a
-   real reason written at the rule itself: a transition list is
-   not merged across layers, so a material layer that animates one
-   property has to restate the ones underneath it or it takes them
-   away. `.card[data-kind="go"]` in `@layer deck` carries the same
-   note, having been bitten once.
-   ============================================================ */
+   `transition` is on the list and is the uncomfortable one: a
+   transition list is not merged across layers, so a material layer
+   that animates one property has to restate the ones underneath or
+   it takes them away. */
 
 
 const CROSSING: Array<[Map<string, string>, Set<string>, string]> = [
@@ -828,23 +643,14 @@ for (const cls of [...everyClass].sort()) {
   );
 }
 
-/* ============================================================
-   A token nothing defines
-
-   `background: var(--ground)` is a declaration the browser throws
-   away whole: an undefined custom property is invalid at computed
-   value time, and the property reverts rather than falling back.
-   The quiz's selected answer was styled with it, so picking an
-   option highlighted nothing and the only feedback was the native
-   dot. `--header-h` was the same, left behind when `body > header`
-   was removed, and both of its uses carried a fallback so nothing
-   ever looked broken enough to chase.
-
-   A token set by a script is real even though this file cannot
-   see it declared, so those are proved rather than assumed: the
-   name has to turn up in a `setProperty()` somewhere under
-   `aab/`. Five do. Nothing else gets the benefit of the doubt.
-   ============================================================ */
+/* A TOKEN NOTHING DEFINES. `background: var(--ground)` is a
+   declaration the browser throws away whole: an undefined custom
+   property is invalid at computed value time, and the property
+   reverts rather than falling back. A token set by a script is
+   real even though this file cannot see it declared, so those are
+   proved rather than assumed: the name has to turn up in a
+   `setProperty()` somewhere under `aab/`. Nothing else gets the
+   benefit of the doubt. */
 
 const strip = (t: string): string => t.replace(/\/\*[\s\S]*?\*\//g, "");
 const noComments = strip(css);
@@ -853,15 +659,10 @@ const used = new Set([...noComments.matchAll(/var\(\s*(--[a-z0-9-]+)/g)].map((m)
 
 /* And the Tailwind source, which NAMES this stylesheet's tokens
    without declaring any: `@theme` there is how `bg-panel` comes to
-   mean `var(--panel)`.
-
-   Reading only `styles.css` missed the worst instance of exactly
-   this. `--background-image-weave: var(--weave)` and its sheen
-   twin sat in the Tailwind source for weeks and `--weave` was
-   never declared anywhere, so `bg-weave` and `bg-sheen` computed
-   to nothing in all seven components that asked for one, and
-   every surface on the site was flat. It looked like a design
-   choice. */
+   mean `var(--panel)`. Reading only `site.css` missed the worst
+   instance: `--background-image-weave: var(--weave)` with `--weave`
+   declared nowhere, so `bg-weave` computed to nothing in seven
+   components and every surface on the site was flat. */
 const tw = join(REPO, "next", "styles", "tailwind.css");
 if (existsSync(tw)) {
   const theme = strip(readFileSync(tw, "utf8"));
@@ -869,20 +670,14 @@ if (existsSync(tw)) {
   for (const m of theme.matchAll(/var\(\s*(--[a-z0-9-]+)/g)) used.add(m[1]);
 }
 
-/* Every custom property this site sets from code, from the
-   sources rather than the built copies.
+/* Every custom property this site sets from code, from the sources
+   rather than the built copies.
 
-   TWO SPELLINGS, and only one of them was here. A browser module
-   writes `setProperty("--x", ...)`; a React component writes it
-   as an inline style, `style={{ "--x": value }}`, and that is
-   how half of this site sets one now: the deck's accent, a
-   school's colour, a band's colour, the fill of a heatmap cell.
-
-   Reading only the first spelling made this check report a
-   property React sets as one nothing sets, which is a false
-   alarm, and false alarms are how a check gets ignored. It also
-   meant the check could never see the other half: a component
-   setting `--typo` would have gone unnoticed either way. */
+   TWO SPELLINGS. A browser module writes `setProperty("--x", ...)`;
+   a React component writes an inline style, `style={{ "--x": v }}`,
+   and that is how half of this site sets one. Reading only the
+   first made this report a property React sets as one nothing
+   sets, and false alarms are how a check gets ignored. */
 const scriptSet = new Set();
 for (const [, src] of markup) {
   for (const m of src.matchAll(/setProperty\(\s*["'`](--[a-z0-9-]+)["'`]/g)) {
@@ -907,50 +702,31 @@ for (const token of [...used].sort()) {
     + "        nothing. That is why it looks fine in a diff.");
 }
 
-/* ============================================================
-   A rule that styles nothing
+/* A RULE THAT STYLES NOTHING: a class with a rule of its own that
+   no markup in this repository carries. 236 lines went dead that
+   way, the whole `.wb-*` vocabulary outliving the module that
+   wrote it.
 
-   This file already asks whether an ARTICLE class is styled
-   nowhere. The other direction was never asked: a class with a
-   rule of its own that no markup in this repository carries.
+   A RATCHET, not a wall: each of the remaining ones needs looking
+   at rather than deleting, and the number may only fall.
 
-   That is how 236 lines went dead without anybody noticing, and
-   they were found by hand on 18 August 2026 rather than by
-   anything here: the whole `.wb-*` vocabulary outlived the module
-   that wrote it, `.cell-aim` outlived the card it painted, and
-   `.wb-picker` was a byte-for-byte copy of `.tag-waehler`.
-
-   A RATCHET, not a wall, for the same reason `check-components.ts`
-   is one: there are 45 of them, clearing them is a change nobody
-   could review in one sitting, and each needs looking at rather
-   than deleting. The number may only fall.
-
-   The test is deliberately broader than `usedIn()` above. That one
-   looks only in a class attribute, which is right for the leak
-   question: a school's rule is anchored by a class the school's
-   PAGES carry. Here any mention counts, because a class can be
-   real without ever appearing in an attribute in this repository:
-   `classList.add("x")`, a selector string in a module, a template
-   literal. A rule flagged as dead and then deleted is a page
-   losing its design, so this errs towards saying nothing.
-   ============================================================ */
+   The test is broader than `usedIn()` above, which looks only in a
+   class attribute. Here any mention counts, because a class can be
+   real without appearing in an attribute: `classList.add("x")`, a
+   selector string, a template literal. A rule flagged dead and
+   then deleted is a page losing its design, so this errs towards
+   saying nothing. */
 {
   const anywhere = [...markup.values()].join("\n");
   /* The name as a WHOLE WORD inside any quoted string, or after a
      dot in a selector. Not "the whole string is this class": half
      the site writes `className={plain ? "art" : "art stage-art"}`,
-     and a pattern anchored to the quotes calls every one of those
-     dead. Both false positives it produced were that shape. */
-  /* A class BUILT by concatenation is real, and its full name is
-     nowhere in the repository. `dissertation.js` writes
-     `` `finding-${d.k}` ``, so `.finding-better` and its six
-     siblings are live rules that no search for their own name can
-     find. Every prefix that appears immediately before a template
-     placeholder counts as a mention of everything under it, which
-     is the same "err towards saying nothing" the paragraph above
-     describes: the cost of a false negative here is a rule nobody
-     deletes, and the cost of a false positive is a page losing its
-     design. */
+     and a pattern anchored to the quotes calls those dead. */
+  /* A class BUILT by concatenation is real and its full name is
+     nowhere in the repository: `` `finding-${d.k}` `` gives seven
+     live rules no search for their own name can find. Every prefix
+     immediately before a template placeholder counts as a mention
+     of everything under it. */
   const built = new Set<string>();
   for (const m of anywhere.matchAll(/([A-Za-z][\w-]*?-)\$\{/g)) built.add(m[1]);
 
@@ -987,22 +763,12 @@ for (const token of [...used].sort()) {
   }
 }
 
-/* ============================================================
-   The light's second radius, overridden once
-
-   `--glow-h` exists so the pointer light can be an ellipse on a
-   surface that is not roughly square, and there is exactly one:
-   `.rail` is 268px wide and the height of the window, so a 220px
-   circle at the pointer reached four rows above it and four
-   below, and read as a flare running the column rather than a
-   light where the reader's hand was.
-
-   Every other surface sets it to `--glow-w` and is a circle. A
-   SECOND literal override means the ladder needs the axis, the
-   way `--glow-w` is derived from `--depth`, rather than a class
-   needing an exception. Written down as a check because a rule
-   that is only prose is the failure CLAUDE.md opens with.
-   ============================================================ */
+/* THE LIGHT'S SECOND RADIUS, overridden once. `--glow-h` exists so
+   the pointer light can be an ellipse on a surface that is not
+   roughly square, and there is exactly one: `.rail`, 268px wide
+   and the height of the window. A SECOND literal override means
+   the ladder needs the axis, the way `--glow-w` is derived from
+   `--depth`, rather than a class needing an exception. */
 {
   const literal = [...css.matchAll(/--glow-h:\s*([^;]+);/g)]
     .map((m) => m[1].trim())
@@ -1016,27 +782,18 @@ for (const token of [...used].sort()) {
   }
 }
 
-/* ============================================================
-   The language switch has to have a language to switch to
+/* THE LANGUAGE SWITCH HAS TO HAVE A LANGUAGE TO SWITCH TO.
 
    `@layer lesson` puts both bodies of a lesson in the markup and
    hides one, keyed on `data-read-lang`. That is right for the 81
-   money lessons, which are written twice. It is wrong for the
-   other 144, which are Bangla and nothing else: hiding the Bangla
-   there hides the LESSON, and those pages render no switch to
-   undo it because there is nothing to switch to.
+   money lessons, which are written twice, and wrong for the other
+   144, which are Bangla and nothing else: hiding the Bangla there
+   hides the LESSON, and those pages render no switch to undo it.
+   The row was right and the route rendered every word of it, so
+   `parity.test.ts` found it correct.
 
-   It shipped, and nothing could see it. The row was right, the
-   route rendered every word of it, `parity.test.ts` compares the
-   server's HTML and found it correct, and the page kept its
-   heading, its byline and its prev/next pair round an empty
-   middle. `reading.test.ts` measures the rendered box and is the
-   better test; it needs a browser and does not run in CI, which
-   is what this is for.
-
-   So: a rule that hides a prose half has to say which lessons it
-   may hide it on, and the component has to mark them.
-   ============================================================ */
+   A rule that hides a prose half has to say which lessons it may
+   hide it on, and the component has to mark them. */
 {
   const layer = layerBody("lesson");
   if (layer === null) {
@@ -1067,10 +824,10 @@ for (const token of [...used].sort()) {
         + "        given. `next/reading.test.ts` measures the box this leaves behind.");
     }
 
-    /* THE MARKER IS HALF OF IT, and it is the half that fails
-       silently: a selector keyed on an attribute nothing writes
-       matches nothing, so the rules above stop firing and the 81
-       money lessons show BOTH languages at once. */
+    /* THE MARKER IS HALF OF IT, and the half that fails silently:
+       a selector keyed on an attribute nothing writes matches
+       nothing, so the rules above stop firing and the 81 money
+       lessons show BOTH languages at once. */
     const at = join(REPO, "next", "components", "lesson", "body.tsx");
     const src = existsSync(at) ? readFileSync(at, "utf8") : "";
     const keyed = rules.some(([, selector]) => selector.includes("[data-langs"));

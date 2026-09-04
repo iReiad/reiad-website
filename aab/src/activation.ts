@@ -1,37 +1,9 @@
-/* ============================================================
-   activation.ts, don't act on a page nobody has opened yet.
-
-   THE BUG THIS EXISTS TO PREVENT
-
-   app.js injects speculation rules with eagerness "moderate",
-   which tells the browser to PRERENDER a link when the pointer
-   hovers it. That is a real speed win, the click is instant,
-   but a prerendered page is not a preview. It is the page,
-   fully loaded, with its scripts running, sharing this origin's
-   localStorage. It simply isn't visible yet.
-
-   So every side effect a page performs on load fires while the
-   reader is merely moving the mouse across a list of links:
-
-     · /money/progress.js ticked lessons off as read, so the hub
-       filled with ✓ marks for lessons nobody had opened, and the
-       "resume where you were" card pointed at wherever the
-       pointer had last drifted.
-     · /api.js counted a page view, inflating the numbers with
-       hovers.
-
-   It only ever happened on a laptop. Phones don't hover, which
-   is exactly why the bug survived testing.
-
-   THE RULE
-
-   Reading the DOM during prerender is fine. Anything a reader
-   would recognise as "I did that" (writing progress, counting a
-   view, recording a position) waits for activation.
-
-   whenActivated(fn) runs fn now on a normally loaded page, or
-   at the moment a prerendered page is actually shown.
-   ============================================================ */
+/* activation.ts: don't act on a page nobody has opened yet.
+   `app.js` prerenders hovered links, and a prerendered page runs
+   its scripts against this origin's localStorage while the reader
+   is only moving the mouse. Reading the DOM then is fine; anything
+   a reader would call "I did that" (a tick, a counted view, a
+   position) waits for `whenActivated`. Phones do not hover. */
 
 /* Chrome's, and not in the DOM library. Optional because that is
    what it is: a browser that has not shipped it answers undefined,

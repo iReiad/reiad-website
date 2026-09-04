@@ -24,7 +24,6 @@ cd next && npm run dev           # the Next routes, on :3000
 | `shared/` | what the Worker, the browser and Next must all agree on |
 | `scripts/` | the checks and the builders |
 | `supabase/migrations/` | accounts, progress, library, targets |
-| `archive/` | replaced pages and modules, kept readable |
 
 ## Before you commit
 

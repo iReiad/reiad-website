@@ -66,15 +66,6 @@ interface Gone {
 }
 
 const GONE: Gone[] = [
-  /* The service worker's changelog is HISTORY: v217 is a version
-     that shipped, and what it shipped was nine drawings rendered
-     into `/art/` by a generator. The generator is gone, because
-     the drawings are inline components now and a raster cannot
-     answer a theme, but the entry has to keep saying what that
-     version actually did or the log stops being a log. */
-  { file: "aab/sw.js", name: "scripts/build-card-art.ts",
-    why: "a shipped version's changelog: it named the generator that drew "
-      + "the rasters, and next/components/card-art.tsx replaced both" },
   /* Named in the past tense, in the paragraph explaining why a
      test whose subject is a module should not be named after a
      page: it was `aab/studio.test.ts`, it spent its life failing
@@ -94,8 +85,6 @@ const GONE: Gone[] = [
   { file: "scripts/admin.test.ts", name: "next/app/(site)/admin/layout.tsx",
     why: "asserted absent: a layout there would wrap /admin/research too, "
       + "so the panel's own is in (panel)/ and this is the check for it" },
-  { file: "aab/sw.js", name: "scripts/check-modules.mjs",
-    why: "the same, said where the reader it misled would be" },
 
   /* Deleted on 18 August 2026 when Next took the Tailwind
      compiler over. All three name it as gone. */

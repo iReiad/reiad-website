@@ -326,10 +326,10 @@ host that is not this site's; `scripts/check-csp.ts` would fail it.
 The desk under `/admin/research` is retired in the studio's first
 stage, and retired properly:
 
-- the desk's threads component goes to `archive/desk-research/threads.tsx`, with the
-  forty-five `.rd-` rules in `@layer admin` of `next/styles/site.css`
-  and the route directory. `scripts/check-css.ts` would otherwise
-  report forty-five rules styling nothing.
+- the desk's threads component goes, with the forty-five `.rd-`
+  rules in `@layer admin` of `next/styles/site.css` and the route
+  directory. `scripts/check-css.ts` would otherwise report
+  forty-five rules styling nothing.
 - `/admin/research` becomes a 301 to `/tools/research/questions` in
   `aab/_redirects`, and the entry comes OUT of `run_worker_first` and
   out of `NEXT_ROUTES`, because a path a Worker answers first never
@@ -344,9 +344,8 @@ stage, and retired properly:
 - `"threads"` leaves `MINE_TABLES` in `aab/src/account-page.ts` in
   the same commit and `"research_questions"` arrives, or
   `scripts/check-account.ts` fails, which is what it is for.
-- its test goes with it, as `archive/desk-research/threads.test.ts`. Its lesson about a
-  controlled field is section 12's, written into the studio's own
-  test.
+- its test goes with it. Its lesson about a controlled field is
+  section 12's, written into the studio's own test.
 - The `/admin` panel that linked to the desk links to the studio.
 - `ADMIN.md` section 7 gets one paragraph saying where the desk went
   and why, and nothing else changes in that file.

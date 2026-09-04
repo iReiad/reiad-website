@@ -179,13 +179,10 @@ answers saved on one device and reached no other. `check-courses.ts` now
 fails if this section writes a storage key the account does not carry.
 
 **A comment that names a file has to name one that exists.**
-`check-pointers.ts` reads every tracked file outside `archive/` and
-fails on any `check-*`, `build-*`, `import-*`, `export-*` or
-`*.test.*` name that reaches nothing. It exists because converting
-`scripts/` to TypeScript turned up twenty-five such names in one
-sweep, two of which promised a check nobody had ever written. A
-stale pointer costs nothing until somebody follows it, which is
-precisely why they survive.
+`check-pointers.ts` reads every tracked file and fails on any
+`check-*`, `build-*`, `import-*`, `export-*` or `*.test.*` name
+that reaches nothing. A stale pointer costs nothing until somebody
+follows it, which is precisely why they survive.
 
 A name that is gone ON PURPOSE goes in `GONE` in that file, keyed
 by the file AND the name, with the reason. Keyed by both because
@@ -213,8 +210,7 @@ it stops matching anything, and `aab/sw.test.ts` installs the real
 worker and changes a file underneath it.
 
 **Nothing here is `.mjs`, and it is a check now.**
-`scripts/check-mjs.ts` fails on any tracked `.mjs` or `.cjs`
-outside `archive/`.
+`scripts/check-mjs.ts` fails on any tracked `.mjs` or `.cjs`.
 
 It was a paragraph in this file first, saying nothing new should
 be one, and it was broken anyway: twenty-three of them were here
@@ -263,7 +259,7 @@ exists to catch. One or two lines.
 
 Cut narrative, dated process notes, and reasoning that only made sense while
 a decision was being taken. "This was three files and is now one" is
-history; `archive/` is where history goes.
+history, and history is what the git log is for.
 
 The test is whether removing the comment would let somebody make a mistake.
 If it would, keep it and make it shorter. If it would not, cut it.
@@ -1546,12 +1542,11 @@ pulled out of the browser into it.**
 | signed in | the device is a mirror. A tick here goes up; a tick on the phone comes down. |
 | signing out | the mirror comes off, so the next person at the same machine does not inherit somebody's ticks. |
 
-The version before this treated a browser and an account as two
-equal copies and merged them, which forced it to ASK, once per
-account per browser, what should happen to what was already
-there. `archive/first-sync.js` is that dialog. A browser is not a
-copy of an account: it may be a library machine or a phone that
-was handed over for five minutes, and the site cannot tell.
+A browser is not a copy of an account: it may be a library machine
+or a phone that was handed over for five minutes, and the site
+cannot tell. Merging the two, which is what the version before this
+did, forces a dialog asking once per account per browser what
+should happen to what was already there.
 
 Two signed-in devices still need reconciling and that is the one
 merge left. `base` is what the account said at the last exchange,
@@ -2265,21 +2260,20 @@ published the moment it is committed, so `scripts/check-routes.ts` reads
 that file and fails on any path matching a build-or-test shape
 that no rule covers.
 
-## Archiving a page, rather than deleting it
+## Retiring a page
 
-A page that has been replaced goes to `archive/`, not to the bin.
-It leaves `aab/`, which is the whole of what taking it off the
-site means, and it stays readable by whoever has to check that its
-replacement really does what it did.
+A page that has been replaced is deleted, and the git log is where
+it stays readable.
 
 Two conditions, both literal: **nothing serves it and nothing
-imports it.** So before the move, follow every reference: a
+imports it.** So before it goes, follow every reference: a
 `PAGES` entry in `shared/content.ts`, the prerender rules in `app.js`,
 the `Disallow` block `build-meta.ts` writes, the `PRIVATE` set in
 `build-og.ts`, any test that drives the page, and any link in
-`app/src/**`. Add a line to `_redirects` for the old URL. If a
-test was the only thing checking a module the page happened to
-host, repoint the test rather than losing it.
+`app/src/**`. Add a line to `_redirects` for the old URL, and
+delete the share card `build-og.ts` was drawing for it. If a test
+was the only thing checking a module the page happened to host,
+repoint the test rather than losing it.
 
 **Repointing at a second page is not repointing.**
 `aab/studio.test.ts` was 68 checks of `aab/editor.js` and it
@@ -2290,9 +2284,6 @@ written for. It is `aab/editor.test.ts` now, it mounts
 `createEditor()` into a shell it writes itself, and an address
 cannot go stale under it. A test whose subject is a module gets
 the module's name and its own surface.
-
-`archive/README.md` has the reasoning and the table of what
-replaced what.
 
 ## An address that was live stays live, and a directory is an address
 
@@ -2400,7 +2391,7 @@ node scripts/check-admin.ts # an endpoint under functions/api/ gated by neither
 node scripts/check-mjs.ts   # a .mjs, which is a file nothing typechecks and the
                             # reason the next one gets written
 node scripts/check-dashes.ts # the one character this file opens by banning,
-                            # in any tracked file outside archive/
+                            # in any tracked file
 node scripts/check-diet.ts # a diet page that prints a target with no
                             # medical advice line, a floor written into a
                             # sentence rather than drawn from the constant,
@@ -2477,8 +2468,7 @@ node scripts/check-next.ts # a copy inside next/ that has drifted from the
 ```
 
 `check-pieces.ts --live` also asks the database and prints where every
-piece actually lives, which is the one question `archive/TRANSITION.md` Stage 3
-turns on.
+piece actually lives.
 
 And when anything under `functions/` or `scripts/` changed:
 
@@ -2634,14 +2624,6 @@ node scripts/schools.test.ts         # a curriculum that lost a field, a lesson
 node scripts/schools-api.test.ts     # a school readable by anyone, writable by
                                      # somebody else, half-written, or a lesson
                                      # edited into existence (43 checks)
-                                     # Both page-comparing checks are archived
-                                     # now: schools-build.test.mjs compared the
-                                     # database against the files, and
-                                     # check-schools-built.mjs compared the
-                                     # builders against the committed pages.
-                                     # There are no committed pages. What asks
-                                     # that question now is next/parity.test.ts,
-                                     # against the route.
 ```
 
 And when anything under `app/src/` changed, after rebuilding.
@@ -2818,10 +2800,8 @@ npx wrangler d1 execute reiad --remote --file=restore.sql
 ## Where a lesson's words live
 
 In D1, and in one committed export of it. The
-`aab/<school>/content/<stage>.js` modules are gone from `aab/`
-as of 16 August 2026: they are in `archive/schools/`, off the
-site, and they were being uploaded and served at addresses nobody
-had asked for in months.
+`aab/<school>/content/<stage>.js` modules are gone: they were
+being uploaded and served at addresses nobody had asked for.
 
 A lesson is written at `/studio/?lessons`, which saves one row
 through `PUT /api/schools/<school>/<stage>/<lesson>`. **As of
@@ -2854,14 +2834,9 @@ deliberately, so that identical content is identical bytes and
 the git log answers "did the prose change" rather than "was this
 refreshed".
 
-**The pages are gone as of 16 August 2026, and so is half of
-this.** archive/TRANSITION.md Stage 11.7: 247 of the 251 school pages became
-Next.js routes rendered from the rows, and the four practice books
-followed in #129, so all 251 are routes. There is no committed page
-to compare a build against, `check-schools-built.mjs` is in
-`archive/schools-builders/` beside the two builders whose whole
-output it watched, and `next/parity.test.ts` asks that question
-against the route instead.
+All 251 school pages are Next.js routes rendered from the rows.
+There is no committed page to compare a build against, so
+`next/parity.test.ts` asks that question against the route.
 
 `check-schools.ts` stays and does two things: it compares the
 ladder in `shared/curricula/<school>.ts` against the ladder in the
@@ -3127,11 +3102,10 @@ already exists for, and a second copy of this file is how you get one.
 when it renders.** Those two look identical from the outside, which is
 how the first React desk shipped as three thin panels missing the
 search boxes, the filter counts and most of the actions. So the list of
-what the old page did is written down as a test: the desk's was 76
-checks, every one of them a feature `archive/desk.js` had, and it is in
-`archive/desk-react/` beside the page it drove now that `/admin` does
-that job and `next/admin.test.ts` drives it. Anything ported out of
-`aab/*.js` gets the same treatment before it is called done.
+what the old page did is written down as a test: the desk's 76 checks
+are in `next/admin.test.ts` now, every one of them a feature the page
+it replaced had. Anything ported out of `aab/*.js` gets the same
+treatment before it is called done.
 
 That includes the `<head>`. A change to canonical links, Open Graph tags
 or the webfont link has to go into `page()` inside both builders, or the
@@ -3635,14 +3609,6 @@ In D1, written through the Studio, and rendered by a Next.js route.
 There is no file half any more and no fallback to one:
 `shared/content.ts` holds the menu, the palette and the site's own
 furniture, and the writing is rows.
-
-`archive/TRANSITION.md` is how it got there, and it is **history
-rather than a plan**. It ran from the 15th to the 17th of August
-2026 and every stage in it has landed or been dropped. Read it for
-why something is the way it is; do not read it for what the site
-looks like, because the addresses and file names in it are the ones
-that were true on the day each entry was written. This file is the
-current description, and this file is the one kept true.
 
 ## Before opening a pull request
 

@@ -22,8 +22,7 @@
    move and the tests fail.
 
    It needs the network, so it is not part of any build. Run it
-   if the source ever changes, and commit what it writes, the
-   same arrangement as build-lessons.mjs and build-og.ts.
+   if the source ever changes, and commit what it writes.
 
    ------------------------------------------------------------
    THE DATA

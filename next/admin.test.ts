@@ -8,9 +8,7 @@
    `scripts/admin.test.ts` asserts what the SOURCE says. This
    drives the page, and the two catch different things: a panel
    that renders perfectly and does nothing looks exactly like one
-   that works, which is the failure
-   `archive/desk-react/desk.test.ts` was written for and what this
-   file inherited when the desk retired.
+   that works.
 
    ---- the one rule this exists to hold ----
 
@@ -843,10 +841,8 @@ console.log("\n/admin, the three the desk never had");
 /* ============================================================
    6. What the desk did that a queue has to keep
 
-   Each of these is a check in `archive/desk-react/desk.test.ts`,
-   which is 76 of them and every one a feature the desk had. A
-   panel that renders is not the same as a panel that does them,
-   which is why they came here rather than retiring with it.
+   Every check below is a feature the retired desk had. A panel
+   that renders is not the same as a panel that does them.
    ============================================================ */
 console.log("\n/admin, the desk's own features");
 {
@@ -931,10 +927,9 @@ console.log("\n/admin, the desk's own features");
    7. What is read
 
    The one panel the desk had and this page did not, ported out of
-   its `Stats.tsx`. Every check below is one of the eight the
-   desk's own `desk.test.ts` made under "what's read", plus the
-   three it could not: it named a path out of one index and a piece
-   out of another, and nothing said which of the two had answered.
+   its `Stats.tsx`. Three of the checks below are ones the desk
+   could not make: it named a path out of one index and a piece out
+   of another, and nothing said which of the two had answered.
 
    A port is finished when it does what the thing it replaced did,
    not when it renders, and those two look identical from here.
@@ -985,9 +980,8 @@ console.log("\n/admin, what is read");
     week.includes("2026-08-08") && !week.includes("2026-07-16"), week.slice(0, 200));
 
   /* ---- what a row says about itself ---- */
-  /* Each of these is a `desk.test.ts` check with a subject on
-     /admin and nothing asking it. The behaviour was there; the
-     assertion was not, which is the same as not having it. */
+  /* The behaviour was there; the assertion was not, which is the
+     same as not having it. */
   ok("an anonymous asker is named as one",
     (await text(page, "#questions")).includes("anonymous"));
   ok("and is offered no reply, rather than a broken one",

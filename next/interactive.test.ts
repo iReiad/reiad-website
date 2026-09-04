@@ -1,47 +1,23 @@
-/* ============================================================
-   interactive.test.ts: does what a page's own module writes into
-   it survive the page being a route?
+/* Does what a page's own module writes into it survive the page being a
+   route?  `node next/interactive.test.ts`, after `npx next build` in
+   `next/`. Needs a browser; without either it says which is missing and
+   SKIPS, and a skip is not a pass.
 
-     node next/interactive.test.ts
-
-   Needs `npx next build` in `next/` first, and a browser. Without
-   either it says which one is missing and skips, and a skip is not
-   a pass.
-
-   ---- what it is for ----
-
-   Every calculator on this site went blank on the day its page
-   stopped being a file. `parity.test.ts` could not see it and
-   neither could any other check here, because all of them read
-   HTML: the markup was right, the module was right, the module ran
-   and computed the right number, and then React's hydration put
-   the empty markup back. Nothing but a browser can tell those two
-   apart, which is the same argument `next/admin.test.ts` makes
-   for the admin panel and is why this file looks like that one.
-
-   So each case below names a page and something in it that ONLY
-   that page's module can have written: a stat with a figure in it,
-   a chart with an axis, a panel of drivers. If the module never
-   ran, or ran and had its work undone, the element is empty and
-   the check fails.
-
-   The pages are served the way Cloudflare serves them: the HTML
-   Next prerendered, the chunks it built beside it, and everything
-   else out of `aab/`, which is exactly the split `wrangler.toml`
-   describes. The dynamic routes are not here: they need the
-   database, and `parity.test.ts` is where they are asked about.
-   ============================================================ */
+   Every calculator went blank the day its page became a route: the
+   markup was right, the module ran and computed the right number, and
+   React's hydration put the empty markup back. Nothing but a browser
+   tells those apart, so each case names a page and something in it that
+   ONLY that page's module can have written. The pages are served the way
+   Cloudflare serves them; dynamic routes are `parity.test.ts`'s. */
 
 import { createServer } from "node:http";
 import { readFile, stat } from "node:fs/promises";
 import { extname, join, dirname } from "node:path";
 import { fileURLToPath } from "node:url";
 import type { Page, Route } from "playwright";
-/* The SOURCE, not the package copy: node strips types from a
-   file in the tree and refuses to from one inside
-   `node_modules`, which is where `install-links` puts
-   `@reiad/shared`. `next/lesson.test.ts` reaches for the same
-   files the same way. */
+    /* The SOURCE, not the package copy: node strips types from a file in
+       the tree and refuses to from one inside `node_modules`, which is
+       where `install-links` puts `@reiad/shared`. */
 import { compounding } from "../shared/calculators.ts";
 import { fmtTk } from "../shared/tool-strings.ts";
 
@@ -50,20 +26,15 @@ const BUILD = join(HERE, ".next");
 const AAB = join(HERE, "..", "aab");
 const PORT = 8991;
 
-/* A page, the file Next prerendered it into, and one thing in it
-   that only its own module can have put there. Where the markup
-   ships a placeholder for that thing, the placeholder is named
-   too: an element that exists in the page either way proves
-   nothing, and this is a check about whether anything filled it. */
+    /* A page, the file Next prerendered it into, and one thing in it that
+       only its own module can have put there. Where the markup ships a
+       placeholder, it is named too: an element that exists either way
+       proves nothing, and this is a check about whether anything filled
+       it. */
 type Case = [url: string, file: string, selector: string, what: string, placeholder?: string];
 const CASES: Case[] = [
-  /* The home page is not here any more. It carried `#kinetic`, a
-     headline `/app.js` rebuilt one span per word, and the front
-     door has no such thing since Stage 11.8: it renders three
-     headlines and shows one, and the choosing is a stylesheet
-     rule rather than a script. What holds the door now is the
-     block at the foot of this file, which checks that it shows
-     one introduction and fits one screen. */
+      /* The front door is not a case: it has no element only a module can
+         write. What holds it is the block at the foot of this file. */
   ["/tools", "tools.html", '[data-stat="final"] .v',
    "what a monthly habit becomes, computed by /tools/tools.js", "–"],
   ["/tools/stock", "tools/stock.html", "#pillars .pillar",
@@ -82,33 +53,20 @@ const CASES: Case[] = [
    "the frontier itself, drawn by /portfolio/frontier.js"],
   ["/portfolio/scorecard", "portfolio/scorecard.html", "#roc-chart *",
    "the ROC curve, drawn by /portfolio/scorecard.js"],
-  /* Both of these were here for `/app.js`, which every page loads
-     and no page's markup held any of: the hover panel it built
-     under the Skills link was in neither file, so it was the one
-     thing that proved the module had run.
-
-     There is no panel. The menu is a rail rendered on the server
-     and it is in both files, which is the improvement and also
-     why it cannot be the witness here. `#app-toast` is app.js's
-     now: the toast host is appended by the module and by nothing
-     else, and it is on every page. */
+      /* `#app-toast` is `/app.js`'s witness: the toast host is appended by
+         the module and by nothing else, and it is on every page. The rail
+         cannot be the witness, because the server renders it. */
   ["/portfolio", "portfolio.html", "#palette",
    "the Ctrl+K palette, built by /app.js"],
   ["/skills", "skills.html", "#palette",
    "the Ctrl+K palette, built by /app.js"],
 ];
 
-/* The home page shows one of four introductions, chosen before the
-   first paint from what the reader chose last time. All four at
-   once is what shipped when the boot script that picks was left
-   out of the port. */
-/* Three answers, not four. The `track` axis went at Stage 11.8:
-   it split a learner into "finance" and "skills" because the
-   learning half had two front doors, money at /money/ and
-   everything else at /skills/. The money school is one entry in
-   the skills list now, so there is one door and nothing left to
-   refine. Anything a browser still has stored under `track` is
-   ignored. */
+    /* The home page shows one of four introductions, chosen before the
+       first paint from what the reader chose last time. All four at once
+       is what a missing boot script looks like. */
+    /* Three answers, not four: the `track` axis is gone, and anything a
+       browser still has stored under it is ignored. */
 type Reader = [who: string, audience: string | null, track: string | null, expected: string];
 const READERS: Reader[] = [
   ["a reader who has just arrived", null, null, "open"],
@@ -145,11 +103,11 @@ const browserPath = process.env.CHROMIUM_PATH
     ? "/opt/pw-browsers/chromium-1194/chrome-linux/chrome"
     : null);
 
-/* The runtime import is the real path, because node resolves a
-   file on disk; the types come from the same package through the
-   `paths` entry in `tsconfig.json`. The specifier is a VARIABLE
-   because a literal is analysed, and a relative path `paths`
-   cannot map is a module with no declaration. */
+    /* The runtime import is the real path, because node resolves a file on
+       disk; the types come from the same package through `paths` in
+       `tsconfig.json`. The specifier is a VARIABLE because a literal is
+       analysed, and a relative path `paths` cannot map has no
+       declaration. */
 const PLAYWRIGHT = "../app/node_modules/playwright/index.mjs";
 const playwright = await import(PLAYWRIGHT)
   .then((m) => m as typeof import("playwright"), () => null);
@@ -180,18 +138,14 @@ const TYPES: Record<string, string> = {
   ".xml": "application/xml",
 };
 
-/* Which URL is answered by which of Next's prerendered files.
-   Mostly the cases above; the front door is here as well and is
-   not one of them, because what it proves is not "a module ran"
-   but "one introduction shows and the page fits a screen", which
-   is the block at the foot of this file. Leaving it out of both
-   is how it silently started 404ing. */
+    /* Which URL is answered by which of Next's prerendered files. The
+       front door is here as well and is not one of the cases above:
+       leaving it out of both is how it silently started 404ing. */
 const PRERENDERED: Record<string, string> = {
   ...Object.fromEntries(CASES.map(([url, file]) => [url, file])),
   "/": "index.html",
-  /* Not one of the cases either: what the contact form proves is
-     not "a module drew something" but "pressing Send reaches
-     somebody", which is the block at the foot of this file. */
+      /* Not a case either: what the contact form proves is that pressing
+         Send reaches somebody, which is the block at the foot. */
   "/contact": "contact.html",
 };
 
@@ -222,9 +176,9 @@ interface Loaded {
   errors: string[];
 }
 
-/** What a reader's browser remembers before the page opens: the
-    audience they chose, and the track they chose before that axis
-    went. */
+    /** What a reader's browser remembers before the page opens: the
+        audience they chose, and the track they chose before that axis
+        went. */
 type Remembers = [audience: string | null, track: string | null];
 
 /** One page, loaded and left alone for a moment: a module that
@@ -242,9 +196,9 @@ const open = async (
   const page = await browser.newPage();
   const errors: string[] = [];
   page.on("pageerror", (e: Error) => { errors.push(e.message); });
-  /* The webfonts are the one thing here that is not this site's,
-     and a test that needs Google to answer is a test that goes red
-     on somebody else's afternoon. */
+      /* The webfonts are the one thing here that is not this site's, and a
+         test that needs Google to answer goes red on somebody else's
+         afternoon. */
   await page.route("https://fonts.googleapis.com/**", (r: Route) => r.abort());
   if (remembers) {
     await page.addInitScript(([a, k]: Remembers) => {
@@ -252,9 +206,8 @@ const open = async (
       if (k) localStorage.setItem("track", k);
     }, remembers);
   }
-  /* The calculators read `tool-lang` at module scope, so it has
-     to be in storage BEFORE the page loads rather than set and
-     reloaded: that is what an init script is for. */
+      /* The calculators read `tool-lang` at module scope, so it has to be
+         in storage BEFORE the page loads rather than set and reloaded. */
   if (prefs?.toolLang) {
     await page.addInitScript((v: string) => {
       localStorage.setItem("tool-lang", v);
@@ -275,9 +228,9 @@ const open = async (
 for (const [url, , selector, what, placeholder] of CASES) {
   const { page, errors } = await open(url);
 
-  /* The argument is a TUPLE and is annotated as one on both
-     sides: inferred, it is an array of the union of its two
-     members, and the function then cannot say which is which. */
+      /* The argument is a TUPLE and is annotated as one on both sides:
+         inferred, it is an array of the union of its two members, and the
+         function then cannot say which is which. */
   const asked: [string, string | undefined] = [selector, placeholder];
   const found = await page.evaluate(([s, empty]: [string, string | undefined]) => {
     const nodes = [...document.querySelectorAll(s)];
@@ -288,58 +241,37 @@ for (const [url, , selector, what, placeholder] of CASES) {
   }, asked);
   ok(`${url} has ${what}`, found === null, `${found} ${selector}`);
 
-  /* React error #418 and its neighbours are what a hydration
-     mismatch looks like once the build is minified, and a page
-     that logs one has thrown away the markup the server sent. */
+      /* React error #418 and its neighbours are what a hydration mismatch
+         looks like once the build is minified. */
   const hydration = errors.filter((e) => /Minified React error #(418|423|425)/.test(e));
   ok(`${url} hydrates cleanly`, hydration.length === 0, hydration[0]);
 
   await page.close();
 }
 
-/* ============================================================
-   THE FIVE CALCULATORS, all of them
-
-   One case above drove `/tools` and asked whether the compounding
-   calculator's first figure had stopped saying "–". That was the
-   whole of it, and it was enough while each calculator held its
-   own arithmetic: a bug reached one of them.
-
-   They share a driver now. `shared/calculators.ts` produces
-   numbers by name and the key of a sentence, and one loop in
-   `tools.js` fills all five from that, so a fault in the loop hits
-   every calculator at once and the old assertion would still pass
-   on the one it happened to watch.
-
-   And the split invents one new way to be wrong that no check
-   reading HTML can see: a `{placeholder}` with no number behind
-   it, or a phrase key that does not exist, both of which RENDER.
-   What a reader gets is the characters `{gap}` or the word
-   `calc.emi.shorter` in the middle of a sentence, on a page that
-   is otherwise perfect. So the verdict is read as text and asked
-   whether it is a sentence.
-   ============================================================ */
+    /* ---- the five calculators ----
+       They share one driver: `shared/calculators.ts` produces numbers by
+       name and the key of a sentence, and one loop in `tools.js` fills all
+       five, so a fault in the loop hits every calculator at once. The
+       split invents a failure no check reading HTML can see: a
+       `{placeholder}` with no number behind it, or a phrase key that does
+       not exist, both of which RENDER. So the verdict is read as text and
+       asked whether it is a sentence. */
 {
   const { page } = await open("/tools");
 
-  /* The figure names are the MODEL's, and the markup's
-     `data-stat` has to match them or a figure is written into a
-     box that is not there. `position`'s said `risk` while the
-     model produced `riskTaka`, and `risk` is also the name of an
-     input, so the two could not be reconciled by guessing.
-
-     `sanchayapatra` names none, and that is not an omission: this
-     site shows the comparison as two boxes with the working in
-     them, gross, tax, kept and total, which is more than three
-     figures can hold. It is asserted below on its own terms. */
+      /* The figure names are the MODEL's, and the markup's `data-stat` has
+         to match them or a figure is written into a box that is not there.
+         `sanchayapatra` names none deliberately: its comparison is two
+         boxes with the working in them, asserted below on its own
+         terms. */
   const TOOLS: Array<[id: string, figures: string[], chart: boolean]> = [
     ["compounding", ["final", "paid", "growth"], true],
     ["sanchayapatra", [], true],
     ["inflation", ["worth", "lost", "real"], true],
     ["emi", ["emi", "interest", "total"], true],
-    /* Position sizing has never had one, and should not: its
-       answer is a share count, and a chart of one number is
-       decoration. */
+        /* Position sizing has never had one and should not: its answer is
+           a share count, and a chart of one number is decoration. */
     ["position", ["shares", "cost", "riskTaka"], false],
   ];
 
@@ -361,9 +293,8 @@ for (const [url, , selector, what, placeholder] of CASES) {
         })),
         verdict: text(".verdict"),
         chart: root.querySelector(".chart-box svg") !== null,
-        /* The comparison's two boxes, for the one calculator
-           that has them: four cells each, and a `winner` on
-           whichever came out ahead. */
+            /* The comparison's two boxes: four cells each, and a `winner`
+               on whichever came out ahead. */
         sides: [...root.querySelectorAll("[data-side]")].map((box) => ({
           filled: [...box.querySelectorAll("[data-k]")]
             .map((cell) => (cell.textContent ?? "").trim())
@@ -382,10 +313,9 @@ for (const [url, , selector, what, placeholder] of CASES) {
       ok(`${id}.${key} was filled in`,
         stat !== undefined && stat.value !== "" && stat.value !== "–",
         `reads "${stat?.value ?? "no such figure"}"`);
-      /* The note under a figure is chosen by the model, so an
-         unfilled one is a branch that named a phrase nobody
-         wrote. Empty is legal for two of them and says so by
-         being empty rather than by holding a key. */
+          /* The note under a figure is chosen by the model, so an unfilled
+             one is a branch that named a phrase nobody wrote. Empty is
+             legal for two of them. */
       ok(`${id}.${key}'s note is words rather than a key`,
         stat !== undefined && !/^calc\./.test(stat.note) && !/[{}]/.test(stat.note),
         `reads "${stat?.note}"`);
@@ -409,9 +339,9 @@ for (const [url, , selector, what, placeholder] of CASES) {
           side.cells > 0 && side.filled === side.cells,
           `${side.filled} of ${side.cells}`);
       }
-      /* Exactly one, always. Two winners is a comparison that has
-         stopped comparing, and none is the class never being
-         applied at all: both render perfectly. */
+          /* Exactly one, always. Two winners is a comparison that has
+             stopped comparing, and none is the class never being applied:
+             both render perfectly. */
       ok("exactly one of the two is marked the winner",
         seen.sides.filter((x) => x.winner).length === 1);
     }
@@ -420,17 +350,12 @@ for (const [url, , selector, what, placeholder] of CASES) {
   await page.close();
 }
 
-/* ============================================================
-   THE STOCK CHECK ASKS FOR ELEVEN NUMBERS, NOT EIGHTY-FIVE
-
-   The page reads the same eighty-five values either way: what
-   changes is how many of them a reader is asked to type, and the
-   note under the switch says which half of the answer is theirs
-   and which is their sector's. Every way of getting this wrong
-   renders a form that looks fine, so what is checked is the
-   COUNT, what survives the switch, and whether the reader's own
-   figures are still there afterwards.
-   ============================================================ */
+    /* ---- the stock check asks for eleven numbers, not eighty-five ----
+       The page reads the same eighty-five values either way; what changes
+       is how many a reader types. Every way of getting this wrong renders
+       a form that looks fine, so what is checked is the COUNT, what
+       survives the switch, and whether the reader's figures are still
+       there afterwards. */
 {
   const { page, errors } = await open("/tools/stock");
 
@@ -447,21 +372,17 @@ for (const [url, , selector, what, placeholder] of CASES) {
     ((await page.textContent("#depth-note")) ?? "").includes("typical values"),
     (await page.textContent("#depth-note")) ?? "nothing");
 
-  /* A figure typed in the short form, so the switch can be shown
-     not to lose it. Reading it back off the URL is the honest
-     check: that string IS the state of the page. */
+      /* A figure typed in the short form, so the switch can be shown not
+         to lose it. Read back off the URL: that string IS the state. */
   await page.fill("#in-price", "321");
   await page.waitForTimeout(200);
 
   await page.click('#depth-switch button[data-depth="all"]');
   await page.waitForTimeout(400);
   const all = await count();
-  /* Against the short form rather than against a number typed
-     here: the count moves whenever a field is added to the model,
-     and a test that pins it is a test somebody edits to make it
-     pass. What is being claimed is that Everything is several
-     times the short form, which is the whole point of there being
-     two. */
+      /* Against the short form rather than a number typed here: the count
+         moves whenever a field is added to the model, and a test that pins
+         it is a test somebody edits to make it pass. */
   ok("Everything opens the whole form",
     all.fields > quick.fields * 4, JSON.stringify({ quick, all }));
   ok("and every group of it", all.groups >= 7, JSON.stringify(all));
@@ -486,15 +407,10 @@ for (const [url, , selector, what, placeholder] of CASES) {
   await page.close();
 }
 
-/* ============================================================
-   AND IT KNOWS WHICH COMPANY IT IS ABOUT
-
-   Two label fields nothing scores, which is exactly why they had
-   to be added to `DEFAULTS`: that object is the list the URL
-   encoder walks, so a field outside it is a field a shared link
-   drops. The link a holding in the live portfolio makes is this
-   URL, so what is checked here is the arrival.
-   ============================================================ */
+    /* ---- and it knows which company it is about ----
+       Two label fields nothing scores, which is why they are in
+       `DEFAULTS`: that object is the list the URL encoder walks, so a
+       field outside it is a field a shared link drops. */
 {
   const { page, errors } = await open("/tools/stock?name=Square+Pharma&ticker=SQURPHARMA&price=321");
 
@@ -509,9 +425,8 @@ for (const [url, , selector, what, placeholder] of CASES) {
   ok("and it is not hidden any more",
     await page.$eval("#verdict-who", (n: Element) => !(n as HTMLElement).hidden));
 
-  /* The round trip, which is what makes a saved check findable
-     from a holding: `/tools/live` reads the ticker back out of
-     the query a scenario stored. */
+      /* The round trip that makes a saved check findable from a holding:
+         `/tools/live` reads the ticker back out of the stored query. */
   const url = await page.evaluate(() => location.search);
   ok("and the ticker survives into the address the save stores",
     new URLSearchParams(url).get("ticker") === "SQURPHARMA", url);
@@ -519,20 +434,12 @@ for (const [url, , selector, what, placeholder] of CASES) {
   await page.close();
 }
 
-/* ============================================================
-   And in Bangla, which they were not until they moved
-
-   These five had English verdicts and English labels, not by
-   anybody's decision but because the sentences were template
-   literals inside the module that drew them: translating one
-   meant editing code. They are phrases now, in both languages,
-   and `tool-lang` decides, which is the same key the stock check
-   next door has written since long before there were accounts.
-
-   Asserted by SCRIPT, because the Bengali block is the only
-   evidence that survives: a page that "looks translated" and a
-   page whose labels are still English render identically to
-   anything reading HTML. */
+    /* ---- and in Bangla ----
+       The verdicts are phrases in both languages now and `tool-lang`
+       decides, which is the key the stock check has written since long
+       before there were accounts. Asserted by SCRIPT, because a page that
+       "looks translated" and one whose labels are still English render
+       identically to anything reading HTML. */
 {
   const bengali = /[\u0980-\u09FF]/;
   const { page } = await open("/tools", undefined, { toolLang: "bn" });
@@ -575,23 +482,15 @@ for (const [who, audience, track, expected] of READERS) {
     shown.length > 0 && new Set(shown).size === 1 && shown[0] === expected,
     `expected ${expected} only, got [${shown}]`);
 
-  /* Under the hero the page is four bands and then the board,
-     and the contract to hold is that it says a thing ONCE.
+      /* Under the hero the page is four bands and then the board, and the
+         contract is that it says a thing ONCE. `DRAWABLE` in
+         `home/board.tsx` settles it: a widget the PAGE draws is not one
+         this build renders.
 
-     It did not. There was a hand-written deck of eleven tiles
-     above a board that draws the schools and the tools out of
-     `shared/nav.ts`, and the two between them made 26 internal
-     links to 17 places. That deck went; then the bands and the
-     board drew the schools and the tools twice over, which is the
-     same failure one rewrite later, and `DRAWABLE` in
-     `home/board.tsx` is what settles it now: a widget the PAGE
-     draws is not a widget this build renders.
-
-     VISIBLE LINKS ONLY, and that is not a loosening. The door
-     server-renders a pair of buttons for each of the three
-     audiences and the stylesheet shows one, so counting the DOM
-     counted two doors nobody can press and reported every
-     destination three times on a page that shows it once. */
+         VISIBLE LINKS ONLY, and that is not a loosening: the door
+         server-renders a pair of buttons for each of the three audiences
+         and the stylesheet shows one, so counting the DOM reports every
+         destination three times on a page that shows it once. */
   const front = await page.evaluate(() => ({
     tiles: [...document.querySelectorAll(".card[href], .gate-tile[href], .work-card[href]")]
       .map((t) => t.getAttribute("href")).filter(Boolean),
@@ -624,11 +523,8 @@ for (const [who, audience, track, expected] of READERS) {
   ok(`and says no destination three times over for ${who}`, thrice.length === 0,
     thrice.map(([h, n]) => `${h} x${n}`).join(", "));
 
-  /* THE SWITCH MOVES A DOOR, not three sentences. It used to move
-     the headline, the lede and one card two screens down, so the
-     answer to "I am here to hire" was a paragraph. The pair of
-     buttons under the lede is the answer now, and there is one
-     pair on screen. */
+      /* The switch moves a DOOR, not three sentences, and there is one
+         pair of buttons on screen. */
   const doors: Record<string, string[]> = {
     open: ["/skills", "/portfolio"],
     learn: ["/money", "/skills"],
@@ -638,11 +534,10 @@ for (const [who, audience, track, expected] of READERS) {
     front.doors.join(",") === doors[expected].join(","),
     `got [${front.doors}], expected [${doors[expected]}]`);
 
-  /* THE LEDGER COUNTS. Every row names a key of `COUNTS` and
-     carries the number that key holds, so a course published
-     tomorrow moves it and nobody edits the page. The rows point
-     at five different places, because a list of five whose whole
-     job is to be five ways in had two rows going to /skills. */
+      /* The ledger counts: every row names a key of `COUNTS` and carries
+         the number that key holds, so a course published tomorrow moves it
+         and nobody edits the page. The five rows point at five different
+         places. */
   ok(`the ledger states five counted facts for ${who}`,
     front.ledger.length === 5 && front.ledger.every((r) => r.count && r.numeral),
     JSON.stringify(front.ledger));
@@ -650,10 +545,9 @@ for (const [who, audience, track, expected] of READERS) {
     new Set(front.ledger.map((r) => r.href)).size === front.ledger.length,
     front.ledger.map((r) => r.href).join(", "));
 
-  /* THE WORK IS ON THE FRONT PAGE. Seven finished case studies
-     were two clicks behind a card that said "See the work", so
-     the strongest evidence this site has was invisible from the
-     page a stranger meets. */
+      /* The work is on the front page: seven case studies were two clicks
+         behind a card, so the strongest evidence here was invisible from
+         the page a stranger meets. */
   ok(`the work is on the front page for ${who}`, front.studies.length === 7,
     `${front.studies.length} case studies`);
   ok(`and every one of them carries its chart for ${who}`,
@@ -663,17 +557,11 @@ for (const [who, audience, track, expected] of READERS) {
   await page.close();
 }
 
-/* ============================================================
-   The reckoner: the one thing on the front page a reader can use
-
-   Five radios, five answers, and the stylesheet shows the one
-   whose radio is checked. There is no JavaScript in it, which is
-   the whole point: it answers before hydration and it answers
-   with the site's own model rather than with a number somebody
-   typed. So this checks two things a screenshot cannot: that
-   exactly ONE answer is on screen at a time, and that the figure
-   in it is what `compounding.run()` returns.
-   ============================================================ */
+    /* ---- the reckoner ----
+       Five radios, five answers, and the stylesheet shows the one whose
+       radio is checked. No JavaScript, so it answers before hydration.
+       Two things a screenshot cannot see: exactly ONE answer is on screen,
+       and the figure in it is what `compounding.run()` returns. */
 {
   const { page, errors } = await open("/");
 
@@ -687,11 +575,10 @@ for (const [who, audience, track, expected] of READERS) {
   ok("and it is the middle amount before anything is pressed",
     first[0]?.for === "5000", first[0]?.for ?? "none");
 
-  /* THE FIGURE IS THE MODEL'S. `compounding` is imported here and
-     run with the same three arguments the component uses, so a
-     change to the model that this page did not follow fails
-     rather than shipping a wrong number under a heading about
-     money. */
+      /* The figure is the MODEL's: `compounding` is imported here and run
+         with the same three arguments the component uses, so a change the
+         page did not follow fails rather than shipping a wrong number
+         under a heading about money. */
   const want = fmtTk(compounding.run({
     start: 0, monthly: 5000, rate: 10, years: 20,
   }).values.final ?? 0, "bn", 0);
@@ -714,24 +601,13 @@ for (const [who, audience, track, expected] of READERS) {
   await page.close();
 }
 
-/* ============================================================
-   The board, which is the reader's and nobody else's
-
-   A stranger got a section headed "আপনার বোর্ড · Your board" with
-   an arrange button on it, and under it four rows reading ০টা
-   পাঠ, on the first visit anybody ever made. A dashboard of
-   somebody's progress shown to somebody who has none is worse
-   than no dashboard, so there are two states and both are checked
-   here: an invitation for a reader with nothing, and the board
-   itself for a reader with something.
-
-   Three of the widgets drew their own heading, in three different
-   shapes, and three drew none: the market grid was eight of
-   somebody else's headlines under nothing at all. The catalogue
-   in `shared/widgets.ts` holds a name in both languages, the
-   picker offers it under that name, and it is DATA, so the app
-   says the same words. The board says it once, from there.
-   ============================================================ */
+    /* ---- the board, which is the reader's and nobody else's ----
+       Two states, both checked: an invitation for a reader with nothing,
+       and the board itself for a reader with something. A dashboard of
+       progress shown to somebody who has none is worse than no dashboard.
+       Every widget's name comes from `shared/widgets.ts`, in both
+       languages, so the board says it once and the app says the same
+       words. */
 {
   const { page, errors } = await open("/");
 
@@ -753,10 +629,10 @@ for (const [who, audience, track, expected] of READERS) {
 }
 
 {
-  /* A reader who has read something. `learn-read` and `learn-last`
-     are the money school's keys, spelled the way they have been
-     spelled since before the school moved to `/money`: renaming
-     one does not move somebody's ticks, it loses them. */
+      /* A reader who has read something. `learn-read` and `learn-last` are
+         the money school's keys, spelled the way they have been since
+         before the school moved to `/money`: renaming one does not move
+         somebody's ticks, it loses them. */
   const page = await browser.newPage();
   const errors: string[] = [];
   page.on("pageerror", (e: Error) => { errors.push(e.message); });
@@ -786,9 +662,8 @@ for (const [who, audience, track, expected] of READERS) {
         return { label: (label.textContent ?? "").trim().length,
                  sameLine: Math.abs((l.top + l.height / 2) - (t.top + t.height / 2)) < 30 };
       })(),
-      /* The meters name the schools this reader has started, and
-         not the three they have not: four rows of nought under an
-         apology is what the board used to open with. */
+          /* The meters name the schools this reader has started, and not
+             the three they have not. */
       meters: document.querySelectorAll(".meters-list li").length,
       meterText: (document.querySelector(".meters-list b")?.textContent ?? "").trim(),
     };
@@ -814,11 +689,9 @@ for (const [who, audience, track, expected] of READERS) {
 }
 
 {
-  /* A BOOKMARK IS WHERE YOU WERE, NOT WHERE TO GO. A reader who
-     read a lesson, ticked it and closed the tab was offered that
-     same lesson again by the one card on the page that is about
-     them. This seeds exactly that state: the bookmark and the tick
-     on the same lesson. */
+      /* A BOOKMARK IS WHERE YOU WERE, NOT WHERE TO GO: a reader who read a
+         lesson, ticked it and closed the tab was offered that same lesson
+         again. This seeds the bookmark and the tick on one lesson. */
   const page = await browser.newPage();
   const errors: string[] = [];
   page.on("pageerror", (e: Error) => { errors.push(e.message); });
@@ -848,31 +721,14 @@ for (const [who, audience, track, expected] of READERS) {
   await page.close();
 }
 
-/* ============================================================
-   The drawer, on a phone.
-
-   Three things, and all three were wrong at once in August 2026.
-
-   1. The button that closes the menu was a 34px circle in the far
-      corner of the drawer, 233px from the burger the reader had
-      just pressed. Opening and closing are one gesture and it
-      should not move, so the close button is laid out to land on
-      the burger's exact pixels. That is asserted as a box, not as
-      "roughly", because the whole point is that it is exact.
-
-   2. `.audience-switch` carried `grid-column: 2`, which is right
-      in the bar and wrong in the drawer, and this component is
-      deliberately rendered in both. In the drawer it grew an
-      implicit second column and sat in it, so the label "What
-      brings you here" and the switch went side by side in a 275px
-      drawer and the label was clipped to "What brings yo".
-
-   3. The site's name was on screen twice with the menu open, once
-      in the bar and once in the drawer's head.
-
-   None of these is visible to a check that reads HTML. The markup
-   was correct for all three.
-   ============================================================ */
+    /* ---- the drawer, on a phone ----
+       Three things none of which a check reading HTML can see. The close
+       button is laid out to land on the burger's exact pixels, so it is
+       asserted as a box rather than as "roughly": opening and closing are
+       one gesture and it should not move. `.audience-switch` carries
+       `grid-column: 2`, which is right in the bar and wrong in the drawer
+       where the component is also rendered, and side by side clips the
+       label. And the site's name must be on screen once, not twice. */
 for (const width of [360, 390, 412]) {
   const page = await browser.newPage({ viewport: { width, height: 780 } });
   await page.route("https://fonts.googleapis.com/**", (r) => r.abort());
@@ -889,10 +745,9 @@ for (const width of [360, 390, 412]) {
   const burger = await box(".drawer-btn");
   ok(`${width}px: the bar has a burger`, burger !== null);
 
-  /* Open it by pressing the burger where a thumb would. There is
-     nothing to press if the check above already failed, and it
-     has recorded that; going on would report the same absence a
-     second time as eight different failures. */
+      /* Open it by pressing the burger where a thumb would. If the check
+         above already failed there is nothing to press, and going on
+         reports the same absence as eight different failures. */
   const b = await page.locator(".drawer-btn").boundingBox();
   if (!b) { await page.close(); continue; }
   const x = b.x + b.width / 2, y = b.y + b.height / 2;
@@ -960,24 +815,14 @@ for (const width of [360, 390, 412]) {
   await page.close();
 }
 
-/* On a laptop the rail is a rail: no burger, no close button, the
-   mark in the rail rather than the bar. The drawer rules must not
-   leak up here.
+    /* On a laptop the rail is a rail: no burger, no close button, the mark
+       in the rail. The drawer rules must not leak up here.
 
-   The switch is in the RAIL at every width now, which is a change
-   and is what this used to assert the opposite of. It was in the
-   bar on a laptop, so "what brings you here" sat across the top
-   of every page somebody read; it is asked once and then never
-   again, so it belongs with the menu.
-
-   What the bar carries instead is the TRAIL, and that is asserted
-   here too, because a bar with neither is what this change would
-   look like if the component failed to render. It was the site
-   tree until 19 August 2026: `TREE_IN_BAR` in `topbar.tsx` is
-   false, the tree is still built and still passed in, and "where
-   am I" is the question a reader arriving from a search result
-   has. The rail down the left already answers "what else is
-   there". */
+       The switch is in the RAIL at every width: it is asked once and then
+       never again, so it belongs with the menu. What the bar carries is
+       the TRAIL, asserted here too because a bar with neither is what a
+       failed component looks like. `TREE_IN_BAR` in `topbar.tsx` is
+       false. */
 {
   const page = await browser.newPage({ viewport: { width: 1280, height: 900 } });
   await page.route("https://fonts.googleapis.com/**", (r) => r.abort());
@@ -1000,23 +845,14 @@ for (const width of [360, 390, 412]) {
   await page.close();
 }
 
-/* ============================================================
-   The contact form, and the three ways sending it can go
-
-   `components/contact-form.tsx` replaced `/contact-form.js` at
-   Stage B, and the thing worth checking is not that it renders.
-   It is that the fallbacks still fall back: this is the one page
-   on the site where somebody with a broken script is trying to
-   reach a person, so the form has to work three ways and say
-   which happened.
-
-   The third way is not driven here and cannot be: it is the
-   browser posting the form itself with no JavaScript, and what
-   makes it true is the `action` and the hidden fields being in
-   the markup rather than in a handler. That IS checked, because
-   the component could have swallowed them into state and the
-   page would look identical.
-   ============================================================ */
+    /* ---- the contact form, and the three ways sending it can go ----
+       This is the one page where somebody with a broken script is trying
+       to reach a person, so the form works three ways and says which
+       happened. The third cannot be driven here: it is the browser posting
+       the form with no JavaScript, and what makes it true is the `action`
+       and the hidden fields being in the MARKUP rather than in a handler.
+       That is checked, because the component could have swallowed them
+       into state and the page would look identical. */
 type Sending = [label: string, api: boolean, web3: boolean, expected: RegExp];
 const SENDING: Sending[] = [
   ["the site's own endpoint answers", true, true, /^Sent/],
@@ -1066,30 +902,22 @@ for (const [label, api, web3, expected] of SENDING) {
   await page.close();
 }
 
-/* ============================================================
-   The trail in the bar, and the arrows that open it.
-
-   Three things this cannot be checked without a browser for. The
-   arrow is a `<button>` and the panel is `[popover]`, so whether
-   it OPENS is the browser's own behaviour and not this site's;
-   whether Escape closes it is the same; and whether it needs any
-   JavaScript of ours to do either is the whole design claim,
-   which only a page with our scripts blocked can settle.
-
-   Only prerendered pages here, because that is what this file's
-   server can hold: the 251 school pages are dynamic and their
-   trail is `next/parity.test.ts`'s to check.
-   ============================================================ */
+    /* ---- the trail in the bar, and the arrows that open it ----
+       The arrow is a `<button>` and the panel is `[popover]`, so whether
+       it opens, and whether Escape closes it, is the browser's own
+       behaviour; whether it needs any JavaScript of ours is the design
+       claim, which only a page with our scripts blocked can settle. Only
+       prerendered pages here: the 251 school pages are dynamic and their
+       trail is `next/parity.test.ts`'s. */
 console.log("\nthe trail, and what its arrows open");
 {
   const { page, errors } = await open("/skills");
 
   ok("the trail is in the bar", await page.locator(".topbar .crumbs-bar").count() === 1);
 
-  /* The mark is the home crumb, so the first crumb the row draws
-     is the second of the trail and still has a level in front of
-     it. It lost its arrow for a while by being sliced off the
-     front of the array instead of skipped. */
+      /* The mark is the home crumb, so the first crumb the row draws is
+         the second of the trail and still has a level in front of it. It
+         lost its arrow by being sliced off the front instead of skipped. */
   const arrows = page.locator(".crumbs-bar .crumb-step");
   ok("and the crumb after the mark keeps its arrow", await arrows.count() >= 1,
     `${await arrows.count()} arrow(s)`);
@@ -1114,9 +942,8 @@ console.log("\nthe trail, and what its arrows open");
   ok("and marks the one you are on",
     await open1.locator('a[aria-current="page"]').count() === 1);
 
-  /* On screen and inside the window. A panel positioned off the
-     edge is a panel that opened and cannot be read, which looks
-     identical in the DOM to one that worked. */
+      /* On screen and inside the window: a panel positioned off the edge
+         looks identical in the DOM to one that worked. */
   const box = await open1.boundingBox();
   const view = page.viewportSize();
   ok("the panel is on screen", Boolean(box) && (box?.width ?? 0) > 80 && (box?.height ?? 0) > 40,
@@ -1134,9 +961,9 @@ console.log("\nthe trail, and what its arrows open");
   await page.close();
 }
 
-/* And the half that has to keep working with no JavaScript at
-   all, because that is the reason it is a popover rather than a
-   component: this is chrome on 251 pages. */
+    /* And the half that has to keep working with no JavaScript, because
+       that is why it is a popover rather than a component: this is chrome
+       on 251 pages. */
 {
   const page = await browser.newPage();
   await page.route("https://fonts.googleapis.com/**", (r: Route) => r.abort());
@@ -1154,42 +981,22 @@ console.log("\nthe trail, and what its arrows open");
   await page.close();
 }
 
-/* ============================================================
-   The same trail on a phone, which is where all of it was broken
+    /* ---- the same trail on a phone ----
+       Three things, none visible to a check that reads HTML and two not
+       visible to one that reads CSS: every selector involved is valid.
 
-   Three separate things shipped, and not one of them is visible
-   to a check that reads HTML. Two are not visible to a check that
-   reads CSS either: every selector involved is valid and matches
-   something.
+       The panel is 21rem anchored to an arrow a third of the way across a
+       412px bar, so it opened 98px past the window edge, and
+       `position-try-fallbacks: flip-inline` makes it worse: the flip hangs
+       it off the LEFT edge, nothing fits, and the browser keeps the
+       position it started with. It is a sheet against the bottom now. The
+       trail's own caps (`max-inline-size: 4.5ch`, `max-width: 22ch` and
+       `46ch`) reached inside the panel, because a crumb's menu is markup
+       inside the crumb. And the row squashed rather than scrolling.
 
-   1. THE PANEL OPENED OFF THE SCREEN. It is 21rem and it is
-      anchored to an arrow a third of the way across a 412px bar,
-      so its right edge landed 98px past the edge of the window.
-      `position-try-fallbacks: flip-inline` is the fallback for
-      exactly that and it makes it worse here: the flip hangs the
-      panel off the arrow's other side, which is off the LEFT
-      edge, so nothing fits and the browser keeps the position it
-      started with. It is a sheet against the bottom edge now.
-
-   2. THE TRAIL'S OWN RULES REACHED INSIDE THE PANEL, because a
-      crumb's menu is markup inside the crumb. Three of them did:
-      `max-inline-size: 4.5ch` capped every row at 34px, and
-      `max-width: 22ch` and `46ch` capped the row of the level you
-      are on, which is the row the panel exists to show you. The
-      kicker wrapped down the side of a 34px box, the label
-      clipped to four characters and the count and the chevron
-      were pushed off the row entirely.
-
-   3. THE TRAIL SQUASHED RATHER THAN SCROLLING. Four levels into
-      a school on a 360px screen that was `› দ… › টা… › প…`.
-
-   The panel and the sheet are asked about on the page's own
-   trail. The scrolling needs a trail deeper than any prerendered
-   page has, so the row here is built by CLONING the one the page
-   rendered: the markup shape stays the component's, and the one
-   thing changed per clone is what `<Crumbs>` itself changes, an
-   `<a href>` for a crumb that is not the last one.
-   ============================================================ */
+       The scrolling needs a trail deeper than any prerendered page has, so
+       the row is built by CLONING the one the page rendered: the markup
+       shape stays the component's. */
 console.log("\nthe trail on a phone");
 for (const width of [360, 412]) {
   const page = await browser.newPage({ viewport: { width, height: 780 } });
@@ -1214,9 +1021,9 @@ for (const width of [360, 412]) {
       rows: rows.length,
       narrowest: Math.min(...rows.map((r) => r.getBoundingClientRect().width)),
       hereMaxWidth: here ? getComputedStyle(here).maxWidth : null,
-      /* The label is `text-overflow: ellipsis`, so a row too
-         narrow for its own words does not look broken, it looks
-         like a different lesson. */
+          /* The label is `text-overflow: ellipsis`, so a row too narrow
+             for its words does not look broken, it looks like a different
+             lesson. */
       clipped: rows.filter((r) => {
         const l = r.querySelector<HTMLElement>(".crumb-menu-label");
         return !!l && l.scrollWidth > l.clientWidth + 1;
@@ -1317,54 +1124,35 @@ for (const width of [360, 412]) {
   ok(`${width}px: no crumb is cut short`, row?.capped === 0, `${row?.capped} capped`);
   ok(`${width}px: it rests showing the page you are on`, row?.rest.last === true);
   ok(`${width}px: with the levels above it scrolled off`, row?.rest.first === false);
-  /* The one that shipped as a silent failure: `justify-content:
-     flex-end` put the row's start outside its own scroll range,
-     so it looked right and no gesture could reach the first two
-     levels of the trail. */
+      /* The silent failure: `justify-content: flex-end` put the row's
+         start outside its own scroll range, so it looked right and no
+         gesture could reach the first two levels. */
   ok(`${width}px: and the start of it can be scrolled back to`,
     row?.away.first === true, `scrollLeft ${row?.away.scrolled}`);
 
   await page.close();
 }
 
-/* ============================================================
-   The arrows themselves: one mark, one size, one line
-
-   The fourth thing that was wrong with this row on a phone, and
-   the only one a reader reports rather than measures. Every
-   selector was valid, every crumb was in the right place, and
-   the arrows between them were three different marks:
-
-   1. THE MARK WAS A `›`, so where it sat came from whichever
-      font in the stack had the glyph. The trail's stack opens
-      with Noto Sans Bengali, which has no `›`.
-   2. IT WAS SIZED AT `1.35em` OF THE CRUMB BESIDE IT, and the row
-      deliberately sets the crumb you are ON one step larger than
-      the ones behind it. Two crumb sizes, two arrow sizes.
-   3. `line-height: 1` WAS MEANT TO HOLD IT AND COULD NOT.
-      `.crumb-step` sets `font: inherit`, which is a shorthand, so
-      the button form got the inherited 1.9 back and the span form
-      kept 1. Two forms of one mark, on two lines.
-   4. AND THERE WERE TWO OF THEM AFTER THE MARK. A `::before` on
-      the first `<li>` drew one to join the trail to the wordmark,
-      and the trail is drawn from its second crumb, which already
-      carries one.
-
-   Measured off the painted page rather than read off the CSS: the
-   three marks sat at -0.5px, +2.5px and +3.1px from the middle of
-   the bar, on marks five pixels tall.
-   ============================================================ */
+    /* ---- the arrows themselves: one mark, one size, one line ----
+       Every selector was valid and every crumb in the right place, and the
+       arrows were three different marks. A `›` sits wherever the font that
+       answered for it puts its ink, and the trail's stack opens with Noto
+       Sans Bengali, which has no `›`. `1.35em` of the crumb beside it is
+       two sizes, because the row sets the crumb you are ON a step larger.
+       `.crumb-step` sets `font: inherit`, a shorthand, so the button form
+       got the inherited line-height back and the span form kept 1. And a
+       `::before` on the first `<li>` drew a second mark after the first.
+       Measured off the painted page rather than read off the CSS. */
 console.log("\nthe arrows in the trail");
 for (const width of [412, 1280]) {
   const page = await browser.newPage({ viewport: { width, height: 780 } });
   await page.goto(`http://localhost:${PORT}/skills`, { waitUntil: "load" });
   await page.waitForTimeout(900);
 
-  /* THE TAP TARGET IS ASKED OF THE PAGE'S OWN TRAIL, before the
-     clone below deepens it. Hit-testing is a question about what
-     a thumb lands on, and a synthetic row that overflows the bar
-     answers it for arrows scrolled off the side. The arrow the
-     page renders is the one a reader presses. */
+      /* The tap target is asked of the PAGE's own trail, before the clone
+         below deepens it: hit-testing is a question about what a thumb
+         lands on, and a synthetic row that overflows answers it for arrows
+         scrolled off the side. */
   const targets = await page.evaluate(() =>
     [...document.querySelectorAll<HTMLElement>(".crumbs-bar .crumb-step")].map((s) => {
       const r = s.getBoundingClientRect();
@@ -1382,15 +1170,11 @@ for (const width of [412, 1280]) {
     targets.length > 0 && targets.every((t) => t >= 40),
     `${targets.join(", ") || "none"}px tall`);
 
-  /* TWO ARROWS AT LEAST, OR HALF OF THIS ASKS NOTHING. `/skills`
-     is one level deep, so the row it renders has a single
-     separator and "they are all the same size" is true of any
-     one thing. The row deliberately sets the crumb you are ON a
-     step larger than the ones behind it, and THAT is what made
-     two arrows two sizes, so the trail has to reach past the
-     page you are on before it can be measured. Cloned from the
-     row the page rendered, exactly as the block above does, so
-     the markup shape stays the component's. */
+      /* Two arrows at least, or half of this asks nothing: `/skills` is
+         one level deep, so "they are all the same size" is true of any one
+         thing. The row sets the crumb you are ON a step larger, and THAT
+         is what made two arrows two sizes. Cloned from the row the page
+         rendered, so the markup shape stays the component's. */
   await page.evaluate(() => {
     const ol = document.querySelector<HTMLElement>(".crumbs-bar > ol");
     const first = ol?.firstElementChild as HTMLElement | undefined;
@@ -1418,9 +1202,9 @@ for (const width of [412, 1280]) {
     if (!bar || !seps.length) return null;
     const mid = bar.getBoundingClientRect().top + bar.getBoundingClientRect().height / 2;
     return {
-      /* The joiner that was drawn twice. `::before` on the first
-         crumb is the one that went; `content` is `none` when no
-         rule sets it. */
+          /* The joiner that was drawn twice. `::before` on the first crumb
+             is the one that went; `content` is `none` when no rule sets
+             it. */
       joiner: getComputedStyle(
         document.querySelector(".crumbs-bar > ol > li")!, "::before").content,
       boxes: seps.map((s) => {
@@ -1429,22 +1213,16 @@ for (const width of [412, 1280]) {
         return {
           w: Math.round(r.width), h: Math.round(r.height),
           off: +(r.top + r.height / 2 - mid).toFixed(2),
-          /* THE MARK IS A DRAWING, NOT A GLYPH, and that is the
-             whole of the alignment fix rather than a detail of it.
-             Every box in this row was already centred to a
-             hundredth of a pixel while the row read crooked,
-             because what a reader sees is the INK and a `›` puts
-             its ink wherever the font that answered for it puts
-             it. An `<svg>` fills the box it is given and the
-             chevron is drawn about the middle of its own viewBox,
-             so its ink is centred by construction and no font is
-             asked anything. */
+              /* THE MARK IS A DRAWING, NOT A GLYPH, and that is the whole
+                 of the alignment fix: every box in this row was centred to
+                 a hundredth of a pixel while the row read crooked, because
+                 what a reader sees is the INK. An `<svg>` fills the box it
+                 is given and is drawn about the middle of its viewBox. */
           svg: s.querySelector("svg") ? 1 : 0,
           text: (s.textContent ?? "").trim().length,
-          /* And nothing offsets the drawing inside its cell: a
-             padding or a margin added here would move the mark
-             off the line the words are on, which is the failure
-             this block exists for, arriving a different way. */
+              /* And nothing offsets the drawing inside its cell: a padding
+                 or margin here would move the mark off the line the words
+                 are on. */
           artOff: art
             ? +Math.hypot(
               (art.left + art.width / 2) - (r.left + r.width / 2),
@@ -1474,11 +1252,9 @@ for (const width of [412, 1280]) {
     marks.boxes.every((b) => b.artOff !== null && b.artOff <= 0.5),
     marks.boxes.map((b) => b.artOff).join(", "));
 
-  /* The boxes were always level, which is exactly why this was
-     hard to see: the row read crooked while every rectangle in it
-     was centred to a hundredth of a pixel. Asserted anyway,
-     because the two checks above only guarantee the ink sits in
-     the middle of ITS box. */
+      /* The boxes were always level, which is why this was hard to see.
+         Asserted anyway, because the two checks above only guarantee the
+         ink sits in the middle of ITS box. */
   const offs = marks.boxes.map((b) => b.off);
   ok(`${width}px: and every box is on the middle of the bar`,
     offs.every((o) => Math.abs(o) <= 1.5), offs.join(", "));

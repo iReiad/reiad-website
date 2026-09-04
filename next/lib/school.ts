@@ -9,24 +9,19 @@
 
    ---- why a table rather than four routes ----
 
-   The four builders wrote the same page, and are in
-   `archive/schools-builders/`. Compare `lessonPage()` in
-   `archive/schools-builders/build-lessons.mjs` with `teilPage()`,
-   `partPage()` and the Quran school's `lessonPage()`: one
-   article, one eyebrow, one heading with a drawing in it, one
-   blurb, one meta line, the body, a backlink and a prev/next
-   pair. What differs is entirely wording and four decisions, and
-   every one of those is written down here rather than branched on
-   in the component:
+   All four schools draw the same page: one article, one eyebrow,
+   one heading with a drawing in it, one blurb, one meta line, the
+   body, a backlink and a prev/next pair. What differs is entirely
+   wording and four decisions, and every one of those is written
+   down here rather than branched on in the component:
 
      · what the school calls a lesson (a পাঠ, a পর্ব, a দিন)
      · which language sits under the Bangla title
      · which of the school's own scripts the page loads
      · where the last lesson of the last stage points
 
-   Four templates that say the same thing in four files is exactly
-   the drift `build-lessons.mjs` was written to stop happening
-   between forty hand-copied pages, one level up.
+   Four templates that say the same thing in four files is drift
+   waiting to happen.
    ============================================================ */
 
 import { cache } from "react";

@@ -116,13 +116,11 @@
 
 # ---------- retired pages that still have links pointing at them ----------
 # Both spellings of the source, because a visitor may arrive at
-# either. The Studio is the React one now, and the page it replaced
-# is in archive/, out of the deploy, as of 16 August 2026.
+# either. The Studio is the React one now.
 /studio.html          /studio               301
 /studio/              /studio               301
-# The desk. Every one of its thirteen panels is on /admin, so the
-# desk retired to archive/desk-react/ and all four spellings of its
-# address go to the page that answers them now. `/desk` itself is a
+# The desk. Every one of its thirteen panels is on /admin, so all
+# four spellings of its address go to the page that answers them now. `/desk` itself is a
 # rule rather than a route: it is absent from run_worker_first and
 # from NEXT_ROUTES, so the asset router reaches this file.
 /desk.html            /admin                301

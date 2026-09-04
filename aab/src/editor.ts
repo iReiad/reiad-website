@@ -1,43 +1,11 @@
-/* ============================================================
-   editor.ts: the writing surface, on its own.
-
-   Everything in this file used to live inside studio.js, which was
-   fine while there was one Studio. There are two for a while now,
-   the page at /studio.html and the React one at /studio/, and a
-   `contenteditable` with a sanitiser, a slash menu, markdown rules
-   and a figure toolbar is the last thing on this site that should
-   exist twice. Each of those has already been the site of a bug
-   nobody would find by reading, and every one of those bugs is
-   written down below where it happened.
-
-   ---- what belongs here, and what does not ----
-
-   Here: anything that touches the caret, the selection, or the
-   HTML the writer is producing. That is not React's work. React is
-   a function of state, and a `contenteditable` is a piece of the
-   DOM the browser and the user are both editing behind React's
-   back; controlling it from a component is how you get a cursor
-   that jumps to the end of the line every time somebody types.
-
-   Not here: the fields, the preview, the meters, the pre-flight
-   panel, the sheets, the publish button. Those are chrome, they
-   are a function of state, and they are exactly what a component
-   tree is good at.
-
-   ---- how it is used ----
-
-       const ed = createEditor({
-         root: document.getElementById("editor"),
-         onChange: () => redraw(),
-         lang: () => "bn",
-         toast, pickPhoto: () => input.click(),
-       });
-
-   The root element is handed in rather than looked up, which is
-   the whole of what made this file possible: `studio.js` reached
-   for `#editor` at module scope, so importing any part of it meant
-   importing a page.
-   ============================================================ */
+/* editor.ts: the writing surface, on its own. Anything touching
+   the caret, the selection or the HTML the writer produces lives
+   here and never inside a component: a `contenteditable` is DOM
+   the browser and the writer are both editing behind React's
+   back. The fields, the preview and the publish button are chrome
+   and belong in the component tree.
+   The root element is handed in rather than looked up, so
+   importing this does not import a page. */
 
 import { encodeImage } from "/photo.js";
 

@@ -285,8 +285,7 @@ const ASSIGN: Assignment[] = [
   [/^deutsch\//, "deutsch.png"],
   /* The Quran school. Same order as the German block above: the
      hub first, then one rule per ধাপ, then a catch-all so a page
-     added under /quran/ later still previews as the school. These
-     have to agree with the `og` values build-quran.mjs writes. */
+     added under /quran/ later still previews as the school. */
   [/^quran\/index\.html$/, "quran.png"],
   ...DHAPS.map((dh): Assignment => [
     new RegExp(`^quran\\/${dh.slug}\\/`),

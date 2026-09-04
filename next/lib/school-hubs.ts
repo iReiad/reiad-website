@@ -15,23 +15,14 @@
    August 2026. Both are rendered from the rows now, by
    `components/school-hub.tsx` and `components/school-contents.tsx`,
    which is where the other three are headed: a page that says how
-   many lessons a school has should count them. The two strings
-   are in `archive/schools-pages/`, where they were lifted from.
+   many lessons a school has should count them.
 
-   ---- how it got here, and why it is a string ----
+   ---- why it is a string ----
 
-   archive/TRANSITION.md Stage 11.7. These five were `aab/money/index.html`
-   and its four neighbours until 16 August 2026, and they are in
-   `archive/schools-pages/` now. `archive/schools-builders/build-school-hubs.mjs`
-   lifted them out verbatim, and `check-next.ts` compared the copy
-   against the original for as long as there was an original.
-
-   They were copied rather than rewritten as JSX because a port is
-   finished when it does what the thing it replaced did, and eight
-   hundred lines of Bangla hand-converted into JSX is eight hundred
-   chances to change a word that nobody reviewing the diff would
-   catch. The reader who would catch it is the one this site is
-   written for.
+   These five hubs were lifted verbatim out of the hand-written
+   pages they replaced rather than rewritten as JSX: eight hundred
+   lines of Bangla hand-converted is eight hundred chances to
+   change a word nobody reviewing the diff would catch.
 
    ---- editing one ----
 

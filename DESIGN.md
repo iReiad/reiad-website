@@ -8,10 +8,9 @@ when they get there, and the list of what does not yet.
 **Glass, not flat.** A surface is a ground, a texture, a lit top
 edge and an edge colour, in that order. `--glass-bg`, `--sheen`,
 `--pane-top` and `--pane-edge` are the tokens; `<Surface>` is the
-component. A flat fill is what a surface looks like when one of the
-four is missing, which is what every surface on this site looked
-like until 18 August 2026, when `--weave` and `--sheen` turned out
-to be named by the Tailwind theme and declared nowhere.
+component. A flat fill is what a surface looks like when one of
+the four is missing, and a token named by the Tailwind theme and
+declared nowhere is how that happens without anything failing.
 
 **Paper, not screen.** `--weave`, `--grain` and `--sheen` are the
 three textures. Weave is a cloth for a sunk ground, grain is a
@@ -34,30 +33,28 @@ mean warn, risk and not-written-yet rather than a section.
 
 ## What is still wrong, in the reader's words
 
-Collected 18 August 2026, from screenshots of the live site. Each
-is a task; the numbers are the task list.
+Each is a task and the numbers are the task list. A number is
+never reused, so a task that is done is struck off rather than
+renumbered.
 
 | | |
 | --- | --- |
-| **#14** | The crumb row on a course page sits against the window edge. Reported first, still there. `crumbs.js` mounts into `main > .wrap` and falls back to bare `main`, which has no inset. `ui/crumbs.tsx` is written and not wired. |
 | **#15** | "Mark complete & continue" and the chip beside it are different heights. One control height should govern both. |
 | **#22** | "text boxes look disgusting everywhere, it should be the best looking thing here." Then: "should feel very integrated, glassy look and a paper like texture." There are at least four implementations. |
 | **#25** | The audience switch belongs at the bottom of the rail, not in the top bar. The top bar should then be real navigation across every page. |
-| **#26** | The account page's tab row "isn't our design language at all". It should be a `ui/tabs.tsx` the course player and the tools tab set also use. |
-| | The preference cards on the account page want the glass treatment. |
+| **#26** | The course player still has no tab set on `ui/tabs.tsx`. The account page and the tools hub are on it. |
 | | "all around the pages, they are places slightly off." |
 
 ## Where the drift comes from
 
-Every one of the above is the same shape of problem: a control that
-exists more than once. A button is `.btn` in the stylesheet and
-`<Button>` in the library and `.pv-btn` in a preview harness, and
-they disagreed about their own corner radius until this was
-written down. A stat is `.tile`, `.stat` and `<StatTile>`. A text
-box is `ui/field.tsx`, the input rules in `@layer components`, the
+Every one of the above is the same shape of problem: a control
+that exists more than once, and the copies disagree about their
+own corner radius. A button is `.btn`, `<Button>` and `.pv-btn`.
+A stat is `.tile`, `.stat` and `<StatTile>`. A text box is
+`ui/field.tsx`, the input rules in `@layer components`, the
 Studio's own, and `textarea[data-schrift]` in the practice book.
 
 `scripts/check-components.ts` counts the hand-written ones and
-only lets the number fall. It stood at 245 and is at 223. That
-number reaching zero is what "the design is consistent" means
-here, and nothing else does.
+only lets the number fall. It is at 16. That number reaching zero
+is what "the design is consistent" means here, and nothing else
+does.

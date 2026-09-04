@@ -1,28 +1,10 @@
-/* ============================================================
-   routine.ts: the browser's half of the routine.
-
-   Three tables in Postgres behind row-level security, all three
-   belonging to exactly one person, and no copy on the device.
-   That is the same rule `saved.ts` follows and for the same
-   reason: `progress` has a local copy because four schools have
-   read localStorage since before there were accounts, and
-   nothing here has that history or works signed out, so a second
-   copy would be a second record to keep in step for nobody.
-
-   `shared/routine.ts` is the shapes and the one calculation.
-   This is the wire.
-
-   ---- what it will not do ----
-
-   NOTHING HERE COUNTS CONSECUTIVE ANYTHING. `ROUTINE.md` §0 is
-   the rule and it belongs in this file as much as in a
-   component: every counter is "how many times ever", and the day
-   one of them becomes "how many times lately" it has started
-   being a streak, whatever it is called.
-
-   `everMarked()` below is the shape all of them take. It only
-   ever grows because it only ever counts.
-   ============================================================ */
+/* routine.ts: the browser's half of the routine. Three tables in
+   Postgres behind row-level security, no copy on the device, for
+   the reason `saved.ts` gives. `shared/routine.ts` is the shapes
+   and the one calculation; this is the wire.
+   NOTHING HERE COUNTS CONSECUTIVE ANYTHING (`ROUTINE.md` §0):
+   every counter is "how many times ever", and one that becomes
+   "how many times lately" has started being a streak. */
 
 import { SUPABASE_URL, SUPABASE_KEY, token, current } from "/account.js";
 

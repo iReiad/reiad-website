@@ -1,27 +1,10 @@
-/* ============================================================
-   tools.ts: the calculators.
-
-   Five of them, all live: change an input and the numbers and
-   the chart move with it. Every calculator writes its state
-   into the URL, so a result is a link you can send someone.
-
-   Charts are inline SVG drawn here: no library, no canvas, and
-   they inherit the theme's colours so dark mode just works.
-
-   The maths is deliberately transparent and every calculator
-   says what it assumes. Rates in Bangladesh change; the numbers
-   here are inputs, not promises.
-
-   ---- the two series, and why they are not colours ----
-
-   A chart here draws with `--series-1` and `--series-2`, which
-   the stylesheet derives: the first is the page's own accent and
-   the second is neutral. It used to draw `--green` and `--gold`
-   by name, so every calculator on the gold tools page drew itself
-   in Insights' green, and the legend beside it did too. The
-   legend is `next/components/ui/legend.tsx` and it reads the same
-   two tokens, so the two halves cannot drift.
-   ============================================================ */
+/* tools.ts: the five calculators. Every one writes its state into
+   the URL, so a result is a link. Charts are inline SVG drawn
+   here, inheriting the theme's colours.
+   A chart draws `--series-1` and `--series-2`, never a colour by
+   name: the first is the page's own accent and the second is
+   neutral. `next/components/ui/legend.tsx` reads the same two, so
+   the chart and its legend cannot drift. */
 
 import { CALCULATORS, FORMATS } from "/calculators.js";
 import { t, type Lang } from "/tools/stock.i18n.js";

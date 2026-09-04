@@ -1,13 +1,10 @@
 /* ============================================================
    Vite, configured to fit a site that has never had a build step.
 
-   THE OUTPUT IS COMMITTED, and that is not laziness. Every school
-   on this site is already generated and committed: `aab/money/**`
-   comes out of `build-lessons.mjs`, and CLAUDE.md's rule is "edit
-   the source, never the output". This is the same arrangement with
-   a different generator, so it needs no change to how the site
-   deploys, no build command in a dashboard that cannot be seen
-   from the repository, and it stays one `git revert` from gone.
+   THE OUTPUT IS COMMITTED, and that is not laziness. The site
+   deploys by uploading `aab/` with no build step in CI, so a
+   generated file has to be in git to be on the site. Edit the
+   source, never the output.
 
    Three constraints, and all three come from the site rather than
    from React:

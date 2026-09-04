@@ -1,46 +1,24 @@
 # ============================================================
-# wrangler.toml, Cloudflare Workers configuration.
-#
-# This site is a Worker with static assets. It used to be written
-# as a Pages project, and for a while it was deployed as neither:
-# the live Worker was built from a `worker.js` that only ever
-# existed on somebody's laptop, so CI could not reproduce it and
-# every automatic build failed. `worker.js` is in the repository
-# now, and so is the configuration below that goes with it.
+# wrangler.toml: this site is a Worker with static assets.
 #
 #   npx wrangler deploy        deploys the Worker and aab/ together
 #   npx wrangler dev           the real runtime, locally
 #
-# ONE-TIME SETUP, if you are starting from an empty account:
-#
-#   npx wrangler login
-#   npx wrangler d1 create reiad
-#     → copy the database_id it prints into this file
-#   npx wrangler deploy
-#
-# Then set the admin passphrase by visiting /studio once.
-# The tables create themselves on the first request that needs
-# them (see functions/_lib/db.ts), so there is no schema step.
+# From an empty account: `wrangler login`, `wrangler d1 create
+# reiad`, copy the database_id it prints in below, deploy, then set
+# the admin passphrase by visiting /studio once. The tables create
+# themselves on the first request that needs them, see
+# functions/_lib/db.ts, so there is no schema step.
 # ============================================================
 
 name = "reiad-website"
 main = "worker.js"
 
-# The account these resources live in.
-#
-# Not a secret and not a credential: it is the identifier in every
-# dashboard URL, it authenticates nothing on its own, and the
-# `database_id` below is the same class of thing and has been
-# committed since the database was made. It is here because
-# wrangler otherwise has to ASK which account it is in, and an API
-# token scoped to "D1 Edit and nothing else" is not allowed to
-# answer that. The import workflow failed on exactly that:
-#
-#   Failed to automatically retrieve account IDs for the logged in user
-#
-# The alternative was a second repository secret, which would have
-# meant the workflow needed two things set up instead of one, and
-# the note at the top of import-schools.yml promises one.
+# The account these resources live in. Not a secret: it is the
+# identifier in every dashboard URL and authenticates nothing. It is
+# written down because a token scoped to "D1 Edit and nothing else"
+# may not answer wrangler's "which account is this", and the import
+# workflow fails with "Failed to automatically retrieve account IDs".
 account_id = "e9b49e82786518eac2e7addec016d028"
 compatibility_date = "2026-08-01"
 compatibility_flags = ["nodejs_compat"]
@@ -61,155 +39,76 @@ binding = "ASSETS"
 # it said out loud, which is the better of the two behaviours.
 not_found_handling = "404-page"
 
-# Assets win over the Worker by default, and for these two prefixes
-# that is the wrong way round:
+# Assets win over the Worker by default, and every path below needs
+# it the other way round. With not_found_handling set, an unmatched
+# path the asset router answers gets 404.html and the Worker is never
+# called, so anything a Worker renders MUST be listed: /media/*
+# (photos are in R2), /_next/* (the Next Worker's own scripts), the
+# hubs, the schools. /feed.xml and /sitemap.xml are listed because
+# the Worker merges database rows into the generated file.
 #
-#   /api/*       nothing in aab/ answers these, so this changes no
-#                behaviour, it is here so the intent is on the page.
-#   /insights/*  every piece is a row and the three mounts are
-#   /cooking/*   rendered by the Next.js Worker as of Stage 11.2.
-#   /travel/*    These were listed before that for the older reason,
-#                which was that serving a committed file first meant
-#                an article published to D1 under the same slug never
-#                got a look in. Both reasons want the same line.
-#   /media/*     photos live in R2, and nothing in aab/ matches. That
-#                is precisely the problem: with not_found_handling
-#                set, the asset router answers an unmatched path with
-#                404.html and the Worker is never called, so every
-#                published photo 404s. It has to be listed.
-#   /feed.xml    both are generated from content.js, which cannot see
-#   /sitemap.xml an article published to the database. The Worker
-#                serves the generated file with those merged in, so a
-#                piece published from the Studio is actually
-#                findable. Assets would otherwise win and the merge
-#                would never run.
-#   the three    /insights, /cooking and /travel are rendered by
-#   hubs         the Next.js Worker as of Stage 11.1. Each is one
-#                segment and so is not covered by its own mount
-#                star above, which is why all three are named.
-#   /_next/*     the Next.js Worker's own JavaScript, once the NEXT
-#                service binding exists. Nothing in aab/ matches, so
-#                with not_found_handling set the asset router would
-#                answer every one of them with 404.html and the
-#                Worker would never be called: an article rendered
-#                by Next asked for six scripts and got six copies of
-#                the 404 page. Listing it costs nothing while the
-#                binding is absent, because worker.js then falls
-#                through to the assets exactly as before.
+# NOTHING HERE MAY BE COVERED BY ANYTHING ELSE HERE. Wrangler refuses
+# an overlapping list at parse time and the whole deploy stops with
+# "Invalid routes in run_worker_first", which is the deploy failing
+# rather than a warning. `check-routes.ts` runs the same overlap test.
 #
-# Nothing here may be covered by anything else here. Wrangler refuses
-# a list holding a rule another rule already matches, and it refuses
-# it at parse time, before it looks at the Worker or the assets: the
-# whole deploy stops with "Invalid routes in run_worker_first". That
-# is not a warning about a redundant line, it is the deploy failing,
-# and it is what took this Worker off the air for the whole of Stage
-# 11. Six entries had grown a broader neighbour beside them,
-# /cooking/index.html under /cooking/* and four school patterns under
-# their own suffixless form, so every push from 16 August onwards
-# built nothing while the site carried on serving the last good
-# upload. `check-routes.ts` now runs the same overlap test the
-# deploy does, so the next one fails on a laptop instead.
+# NO ENTRY HERE ENDS IN .html, and that is what makes the redirects
+# work: a listed path never reaches the asset router, and
+# `aab/_redirects` IS the asset router, so an old spelling has to be
+# ABSENT from this list for its 301 to fire. `/about` is here and
+# `/about.html` deliberately is not.
 #
-# NO ENTRY HERE ENDS IN .html, as of task #28, and that is what
-# makes the redirects work. A listed path never reaches the asset
-# router, and `aab/_redirects` IS the asset router, so the old
-# spelling of an address has to be absent from this list for its
-# 301 to fire. `/about` is here and `/about.html` deliberately is
-# not.
+# A `*` matches what comes AFTER the slash, so a bare path and its
+# own star are two rules and neither covers the other. That is what
+# took /skills/courses off the site, and it is why the pairs below
+# are written out.
 run_worker_first = ["/api/*", "/insights/*", "/cooking/*", "/travel/*", "/media/*", "/_next/*",
   "/feed.xml", "/sitemap.xml",
-  # The three reading hubs. Their own mounts above carry everything
-  # under them; a hub is one segment and is not covered by its own
-  # star, so it is named.
   "/insights", "/cooking", "/travel",
   "/about", "/contact", "/account", "/skills",
   # The third-party course section, and the one prefix here still
   # answering `.html` addresses: its five shapes are duplicated in
   # `aab/src/courses.ts` and `check-courses.ts` holds the two to
-  # each other.
-  #
-  # The star is what covers the depth, so the programme segment
-  # added no line here: a `*` in a route pattern matches slashes
-  # too, and every address under this prefix is one path deeper
-  # than it was.
-  #
-  # BOTH, and the star alone was wrong. A `*` matches what comes
-  # AFTER the slash, so "/skills/courses/*" covers the hub's
-  # trailing-slash form and everything under it and does NOT cover
-  # "/skills/courses" itself. That is the address in `shared/nav.ts`,
-  # the one the rail links, and it 404ed: the asset router
-  # answered it, there is no file, and the reader got the site's
-  # 404 page while the Worker sat behind a route it was never
-  # asked to run. `/skills/courses/` made it worse by 308ing
-  # straight into it.
-  #
-  # "/insights" and "/insights/*" are both listed above for the
-  # same reason and are the proof this pair does not overlap: a
-  # bare path and its own star are two rules, not one covering the
-  # other.
+  # each other. The star matches slashes too, so the programme
+  # segment needed no extra line.
   "/skills/courses", "/skills/courses/*",
   "/tools", "/tools/stock", "/tools/live",
-  # Both, and the bare one is not covered by the star: a `*`
-  # matches what comes AFTER the slash. That is exactly what took
-  # /skills/courses off the site, so it is written out here.
   "/tools/routine", "/tools/routine/*",
   "/tools/diet", "/tools/diet/*",
   "/tools/research", "/tools/research/*",
-  # The panel, and the desk under it. Both written out: a `*`
-  # matches what comes AFTER the slash, so "/admin/*" would not
-  # cover "/admin" and the panel would fall to the asset router.
   "/admin",
   "/portfolio", "/portfolio/*", "/",
-  # "/desk" is deliberately NOT here. It retired to archive/ and is
-  # a 301 to /admin in aab/_redirects, and a path this list claims
-  # never reaches that file.
+  # "/desk" is deliberately NOT here: it is a 301 to /admin in
+  # aab/_redirects, and a path this list claims never reaches
+  # that file.
   "/studio",
-  # The four schools, Stage 11.7. 247 pages left aab/ in the same
-  # commit that added these, so with not_found_handling set the asset
-  # router would answer every one of them with 404.html and the Worker
-  # would never be called: the whole of /money/, /deutsch/, /quran/
-  # and /english/ would 404 at once.
-  #
-  # This was "/money/*/*" and its three siblings, deliberately, so
-  # that a school's own modules were left to the asset router. A
-  # stage's ladder is `/money/basics-1` now rather than
-  # `/money/basics-1/index.html`, and a two-segment path cannot be
-  # named without a star at the second segment. The alternative was
-  # seventeen stage slugs typed into this file, which is data in a
-  # config nothing checks: a stage added in the Studio would 404
-  # until somebody remembered to come here. So the star is wider
-  # and the cost is one binding hop on /money/reader.js and the
-  # twenty-four other school modules, which worker.js answers by
-  # falling straight through to the file.
+  # The four schools. The star is deliberately wide rather than
+  # "/money/*/*": naming seventeen stage slugs here would be data in
+  # a config nothing checks, and a stage added in the Studio would
+  # 404 until somebody remembered to come here. The cost is one
+  # binding hop on the twenty-five school modules, which worker.js
+  # answers by falling straight through to the file.
   "/money", "/deutsch", "/quran", "/english",
   "/money/*", "/deutsch/*", "/quran/*", "/english/*"]
 
 # ---------- D1: the database everything dynamic runs on ----------
 # Articles, reader questions, subscribers, enquiries, view counts and
-# admin sessions all live here. One database, comfortably inside the
-# free tier for a long time.
-#
-# The ID is not a secret: it identifies a database, it does not open
-# one. Deploying with it absent is safe: every dynamic feature checks
-# for the binding and falls back to the static behaviour without it.
+# admin sessions. The ID identifies a database, it does not open one.
+# Every dynamic feature checks for the binding and falls back to the
+# static behaviour without it.
 [[d1_databases]]
 binding = "DB"
 database_name = "reiad"
 database_id = "ad23dea3-74fc-4346-8119-ab5936f1a708"
 
 # ---------- R2: the photo store ----------
-# Article photos used to be base64 data URLs inside the article body.
-# That put a third more bytes than the photo into a D1 column capped
-# at 2 MB, and the body was being truncated to fit. Photos live here
-# now and the body carries a `/media/...` path.
-#
-# The bucket has to exist before the first deploy, or wrangler stops:
+# An article body carries a `/media/...` path; the photo is here. The
+# bucket has to exist before the first deploy or wrangler stops:
 #
 #   npx wrangler r2 bucket create reiad-media
 #
-# (./setup.sh does this for you.) Without the binding, /api/media
-# answers "not configured" and the Studio goes back to embedding
-# photos in the page, exactly as it did before.
+# (./setup.sh does this.) Without the binding, /api/media answers
+# "not configured" and the Studio embeds photos in the page instead.
 [[r2_buckets]]
 binding = "MEDIA"
 bucket_name = "reiad-media"
@@ -226,76 +125,55 @@ bucket_name = "reiad-media"
 # the secret, /api/notion answers "not configured" and the button
 # never appears.
 
-# ---------- Notion auto-sync ----------
-# Every quarter hour, any article that came from Notion is checked
-# against its page and pulled in again if it changed. Nothing happens
-# without NOTION_TOKEN, and nothing happens to a page whose Status
-# column says it isn't ready, see functions/_lib/sync.ts.
+# ---------- the schedules ----------
+# Notion auto-sync every quarter hour, and fifteen minutes is a floor:
+# Notion rate-limits at roughly three requests a second and a sync
+# costs several per article. Then the nightly snapshot into R2 under
+# backups/, which is the private half of the backup (the public half
+# is .github/workflows/backup.yml).
 #
-# Cron triggers are free and are not billed as requests. Fifteen
-# minutes is a deliberate floor: Notion rate-limits at roughly three
-# requests a second, and a sync costs several per article.
-#
-# ---------- the nightly backup ----------
-# The second schedule writes a snapshot of every table worth keeping
-# into R2, under backups/. It is the private half of the backup; the
-# public half is live articles committed to this repository nightly
-# by .github/workflows/backup.yml. The split is about who can read
-# the result, and the reasoning is in functions/_lib/backup.ts.
-#
-# worker.js tells the two apart by matching event.cron against these
-# exact strings, so changing one here without changing it there
-# stops that job running rather than running the wrong one.
+# worker.js tells the jobs apart by matching event.cron against these
+# EXACT strings: changing one here without changing it there stops
+# that job running rather than running the wrong one.
 [triggers]
 crons = ["*/15 * * * *", "17 3 * * *", "0 6 * * 1"]
 
 # ---------- Workers AI (optional) ----------
 # functions/api/news.ts uses an `AI` binding to translate headlines
-# into Bangla, and skips the translation when it isn't there.
-#
-# It is deliberately NOT declared here: an [ai] binding forces
-# `wrangler dev` into remote mode, which needs an API token, and that
-# would break local development for the sake of one optional feature.
-# Turn it on instead in the Cloudflare dashboard:
+# into Bangla and skips the translation without it. Deliberately NOT
+# declared here: an [ai] binding forces `wrangler dev` into remote
+# mode, which needs an API token. Turn it on in the dashboard:
 #   Workers & Pages → your Worker → Settings → Bindings →
 #   Add → Workers AI → variable name: AI
 
 [vars]
 SITE_ORIGIN = "https://reiad.co.uk"
 
-# Where reader accounts live. The Worker needs it to fetch the public
-# keys it verifies a reader's access token against, see
-# functions/_lib/reader.ts.
+# Where reader accounts live, so the Worker can fetch the public keys
+# it verifies an access token against (functions/_lib/reader.ts). A
+# URL, not a secret: it is already in aab/account.js. The thing that
+# must never appear here is the service role key, and it is nowhere
+# in this repository.
 #
-# This is a URL, not a secret: it is already in aab/account.js, which
-# every browser downloads. The thing that must never appear here is
-# the service role key, and it does not exist anywhere in this
-# repository.
-#
-# Older Supabase projects sign tokens with HS256 rather than ES256,
-# and those need the project's JWT secret to verify. This one does
-# not, and if that ever changes the secret goes in as a secret:
+# An older Supabase project signing HS256 rather than ES256 needs the
+# project's JWT secret to verify. This one does not; if that changes:
 #   npx wrangler secret put SUPABASE_JWT_SECRET
-# Without it, an HS256 token is refused rather than believed.
+# Without it an HS256 token is refused rather than believed.
 SUPABASE_URL = "https://wvjarqnnmkkuxyrndtya.supabase.co"
 
-# The publishable key, which is the other half of talking to
-# Supabase REST. Publishable is the word Supabase uses and means
-# it: this exact string is in aab/account.js, which every browser
-# downloads. The Worker needs it because /api/broker reads and
-# writes a reader's broker_tokens row AS THE READER, forwarding
-# their own bearer token, and PostgREST wants the apikey header
-# beside it. Row-level security does the scoping either way.
+# The publishable key: this exact string is in aab/account.js, which
+# every browser downloads. /api/broker reads and writes a reader's
+# broker_tokens row AS THE READER, forwarding their own bearer, and
+# PostgREST wants the apikey header beside it. Row-level security
+# does the scoping either way.
 SUPABASE_KEY = "sb_publishable_lvckv69CrjRyF1_urwDrCQ_PWoTH3UW"
 
-# Who the live-portfolio dashboard treats as an admin, as a
-# comma-separated list of Supabase user ids. A user id names an
-# account and opens nothing, so it can live here beside the URL
-# that is already in every browser. The durable record is the
-# public.admins table in Supabase (see
-# supabase/migrations/20260818030907_broker_admins.sql); this list
-# is the half that works before that migration has run, and the
-# two are OR'd together in functions/_lib/broker.ts.
+# Who the dashboard treats as an admin: a comma-separated list of
+# Supabase user ids. A user id names an account and opens nothing.
+# The durable record is public.admins (see
+# supabase/migrations/20260818030907_broker_admins.sql); this list is
+# the half that works before that migration has run, and the two are
+# OR'd together in functions/_lib/broker.ts.
 ADMIN_READERS = "f8278696-caa3-4321-938c-ead22d86d144"
 
 # ---------- the live portfolio (optional) ----------

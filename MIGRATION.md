@@ -35,8 +35,7 @@ build step.
 That list is `MODULES` in `build-modules.ts`, read out of it rather
 than remembered. It said fourteen until 19 August 2026 and one of the
 fourteen was `crumbs`, which this generator has never built: that
-module is a component now and both halves of it are in
-`archive/modules/`. A name in a Done list that the thing doing the
+module is a component now. A name in a Done list that the thing doing the
 work has never heard of is the failure at the top of `CLAUDE.md`
 happening to the list that tracks it.
 
@@ -74,28 +73,28 @@ loaded by something not counted here, and both were worth checking.
 | `app.js` | 605 | ts | **shell.** Eight jobs; the theme and the boot are already `shell.tsx`'s. What is left that a route cannot do: the palette, the shortcut sheet, speculation rules and the service-worker registration. `noUnusedLocals` found six bindings imported from `/content.js` and never read: `PAGES` `TOOLS` `STAGES` `STUFEN` `stufeUrl` `SITE`. It also carried the last pointer `check-pointers.ts` excused, and that entry is out of `GONE` with it: the comment names `check-content.ts` now |
 | `sync.js` | 513 | ts | **service.** The account is the record and this is the mirror. Nothing about it is a page |
 | `account.js` | 417 | ts | **service.** The session. Eighteen importers, more than anything else here. Converted with the change that brought the Google picture through, and it took TWO hand-written declarations with it: `aab/src/types/` and `app/src/types/` each described this file and they disagreed about what `saveProfile` answers |
-| `crumbs.js` | 351 | ✔ | **interface**, and done: `next/lib/crumbs.ts` builds the trail out of `shared/nav.ts` and the top bar draws it, JSON-LD included. The module is in `archive/modules/` |
+| `crumbs.js` | 351 | ✔ | **interface**, and done: `next/lib/crumbs.ts` builds the trail out of `shared/nav.ts` and the top bar draws it, JSON-LD included |
 | `signin.js` | 347 | ts | **interface.** The account menu, which is a `popover` |
 | `tilt.js` | 246 | ts | **interface.** A pointer effect on cards, and only where there is a pointer. The device-orientation half that leaned cards on a phone is gone: the perspective it needed is declared inside the hover query, so a handset got a shear rather than a lean, and paid a forced layout per card per sensor frame for it |
 | `audience.js` | 281 | ts | **shell.** The learn/work switch, whose markup is already `sidebar.tsx`'s. Deriving its two unions from its two vocabularies found three comparisons against `"money"`, which this module has never stored: the audience is `learn` or `work`, in `AUDIENCES` in `nav.ts`, in the boot script and in the stylesheet. So `data-track` was never set on any page, the footer's switcher could not take a recruiter back to the library and reloaded on a value it had just dropped, and the track switcher was hidden everywhere. The same `"money"` is still in the boot scripts of `404.html` and `offline.html` |
-| `news.js` | 246 | ✔ | **interface**, and done: `components/news.tsx` and `components/market-pulse.tsx`, with the FLIP both mini windows share in `next/lib/flip.ts`. It outlived the pulse port by a day because `about.js` imported `el` and `flip` from it; archiving that page's window archived this. The module is in `archive/modules/`, and it is the one entry here whose last step is somebody else's file: `/news.js` is still in `PRECACHE` in `aab/sw.js`, which is a line, a comment above it and a `VERSION` bump |
+| `news.js` | 246 | ✔ | **interface**, and done: `components/news.tsx` and `components/market-pulse.tsx`, with the FLIP both mini windows share in `next/lib/flip.ts`. It outlived the pulse port by a day because `about.js` imported `el` and `flip` from it, so retiring that page's window retired this. It is the one entry here whose last step is somebody else's file: `/news.js` is still in `PRECACHE` in `aab/sw.js`, which is a line, a comment above it and a `VERSION` bump |
 | `saved.js` | 240 | ts | **service.** Scenarios, targets and the library |
-| `keep.js` | 220 | ✔ | **interface**, and done: `components/keep.tsx`, rendered by the piece route and the lesson route. The module read the address, the title and the kind back out of the DOM it had just been rendered into; all three are props now, and the address is the canonical one, so a page reached at both of its two forms is still one row. The module is in `archive/modules/` |
-| `comments.js` | 219 | ✔ | **interface**, and done: `components/comments.tsx`. The module is in `archive/modules/` and the first precached entry to leave this list rather than change |
+| `keep.js` | 220 | ✔ | **interface**, and done: `components/keep.tsx`, rendered by the piece route and the lesson route. The module read the address, the title and the kind back out of the DOM it had just been rendered into; all three are props now, and the address is the canonical one, so a page reached at both of its two forms is still one row |
+| `comments.js` | 219 | ✔ | **interface**, and done: `components/comments.tsx`. The first precached entry to leave this list rather than change |
 | `auth.js` | 216 | ts | **service.** The Studio's gate. Converted clean. The block it prints to the console on a deployment with no database named `auth-config.js`, which is the built file: pasting there passes every check and is discarded by the next build, so it names `aab/src/auth-config.ts` |
 | `checkpoints.js` | 209 | ts | **service.** The ticks inside a lesson, filed under a school's own key |
 | `account-page.js` | 203 | ts | **shell**, and finished: four jobs left and the section above says why each stays |
 | `engage.js` | 186 | ✔ | **interface**, and done: `components/engage.tsx`. It counted every insights view a second time |
 | `prefs.js` | 181 | ts | **service.** Applied before the first paint by `shell.tsx`, carried by `sync.ts` |
-| `read-aloud.js` | 150 | ✔ | **interface**, and done: `components/read-aloud.tsx`. It built a toolbar with `createElement` and appended a `<style>` to the head, which is the pair of things `components/scripts.tsx` exists to stop. The module is in `archive/modules/` |
+| `read-aloud.js` | 150 | ✔ | **interface**, and done: `components/read-aloud.tsx`. It built a toolbar with `createElement` and appended a `<style>` to the head, which is the pair of things `components/scripts.tsx` exists to stop |
 | `photo.js` | 144 | ts | **service.** Decoding a pasted photo. Never a fetch: `CLAUDE.md` says what that cost |
-| `about.js` | 107 | ✔ | **interface**, and done: `components/research.tsx`, with the words as a prop from the route because they are that page's copy. The `<template data-detail>` the module cloned had been rendered EMPTY since the page became a route, so every window opened on nothing; a port is finished when it does what the thing it replaced did. The module is in `archive/modules/` |
+| `about.js` | 107 | ✔ | **interface**, and done: `components/research.tsx`, with the words as a prop from the route because they are that page's copy. The `<template data-detail>` the module cloned had been rendered EMPTY since the page became a route, so every window opened on nothing; a port is finished when it does what the thing it replaced did |
 | `api.js` | 133 | ts | **service.** Every endpoint this site has |
 | `share-card.js` | 123 | ts | **service.** Draws the 1200×630 JPEG a pasted link shows |
 | `streak.js` | 122 | ts | **service.** `days-active`, which four things count. Two hand-written declarations described it and they disagreed: `aab/src/types/` said `markToday(): void` where it answers whether the day was new, and `app/src/types/` made `daysIn`'s argument required where it has a default. Both are gone, and this is the module that emptied `aab/src/types/` |
 | `pieces.js` | 116 | ts | **service**, and smaller than it was: see below. The first module in `aab/src/` to import `/content.js`, which is why that config's `rootDir` is the repo root and `build-modules.ts` reads its output under a prefix. Converted clean otherwise |
-| `hub.js` | 97 | ✔ | **interface**, and done: `components/topic-filter.tsx` and `components/subscribe.tsx`. Two things under one name, and the Insights hub was the only page loading either. The module is in `archive/modules/` |
-| `pulse.js` | 83 | ✔ | **interface**, and done: `components/market-pulse.tsx` over `components/news.tsx`. Still not `pulse-card.tsx`, which is the home page's card of WRITING: two things with one name, and neither was renamed. The module is in `archive/modules/` |
+| `hub.js` | 97 | ✔ | **interface**, and done: `components/topic-filter.tsx` and `components/subscribe.tsx`. Two things under one name, and the Insights hub was the only page loading either |
+| `pulse.js` | 83 | ✔ | **interface**, and done: `components/market-pulse.tsx` over `components/news.tsx`. Still not `pulse-card.tsx`, which is the home page's card of WRITING: two things with one name, and neither was renamed |
 | `activation.js` | 61 | ts | **service.** Whether the dynamic layer is reachable. It declares `document.prerendering` globally, because Chrome ships it and the DOM library does not, and reads `activationStart` off `unknown` rather than through `instanceof PerformanceNavigationTiming`, which would throw on a browser old enough not to have the constructor |
 | `auth-config.js` | 35 | ts | **service.** One constant the gate reads. Converted clean. Not `as const`: the block below the comment is meant to be replaced wholesale by the one the setup screen prints |
 
@@ -109,8 +108,7 @@ page a reader with a broken script is using to reach a person.
 **And what the survey found dead.** `initArticleCards()` in `app.js`
 filled `#article-cards`, and nothing renders that id: the hubs draw
 their own cards on the server from `next/lib/hub.ts` and the home page
-has `<FeaturedCard>`, `<ContinueCard>` and `<PulseCard>`. The only two
-documents left carrying it are in `archive/`, which nothing serves. It
+has `<FeaturedCard>`, `<ContinueCard>` and `<PulseCard>`. It
 took `piecesIn` and `filePieces` off `pieces.js` with it, and four
 imports off `app.js`. `allPieces()` stays: it feeds the palette, which
 is on every page.
@@ -129,15 +127,15 @@ now for everything marked `ts`.
 
 That is `ls aab/*.js` minus what `aab/src/` and `shared/` build, and it
 is counted rather than remembered: `comments`, `engage`, `hub` and
-`read-aloud` were all still on this list after they had been archived,
-which is a tracker being wrong about itself.
+`read-aloud` were all still on this list after they had gone, which
+is a tracker being wrong about itself.
 
 `sw.js` is last on purpose and the reason is in the table above: a
 mistake there logs nobody out and serves stale everything.
 
 The two lists are not the same job and are not done in the same order.
 A module that becomes a component does not need converting first: it
-is rewritten in TSX and the `.js` is archived, which is one change
+is rewritten in TSX and the `.js` deleted, which is one change
 rather than two. A module that stays a **service** is the one worth
 converting, because it is the one that is going to be read by
 TypeScript at the other end.
@@ -227,8 +225,7 @@ existed under any extension, and `courses.ts` and `sw.js` to
 `scripts/build-styles.mjs`, and this file said `aab/tailwind.css`
 was built by it, three days after both were deleted for a compiler
 Next already has. `cards.tsx` named `check-icons.mjs` where the
-check is `check-next.ts`, and `written.tsx` named
-`build-school-hubs.mjs`, which is in `archive/schools-builders/`.
+check is `check-next.ts`.
 
 Converting `scripts/` is what made them visible, and the shape they
 share is worth naming: **a stale pointer costs nothing until
@@ -238,7 +235,7 @@ which is the argument for the length rather than against it: the
 ones that said only what a thing was for stayed true.
 
 `scripts/check-pointers.ts` is what stops the twentieth. It reads
-every tracked file outside `archive/` and fails on any `check-*`,
+every tracked file and fails on any `check-*`,
 `build-*`, `import-*`, `export-*` or `*.test.*` name that reaches
 no file, with `GONE` for the ones that are named as gone on
 purpose, keyed by the file AND the name so that a NEW mention
@@ -295,7 +292,7 @@ wrong one.
 places, and one of them was a command. It said to run
 `node aab/deutsch/build-deutsch.mjs` and `build-english.mjs` to
 regenerate the practice books; both files were deleted when #129
-made the books routes, and they are not even in `archive/`. It also
+made the books routes. It also
 called the four books "the last real pages", said "six pages are
 not routes and cannot be", and gave the wrong reason for the three
 schools still needing a browser module. `aab/*.html` is `404.html`
@@ -417,10 +414,8 @@ already holds the database to.
 
 ### app/
 
-One file, and it is a browser test: `studio.test.ts`, converted on 19
-August 2026. `desk.test.ts` was the other and went to
-`archive/desk-react/` on 21 August 2026 with the page it drove. There
-is no JavaScript and no `.mjs` left in this workspace.
+One file, and it is a browser test: `studio.test.ts`. There is no
+JavaScript and no `.mjs` left in this workspace.
 
 It is NOT in `app/tsconfig.json`, and that is the point of the second
 config rather than an oversight. That one is the BUILD, run by `tsc -b`
@@ -608,6 +603,3 @@ decision was being made.
 
 **Left:** `CLAUDE.md` (1336), and the file headers across `aab/` and
 `functions/`, most of which run 30 to 70 lines.
-
-`archive/TRANSITION.md` (5158) is history and is not loaded by anything. Leave
-it.
