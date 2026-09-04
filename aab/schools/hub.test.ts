@@ -1,48 +1,23 @@
 #!/usr/bin/env node
-/* ============================================================
-   hub.test.ts: the three school hubs, built against the markup
-   a reader actually gets.
+/* hub.test.ts: the three school hubs, against the markup a
+   reader actually gets.
 
        node aab/schools/hub.test.ts
 
-   `schools/hub.js` took the four identical halves out of three
-   hub scripts: the progress ring, the resume card, the bar at
-   the top and the reset button. `progress.test.ts` next door
-   covers the arithmetic; nothing covered the drawing, and the
-   drawing is the half a reader sees.
+   `progress.test.ts` covers the arithmetic; this covers the
+   drawing, which is the half a reader sees. A port is finished
+   when it does what the thing it replaced did, not when it
+   renders, and those two look identical from the outside.
 
-   The house rule this answers is in CLAUDE.md: a port is
-   finished when it does what the thing it replaced did, not when
-   it renders, and those two look identical from the outside. So
-   this loads each school's real hub.js against the real hub
-   markup, and asks what a reader would ask. Is there a
-   ladder. Does every rung have a ring, a state and a count. Does
-   the bar say anything. Is the resume card hidden before there
-   is anything to resume and there afterwards.
+   The markup is RENDERED from `components/school-hub-page.tsx`
+   rather than read off disk: a test that read a string would go
+   on passing against markup nothing serves.
 
-   ---- where the markup comes from ----
-
-   `components/school-hub-page.tsx`, rendered here rather than
-   read off disk. The three hubs were an HTML string each until
-   they became components, and a test that kept reading the
-   string would have gone on passing against markup nothing
-   serves. Rendering the component is the only way this stays a
-   test of what a reader gets.
-
-   It is a plain synchronous component on purpose: its content is
-   a file in this repository rather than a row, so nothing here
-   awaits and `renderToStaticMarkup` is enough.
-
-   No browser and no network: `linkedom` is a DOM, the twenty
-   lines of storage and events the modules touch are stubbed, and
-   the markup is rendered in process. It runs in about a second.
-
-   Without linkedom installed it says so and skips, which is not
-   a pass. `npm install` at the root is the whole of the fix.
-
-   `aab/tsconfig.test.json` is what typechecks the annotations
-   below, and `scripts/check-types.ts` runs it.
-   ============================================================ */
+   No browser and no network: `linkedom` is the DOM, storage and
+   events are stubbed, and the markup is rendered in process.
+   Without linkedom it says so and SKIPS, which is not a pass.
+   `aab/tsconfig.test.json` typechecks the annotations below and
+   `scripts/check-types.ts` runs it. */
 
 import { registerHooks } from "node:module";
 import { dirname, join } from "node:path";

@@ -9,49 +9,27 @@ calculators, the routine and the diet tool, and built the way they
 are built: routes under `next/`, rows under row-level security, the
 site's own glass, the site's own keyboard, in Bangla and in English.
 
-**This file is the plan, and nothing in it is built.** It was written
-on 2 September 2026, in one sitting, before a line of the studio
-existed, so that the building can be judged against something rather
-than against whoever last remembered what was wanted. It is long on
-purpose: every room, every table, every connection and every gap that
-a year of real research would have found is written down here, so
-that the work is a matter of executing a list rather than of
-discovering the list while executing.
+**This file is the plan and the reference.** It is long on purpose:
+every room, every table, every connection and every gap that a year
+of real research would find is written down, so that the work is a
+matter of executing a list rather than of discovering the list
+while executing.
 
 The order of the file is the order a reader needs it in, not the
-order it will be built in. Section 31 is the build order and section
-36 amends it. Section 34 is every decision this plan takes, in one
-list, so that the build does not reopen them, and section 36 adds
-ten more.
+order it was built in. Section 31 is the build order and what is
+left of it; section 36 amends it. **Section 34 is every decision
+this plan takes, in one list, so that the build does not reopen
+them**, and section 36 adds ten more.
 
-**What was read to write it.** The site as it stands, in particular
-the diet tool, whose fifteen routes and one pages table are the shape
-this borrows, and the research desk under `/admin`, which this
-replaces. The Notion workspace: the home page with its three live
-projects (a funded doctorate with a 2028 intake, a book on halal
-micro-investing for Bangladesh, and an application whose strongest
-paragraph is the investing platform), the supervisor shortlist for
-banking and ethical finance, and the Drive document on faculty
-alignment for an MPhil in finance and risk management with a focus on
-Islamic funds. Nothing in this plan is specific to those three, but
-every room was walked through with them in hand, and section 29 is
-that walk written down.
-
-**What could not be read, said plainly.** Conversations and memory
-held on claude.ai are not reachable from this session, and no tool
-here can open them. If a decision was taken there that this plan
-contradicts, the plan is what has to move, and section 34 is where
-to change it.
+Its shape is borrowed from the diet tool, whose fifteen routes and
+one pages table are the arrangement this uses.
 
 **A note on file names in this file.** `scripts/check-pointers.ts`
 reads every tracked file and fails on a path into this repository
-that reaches nothing. A plan for things that do not exist yet cannot
-name them with their extensions, so every file this plan promises is
-written without one (`next/lib/research-pages.ts`, not the `.ts` form),
-and every file it names WITH an extension is one that exists today.
-That is a rule about this document, and it is also the first thing
-the build gets to delete: once a file exists, the sentence naming it
-gains its extension.
+that reaches nothing, so a file this plan promises and has not
+built is written WITHOUT its extension, and a file named with one
+exists today. Once a file exists, the sentence naming it gains its
+extension.
 
 ---
 

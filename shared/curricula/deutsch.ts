@@ -1,60 +1,27 @@
 /* ============================================================
-   deutsch.ts: the German school's ladder, in one file.
+   deutsch.ts: THE ONE COPY of the German school's ladder.
+   Everything reads from it: the hub, the Teil routes, the
+   breadcrumb, the palette, the menu and the sitemap.
 
-   THIS IS THE ONE FILE YOU EDIT to add, rename or reorder
-   anything under /deutsch/. Everything else reads from it: the
-   hub, the Teil routes, the breadcrumb, the palette, the menu and
-   the sitemap.
-
-   ---- and it is served as well as imported ----
-
-   `scripts/build-modules.ts` compiles this file to
-   `aab/deutsch/curriculum.js`, which is the address the browser
-   has always fetched it from and which `sw.js` precaches by name.
+   `scripts/build-modules.ts` compiles it to
+   `aab/deutsch/curriculum.js`, which `sw.js` precaches by name.
    Edit this file, never that one.
 
-   ------------------------------------------------------------
-   WHY THIS IS NOT IN THE MONEY SCHOOL'S LADDER
-
-   /money/ is the money school: eight stages about investing in
-   Bangladesh, with risk labels, broker warnings and a starter
-   guide about opening a BO account. German shares none of that
-   vocabulary. Mounting it there would have meant a reader
-   looking for শেয়ার scrolling past Akkusativ, and a reader
-   looking for Akkusativ scrolling past ব্রোকার.
-
-   So it is a second school at its own mount, deliberately built
-   from the same parts: the same ladder, the same lesson cards,
-   the same tick-in-your-own-browser progress. Someone who has
-   used the Learn area already knows how to use this one, and
-   nothing here can break anything there.
-
-   ------------------------------------------------------------
-   THE SHAPE
-
-   STUFEN[]              four stages, zero to speaking. A stage
-                         is a folder and a page of its own.
-
-     .sections[]         a heading inside a stage. Never a page.
-
-       .teile[]          one page each. "Teil" is what the
-                         course itself calls a chapter, so that
-                         is what they are called here.
-
-   Plus one thing the money school has no equivalent of: each
-   Stufe has a WORKBOOK, thirty days of daily practice on a
-   single page the learner writes into. See
+   THE SHAPE: `STUFEN[]`, four stages, a folder and a page each;
+   `.sections[]`, headings and never pages; `.teile[]`, one page
+   each. A Stufe also has a WORKBOOK, days of daily practice on
+   one page the learner writes into: see
    `aab/deutsch/arbeitsbuch.data.js`.
 
+   A SLUG IS HALF OF A STORED PROGRESS ID and may never be
+   renamed.
    ============================================================ */
 
 /** Live, or promised and not yet written. */
 export type Status = "live" | "soon";
 
-/** One page. "Teil" is what the course itself calls a chapter, so
-    that is what they are called here. `slug` is half of the id
-    progress is filed under, so renaming one loses whoever had
-    ticked it. */
+/** One page. `slug` is half of the id progress is filed under:
+    renaming one does not move somebody's tick, it loses it. */
 export interface Teil {
   slug: string;
   bn: string;
@@ -77,20 +44,17 @@ export interface StufeSection {
   teile: Teil[];
 }
 
-/** A practice book: a page a day the learner writes into.
-
-    `days` is DECLARED here rather than counted from the book's own
-    data, because the browser needs the number to draw a progress
-    bar and must not pull five thousand lines of days down to count
-    them. `scripts/check-next.ts` asserts the two agree. */
+/** A practice book: a page a day the learner writes into. `days`
+    is DECLARED rather than counted, because the browser draws a
+    bar from it and must not download the whole book to do so.
+    `scripts/check-next.ts` asserts the two agree. */
 export interface Workbook {
   slug: string;
   days: number;
 }
 
-/** One rung of the ladder. Exactly one of `workbook` and `uebung`,
-    never both: a Stufe either has a book or says what the daily
-    practice is instead. */
+/** One rung of the ladder. Exactly one of `workbook` and
+    `uebung`, never both. */
 export interface Stufe {
   slug: string;
   /** The tiny label above the name, "Stufe 1". */
@@ -861,19 +825,11 @@ const STUFE_4_SECTIONS: StufeSection[] = [
 ];
 
 /* ------------------------------------------------------------
-   THE LADDER, four Stufen.
-
-   All four are written, and each is fourteen Teile: that is the
-   shape of the course, not a coincidence. What changes with the
-   level is the practice. Stufe 1 needs thirty days, Stufe 2
-   sixty, Stufe 3 ninety, because cases and the Perfekt and then
-   fluency each need more room to settle than the one before.
-
-   Stufe 4 declares no workbook at all. At B2 the daily page
-   stops being a form to fill in and becomes the news you read
-   and the argument you have, so it carries a `uebung` line
-   instead and the stage page says so rather than linking at a
-   book that was never written.
+   THE LADDER, four Stufen, fourteen Teile each. What changes with
+   the level is the practice: thirty days, then sixty, then
+   ninety. Stufe 4 declares NO workbook and carries a `uebung`
+   line instead, so the stage page says what the daily practice is
+   rather than linking at a book that was never written.
    ------------------------------------------------------------ */
 export const STUFEN: Stufe[] = [
   {
@@ -957,11 +913,8 @@ export const SCHOOL: School = {
 };
 
 /* ------------------------------------------------------------
-   URLs and ids
-
-   Nothing below assumes there are four Stufen or that Stufe 1 is
-   the written one, so adding Stufe 5 is a matter of adding it to
-   the array above.
+   URLs and ids. Nothing below assumes there are four Stufen or
+   that Stufe 1 is the written one.
    ------------------------------------------------------------ */
 
 /** A Stufe's ladder URL. */
@@ -971,13 +924,10 @@ export const stufeUrl = (stufe: Stufe): string => `/deutsch/${stufe.slug}`;
 export const teilUrl = (stufe: Stufe, teil: Teil): string =>
   `/deutsch/${stufe.slug}/${teil.slug}.html`;
 
-/** A Stufe's practice book, or null.
-
-    Null for a Stufe still marked "soon", even though the Stufe
-    declares a workbook: the declaration is the plan, the page is
-    the thing. Every caller links to whatever this returns, so
-    letting it name a page that has not been generated is how a
-    course ends up advertising a 404. */
+/** A Stufe's practice book, or null. NULL FOR A STUFE STILL
+    MARKED "soon" even where it declares a workbook: every caller
+    links to whatever this returns, so naming a page that has not
+    been generated is a course advertising a 404. */
 export const workbookUrl = (stufe: Stufe): string | null =>
   stufe.workbook && stufe.status === "live"
     ? `/deutsch/${stufe.slug}/${stufe.workbook.slug}`

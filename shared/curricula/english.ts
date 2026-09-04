@@ -1,68 +1,21 @@
 /* ============================================================
-   english.ts: the English school's ladder, in one file.
+   english.ts: THE ONE COPY of the English school's ladder.
+   Everything reads from it: the hub, the part routes, the
+   practice book, the breadcrumb, the palette, the menu and the
+   sitemap.
 
-   THIS IS THE ONE FILE YOU EDIT to add, rename or reorder
-   anything under /english/. Everything else reads from it: the
-   hub, the part routes, the practice book, the breadcrumb, the
-   palette, the menu and the sitemap.
-
-   ---- and it is served as well as imported ----
-
-   `scripts/build-modules.ts` compiles this file to
-   `aab/english/curriculum.js`, which is the address the browser
-   has always fetched it from and which `sw.js` precaches by name.
+   `scripts/build-modules.ts` compiles it to
+   `aab/english/curriculum.js`, which `sw.js` precaches by name.
    Edit this file, never that one.
 
-   ------------------------------------------------------------
-   WHY THIS IS A FOURTH SCHOOL AND NOT A FOURTH STUFE
+   THE SHAPE: `TERMS[]`, two terms, a folder and a page each;
+   `.sections[]`, segments and never pages; `.parts[]`, one page
+   each. THE UNIT IS A PART, NOT A DAY: the days live in the
+   practice book, and the map inside part 13 lines them up against
+   these parts.
 
-   /money/ is about money, /deutsch/ about German, /quran/ about
-   reading the Quran. This is about speaking English, and it
-   shares no vocabulary with any of them. It is mounted at
-   /english/, built from the same parts as the German school so
-   that anyone who has used one already knows how to use this
-   one, and nothing here can break anything there.
-
-   ------------------------------------------------------------
-   WHAT IS DIFFERENT FROM THE OTHER THREE, AND WHY
-
-   1. THE LEARNER ALREADY OWNS HALF OF IT. A Bangla speaker has
-      met English at school, on signboards and in every form they
-      have ever filled in. What they lack is not vocabulary, it
-      is the courage and the shapes. So the course teaches
-      patterns with slots in them, never word lists, and every
-      part ends by asking for the learner's own true sentences.
-
-   2. THE UNIT IS A PART, NOT A DAY. The two terms are thirteen
-      and seventeen parts long. The DAYS live in the practice
-      book, thirty of them, one page each, and the map inside
-      part 13 lines those thirty days up against these parts.
-
-   3. BANGLA IS THE LADDER, NOT THE FLOOR. Term One explains
-      everything in Bangla because a beginner needs the ground
-      under them. Term Two says so out loud on its own first
-      slide and starts pulling the ladder up: the English
-      examples get longer, and the Bangla stays only where it is
-      doing work.
-
-   4. EVERYTHING IS SPOKEN. The course's first rule is "say it
-      out loud, always", and the workbook's own rule is that at
-      least twenty-five of the sixty daily minutes must leave
-      your mouth. So every part ends in a drill you say, not one
-      you tick.
-
-   ------------------------------------------------------------
-   THE SHAPE
-
-   TERMS[]               two terms, beginner and intermediate.
-                         A term is a folder and a page of its own.
-
-     .sections[]         a segment inside a term. Never a page.
-
-       .parts[]          one page each. "Part" is what the course
-                         itself calls them, so that is what they
-                         are called here.
-
+   A SLUG IS HALF OF A STORED PROGRESS ID and may never be
+   renamed.
    ============================================================ */
 
 /** Live, or promised and not yet written. */
@@ -72,9 +25,8 @@ export type Status = "live" | "soon";
     is what they are called here. */
 export interface Part {
   slug: string;
-  /** The part number the deck itself uses. It is on the card and
-      in the eyebrow, because a learner with the deck open should
-      be able to match the two without counting. */
+  /** The part number the deck itself uses, so a learner with the
+      deck open can match the two without counting. */
   n: number;
   bn: string;
   en: string;
@@ -94,11 +46,10 @@ export interface Section {
   parts: Part[];
 }
 
-/** A practice book: a page a day the learner writes into.
-
-    `days` is DECLARED rather than counted because the browser
-    draws a bar from it and must not download the whole book to do
-    so. `scripts/check-next.ts` asserts it against the data. */
+/** A practice book: a page a day the learner writes into. `days`
+    is DECLARED rather than counted, because the browser draws a
+    bar from it and must not download the whole book to do so.
+    `scripts/check-next.ts` asserts it against the data. */
 export interface Workbook {
   slug: string;
   days: number;
@@ -519,15 +470,10 @@ const TERM_2_SECTIONS: Section[] = [
 ];
 
 /* ------------------------------------------------------------
-   THE LADDER, two terms.
-
-   Thirteen parts then seventeen. Term One is the whole of
-   spoken survival English and carries the thirty-day book;
-   Term Two is everything that turns survival into speech worth
-   listening to, and carries no book at all. That absence is a
-   decision, not a gap: by then the daily page stops being a form
-   to fill in and becomes the two minutes you record and the
-   article you read out loud. `chorcha` says so on the page.
+   THE LADDER, two terms: thirteen parts then seventeen. Term One
+   carries the thirty-day book; Term Two carries NO book, which is
+   a decision rather than a gap, and its `chorcha` line says what
+   the daily practice is instead.
    ------------------------------------------------------------ */
 export const TERMS: Term[] = [
   {
@@ -578,11 +524,8 @@ export const SCHOOL: School = {
 };
 
 /* ------------------------------------------------------------
-   URLs, ids and sums
-
-   Nothing below assumes there are two terms or that a term has
-   a workbook, so adding a third is a matter of adding it to the
-   array above.
+   URLs, ids and sums. Nothing below assumes there are two terms
+   or that a term has a workbook.
    ------------------------------------------------------------ */
 
 /** A term's ladder URL. */

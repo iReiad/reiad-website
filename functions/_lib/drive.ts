@@ -1,75 +1,44 @@
-/* ============================================================
-   _lib/drive.ts: the one place this site reads Google Drive.
+/* _lib/drive.ts: the one place this site reads Google Drive.
 
-   ---- why the Worker and not the browser ----
+   THE BROWSER NEVER TALKS TO DRIVE. A private Drive file needs
+   Drive to know who is asking, and inside a cross-site iframe it
+   cannot: browsers block or partition third-party cookies, so
+   Drive gets an anonymous request for a file that is not public
+   and answers "Unable to load video". Nothing is broken; the embed
+   only ever worked for files shared with a link, and these
+   deliberately are not. So one credential is held by the Worker,
+   never in a page, and the browser asks
+   `/api/courses/file/<id>` and gets bytes from its own origin.
 
-   `/skills/courses/` is a catalogue of files in one person's
-   private Drive folder. The first version handed those file ids
-   to the browser and let it embed Drive directly: a `/preview`
-   iframe for a video, a link for a reading. Neither works, and
-   the reason is the same for both.
+   THIS MODULE OPENS NOTHING BY ITSELF. It fetches whatever id it
+   is given; `isCourseFile()` in the endpoint above decides which
+   ids exist, by looking them up in the committed catalogue. That
+   split is the important line in this feature: a proxy that
+   fetched any id it was handed would be a read-only window on to
+   the whole of somebody's Drive, one guessed id at a time, with
+   only the admin check in front of it. Two locks, and the second
+   is a list of ids that cannot be argued with.
 
-   A private Drive file needs Drive to know who is asking. Inside
-   a cross-site iframe it cannot: browsers block or partition
-   third-party cookies now, so Drive gets an anonymous request for
-   a file that is not public and answers "Unable to load video".
-   The embed is not broken and neither is the file. The mechanism
-   only ever worked for files shared with a link, and these are
-   deliberately not.
-
-   So the reader's browser stops talking to Drive, and this does.
-   One credential, held by the Worker, never in a page. The
-   browser asks `/api/courses/file/<id>` and gets bytes from its
-   own origin, where no third-party anything is involved.
-
-   ---- what it is allowed to open ----
-
-   NOTHING BY ITSELF. This module fetches whatever id it is
-   given; the endpoint above it decides which ids exist, and it
-   decides by looking them up in the committed catalogue. That
-   split is deliberate and it is the important line in this
-   feature: a proxy that fetched any id it was handed would be a
-   read-only window onto the whole of somebody's Drive, one
-   guessed id at a time, and the only thing in front of it would
-   be the admin check. Two locks, and the second one is a list of
-   ids that cannot be argued with.
-
-   ---- the credential, and why it is a service account ----
-
-   Two wrangler secrets, and the site works without them: every
-   caller checks `canReachDrive()` first and says plainly that the
+   THE CREDENTIAL IS A SERVICE ACCOUNT, and that is not a
+   convenience. Two wrangler secrets, and the site works without
+   them: every caller checks `canReachDrive()` first and says the
    section is not connected rather than failing oddly.
 
      GOOGLE_SA_EMAIL   a service account in the same project
      GOOGLE_SA_KEY     its private key, from the JSON key file
 
-   This started as a user OAuth refresh token and that was the
-   wrong credential twice over.
+   A user OAuth refresh token was the wrong credential twice over.
+   It could not be obtained: `drive.readonly` is a RESTRICTED
+   scope, so an app using it needs a security assessment to leave
+   "Testing", and refresh tokens issued in Testing expire after
+   seven days. And it reads the WHOLE of that person's Drive, where
+   this needs one folder. A service account owns no files, so
+   sharing the course folder with it is the entire grant, and what
+   leaks if the key leaks is a folder of somebody else's course.
 
-   It could not be obtained. `drive.readonly` is a RESTRICTED
-   scope, so an app using it needs a security assessment before
-   Google will let it out of "Testing", and refresh tokens issued
-   by an app in Testing expire after seven days. The section would
-   have worked for a week and then quietly stopped.
-
-   And it was far too much power. A user refresh token with
-   `drive.readonly` can read the WHOLE of that person's Drive:
-   every document, every photo, everything anybody has ever shared
-   with them. This section needs one folder. A service account is
-   a principal with no files of its own, and it can see exactly
-   what has been shared with it and nothing else, so sharing the
-   course folder with it is the entire grant. If this credential
-   ever leaks, what leaks with it is a folder of somebody else's
-   course, not a life.
-
-   That is also what makes `isCourseFile()` in the endpoint a
-   second lock rather than the only real one.
-
-   The scope is still `drive.readonly`: read, never write.
+   The scope is `drive.readonly`: read, never write.
    `drive.metadata.readonly`, which the importer uses, is NOT
-   enough here, because that scope deliberately cannot read file
-   content and content is the whole point.
-   ============================================================ */
+   enough here, because it deliberately cannot read file content. */
 
 const TOKEN_URL = "https://oauth2.googleapis.com/token";
 const FILES_URL = "https://www.googleapis.com/drive/v3/files";
@@ -78,10 +47,10 @@ const SCOPE = "https://www.googleapis.com/auth/drive.readonly";
 /** Two secrets, out of a service account's JSON key file.
 
     `GOOGLE_SA_KEY` is the `private_key` field, PEM and all. It
-    arrives from that file with the newlines written as the two
-    characters `\n`, and `wrangler secret put` will happily store
-    it either way, so `pemToDer` below accepts both rather than
-    making somebody find that out from a 500. */
+    arrives with the newlines written as the two characters `\n`,
+    and `wrangler secret put` stores it either way, so `pemToDer`
+    accepts both rather than making somebody find that out from a
+    500. */
 export interface DriveEnv {
   GOOGLE_SA_EMAIL?: string;
   GOOGLE_SA_KEY?: string;
@@ -93,10 +62,8 @@ export const canReachDrive = (env: DriveEnv): boolean =>
 /* ---------- signing a JWT, which is the whole of the flow ----------
 
    A service account authenticates by signing a short-lived
-   assertion about itself and trading it for an access token. There
-   is no user, no consent screen and no refresh token, which is
-   what makes it the right credential here and not merely the
-   convenient one: see the note at the top of this file. */
+   assertion about itself and trading it for an access token. No
+   user, no consent screen and no refresh token. */
 
 const enc = new TextEncoder();
 
@@ -109,12 +76,10 @@ const b64url = (input: ArrayBuffer | string): string => {
   return btoa(binary).replace(/\+/g, "-").replace(/\//g, "_").replace(/=+$/, "");
 };
 
-/** The DER bytes inside a PEM private key.
-
-    Accepts a real multi-line PEM and the one-line form with
-    literal backslash-n in it, because both are what somebody
-    actually pastes: the first is what you get selecting the key
-    out of the JSON in an editor, the second is what you get
+/** The DER bytes inside a PEM private key. Accepts a real
+    multi-line PEM and the one-line form with literal backslash-n
+    in it, because both are what somebody pastes: the first from
+    selecting the key out of the JSON in an editor, the second from
     copying the JSON field itself. */
 function pemToDer(pem: string): ArrayBuffer {
   const body = pem
@@ -211,14 +176,11 @@ export const forgetToken = (): void => {
  *
  * The response is handed back whole rather than read, so the
  * caller can pass its body through without buffering: a lesson
- * video is thirty megabytes and a Worker that held one in memory
- * to hand it on would be a Worker that fell over on the second
- * reader.
+ * video is thirty megabytes and a Worker holding one in memory
+ * would fall over on the second reader.
  *
  * `range` is forwarded because it is what makes a video
- * scrubbable. Without it the browser can only play from the
- * start, and dragging the bar re-downloads everything before the
- * point it was dragged to.
+ * scrubbable: without it the browser can only play from the start.
  */
 export async function driveFile(
   env: DriveEnv, id: string, { range }: { range?: string | null } = {}

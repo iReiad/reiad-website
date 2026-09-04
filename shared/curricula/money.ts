@@ -1,48 +1,23 @@
 /* ============================================================
-   money.ts: the whole money school's ladder, in one file.
+   money.ts: THE ONE COPY of the money school's ladder. Everything
+   reads from it: the hub, the lesson routes, the breadcrumb, the
+   palette, the menu and the sitemap.
 
-   THIS IS THE ONE FILE YOU EDIT to add, rename or reorder
-   anything in that school. Everything else reads from it:
-   the hub, the lesson routes, the breadcrumb, the palette, the
-   menu and the sitemap.
-
-   ---- and it is served as well as imported ----
-
-   `scripts/build-modules.ts` compiles this file to
-   `aab/money/curriculum.js`, which is the address the browser has
-   always fetched it from and which `sw.js` precaches by name.
+   `scripts/build-modules.ts` compiles it to
+   `aab/money/curriculum.js`, which `sw.js` precaches by name.
    Edit this file, never that one.
 
-   ------------------------------------------------------------
-   THE SHAPE
+   THE SHAPE: a school holds `.stages[]`, a পর্যায় each; a stage
+   holds `.sections[]`, which are headings and never pages; a
+   section holds `.lessons[]`, one page each. A ধাপ is a STEP
+   INSIDE A LESSON and never a stage: stage 0 is eight steps, so
+   "ধাপ ৩" would name two things one click apart. MONEY.md.
 
-   SCHOOLS[]                a school is a subject area with its own
-                            front page. Today there is one, money.
-                            German, Arabic, English, cooking and the
-                            rest become school #2 at their own mount
-                            point, using this same code unchanged.
-
-     .stages[]              the ladder a reader climbs, a পর্যায়
-                            each. Numbered, collapsible, tracked.
-                            A ধাপ is a STEP inside a lesson and
-                            never a stage: both were ধাপ until 28
-                            August 2026, in a school whose stage 0
-                            is eight steps, so "ধাপ ৩" named two
-                            things one click apart. MONEY.md.
-
-       .sections[]          a heading inside a stage. Never a page
-                            of its own, just a grouping.
-
-         .lessons[]         one page each.
-
-   ------------------------------------------------------------
-   LESSON URLs
-
-   A lesson's URL is `${stage.base}${lesson.slug}.html`, where
-   `base` defaults to `/money/${stage.slug}/`. Stage `basics-1`
-   overrides it to `/money/terms/` because those eighteen pages
-   were published there first and links to them exist in the wild.
-   Nothing about a URL that already works is allowed to change.
+   A lesson's URL is `${stage.base}${lesson.slug}.html`, `base`
+   defaulting to `/money/${stage.slug}/`. Stage `basics-1`
+   overrides it to `/money/terms/`, where those eighteen pages
+   were published first: a URL that already works may not change,
+   and a SLUG IS HALF OF A STORED PROGRESS ID.
    ============================================================ */
 
 /** Live, or promised and not yet written. A "soon" stage is
@@ -51,8 +26,8 @@
 export type Status = "live" | "soon";
 
 /** One page. `slug` is the file name without `.html` and is half
-    of the id progress is filed under, so renaming one loses
-    whoever had ticked it. */
+    of the id progress is filed under: renaming one does not move
+    somebody's tick, it loses it. */
 export interface Lesson {
   slug: string;
   bn: string;
@@ -64,19 +39,14 @@ export interface Lesson {
   /** A key in `aab/money/icons.js`. */
   icon?: string;
   status?: Status;
-  /** How much this one matters, 1 to 5, drawn as stars on the
-      card and on the lesson.
-
-      A ladder of eighty equally weighted rungs is a ladder
-      nobody can budget three evenings against, so this is a
-      route through rather than a grade. The scale is written out
-      in `next/components/lesson/stars.tsx` and must stay one
-      scale: 5 is "you cannot invest without this" and 1 is
-      "worth knowing, not worth waiting for". */
+  /** How much this one matters, 1 to 5, drawn as stars. A route
+      through rather than a grade. The scale is written out in
+      `next/components/lesson/stars.tsx` and must stay ONE scale:
+      5 is "you cannot invest without this" and 1 is "worth
+      knowing, not worth waiting for". */
   stars?: 1 | 2 | 3 | 4 | 5;
-  /** Lesson ids this one builds on, which is what makes the
-      ladder a graph a check can walk rather than an order
-      somebody remembered. `check-money.ts` fails on a `needs`
+  /** Lesson ids this one builds on, which makes the ladder a
+      graph a check can walk. `check-money.ts` fails on a `needs`
       that points forward, at nothing, or at a later stage. */
   needs?: string[];
 }
@@ -132,13 +102,11 @@ export interface LadderLesson extends Lesson {
 /* ------------------------------------------------------------
    STAGE 0, হাতেখড়ি
 
-   Eight lessons at /money/start/, like every other stage. They
-   were accordion sections of the hub until August 2026, which is
-   why the ids below are the ids they had: progress is filed under
-   `start/<slug>` and moving somebody's ticks is not a thing a
-   restructure is allowed to do. The hub still carries an anchor
-   per step so that a link somebody saved to
-   /money#step-papers lands where it named.
+   Eight lessons at /money/start/. The ids below are the ones they
+   carried as accordion sections of the hub: progress is filed
+   under `start/<slug>`, and a restructure may not move somebody's
+   ticks. The hub still carries an anchor per step so a saved link
+   to /money#step-papers lands where it named.
    ------------------------------------------------------------ */
 const STARTER_STEPS: Omit<Lesson, "status">[] = [
   {
@@ -231,14 +199,8 @@ const STARTER_STEPS: Omit<Lesson, "status">[] = [
   },
 ];
 
-/* Three lessons BEFORE the eight, added 28 August 2026.
-
-   The eight answer HOW, and a reader who has not answered WHY
-   stops at the first red week: the commonest way somebody leaves
-   this market is not a bad share, it is having no reason to be
-   here that survives a bad month. These three are that reason,
-   and the third one is what decides whether the rest of the
-   school is even the right thing for this reader. */
+/* Three lessons BEFORE the eight. The eight answer HOW, and a
+   reader who has not answered WHY stops at the first red week. */
 const STARTER_WHY: Omit<Lesson, "status">[] = [
   {
     slug: "why-invest",
@@ -810,11 +772,7 @@ const MONEY_STAGES: Stage[] = [
 ];
 
 /* ------------------------------------------------------------
-   SCHOOLS
-   One today. The second one, German from Bangla, beginner
-   English, Quranic Arabic, cooking, daily checklists, travel,
-   mounts at its own path and reuses every bit of this file's
-   machinery. Nothing below assumes there is only one.
+   SCHOOLS. One here, and nothing below assumes there is only one.
    ------------------------------------------------------------ */
 export const SCHOOLS: School[] = [
   {
@@ -840,11 +798,7 @@ export const stageUrl = (stage: Stage): string => `/money/${stage.slug}`;
 /** Where a stage's lessons live, `base` wins, so basics-1 keeps /money/terms/. */
 export const lessonBase = (stage: Stage): string => stage.base ?? `/money/${stage.slug}/`;
 
-/** A lesson's URL.
-
-    There was a branch here for an `inline` stage, whose lessons
-    were anchors on the hub rather than pages. The starter guide
-    was the only one and it is eight pages now. */
+/** A lesson's URL. */
 export const lessonUrl = (stage: Stage, lesson: Lesson): string =>
   `${lessonBase(stage)}${lesson.slug}.html`;
 
