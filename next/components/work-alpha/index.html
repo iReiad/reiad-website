@@ -1,0 +1,20 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Work-Alpha</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:wght@500;800&family=IBM+Plex+Sans:wght@400;500;600&family=IBM+Plex+Mono&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="style.css">
+</head>
+<body>
+<div id="app"></div>
+<script src="engine.js"></script>
+<script>
+fetch("plan.json").then(r => r.json()).then(plan => {
+  WorkAlpha.mount(document.getElementById("app"), plan, WorkAlpha.localStorageAdapter("work-alpha"));
+}).catch(e => { document.getElementById("app").textContent = "Open this folder through a local server (python3 -m http.server) so plan.json can load. " + e; });
+</script>
+</body>
+</html>

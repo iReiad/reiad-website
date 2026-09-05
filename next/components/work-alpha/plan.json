@@ -1,0 +1,969 @@
+{
+  "name": "Work-Alpha",
+  "subtitle": "Month 1: from zero to an application-ready research pack",
+  "start": "2026-09-05",
+  "hoursPerWeek": 10,
+  "workDays": [
+    "Sat",
+    "Sun"
+  ],
+  "endGoal": "By Sunday 27 September 2026 you hold a sendable PhD application pack: a chosen research question, 15 verified papers with structured notes, a gap matrix, one dataset explored with a figure and a table, a 15-name supervisor directory with deadlines, a 2-page proposal that survived a hostile review, and three outreach emails ready to send.",
+  "tracks": {
+    "A": {
+      "name": "Agricultural and climate risk economics",
+      "short": "Ag-climate",
+      "question": "Do rainfall and temperature shocks reduce farm household consumption and income in Bangladesh, and does access to credit or index insurance buffer the effect?",
+      "data": "Bangladesh Integrated Household Survey (IFPRI, Harvard Dataverse, free registration), matched to NASA POWER daily weather at the district centroid",
+      "venues": [
+        "Journal of Development Economics",
+        "American Journal of Agricultural Economics",
+        "World Development",
+        "Food Policy",
+        "Economic Development and Cultural Change",
+        "Environment and Development Economics",
+        "AEJ: Applied Economics",
+        "Journal of Development Studies"
+      ],
+      "seeds": [
+        "Dell, Jones and Olken (2014), What do we learn from the weather? The new climate-economy literature, Journal of Economic Literature",
+        "Dercon (2004), Growth and shocks: evidence from rural Ethiopia, Journal of Development Economics",
+        "Kazianga and Udry (2006), Consumption smoothing? Livestock, insurance and drought in rural Burkina Faso, JDE",
+        "Cole, Gine, Tobacman, Topalova, Townsend and Vickery (2013), Barriers to household risk management: evidence from India, AEJ Applied",
+        "Karlan, Osei, Osei-Akoto and Udry (2014), Agricultural decisions after relaxing credit and risk constraints, QJE",
+        "Mobarak and Rosenzweig (2013), Informal risk sharing, index insurance, and risk taking in developing countries, AER P&P",
+        "Clarke (2016), A theory of rational demand for index insurance, AEJ Micro",
+        "Jensen and Barrett (2017), Agricultural index insurance for development, Applied Economic Perspectives and Policy",
+        "Hill, Kumar, Magnan, Makhija, de Nicola, Spielman and Ward (2019), Ex ante and ex post effects of hybrid index insurance in Bangladesh, JDE",
+        "Emerick, de Janvry, Sadoulet and Dar (2016), Technological innovations, downside risk, and the modernization of agriculture, AER",
+        "Auffhammer, Hsiang, Schlenker and Sobel (2013), Using weather data and climate model output in economic analyses of climate change, Review of Environmental Economics and Policy",
+        "Burke, Hsiang and Miguel (2015), Global non-linear effect of temperature on economic production, Nature",
+        "Skoufias and Quisumbing (2005), Consumption insurance and vulnerability to poverty, European Journal of Development Research",
+        "Carter, de Janvry, Sadoulet and Sarris (2017), Index insurance for developing country agriculture, Annual Review of Resource Economics",
+        "Chen, Wang and Yu (2018 or later), a recent Bangladesh flood or cyclone shock paper: find the best-cited one on Google Scholar with 'Bangladesh flood household consumption'"
+      ],
+      "supervisorHunt": "Search OpenAlex and Google Scholar for authors with 3+ papers since 2020 on 'index insurance', 'weather shocks', 'Bangladesh agriculture'. Priority institutions: Motu (NZ), Lincoln University, University of Waikato, Massey, Wageningen, IFPRI-affiliated academics, University of Reading, Sussex IDS."
+    },
+    "B": {
+      "name": "Islamic finance, ESG and banking",
+      "short": "Islamic finance",
+      "question": "Do Shariah-compliant equity portfolios on the Dhaka Stock Exchange provide downside protection in crisis periods, and does adding ESG screening change the risk-return trade-off?",
+      "data": "DSE daily prices and the DSEX Shariah index (dsebd.org, free), Bangladesh Bank policy rates, plus a Ken French factor file for the benchmark case",
+      "venues": [
+        "Journal of Banking and Finance",
+        "Journal of Financial Stability",
+        "Pacific-Basin Finance Journal",
+        "Emerging Markets Review",
+        "Journal of Business Ethics",
+        "International Review of Financial Analysis",
+        "Research in International Business and Finance",
+        "Journal of Islamic Accounting and Business Research"
+      ],
+      "seeds": [
+        "Renneboog, Ter Horst and Zhang (2008), Socially responsible investments: institutional aspects, performance, and investor behavior, Journal of Banking and Finance",
+        "Friede, Busch and Bassen (2015), ESG and financial performance: aggregated evidence from more than 2000 empirical studies, Journal of Sustainable Finance and Investment",
+        "Ashraf, Rizwan and L'Huillier (2016), A net beta approach to Islamic and conventional equity: crisis evidence, Journal of Financial Stability",
+        "Hassan and Aliyu (2018), A contemporary survey of Islamic banking literature, Journal of Financial Stability",
+        "Abdelsalam, Fethi, Matallin and Tortosa-Ausina (2014), On the comparative performance of socially responsible and Islamic mutual funds, Journal of Economic Behavior and Organization",
+        "Nainggolan, How and Verhoeven (2016), Ethical screening and financial performance: the case of Islamic equity funds, Journal of Business Ethics",
+        "Alexakis, Pappas and Tsikouras (2017), Hidden cointegration reveals hidden values in Islamic investments, Journal of International Financial Markets, Institutions and Money",
+        "Ho, Abd Rahman, Yusuf and Zamzamin (2014), Performance of global Islamic versus conventional share indices, Pacific-Basin Finance Journal",
+        "Jawadi, Jawadi and Louhichi (2014), Conventional and Islamic stock price performance: an empirical investigation, International Economics",
+        "Beck, Demirguc-Kunt and Merrouche (2013), Islamic vs conventional banking: business model, efficiency and stability, Journal of Banking and Finance",
+        "Heider, Saidi and Schepens (2019), Life below zero: bank lending under negative policy rates, Review of Financial Studies",
+        "Eggertsson, Juelsrud, Summers and Wold (2019 or later), Negative nominal interest rates and the bank lending channel, NBER / Review of Economic Studies",
+        "Brunnermeier and Koby (2018), The reversal interest rate, NBER working paper",
+        "Uddin, Hassan and Hossain (2020 or later), a recent Dhaka Stock Exchange Shariah index paper: find the best-cited one on Google Scholar with 'DSE Shariah index performance'",
+        "Hoepner, Rammal and Rezec (2011), Islamic mutual funds' financial performance and international investment style, European Journal of Finance"
+      ],
+      "supervisorHunt": "Search OpenAlex and Google Scholar for authors with 3+ papers since 2020 on 'Islamic equity', 'ESG screening emerging markets', 'negative interest rates banks'. Priority institutions: Durham Centre for Islamic Economics and Finance, INCEIF (Malaysia), HBKU (Qatar), KFUPM, University of Hamburg Sustainable Finance, Bangor, Reading ICMA."
+    }
+  },
+  "goals": [
+    {
+      "id": "G1",
+      "name": "Decision made, tools ready",
+      "day": 1,
+      "color": "#E4573D",
+      "test": "One track chosen with a written 3-line reason. Zotero, Drive tree, Colab and the prompt library all open in one click."
+    },
+    {
+      "id": "G2",
+      "name": "Literature map",
+      "day": 2,
+      "color": "#E6A100",
+      "test": "15 papers verified (DOI or PDF in hand), 8 venues recorded, reading order fixed."
+    },
+    {
+      "id": "G3",
+      "name": "Ten papers read, gap found",
+      "day": 4,
+      "color": "#7CB518",
+      "test": "10 structured notes complete, gap matrix filled, one sentence naming the gap."
+    },
+    {
+      "id": "G4",
+      "name": "Data touched",
+      "day": 5,
+      "color": "#12A594",
+      "test": "One dataset loaded in Colab, four sanity checks passed, one figure and one summary table saved."
+    },
+    {
+      "id": "G5",
+      "name": "People and dates",
+      "day": 6,
+      "color": "#2457D6",
+      "test": "15 supervisors ranked A/B/C, scholarship rounds dated, five loose ends assigned."
+    },
+    {
+      "id": "G6",
+      "name": "Proposal survives review",
+      "day": 7,
+      "color": "#7048E8",
+      "test": "2-page proposal v2 exists and the hostile reviewer's top three objections are answered in the text."
+    },
+    {
+      "id": "G7",
+      "name": "Pack ready to send",
+      "day": 8,
+      "color": "#D6336C",
+      "test": "Proposal final, CV bullets updated, three emails drafted, month 2 plan written."
+    }
+  ],
+  "rituals": {
+    "open": {
+      "minutes": 15,
+      "title": "Open the day",
+      "steps": [
+        "Open Work-Alpha, read today's goal card out loud",
+        "Open the Drive folder for today and the Zotero library",
+        "Write one line in the Log: what today must produce",
+        "Start the first task timer"
+      ]
+    },
+    "close": {
+      "minutes": 15,
+      "title": "Close the day",
+      "steps": [
+        "Fill the five log lines: time spent, what I did, what I learned, what blocked me, tomorrow's first task",
+        "Tick every task you finished (be honest: half-done stays unticked)",
+        "Save every file with the naming rule YYYY-MM-DD_short-description_v1",
+        "Look at the heatmap and the goal track; if a goal test is met, mark it"
+      ]
+    }
+  },
+  "days": [
+    {
+      "n": 1,
+      "date": "2026-09-05",
+      "theme": "Decide and set up",
+      "goal": "G1",
+      "tasks": [
+        {
+          "id": "d1t1",
+          "minutes": 45,
+          "kind": "setup",
+          "title": "Build the workspace in one sitting",
+          "why": "Every later task assumes these five things exist. Doing them once, together, removes every 'where do I put this' moment for the rest of the month.",
+          "steps": [
+            "Google Drive: create folder Work-Alpha with subfolders 00-Admin, 01-Literature, 02-Targets, 03-Paper (with data, code, output, drafts inside), 04-Proposal, 05-Outreach",
+            "Install Zotero (zotero.org) and the browser connector. Create one collection called Month-1",
+            "Open Google Colab (colab.research.google.com), make a notebook called 2026-09-05_setup.ipynb, run print('ok'), save to 03-Paper/code",
+            "Make a Google Scholar profile alert: search your track's keywords, click Create alert",
+            "Bookmark folder 'Work-Alpha' in your browser with: this app, Drive, Zotero web, Colab, Scholar, Connected Papers, OpenAlex"
+          ],
+          "prompt": "I am setting up a research workspace for a PhD application. Give me a one-line description to paste into a README for each of these Drive folders: 00-Admin, 01-Literature, 02-Targets, 03-Paper, 04-Proposal, 05-Outreach. Under 15 words each.",
+          "output": "Drive tree exists, Zotero installed, Colab notebook saved, one Scholar alert, one bookmark folder.",
+          "done": "You can open all five in under a minute from the bookmark folder."
+        },
+        {
+          "id": "d1t2",
+          "minutes": 60,
+          "kind": "think",
+          "title": "Write both research questions in one page each",
+          "why": "You cannot choose between two vague ideas. Forcing each into the same one-page shape makes the comparison honest.",
+          "steps": [
+            "Open a Google Doc: 2026-09-05_two-questions_v1",
+            "For track A and track B, fill the same six headings: Question (one sentence), Why it matters (three lines), Data I can actually get (name the file), Method in one sentence, Who would supervise this (two names or 'unknown'), What I already know (courses, dissertation, code)",
+            "Use the AI prompt below to sharpen each question, then rewrite it in your own words",
+            "Save to 00-Admin"
+          ],
+          "prompt": "Here is a draft PhD research question: [PASTE]. Rewrite it three ways: (1) narrower and testable with one dataset, (2) as a causal question naming the treatment and the outcome, (3) as a policy question a minister would care about. Then list the two most likely referee objections to each. Keep every line under 25 words.",
+          "output": "One Google Doc with two one-page question sheets.",
+          "done": "Every heading has real words under it for both tracks, including 'unknown' where that is the truth."
+        },
+        {
+          "id": "d1t3",
+          "minutes": 45,
+          "kind": "think",
+          "title": "Score the tracks and decide",
+          "why": "A decision written with numbers is one you will stop re-opening every weekend.",
+          "steps": [
+            "In the Decision page of this app, score each track 1 to 5 on the six criteria (the app sums them)",
+            "Read the sums. If they are within 3 points, the tie-break is 'which dataset can I download tonight'",
+            "Set the active track in Settings (A, B, or Both with a primary)",
+            "Write the three-line reason in the Decision page; it is shown on the dashboard from now on"
+          ],
+          "prompt": "I have to choose between two PhD directions. Track A: [PASTE A QUESTION]. Track B: [PASTE B QUESTION]. My background: [MSc in X, dissertation on Y, know Python at level Z]. Score each track 1 to 5 on: data access within a month, fit to my background, supervisor supply in [countries], scholarship fit, publishability in 2 years, my genuine interest. Give a one-sentence justification per score and a recommendation. Then tell me the single strongest reason to pick the other one.",
+          "output": "Decision recorded in the app with scores and a reason.",
+          "done": "The Settings page shows the chosen track and the dashboard shows the reason."
+        },
+        {
+          "id": "d1t4",
+          "minutes": 60,
+          "kind": "setup",
+          "title": "Load the prompt library and the note template",
+          "why": "Reading with a fixed template is what turns 10 papers into a gap matrix. Deciding the template now means every note from Day 3 has the same shape.",
+          "steps": [
+            "Open the Prompts page of this app. Read the seven prompts once; you will reuse them all month",
+            "Copy the Paper Note template into a Google Doc named TEMPLATE_paper-note and put it in 01-Literature",
+            "Copy the Research Log template into 00-Admin",
+            "Test the Paper Note prompt on any PDF you already own to see the shape of the answer"
+          ],
+          "prompt": "You are my reading assistant. When I paste a paper's abstract, introduction and conclusion, answer under exactly these headings and nothing else: Question, Data (source, years, N), Method (one sentence), Main result (with the number), Identification worry, What it leaves open, One sentence I could cite it for. Under 40 words per heading. Say 'not stated' rather than guessing.",
+          "output": "Two template Docs, and one test note.",
+          "done": "The test note has all seven headings filled from a real paper."
+        },
+        {
+          "id": "d1t5",
+          "minutes": 60,
+          "kind": "people",
+          "title": "Record the loose ends and the calendar",
+          "why": "Five admin facts decide whether an application is even possible. Finding them out costs an hour now or a rejection later.",
+          "steps": [
+            "In the People page, Loose ends tab, fill: English test (which, valid until), partner visa rule for each target country, domestic tuition status, alumni library access (which library, proxy URL), scholarship round dates",
+            "For anything you cannot find in 10 minutes, write 'waiting: asked [who] on [date]' and move on",
+            "Put every known deadline in the Deadlines tab; the dashboard counts down to the nearest one",
+            "Email your former university library about alumni access today (template in Prompts)"
+          ],
+          "prompt": "Write an email under 120 words to [University] library asking whether alumni have remote database access, which databases, and how to activate it. Polite, no adverbs, one question per sentence.",
+          "output": "Five loose-end rows and at least one dated deadline.",
+          "done": "No loose end row is blank; each says a fact or names who you asked."
+        }
+      ]
+    },
+    {
+      "n": 2,
+      "date": "2026-09-06",
+      "theme": "Map the literature",
+      "goal": "G2",
+      "tasks": [
+        {
+          "id": "d2t1",
+          "minutes": 60,
+          "kind": "read",
+          "title": "Verify the 15 seed papers into Zotero",
+          "why": "A citation exists only if the real paper is in the library. Fifteen verified papers is the whole floor of the proposal.",
+          "steps": [
+            "Open the Library page: the 15 seeds for your track are pre-filled",
+            "For each: search Google Scholar, click the Zotero connector to save it, tick Verified in the Library page when the PDF or DOI is in Zotero",
+            "If a paper cannot be found in 5 minutes, mark it Not found and replace it using the prompt below",
+            "Use Unpaywall (the browser extension) for open versions; use the alumni proxy if you got one; otherwise email the author with the request template"
+          ],
+          "prompt": "I could not find this paper: [CITATION]. Suggest three substitutes published 2015 or later on the same question in a top field journal, with authors, year, journal and a one-line reason each. Do not invent papers: if unsure, say so.",
+          "output": "15 rows in Library marked Verified, each with a DOI or PDF in Zotero.",
+          "done": "Zotero collection Month-1 shows 15 items with attachments or DOIs."
+        },
+        {
+          "id": "d2t2",
+          "minutes": 45,
+          "kind": "read",
+          "title": "Snowball forward and backward",
+          "why": "Seeds are what I know. Snowballing is how you find what the field knows that I do not.",
+          "steps": [
+            "Open connectedpapers.com, paste your three most central seeds one at a time",
+            "From each graph, save the two most-cited recent papers you had not seen into Zotero",
+            "In Scholar, click 'Cited by' on your oldest seed and sort by date; save one 2023 or later paper",
+            "Add every new find to the Library page as a row with Verified unticked"
+          ],
+          "prompt": "Here are 15 papers on [TOPIC]: [PASTE LIST]. Which three are the hubs everything else cites? Which subtopic is missing from this list entirely? Name two papers that would fill it, and say if you are unsure they exist.",
+          "output": "6 to 9 new candidate rows in Library.",
+          "done": "Library has at least 21 rows."
+        },
+        {
+          "id": "d2t3",
+          "minutes": 45,
+          "kind": "read",
+          "title": "Build the journal map",
+          "why": "Knowing where the conversation happens tells you where your paper belongs and which journals a supervisor publishes in.",
+          "steps": [
+            "The Venues tab lists 8 journals for your track; for each, open its website and note: open access yes/no, typical article length, latest issue date",
+            "Rank them 1 to 8 for where you would first submit",
+            "Tick 'read regularly' on three; set a Scholar alert for each"
+          ],
+          "prompt": "For the journal [NAME], tell me: its scope in one line, whether it publishes empirical development or finance papers from South Asia, its rough acceptance difficulty (top field, strong field, solid), and one 2023 or later paper close to [MY QUESTION]. If you are unsure about any item, say unsure.",
+          "output": "8 venue rows completed and ranked.",
+          "done": "Three venues carry a Scholar alert."
+        },
+        {
+          "id": "d2t4",
+          "minutes": 60,
+          "kind": "read",
+          "title": "Fix the reading order",
+          "why": "Read the review paper first and the frontier paper last, or you will spend Day 3 confused.",
+          "steps": [
+            "Sort the Library so that reviews and surveys come first, the two most-cited empirical papers next, then the rest by year descending",
+            "Number the first ten in the Order column; those are Days 3 and 4",
+            "Download all ten PDFs into 01-Literature with the naming rule",
+            "Read the abstract of each of the ten once, five minutes each, and write one line in Notes: 'this is about X'"
+          ],
+          "prompt": "Order these papers for a newcomer to read in two days, five per day: [LIST]. Reviews first, then the two most-cited empirical papers, then the most recent frontier. Give the order and one line per paper on what to look for while reading it.",
+          "output": "Order column filled 1 to 10, ten PDFs downloaded.",
+          "done": "Ten PDFs are in 01-Literature with correct names."
+        },
+        {
+          "id": "d2t5",
+          "minutes": 60,
+          "kind": "write",
+          "title": "Write the one-page literature sketch",
+          "why": "Writing a paragraph before reading closely gives you a hypothesis about the field that Days 3 and 4 will confirm or break.",
+          "steps": [
+            "New Doc 2026-09-06_lit-sketch_v1 in 01-Literature",
+            "Four paragraphs: what the field asks; what methods it uses; what it finds; what nobody seems to answer",
+            "Use the prompt below with your ten abstracts; then rewrite every sentence yourself, no pasted sentences",
+            "Cite papers as (Author, Year) only; the bibliography comes from Zotero later"
+          ],
+          "prompt": "Here are ten abstracts: [PASTE]. Write a 250-word sketch of the field with four paragraphs: the questions, the methods, the findings, the gaps. Use (Author Year) citations only from these abstracts. Flag any claim you are unsure the abstracts support.",
+          "output": "One page, four paragraphs, saved.",
+          "done": "The Gaps paragraph names one concrete missing thing."
+        }
+      ]
+    },
+    {
+      "n": 3,
+      "date": "2026-09-12",
+      "theme": "Read five papers properly",
+      "goal": "G3",
+      "tasks": [
+        {
+          "id": "d3t1",
+          "minutes": 50,
+          "kind": "read",
+          "title": "Paper 1 (the review): full structured note",
+          "why": "The review is your map. Its note will be twice as long as the others and that is right.",
+          "steps": [
+            "Open the PDF, read introduction and conclusion first, then skim the body headings",
+            "Paste abstract, intro and conclusion into the Paper Note prompt (from Prompts page)",
+            "Read the AI answer against the paper: fix every line the paper does not support",
+            "Save as a Note in the Library row (Notes column opens an editor) and as a Doc in 01-Literature"
+          ],
+          "prompt": "USE: Paper Note prompt (Prompts page).",
+          "output": "One complete structured note.",
+          "done": "All seven headings filled, none says 'not stated' unless the paper truly does not state it."
+        },
+        {
+          "id": "d3t2",
+          "minutes": 50,
+          "kind": "read",
+          "title": "Paper 2: full structured note",
+          "why": "Same shape, same discipline. The value is in the sameness.",
+          "steps": [
+            "Same four steps as Paper 1",
+            "Add one extra line at the end: 'differs from Paper 1 by...'"
+          ],
+          "prompt": "USE: Paper Note prompt.",
+          "output": "One structured note.",
+          "done": "Seven headings plus the 'differs from' line."
+        },
+        {
+          "id": "d3t3",
+          "minutes": 50,
+          "kind": "read",
+          "title": "Paper 3: full structured note",
+          "why": "Third note: you should now be faster than the timer.",
+          "steps": [
+            "Same four steps",
+            "Start a running list in the Gap page: every 'what it leaves open' line goes there"
+          ],
+          "prompt": "USE: Paper Note prompt.",
+          "output": "One structured note, Gap page has 3 lines.",
+          "done": "Seven headings, gap line copied."
+        },
+        {
+          "id": "d3t4",
+          "minutes": 50,
+          "kind": "read",
+          "title": "Paper 4: full structured note",
+          "why": "Keep the shape.",
+          "steps": [
+            "Same four steps",
+            "Copy the 'leaves open' line to the Gap page"
+          ],
+          "prompt": "USE: Paper Note prompt.",
+          "output": "One structured note.",
+          "done": "Seven headings, gap line copied."
+        },
+        {
+          "id": "d3t5",
+          "minutes": 50,
+          "kind": "read",
+          "title": "Paper 5: full structured note",
+          "why": "Half way. Five notes in one day is a real week of work for most students.",
+          "steps": [
+            "Same four steps",
+            "Copy the 'leaves open' line to the Gap page",
+            "In the Log, write which paper you would email the author of, and why"
+          ],
+          "prompt": "USE: Paper Note prompt.",
+          "output": "One structured note, Gap page has 5 lines.",
+          "done": "Five Library rows show Note: done."
+        },
+        {
+          "id": "d3t6",
+          "minutes": 20,
+          "kind": "review",
+          "title": "Five-note comparison",
+          "why": "Five notes in the same shape can be compared in a table. That table is the start of the gap matrix.",
+          "steps": [
+            "Open the Gap page: the matrix has a row per read paper and columns for Data, Method, Outcome, Shock or Screen, Country, Years",
+            "Fill the five rows from your notes",
+            "Look down each column: where are all five the same? That sameness is a candidate gap"
+          ],
+          "prompt": "Here are five paper notes in the same format: [PASTE]. Build a table with rows = papers and columns = data source, country, years, method, outcome, key finding. Then name two things all five have in common that a new paper could vary.",
+          "output": "Five rows of the gap matrix filled.",
+          "done": "One candidate gap written under the matrix."
+        }
+      ]
+    },
+    {
+      "n": 4,
+      "date": "2026-09-13",
+      "theme": "Read five more and find the gap",
+      "goal": "G3",
+      "tasks": [
+        {
+          "id": "d4t1",
+          "minutes": 45,
+          "kind": "read",
+          "title": "Paper 6: structured note",
+          "why": "Same shape.",
+          "steps": [
+            "Four steps, then gap line to Gap page"
+          ],
+          "prompt": "USE: Paper Note prompt.",
+          "output": "Note 6.",
+          "done": "Seven headings."
+        },
+        {
+          "id": "d4t2",
+          "minutes": 45,
+          "kind": "read",
+          "title": "Paper 7: structured note",
+          "why": "Same shape.",
+          "steps": [
+            "Four steps, then gap line"
+          ],
+          "prompt": "USE: Paper Note prompt.",
+          "output": "Note 7.",
+          "done": "Seven headings."
+        },
+        {
+          "id": "d4t3",
+          "minutes": 45,
+          "kind": "read",
+          "title": "Paper 8: structured note",
+          "why": "Same shape.",
+          "steps": [
+            "Four steps, then gap line"
+          ],
+          "prompt": "USE: Paper Note prompt.",
+          "output": "Note 8.",
+          "done": "Seven headings."
+        },
+        {
+          "id": "d4t4",
+          "minutes": 45,
+          "kind": "read",
+          "title": "Paper 9: structured note",
+          "why": "Same shape.",
+          "steps": [
+            "Four steps, then gap line"
+          ],
+          "prompt": "USE: Paper Note prompt.",
+          "output": "Note 9.",
+          "done": "Seven headings."
+        },
+        {
+          "id": "d4t5",
+          "minutes": 45,
+          "kind": "read",
+          "title": "Paper 10: structured note",
+          "why": "Ten notes. This is the reading floor of a proposal.",
+          "steps": [
+            "Four steps, then gap line",
+            "Fill rows 6 to 10 of the gap matrix"
+          ],
+          "prompt": "USE: Paper Note prompt.",
+          "output": "Note 10, matrix rows 6 to 10.",
+          "done": "Ten Library rows show Note: done."
+        },
+        {
+          "id": "d4t6",
+          "minutes": 45,
+          "kind": "write",
+          "title": "Name the gap in one sentence",
+          "why": "A proposal is one sentence about what is missing, followed by evidence. This is that sentence.",
+          "steps": [
+            "Read down every column of the matrix",
+            "Write three candidate gap sentences of the form: 'Nobody has looked at [outcome] under [condition] in [place] using [data]'",
+            "Use the hostile reviewer prompt (Prompts page) on each; keep the one that survives",
+            "Paste the winner into the Gap page's Gap sentence box; it now appears on the dashboard"
+          ],
+          "prompt": "USE: Hostile reviewer prompt on each candidate gap sentence.",
+          "output": "One gap sentence saved.",
+          "done": "The dashboard shows the gap sentence and it names outcome, condition, place and data."
+        }
+      ]
+    },
+    {
+      "n": 5,
+      "date": "2026-09-19",
+      "theme": "Touch the data",
+      "goal": "G4",
+      "tasks": [
+        {
+          "id": "d5t1",
+          "minutes": 60,
+          "kind": "data",
+          "title": "Get the dataset and file its source",
+          "why": "A proposal that names a dataset you have already opened is a different document from one that hopes.",
+          "steps": [
+            "Track A: register on Harvard Dataverse, download the Bangladesh Integrated Household Survey household file (the .dta or .csv); then open NASA POWER (power.larc.nasa.gov) and download daily rainfall and temperature for one district centroid, 2011 to 2019. Track B: download 5 years of daily DSEX and DSEX Shariah index values from dsebd.org (or investing.com as a fallback) and Bangladesh Bank's policy rate table",
+            "Save raw files to 03-Paper/data/raw with the naming rule. Never edit a raw file",
+            "In the Data page, add one row per file: source URL, download date, filters used, DOI or citation",
+            "Upload the files to Colab (or mount Drive)"
+          ],
+          "prompt": "I have downloaded [FILE] from [SOURCE]. Write the citation for this dataset in APA and in BibTeX. Then list the three columns a first analysis of [MY QUESTION] needs and what each must be checked for (units, missing codes, date format).",
+          "output": "Raw files in Drive, Data page rows with sources.",
+          "done": "Every raw file has a row with a URL and a download date."
+        },
+        {
+          "id": "d5t2",
+          "minutes": 60,
+          "kind": "data",
+          "title": "The four sanity checks in Colab",
+          "why": "Rows and columns, missing values, summary statistics, coverage. Every dataset, every time, before any regression.",
+          "steps": [
+            "New notebook 2026-09-19_sanity_v1.ipynb",
+            "Ask the AI for the code (prompt below), paste, run, read",
+            "Check 1: rows and columns against what the documentation says",
+            "Check 2: missing values per column as a percentage",
+            "Check 3: describe() with anything a thousand times off flagged",
+            "Check 4: date range and district or ticker coverage",
+            "Save the notebook and a screenshot of the output to 03-Paper/output"
+          ],
+          "prompt": "Write Python (pandas) for Google Colab that loads [FILE TYPE] from [PATH] and prints: shape; missing values per column as %; describe() for numeric columns; the min and max date; the count of unique [district / ticker]. Add a comment above each block saying what a bad answer would look like. No plotting yet.",
+          "output": "One notebook with four check outputs.",
+          "done": "You can say out loud N rows, the worst missing column, and the year range."
+        },
+        {
+          "id": "d5t3",
+          "minutes": 60,
+          "kind": "data",
+          "title": "One figure that shows the question",
+          "why": "One honest figure in a proposal beats three pages of promises.",
+          "steps": [
+            "Track A: monthly rainfall for the district with the survey years shaded, or household consumption distribution by shock year. Track B: cumulative return of the Shariah index versus the main index with crisis months shaded",
+            "Ask the AI for matplotlib code; label axes with units; no title inside the figure (the caption does that)",
+            "Save as PNG at 300 dpi to 03-Paper/output with the naming rule",
+            "Attach the file name in the Data page Figures tab"
+          ],
+          "prompt": "Write matplotlib code for Colab that plots [DESCRIBE] from dataframe [NAME] with columns [LIST]. Axis labels with units, a light grid, shaded regions for [PERIODS], legend outside the plot, save as PNG at 300 dpi to [PATH]. Use a colourblind-safe palette.",
+          "output": "One PNG.",
+          "done": "A stranger looking at the figure could guess your research question."
+        },
+        {
+          "id": "d5t4",
+          "minutes": 60,
+          "kind": "data",
+          "title": "One summary table",
+          "why": "Table 1 of every empirical paper is descriptive statistics. Having yours now means the proposal's data section writes itself.",
+          "steps": [
+            "Ask the AI for a table: mean, sd, min, max, N for the six variables the question needs",
+            "Track A add a column split by shock year vs normal year. Track B add a column split by crisis vs calm months",
+            "Export to CSV and to a formatted table image; save both to 03-Paper/output",
+            "Paste the table into the Data page Tables tab as text"
+          ],
+          "prompt": "From dataframe [NAME], produce a descriptive statistics table for [VARIABLES] with mean, sd, min, max, N, split by [GROUP]. Output as a pandas DataFrame, then save to CSV and render as a clean table image with matplotlib. Round to 2 decimals.",
+          "output": "One CSV, one table image.",
+          "done": "The table has six variables and two groups."
+        },
+        {
+          "id": "d5t5",
+          "minutes": 30,
+          "kind": "write",
+          "title": "Write the data paragraph",
+          "why": "While the numbers are fresh.",
+          "steps": [
+            "New Doc 2026-09-19_data-paragraph_v1 in 04-Proposal",
+            "One paragraph: source, years, N, unit of observation, the key variables, one limitation",
+            "Cite the dataset with the citation from Task 1"
+          ],
+          "prompt": "Here are my sanity check outputs and summary table: [PASTE]. Write a 120-word data paragraph for a research proposal: source, years, unit of observation, N, key variables, one honest limitation. Formal, no adverbs.",
+          "output": "One paragraph saved.",
+          "done": "The paragraph states N and the years."
+        }
+      ]
+    },
+    {
+      "n": 6,
+      "date": "2026-09-20",
+      "theme": "People and dates",
+      "goal": "G5",
+      "tasks": [
+        {
+          "id": "d6t1",
+          "minutes": 75,
+          "kind": "people",
+          "title": "Find 15 potential supervisors",
+          "why": "A PhD is a person as much as a topic. Fifteen names ranked is the difference between applying and hoping.",
+          "steps": [
+            "Open the People page, Supervisors tab (15 empty rows)",
+            "Method 1: the authors of your ten notes; check each on OpenAlex (openalex.org) for affiliation and papers since 2022",
+            "Method 2: search Scholar with your track's keywords plus 'university' and each priority country",
+            "Method 3: open the department pages of the priority institutions in the Track panel and scan staff lists",
+            "For each name fill: institution, country, pillar, last three papers (OpenAlex), active grant yes/no/unknown, what data I could bring them",
+            "Rank A (perfect fit, 3), B (good fit, 7), C (possible, 5)"
+          ],
+          "prompt": "Here is a researcher's recent paper list: [PASTE from OpenAlex]. In three lines: their main research question since 2020, the data they use, and one specific way my proposed project ([MY QUESTION]) would extend their work. Then draft the first sentence of an email to them that proves I read their [YEAR] paper.",
+          "output": "15 supervisor rows with rank.",
+          "done": "Three rows are rank A and each has a 'why me for them' line."
+        },
+        {
+          "id": "d6t2",
+          "minutes": 45,
+          "kind": "people",
+          "title": "Check every target against the hard constraint",
+          "why": "Funded place, full stipend, partner can legally live there. Any target failing one is not a target.",
+          "steps": [
+            "For each rank A and B supervisor's country, fill the Constraint tab: funded PhD route (name the scholarship), stipend amount, partner visa rule with a URL",
+            "Mark each supervisor row Pass, Fail, or Unknown",
+            "Anything Unknown becomes a loose end with a name to ask"
+          ],
+          "prompt": "For a PhD student from Bangladesh at [UNIVERSITY, COUNTRY] in 2027: name the main fully funded doctoral scholarships with stipend amounts, and state the rule for a spouse accompanying the student (visa type, right to work). Give the official URL for each claim. If you are not certain, say so rather than guessing.",
+          "output": "Constraint rows for every A and B country.",
+          "done": "No rank A supervisor has a Fail; Unknowns are in Loose ends with a name."
+        },
+        {
+          "id": "d6t3",
+          "minutes": 45,
+          "kind": "people",
+          "title": "Date the scholarship rounds",
+          "why": "A deadline you do not know about is a deadline you miss.",
+          "steps": [
+            "For each Pass institution, find the doctoral scholarship page and record: round name, opens, closes, decision date, what the application needs",
+            "Add every closing date to the Deadlines tab",
+            "Add a 'send proposal to supervisor' milestone six weeks before each closing date"
+          ],
+          "prompt": "USE: web search, not the assistant, for dates. Then paste the page into the assistant with: 'Extract the application deadline, the required documents, and the stipend from this page. Quote the exact sentences.'",
+          "output": "Deadlines tab has at least three dated rounds.",
+          "done": "The dashboard countdown shows a real date."
+        },
+        {
+          "id": "d6t4",
+          "minutes": 45,
+          "kind": "write",
+          "title": "Write the three positioning paragraphs",
+          "why": "A positioning paragraph is the one paragraph a supervisor reads. Three versions for three rank A people.",
+          "steps": [
+            "For each rank A supervisor: 120 words, first sentence proves you read their paper, second says your question, third says the data you bring, fourth is one ask (a 20-minute call)",
+            "Save to 05-Outreach as 2026-09-20_positioning_[surname]_v1",
+            "Do not send yet; Day 8 sends"
+          ],
+          "prompt": "USE: Outreach email prompt (Prompts page) with the supervisor's paper list pasted.",
+          "output": "Three paragraphs saved.",
+          "done": "Each paragraph names a specific paper by year and contains exactly one ask."
+        },
+        {
+          "id": "d6t5",
+          "minutes": 30,
+          "kind": "review",
+          "title": "Mid-month review",
+          "why": "Halfway. What is behind, what is ahead, what to cut.",
+          "steps": [
+            "Open the Dashboard: read the heatmap and the goal track",
+            "For any unticked task from Days 1 to 5, decide: do it in the buffer slot on Day 7, or drop it and write why in the Log",
+            "Update the month 2 sketch in the Log with what you now know"
+          ],
+          "prompt": "Here is my research log for three weekends: [PASTE]. Tell me the one thing I keep postponing, the one thing I am spending too long on, and the single most valuable task for the final two days.",
+          "output": "Log entry with the review.",
+          "done": "Every unticked task has a decision next to it."
+        }
+      ]
+    },
+    {
+      "n": 7,
+      "date": "2026-09-26",
+      "theme": "Write the proposal",
+      "goal": "G6",
+      "tasks": [
+        {
+          "id": "d7t1",
+          "minutes": 30,
+          "kind": "write",
+          "title": "Outline the two pages",
+          "why": "A two-page proposal has eight parts in a fixed order. Outline first, or the writing wanders.",
+          "steps": [
+            "New Doc 2026-09-26_proposal_v1 in 04-Proposal",
+            "Headings in this order: Title; Question (2 lines); Motivation (why now, why here); What is known (5 citations from your notes); The gap (your sentence); Data (your paragraph); Method (one paragraph naming the estimator and the identification argument); Contribution and fit (why this supervisor, why this programme); Timeline (three years in six lines)",
+            "Under each heading write the one sentence it must say"
+          ],
+          "prompt": "Turn these materials into a two-page proposal outline with one sentence per section: gap sentence [PASTE], data paragraph [PASTE], five paper notes [PASTE]. Sections: Title, Question, Motivation, What is known, The gap, Data, Method, Contribution and fit, Timeline. Do not write the proposal, only the sentence each section must carry.",
+          "output": "Outline Doc with nine headings and a sentence each.",
+          "done": "Every heading has one sentence."
+        },
+        {
+          "id": "d7t2",
+          "minutes": 90,
+          "kind": "write",
+          "title": "Draft the full two pages",
+          "why": "Draft fast, in one sitting, from the outline. Editing is tomorrow.",
+          "steps": [
+            "Write each section from its sentence; aim for 900 to 1100 words total",
+            "Method: name the estimator (Track A: panel fixed effects with clustered errors, or difference in differences around shocks. Track B: CAPM and Fama-French alphas with a crisis dummy, or a DCC-GARCH on the two indices) and one sentence on why it identifies the effect",
+            "Cite only papers in your Library; insert (Author Year) as you go",
+            "Add the figure and the table with captions"
+          ],
+          "prompt": "USE: Section drafter prompt (Prompts page), one section at a time, then rewrite every sentence in your own words. Never paste an AI sentence unchanged into the proposal.",
+          "output": "Proposal v1, about 1000 words, one figure, one table.",
+          "done": "Nine sections filled, word count between 900 and 1100."
+        },
+        {
+          "id": "d7t3",
+          "minutes": 45,
+          "kind": "review",
+          "title": "The hostile review, in a fresh chat",
+          "why": "A reviewer who has read your notes is a collaborator. A fresh chat with only the proposal is a referee.",
+          "steps": [
+            "Open a brand-new chat with no history",
+            "Paste only the proposal and the Hostile reviewer prompt",
+            "Copy the answer into the Review page of this app, unedited",
+            "Rank the objections: which three would sink it?"
+          ],
+          "prompt": "USE: Hostile reviewer prompt (Prompts page). Fresh chat, nothing else pasted.",
+          "output": "Review saved with three ranked objections.",
+          "done": "Review page shows the three objections."
+        },
+        {
+          "id": "d7t4",
+          "minutes": 60,
+          "kind": "write",
+          "title": "Answer the three objections in the text",
+          "why": "The proposal that gets funded is the one that answers the objection before the reader raises it.",
+          "steps": [
+            "For each objection: find the paragraph it attacks; add or change two sentences that answer it; if you cannot answer it, say so in the text as a limitation with a plan",
+            "Save as v2",
+            "Run a second fresh-chat review on v2 and note whether the same objections return"
+          ],
+          "prompt": "This proposal received the objection: [OBJECTION]. Here is the paragraph it targets: [PASTE]. Suggest two sentences that answer it without over-claiming, and one sentence that concedes it as a limitation if it cannot be answered. Formal register.",
+          "output": "Proposal v2 and a second review.",
+          "done": "The second review does not repeat the top objection."
+        },
+        {
+          "id": "d7t5",
+          "minutes": 45,
+          "kind": "review",
+          "title": "Buffer: finish anything unticked",
+          "why": "Every plan needs one slot for the tasks that ran over.",
+          "steps": [
+            "Open the Dashboard; sort by unticked",
+            "Do the shortest unfinished task first",
+            "Anything still undone at the end goes to month 2 with a note"
+          ],
+          "prompt": "None.",
+          "output": "Fewer unticked tasks.",
+          "done": "Every remaining unticked task has a month 2 note."
+        }
+      ]
+    },
+    {
+      "n": 8,
+      "date": "2026-09-27",
+      "theme": "Finish the pack",
+      "goal": "G7",
+      "tasks": [
+        {
+          "id": "d8t1",
+          "minutes": 60,
+          "kind": "write",
+          "title": "Proposal final and bibliography",
+          "why": "Final means: read aloud once, bibliography from Zotero, PDF exported.",
+          "steps": [
+            "Read the whole thing aloud; fix every sentence you stumbled on",
+            "In Zotero, select the cited papers, right-click, Create bibliography, APA (Track B law-adjacent parts: OSCOLA), paste at the end",
+            "Export PDF as 2026-09-27_proposal_final.pdf to 04-Proposal",
+            "Word count on the first page of the PDF"
+          ],
+          "prompt": "Proofread this proposal for grammar, repeated words, and any sentence over 30 words. Return only a list of line-level fixes, not a rewrite.",
+          "output": "Final PDF with bibliography.",
+          "done": "The PDF is two pages plus references and opens on your phone."
+        },
+        {
+          "id": "d8t2",
+          "minutes": 45,
+          "kind": "write",
+          "title": "CV bullets from the month",
+          "why": "The month produced evidence: a dataset explored, a figure, a literature map. That is three CV lines.",
+          "steps": [
+            "Open your CV; add a Research section if missing",
+            "Three bullets: the proposal (title and one-line question), the data work (dataset, N, tool), the literature review (15 papers, gap identified)",
+            "Add Python (pandas, matplotlib) and Zotero to skills if they were not there",
+            "Save as 2026-09-27_CV_v[n].pdf in 00-Admin"
+          ],
+          "prompt": "Turn these facts into three CV bullet points, each under 20 words, starting with a verb, no adjectives: [PASTE proposal title, dataset and N, figure, 15 papers, gap sentence].",
+          "output": "Updated CV PDF.",
+          "done": "Three new bullets exist and each states a number."
+        },
+        {
+          "id": "d8t3",
+          "minutes": 60,
+          "kind": "people",
+          "title": "Three outreach emails, sent",
+          "why": "Sent is the only state that matters. A perfect unsent email is nothing.",
+          "steps": [
+            "Take the three positioning paragraphs from Day 6",
+            "Add: subject line 'Prospective PhD student: [topic] (question about your [YEAR] paper)', greeting, the paragraph, one line offering the two-page proposal attached, sign-off with your name and MSc",
+            "Attach the proposal PDF. Under 200 words. No adverbs. One ask",
+            "Send all three. Log each in the People page Email log with the date. Set a follow-up date 14 days out"
+          ],
+          "prompt": "USE: Outreach email prompt (Prompts page), then cut anything that sounds like flattery.",
+          "output": "Three sent emails logged.",
+          "done": "Email log shows three rows with a sent date and a follow-up date."
+        },
+        {
+          "id": "d8t4",
+          "minutes": 30,
+          "kind": "data",
+          "title": "Push the month's code to GitHub",
+          "why": "Visible progress. A supervisor who clicks your GitHub sees a notebook, a figure and a README.",
+          "steps": [
+            "Create a public repository named after the project",
+            "Upload: the two notebooks, the figure, the table CSV (never the raw survey data), and a README with the question, the data source and citation, and what the notebooks do",
+            "Put the repository URL in the Settings page"
+          ],
+          "prompt": "Write a README for a research repository: project question [PASTE], data source with citation [PASTE], what each notebook does [LIST], how to run it in Colab. Under 200 words. Note that raw survey data is not included and where to get it.",
+          "output": "Public repo with README.",
+          "done": "The README renders and the notebooks open in Colab from the links."
+        },
+        {
+          "id": "d8t5",
+          "minutes": 45,
+          "kind": "review",
+          "title": "Month review and the month 2 plan",
+          "why": "The last hour of a month is worth more than the first.",
+          "steps": [
+            "Fill the Month review page: hours logged vs planned, goals met vs missed, the three biggest lessons",
+            "Month 2 goal options: (a) replicate one table from your central paper on your data, (b) apply to the first round, (c) a second dataset. Pick one",
+            "Write the month 2 goal sentence and the first two days' tasks",
+            "Export the whole app state as JSON to 00-Admin (Settings page, Export)"
+          ],
+          "prompt": "Here is my month 1 review: [PASTE]. Propose a month 2 plan with the same shape (two days a week, five hours a day, four weekends) that turns the proposal into a first empirical result. Name the end goal in one sentence and the goal for each weekend.",
+          "output": "Month review page filled, month 2 goal saved, JSON exported.",
+          "done": "The dashboard shows the month 2 goal sentence and a JSON file is in 00-Admin."
+        }
+      ]
+    }
+  ],
+  "prompts": [
+    {
+      "id": "paper-note",
+      "name": "Paper Note",
+      "when": "Every paper you read closely (Days 3 and 4)",
+      "text": "You are my reading assistant. Here are the abstract, introduction and conclusion of a paper. Answer under exactly these headings and nothing else: Question; Data (source, years, N); Method (one sentence); Main result (with the number); Identification worry; What it leaves open; One sentence I could cite it for. Under 40 words per heading. Write 'not stated' rather than guessing. Do not add headings.\n\n[PASTE TEXT]"
+    },
+    {
+      "id": "hostile",
+      "name": "Hostile reviewer",
+      "when": "Any gap sentence or proposal draft. Always in a fresh chat with nothing else pasted.",
+      "text": "You are a sceptical referee for a top field journal in economics. You have not seen anything about this project before. Read the text below and give: the three objections most likely to lead to rejection, ranked; for each, the specific sentence or paragraph it targets and what evidence would remove it; one thing the author claims that the text does not support; and one strength, in one line. Be blunt, be specific, do not soften.\n\n[PASTE TEXT]"
+    },
+    {
+      "id": "section",
+      "name": "Section drafter",
+      "when": "Drafting one proposal section from its outline sentence (Day 7)",
+      "text": "Draft the [SECTION NAME] section of a two-page PhD research proposal in economics. It must carry this sentence: [SENTENCE]. Use only these sources, cited as (Author Year): [LIST]. 100 to 160 words, formal, no adverbs, no rhetorical questions, no 'in today's world'. If a claim needs a citation I have not given, write [CITATION NEEDED] rather than inventing one."
+    },
+    {
+      "id": "outreach",
+      "name": "Outreach email",
+      "when": "Positioning paragraphs and emails (Days 6 and 8)",
+      "text": "Write an email to Professor [SURNAME] from a prospective PhD student. Rules: under 200 words; the first sentence must refer to a specific finding in their [YEAR] paper [TITLE]; the second states my question in one sentence: [QUESTION]; the third says what data I bring: [DATA]; exactly one ask, a 20-minute call in the next month; no adverbs, no flattery, no 'I am passionate'. Sign as [NAME], MSc [DEGREE], [UNIVERSITY]. Their recent papers: [PASTE]."
+    },
+    {
+      "id": "code",
+      "name": "Colab code",
+      "when": "Any data task (Day 5)",
+      "text": "Write Python for Google Colab using pandas and matplotlib. Task: [DESCRIBE]. Data: [FILE, COLUMNS]. Rules: one cell per step with a one-line comment saying what a wrong output would look like; never modify the raw dataframe, always assign to a new name; print shapes after every merge or filter; save every figure at 300 dpi to [PATH] with the file name [YYYY-MM-DD_short-description_v1.png]."
+    },
+    {
+      "id": "substitute",
+      "name": "Paper substitute",
+      "when": "A seed paper cannot be found (Day 2)",
+      "text": "I could not find this paper: [CITATION]. Suggest three substitutes published 2015 or later on the same question in a well-regarded field journal, giving authors, year, journal and a one-line reason each. Do not invent papers: if you are not sure a paper exists, say so and give a search string I can use on Google Scholar instead."
+    },
+    {
+      "id": "review-log",
+      "name": "Log reviewer",
+      "when": "Mid-month and month end",
+      "text": "Here is my research log: [PASTE]. Tell me in under 120 words: the one thing I keep postponing, the one thing I spend too long on, the single most valuable task for the next session, and one habit to stop. No encouragement."
+    }
+  ],
+  "templates": {
+    "paperNote": "Question:\nData (source, years, N):\nMethod (one sentence):\nMain result (with the number):\nIdentification worry:\nWhat it leaves open:\nOne sentence I could cite it for:\nDiffers from paper 1 by:",
+    "log": "Time spent:\nWhat I did:\nWhat I learned:\nWhat blocked me:\nTomorrow's first task:"
+  },
+  "decisionCriteria": [
+    "Data access within a month",
+    "Fit to my background",
+    "Supervisor supply in target countries",
+    "Scholarship fit (funded, stipend, partner visa)",
+    "Publishable within 2 years",
+    "My genuine interest"
+  ],
+  "looseEnds": [
+    "English test: which, score, valid until",
+    "Partner visa rule per target country",
+    "Domestic tuition status",
+    "Alumni library access: library, proxy URL",
+    "Scholarship round dates recorded"
+  ],
+  "gapColumns": [
+    "Paper",
+    "Data source",
+    "Country",
+    "Years",
+    "Method",
+    "Outcome",
+    "Shock or screen",
+    "Leaves open"
+  ],
+  "supervisorColumns": [
+    "Name",
+    "Institution",
+    "Country",
+    "Pillar",
+    "Last three papers",
+    "Active grant",
+    "Data I bring",
+    "Constraint",
+    "Rank",
+    "Contact status",
+    "Why me for them"
+  ],
+  "venueColumns": [
+    "Journal",
+    "Open access",
+    "Article length",
+    "Latest issue",
+    "My rank",
+    "Read regularly",
+    "Alert set"
+  ],
+  "dataColumns": [
+    "File",
+    "Source URL",
+    "Download date",
+    "Filters",
+    "Citation",
+    "Sanity checks passed"
+  ]
+}
