@@ -408,7 +408,7 @@ export function mount(root: HTMLElement, plan: Plan, storage: Storage): Promise<
         h("h1", { class: "wa-title" }, plan.name),
         h("p", { class: "wa-goal" }, plan.endGoal)),
       h("div", { class: "wa-head-r" },
-        ring(pct, 96, "#2457D6", "of the month",
+        ring(pct, 96, "var(--accent)", "of the month",
           Math.round(doneMinutes() / 60) + "h / " + Math.round(plannedTotal / 60) + "h"),
         h("div", { class: "wa-head-facts" },
           h("div", { class: "wa-fact" },
@@ -434,7 +434,11 @@ export function mount(root: HTMLElement, plan: Plan, storage: Storage): Promise<
     svg.innerHTML =
       '<svg viewBox="0 0 ' + size + " " + size + '" width="' + size + '" height="' + size + '">'
       + '<circle cx="' + size / 2 + '" cy="' + size / 2 + '" r="' + r + '" class="wa-ring-track"/>'
-      + '<circle cx="' + size / 2 + '" cy="' + size / 2 + '" r="' + r + '" class="wa-ring-fill" stroke="'
+      /* STYLE, never the `stroke` attribute: a presentation attribute is
+         not parsed as CSS, so `stroke="var(--green)"` paints nothing at
+         all. Every colour here is a token now, so it has to be a
+         declaration. */
+      + '<circle cx="' + size / 2 + '" cy="' + size / 2 + '" r="' + r + '" class="wa-ring-fill" style="stroke:'
       + color + '" stroke-dasharray="' + c + '" stroke-dashoffset="'
       + c * (1 - clamp(pct, 0, 100) / 100) + '"/>'
       + "</svg>";

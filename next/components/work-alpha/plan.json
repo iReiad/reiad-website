@@ -83,49 +83,49 @@
       "id": "G1",
       "name": "Decision made, tools ready",
       "day": 1,
-      "color": "#E4573D",
+      "color": "var(--rose)",
       "test": "One track chosen with a written 3-line reason. Zotero, Drive tree, Colab and the prompt library all open in one click."
     },
     {
       "id": "G2",
       "name": "Literature map",
       "day": 2,
-      "color": "#E6A100",
+      "color": "var(--gold)",
       "test": "15 papers verified (DOI or PDF in hand), 8 venues recorded, reading order fixed."
     },
     {
       "id": "G3",
       "name": "Ten papers read, gap found",
       "day": 4,
-      "color": "#7CB518",
+      "color": "var(--green)",
       "test": "10 structured notes complete, gap matrix filled, one sentence naming the gap."
     },
     {
       "id": "G4",
       "name": "Data touched",
       "day": 5,
-      "color": "#12A594",
+      "color": "var(--teal)",
       "test": "One dataset loaded in Colab, four sanity checks passed, one figure and one summary table saved."
     },
     {
       "id": "G5",
       "name": "People and dates",
       "day": 6,
-      "color": "#2457D6",
+      "color": "var(--blue)",
       "test": "15 supervisors ranked A/B/C, scholarship rounds dated, five loose ends assigned."
     },
     {
       "id": "G6",
       "name": "Proposal survives review",
       "day": 7,
-      "color": "#7048E8",
+      "color": "var(--violet)",
       "test": "2-page proposal v2 exists and the hostile reviewer's top three objections are answered in the text."
     },
     {
       "id": "G7",
       "name": "Pack ready to send",
       "day": 8,
-      "color": "#D6336C",
+      "color": "var(--plum)",
       "test": "Proposal final, CV bullets updated, three emails drafted, month 2 plan written."
     }
   ],

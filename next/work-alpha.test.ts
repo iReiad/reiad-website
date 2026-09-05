@@ -11,10 +11,21 @@
    `/account.js` served off disk and Supabase answered from memory. The
    three locks are what it asks about: a stranger and a signed-in reader
    who is not the owner get `notFound()` and no rail entry; the owner gets
-   the app, and a tick goes to `work_alpha_state` and survives a reload. */
+   the app, and a tick goes to `work_alpha_state` and survives a reload.
 
-import { readFileSync } from "node:fs";
-import { dirname, join } from "node:path";
+   THE THIRD NEEDS THE BUILD as well, because it is about the STYLESHEET
+   and the fixture above deliberately drops it. It measures the page in
+   both themes, and it exists for two failures that shipped together and
+   neither of which a check that reads files could see: a palette written
+   in light-mode hex, which put dark ink on the dark ground at night, and
+   a colour in the middle of a `background` shorthand, which is invalid
+   at parse time, so the graph-paper ground never drew in either theme
+   and what showed through was the body. */
+
+import { createServer } from "node:http";
+import { existsSync, readFileSync } from "node:fs";
+import { readFile } from "node:fs/promises";
+import { dirname, extname, join } from "node:path";
 import { fileURLToPath } from "node:url";
 import { load, open, skip } from "./hydrate-fixture.ts";
 import type { BrowserContext, ConsoleMessage, Page, Route } from "playwright";
@@ -411,6 +422,153 @@ console.log("\nthe three locks, in a browser");
     await shows(page, ".wa .wa-flag");
     is("and a row newer than the mirror wins", await page.locator(".wa-main .wa-task.is-done").count(), 1);
     await context.close();
+  }
+}
+
+/* ============================================================
+   3. The two themes, on the built page
+
+   The stylesheet is the subject, so this is the REAL route out of
+   `.next/` with the site's own hashed stylesheet beside it, rather
+   than the hydration fixture, which drops CSS on purpose.
+   ============================================================ */
+{
+  const BUILT = join(ROOT, "next", ".next");
+  const PAGE = join(BUILT, "server", "app", "work-alpha.html");
+  if (!existsSync(PAGE)) {
+    console.log("\nthe two themes: SKIPPED, next/.next holds no prerendered page."
+      + "\nRun `npx next build` in next/ first. A skip is not a pass.");
+  } else {
+    console.log("\nthe two themes, on the built page");
+
+    const TYPES: Record<string, string> = {
+      ".html": "text/html; charset=utf-8", ".js": "text/javascript; charset=utf-8",
+      ".css": "text/css; charset=utf-8", ".json": "application/json",
+      ".woff2": "font/woff2", ".svg": "image/svg+xml", ".ico": "image/x-icon",
+      ".png": "image/png",
+    };
+    const server = createServer((req, res) => {
+      const path = new URL(req.url ?? "/", "http://x").pathname;
+      const file = path === "/work-alpha" ? PAGE
+        : path.startsWith("/_next/static/")
+          ? join(BUILT, "static", path.slice("/_next/static/".length))
+          : join(ROOT, "aab", path);
+      readFile(file).then(
+        (body) => { res.writeHead(200, { "Content-Type": TYPES[extname(file)] ?? "application/octet-stream" }); res.end(body); },
+        () => { res.writeHead(404).end("not found"); });
+    });
+    await new Promise<void>((r) => server.listen(PORT + 2, r));
+
+    /** What a colour actually paints as, in sRGB. A computed value
+        comes back as `oklab(...)` or `color-mix(...)`, so it is
+        painted rather than parsed: one pixel, read back. */
+    const PIXEL = `(color) => {
+      const c = document.createElement("canvas");
+      c.width = c.height = 1;
+      const x = c.getContext("2d");
+      x.clearRect(0, 0, 1, 1);
+      x.fillStyle = color;
+      x.fillRect(0, 0, 1, 1);
+      return [...x.getImageData(0, 0, 1, 1).data];
+    }`;
+
+    /** WCAG relative luminance, and the ratio between two of them. */
+    const lum = ([r, g, b]: number[]): number => {
+      const f = (v: number): number => {
+        const n = v / 255;
+        return n <= 0.03928 ? n / 12.92 : ((n + 0.055) / 1.055) ** 2.4;
+      };
+      return 0.2126 * f(r) + 0.7152 * f(g) + 0.0722 * f(b);
+    };
+    const ratio = (a: number[], b: number[]): number => {
+      const [hi, lo] = [lum(a), lum(b)].sort((x, y) => y - x);
+      return Math.round(((hi + 0.05) / (lo + 0.05)) * 100) / 100;
+    };
+
+    interface Painted {
+      ground: number[];
+      card: number[];
+      ink: number[];
+      cardInk: number[];
+      kinds: number[][];
+      image: string;
+    }
+
+    for (const theme of ["dark", "light"] as const) {
+      const context = await fixture.browser.newContext({ colorScheme: theme });
+      const page = await context.newPage();
+      await context.route("**/api/**", (r: Route) =>
+        r.fulfill({ status: 404, contentType: "application/json", body: "{}" }));
+      await context.route("**/api/work-alpha", (r: Route) =>
+        r.fulfill({ status: 200, contentType: "application/json", body: JSON.stringify({ ok: true }) }));
+      await context.route(`${SUPA}/**`, (r: Route) => r.fulfill({
+        status: 200, contentType: "application/json", headers: CORS, body: "[]",
+      }));
+      /* The webfont stylesheet, answered empty: this measures colour,
+         and a test that waits on fonts.googleapis.com is a test that
+         fails where there is no network. */
+      await context.route("https://fonts.googleapis.com/**", (r: Route) =>
+        r.fulfill({ status: 200, contentType: "text/css", body: "" }));
+      await page.addInitScript(({ t, who }: { t: string; who: string }) => {
+        localStorage.setItem("theme", t);
+        localStorage.setItem("reiad-session", who);
+      }, { t: theme, who: session("u-1") });
+
+      await page.goto(`http://localhost:${PORT + 2}/work-alpha`, { waitUntil: "load" });
+      const drew = await page.waitForSelector(".wa .wa-flag", { timeout: 10000 })
+        .then(() => true, () => false);
+      ok(`${theme}: the owner's page draws`, drew);
+      if (!drew) { await context.close(); continue; }
+
+      const seen = await page.evaluate(`((pixel) => {
+        const wa = document.querySelector(".wa");
+        const card = document.querySelector(".wa-card");
+        const cs = getComputedStyle(wa);
+        return {
+          ground: pixel(cs.backgroundColor),
+          card: pixel(getComputedStyle(card).backgroundColor),
+          ink: pixel(getComputedStyle(document.querySelector(".wa-title")).color),
+          cardInk: pixel(getComputedStyle(card.querySelector("h2")).color),
+          kinds: ["setup", "think", "read", "write", "data", "people", "review"]
+            .map((k) => pixel(cs.getPropertyValue("--k-" + k).trim())),
+          image: cs.backgroundImage,
+        };
+      })(${PIXEL})`) as Painted;
+
+      /* THE SHORTHAND BUG. A transparent ground is what an invalid
+         `background` declaration leaves behind, and the page still
+         looks fine because the body is underneath it. */
+      is(`${theme}: the app's own ground is painted rather than transparent`,
+        seen.ground[3], 255);
+      ok(`${theme}: and the graph paper is drawn on it`,
+        seen.image.includes("gradient"), seen.image);
+
+      /* THE PALETTE. Which way round it is, and that the words on it
+         can be read. */
+      const groundLum = lum(seen.ground);
+      ok(`${theme}: the ground is ${theme}`,
+        theme === "dark" ? groundLum < 0.2 : groundLum > 0.7,
+        `luminance ${groundLum.toFixed(3)}`);
+      ok(`${theme}: the heading is readable on it`,
+        ratio(seen.ink, seen.ground) >= 4.5, `${ratio(seen.ink, seen.ground)}:1`);
+      ok(`${theme}: and a card's heading on the card`,
+        ratio(seen.cardInk, seen.card) >= 4.5, `${ratio(seen.cardInk, seen.card)}:1`);
+      ok(`${theme}: a card is a surface rather than the ground again`,
+        Math.abs(lum(seen.card) - groundLum) > 0.01,
+        `card ${lum(seen.card).toFixed(3)} against ground ${groundLum.toFixed(3)}`);
+
+      /* The seven kinds, which are the site's seven accents: a kind
+         written in light-mode hex is the failure this whole block is
+         about, one label at a time. */
+      seen.kinds.forEach((kind, i) => {
+        const name = ["setup", "think", "read", "write", "data", "people", "review"][i];
+        ok(`${theme}: the ${name} label is readable on a card`,
+          ratio(kind, seen.card) >= 4.5, `${ratio(kind, seen.card)}:1`);
+      });
+
+      await context.close();
+    }
+    await new Promise<void>((r) => server.close(() => r()));
   }
 }
 
