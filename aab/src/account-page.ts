@@ -103,6 +103,8 @@ const MINE_TABLES = [
      keeps those out of a copy and, far more importantly, out of
      an erase. */
   "routine_templates",
+  /* The owner's month plan, one row, the whole state as JSON. */
+  "work_alpha_state",
 ] as const;
 
 /** Which column says whose row it is, where it is not `user_id`.
@@ -345,6 +347,7 @@ $("#account-forget")?.addEventListener("click", async () => {
      behind for a moment is a delete somebody could interrupt. */
   for (const table of [
     "routine_entries", "routines", "routine_templates", ...RESEARCH_TABLES, "broker_tokens",
+    "work_alpha_state",
   ]) {
     if (await readerTable(table, "DELETE") === null) {
       console.warn("account: could not erase", table);

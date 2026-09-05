@@ -9,6 +9,7 @@ Allow: /
 # so a crawler that follows the old address lands inside this rule.
 Disallow: /studio
 Disallow: /admin
+Disallow: /work-alpha
 Disallow: /insights/_template.html
 
 # One person's own copy of a third-party course, behind the admin

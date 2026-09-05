@@ -117,6 +117,7 @@ const CARRIED: Record<string, { copy: string; erase?: string; how?: string }> = 
       + "on the wrong column would have taken the site's own templates with it.",
   },
   routine_entries: { copy: "MINE_TABLES", erase: '"routine_entries"' },
+  work_alpha_state: { copy: "MINE_TABLES", erase: '"work_alpha_state"' },
   profiles: {
     /* The field in the bundle, not the function that fills it:
        `getProfile()` is called on boot for the page's own use and

@@ -31,6 +31,10 @@ const ROOT = join(dirname(fileURLToPath(import.meta.url)), "..");
     name, carrying the reason, because the reason is what stops
     the next entry being added out of habit. */
 const NOT_FOR_APP: Record<string, string> = {
+  WORK_ALPHA:
+    "owner-only, not a reader feature. The entry is `unlisted` in NAV, which "
+    + "/api/site already filters, and the page behind it answers 404 to anybody "
+    + "who is not the owner.",
   ANCHOR_CONTEXT:
     "the width of a highlight's prefix and suffix, which is arithmetic the "
     + "reader carries in code beside findAnchor() rather than a table it reads.",

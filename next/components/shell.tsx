@@ -23,6 +23,7 @@ import { NavTree } from "./nav-tree";
 import { SiteFooter } from "./footer";
 import { accentStyle, TOOL_KEYS } from "@reiad/shared/nav";
 import { Used } from "./used";
+import { OwnerMark } from "./work-alpha/owner-mark";
 import { trailFor, trailJsonLd } from "../lib/crumbs";
 import { siteOrigin } from "../lib/article";
 import { Crumbs, type Crumb } from "./ui/crumbs";
@@ -91,6 +92,13 @@ const BOOT = `(function(){var d=document.documentElement;try{`
          on the client, which is what blanked every calculator here. */
   + `var l=localStorage.getItem("tool-lang");`
   + `d.setAttribute("data-tool-lang",l==="bn"?"bn":"en");`
+      /* WHETHER THIS READER IS THE OWNER, as the browser last heard it
+         from /api/work-alpha (`components/work-alpha/owner.ts`). The
+         rail draws the owner's entry from this attribute, so it has to
+         be on the root before the first paint or the link arrives a
+         paint late. A wrong "yes" costs nothing: the page it links
+         answers 404. */
+  + `if(localStorage.getItem("work-alpha-owner")==="yes")d.setAttribute("data-owner","yes");`
       /* THE SAME KEY, THE OTHER DEFAULT. A lesson is Bangla unless
          somebody has said English and a calculator is English unless
          somebody has said Bangla, so null means different things to the
@@ -110,7 +118,7 @@ export type Current =
   | "insights"
   | "portfolio"
   | "about" | "contact" | "account" | "deutsch" | "quran" | "english"
-  | "cooking" | "travel" | "home" | "admin"
+  | "cooking" | "travel" | "home" | "admin" | "work-alpha"
       /* Kept because four routes still pass it: a piece in the kitchen or
          on the travel desk is inside the skills half. */
   | "in-skills" | null;
@@ -268,6 +276,7 @@ export function SiteShell({
                 from `shared/nav.ts`, so a sixth tool is recorded by being
                 added to that table. */}
         {current && TOOL_KEYS.includes(current) ? <Used id={current} /> : null}
+        <OwnerMark />
       </body>
     </html>
   );

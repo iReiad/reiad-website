@@ -329,7 +329,7 @@ const drawn = (page: Page): Promise<Drawn> => page.evaluate(() => {
     noteOn: note.hasAttribute("data-on"),
     said: said?.textContent ?? "",
     role: said?.getAttribute("role") ?? null,
-    panelHidden: panel === null ? true : panel.hidden,
+    panelHidden: panel === null ? true : panel.hidden !== false,
   };
 }).then((d) => d ?? NOTHING);
 

@@ -1,5 +1,5 @@
 {
-  "version": "v250",
+  "version": "v251",
   "hashes": {
     "/offline.html": "bd9144e7162be323",
     "/fallback.css": "9c9cef91417bc000",
@@ -10,7 +10,7 @@
     "/signin.js": "2cefbe16558152f0",
     "/account.js": "0e11b8b6fee8c259",
     "/sync.js": "3bdcbb44ff1e1e46",
-    "/account-page.js": "bdb6d4734f507763",
+    "/account-page.js": "336e8d02bdc34ad2",
     "/streak.js": "bf18786841df6aa0",
     "/photo.js": "494fdc73845dabe8",
     "/saved.js": "08cf896f276e0043",

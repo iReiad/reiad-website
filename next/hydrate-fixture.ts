@@ -74,6 +74,16 @@ export async function bundle(contents: string): Promise<string> {
        `interactive.test.ts` matches on those; a readable message
        is worth more here, and both spellings are watched for. */
     define: { "process.env.NODE_ENV": '"development"' },
+    /* A component that reaches into Next's own client modules, as
+       the Work-Alpha mount does for `notFound()`, pulls in code
+       that reads `process.env` flags at load. Next's bundler
+       defines them; this is a browser, so it gets an empty one. */
+    banner: { js: 'var process = { env: { NODE_ENV: "development" } };' },
+    /* A component that imports its own stylesheet, as the
+       Work-Alpha mount does, would otherwise need an output path
+       for the `.css` esbuild emits beside the script. Nothing here
+       measures a style, so the import is dropped. */
+    loader: { ".css": "empty" },
     logLevel: "silent",
   });
   return out.outputFiles[0].text;
@@ -99,6 +109,7 @@ export async function load<T>(contents: string): Promise<T> {
        says the rest, having been the one that found it. */
     alias: { "@reiad/shared": join(here, "..", "shared") },
     define: { "process.env.NODE_ENV": '"development"' },
+    loader: { ".css": "empty" },
     logLevel: "silent",
   });
   const encoded = Buffer.from(out.outputFiles[0].text).toString("base64");

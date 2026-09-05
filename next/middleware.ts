@@ -45,7 +45,7 @@ const PRIVATE_CACHE = "private, no-store";
    it is somebody else's course, behind `isAdmin()`, and a shared
    copy of it is a redistribution. */
 const PRIVATE = [/^\/admin(\/|$)/, /^\/account(\/|$)/, /^\/studio(\/|$)/,
-  /^\/skills\/courses(\/|$)/];
+  /^\/skills\/courses(\/|$)/, /^\/work-alpha(\/|$)/];
 
 export function middleware(request: NextRequest) {
   const res = NextResponse.next();
