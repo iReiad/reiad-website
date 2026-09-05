@@ -24,6 +24,8 @@
    the number moves. `node scripts/check-sw.ts --update` records the
    new hashes.
 
+   v251: the account page's copy and erase carry work_alpha_state, the
+         owner's month plan, so leaving takes it too.
    v250: a card's scene no longer turns where there is no pointer to
         turn it towards. /fallback.css carries the same stylesheet,
         so its bytes moved.
@@ -31,7 +33,7 @@
    v249: comments. Every precached module lost the essay at the top
         of it and this file lost 2,167 lines of changelog, so the
         bytes moved without a line of behaviour changing. */
-const VERSION = "v250";
+const VERSION = "v251";
 const SHELL = `shell-${VERSION}`;
 const RUNTIME = `runtime-${VERSION}`;
 
@@ -321,7 +323,7 @@ self.addEventListener("fetch", (event) => {
      in a cache that a later reader at the same machine is handed,
      which is the argument `sync.js` makes about ticks one level
      up. */
-  if (url.pathname === "/admin") return;
+  if (url.pathname === "/admin" || url.pathname === "/work-alpha") return;
 
   if (isHTML(request) || STABLE_BUNDLE.test(url.pathname)) {
     event.respondWith(

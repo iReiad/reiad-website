@@ -54,6 +54,11 @@ export interface NavItem {
       than written into the skills page, because the menu is said
       once: `/skills` reads the flag and gives it a card. */
   unlisted?: boolean;
+  /** The owner's alone. The rail draws it only where `data-owner`
+      on `<html>` says the reader passed `isAdmin()`; every other
+      reader of this table treats it as `unlisted`, which it also
+      is. */
+  ownerOnly?: boolean;
   /** This entry IS its group's own front page. A fact rather
       than an instruction, and each reader decides what to do with
       it: `/skills` drops it, because a card linking to the page
@@ -80,6 +85,15 @@ export interface NavGroup {
   accent: string;
   items: NavItem[];
 }
+
+/** The owner's research control room, `/work-alpha`. Named here
+    so `check-app-surface.ts` can say out loud that the app does
+    not get it: it is behind `isAdmin()` and answers 404 to
+    everybody else, and the rail draws it for the owner alone. */
+export const WORK_ALPHA: NavItem = {
+  label: "Work-Alpha", sub: "গবেষণার মাস", href: "/work-alpha", icon: "microscope",
+  key: "work-alpha", unlisted: true, ownerOnly: true,
+};
 
 export const NAV: NavGroup[] = [
   {
@@ -212,6 +226,7 @@ export const NAV: NavGroup[] = [
         label: "Admin", sub: "অ্যাডমিন", href: "/admin", icon: "gauge",
         key: "admin", unlisted: true,
       },
+      WORK_ALPHA,
     ],
   },
 ];

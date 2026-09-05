@@ -16,7 +16,7 @@
    attribute is the state; the buttons toggle it and the stylesheet
    answers. A copy in React is the copy that arrives one paint late. */
 
-import { useEffect } from "react";
+import { useEffect, useState } from "react";
 import { NAV, ORDER, type NavGroup } from "@reiad/shared/nav";
 import { Icon } from "./icons";
 import { AudienceSwitch } from "./topbar";
@@ -116,6 +116,25 @@ function Item({ item, current }: { item: NavGroup["items"][number]; current: Cur
   );
 }
 
+/** The entries that are the owner's alone, drawn from `data-owner`
+    on the root and from nothing else. NOT in the server's HTML: a
+    stranger's page must not carry the link, even hidden. The boot
+    script sets the attribute from the browser's cache before the
+    first paint, so for the owner this costs the hydration and no
+    request; `owner-mark.tsx` keeps the attribute true. */
+function OwnerItems({ items, current }: { items: NavGroup["items"]; current: Current }) {
+  const [owner, setOwner] = useState(false);
+  useEffect(() => {
+    const read = (): void => setOwner(root().getAttribute("data-owner") === "yes");
+    read();
+    const watch = new MutationObserver(read);
+    watch.observe(root(), { attributes: true, attributeFilter: ["data-owner"] });
+    return () => watch.disconnect();
+  }, []);
+  if (!owner) return null;
+  return items.map((item) => <Item key={item.href} item={item} current={current} />);
+}
+
 /** `audience` decides the order of the groups and nothing else.
     It is read on the server from nothing, because the server does
     not know: the markup renders in the learner's order and the
@@ -163,6 +182,7 @@ export function Sidebar({ current }: { current: Current }) {
             {group.items.filter((item) => !item.unlisted).map((item) => (
               <Item key={item.href} item={item} current={current} />
             ))}
+            <OwnerItems items={group.items.filter((item) => item.ownerOnly)} current={current} />
           </div>
         ))}
       </nav>

@@ -183,6 +183,14 @@ export const KEPT: Keep[] = [
       + "account row for a feature nobody has asked for.",
     by: "app/src/studio/drafts.ts" },
 
+  { key: "work-alpha", where: "local", held: "made", syncs: false,
+    what: "Every tick, note and row of the Work-Alpha month plan, mirrored here so a "
+      + "save made offline is not lost.",
+    why: "Carried by its own table, work_alpha_state, rather than by sync.ts: the "
+      + "page is the owner's alone and writes the row itself with the reader's "
+      + "bearer, and load() takes the newer of this mirror and the row.",
+    by: "next/components/work-alpha/storage.ts" },
+
   /* ---------------- what a reader chose ---------------- */
   { key: "reader-prefs", where: "local", held: "preference", syncs: true,
     what: "Type size, line width, the finish, and which language the calculators open in.",
@@ -249,6 +257,10 @@ export const KEPT: Keep[] = [
   { key: "sync-base", where: "local", held: "session", syncs: false,
     what: "What the account said at the last exchange, so two devices can be reconciled.",
     by: "aab/src/sync.ts" },
+  { key: "work-alpha-owner", where: "local", held: "cache", syncs: false,
+    what: "Whether /api/work-alpha last said you are the site's owner, so the rail can "
+      + "draw that entry before the first paint.",
+    by: "next/components/work-alpha/owner.ts" },
   { key: "pulse-cache", where: "local", held: "cache", syncs: false,
     what: "The last market headlines, so the board is not empty while it fetches.",
     by: "next/components/news.tsx" },

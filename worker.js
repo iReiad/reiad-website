@@ -48,6 +48,7 @@ import { onRequest as engine } from "./functions/api/engine/[[route]].ts";
 import { onRequest as survey } from "./functions/api/survey/[[route]].ts";
 import { runAlerts } from "./functions/_lib/scholar-search.ts";
 import { onRequest as admin } from "./functions/api/admin/[[route]].ts";
+import { onRequest as workAlpha } from "./functions/api/work-alpha.ts";
 import { onRequest as insight } from "./functions/insights/[slug].ts";
 import { onRequest as feeds } from "./functions/feeds/[kind].ts";
 import { db } from "./functions/_lib/db.ts";
@@ -86,6 +87,9 @@ const API_ROUTES = [
   ["/api/engine", engine, "route"],
   ["/api/survey", survey, "route"],
   ["/api/admin", admin, "route"],
+  /* Is this reader the owner of /work-alpha. The state itself
+     never passes through here. */
+  ["/api/work-alpha", workAlpha, null],
 ];
 
 /* The Cron schedules, as strings, because `event.cron` hands back
@@ -166,6 +170,9 @@ export const NEXT_ROUTES = [
   /* The admin panel. ADMIN.md is the plan; it is `unlisted` in
      shared/nav.ts for the reason the course section is. */
   /^\/admin$/i,
+  /* The owner's research control room. `ownerOnly` in
+     shared/nav.ts; answers 404 to everybody else. */
+  /^\/work-alpha$/i,
   /* The Studio's shell. Its bundle is NOT here: that is a file in
      aab/studio/, and the asset router answers it. `/desk` is a 301
      to /admin in aab/_redirects, which only works because this

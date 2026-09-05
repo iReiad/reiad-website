@@ -76,7 +76,7 @@ run_worker_first = ["/api/*", "/insights/*", "/cooking/*", "/travel/*", "/media/
   "/tools/routine", "/tools/routine/*",
   "/tools/diet", "/tools/diet/*",
   "/tools/research", "/tools/research/*",
-  "/admin",
+  "/admin", "/work-alpha",
   "/portfolio", "/portfolio/*", "/",
   # "/desk" is deliberately NOT here: it is a 301 to /admin in
   # aab/_redirects, and a path this list claims never reaches
