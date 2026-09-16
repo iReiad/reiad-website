@@ -21,7 +21,6 @@ import { toneVar } from "@reiad/shared/research";
 import { GoCard, SoonCard } from "../deck";
 import { KIND_TONE, METHOD_KINDS, RESEARCH_METHODS, isMethodPiece, type MethodKind } from "../../lib/research-methods";
 import { writtenLesson } from "../../lib/methods/written";
-import { researchPage } from "../../lib/research-pages";
 import { T, W, both } from "./lang";
 
 interface Listed { slug: string; title: string; dek: string | null; tag: string | null; topics: string | null; lang: string | null; minutes: number | null; section: string | null; cover: string | null }
@@ -30,7 +29,6 @@ const urlOf = (p: Listed): string => `${lookFor(p.section ?? "insights").mount}$
 
 export function Methods() {
   const [pieces, setPieces] = useState<Listed[] | null | "failed">(null);
-  const art = researchPage("/tools/research/methods")?.art;
 
   useEffect(() => {
     let alive = true;
@@ -56,11 +54,11 @@ export function Methods() {
               const p = written.get(m.slug);
               const lesson = p ? undefined : writtenLesson(m.slug);
               return p ? (
-                <GoCard key={m.slug} id={m.slug} href={urlOf(p)} art={p.cover ? undefined : art} cover={p.cover ?? undefined} accent={toneVar(KIND_TONE[kind])}
+                <GoCard key={m.slug} id={m.slug} href={urlOf(p)} cover={p.cover ?? undefined} accent={toneVar(KIND_TONE[kind])}
                         chip={<span className="mono">{p.minutes ?? 1} min</span>}
                         title={<T en={m.title.en} bn={m.title.bn} />} dek={<T en={m.dek.en} bn={m.dek.bn} />} go={<W k="rs.me.read" />} />
               ) : lesson ? (
-                <GoCard key={m.slug} id={m.slug} href={`/tools/research/methods/${m.slug}`} art={art} accent={toneVar(KIND_TONE[kind])}
+                <GoCard key={m.slug} id={m.slug} href={`/tools/research/methods/${m.slug}`} accent={toneVar(KIND_TONE[kind])}
                         chip={<span className="mono">{lesson.minutes} min · <W k="rs.me.here" /></span>}
                         title={<T en={m.title.en} bn={m.title.bn} />} dek={<T en={m.dek.en} bn={m.dek.bn} />} go={<W k="rs.me.open" />} />
               ) : (
@@ -76,7 +74,7 @@ export function Methods() {
           <h2 id="rs-me-more" className="text-t3 font-medium mb-3"><W k="rs.me.more" /></h2>
           <div className="cards grid-2">
             {more.map((p) => (
-              <GoCard key={p.slug} id={p.slug} href={urlOf(p)} art={p.cover ? undefined : art} cover={p.cover ?? undefined} accent={toneVar("plum")} lang={p.lang ?? undefined}
+              <GoCard key={p.slug} id={p.slug} href={urlOf(p)} cover={p.cover ?? undefined} accent={toneVar("plum")} lang={p.lang ?? undefined}
                       chip={<span className="mono">{p.minutes ?? 1} min</span>} title={p.title} dek={p.dek ?? ""} go={both("rs.me.read")} />
             ))}
           </div>

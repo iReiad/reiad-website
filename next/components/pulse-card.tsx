@@ -25,8 +25,7 @@
    tab. */
 
 import { useEffect, useRef, useState, type ReactNode } from "react";
-import { NAV, accentFor } from "@reiad/shared/nav";
-import type { ArtSubject } from "./card-art";
+import { accentFor } from "@reiad/shared/nav";
 import { GoCard } from "./deck";
 import { Icon } from "./icons";
 
@@ -48,13 +47,6 @@ const coverOf = (piece: Piece | null | undefined): string | undefined => {
   const path = piece?.cover ?? "";
   return /^\/(media|og)\/[A-Za-z0-9._/-]+$/.test(path) ? path : undefined;
 };
-
-/** The desk's own drawing, out of `shared/nav.ts` by section
-    rather than a table here: a piece on the kitchen desk gets the
-    kitchen's pan, which is the drawing the kitchen's own card
-    wears on the board and on `/skills`. */
-const deskArt = (section: string | undefined): ArtSubject | undefined =>
-  NAV.flatMap((g) => g.items).find((i) => i.key === section)?.art;
 
 /** The rotating card, and beside it, at the board's `tall` size,
     the next few pieces as cards of the same kind.
@@ -127,7 +119,7 @@ function PieceCard({ piece, compact, children }: {
   if (!piece) {
     return (
       <GoCard
-        href="/insights" icon="pen" art="book"
+        href="/insights" icon="pen"
         accent={accentFor("insights") ?? undefined}
         chip="Insights · পড়া"
         title="Insights, and a market pulse"
@@ -140,11 +132,7 @@ function PieceCard({ piece, compact, children }: {
     <GoCard
       className={compact ? "card-compact" : undefined}
       href={`/${piece.section}/${piece.slug}.html`}
-      /* The piece's own photograph first, its desk's drawing
-         second. Never both: two pictures on one card is two
-         answers to the same question. */
       cover={coverOf(piece)}
-      art={coverOf(piece) ? undefined : deskArt(piece.section)}
       icon={compact ? undefined : "pen"}
       /* The colour of whichever piece is showing, out of the one
          table in `shared/nav.ts`: a cooking piece is rose and a

@@ -36,17 +36,19 @@ this repository got written.
   lists; this DERIVES one for the two hundred that are rows, out
   of the tag, the topics and the section a row already carries, so
   a piece published next year arrives with a picture and nobody
-  has to remember anything. It also owns the vocabulary: `nav.ts`
-  and `next/components/card-art.tsx` both take `ArtSubject` from
-  here rather than writing the twelve out again.
+  has to remember anything. The site's own cards draw only the
+  colour; the subject reaches the share card and the Android app.
+  It also owns the vocabulary: `nav.ts` and `aab/src/share-card.ts`
+  both take `ArtSubject` from here rather than writing the twelve
+  out again.
 
 - **`art-svg.ts`** the twelve drawings themselves and the six
   walls they stand against, as the inside of an `<svg>`. Strings
   rather than JSX for the reason `next/lib/school-icons.ts` holds
   strings: markup that something other than React has to be able
-  to read. They were 747 lines inside `card-art.tsx` and
-  `aab/src/share-card.ts` could not reach them, so a card pasted
-  into a chat carried the room with nothing standing in it.
+  to read: `aab/src/share-card.ts` rasterises them into a JPEG,
+  and a card pasted into a chat is the one place on this site the
+  room is still drawn.
   **Not compiled into `aab/`**, unlike the eight below: it is
   34 KB and nobody needs it except whoever is drawing a card,
   which is one admin at publish time. `GET /api/admin/art` hands

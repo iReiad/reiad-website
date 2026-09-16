@@ -314,211 +314,48 @@ They carry `.slimbar` instead, in the same layer, and they are the whole of
 `aab/*.html`. If you add a third, give it the slim bar too: `body > header`
 is gone from the stylesheet and nothing will style a header you write.
 
-## One design system, and six kinds of glass
+## Plain surfaces, and the check that keeps them plain
 
-**Every surface on this site is the same material, and three axes decide
-what a given thing gets.** `@layer glow` in `next/styles/site.css` is the
-whole of it, and `scripts/check-material.ts` is what stops it rotting.
+**A surface on this site is a colour, a hairline and a corner.** A card
+is `--panel` with `--hairline` round it at `--radius`; a sunk ground is
+`--paper-sunk`; the bar, a menu and the palette float on `--shadow`,
+which is the one resting shadow the site has, and a card under the
+pointer takes `--shadow-lift` and a firmer border. Nothing blurs what
+is behind it, nothing carries a texture, nothing turns towards the
+pointer, nothing lights up under it, and nothing animates because the
+reader scrolled past it.
 
-| | depth | polish | clarity | standing | follows |
-| --- | --- | --- | --- | --- | --- |
-| `chip`    | 1   | 0.94 | 0.78 | 0.3 | yes |
-| `control` | 2.2 | 0.80 | 0.70 | 0.9 | yes |
-| `card`    | 5   | 0.50 | 0.50 | 1   | yes |
-| `pane`    | 9   | 0.30 | 0.30 | 1   | no  |
-| `plate`   | 3.4 | 0.55 | 0.28 | 1   | no  |
-| `groove`  | 1.6 | 0.88 | 0.74 | 0   | no  |
+That was not always true. The site carried a glass material with six
+kinds of surface and a light that followed the pointer, eleven cast
+finishes a reader chose between, a ten-layer scene behind every card,
+a sky behind every page, a meadow behind the front door and a relief
+that lifted every icon. Together they were four thousand lines of
+stylesheet, three listeners on every page and the most expensive
+thing on the site to paint, and none of it was the reading.
 
-**Nothing visible is authored. All of it is derived:**
+**`scripts/check-plain.ts` is what stops it coming back**, one small
+rule at a time, which is how every one of those arrived:
 
-```
---glow-w    = depth * 46px          how wide the light spreads
---glow-i    = clarity * 32%         how strong it is
---glow-stop = 52% + (1 - polish) * 46%   how far the falloff reaches
---depth-lit = depth * (1 + glow-a * 0.6)   the edge opens as it lights
---edge      = three inset shadows: the catch light on the near wall at
-              depth-lit, the seat above it, and a 1px rim all the way round
-```
+| it fails on | which was |
+| --- | --- |
+| `backdrop-filter` | the glass |
+| `perspective`, `rotateX`, `rotateY` | the lean towards the pointer |
+| `animation-timeline: view()` | an entrance played on scroll |
+| `data-glow` in a component | a component asking for a light |
 
-**Flat on top. The thickness is at the CUT EDGE.** A wash fading down a
-face is a dome, and a dome is the one thing a slab of glass does not have.
-Every stop in `--lit` is doubled and every transition is hard: a hairline
-rim, nothing across the face, then the seat and the catch light at the
-bottom. `--depth` is a length in pixels there and drives the BOTTOM band
-only.
-
-**The rim goes all the way round, and it splits.** A cut edge of real glass
-disperses, so `--polish` mixes the section's accent into it: the money
-school's edge splits green and Deutsch's blue, and neither is a colour
-anybody typed.
-
-**The edge is a SHADOW, because a gradient is straight.** A gradient stop
-is a straight line across the whole box, so on anything round the top of
-the bottom band is a CHORD. An inset shadow is bounded by the border
-radius, so offsetting it down with a negative spread makes the band a
-crescent hugging the bottom arc. The rim is the same primitive at zero
-offset: `inset 0 0 0 1px` traces the whole silhouette, corners included.
-
-**Which means the material owns `box-shadow`, and that is only safe because
-of `--surface-shadow`.** A later layer REPLACES box-shadow, which would
-otherwise take fourteen focus rings and thirteen hover lifts with it. 44
-rules set the token instead, the material's list ends
-`var(--surface-shadow, 0 0 transparent)`, and a ring sits BESIDE the edge.
-
-**`0 0 transparent`, never `none`.** A `none` is legal only as the whole of
-box-shadow, so `var(--edge), none` is invalid at computed value time and
-falls back to the initial value, which IS `none`: the edge vanishes from
-every surface with no shadow of its own.
-
-**And the edge opens as the thing leans towards you.** `--glow-a` is
-already the "the pointer is on this" number, registered so it animates, on
-the 190-in/820-out curve, so `--depth-lit` rides it and there is no second
-piece of state: a card's edge goes from 5.7px to 9.2px. A plate and a
-groove never raise it, because neither leans.
-
-`box-shadow` is deliberately NOT in the material's transition list. The
-edge is computed from a registered property that already animates, and
-transitioning it too starts a fresh transition on each of those frames.
-
-**Three of the four describe the glass. `--standing` describes the
-situation.** A lone button has to look pressable because nothing else says
-it is; a row in a list does not, because the LIST is the affordance. The
-test is one question: **would this ever be the only one of its kind on the
-page?** Standing also drives the lit top edge, so it is what "flat top"
-means: standing 0 is flat, a chip at 0.3 is a hint of a bevel, a pane at 1
-is a real one.
-
-**The light comes up in 190ms and goes out in 820ms.** One property does
-both, because a transition reads its duration from the state it is going
-TO.
-
-**Three of the six follow the pointer and three hold still**, and the still
-ones say so with `--follows: 0` **on their class block**. Not with
-`--glow-w: 0`, which the derived formula overrides at equal specificity,
-and not on `[data-glow="pane"]`, which reaches almost nothing because the
-material is applied by class. Both mistakes shipped, as 156px of moving
-light on a `.stat` and 220px each on `.rail` and `.topbar`.
-
-**INTERACTIVITY decides whether the light follows, not whether a thing is
-in the system.** Everything is in it. A statistic is never pressed, so it
-is a `plate`: the same weave, the same lit edge, a still light in the
-corner. `--glow-w: 0` says that, and it is also what stops `glow.tsx`
-tracking it, because a non-zero spread is the module's membership test.
-
-**FUNCTION and SIZE both land on `--depth`**: a small piece of glass
-carries a tight bright spot and a thick one diffuses it wide.
-
-**As a surface gets thicker it must get less polished and less clear.**
-`check-material.ts` asserts that ordering and names both kinds when it
-breaks.
-
-**A GROOVE is the sixth, and it is the inverse of the other five.** Not a
-thinner plate: a channel cut IN, so the light runs the other way up, the
-near wall in shadow and the far wall catching it. `--standing: 0` says it
-in the system's own words. A segmented control is one too, so
-`.audience-switch` is the groove and `.audience-slider` is a `control`.
-
-**A class in the wrong list is the one way to get this wrong**, and the
-test is what happens when you press it: a chip latches, a control acts, a
-card takes you in, a pane holds other things, a plate is read, a groove is
-filled.
+`animation-timeline: scroll()` is allowed: the reading progress bar
+and the fade at the end of an overflowing row ARE the scroll position
+rather than a decoration playing over it.
 
 ```sh
-node scripts/check-material.ts          # every pressable class is placed
-node scripts/check-material.ts --list   # what is on the system
+node scripts/check-plain.ts
 ```
 
-It asks nine questions:
-
-- **Is anything pressable off the system?** The first material reached 1 of
-  203 surface-like classes, scoped to an attribute only components carry.
-- **Is anything SURFACE-SHAPED off the system?** Nobody presses a progress
-  bar. A surface is a class whose own rule gives it a ground AND an edge.
-  Nested blocks are stripped first, innermost outwards: counting a
-  `& .track { background }` reported 57 surfaces where there were 39.
-- **Would the material take a surface's own gradient away?** A later layer
-  REPLACES `background-image`. `--surface-image` is the way through.
-- **Is the ladder still a ladder?** Thicker must mean less polished and
-  less clear. `plate` and `groove` are skipped: their spread is zero.
-- **Does a kind name a class that exists?** A kind can name a class the
-  stylesheet has never had and read as though it covered something.
-- **Is anything given a kind and never painted?** The paint rule is
-  everything, the hover rule is only what follows the pointer, each kind
-  block is one kind. A class can get four numbers and miss the paint rule.
-- **Would the material take a surface's own SHADOW away?** What it loses is
-  its hover lift and its focus ring. `--surface-shadow` is the way through
-  and this fails on a listed class that sets the shorthand instead.
-- **Is an exemption stale?** `NOT_A_SURFACE` holds the rows of controls and
-  `NOT_GLASS` holds the marks, the grid cells, the fills and the text
-  fields, both keyed by class with the reason, both failing when the class
-  is gone.
-
-**`NOT_GLASS` has four arguments in it and they are different.** A MARK is
-not a surface: a bevel on a nine pixel dot is detail nobody can resolve. A
-CELL IN A GRID belongs to the grid: a year of days is 365 of them. A FILL
-is what is IN a groove, so its own cut edge draws a channel inside a
-channel. And a TEXT FIELD answers differently: its affordance is the caret
-and the focus ring, and a lit resting rim on a box you type into looks like
-a button.
-
-### A material layer may set the light and nothing else
-
-`@layer glow` names a hundred classes other layers define, and it has to:
-the material is a property of what a thing IS, so it cuts across every
-layer the way a theme does. What makes it the exception is that it CANNOT
-do the damage the rule guards against, and `check-css.ts` proves that:
-`MATERIAL_PROPS` is the list, and it is short.
-
-**`position` was on that list for one draft and that is why the list is
-worth having.** A later layer saying `relative` overrides `fixed` on
-`.rail` and on `.topbar`, dropping both into the flow and pushing every
-page thirteen hundred pixels down. Position is geometry, so are
-`isolation`, `z-index` and `display`, and none of them is the light.
-
-### Eleven finishes, and a cast pattern is light and shadow
-
-`data-glass` on `<html>`. The material above is what a surface IS; this is
-what it is MADE of, and the reader chooses it on `/account` with every one
-drawn beside its name.
-
-Nine are cast glass and the names are the trade's own: **reeding is a run
-of convex ridges and fluting is a run of concave channels**, so a reed is
-lit on the flank NEAREST the light and a flute on the wall FURTHEST from
-it. Backwards, it reads as a printed stripe rather than as moulded glass.
-
-**Every one of them is two colours: a white at a low alpha and a black at a
-low alpha.** Nothing names a hue, which is what lets one definition serve
-both themes and all seven accents. Naming `--accent` freezes it at the
-declaration site.
-
-**How much of it a reader sees is a knob, and it had to be.** It cannot
-ride on `--depth`: **a custom property's computed value is the specified
-value with `var()` ALREADY SUBSTITUTED, on the element the declaration is
-on**, and `--glass-grain` names `--tex-hi` names `--tex-k` names
-`--depth`, all four declared on `:root` where depth is 0, so it computes to
-the same number on every surface. Declaring the chain on `*` is the way
-through and costs tens of thousands of `color-mix` calls on a long page.
-`--tex-strength` is the reader's knob instead.
-
-**The paper is paper.** Three things at three scales: a wove TOOTH, which
-is amorphous, out of five stipples at pitches sharing no factor, which is
-the snow's trick in `@layer weather`; LAID LINES, fine and in one
-direction, at a tenth of the strength; and FORMATION, the cloudiness a
-sheet has from the way the pulp fell, at three hundred times the pitch of
-the tooth. Five square grids at coprime WIDTHS still put every blob in a
-row, because the vertical rhythm is the same in all five.
-
-**A finish is three files and `check-glass.ts` holds them.** `GLASSES` in
-`aab/src/prefs.ts`, a `[data-glass="<id>"]` block in `site.css`, and the
-whitelist in the boot script. The third is the worst to get wrong: the
-choice survives exactly until the next page load, when the boot script
-writes `frost` over it.
-
-**The trailing `auto` in the material's `background-size` is the LIGHT.** A
-size list shorter than the image list repeats from the start, so a
-nine-layer texture with nine sizes leaves the glow with the first stipple's
-7x11 tile and the whole light becomes a 7px dot repeated across the
-surface.
+**The two shadows are colours first.** `light-dark()` takes only a
+colour, so `--shade` and `--shade-lift` are the tokens that flip and
+`--shadow` and `--shadow-lift` are the geometry written round them.
+A shadow written as `light-dark(0 10px 30px ..., ...)` is invalid at
+computed value time and paints nothing, silently.
 
 ## Two kinds of card, and a reader can tell them apart
 
@@ -538,225 +375,6 @@ components rather than one with a prop. `<SoonCard>` is the third state:
 promised and not written, a `div` for the same reason a chip that goes
 nowhere is not a link.
 
-## A card wears a scene, and the scene is made of tokens
-
-`next/components/card-art.tsx` holds twelve SUBJECTS: coins, a chart,
-sheets, a book, a pan, ridges, flashcards, an arch, bubbles, a gauge, a
-calendar, a plate. `shared/nav.ts` names which subject each school, tool
-and desk wears, so the board, `/skills` and the tools hub draw the same
-picture for the same thing out of one table, and the Android app is sent it
-like every other field.
-
-**They are markup, not rasters.** A raster cannot answer a theme: light and
-dark would mean two files each kept in step by hand, plus a build step, a
-browser, a stamp file and 300 KB of binaries.
-
-### A scene is a room, not a picture
-
-Ten layers, back to front, each a different KIND of thing rather than the
-same wash at another opacity:
-
-| | |
-| --- | --- |
-| `art-sky` | the ground and the horizon |
-| `art-weave` | the tooth of the material, a stipple |
-| `art-halo` | the bloom the subject throws behind it |
-| `art-rays` | shafts of light from the top left |
-| `art-far` | the MOTIF: what is behind this subject |
-| `art-floor` | the plane it all stands on |
-| `art-stage` | the subject, and its reflection |
-| `art-near` | motes in front of it, out of focus |
-| `art-spec` | the highlight crossing the glass |
-| `art-veil` | the corners going down |
-
-They live inside `.art-space`, not inside the frame, and that is
-load-bearing: the frame CLIPS, a clip flattens, and the room has to turn
-inside something that is not turning.
-
-**Six motifs, not twelve.** A motif is about the KIND of thing a subject
-is: money and bubbles both belong in a field of orbits, a ridge and a plate
-both sit against strata. Twelve would be twelve more drawings to keep in
-step for a layer rendered at 62% opacity behind a 1.1px blur.
-
-**`<Scene>` takes a drawing rather than owning one.** The seven case
-studies each carry a sparkline describing that model.
-
-**Three sizes, and each changes ONE number.** `band`, `tile`, `panel`.
-`--art-throw` is what differs, because a subject that slides 26px inside an
-84px thumbnail slides off its own floor.
-
-### The room turns for a pointer, and a phone has none
-
-`glow.tsx` is the only writer of `--gpx`/`--gpy` and it returns early unless
-`(hover: hover) and (pointer: fine)` matches. So on a handset the rotation on
-`.art-space` is the identity and every layer's slide is zero: the scene is
-already a still picture there, which is the right answer and was not the
-cheap one.
-
-**A 3D transform promotes its element whatever its value.** An identity
-`rotateY(0)` bought a composited layer per card and pulled the layers
-overlapping it up with it. Measured through the compositor's own layer tree,
-a deck of 24 cards at 390x844 and dpr 3:
-
-| | layers | texture |
-| --- | --- | --- |
-| before | 100 | 60.5 MB |
-| after | 76 | 32.8 MB |
-
-So `perspective`, the turn and the slide are all inside that query in
-`@layer deck`, exactly as `.tilt-scene`'s perspective already is in
-`@layer components`, and the two have to agree. **Both, or neither**: a 3D
-rotation with no perspective anywhere is an affine squash rather than a lean.
-
-**The reduced-motion promise is the `no-preference` nesting**, not a block
-further down undoing three declarations. What is left in the `reduce` block
-is the half that costs no layer and still has to stop: the `--art-a` fade and
-the specular.
-
-**What is NOT gated is the drawing.** The blurs, the reflection and the
-floor's own keystone are the picture rather than the pointer, and a phone
-gets all of them. Measured, they cost no composited layer: gating them would
-be two drawings to keep in step for nothing.
-
-### At night a thing is lit; on paper a thing is printed
-
-A palette is not enough. Light ADDS: a glowing edge over black is brighter
-than the black. Ink SUBTRACTS: nothing on paper is brighter than the paper,
-so a bloom over white is invisible and the only way to say "this is in
-front" is a cast shadow.
-
-| | |
-| --- | --- |
-| `--art-bloom` / `--art-cast` | the glow and the shadow, each transparent in the theme it is not for, so one filter list says both |
-| `--art-haze` | what a receding tone fades INTO: the dark at night, a warm grey on paper, because fading to white on white is fading into nothing |
-| `--art-sink` / `--art-shade` | the ground, and it is a tinted PLATE on paper. Nine per cent of an accent over near-white is white |
-| `--art-corner` | the vignette, which goes towards the accent on paper because a printed plate is darker at its edges from ink rather than from falloff |
-
-**Which end a tone mixes towards is the rest of the trick.** A tone that
-has to be SEEN mixes towards `--ink`. A tone that has to RECEDE mixes
-towards `--art-haze`. Mix the wrong way and every drawing comes out as pale
-as the paper.
-
-**It is `.artwork`, not `.art`.** `.art` has been the icon beside a step's
-name since the schools were written, at 1.6em square, in `@layer money`.
-Taking the name makes every drawing on the front page 27 pixels wide.
-
-**And a modifier handed to `<CardArt>` has to be two classes deep or
-declared after `.artwork`.** One class declared first loses to `.artwork`'s
-`position: relative` and 16:9 ratio, which draws a 540px stamp in the top
-left corner of a card two thirds empty.
-
-### The light is instant and the glass has weight
-
-`glow.tsx` publishes two signals and they are deliberately not the same
-signal. `--gx`/`--gy` is WHERE THE LIGHT IS and is assigned from the event:
-a lamp over a table is over the table the instant you move it.
-
-`--gpx`/`--gpy` is HOW THE GLASS IS LEANING and is INTEGRATED towards the
-pointer through a critically damped spring, because a sheet of glass has
-weight. `DAMPING` is exactly `2 * sqrt(STIFFNESS)`, the one value at which
-it arrives as fast as it can without crossing: softer drags, stiffer
-wobbles. The loop cancels itself once the error and the velocity are both
-under a threshold nobody can see, so a still pointer costs no frames.
-`--gvx`/`--gvy` comes free out of that, and the specular stretches along
-it.
-
-**The strength is `--art-a`, registered `inherits: true`**, because
-`--glow-a` is `inherits: false` and a layer inside a drawing reads 0 from
-it for ever. Only the strength animates, never `translate` itself, or the
-picture lags the hand.
-
-**The event records and the frame writes.** `pointermove` fires as fast as
-the pointer reports, a 1000Hz mouse reports sixteen times per frame, and a
-screen draws once, so reading a box out of the layout and writing a
-rotation back per EVENT is sixteen forced layouts and sixteen style writes
-per frame for one picture. The rectangle is read inside the frame rather
-than cached, because a cached box has to be invalidated by scrolling,
-resizing, a font arriving and anything that reflows a grid.
-
-**And both stand down while the page is scrolling.** `data-scrolling` on
-the root, published by `glow.tsx` and read by `tilt.js`, which cannot
-import across the wall. Measured over a 3150px scroll with the pointer
-moving:
-
-| | before | after |
-| --- | --- | --- |
-| lean writes | 252 | 2 |
-| light passes | 301 | 3 |
-| style recalculations | 1340 | 30 |
-| style recalculation | 260ms | 3ms |
-
-With the page held still the same stroke still writes 265 leans and 301
-light passes, which is the control that says the effect was fixed rather
-than turned off.
-
-## A photograph stands in a room too
-
-**A photograph gets a room with no markup.** A figure comes out of the
-database as `<figure class="..."><img><figcaption>`, through two
-sanitisers, in three hundred stored bodies. So the room is the two
-pseudo-elements a figure already has: `::before` is the ground it stands
-on, `::after` is the glass in front, and the photo is the stage between.
-
-**A figure is a GRID and all three are in cell one.** The ground and the
-glass have to cover the photograph and not the caption; positioning them
-against the figure puts the words on a green plate. A pseudo-element is a
-grid item, so the picture, the ground and the glass share row one and the
-caption is row two: the row is exactly as tall as the picture, whatever
-shape the camera made it. `figure.duo` opts out, because two photographs
-side by side are a comparison rather than a thing on a plinth.
-
-**The depth comes from the READER, not the pointer.** A photograph is read
-rather than pressed, which here means a `plate` and a still light, and half
-the readers of a long piece are on a phone. So the three layers move at
-three speeds as the reader scrolls past, which is
-`animation-timeline: view()`, runs on the compositor and needs no
-JavaScript.
-
-**`check-relief.ts` asks a fourth question**: every scroll-driven animation
-has to sit inside a `prefers-reduced-motion: no-preference` block, or be
-named in `TIED_TO_SCROLL` with the reason it IS the scroll rather than a
-decoration of it. Two are: a bar that fills as the page moves is a
-scrollbar, and a fade at the end of an overflowing row says there is more.
-
-It walks the stylesheet FORWARDS keeping a stack of what is open. Looking
-backwards for the nearest guard is wrong: a guard that has already closed
-is still the nearest one behind.
-
-## Everything drawn ON a surface stands off it
-
-`@layer relief` is the same idea one order of magnitude down. A card's
-scene throws 26 pixels; a search button's icon throws two. Same light, same
-pointer, same curve.
-
-**`--lift` is not `--glow-a`**: it is a plain custom property set on any
-hovered ancestor, so it inherits, and the figure multiplies the pointer by
-it. Nothing transitions on the ancestor: a `transition` in a later layer
-REPLACES the list underneath, so one on `:where(a, button)` would take the
-hover colour off every link on the site. The figure owns its transition.
-
-**A relief layer may move a thing and may never lay it out**, which is how
-it earns the right to name classes other layers define. `check-css.ts`
-knows about both kinds, and the one word this layer may never say is
-`transform`: `translate`, `rotate` and `scale` COMPOSE with whatever
-transform the owning layer set, and `transform` replaces it. One line of it
-naming `.art-floor` would stand every floor on this site back up with every
-rule still reading correctly.
-
-**The sign is what makes it one system.** `--gpx` is a VIEW direction, so a
-scene slides each layer by MINUS its depth, and a figure standing off a
-surface obeys the same arithmetic. The shadow goes the other way from the
-figure, because `drop-shadow` offsets from the ELEMENT and the gap opening
-between a thing and its shadow is the only cue saying it is above the page.
-
-```sh
-node scripts/check-relief.ts --list   # what lifts
-```
-
-Three questions: does every name in the list reach a class; does everything
-that lifts also STOP for a reader who asked for no motion; and is anything
-in both the scene and the relief, which would move it twice.
-
 ## The front page is five bands, and the last one is the reader's
 
 `next/app/(home)/page.tsx`. Every band is a lead and a set behind it, and
@@ -767,7 +385,7 @@ is it any good, where do I start.
 | --- | --- |
 | the door | who this is, what is here, and two ways in |
 | the reckoner | one line of the site's own compounding model |
-| the library | six courses, each wearing its own drawing |
+| the library | six courses, one card each in its own colour |
 | the work | seven case studies, each with its chart |
 | the writing | the newest pieces |
 | the tools | six things a reader can use today |
@@ -833,26 +451,21 @@ depending on which page a reader is standing on. All of them are
 table, and so is the CARD that draws one. A new kind of card is a second
 answer to a question `deck.tsx` has already answered.
 
-`art` puts a scene across the top of one; `cover` puts a photograph there
-instead, for a piece that has its own. Never both.
+`cover` puts a piece's own photograph across the top of one. Nothing
+else goes there: a card is a title, a line and a way in.
 
-**A card in a DECK gets a scene; a rung in a LADDER gets the relief.** A
-lesson card, a ladder row and a market headline are rows of a list, and
-thirty 16:9 scenes down a stage page is the cage the plate was invented to
-stop. They get the light and the depth on their own icon instead.
+## A row that is not in the rail still gets a colour
 
-## A row that is not in the rail still gets a picture
+`shared/nav.ts` names a subject and a colour for the twenty things the
+rail lists. It cannot answer for the two hundred that are rows, and
+choosing one each by hand means the newest thing on the site is always
+the one without a colour.
 
-`shared/nav.ts` names a subject for the twenty things the rail lists. It
-cannot answer for the two hundred that are rows, and choosing one each by
-hand means the newest thing on the site is always the one without a
-picture.
-
-`shared/art.ts` DERIVES one, out of the tag, the topics and the section a
-row already carries, plus a hash of its id. In order: a tag that names a
-subject wins outright, then the desk's own POOL, then prose. A pool rather
-than the desk's subject flat, because falling straight through makes a hub
-of twenty pieces twenty copies of one drawing.
+`shared/art.ts` DERIVES both, out of the tag, the topics and the section
+a row already carries, plus a hash of its id. The site's own cards draw
+only the colour now; the subject still reaches the share card, which
+draws a picture for a chat preview, and the Android app, which is sent
+it like every other field.
 
 The colour is the section's own two times in three, and one of six others
 otherwise. High on purpose: a hub whose cards are eight colours is a fruit
@@ -864,149 +477,6 @@ small n: fourteen consecutive slugs picked index 0 or 5 out of a pool of
 six. The xorshift-multiply finaliser spreads entropy downwards; `frac()`
 reads the top bits, which moved "two in three" from a measured 72 per cent
 to 66.
-
-## The site says a few things out loud
-
-`next/lib/sound.ts`, and there is no audio file in this repository. Every
-cue is synthesised: a few oscillators, an envelope and a low-pass. A
-committed `.mp3` cannot be diffed, has to be fetched and licensed, and
-would be the second binary asset on a site that deliberately has none.
-
-**Every note is a degree of a D major pentatonic**, which is why two cues
-firing at once cannot sound wrong: there is no semitone in the scale, so no
-interval available clashes. `HZ` is that scale and nothing may play a
-frequency outside it.
-
-| | |
-| --- | --- |
-| `press` | a button. The one a reader hears hundreds of times, so a tenth of the others |
-| `tick` | a checkpoint inside a lesson |
-| `lesson` | a lesson finished: the triad, rising |
-| `stage` | a whole stage, with the root held under it |
-| `next` / `prev` | a page turned, as a glide |
-| `saved` | a setting kept |
-| `refused` | the only one that falls |
-
-Three things keep it from being annoying, and all three are load-bearing:
-the master gain is low and a press is a tenth of a finish; every cue is
-under 400ms; and the attack is 6ms with a long release, because a square
-edge on either end is a click.
-
-**The context is built inside the first cue and never before.** An
-AudioContext made at import time starts suspended under every autoplay
-policy, so the first cue is silently dropped; building it inside the first
-cue means the first cue IS the gesture.
-
-**`data-sound` on `<html>` is the switch**, set before the first paint by
-the boot script and kept by `aab/src/prefs.ts`, so asking "is this allowed"
-inside a click handler is a string comparison rather than a JSON parse out
-of localStorage. It is ON by default: nothing can fire on a page load.
-
-Anything under `next/` calls `cue()`. Anything that cannot import across
-the wall dispatches `reiad:sound` on the document, and
-`next/components/sound.tsx` listens. An element carrying `data-cue="next"`
-fires that cue when pressed, which is how a server-rendered prev/next link
-asks for one without a handler.
-
-**A cue on a LINK is cut short and that is why they are 110ms.** A link
-navigates, the document is torn down, and every scheduled note goes too.
-
-## The reader's own sky, behind the page
-
-`next/components/weather.tsx` and `functions/api/weather.ts`.
-
-**The browser never talks to the weather service.** The same rule the
-broker follows and for the same two reasons: `connect-src` is `'self'`, so
-the fetch would be blocked before it left the page, and one caller is the
-only place that can cache honestly. `check-csp.ts` scans every string in
-`aab/` and `next/` and would fail on that hostname appearing in either.
-
-**Two decimal places, rounded in both places.** About a kilometre: enough
-to know whether it is raining, nowhere near enough to find a house. Doing
-it in the browser AND in the Worker is one place too few doing it, and it
-is also what makes the edge cache work.
-
-**`Permissions-Policy: geolocation` must be `(self)`, never `()`.** An
-empty allowlist is not "ask the reader": it is the page telling the browser
-not to have the API. No prompt appears, `getCurrentPosition` fails at once
-with PERMISSION_DENIED, and a reader who grants location in their own
-browser settings is told on reload that their browser said no. It is in two
-header lists that `check-headers.ts` keeps in step.
-
-**Two ways in, and the second is not a fallback.** A browser can refuse, a
-desktop can have no radio, a work laptop can have it off three levels up.
-`/api/weather/place?q=` searches Open-Meteo's place index through the same
-Worker for the same two reasons, and a chosen town is kept under the same
-key with a name on it. `askForPlace()` answers with four states rather than
-a boolean, so a policy failure is distinguishable from a person saying no.
-
-**`weather-place` is deliberately not synced.** Every other key
-`aab/sync.js` carries is something the reader MADE. Where somebody is
-standing is not that: a phone in Dhaka and a laptop in Brighton are two
-places.
-
-Seven skies, because seven is what can be told apart behind a page of
-prose, and the Worker does that reduction from the WMO codes so the drawing
-never sees a number. `@layer weather` is the whole of the drawing:
-gradients and keyframes, no canvas, no loop, and `display: none` when there
-is no weather.
-
-**It is BEHIND the page, at `z-index: -1`, and two facts elsewhere hold
-that up.** Nothing gives `<html>` a background, so body's `--paper`
-propagates to the canvas and body paints no box of its own; and nothing
-gives body a stacking context. Give it either and the weather VANISHES on
-a page that renders perfectly. `.home-aura` is the same arrangement one
-element down.
-
-**Five layers: the wash, three depths, and the light.** `wx-far`, `wx-mid`
-and `wx-near` are the same weather at three distances, the near one always
-larger, faster and softer at the edges. THE SOFTNESS IS IN THE GRADIENT
-STOP AND NEVER IN A `filter`: everything that moves here moves a
-background, so a blur is a whole window re-blurred every frame. `fog` is
-the exception and keeps its blurs, because a fog bank slides on `translate`
-and a translated raster is not redrawn.
-
-**A drop is an ellipse and the slant is on the layer.** A repeating stripe
-under a mask cut ACROSS it moves while the mask does not, so a drop appears
-and disappears at the same place on the screen for ever. It is a tiled
-radial gradient, head and tail, on a layer carrying the wind angle as its
-own `rotate`, and the fall is `background-position` rather than
-`translate`: a background is positioned in the element's OWN rotated space,
-so moving it down by exactly one tile height is a drop falling along its
-own line.
-
-**A cloud tile is as tall as the layer.** Only the width tiles. A tile
-620px tall repeats DOWN the page, so a bank drawn in the top quarter is
-drawn again under the reader's feet: the `100%` in each cloud's
-`background-size` fixes that. A cloud is a cluster of puffs rather than one
-wide ellipse, because a 220 by 44 gradient is a smear whatever its falloff.
-
-**The wash and the light are placed against the WINDOW; the three depths
-are 24 per cent bigger than it.** The depths need the overscan because they
-rotate and slide. The other two must not have it: a gradient is positioned
-inside its own element, so a sun at `87% 4%` of an oversized layer is a sun
-off the top right corner.
-
-**Nothing flashes.** `storm` would ordinarily be lightning and deliberately
-is not: a bright frame on a dark page is a seizure risk. It is heavier,
-steeper rain and a slow eight-second bloom.
-
-**Three tilings at coprime sizes is what makes snow snow**, and they are
-the three depths rather than three images on one layer. One tiled dot is
-wallpaper: the eye finds the lattice in about a second.
-
-**Stars are drawn where they can be seen**, which is `--wx-star` and a dark
-page: there is no colour that reads as a star against paper, so a light
-theme at midnight gets the blue wash and no dots. Turning off the twinkle
-alone leaves the dots there.
-
-**A reader who asked for contrast has asked for the opposite of this**, so
-the honest answer to `prefers-contrast: more` or
-`prefers-reduced-transparency: reduce` is no sky at all.
-`prefers-reduced-motion` keeps the sky and stops the movement.
-
-**`--wx-a` on `.weather` is the one knob.** Every opacity in the layer is a
-fraction of it.
 
 ## What a reader has read
 
@@ -1240,27 +710,19 @@ pass: it changes something the reader can point at.
   `public.library` is **one row per person per page**, with `saved` and
   `note` as two columns of it. A trigger removes the row once both have
   gone, so the list can be counted rather than filtered.
-- **Reading preferences.** `aab/src/prefs.ts`: the type size, the measure,
-  the theme and which language the calculators open in. **Every option
-  draws itself**, out of the same tokens the site is made of, because a row
-  of chips reading "Frost", "Paper", "Thin reed", "Linear ridge" asks a
-  reader to imagine eleven materials from their names.
-  `next/components/account/pref-swatch.tsx` is the drawing and it names no
-  finish: `[data-finish]` in `@layer tokens` lets a swatch wear a material
-  the document is not wearing, so a finish added tomorrow draws here
-  without that file learning about it. A swatch is a WINDOW rather than a
-  square, because a blur is only visible on an edge.
-  **`@layer glow` sets `--glass-grain: none` on every descendant of a
-  surface**, so a chip is a surface and eleven swatches inside eleven chips
-  are eleven identical rectangles. `:not([data-finish])` is the one
-  exception and it is this panel's.
+- **Reading preferences.** `aab/src/prefs.ts`: the type size, the
+  measure, the theme, which language the calculators open in and how
+  many of a calculator's fields a reader is asked to fill. Every option
+  draws itself in `next/components/account/pref-swatch.tsx`, out of the
+  same tokens the site is made of, because a row of chips reading
+  "Compact", "Narrow", "Dark" asks a reader to imagine the result.
   **`savePrefs` SPREADS.** Naming fields by hand drops whatever arrives
-  later: `texture` applied to the page and was gone on the next load. Same
-  rule as `/api/site` one floor up. Applied before the first paint by the
-  boot script in `next/components/shell.tsx`, carried between devices by
-  `sync.ts` under `reader-prefs`, and the language one writes `tool-lang`,
-  which the stock check has read since long before accounts. One choice,
-  one key.
+  later. Same rule as `/api/site` one floor up. Applied before the first
+  paint by the boot script in `next/components/shell.tsx`, held to the
+  panel's tables by `scripts/check-prefs.ts`, carried between devices
+  by `sync.ts` under `reader-prefs`, and the language one writes
+  `tool-lang`, which the stock check has read since long before
+  accounts. One choice, one key.
 - **A year of days**, drawn from `days-active` on the account page. No
   flame, nothing red, nothing counting down.
 - **Take a copy of everything.** One JSON file with everything the account
@@ -1326,7 +788,7 @@ React, and the four decisions in it are the four that make a
 | arrows, Home and End | with a roving tabindex, so the strip is one tab stop |
 | **nothing hides until it has run** | the panels render open and the first effect closes them. Hiding in CSS alone is a page that shows one section and seven buttons that do nothing |
 
-The strip is `.topbar` again: the same pill, the same glass, the same edge
+The strip is `.topbar` again: the same pill, the same ground, the same edge
 and shadow, one `--top-gap` below it and inside the page's own column.
 
 `[data-panels="on"]` is how the stylesheet knows a section is the only one
@@ -1457,37 +919,6 @@ overhang is clipped rather than scrolled. `clip` and never `hidden`: hidden
 makes a scroll container, which gives the page a second scrollport and
 breaks `position: sticky` inside it.
 
-### The reading hush
-
-A hub is a place to choose. A piece is one column of prose: measured,
-fourteen focusable things sat between the top of an article and its first
-sentence. So the furniture goes quiet once the reader is past the heading
-and comes back the moment they reach for it. Nothing moves, nothing is
-removed, nothing leaves the tab order, and no layout changes.
-
-**It is the scroll POSITION, not a timer.** A "they have stopped scrolling"
-tail flashes the rail on and off with every wheel notch. It is
-`animation-timeline: scroll()`: no listener, no rAF, no state.
-`check-relief.ts` knows it by name in `TIED_TO_SCROLL`.
-
-**Two numbers, because an animation beats a plain declaration.**
-`:hover { opacity: 1 }` over an animated opacity does nothing. `--hush` is
-animated and `--awake` is not, they multiply, and neither contests the
-other.
-
-**The noise is the COLOUR, not the words.** Twelve destinations each with a
-filled lozenge in its section's hue is a row of traffic lights down the
-edge of a page of prose. The marks come down by 0.55 and the panel by 0.2:
-measured on the rendered pixels of a nav label, an even fade reaches 4.82:1
-in light at 0.35 and 3.82:1 at 0.42, and 4.5:1 is the line. At 0.2 the
-label sits at 7.9:1. `reading.test.ts` re-measures both themes.
-
-**`:focus-within` is not optional.** Nothing in a rail can be reached by
-hovering a pointer that is not there, and a rail that stays dim under a
-focus ring is unreadable to anybody tabbing through the site.
-`prefers-contrast: more` and `prefers-reduced-transparency: reduce` switch
-the whole thing off.
-
 ### And the small things that were wrong
 
 - **The separator belongs to the thing in front of it.** A byline of
@@ -1596,13 +1027,15 @@ at. **It is drawn as this site rather than as a photograph**: a card
 arriving in a chat should look like the place it came from before anybody
 reads the title.
 
-**So it is THE ROOM**, the same ten layers `card-art.tsx` puts behind every
-card here, in the same order, then the card's own furniture on top: the
-scrim that seats the words, the accent rail every `<GoCard>` carries, the
-hairline rim, the kicker in the mono face and the title in the serif.
+**So it is THE ROOM**: ten layers, back to front, the one place on the
+site the room is still drawn now that the cards themselves are plain,
+then the card's own furniture on top: the scrim that seats the words, the
+accent rail every `<GoCard>` carries, the hairline rim, the kicker in the
+mono face and the title in the serif. A chat preview has to say where it
+came from before anybody reads the title, and a plain rectangle does not.
 
 **The twelve drawings are `shared/art-svg.ts` and are strings**, because
-the share card cannot reach JSX inside `card-art.tsx`. Same reason
+the share card is a Vite bundle and cannot reach JSX under `next/`. Same reason
 `next/lib/school-icons.ts` holds strings: markup something other than React
 has to read.
 
@@ -1768,14 +1201,12 @@ node scripts/check-utility-clash.ts # a class this site styles that Tailwind als
                             # generates, which no layer order can win back
 node scripts/check-closed.ts # a new file on the old system: a browser module in
                             # aab/src/, a hand-written page, a functions/*.js
-node scripts/check-material.ts # a pressable class on none of the five kinds, or
-                            # one whose own gradient the material would erase
-node scripts/check-glass.ts # a finish the panel offers and the stylesheet cannot
-                            # draw, or one the boot script throws away before the
-                            # first paint, so the choice never survives a reload
-node scripts/check-relief.ts # a figure that lifts and never stops for a reader
-                            # who asked for no motion, a relief on a class no
-                            # layer defines, and a scene layer moved twice
+node scripts/check-plain.ts # a blur, a turn towards the pointer, a light under
+                            # it or an entrance on scroll, coming back one rule
+                            # at a time
+node scripts/check-prefs.ts # a type step the panel offers and the boot script
+                            # throws away before the first paint, so the choice
+                            # never survives a reload
 node scripts/check-admin.ts # an endpoint under functions/api/ gated by neither
                             # requireAdmin nor isAdmin and not named as public,
                             # or a file open in part whose gate has quietly gone
@@ -1928,7 +1359,7 @@ node next/read-aloud.test.ts       # what the speech control reads, what it
 node next/reading.test.ts          # every number this site states about its own
                                    # typography, measured against its own prose
                                    # in both scripts: the measure, the column, a
-                                   # full-bleed figure, and the hush (52 checks,
+                                   # full-bleed figure (checks the measure,
                                    # needs Playwright and a browser, skips
                                    # without)
 node next/market-pulse.test.ts     # two endpoints raced, the device as the last

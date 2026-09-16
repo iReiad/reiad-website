@@ -14,9 +14,6 @@ import "../styles/globals.css";
 import type { CSSProperties, ReactNode } from "react";
 import { FONTS, LOOK } from "@reiad/shared/look";
 import { SiteScripts } from "./scripts";
-import { Glow } from "./glow";
-import { Sound } from "./sound";
-import { Weather } from "./weather";
 import { Sidebar, DrawerBackdrop } from "./sidebar";
 import { TopBar } from "./topbar";
 import { NavTree } from "./nav-tree";
@@ -39,7 +36,8 @@ import { Crumbs, type Crumb } from "./ui/crumbs";
        The two custom properties are set rather than defaulted, and the
        defaults live in the stylesheet so a reader with no preference and a
        reader with JavaScript off get the same page. `aab/prefs.js` writes
-       the same values; this is the copy that runs before a paint.
+       the same values; this is the copy that runs before a paint, and
+       `scripts/check-prefs.ts` holds the two copies to the same values.
 
        First child of <body> rather than in <head>: App Router hoists only
        the tags it knows about and a blocking inline script is not one, and
@@ -56,31 +54,6 @@ const BOOT = `(function(){var d=document.documentElement;try{`
   + `if(s)d.style.setProperty("--read-scale",s);`
   + `var m={narrow:"0.85",normal:"1",wide:"1.18"}[p.measure];`
   + `if(m)d.style.setProperty("--read-wide",m);`
-      /* The glass. Three tables, the ones in `aab/src/prefs.ts`: GLASSES,
-         BLURS and VEILS. A surface that arrived flat and frosted a frame
-         later is worse than one that never blurred, so this cannot wait
-         for a module.
-
-         The finish list is written out a second time here and
-         `scripts/check-glass.ts` stops the two drifting: it cannot be
-         imported, and a finish missing from THIS copy is thrown away
-         before the first paint while the panel goes on offering it. */
-  + `d.setAttribute("data-glass",`
-  + `{frost:1,paper:1,"thin-reed":1,"linear-ridge":1,"crossed-reed":1,`
-  + `"deep-flute":1,aquatex:1,"arctic-ice":1,callisto:1,champagne:1,`
-  + `eurodrop:1,plain:1}[p.glass]?p.glass:"frost");`
-  + `var b={soft:"0.55",normal:"1",deep:"1.7"}[p.blur];`
-  + `if(b)d.style.setProperty("--glass-amount",b);`
-  + `var v={clear:"0.54",normal:"0.72",dense:"0.9"}[p.veil];`
-  + `if(v)d.style.setProperty("--glass-veil",v);`
-  + `var x={faint:"0.5",normal:"1",strong:"1.6"}[p.texture];`
-  + `if(x)d.style.setProperty("--tex-strength",x);`
-      /* WHETHER THE SITE MAKES A SOUND, as an attribute rather than a
-         value the sound module digs out of storage on every press: the
-         first press can come before any module has loaded, and a cue that
-         fired once for somebody who turned sound off is the whole promise
-         broken. */
-  + `d.setAttribute("data-sound",p.sound==="off"?"off":"on");`
       /* WHICH LANGUAGE THE TOOLS SPEAK. `tool-lang` is the key the
          calculators have written since long before accounts, and
          `prefs.ts` writes the same one.
@@ -105,9 +78,8 @@ const BOOT = `(function(){var d=document.documentElement;try{`
          two. One key still, because a reader who has chosen has chosen
          once. */
   + `d.setAttribute("data-read-lang",l==="en"?"en":"bn")}catch(e){`
-  + `d.setAttribute("data-rail","open");d.setAttribute("data-glass","frost");`
-  + `d.setAttribute("data-tool-lang","en");d.setAttribute("data-read-lang","bn");`
-  + `d.setAttribute("data-sound","on")}})()`;
+  + `d.setAttribute("data-rail","open");`
+  + `d.setAttribute("data-tool-lang","en");d.setAttribute("data-read-lang","bn")}})()`;
 
     /** Which nav item is marked as where you are. A page marks its own
         link with `aria-current="page"`; a page INSIDE a section marks that
@@ -263,13 +235,6 @@ export function SiteShell({
                 `components/scripts.tsx` is the whole story. */}
         {scripts}
         <SiteScripts srcs={["/app.js"]} />
-            {/* The pointer's position, for `@layer glow`. A component
-                rather than a served module because nothing outside this
-                shell needed it and `aab/` is a closed set:
-                `scripts/check-closed.ts`. */}
-        <Glow />
-        <Sound />
-        <Weather />
             {/* WHEN A CALCULATOR WAS LAST OPENED, and nothing else: see
                 `components/used.tsx`. Here because the shell already knows
                 which rail key this page is, and `TOOL_KEYS` is derived

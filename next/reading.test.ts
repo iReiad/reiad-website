@@ -41,7 +41,7 @@ const skip: (why: string) => never = (why) => {
 
     `aab/src/prefs.ts` reaches for `document` and `addEventListener`
     at its top level, which is right for a browser module and
-    means node cannot import it. `scripts/check-glass.ts` parses
+    means node cannot import it. `scripts/check-prefs.ts` parses
     that file for the same reason and says so where it does it. */
 interface Step { label: string; note: string; wide: string }
 const MEASURES: Step[] = (() => {
@@ -385,116 +385,7 @@ for (const script of ["bn", "en"] as const) {
   await p.close();
 }
 
-    /* ---- 4. the reading hush ----
-       The rail and the bar go quiet once the reader is past the heading.
-       Each of these is a way of shipping a hush that looks right and is
-       wrong: one that never comes back, one that cannot be woken from a
-       keyboard, and one that leaves the navigation below the contrast a
-       reader can use. */
-{
-  const p: Page = await browser.newPage({ viewport: { width: 1440, height: 900 } });
-  await p.goto(`http://localhost:${PORT}/`, { waitUntil: "load" });
-  await p.waitForTimeout(200);
-  const hush = (): Promise<number> => p.evaluate(() =>
-    Number(getComputedStyle(document.body).getPropertyValue("--hush")));
-  const railOpacity = (): Promise<number> => p.evaluate(() =>
-    Number(getComputedStyle(document.querySelector(".rail")!).opacity));
-  const settle = async (y: number): Promise<void> => {
-    await p.evaluate((to: number) => window.scrollTo(0, to), y);
-    await p.waitForTimeout(900);
-  };
-
-  await settle(0);
-  ok("at the top of a piece nothing is hushed", await hush() === 0);
-  await settle(1200);
-  ok("once the reader is into it, the furniture is", await hush() === 1);
-  const quiet = await railOpacity();
-  ok("and the rail is quieter than it was", quiet < 1, String(quiet));
-
-  await p.hover(".rail");
-  await p.waitForTimeout(700);
-  ok("reaching for the rail wakes it", await railOpacity() === 1);
-  await p.mouse.move(1000, 500);
-  await p.waitForTimeout(1100);
-  ok("and it goes quiet again when the pointer leaves", await railOpacity() < 1);
-
-  /* THE KEYBOARD PATH, which is the one that is easy to leave
-     out: nothing here can be reached by hovering a pointer that
-     is not there, and a rail that stayed dim under a focus ring
-     would be unreadable to somebody tabbing through the site. */
-  await p.evaluate(() => (document.querySelector(".rail a") as HTMLElement).focus());
-  await p.waitForTimeout(700);
-  ok("and a tab key wakes it too", await railOpacity() === 1);
-  await p.evaluate(() => (document.activeElement as HTMLElement).blur());
-  await p.waitForTimeout(1100);
-
-  await settle(0);
-  ok("scrolling back to the top brings it all back", await hush() === 0);
-  await p.close();
-}
-
-/* ---- and it is still readable while it is quiet ---- */
-{
-  const ratio = async (p: Page, clip: { x: number; y: number; width: number; height: number }):
-  Promise<number> => {
-    const shot = Buffer.from(await p.screenshot({ clip })).toString("base64");
-    return await p.evaluate(async (b64: string) => {
-      const img = new Image();
-      img.src = `data:image/png;base64,${b64}`;
-      await img.decode();
-      const c = document.createElement("canvas");
-      c.width = img.width; c.height = img.height;
-      const x = c.getContext("2d", { willReadFrequently: true })!;
-      x.drawImage(img, 0, 0);
-      const d = x.getImageData(0, 0, c.width, c.height).data;
-      const f = (v: number): number => {
-        const n = v / 255;
-        return n <= 0.03928 ? n / 12.92 : ((n + 0.055) / 1.055) ** 2.4;
-      };
-      const ls: number[] = [];
-      for (let i = 0; i < d.length; i += 4) {
-        ls.push(0.2126 * f(d[i]) + 0.7152 * f(d[i + 1]) + 0.0722 * f(d[i + 2]));
-      }
-      ls.sort((a, b) => a - b);
-      /* Second and ninety-eighth percentile rather than the two
-         extremes, so one antialiased pixel cannot decide it, and
-         either way round so the same code answers for both
-         themes: on paper the ink is the low end and at night it
-         is the high one. */
-      const lo = ls[Math.floor(ls.length * 0.02)];
-      const hi = ls[Math.floor(ls.length * 0.98)];
-      return (hi + 0.05) / (lo + 0.05);
-    }, shot);
-  };
-
-  for (const theme of ["light", "dark"] as const) {
-    const p: Page = await browser.newPage({
-      viewport: { width: 1440, height: 900 }, deviceScaleFactor: 2 });
-    await p.goto(`http://localhost:${PORT}/`, { waitUntil: "load" });
-    await p.evaluate((t: string) =>
-      document.documentElement.setAttribute("data-theme", t), theme);
-    /* Held at the hushed end rather than scrolled to it, so the
-       measurement cannot depend on an animation settling. */
-    await p.evaluate(() => {
-      document.body.style.animation = "none";
-      document.body.style.setProperty("--hush", "1");
-    });
-    await p.waitForTimeout(600);
-    const clip = await p.evaluate(() => {
-      const b = document.querySelector(".rail-item-label")!.getBoundingClientRect();
-      return { x: Math.round(b.x), y: Math.round(b.y),
-               width: Math.max(40, Math.round(b.width)),
-               height: Math.max(12, Math.round(b.height)) };
-    });
-    const got = await ratio(p, clip);
-    ok(`${theme}: the hushed rail is still above the contrast a reader needs`,
-      got >= 4.5, `measured ${got.toFixed(2)}:1, and 4.5:1 is the line for `
-      + "normal text. Take the multiplier in @layer shell down.");
-    await p.close();
-  }
-}
-
-    /* ---- 5. a lesson's only language is on the screen ----
+    /* ---- 4. a lesson's only language is on the screen ----
        `@layer lesson` puts both bodies in the markup and hides one, keyed
        on `data-read-lang`, which the boot script sets from `tool-lang`.
        144 of the 225 written lessons have no second body, so hiding the

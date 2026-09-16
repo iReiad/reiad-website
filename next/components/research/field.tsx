@@ -34,7 +34,6 @@ import { Button, ButtonLabel } from "../ui/button";
 import { Chip, ChipButton } from "../ui/chip";
 import { Field, Select, TextArea } from "../ui/field";
 import { Surface } from "../ui/surface";
-import { cue } from "../../lib/sound";
 import { T, W, both, useToolLang } from "./lang";
 import { SignedOut } from "./signed-out";
 import { useWho } from "./use-who";
@@ -128,23 +127,23 @@ function Participants({ w, lang, participants, interviews, ready, onMade, onChan
   const add = async (): Promise<void> => {
     if (!pseudonym.trim()) return;
     const made = await addParticipant(w, { pseudonym: pseudonym.trim(), role: role.trim(), consent: { status: "pending" } });
-    if (made) { onMade(made); setChosen(made.id); setPseudonym(""); setRole(""); cue("saved"); }
+    if (made) { onMade(made); setChosen(made.id); setPseudonym(""); setRole(""); }
   };
   const consent = async (part: Partial<Participant["consent"]>): Promise<void> => {
     if (!p) return;
     const r = await saveParticipant(w, p, { consent: { ...p.consent, ...part } });
-    if (r.ok) { onChanged(r.row); cue("saved"); }
+    if (r.ok) { onChanged(r.row); }
   };
   const sealIt = async (): Promise<void> => {
     if (!p || !pass || !identity.trim()) return;
     const sealed = await seal(pass, identity.trim());
     const r = await saveParticipant(w, p, { sealed });
-    if (r.ok) { onChanged(r.row); setIdentity(""); setOpened(null); cue("saved"); setSaid(both("rs.field.sealed.done")); }
+    if (r.ok) { onChanged(r.row); setIdentity(""); setOpened(null); setSaid(both("rs.field.sealed.done")); }
   };
   const openIt = async (): Promise<void> => {
     if (!p?.sealed || !pass) return;
     const plain = await unseal(pass, p.sealed);
-    if (plain === null) { setSaid(both("rs.field.sealed.wrong")); cue("refused"); return; }
+    if (plain === null) { setSaid(both("rs.field.sealed.wrong")); return; }
     setOpened(plain);
   };
   const mine = p ? interviews.filter((s) => participantOf(s) === p.id) : [];
@@ -279,7 +278,7 @@ function Interviews({ w, lang, participants, interviews, codes, codings, transcr
       const s = await addSource(w, { type: "interview", title: title.trim(), author: [{ literal: who?.pseudonym ?? "" }], issued: { "date-parts": [[new Date().getFullYear(), new Date().getMonth() + 1, new Date().getDate()]] } }, { via: "manual", verified: true, identifiers: { participant } });
       if (!s) return;
       const withFile = files.length ? await saveSourceFiles(w, s, files) : s;
-      onMade(withFile); setChosen(withFile.id); setTitle(""); setFile(null); cue("saved");
+      onMade(withFile); setChosen(withFile.id); setTitle(""); setFile(null);
     } finally { setBusy(false); }
   };
   const keepTranscript = async (segs: Segment[], st: TranscriptState): Promise<void> => {
@@ -288,10 +287,10 @@ function Interviews({ w, lang, participants, interviews, codes, codings, transcr
     const body = segs.map((s) => `<p>${s.speaker ? `<strong>${s.speaker}:</strong> ` : ""}${s.text.replace(/</g, "&lt;")}</p>`).join("");
     if (transcript) {
       const r = await saveNote(w, transcript.id, { meta: { ...transcript.meta, segments: segs, state: st }, text, body }, transcript.title);
-      if (r.ok) { onTranscript(r.row); cue("saved"); }
+      if (r.ok) { onTranscript(r.row); }
     } else {
       const n = await addNote(w, { kind: "transcript", title: `${interview.title}: ${both("rs.field.transcript")}`, source_id: interview.id, text, body, meta: { segments: segs, state: st, participant: participantOf(interview) } });
-      if (n) { onTranscript(n); cue("saved"); }
+      if (n) { onTranscript(n); }
     }
   };
   const fromPaste = async (): Promise<void> => {
@@ -332,7 +331,7 @@ function Interviews({ w, lang, participants, interviews, codes, codings, transcr
     const made = await addCoding(w, {
       code_id: c.id, note_id: transcript.id, source_id: interview.id, participant_id: participantOf(interview), segment: selection.segment, start_at: selection.start, end_at: selection.end, text: selection.text,
     });
-    if (made) { onCoding(made); setSelection(null); window.getSelection()?.removeAllRanges(); cue("tick"); }
+    if (made) { onCoding(made); setSelection(null); window.getSelection()?.removeAllRanges(); }
   };
   const present = [...new Set(mine.map((c) => c.code_id))].map((id) => codes.find((c) => c.id === id)).filter((c): c is Code => Boolean(c));
 
@@ -486,7 +485,7 @@ function Codebook({ w, lang, codes, codings, onMade, onRemoved }: Shared & { onM
   const add = async (): Promise<void> => {
     if (!name.trim() || !definition.trim()) return;
     const c = await addCode(w, { name: name.trim(), definition: definition.trim(), colour, parent_id: parent || null, position: codes.length });
-    if (c) { onMade(c); setName(""); setDefinition(""); cue("saved"); }
+    if (c) { onMade(c); setName(""); setDefinition(""); }
   };
   const roots = codes.filter((c) => !c.parent_id);
   const children = (id: string): Code[] => codes.filter((c) => c.parent_id === id);
@@ -532,7 +531,7 @@ function Retrieval({ w, lang, codes, codings, participants, interviews, transcri
   };
   const keep = async (c: Coding, part: Partial<Coding>): Promise<void> => {
     const r = await saveCoding(w, c, part);
-    if (r.ok) { onChanged(r.row); cue("saved"); }
+    if (r.ok) { onChanged(r.row); }
   };
   return (
     <Surface material="pane" className="px-4 py-3 grid gap-3">
@@ -619,12 +618,12 @@ function Surveys({ w, lang, setSaid }: { w: Who; lang: "en" | "bn"; setSaid: (s:
 
   const start = async (): Promise<void> => {
     const made = await addSurvey(w, { title: both("rs.field.survey.new"), questions: [], intro: "", token: tokenOf(crypto.randomUUID()) });
-    if (made) { setSurveys((was) => [made, ...was]); setChosen(made.id); cue("saved"); }
+    if (made) { setSurveys((was) => [made, ...was]); setChosen(made.id); }
   };
   const save = async (): Promise<void> => {
     if (!s) return;
     const r = await saveSurvey(w, s, { title: title.trim() || s.title, intro, questions: questionsOf(text) });
-    if (r.ok) { setSurveys((was) => was.map((x) => (x.id === s.id ? r.row : x))); cue("saved"); setSaid(both("rs.saved")); }
+    if (r.ok) { setSurveys((was) => was.map((x) => (x.id === s.id ? r.row : x))); setSaid(both("rs.saved")); }
   };
   const publish = async (open: boolean): Promise<void> => {
     if (!s) return;
@@ -633,7 +632,7 @@ function Surveys({ w, lang, setSaid }: { w: Who; lang: "en" | "bn"; setSaid: (s:
     const done = await publishSurveyForm(w, fresh, open);
     if (!done) { setSaid(both("rs.field.survey.failed")); return; }
     const r = await saveSurvey(w, s, { open });
-    if (r.ok) { setSurveys((was) => was.map((x) => (x.id === s.id ? r.row : x))); cue("saved"); }
+    if (r.ok) { setSurveys((was) => was.map((x) => (x.id === s.id ? r.row : x))); }
   };
   const collect = async (): Promise<void> => {
     if (!s) return;
@@ -646,7 +645,7 @@ function Surveys({ w, lang, setSaid }: { w: Who; lang: "en" | "bn"; setSaid: (s:
     const file = new File([tableCsv(table)], `${s.token}-responses.csv`, { type: "text/csv" });
     const made = await importFile(w, file, { name: `${s.title}: ${both("rs.field.responses")}`, provenance: { kind: "survey", token: s.token, responses: responses.length } });
     if ("error" in made) { setSaid(`${both("rs.lab.failed")}: ${made.error}`); return; }
-    cue("saved"); setSaid(both("rs.field.survey.dataset.done"));
+    setSaid(both("rs.field.survey.dataset.done"));
   };
   const url = s ? `${typeof location !== "undefined" ? location.origin : ""}/tools/research/survey/${s.token}` : "";
   return (
@@ -718,10 +717,10 @@ function Guide({ w, interviews, setSaid }: Shared) {
     const questions = text.split("\n").map((q) => q.trim()).filter(Boolean);
     if (guide) {
       const r = await saveNote(w, guide.id, { meta: { ...guide.meta, questions }, text: questions.join("\n"), body: questions.map((q) => `<p>${q.replace(/</g, "&lt;")}</p>`).join("") }, guide.title);
-      if (r.ok) { setGuide(r.row); cue("saved"); setSaid(both("rs.saved")); }
+      if (r.ok) { setGuide(r.row); setSaid(both("rs.saved")); }
     } else {
       const n = await addNote(w, { kind: "memo", title: both("rs.field.guide"), meta: { guide: true, questions, asked: {} }, text: questions.join("\n"), body: questions.map((q) => `<p>${q.replace(/</g, "&lt;")}</p>`).join("") });
-      if (n) { setGuide(n); cue("saved"); }
+      if (n) { setGuide(n); }
     }
   };
   const tick = async (interview: string, q: number): Promise<void> => {
@@ -730,7 +729,7 @@ function Guide({ w, interviews, setSaid }: Shared) {
     const had = g.asked[interview] ?? [];
     const asked = { ...g.asked, [interview]: had.includes(q) ? had.filter((x) => x !== q) : [...had, q].sort((a, b) => a - b) };
     const r = await saveNote(w, guide.id, { meta: { ...guide.meta, asked } }, guide.title);
-    if (r.ok) { setGuide(r.row); cue("tick"); }
+    if (r.ok) { setGuide(r.row); }
   };
   const g = guide ? guideOf(guide.meta) : { questions: [], asked: {} };
   return (

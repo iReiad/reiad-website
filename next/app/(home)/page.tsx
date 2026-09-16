@@ -25,10 +25,8 @@ import type { CSSProperties } from "react";
 import { Board } from "../../components/home/board";
 import { LatestWriting } from "../../components/home/writing";
 import { Reckoner } from "../../components/home/reckoner";
-import { Meadow } from "../../components/meadow";
 import { GoCard } from "../../components/deck";
 import { WorkCard } from "../../components/work-card";
-import { Icon } from "../../components/icons";
 import { ButtonLink } from "../../components/ui/button";
 import { SectionLabel } from "../../components/ui/label";
 import { pageMeta } from "../../lib/pageMeta";
@@ -100,14 +98,7 @@ function bandAccent(key: string): CSSProperties | undefined {
 
 export default function HomePage() {
   return (
-    <main id="main" className="home-aura">
-          {/* The ground this page stands in: `@layer meadow` is the whole
-              drawing. Inside `.home-aura` on purpose, because that
-              element's `isolation: isolate` is what makes a `z-index: -1`
-              child paint behind the page's content instead of behind the
-              page. It stands down under `html[data-weather]`. */}
-      <Meadow />
-
+    <main id="main">
       <div className="home-wrap mx-auto w-full max-w-[1240px]
         px-[clamp(16px,3vw,44px)] pt-[clamp(18px,3.4vw,44px)] pb-[clamp(28px,4vw,56px)]
         grid gap-[clamp(34px,4.4vw,64px)]">
@@ -163,12 +154,8 @@ export default function HomePage() {
               {/* ---- the ledger ----
                   What is actually here, counted: five rows out of
                   `COUNTS`, each one a way in, the numeral a slot rather
-                  than a number anybody typed.
-
-                  No ground and no edge on purpose: the hero already has a
-                  card's worth of weight, and a panel of glass beside it
-                  would be two things asking to be read first. That also
-                  keeps this off the material's books. */}
+                  than a number anybody typed. No ground and no edge: the
+                  headline already carries the weight on this screen. */}
           <div className="door-ledger">
             <ul className="ledger">
               {DOOR.facts.map((row) => (
@@ -181,15 +168,6 @@ export default function HomePage() {
                 </li>
               ))}
             </ul>
-                {/* The keyboard hint's `max-sm:hidden` lost silently:
-                    `.gate-hint` sets `display: flex` in `@layer deck`,
-                    which is a LATER layer than `tw`. A utility can only
-                    win where no later layer sets the same property. The
-                    media query is in the stylesheet. */}
-            <p className="gate-hint mono">
-              <Icon name="search" size={13} /> <kbd>Ctrl K</kbd>
-              <span>anything on this site, by name</span>
-            </p>
           </div>
         </header>
 
@@ -203,24 +181,16 @@ export default function HomePage() {
                 First, because the door speaks Bangla to anybody who has
                 pressed nothing and its primary button goes to `/skills`.
                 Somebody here to hire gets a door whose primary button IS
-                the work, which is one press rather than one scroll.
-
-                Every school wears its drawing: they are how a reader tells
-                six schools apart at a glance. Three columns, so six of
-                them are two clean rows. */}
+                the work, which is one press rather than one scroll. Six
+                cards, each in its school's own colour, three to a row. */}
         <section aria-labelledby="learn-h">
           <div className="hub-section-head">
             <SectionLabel>
               শেখা · <span lang="en">The library</span>
             </SectionLabel>
             <h2 className="band-h" id="learn-h" lang="bn">যা যা শেখানো হয়</h2>
-                {/* NOT "সব ডিভাইসে জমা থাকে", which is only true with an
-                    account and is read by a reader who has none. Ticks are
-                    kept in this browser; an account carries them between
-                    devices, and `/account` is where that is offered. */}
             <p className="hub-section-note" lang="bn">
-              সবগুলো ফ্রি, সবগুলো বাংলায়, একদম শুরু থেকে। কোন পাঠটা পড়া হয়েছে
-              টিক দিয়ে রাখা যায়, অ্যাকাউন্ট ছাড়াই।
+              সবগুলো ফ্রি, সবগুলো বাংলায়, একদম শুরু থেকে।
             </p>
           </div>
           <div className="deck learn-deck">
@@ -228,7 +198,6 @@ export default function HomePage() {
               <GoCard
                 key={item.href}
                 href={item.href}
-                art={item.art}
                 icon={item.icon}
                 accent={item.accent ?? "var(--green)"}
                 chip={item.kind ? <span lang="bn">{item.kind}</span> : undefined}
@@ -257,20 +226,14 @@ export default function HomePage() {
             </SectionLabel>
             <h2 className="band-h" id="work-h" lang="en">Models you can open and drive</h2>
                 {/* No count in the sentence: the ledger a screen above
-                    states the same figure out of `COUNTS`, and a number
-                    said twice on one page is a number that will one day be
-                    said two ways. */}
+                    states the same figure out of `COUNTS`. The one band not
+                    in the reader's language says so in theirs. */}
             <p className="hub-section-note" lang="en">
-              Interactive, all of them. The arithmetic runs in your browser as
-              you read: nothing here is a picture of a spreadsheet.
+              The arithmetic runs in your browser: nothing here is a picture
+              of a spreadsheet.
             </p>
-                {/* THE ONE BAND NOT IN THE READER'S LANGUAGE, and it says
-                    so in theirs: a Bangla reader arriving at seven English
-                    cards with no explanation has been left to guess
-                    whether the site stopped being theirs. */}
             <p className="hub-section-note" lang="bn">
               এই অংশটা ইংরেজিতে, কারণ কাজগুলো ইংরেজিতেই করা।
-              শেখার সবকিছু বাংলায়, উপরে।
             </p>
           </div>
               {/* ONE LEAD AND SIX: seven equal cards in a three column
@@ -298,14 +261,8 @@ export default function HomePage() {
         </section>
 
             {/* ---- the tools ----
-                Every tool carries a blurb in `shared/nav.ts` now, in
-                Bangla, which means the rail and the app get them too.
-
-                AND NO PICTURES HERE: the library band above is six
-                drawings, and six more directly under it is a page of
-                wallpaper. A tool is a thing you go and use, so the icon
-                and the sentence are what a reader needs, and it is what
-                makes the two bands read as two bands. */}
+                Every tool carries a blurb in `shared/nav.ts`, in Bangla,
+                which means the rail and the app get them too. */}
         <section aria-labelledby="make-h" style={bandAccent("tools")}>
           <div className="hub-section-head">
             <SectionLabel>
@@ -314,11 +271,9 @@ export default function HomePage() {
             <h2 className="band-h" id="make-h" lang="bn">যেগুলো দিয়ে হিসাবটা করা যায়</h2>
                 {/* NOT "যা লেখেন তা আপনার কাছেই থাকে": the routine, the
                     diet log and the Research Studio keep a reader's rows
-                    in an account, which is the opposite. Say the thing
-                    that is true of all six. */}
+                    in an account. Say the thing that is true of all six. */}
             <p className="hub-section-note" lang="bn">
-              হিসাবটা আপনার ব্রাউজারেই চলে, কিছু ইনস্টল করতে হয় না। বেশিরভাগই
-              অ্যাকাউন্ট ছাড়াই খোলা যায়।
+              হিসাবটা আপনার ব্রাউজারেই চলে, আর বেশিরভাগই অ্যাকাউন্ট ছাড়াই খোলা যায়।
             </p>
           </div>
           <div className="deck make-deck">

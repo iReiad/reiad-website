@@ -57,10 +57,8 @@ export default function ToolsPage() {
             <h1>The five sums worth doing before you decide anything.
             </h1>
             <p className="lede">
-              No sign-up, no data leaving your browser, no "book a call". Change a
-          number and everything moves. When you get a result worth keeping,
-          copy the link, the whole calculation travels with it.
-        
+              Change a number and everything moves. Copy the link and the whole
+              calculation travels with it.
             </p>
             {/* ============ the advanced one, which needs its own page ============
              It sits ABOVE the calculator picker rather than after it: it is
@@ -71,22 +69,9 @@ export default function ToolsPage() {
              that navigates away is not a tab. It is also a different kind
              of thing: the five below answer one question each, this one
              runs a whole analysis. */}
-            {/* THE SITE'S OWN CARD, wearing the drawing the stock
-                check wears on the board: it was `.work-card
-                .advanced-card`, a shape used here and nowhere
-                else for a thing the front page already draws as a
-                `<GoCard>`. */}
-            {/* THE TWO SIDE BY SIDE, and that is about the picture
-                rather than about tidiness. A card wearing a scene
-                across its top is 16:9 of its own width, so one
-                full-width card on a laptop is a 300px banner over
-                four lines of text: the drawing stops being a
-                picture on a card and becomes a header. Two up
-                halves the width and the band comes back to the
-                proportion every other card on the site has. */}
             <div className="cards grid-2">
             <GoCard
-              href="/tools/stock" art="gauge" icon="gauge" accent="var(--gold)"
+              href="/tools/stock" icon="gauge" accent="var(--gold)"
               chip={<>Advanced · <span lang="bn">উন্নত টুল</span></>}
               title="Stock check: buy, hold or sell?"
               go="Open the stock check"
@@ -112,7 +97,7 @@ export default function ToolsPage() {
             {/* Its sibling, for the same reason and in the same place:
              a live feed is not a calculator tab either. */}
             <GoCard
-              href="/tools/live" art="chart" icon="wallet" accent="var(--gold)"
+              href="/tools/live" icon="wallet" accent="var(--gold)"
               chip={<>Live · <span lang="bn">লাইভ</span></>}
               title="Live portfolio: a real account, as it stands"
               go="Open the live portfolio"

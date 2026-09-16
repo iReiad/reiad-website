@@ -30,7 +30,6 @@ import { Chip, ChipButton } from "../ui/chip";
 import { Field, Select, TextArea } from "../ui/field";
 import { Empty } from "../ui/note";
 import { Surface } from "../ui/surface";
-import { cue } from "../../lib/sound";
 import { T, W, both, useToolLang } from "./lang";
 import { SignedOut } from "./signed-out";
 import { SAID, SETTLE, useWho, when } from "./use-who";
@@ -90,7 +89,7 @@ export function Questions() {
     const text = window.prompt(both("rs.q.text"));
     if (!text?.trim()) return;
     const q = await addQuestion(w, text.trim(), parent ? "hypothesis" : "question", parent, current?.project_id ?? null);
-    if (q) { cue("saved"); setOpen(q.id); await reload(); }
+    if (q) { setOpen(q.id); await reload(); }
   }, [w, current, reload]);
 
   const move = useCallback((by: number) => {
@@ -210,7 +209,6 @@ function QuestionCard({ w, q, all, projects, sources, onChange, onChild, onOpen,
       latest.current = r.row;
       onChange(r.row);
       setState("saved");
-      cue("saved");
       if (said.current) clearTimeout(said.current);
       said.current = setTimeout(() => setState(""), SAID);
     } else setState(r.conflict ? "conflict" : "failed");
@@ -348,7 +346,7 @@ function QuestionViews({ view, w, rows, sources, projects, onMade, onChanged }: 
     if (q) {
       const r = await saveQuestion(w, q.id, { body: { measure: measure.trim() } }, name.trim());
       onMade(r.ok ? r.row : q);
-      setName(""); setMeasure(""); cue("saved");
+      setName(""); setMeasure("");
     }
   };
   void projects;

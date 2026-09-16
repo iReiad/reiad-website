@@ -33,7 +33,6 @@ import { Button } from "../ui/button";
 import { Chip, ChipButton, ChipLink } from "../ui/chip";
 import { Field, Select, TextArea } from "../ui/field";
 import { Surface } from "../ui/surface";
-import { cue } from "../../lib/sound";
 import { T, W, both, useToolLang } from "./lang";
 import { SAID, SETTLE, when } from "./use-who";
 import { FileBox, readHref } from "./files";
@@ -85,7 +84,6 @@ export function SourceCard({ w, source, projects, collections, onChange, onGone 
       seen.current = r.row.updated_at;
       onChange(r.row);
       setState("saved");
-      cue("saved");
       if (said.current) clearTimeout(said.current);
       said.current = setTimeout(() => setState(""), SAID);
     } else {
@@ -112,7 +110,7 @@ export function SourceCard({ w, source, projects, collections, onChange, onGone 
   const yearValue = String(csl.issued?.["date-parts"]?.[0]?.[0] ?? "");
 
   const copy = async (text: string): Promise<void> => {
-    try { await navigator.clipboard.writeText(text); cue("saved"); } catch { /* no clipboard */ }
+    try { await navigator.clipboard.writeText(text); } catch { /* no clipboard */ }
   };
 
   const type = sourceType(source.type);

@@ -75,7 +75,6 @@ export function Button({
       type={type}
       className={classes(kind, size, block, onAccent, className)}
       aria-pressed={pressed}
-      data-glow="control"
       {...rest}
     >
       {children}
@@ -100,7 +99,6 @@ export function ButtonLink({
   return (
     <a
       className={classes(kind, size, block, onAccent, className)}
-      data-glow="control"
       {...rest}
     >
       {children}
@@ -128,7 +126,6 @@ export function ButtonLabel({
   return (
     <label
       className={classes(kind, size, block, onAccent, className)}
-      data-glow="control"
       {...rest}
     >
       {children}
@@ -160,7 +157,6 @@ export function IconButton({
       type={type}
       className={["icon-btn", className].filter(Boolean).join(" ")}
       aria-label={label}
-      data-glow="control"
       {...rest}
     >
       {children}

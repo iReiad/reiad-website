@@ -86,7 +86,7 @@ function StockTile() {
   if (!item) return null;
   return (
     <GoCard
-      href={item.href} art={item.art} icon={item.icon} accent="var(--gold)"
+      href={item.href} icon={item.icon} accent="var(--gold)"
       chip="Tool" title={item.sub ?? item.label} lang="bn"
       dek="একটা টিকার লিখুন: ৪৪টা অনুপাত আর একটা রায়, হিসাবটা দেখিয়ে।"
       go="যাচাই করুন"

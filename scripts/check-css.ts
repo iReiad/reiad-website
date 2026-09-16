@@ -434,81 +434,8 @@ function definedIn(cls: string): string[] {
   return layers;
 }
 
-const MATERIAL = new Map([
-  ["glow", "the light inside the glass, which every surface carries"],
-]);
-
-/* A RELIEF LAYER, which is the same exception earned differently.
-
-   `@layer relief` names classes other layers define because a
-   thing drawn on a surface sits above it, and that is true of an
-   icon in a button and a sparkline on a case study, four layers
-   apart. The material earns its exception by setting NOTHING but
-   the light; a relief cannot promise that, because moving a thing
-   is the whole of what it does. So:
-
-     a relief layer may move a thing and may never lay it out.
-
-   `translate`, `rotate` and `scale` COMPOSE with whatever
-   `transform` the owning layer set; `transform` REPLACES it. So
-   `transform` is the one word this layer may never say: one line
-   of it naming `.art-floor` would stand every floor on this site
-   back up with every rule still reading correctly. Nothing about
-   size, position, colour or type either. */
-const RELIEF = new Map([
-  ["relief", "how far a thing drawn ON a surface stands off it"],
-]);
-
-const RELIEF_PROPS = new Set([
-  /* The three that compose. Never `transform`. */
-  "translate", "rotate", "scale",
-  "filter", "opacity", "transition", "transition-duration", "will-change",
-  "perspective", "transform-style", "transform-origin",
-  /* Its own tokens, and the pointer it reads. */
-  "--lift", "--relief-throw", "--relief-rise", "--relief-cast",
-  "--gpx", "--gpy", "--gx", "--gy", "--gvx", "--gvy",
-]);
-
-/* `position` was on this list for one draft and it is the reason
-   the list is worth having: the material set `position: relative`,
-   and a later layer saying `relative` overrides `fixed` on `.rail`
-   and `.topbar`, which pushed every page 1300 pixels down with
-   every check passing. Position is geometry, and so are isolation,
-   z-index and display. None of them is the light. */
-const MATERIAL_PROPS = new Set([
-  "background-image", "background-size", "background-position", "transition",
-  /* The edge follows the border radius, which a gradient cannot. Safe only
-     because every surface's own shadow is routed through --surface-shadow
-     and check-material.ts fails on one that is not. */
-  "box-shadow",
-  /* The three a surface is DESCRIBED by, and the four derived
-     from them. Nothing else: a material layer says what a thing
-     is made of, and every consequence of that is a light. */
-  "--depth", "--polish", "--clarity", "--standing",
-  "--glow-w", "--glow-h", "--glow-i", "--glow-stop", "--glow-a", "--glow-fade",
-  /* The ground's own texture, which this layer sets to `none` on
-     everything drawn ON a surface: a row on the sheet repainting
-     it is two gratings stacking into dirt. */
-  "--glass-grain",
-  /* Whether the light FOLLOWS the pointer, which is a fact about
-     the light rather than the thing under it: the size formula
-     multiplies by it, so a plate and a pane come out at nothing
-     and are not tracked. It replaced a `--glow-w: 0` beside each
-     of their depths, which the derived formula later in the same
-     layer overrode at equal specificity. */
-  "--follows",
-  "--lit", "--rim", "--gpx", "--gpy", "--glass-face", "--glass-under", "--rim-a", "--rim-b", "--rim-face-a", "--rim-face-b",
-  "--spec", "--gx", "--gy", "--tx", "--ty",
-  "--surface-image", "--surface-size", "--surface-position",
-  "--surface-shadow", "--edge",
-]);
-
 for (const cls of new Set([...studioClasses, ...serverClasses])) {
-  /* Material layers are filtered here for the same reason as in
-     the wider loop below: a material layer may set the light and
-     nothing else, and this file proves that rather than trusting
-     it. */
-  const layers = definedIn(cls).filter((l) => !MATERIAL.has(l) && !RELIEF.has(l));
+  const layers = definedIn(cls);
   if (!layers.length) {
     // Some are modifiers on a selector that names the tag as well,
     // like figure.wide, so a bare rule is not required, only some
@@ -553,62 +480,8 @@ const ALLOWED = new Map([
      it in ONE grouped rule giving all six pieces of fixed chrome
      the same glass ground, which is cross-cutting and cannot
      redefine what the popover is. */
-  [".acc-menu", "components+shell, shell gives the six chrome surfaces one glass ground"],
+  [".acc-menu", "components+shell, shell gives the six chrome surfaces one ground"],
 ]);
-
-/* A MATERIAL LAYER, which is the one exception that generalises.
-
-   `@layer glow` names a hundred classes other layers define, and
-   it has to: the light is a property of what a thing IS rather
-   than of what it looks like, so it cuts across every layer the
-   way a theme does. What makes it different from the collision the
-   rule above guards against is that it CANNOT do that damage, and
-   that is checkable rather than promised:
-
-     a material layer may set the light and nothing else.
-
-   Not a colour, size, font, radius, border or grid position. If
-   `@layer glow` ever sets one, this fails and the exception is
-   withdrawn for the whole layer rather than the one rule.
-
-   `transition` is on the list and is the uncomfortable one: a
-   transition list is not merged across layers, so a material layer
-   that animates one property has to restate the ones underneath or
-   it takes them away. */
-
-
-const CROSSING: Array<[Map<string, string>, Set<string>, string]> = [
-  [MATERIAL, MATERIAL_PROPS, "material"],
-  [RELIEF, RELIEF_PROPS, "relief"],
-];
-
-for (const [list, allowed, kind] of CROSSING)
-for (const [name, why] of list) {
-  const body = layerBody(name);
-  if (!body) {
-    failures++;
-    console.error(`\n@layer ${name} is listed as a ${kind} layer and is not there.`);
-    console.error(`        Remove it from ${kind.toUpperCase()} in this file: an exception to a`);
-    console.error("        rule that guards nothing is the stale entry the list exists to avoid.");
-    continue;
-  }
-  /* Every property this layer sets, at any depth. A material
-     layer is small enough that reading it whole is right: the
-     claim is about the LAYER, not about one rule in it. */
-  const bare = body.replace(/\/\*[\s\S]*?\*\//g, "");
-  const props = new Set(
-    [...bare.matchAll(/(^|[;{])\s*(-{2}[a-z0-9-]+|[a-z-]+)\s*:/gm)]
-      .map((m) => m[2]),
-  );
-  const stray = [...props].filter((prop) => !allowed.has(prop));
-  if (!stray.length) continue;
-  failures++;
-  console.error(`\n@layer ${name} sets ${stray.length} thing(s) a ${kind} layer may not:`);
-  console.error(`        ${stray.join(", ")}`);
-  console.error(`        It is allowed to name classes other layers define because it is`);
-  console.error(`        ${why}, and that only holds while it sets the light and nothing`);
-  console.error("        else. Move these into the layer that owns the class.");
-}
 
 /** Every class the stylesheet gives a rule of its own, with no
     leading dot. Two sections read it: the one below, which fails
@@ -629,9 +502,7 @@ for (const name of [...css.matchAll(/@layer ([a-z]+) \{/g)].map((m) => m[1])) {
 let shared = 0;
 for (const cls of [...everyClass].sort()) {
   if (ALLOWED.has(`.${cls}`)) continue;
-  /* A material layer is not a second definition, and the block
-     above is what makes that true rather than assumed. */
-  const layers = definedIn(cls).filter((l) => !MATERIAL.has(l) && !RELIEF.has(l));
+  const layers = definedIn(cls);
   if (layers.length < 2) continue;
   failures++;
   shared++;
@@ -760,25 +631,6 @@ for (const token of [...used].sort()) {
   } else if (dead.length < recorded && !failures) {
     console.log(`${recorded - dead.length} dead rule(s) gone since the last count. `
       + "Run --update to hold it.");
-  }
-}
-
-/* THE LIGHT'S SECOND RADIUS, overridden once. `--glow-h` exists so
-   the pointer light can be an ellipse on a surface that is not
-   roughly square, and there is exactly one: `.rail`, 268px wide
-   and the height of the window. A SECOND literal override means
-   the ladder needs the axis, the way `--glow-w` is derived from
-   `--depth`, rather than a class needing an exception. */
-{
-  const literal = [...css.matchAll(/--glow-h:\s*([^;]+);/g)]
-    .map((m) => m[1].trim())
-    .filter((value) => !value.startsWith("var(--glow-w)"));
-  if (literal.length > 1) {
-    failures++;
-    console.error(`\n--glow-h is overridden ${literal.length} times: ${literal.join(", ")}`);
-    console.error("        One surface is an ellipse and it is the rail, for a reason");
-    console.error("        written where it is set. A second means the ladder needs the");
-    console.error("        axis rather than a class needing an exception.");
   }
 }
 

@@ -5,19 +5,20 @@ when they get there, and the list of what does not yet.
 
 ## The language
 
-**Glass, not flat.** A surface is a ground, a texture, a lit top
-edge and an edge colour, in that order. `--glass-bg`, `--sheen`,
-`--pane-top` and `--pane-edge` are the tokens; `<Surface>` is the
-component. A flat fill is what a surface looks like when one of
-the four is missing, and a token named by the Tailwind theme and
-declared nowhere is how that happens without anything failing.
+**Plain.** A surface is a ground and an edge: `--panel` or
+`--paper-sunk`, `--hairline` round it, one of the corner tokens.
+`<Surface>` is the component. Nothing blurs, nothing is textured,
+nothing turns towards the pointer and nothing animates because the
+reader scrolled. The bar, a menu and the palette float on
+`--shadow`; a card under the pointer takes `--shadow-lift` and a
+firmer border; everything else sits flat on the page.
+`scripts/check-plain.ts` fails a blur, a perspective, a
+view-driven animation or a `data-glow` coming back.
 
-**Paper, not screen.** `--weave`, `--grain` and `--sheen` are the
-three textures. Weave is a cloth for a sunk ground, grain is a
-stipple for a large flat area that wants tooth, sheen is the lit
-fall down the top of anything raised. All three take the page's
-accent through `--tex-ink`, so the paper on a German page is
-faintly blue.
+**Paper, by colour alone.** The page carries a trace of the
+section's accent through `--paper`, `--panel` and `--hairline`, so
+the paper on a German page is faintly blue without a texture
+saying so.
 
 **Corners are a ladder, never a number.** `--radius-xs` 5,
 `--radius-sm` 12, `--radius` 18, `--radius-lg` 24, `--radius-pill`.
@@ -40,7 +41,7 @@ renumbered.
 | | |
 | --- | --- |
 | **#15** | "Mark complete & continue" and the chip beside it are different heights. One control height should govern both. |
-| **#22** | "text boxes look disgusting everywhere, it should be the best looking thing here." Then: "should feel very integrated, glassy look and a paper like texture." There are at least four implementations. |
+| **#22** | "text boxes look disgusting everywhere, it should be the best looking thing here." There are at least four implementations, and the plain design wants one: a panel, a pane edge, a real focus ring. |
 | **#25** | The audience switch belongs at the bottom of the rail, not in the top bar. The top bar should then be real navigation across every page. |
 | **#26** | The course player still has no tab set on `ui/tabs.tsx`. The account page and the tools hub are on it. |
 | | "all around the pages, they are places slightly off." |

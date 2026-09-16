@@ -25,7 +25,6 @@ import { ChipButton } from "../ui/chip";
 import { Field, Select } from "../ui/field";
 import { Surface } from "../ui/surface";
 import { Icon } from "../icons";
-import { cue } from "../../lib/sound";
 import { T, W, both, useToolLang } from "./lang";
 import { SignedOut } from "./signed-out";
 import { useWho, when } from "./use-who";
@@ -66,14 +65,13 @@ export function Tasks() {
   const add = useCallback(async () => {
     if (!w || !title.trim()) return;
     const t = await addTask(w, title.trim(), lane, project || null, [], due || null);
-    if (t) { cue("saved"); setTitle(""); setDue(""); setRows((was) => [t, ...(was ?? [])]); }
+    if (t) { setTitle(""); setDue(""); setRows((was) => [t, ...(was ?? [])]); }
   }, [w, title, lane, project, due]);
 
   const move = useCallback(async (t: Task, to: TaskLane) => {
     if (!w || t.lane === to) return;
     const r = await saveTask(w, t, { lane: to });
     if (r.ok) {
-      if (to === "done") cue("tick");
       setRows((was) => (was ?? []).map((x) => (x.id === t.id ? r.row : x)));
     }
   }, [w]);

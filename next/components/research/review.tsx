@@ -40,7 +40,6 @@ import { Button } from "../ui/button";
 import { Chip, ChipButton } from "../ui/chip";
 import { Field, Select, TextArea } from "../ui/field";
 import { Surface } from "../ui/surface";
-import { cue } from "../../lib/sound";
 import { W, both, useToolLang } from "./lang";
 import { SignedOut } from "./signed-out";
 import { useWho } from "./use-who";
@@ -189,7 +188,7 @@ export function ReviewRoom() {
   const start = async (): Promise<void> => {
     if (!w || !title.trim()) return;
     const r = await addReview(w, { title: title.trim(), kind });
-    if (r) { setReviews((was) => [r, ...was]); setChosen(r.id); setTitle(""); setView("protocol"); cue("saved"); }
+    if (r) { setReviews((was) => [r, ...was]); setChosen(r.id); setTitle(""); setView("protocol"); }
   };
   const changed = useCallback((r: Review): void => setReviews((was) => was.map((x) => (x.id === r.id ? r : x))), []);
   const recordChanged = useCallback((rec: ReviewRecord): void => setRecords((was) => was.map((x) => (x.id === rec.id ? rec : x))), []);
@@ -229,7 +228,7 @@ export function ReviewRoom() {
               <Chip tone="accent">{REVIEW_KIND_NAMES[review.kind][lang]}</Chip>
               <Select
                 id="rs-rev-state" hideLabel label={<W k="rs.rev.state" />} value={review.state}
-                onChange={(e) => { void saveReview(w, review, { state: e.target.value as ReviewState }).then((r) => { if (r.ok) { changed(r.row); cue("saved"); } }); }}
+                onChange={(e) => { void saveReview(w, review, { state: e.target.value as ReviewState }).then((r) => { if (r.ok) { changed(r.row); } }); }}
               >
                 {REVIEW_STATES.map((s) => <option key={s} value={s}>{REVIEW_STATE_NAMES[s][lang]}</option>)}
               </Select>
@@ -282,7 +281,7 @@ function ProtocolForm({ w, review, onChanged }: { w: Who; review: Review; onChan
       languages: list(languages), screeners: list(screeners), second, columns: list(columns), appraisal,
     };
     const r = await saveReview(w, review, { protocol });
-    if (r.ok) { onChanged(r.row); setCriteria(criteriaText(protocol.criteria ?? [])); setSaid(both("rs.saved")); cue("saved"); }
+    if (r.ok) { onChanged(r.row); setCriteria(criteriaText(protocol.criteria ?? [])); setSaid(both("rs.saved")); }
     else setSaid(both("rs.conflict"));
   };
   const toggleDb = (d: string): void => setDbs((was) => { const n = new Set(was); if (n.has(d)) n.delete(d); else n.add(d); return n; });
@@ -374,7 +373,7 @@ function SearchLog({ w, review, records, searches, onSearch, onRecords, onRecord
       const s = await addSearch(w, query, r.hits.length, review.project_id, review.id);
       if (s) onSearch(s);
       const n = await importHits(r.hits, s?.id ?? null);
-      setSaid(`${n} ${both("rs.rev.imported")}`); setQ(""); cue("saved");
+      setSaid(`${n} ${both("rs.rev.imported")}`); setQ("");
     } finally { setBusy(false); }
   };
   const rerun = async (s: Search): Promise<void> => {
@@ -384,7 +383,7 @@ function SearchLog({ w, review, records, searches, onSearch, onRecords, onRecord
       const r = await searchIndexes(w, { q: s.query, ...s.fields, databases: s.databases });
       if (!r) { setSaid(both("rs.findroom.failed")); return; }
       const n = await importHits(r.hits, s.id);
-      setSaid(`${n} ${both("rs.rev.imported")}`); cue("saved");
+      setSaid(`${n} ${both("rs.rev.imported")}`);
     } finally { setBusy(false); }
   };
   const dedupe = async (): Promise<void> => {
@@ -396,7 +395,6 @@ function SearchLog({ w, review, records, searches, onSearch, onRecords, onRecord
       if (r.ok) onRecordChanged(r.row);
     }
     setSaid(`${dups.length} ${both("rs.rev.duplicates.marked")}`);
-    if (dups.length) cue("saved");
   };
 
   return (
@@ -492,7 +490,7 @@ function Screen({ w, review, records, sources, onChanged, onSource, onPicking, o
   const decide = useCallback(async (rec: ReviewRecord, part: Partial<ReviewRecord>): Promise<void> => {
     const stamp = writingB ? { decided2_at: new Date().toISOString(), screener2: w.id } : { decided_at: new Date().toISOString() };
     const r = await saveRecord(w, rec, { ...part, ...stamp });
-    if (r.ok) { onChanged(r.row); cue("next"); } else setSaid(both("rs.conflict"));
+    if (r.ok) { onChanged(r.row); } else setSaid(both("rs.conflict"));
   }, [w, onChanged, writingB]);
 
   /** At title stage an include sends the record on to full text.
@@ -549,17 +547,17 @@ function Screen({ w, review, records, sources, onChanged, onSource, onPicking, o
         ? { stage: "fulltext" }
         : { stage: "excluded", reason: rec.reason2 ?? rec.reason ?? null, record: { ...rec.record, fullText: false } };
       const r = await saveRecord(w, rec, { ...part, decided_at: new Date().toISOString() });
-      if (r.ok) { onChanged(r.row); cue("next"); }
+      if (r.ok) { onChanged(r.row); }
       return;
     }
     if (v === "include") {
       const source_id = await becomeSource(w, rec, onSource);
       const r = await saveRecord(w, rec, { stage: "included", source_id, record: { ...rec.record, fullText: true }, decided_at: new Date().toISOString() });
-      if (r.ok) { onChanged(r.row); cue("next"); }
+      if (r.ok) { onChanged(r.row); }
       return;
     }
     const r = await saveRecord(w, rec, { stage: "excluded", reason: rec.reason2 ?? rec.reason ?? null, record: { ...rec.record, fullText: true }, decided_at: new Date().toISOString() });
-    if (r.ok) { onChanged(r.row); cue("next"); }
+    if (r.ok) { onChanged(r.row); }
   }, [stage, w, onChanged, onSource]);
 
   const agree = useMemo(() => agreement(records, stage), [records, stage]);
@@ -802,7 +800,7 @@ function Extraction({ w, review, records, sources, onChanged }: { w: Who; review
     const v = value(r, c);
     if (v === (r.extraction[c] ?? "")) return;
     const res = await saveRecord(w, r, { extraction: { ...r.extraction, [c]: v } });
-    if (res.ok) { onChanged(res.row); cue("saved"); }
+    if (res.ok) { onChanged(res.row); }
   };
   const csv = (): void => {
     const esc = (s: string): string => `"${s.replace(/"/g, "\"\"")}"`;
@@ -831,7 +829,6 @@ function Extraction({ w, review, records, sources, onChanged }: { w: Who; review
     }
     setFilling(false);
     setSaid(`${filled} ${both("rs.rev.filled")}`);
-    if (filled) cue("saved");
   };
   return (
     <Surface material="pane" className="px-4 py-3 grid gap-3">
@@ -882,7 +879,7 @@ function Appraisal({ w, review, records, onChanged }: { w: Who; review: Review; 
   const included = records.filter((r) => r.stage === "included");
   const answer = async (r: ReviewRecord, i: number, v: "yes" | "no" | "unclear"): Promise<void> => {
     const res = await saveRecord(w, r, { appraisal: { ...r.appraisal, [String(i)]: v } });
-    if (res.ok) { onChanged(res.row); cue("tick"); }
+    if (res.ok) { onChanged(res.row); }
   };
   return (
     <Surface material="pane" className="px-4 py-3 grid gap-3">

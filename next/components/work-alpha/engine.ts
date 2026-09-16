@@ -6,7 +6,6 @@
    the server's markup back over every keystroke. `mount.tsx` owns the
    host element and hands it in; nothing here looks a page up. */
 
-import { cue } from "../../lib/sound";
 
 /* ---------- the plan ---------- */
 
@@ -612,7 +611,6 @@ export function mount(root: HTMLElement, plan: Plan, storage: Storage): Promise<
     set((s) => {
       if (s.done[id]) { delete s.done[id]; return; }
       s.done[id] = new Date().toISOString();
-      cue("tick");
       if (t && s.timer && s.timer.taskId === id) stopTimer();
       if (!s.spent[id]) s.spent[id] = minutes;
       if (t) checkGoal(t.goal);
@@ -626,7 +624,6 @@ export function mount(root: HTMLElement, plan: Plan, storage: Storage): Promise<
     }
   }
   function goalMet(color: string): void {
-    cue("stage");
     const b = h("div", { class: "wa-burst" });
     for (let i = 0; i < 18; i++) {
       b.appendChild(h("i", { style: "--a:" + (i * 20) + "deg;--c:" + color + ";--d:" + (0.6 + Math.random()) }));

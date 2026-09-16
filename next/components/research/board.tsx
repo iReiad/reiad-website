@@ -35,7 +35,6 @@ import { Chip, ChipButton, ChipLink } from "../ui/chip";
 import { Field } from "../ui/field";
 import { Surface } from "../ui/surface";
 import { Icon } from "../icons";
-import { cue } from "../../lib/sound";
 import { T, W, both } from "./lang";
 import { SignedOut } from "./signed-out";
 import { useWho, when } from "./use-who";
@@ -129,7 +128,6 @@ export function Board() {
       } else {
         await keep("note");
       }
-      cue("saved");
       setLine("");
       await reload();
     } finally { setBusy(false); }
@@ -167,7 +165,7 @@ export function Board() {
   const tick = async (t: Task): Promise<void> => {
     if (!w) return;
     const r = await saveTask(w, t, { lane: "done" });
-    if (r.ok) { cue("tick"); setTasks((was) => was.map((x) => (x.id === t.id ? r.row : x))); }
+    if (r.ok) { setTasks((was) => was.map((x) => (x.id === t.id ? r.row : x))); }
   };
 
   const file = async (n: Note): Promise<void> => {
@@ -311,7 +309,6 @@ export function Board() {
             <GoCard
               key={p.href}
               href={p.href}
-              art={p.art}
               accent={toneVar(p.tone)}
               chip={isOpen(p) ? undefined : <T en={`Stage ${p.stage}`} bn={`ধাপ ${p.stage}`} />}
               title={<T en={p.title.en} bn={p.title.bn} />}

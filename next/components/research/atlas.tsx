@@ -27,7 +27,6 @@ import { Button } from "../ui/button";
 import { Chip, ChipButton } from "../ui/chip";
 import { Field, Select, TextArea } from "../ui/field";
 import { Surface } from "../ui/surface";
-import { cue } from "../../lib/sound";
 import { W, both, useToolLang } from "./lang";
 import { SignedOut } from "./signed-out";
 import { useWho } from "./use-who";
@@ -158,7 +157,7 @@ function Network({ w }: { w: Who }) {
     const h = hits.get(nid);
     if (!h) return;
     const s = await addSource(w, h.csl, { via: "search", verified: true, identifiers: h.openalex ? { openalex: h.openalex } : {} });
-    if (s) { setSources((was) => [s, ...was]); setNodes((was) => was.map((n) => n.id === nid ? { ...n, id: s.id, kind: "source", tone: "teal", href: `/tools/research/library/${s.id}` } : n)); setEdges((was) => was.map((e) => ({ ...e, from: e.from === nid ? s.id : e.from, to: e.to === nid ? s.id : e.to }))); cue("saved"); }
+    if (s) { setSources((was) => [s, ...was]); setNodes((was) => was.map((n) => n.id === nid ? { ...n, id: s.id, kind: "source", tone: "teal", href: `/tools/research/library/${s.id}` } : n)); setEdges((was) => was.map((e) => ({ ...e, from: e.from === nid ? s.id : e.from, to: e.to === nid ? s.id : e.to }))); }
   };
   return (
     <Surface material="pane" className="px-4 py-3 grid gap-2">
@@ -244,7 +243,7 @@ function People({ w }: { w: Who }) {
   const add = async (): Promise<void> => {
     if (!name.trim()) return;
     const p = await addPerson(w, { name: name.trim(), role, orcid: orcid.trim(), institution: institution.trim() });
-    if (p) { setPeople((was) => [...(was ?? []), p]); setName(""); setOrcid(""); setInstitution(""); cue("saved"); }
+    if (p) { setPeople((was) => [...(was ?? []), p]); setName(""); setOrcid(""); setInstitution(""); }
   };
   const change = async (p: Person, part: Partial<Person>): Promise<void> => {
     const r = await savePerson(w, p, part);
@@ -297,7 +296,7 @@ function People({ w }: { w: Who }) {
                       <div className="grid gap-2">
                         <div><ChipButton onClick={() => { void fetchWorks(p); }}><W k="rs.atlas.person.works" /></ChipButton></div>
                         {works[p.id] === null ? <p className="text-t1 text-ink-soft"><W k="rs.moment" /></p> : works[p.id]?.length ? (
-                          <ul className="grid gap-2">{works[p.id]!.slice(0, 20).map((h) => <HitRow key={h.doi ?? h.hash} h={h} have={sources.find((s) => s.doi && h.doi && s.doi.toLowerCase() === h.doi.toLowerCase()) ?? null} onAdd={() => { void addSource(w, h.csl, { via: "search", verified: true }).then((s) => { if (s) { setSources((was) => [s, ...was]); cue("saved"); } }); }} dbName={(d) => d} />)}</ul>
+                          <ul className="grid gap-2">{works[p.id]!.slice(0, 20).map((h) => <HitRow key={h.doi ?? h.hash} h={h} have={sources.find((s) => s.doi && h.doi && s.doi.toLowerCase() === h.doi.toLowerCase()) ?? null} onAdd={() => { void addSource(w, h.csl, { via: "search", verified: true }).then((s) => { if (s) { setSources((was) => [s, ...was]); } }); }} dbName={(d) => d} />)}</ul>
                         ) : works[p.id] ? <p className="text-t1 text-ink-soft"><W k="rs.none" /></p> : null}
                       </div>
                     ) : null}

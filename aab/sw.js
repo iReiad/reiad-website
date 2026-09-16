@@ -24,6 +24,10 @@
    the number moves. `node scripts/check-sw.ts --update` records the
    new hashes.
 
+   v252: the plain design. /tilt.js is gone and /app.js no longer
+         imports it; /prefs.js lost the glass, sound and weather tables;
+         /fallback.css is the stylesheet without the glass, the scenes,
+         the sky and the light, 4,000 lines shorter.
    v251: the account page's copy and erase carry work_alpha_state, the
          owner's month plan, so leaving takes it too.
    v250: a card's scene no longer turns where there is no pointer to
@@ -33,7 +37,7 @@
    v249: comments. Every precached module lost the essay at the top
         of it and this file lost 2,167 lines of changelog, so the
         bytes moved without a line of behaviour changing. */
-const VERSION = "v251";
+const VERSION = "v252";
 const SHELL = `shell-${VERSION}`;
 const RUNTIME = `runtime-${VERSION}`;
 
@@ -105,13 +109,8 @@ const PRECACHE = [
      draws for somebody reading offline. */
   "/audience.js",
   "/activation.js",
-  /* app.js imports this one directly, so a cached app.js without
-     it is an app.js whose import 404s, which is worse than no
-     app.js at all.
-
-     /money/reader.js is the modal term reader, which is the one
+  /* /money/reader.js is the modal term reader, which is the one
      thing on those pages that really does need a browser. */
-  "/tilt.js",
   "/money/reader.js",
   "/money/curriculum.js",
   "/money/icons.js",

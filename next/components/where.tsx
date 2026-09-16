@@ -29,14 +29,13 @@
    ---- and it is one listener, passive, off a rAF ----
 
    The read of the block positions happens inside the frame, not
-   in the scroll handler, for the reason `aab/src/tilt.ts` gives:
-   reading a layout value in a scroll handler is a synchronous
-   layout on the frame the browser is already trying to paint.
+   in the scroll handler: reading a layout value in a scroll
+   handler is a synchronous layout on the frame the browser is
+   already trying to paint.
    ============================================================ */
 
 import { useCallback, useEffect, useRef, useState } from "react";
 import { markWhere, whereRead, forgetWhere, type Place } from "../lib/progress";
-import { cue } from "../lib/sound";
 
 /** The blocks a position can name. Anything a reader's eye stops
     on, and nothing that is furniture: the byline, the tools row
@@ -174,7 +173,6 @@ export function Where({ url }: { url: string }) {
        does not immediately record a step backwards. */
     furthest.current = back.i;
     setBack(null);
-    cue("next");
   }, [back]);
 
   return (

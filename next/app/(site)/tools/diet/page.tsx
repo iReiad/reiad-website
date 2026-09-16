@@ -84,7 +84,6 @@ export default function DietPage() {
           <GoCard
             key={p.href}
             href={p.href}
-            art={p.art}
             accent={p.tone}
             icon={dietIcon(p.href)}
             title={<T en={p.title.en} bn={p.title.bn} />}

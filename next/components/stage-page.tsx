@@ -88,7 +88,7 @@ export async function StagePage({ section, slug }: { section: string; slug: stri
      They are pages, the hub is rendered from the rows, and no
      stage on this site is inline any more. */
   const rung = (to: typeof prev, label: string, way: "prev" | "next") => (to ? (
-    <a data-cue={way} href={stageUrl(school, to)}>
+    <a href={stageUrl(school, to)}>
       <span className="mono">{label}</span>
       <strong className="bn-h">{`${to.kicker} · ${to.bn}`}</strong>
     </a>

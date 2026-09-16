@@ -125,9 +125,9 @@ const GONE: Gone[] = [
   { file: "next/postcss.config.mjs", name: "aab/tailwind.css",
     why: "names the committed output as gone, which is why this config exists" },
 
-  /* The module the closed door turned back. It was never
-     committed: the pointer glow is `next/components/glow.tsx`, and
-     naming the file that would have been is the argument. */
+  /* Modules the closed door turned back, each named by the test
+     that asserts the replacement is not served at the old
+     address. */
   { file: "next/comments.test.ts", name: "aab/comments.js",
     why: "asserts the replaced module is not served, by its address" },
   { file: "next/insights-hub.test.ts", name: "aab/hub.js", why: "the same" },

@@ -107,8 +107,6 @@ export const MODULES = [
      switcher could not take a recruiter back to the library, and
      the track switcher was hidden everywhere. */
   "audience",
-  /* The pointer effect on cards. */
-  "tilt",
   /* The shell's browser half: the theme, the palette, the shortcut
      sheet, the counts, speculation rules and the service worker
      registration. */

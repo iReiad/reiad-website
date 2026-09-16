@@ -132,12 +132,10 @@ Rules from CLAUDE.md that this touches:
   `min-height: 100vh` fights the shell's `.shell-col`, drop it to `auto`.
   If the site's `--paper`/`--ink` tokens are meant to win, set them on
   `.wa` from the site's own variables (`--paper: var(--paper)` will not do;
-  read `@layer tokens` for the real names). The material system
-  (`check-material.ts`) will ask about `.wa-btn`, `.wa-tab`, `.wa-card`,
-  `.wa-mini`, `.wa-check`: give them the kinds the check asks for (`control`
-  for buttons and tabs, `card` for `.wa-card`, `chip` for `.wa-check`) or
-  list them in `NOT_GLASS` with the reason "self-contained tool stylesheet,
-  prefixed wa-". Either passes; do not leave the check red.
+  read `@layer tokens` for the real names). `scripts/check-plain.ts`
+  will refuse a blur, a perspective or a view-driven animation in
+  `.wa-*`: a surface here is a colour, a hairline and a corner like
+  everywhere else. Do not leave the check red.
 
 ## TypeScript conversion of engine.js
 
@@ -147,9 +145,8 @@ plan with an interface derived from `plan.json` (`Plan`, `Day`, `Task`,
 `Goal`, `Prompt`, `Track`) and the state with `WorkAlphaState`. The `h()`
 helper takes `(tag: keyof HTMLElementTagNameMap, attrs: Record<string,
 unknown> | null, ...kids: Kid[])`. No `any`, no `@ts-expect-error`
-(CLAUDE.md). The `Audio` placeholder line can go: replace `tick` with a call
-to `cue("tick")` from `next/lib/sound.ts` when a task is ticked and
-`cue("stage")` when a goal is met, which is what the site's other ticks do.
+(CLAUDE.md). The `Audio` placeholder line can go: the site makes no sound,
+so a ticked task and a met goal are said on the page and nowhere else.
 
 Keep behaviour identical. The smoke test below must still pass.
 

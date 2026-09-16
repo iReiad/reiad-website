@@ -51,7 +51,7 @@ numbers in `DESIGN.md` are the same list.
    Four implementations today: `ui/field.tsx`, the input rules in
    `@layer components`, the Studio's own, and
    `textarea[data-schrift]` in the practice book. One component,
-   glass, paper texture, a real focus ring.
+   a panel ground, a pane edge, a real focus ring.
 3. **The header and the rail.** The audience switch moves to the
    bottom of the rail. The top bar becomes navigation across every
    page, which is what a bar that wide should be doing.

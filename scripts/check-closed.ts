@@ -35,12 +35,12 @@
 
    ---- what it caught on the day it was written ----
 
-   `aab/src/glow.ts`, the browser half of the pointer glow,
-   written that morning as a served module because `tilt.ts` is
-   one and the neighbours are always the pattern. It is
-   `next/components/glow.tsx` instead: nothing outside the Next
-   shell ever needed it, and building it the old way would have
-   cost a module registration, a tsconfig path, a service-worker
+   `aab/src/glow.ts`, the browser half of a pointer effect,
+   written that morning as a served module because its neighbours
+   were. It belonged under `next/components/` instead, and has
+   since gone altogether: nothing outside the Next shell ever
+   needed it, and building it the old way would have cost a
+   module registration, a tsconfig path, a service-worker
    precache entry and a version bump, all to serve one listener
    to pages that are already React.
 

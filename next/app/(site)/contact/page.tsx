@@ -145,26 +145,21 @@ export default function ContactPage() {
           <section>
             <SectionLabel>Who this is for
             </SectionLabel>
-            {/* Each one wearing the drawing and the colour of the
-                place it takes you, out of `shared/nav.ts` like
-                every other card on this site: a reader who has met
-                the portfolio's sheets on the board meets them
-                again here. `/about` is the one the rail names no
-                subject for, so it takes the book, which is what a
-                background is. */}
+            {/* Each one wearing the colour of the place it takes
+                you, out of `shared/nav.ts` like every other card. */}
             <div className="grid-3">
-              <GoCard href="/about" art="book" accent={accentFor("about") ?? undefined}
+              <GoCard href="/about" accent={accentFor("about") ?? undefined}
                       chip="Recruiters"
                       title="Roles in finance, risk or analysis"
                       dek="MSc Finance & Risk Management, CFA Level 1 candidate, comfortable in Excel, Python and R, and equally comfortable presenting the result to people who don't want the technical version. Happy to talk about roles in the UK or Bangladesh."
                       go="Full background" />
-              <GoCard href="/portfolio" art="sheets"
+              <GoCard href="/portfolio"
                       accent={accentFor("portfolio") ?? undefined}
                       chip="Clients"
                       title="A model, an analysis, or something written"
                       dek="Send the brief in whatever state it's in: a paragraph and a spreadsheet is enough. You'll get a fixed price and a date back, and the files are yours at the end."
                       go="How projects run" />
-              <GoCard href="/money" art="coins"
+              <GoCard href="/money"
                       accent={accentFor("money") ?? undefined}
                       chip="Readers"
                       title="A question, a correction, a request"

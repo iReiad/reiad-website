@@ -33,7 +33,6 @@ import { Chip, ChipButton } from "../ui/chip";
 import { Field, Select } from "../ui/field";
 import { Empty } from "../ui/note";
 import { Surface } from "../ui/surface";
-import { cue } from "../../lib/sound";
 import { T, W, both, useToolLang } from "./lang";
 import { SignedOut } from "./signed-out";
 import { SAID, SETTLE, isoDay, useWho, when } from "./use-who";
@@ -208,7 +207,6 @@ function NoteCard({ w, note, onChange, onGone }: {
       seen.current = r.row.updated_at;
       onChange(r.row);
       setState("saved");
-      cue("saved");
       if (said.current) clearTimeout(said.current);
       said.current = setTimeout(() => setState(""), SAID);
       if (part.body) void keepVersion(w, "note", note.id, part.body);

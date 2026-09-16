@@ -8,8 +8,6 @@
    inside a school recomputes the URL from the rows it just read, and only
    the front door, which reads no ladder, falls back to the stored one. */
 
-import { cue, type Cue } from "./sound.ts";
-
     /** Where each school keeps its set. These are STORAGE KEYS, not
         identifiers, and the difference is the whole of this table: the
         money school sits at /money/ and its key is still `learn-read`,
@@ -101,23 +99,14 @@ export function readSet(school: string): Set<string> {
   return new Set(raw.filter((id): id is string => typeof id === "string"));
 }
 
-    /** Add or remove one, and say which it ended up as. `sound` is an
-        argument because only the CALLER knows what just happened: ticking
-        the last lesson of a stage finished a stage, which is a different
-        sentence. Null wherever the reader pressed nothing. */
-export function toggleRead(
-  school: string, id: string, sound: Cue | null = "lesson",
-): boolean {
+    /** Add or remove one, and say which it ended up as. */
+export function toggleRead(school: string, id: string): boolean {
   const key = READ_KEY[school] ?? `${school}-read`;
   const set = readSet(school);
   const now = !set.has(id);
   if (now) set.add(id); else set.delete(id);
   writeJSON(key, [...set]);
   announce();
-      /* Only on the way ON: un-ticking is a correction, and a correction
-         that sounds like an achievement is a site congratulating somebody
-         for changing their mind. */
-  if (now && sound) cue(sound);
   return now;
 }
 
@@ -184,7 +173,6 @@ export function toggleCheck(school: string, id: string): boolean {
     document.dispatchEvent(
       new CustomEvent(`${school === "money" ? "learn" : school}:progress`));
   } catch { /* SSR */ }
-  if (now) cue("tick");
   return now;
 }
 

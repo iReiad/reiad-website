@@ -24,7 +24,6 @@ import { Button } from "../ui/button";
 import { Chip, ChipButton, ChipLink } from "../ui/chip";
 import { Field, Select } from "../ui/field";
 import { Surface } from "../ui/surface";
-import { cue } from "../../lib/sound";
 import { T, W, both, useToolLang } from "./lang";
 import { SignedOut } from "./signed-out";
 import { useWho, when } from "./use-who";
@@ -108,7 +107,7 @@ export function Find() {
   const keep = useCallback(async () => {
     if (!w || !query.q) return;
     const s = await addSearch(w, query, found?.hits.length ?? null);
-    if (s) { setSearches((was) => [s, ...was]); cue("saved"); }
+    if (s) { setSearches((was) => [s, ...was]); }
   }, [w, query, found]);
 
   const add = useCallback(async (h: Hit) => {
@@ -118,7 +117,7 @@ export function Find() {
       oa: h.oa ? { isOa: h.oa.isOa, url: h.oa.url, at: new Date().toISOString() } : null,
       identifiers: h.openalex ? { openalex: h.openalex } : {},
     });
-    if (s) { setSources((was) => [s, ...was]); cue("saved"); }
+    if (s) { setSources((was) => [s, ...was]); }
   }, [w]);
 
   const toggleAlert = useCallback(async (s: Search) => {
@@ -128,7 +127,6 @@ export function Find() {
     if (!r.ok) return;
     setSearches((was) => was.map((x) => x.id === s.id ? r.row : x));
     if (next) await pushAlert(w, r.row); else await dropAlert(w, s.id);
-    cue("saved");
   }, [w]);
 
   const rerun = useCallback((s: Search) => {
@@ -282,7 +280,7 @@ export function RelatedWorks({ w, source, sources }: { w: Who; source: Source; s
   };
   const add = async (h: Hit): Promise<void> => {
     const s = await addSource(w, h.csl, { via: "search", verified: true, identifiers: h.openalex ? { openalex: h.openalex } : {} });
-    if (s) { setHave((was) => [s, ...was]); cue("saved"); }
+    if (s) { setHave((was) => [s, ...was]); }
   };
   const list = rel ? rel[tab] : [];
   return (

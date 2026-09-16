@@ -74,7 +74,6 @@ export function ChipButton({
   return (
     <button type={type} aria-pressed={pressed}
             className={classes("quiet", className)}
-            data-glow="chip"
             {...rest}>
       {children}
     </button>
@@ -87,10 +86,8 @@ export function ChipButton({
         a screen reader announces the two as one thing: `<ChipButton>`
         would be a second control beside the real one.
 
-        No `data-glow`: the input carries the state, and the material's
-        light comes up on the label through the group's own rules rather
-        than on hover, because a radio in a row of five is not a lone
-        control asking to be pressed. */
+        The input carries the state, and the label reads it through the
+        group's own rules. */
 export function ChipLabel({
   tone = "quiet", className, children, ...rest
 }: { tone?: ChipTone; className?: string; children: ReactNode }
@@ -109,7 +106,6 @@ export function ChipLink({
   return (
     <a
       className={classes(tone, ["no-underline", className].filter(Boolean).join(" "))}
-      data-glow="chip"
       {...rest}
     >
       {children}
