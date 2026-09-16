@@ -49,7 +49,7 @@ export function Meter({
         aria-valuemax={total}
         className={[
           "relative flex-1 overflow-hidden rounded-full",
-          "bg-paper-sunk bg-weave [background-size:var(--weave-size)]",
+          "bg-paper-sunk",
           "border border-hairline",
           size === "sm" ? "h-1.5" : "h-2.5",
         ].join(" ")}

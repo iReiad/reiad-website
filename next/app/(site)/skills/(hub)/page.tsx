@@ -30,7 +30,7 @@
    ============================================================ */
 
 import type { Metadata } from "next";
-import { GoCard, InfoCard, SoonCard } from "../../../../components/deck";
+import { GoCard, SoonCard } from "../../../../components/deck";
 import { NAV } from "@reiad/shared/nav";
 import { pageMeta } from "../../../../lib/pageMeta";
 import { SectionLabel } from "../../../../components/ui/label";
@@ -119,10 +119,6 @@ export default function SkillsPage() {
                      table gives them, on the page whose whole job
                      is to show the six side by side. */
                   accent={skill.accent}
-                  /* The same drawing this school wears on the
-                     board and in the tools hub, out of the same
-                     table its colour comes from. */
-                  art={skill.art}
                   icon={skill.icon} chip={skill.kind} lang="bn"
                   title={skill.sub ?? skill.label} dek={skill.blurb}
                   go={skill.kind === "কোর্স" ? "কোর্সটা খুলুন" : "লেখাগুলো দেখুন"}
@@ -133,37 +129,6 @@ export default function SkillsPage() {
                 </GoCard>
               )
             ))}
-          </div>
-        </section>
-
-        <section className="hub-section" id="kilo">
-          <div className="hub-section-head">
-            <SectionLabel>
-              কেন এভাবে · <span lang="en">How they are written</span>
-            </SectionLabel>
-          </div>
-
-          <div className="deck">
-            <InfoCard
-              icon="signpost" lang="bn"
-              title="ব্যাখ্যা বাংলায়, অনুশীলন আসল জিনিসে"
-              dek="বোঝার সময় শক্তি খরচ হওয়া উচিত বিষয়টা বুঝতে, ভাষা বুঝতে নয়। তাই ব্যাখ্যাটা
-                   বাংলায়। কিন্তু যা মুখে তুলবেন বা হাতে করবেন, সেটা আসল জিনিসেই: জার্মান
-                   বাক্য জার্মানে, রান্নার মাপ চামচে।"
-            />
-            <InfoCard
-              icon="book" lang="bn"
-              title="ছাঁচ, তালিকা নয়"
-              dek="একশোটা শব্দ মুখস্থ করলে একশোটা শব্দই থাকে। একটা কাঠামো শিখলে তাতে নিজের
-                   হাজারটা বাক্য ঢালা যায়। প্রতিটা অংশ সেভাবেই সাজানো: মুখস্থ করার মতো কম,
-                   বানানোর মতো বেশি।"
-            />
-            <InfoCard
-              icon="warning" accent="var(--gold)" lang="bn"
-              title="যা লেখা হয়নি, সেটা বলা আছে"
-              dek="উপরের তালিকায় যেগুলোতে আসছে লেখা, সেগুলো এখনো লেখা হয়নি, এবং সেটা লুকানো
-                   হয়নি। খালি পাতায় ঢুকে সময় নষ্ট করার চেয়ে আগে থেকে জানা ভালো।"
-            />
           </div>
         </section>
 

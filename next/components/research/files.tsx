@@ -21,7 +21,6 @@ import { attachFile, captureUrl, fileTicket, saveSource, uploadFile, type Source
 import { canKeep, forgetFile, keepFile, listKept } from "../../lib/offline-files";
 import { Button, ButtonLabel } from "../ui/button";
 import { Chip, ChipButton, ChipLink } from "../ui/chip";
-import { cue } from "../../lib/sound";
 import { W, both } from "./lang";
 
 const ACCEPT = Object.keys(FILE_TYPES).map((ext) => `.${ext}`).join(",") + ",.jpeg,.htm";
@@ -62,7 +61,6 @@ export function FileBox({ w, source, onChange }: {
         if (!ok) { setSaid(both("rs.read.keep.failed")); return; }
         setKept((was) => new Set(was).add(f.key));
         setSaid("");
-        cue("saved");
       }
       document.dispatchEvent(new Event(KEPT_EVENT));
     } finally { setBusy(false); }
@@ -80,7 +78,6 @@ export function FileBox({ w, source, onChange }: {
       if (!r.ok) { setSaid(both("rs.notsaved")); return; }
       onChange(r.row);
       setSaid("");
-      cue("saved");
     } finally { setBusy(false); }
   }, [w, source, onChange]);
 
@@ -97,13 +94,12 @@ export function FileBox({ w, source, onChange }: {
       if (!r.ok) { setSaid(both("rs.notsaved")); return; }
       onChange(r.row);
       setSaid("");
-      cue("saved");
     } finally { setBusy(false); }
   }, [w, source, onChange]);
 
   const detach = useCallback(async (key: string) => {
     const r = await saveSource(w, source, { files: files.filter((f) => f.key !== key) } as Partial<Source>, source.updated_at);
-    if (r.ok) { onChange(r.row); cue("saved"); } else setSaid(both("rs.notsaved"));
+    if (r.ok) { onChange(r.row); } else setSaid(both("rs.notsaved"));
   }, [w, source, files, onChange]);
 
   const hasCapture = files.some((f) => f.kind === "html");

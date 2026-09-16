@@ -46,7 +46,6 @@
       "/auth-config.js": ["./auth-config.ts"],
       "/auth.js": ["./auth.ts"],
       "/audience.js": ["./audience.ts"],
-      "/tilt.js": ["./tilt.ts"],
       "/app.js": ["./app.ts"],
       "/photo.js": ["./photo.ts"],
       "/editor.js": ["./editor.ts"],

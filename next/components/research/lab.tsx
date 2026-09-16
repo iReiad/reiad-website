@@ -38,7 +38,6 @@ import { Button, ButtonLabel } from "../ui/button";
 import { Chip, ChipButton } from "../ui/chip";
 import { Field, Select, TextArea } from "../ui/field";
 import { Surface } from "../ui/surface";
-import { cue } from "../../lib/sound";
 import { T, W, both, useToolLang } from "./lang";
 import { SignedOut } from "./signed-out";
 import { useWho } from "./use-who";
@@ -371,7 +370,7 @@ export function Lab({ openRun }: { openRun?: string } = {}) {
   const keepRun = useCallback(async (part: Partial<Run> & { kind: Run["kind"]; label: string }): Promise<Run | null> => {
     if (!w) return null;
     const r = await addRun(w, { dataset_id: dataset?.id ?? null, project_id: dataset?.project_id ?? null, data_hash: dataset?.hash ?? "", ...part });
-    if (r) { setRuns((was) => [r, ...was]); cue("saved"); setSaid(both("rs.lab.saved.run")); }
+    if (r) { setRuns((was) => [r, ...was]); setSaid(both("rs.lab.saved.run")); }
     return r;
   }, [w, dataset]);
 
@@ -506,7 +505,7 @@ function Datasets({ w, lang, datasets, chosen, ready, variables, loadedName, onC
     try {
       const made = await importFile(w, file, { licence, raw });
       if ("error" in made) { setSaid(`${both("rs.lab.failed")}: ${made.error}`); return; }
-      onMade(made); cue("saved"); setLicence("");
+      onMade(made); setLicence("");
     } finally { setBusy(false); }
   };
   const load = async (): Promise<void> => {
@@ -533,7 +532,7 @@ function Datasets({ w, lang, datasets, chosen, ready, variables, loadedName, onC
     const next = chosen.dictionary.map((x) => (x.name === c.name ? column(c) : x));
     if (JSON.stringify(next) === JSON.stringify(chosen.dictionary)) return;
     const r = await saveDataset(w, chosen, { dictionary: next });
-    if (r.ok) { onChanged(r.row); cue("saved"); }
+    if (r.ok) { onChanged(r.row); }
   };
   const draft = (c: Column, part: Partial<Column>): void => setDrafts((was) => ({ ...was, [c.name]: { ...column(c), ...part } }));
 
@@ -677,7 +676,7 @@ function Sql({ w, dataset, ensureLoaded, keepRun, setSaid }: {
   const keepTransform = async (): Promise<void> => {
     if (!name.trim() || !sql.trim()) return;
     const t = await addTransform(w, dataset.id, name.trim(), sql, transforms.length);
-    if (t) { setTransforms((was) => [...was, t]); setName(""); cue("saved"); }
+    if (t) { setTransforms((was) => [...was, t]); setName(""); }
   };
   const view = async (t: Transform): Promise<void> => {
     const a = await run(`CREATE OR REPLACE VIEW ${ident(slug(t.name))} AS ${t.sql}`);
@@ -968,7 +967,7 @@ function Market({ w, onMade, setSaid }: { w: Who; onMade: (d: Dataset) => void; 
     const file = new File([csv], `${series.symbol.toLowerCase()}-daily.csv`, { type: "text/csv" });
     const made = await importFile(w, file, { name: `${series.symbol} daily`, provenance: { kind: "market", symbol: series.symbol, source: series.source, fetched: series.fetched } });
     if ("error" in made) { setError(`${both("rs.lab.failed")}: ${made.error}`); return; }
-    onMade(made); cue("saved"); setSaid(both("rs.saved"));
+    onMade(made); setSaid(both("rs.saved"));
   };
   const svg = series ? chartSvg({ kind: "line", series: [{ name: "close", points: series.bars.map((b) => ({ x: dayOf(b.date) ?? 0, y: b.close })) }], xDates: true, yLabel: "close", title: series.symbol }) : "";
   return (
@@ -1040,7 +1039,7 @@ function Climate({ w, onMade, setSaid }: { w: Who; onMade: (d: Dataset) => void;
       provenance: { kind: "climate", source: series.source, licence: series.licence, lat: series.lat, lon: series.lon, from: series.from, to: series.to, place: chosen || null, units: series.units, fetched: series.fetched },
     });
     if ("error" in made) { setError(`${both("rs.lab.failed")}: ${made.error}`); return; }
-    onMade(made); cue("saved"); setSaid(both("rs.saved"));
+    onMade(made); setSaid(both("rs.saved"));
   };
   const svg = series ? chartSvg({
     kind: "line", xDates: true, yLabel: "°C", title: chosen || `${series.lat}, ${series.lon}`,

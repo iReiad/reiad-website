@@ -48,7 +48,6 @@ import { Chip as Pill, ChipButton, ChipLink } from "../ui/chip";
 import { Field, Select } from "../ui/field";
 import { Meter } from "../ui/meter";
 import { Surface } from "../ui/surface";
-import { cue } from "../../lib/sound";
 import { W, both, useToolLang } from "./lang";
 import { SignedOut } from "./signed-out";
 import { useWho, SETTLE, SAID, when } from "./use-who";
@@ -117,7 +116,7 @@ export function Desk({ openId }: { openId?: string }) {
        vocabulary check-research.ts holds to the migration, and the
        two agree on every member that alias had before. */
     const d = await addDocument(w, { title: title.trim(), kind: kind as ApiDocumentKind, position: (docs?.length ?? 0) + 1 });
-    if (d) { setDocs((was) => [...(was ?? []), d]); setOpen(d.id); setTitle(""); cue("saved"); }
+    if (d) { setDocs((was) => [...(was ?? []), d]); setOpen(d.id); setTitle(""); }
   }, [w, title, kind, docs]);
 
   useKeys(useMemo(() => ({ n: () => document.getElementById("rs-d-new")?.focus() }), []), Boolean(w));
@@ -323,7 +322,6 @@ function Paper({ w, doc, sources, projects, onChange, onGone, onSourceChange }: 
     restoreCaret();
     editor.current.insertHtmlAtCaret(chipHtml(chip, text) + " ");
     setPicker(false);
-    cue("tick");
     changed();
     void render();
   }, [doc.style, items, changed, render, restoreCaret]);
@@ -443,14 +441,12 @@ function Paper({ w, doc, sources, projects, onChange, onGone, onSourceChange }: 
       } catch (err) { console.warn("pptx", err); }
     }
     setFiles(out);
-    cue("saved");
   }, [body, sources, doc, bib, lang]);
 
   const keepSnapshot = useCallback(async () => {
     if (!snapName.trim()) return;
     await snapshot(w, { ...doc, body: editor.current?.html() ?? body }, snapName.trim());
     setSnapName("");
-    cue("saved");
     setVersions(await listVersions(w, doc.id));
   }, [w, doc, body, snapName]);
 

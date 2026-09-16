@@ -34,9 +34,7 @@
    the two deployments would: one down and one up, both up, both
    down, and an answer with nothing in it. No mock and no
    injection, and the component under test is the one the route
-   ships. `/tilt.js` is a served file instead, for the same reason
-   `insights-hub.test.ts` serves `/api.js`: `runtimeModule()` is a
-   real `import()` resolved against the origin the page came from.
+   ships.
    ============================================================ */
 
 import { existsSync, readFileSync, readdirSync } from "node:fs";
@@ -149,18 +147,6 @@ const fixture = await open({
     hydrateRoot(document.getElementById("root"),
       h("section", null, h(MarketPulse, null)));
   `,
-  files: {
-    /* The grid arrives long after `initTilt()` has run, so the
-       component has to hand it over. This is `/tilt.js` as far as
-       the component is concerned, and it records what it was
-       given. */
-    "/tilt.js": {
-      type: "text/javascript; charset=utf-8",
-      body: `export function tiltIn(root) {
-        (window.__tilted = window.__tilted || []).push(root.className);
-      }`,
-    },
-  },
 });
 
 let passed = 0;
@@ -397,11 +383,6 @@ console.log("the market pulse on the Insights hub");
     await noteText(page)
       === "Updated 12 minutes ago · tap a card for a little more",
     await noteText(page));
-
-  const tilted = await page.evaluate(() =>
-    (window as unknown as { __tilted?: string[] }).__tilted ?? []);
-  ok("the grid is handed to /tilt.js, because it arrives after initTilt() has run",
-    tilted.includes("news-grid"), tilted.join(",") || "nothing was");
 
   ok("nothing hydrated wrongly on the way", mismatches(errors).length === 0,
     mismatches(errors)[0]);

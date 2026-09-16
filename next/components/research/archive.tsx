@@ -25,7 +25,6 @@ import {
 import { Button } from "../ui/button";
 import { Chip, ChipButton, ChipLink } from "../ui/chip";
 import { Surface } from "../ui/surface";
-import { cue } from "../../lib/sound";
 import { T, W, both } from "./lang";
 import { SignedOut } from "./signed-out";
 import { useWho, when } from "./use-who";
@@ -65,13 +64,12 @@ export function Archive() {
         bib: blob(sources.map((s) => toBibtex(s.csl, s.key)).join("\n\n"), "application/x-bibtex"),
         ris: blob(sources.map((s) => toRis(s.csl, s.key)).join("\n\n"), "application/x-research-info-systems"),
       });
-      cue("saved");
     } finally { setBusy(false); }
   }, [w]);
 
   const restore = async (table: "research_sources" | "research_notes", id: string, title: string): Promise<void> => {
     if (!w) return;
-    if (await unbin(w, table, id, title)) { cue("saved"); await reload(); }
+    if (await unbin(w, table, id, title)) { await reload(); }
   };
 
   if (!w) return <SignedOut answered={answered} />;

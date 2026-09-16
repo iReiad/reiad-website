@@ -35,19 +35,10 @@
    browser's own state is the browser's.
    ============================================================ */
 
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useState } from "react";
 import { Button } from "./ui/button";
 import { NewsCard, NewsWindow, loadNews, relTime, type NewsFeed, type Story }
   from "./news";
-import { runtimeModule } from "./account/runtime";
-
-/** `/tilt.js` as this uses it. Declared here rather than in
-    `app/src/types/`, which is a directory that is emptying: the
-    module is interface waiting to be a component, so a
-    description of it would be deleted rather than converted. */
-interface TiltModule {
-  tiltIn: (root: Element) => void;
-}
 
 /** How many grey squares stand in for the feed while it loads.
 
@@ -81,7 +72,6 @@ export function MarketPulse({ limit }: { limit?: number } = {}) {
      module did by passing `isRetry` straight through. */
   const [attempt, setAttempt] = useState(0);
   const [story, setStory] = useState<Story | null>(null);
-  const gridRef = useRef<HTMLDivElement | null>(null);
 
   useEffect(() => {
     let live = true;
@@ -105,18 +95,6 @@ export function MarketPulse({ limit }: { limit?: number } = {}) {
     return () => { live = false; clearTimeout(timer); };
   }, [attempt]);
 
-  /* The grid arrives long after `initTilt()` has run, so the cards
-     in it lean towards the pointer only if something tells the
-     module they are there. `/tilt.js` is served and precached; if
-     it cannot be reached the cards simply do not lean. */
-  useEffect(() => {
-    const grid = gridRef.current;
-    if (state.kind !== "ready" || !grid) return;
-    runtimeModule<TiltModule>("/tilt.js")
-      .then((tilt) => tilt.tiltIn(grid))
-      .catch(() => { /* a nicety, and never a reason to break the grid */ });
-  }, [state]);
-
   return (
     <>
       {/* The window is outside the live region on purpose: a
@@ -133,7 +111,7 @@ export function MarketPulse({ limit }: { limit?: number } = {}) {
 
         {state.kind === "ready" ? (
           <>
-            <div className="news-grid" ref={gridRef}>
+            <div className="news-grid">
               {(limit ? state.feed.items.slice(0, limit) : state.feed.items).map((item) => (
                 <NewsCard key={item.url} item={item}
                           onOpen={(it, from) => setStory({ item: it, from })} />

@@ -22,10 +22,10 @@
    `TURN`: listing it would make the variation invisible.
    ============================================================ */
 
-/** The twelve drawings, and THE list of them.
-    `next/components/card-art.tsx` holds the markup and
-    `shared/nav.ts` names one per rail entry; both take the
-    vocabulary from here, so a thirteenth is one edit. */
+/** The twelve drawings, and THE list of them. `art-svg.ts`
+    holds the markup and `shared/nav.ts` names one per rail
+    entry; both take the vocabulary from here, so a thirteenth
+    is one edit. */
 export const ART_SUBJECTS = [
   "chart", "coins", "sheets", "book", "pan", "ridge",
   "cards", "arch", "bubbles", "gauge", "calendar", "plate",

@@ -109,23 +109,18 @@ const STAGES: Array<[stage: string, entries: Entry[]]> = [
        endpoint that answers, returns the right shape, passes
        every other check, and works for everybody. */
     "scripts/check-admin.ts",
-    /* One design system all around: every pressable class is on
-       one of the five kinds, or is named as a row of controls
-       with the reason. The first material reached 1 of 203
-       surface-like classes and nothing failed. */
-    "scripts/check-material.ts",
-    /* The same design system one order of magnitude down: every
-       icon, disc and plate that stands off a surface, and the
-       promise that all of them stop for a reader who asked for
-       no motion. Two lists that have to agree, so they are
-       compared rather than trusted. */
-    "scripts/check-relief.ts",
-    /* The reader's own finish, which is three files: the panel's
-       table, the stylesheet's block and the boot script's
-       whitelist. One missing from the third is a choice that
-       will not survive the next page load, and nothing else
-       would ever say so. */
-    "scripts/check-glass.ts",
+    /* The design is plain, and this is what keeps it plain: no
+       blur, no perspective, no view-driven animation and no
+       pointer light, in the stylesheet or in a component. Each
+       of those shipped once and was the most expensive thing on
+       the page. */
+    "scripts/check-plain.ts",
+    /* The reader's two type settings are written out twice, in
+       the panel's table and in the boot script that runs before
+       the first paint. A value in one and not the other is a
+       preference that applies on the press and is written over
+       on the next page load. */
+    "scripts/check-prefs.ts",
     /* Everything this site keeps in a browser, against what the
        code actually writes and what the account actually carries.
        A key that says it syncs and is not in `sync.ts` is a

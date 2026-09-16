@@ -6,15 +6,15 @@
 
    The same reason `next/lib/school-icons.ts` holds strings: this
    is markup, and it has to be usable by something that is not
-   React. `next/components/card-art.tsx` renders it into the room
-   with `dangerouslySetInnerHTML`, which for this one purpose is
-   the ordinary way; `aab/src/share-card.ts` builds a standalone
+   React. `aab/src/share-card.ts` builds a standalone
    SVG document out of the same strings, rasterises it and draws
    it into a 1200x630 JPEG.
 
-   They were JSX inside `card-art.tsx` and the share card could
+   They were JSX inside a card component and the share card could
    not reach them, so a card pasted into a chat carried a room
-   with nothing standing in it. Two copies of a drawing is the
+   with nothing standing in it. The site's cards are plain now
+   and the share card is the one place the room is drawn. Two
+   copies of a drawing is the
    failure `CLAUDE.md` opens with, and twelve of them is twelve
    times that.
 

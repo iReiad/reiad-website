@@ -40,7 +40,6 @@ import { Button } from "../ui/button";
 import { Chip, ChipLink } from "../ui/chip";
 import { Field, Select, TextArea } from "../ui/field";
 import { Surface } from "../ui/surface";
-import { cue } from "../../lib/sound";
 import { T, W, both, useToolLang } from "./lang";
 import { SignedOut } from "./signed-out";
 import { useWho } from "./use-who";
@@ -224,18 +223,18 @@ export function Ask() {
         projects: brief ? [brief.id] : [],
         meta: { task: mode === "fresh" ? "fresh" : task.id, mode, fresh: mode === "fresh", model: r.model, context: ctx.ids, usage: r.usage, usd, gbp: gbp(usd), prompt: content.slice(0, 4000), stop: r.stop },
       });
-      if (note) { setSaved(note); setMonth((m) => m + usd); cue("saved"); }
+      if (note) { setSaved(note); setMonth((m) => m + usd); }
     } finally { setBusy(false); }
   }, [w, ready, build, projects, project, mode, task, text]);
 
   const copy = useCallback(async () => {
-    try { await navigator.clipboard.writeText(answer); setCopied(true); cue("tick"); } catch { setCopied(false); }
+    try { await navigator.clipboard.writeText(answer); setCopied(true); } catch { setCopied(false); }
   }, [answer]);
 
   const keepPrompt = useCallback(async () => {
     if (!w || !text.trim()) return;
     const n = await addNote(w, { kind: "prompt", title: text.trim().split("\n")[0].slice(0, 80), text: text.trim(), body: `<p>${escapeHtml(text.trim()).replace(/\n/g, "<br>")}</p>` });
-    if (n) { setPrompts((was) => [n, ...was]); cue("saved"); }
+    if (n) { setPrompts((was) => [n, ...was]); }
   }, [w, text]);
 
   /* ---- the prompt library ---- */
@@ -292,7 +291,6 @@ export function Ask() {
         done += await replaceChunks(w, j.kind, j.ref, mine.map((p) => ({ part: p.part, title: j.title, text: p.text, embedding: p.vector })));
       }
       setIndexing(`${jobs.length} ${both("rs.ask.index.done")} · ${done}`);
-      cue("saved");
     } catch { setIndexing(both("rs.ask.failed")); }
   }, [w, indexing, rebuild]);
 
@@ -307,7 +305,7 @@ export function Ask() {
         <p className="text-t1 text-ink-soft mr-auto"><W k="rs.ask.hint" /></p>
         <label className="flex items-center gap-2 text-t2">
           <input id="rs-ask-on" type="checkbox" checked={on === true} disabled={on === null}
-                 onChange={(e) => { setOn(e.target.checked); void savePrefs(w, { assistant: e.target.checked }).then(() => cue("saved")); }} />
+                 onChange={(e) => { setOn(e.target.checked); void savePrefs(w, { assistant: e.target.checked }); }} />
           <span><W k="rs.ask.switch" /></span>
         </label>
         <span className="text-t1 mono text-ink-soft" data-testid="rs-ask-cost"><W k="rs.ask.month" /> {pounds(month)}</span>

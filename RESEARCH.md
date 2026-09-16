@@ -337,7 +337,7 @@ makes the studio colourful is that the THINGS in it carry colour:
 | a code in the codebook | a colour the reader chooses from the seven | a coded transcript reads at a glance |
 | a project | a tone | three projects side by side on the board are three colours |
 | a lane on the task board | the site's four states, no red | done is green, waiting is gold, nothing is red |
-| a card in a deck | a scene out of `next/components/card-art.tsx` | the board is a room, not a menu |
+| a card in a deck | the room's own colour and no picture | the board is a menu, and a menu is plain |
 
 Two of those are new tables of colour (source types, highlight
 meanings) and both are DATA in `shared/research.ts`, so the Android app
@@ -365,17 +365,12 @@ its new lane after a drop, and a highlight's colour rising as it is
 made. Both under `prefers-reduced-motion`. Nothing flashes, for the
 reason `@layer weather` gives about a bright frame on a dark page.
 
-**Sound, sparingly.** `saved` when a write lands where the reader
-would otherwise wonder; `tick` on a task or a screening decision;
-`next` and `prev` when the reader steps through a queue. Nothing
-else, and all of them through `cue()` in `next/lib/sound.ts`.
+**No sound.** A write that lands says so on the page, in the
+status line beside the control, and nowhere else.
 
-**The reading hush applies in the reading room.** It is the one room
-where the reader is reading rather than working, so the rail and the
-strip go quiet past the first page and come back on hover, focus or
-the keyboard, exactly as they do on a piece. `scripts/check-relief.ts`
-knows the hush by name and the reader's own scroll-driven rules go
-inside the same guard.
+**The reading room is a reading page.** It is the one room where the
+reader is reading rather than working, so it is set like a piece: one
+column, the measure, and nothing that moves.
 
 **The phone.** Every room works at 360px because a reader on a bus
 will open the queue and read, tick a task, or capture a thought. The
@@ -2108,9 +2103,8 @@ policies), `scripts/check-storage.ts` (the five keys),
 `scripts/check-csp.ts` and `scripts/check-headers.ts` (the three
 words added to the policy), `scripts/check-admin.ts` (the gates),
 `scripts/check-css.ts` (the chip class in three places, the desk's
-rules gone), `scripts/check-material.ts` and `scripts/check-relief.ts`
-(every new pressable class placed, the reader's hush guarded),
-`scripts/check-content.ts` (any count a room states),
+rules gone), `scripts/check-plain.ts` (no blur, no turn, no light in
+a new room), `scripts/check-content.ts` (any count a room states),
 `scripts/check-crons.ts` (the weekly alert), `scripts/check-api.ts`
 (every endpoint the browser calls is routed), `scripts/check-icons.ts`
 (the microscope), `scripts/check-closed.ts` (nothing new under

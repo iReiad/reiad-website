@@ -10,11 +10,9 @@
    shocks run on a saved series like on any upload.
 
    Two decimal places on the coordinate, here as well as in the
-   browser, for the reason functions/api/weather.ts gives: about
-   a kilometre, which is the resolution of the model anyway, and
-   it is what lets two readers share one cache entry. `coord` is
-   that file's rule written a second time because it is not
-   exported from there.
+   browser: about a kilometre, which is the resolution of the
+   model anyway, and it is what lets two readers share one cache
+   entry.
    ============================================================ */
 
 const ARCHIVE = "https://archive-api.open-meteo.com/v1/archive";
@@ -47,7 +45,7 @@ export interface ClimateSeries {
 }
 
 /** A coordinate rounded to two places, or null for anything that
-    is not a finite number in range. Agrees with weather.ts. */
+    is not a finite number in range. */
 export function coord(raw: string | null, limit: number): number | null {
   if (!raw) return null;
   const n = Number(raw);

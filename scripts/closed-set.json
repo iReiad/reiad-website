@@ -68,7 +68,6 @@
   "aab/src/signin.ts",
   "aab/src/streak.ts",
   "aab/src/sync.ts",
-  "aab/src/tilt.ts",
   "aab/src/tools/live.ts",
   "aab/src/tools/tools.ts",
   "aab/sw.js",

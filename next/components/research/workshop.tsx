@@ -40,7 +40,6 @@ import { Button, ButtonLink } from "../ui/button";
 import { Chip, ChipButton, ChipLink } from "../ui/chip";
 import { Field, Select, TextArea } from "../ui/field";
 import { Surface } from "../ui/surface";
-import { cue } from "../../lib/sound";
 import { T, W, both, useToolLang } from "./lang";
 import { SignedOut } from "./signed-out";
 import { useWho } from "./use-who";
@@ -158,7 +157,7 @@ function CiteThis() {
     const dup = await findDuplicate(w, csl);
     if (dup?.sure) { setSaid(both("rs.ws.already")); return; }
     const s = await addSource(w, csl, { via: idKind(id).kind === "isbn" ? "isbn" : idKind(id).kind === "url" ? "url" : "doi", verified: true });
-    if (s) { cue("saved"); setSaid(both("rs.saved")); }
+    if (s) { setSaid(both("rs.saved")); }
   };
   return (
     <Surface material="pane" className="px-4 py-3 grid gap-3">
@@ -187,7 +186,7 @@ function ParseReference() {
   const [matches, setMatches] = useState<Awaited<ReturnType<typeof parseReference>>>(null);
   const [said, setSaid] = useState("");
   const go = async (): Promise<void> => { setSaid(""); const m = await parseReference(w, text); setMatches(m); if (!m) setSaid(both("rs.ws.failed")); };
-  const keep = async (csl: CslItem): Promise<void> => { const s = await addSource(w, csl, { via: "doi", verified: true }); if (s) { cue("saved"); setSaid(both("rs.saved")); } };
+  const keep = async (csl: CslItem): Promise<void> => { const s = await addSource(w, csl, { via: "doi", verified: true }); if (s) { setSaid(both("rs.saved")); } };
   return (
     <Surface material="pane" className="px-4 py-3 grid gap-3">
       <TextArea id="rs-ws-ref" label={<W k="rs.ws.reference.paste" />} value={text} onChange={(e) => setText(e.target.value)} rows={3} />
@@ -362,7 +361,7 @@ function BooleanBuilder() {
   const keep = async (): Promise<void> => {
     if (!w || !out) return;
     const s = await addSearch(w, { q: out, databases: [] }, null);
-    if (s) { cue("saved"); setSaid(both("rs.saved")); }
+    if (s) { setSaid(both("rs.saved")); }
   };
   return (
     <Surface material="pane" className="px-4 py-3 grid gap-3">
@@ -402,7 +401,7 @@ function QuestionBuilder() {
     if (!r) return;
     const criteria = q.criteria.map((c, i) => ({ id: c.startsWith("- ") ? `E${i + 1}` : `I${i + 1}`, kind: c.startsWith("- ") ? "exclude" as const : "include" as const, text: c.replace(/^- /, "") }));
     await saveReview(w, r, { protocol: { frame: frame === "peo" ? "plain" : frame, question: slots, criteria } });
-    cue("saved"); setSaid(both("rs.ws.review.made"));
+    setSaid(both("rs.ws.review.made"));
   };
   return (
     <Surface material="pane" className="px-4 py-3 grid gap-3">
@@ -669,7 +668,6 @@ function TableMaker() {
       const a = document.createElement("a");
       a.href = url; a.download = "table.docx"; a.click();
       setTimeout(() => URL.revokeObjectURL(url), 10_000);
-      cue("saved");
     } catch { setSaid(both("rs.ws.word.failed")); } finally { setBusy(false); }
   };
   return (
@@ -750,7 +748,7 @@ function QuizMe() {
     if (note) { const r = await saveNote(w, note.id, { meta: { ...note.meta, cards: next } }, note.title); if (r.ok) setNote(r.row); }
     else { const n = await addNote(w, { kind: "memo", title: both("rs.ws.quiz"), meta: { quiz: true, cards: next }, text: "", body: "" }); if (n) setNote(n); }
   };
-  const add = async (): Promise<void> => { if (!front.trim() || !back.trim()) return; await keep([...cards, newCard(crypto.randomUUID(), front.trim(), back.trim(), today)]); setFront(""); setBack(""); cue("saved"); };
+  const add = async (): Promise<void> => { if (!front.trim() || !back.trim()) return; await keep([...cards, newCard(crypto.randomUUID(), front.trim(), back.trim(), today)]); setFront(""); setBack(""); };
   /* ts-fsrs schedules; the card keeps the note's own shape and a
      card from before FSRS is read through its SM-2 fields on this
      first review. Short-term steps are off so every answer is a
@@ -765,7 +763,7 @@ function QuizMe() {
     const scheduled = withMemory(current, fsrs({ enable_short_term: false, enable_fuzz: false }).next(memoryOf(current), new Date(), ratingOf(g)).card);
     setNext(scheduled.due);
     await keep(cards.map((c) => (c.id === current.id ? scheduled : c)));
-    setShow(false); cue("tick");
+    setShow(false);
   };
   return (
     <Surface material="pane" className="px-4 py-3 grid gap-3">
@@ -795,8 +793,8 @@ function VivaBank() {
   const keep = async (i: number, text: string): Promise<void> => {
     if ((answers[String(i)] ?? "") === text) return;
     const next = { ...answers, [String(i)]: text };
-    if (note) { const r = await saveNote(w, note.id, { meta: { ...note.meta, answers: next } }, note.title); if (r.ok) { setNote(r.row); cue("saved"); } }
-    else { const n = await addNote(w, { kind: "memo", title: both("rs.ws.viva"), meta: { viva: true, answers: next }, text: "", body: "" }); if (n) { setNote(n); cue("saved"); } }
+    if (note) { const r = await saveNote(w, note.id, { meta: { ...note.meta, answers: next } }, note.title); if (r.ok) { setNote(r.row); } }
+    else { const n = await addNote(w, { kind: "memo", title: both("rs.ws.viva"), meta: { viva: true, answers: next }, text: "", body: "" }); if (n) { setNote(n); } }
   };
   return (
     <Surface material="pane" className="px-4 py-3 grid gap-3">

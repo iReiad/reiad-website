@@ -17,13 +17,11 @@ export const SECURITY_HEADERS = {
   "X-Frame-Options": "DENY",
   "X-Content-Type-Options": "nosniff",
   "Referrer-Policy": "strict-origin-when-cross-origin",
-  /* geolocation is (self) and MUST NOT be (). An empty allowlist
-     is not "ask the reader": it is the page telling the browser
-     not to have the API, so no prompt ever appears,
-     getCurrentPosition fails at once with PERMISSION_DENIED, and
-     granting location in site settings changes nothing. */
+  /* Nothing on this site asks where a reader is, so geolocation
+     is off. `()` is the page telling the browser not to have the
+     API, which is right while nothing calls it. */
   "Permissions-Policy":
-    "geolocation=(self), camera=(), microphone=(), payment=(), interest-cohort=(), "
+    "geolocation=(), camera=(), microphone=(), payment=(), interest-cohort=(), "
     + "publickey-credentials-get=(self), publickey-credentials-create=(self)",
   "Strict-Transport-Security": "max-age=31536000; includeSubDomains",
   "Content-Security-Policy":

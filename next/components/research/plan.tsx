@@ -38,7 +38,6 @@ import { Button } from "../ui/button";
 import { Chip, ChipButton, ChipLink } from "../ui/chip";
 import { Field, Select, TextArea } from "../ui/field";
 import { Surface } from "../ui/surface";
-import { cue } from "../../lib/sound";
 import { W, both, useToolLang } from "./lang";
 import { SignedOut } from "./signed-out";
 import { useWho, when, isoDay } from "./use-who";
@@ -109,7 +108,7 @@ function Dates({ w }: { w: Who }) {
   const add = useCallback(async () => {
     if (!title.trim() || !when_) return;
     const e = await addEvent(w, { title: title.trim(), kind, starts: when_.length === 10 ? `${when_}T00:00:00Z` : when_, ends: until ? (until.length === 10 ? `${until}T00:00:00Z` : until) : null, all_day: when_.length === 10, place, project_id: project || null });
-    if (e) { setEvents((was) => [...(was ?? []), e].sort((a, b) => a.starts.localeCompare(b.starts))); setTitle(""); setWhen(""); setUntil(""); setPlace(""); cue("saved"); }
+    if (e) { setEvents((was) => [...(was ?? []), e].sort((a, b) => a.starts.localeCompare(b.starts))); setTitle(""); setWhen(""); setUntil(""); setPlace(""); }
   }, [w, title, kind, when_, until, place, project]);
 
   const change = useCallback(async (e: Event, part: Partial<Event>) => {
@@ -120,7 +119,7 @@ function Dates({ w }: { w: Who }) {
   /** The whole list, pushed as one file; the address comes back. */
   const publish = useCallback(async (reset = false) => {
     const url = reset ? await resetCalendar(w) : await pushCalendar(w, toIcs(events ?? []));
-    if (url) { setFeed(`${location.origin}${url}`); cue("saved"); }
+    if (url) { setFeed(`${location.origin}${url}`); }
   }, [w, events]);
 
   const now = Date.now();
@@ -194,7 +193,6 @@ function EventRow({ e, open, onOpen, onChange, onGone, w }: {
     const lines = actions.split("\n").map((l) => l.trim()).filter(Boolean);
     for (const line of lines) await addTask(w, line, "week", e.project_id, [{ kind: "event", id: e.id, title: e.title }]);
     set({ actions: lines });
-    cue("saved");
   };
   return (
     <li className="grid gap-2">
@@ -355,13 +353,13 @@ function Sessions({ w }: { w: Who }) {
 
   const elapsed = running ? Math.floor((Date.now() - new Date(running.started).getTime()) / 1000) : 0;
   useEffect(() => {
-    if (running && elapsed >= SESSION_MINUTES * 60 && !bell.current) { bell.current = true; cue("stage"); }
+    if (running && elapsed >= SESSION_MINUTES * 60 && !bell.current) { bell.current = true; }
     /* eslint-disable-next-line react-hooks/exhaustive-deps */
   }, [tick]);
 
   const start = async (): Promise<void> => {
     const s = await startSession(w, room, project || null);
-    if (s) { setRunning(s); bell.current = false; cue("press"); }
+    if (s) { setRunning(s); bell.current = false; }
   };
   const stop = async (): Promise<void> => {
     if (!running) return;
@@ -373,7 +371,6 @@ function Sessions({ w }: { w: Who }) {
     setSessions((was) => [r.row, ...was.filter((x) => x.id !== r.row.id)]);
     setRunning(null);
     setNote("");
-    cue("saved");
   };
   const todayMins = sessions.filter((s) => s.ended && s.started.slice(0, 10) === isoDay()).reduce((n, s) => n + minutesBetween(s.started, s.ended as string), 0);
   const mm = String(Math.floor(elapsed / 60)).padStart(2, "0");
@@ -633,7 +630,7 @@ export function WeekReview() {
   const keep = async (): Promise<void> => {
     if (!note.trim()) return;
     await appendToDay(w, weekDay, `${both("rs.plan.wk.note")}: ${note.trim()}`);
-    setSaved(true); setNote(""); cue("saved");
+    setSaved(true); setNote("");
   };
   const laneName = (l: TaskLane): string => LANE_NAMES[l].en;
   return (

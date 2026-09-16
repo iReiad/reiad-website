@@ -1574,11 +1574,11 @@ export async function climateSeries(w: Who, q: { lat: number; lon: number; from:
 
 export interface PlaceFound { id: string; name: string; where: string; lat: number; lon: number }
 
-/** A town by name, through the weather Worker's place index, which
+/** A town by name, through the Worker's place index, which
     already rounds to two places. */
 export async function findPlaces(q: string): Promise<PlaceFound[]> {
   try {
-    const res = await fetch(`/api/weather/place?q=${enc(q)}`, { signal: AbortSignal.timeout(9000) });
+    const res = await fetch(`/api/place?q=${enc(q)}`, { signal: AbortSignal.timeout(9000) });
     const data = await res.json() as { ok?: boolean; places?: PlaceFound[] };
     return data.ok ? (data.places ?? []) : [];
   } catch { return []; }

@@ -9,7 +9,6 @@ import { searchIndex, SEARCH_GROUPS, COUNTS, type SearchEntry } from "/content.j
 import { countView } from "/api.js";
 import { allPieces, pieceHref, type Piece } from "/pieces.js";
 import { initAudience, audienceBoost } from "/audience.js";
-import { initTilt } from "/tilt.js";
 import { initStreak } from "/streak.js";
 /* Imported for its side effect: it reads `reader-prefs` and puts
    the type scale and the measure on <html>. A no-op on a route,
@@ -542,7 +541,6 @@ initAudience();
 initPalette();
 initShortcuts();
 initCounts();
-initTilt();
 initSpeculation();
 initStreak();
 

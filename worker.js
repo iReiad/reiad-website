@@ -32,7 +32,7 @@ import { onRequest as search } from "./functions/api/search.ts";
 import { onRequest as site } from "./functions/api/site.ts";
 import { onRequest as tools } from "./functions/api/tools.ts";
 import { onRequestGet as news } from "./functions/api/news.ts";
-import { onRequestGet as weather } from "./functions/api/weather.ts";
+import { onRequestGet as place } from "./functions/api/place.ts";
 import { onRequest as foods } from "./functions/api/foods.ts";
 import { onRequest as media } from "./functions/api/media/[[key]].ts";
 import { onRequest as notion } from "./functions/api/notion/[[route]].ts";
@@ -68,7 +68,7 @@ const API_ROUTES = [
   ["/api/site", site, null],
   ["/api/tools", tools, null],
   ["/api/news", news, null],
-  ["/api/weather", weather, null],
+  ["/api/place", place, null],
   /* The portion library itself, which the browser gets by
      importing `shared/foods.ts` and a phone cannot. NOT the same
      thing as `/api/diet/food`, which is a LOOKUP against two

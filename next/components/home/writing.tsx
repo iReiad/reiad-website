@@ -102,7 +102,7 @@ export function LatestWriting({ limit = 4 }: { limit?: number }) {
          wide here rather than four with three empty. */
       <div className="deck read-deck read-deck-one">
         <GoCard
-          href="/insights" art="book" icon="pen" accent="var(--green)"
+          href="/insights" icon="pen" accent="var(--green)"
           chip="Insights" title="Insights, and a market pulse"
           dek="লম্বা লেখাগুলো, সাথে বাজারের খবরের স্রোত: সবটা এক জায়গায়।"
           go="Open Insights"

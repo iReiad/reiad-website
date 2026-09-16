@@ -38,8 +38,7 @@ function Tally(
   return (
     <a href={href}
        className="flex items-baseline justify-between gap-3 rounded-[var(--radius-sm)]
-                  border border-hairline px-3 py-2 no-underline"
-       data-glow="control">
+                  border border-hairline px-3 py-2 no-underline">
       <span>{label}</span>
       <strong className={`mono ${tone === "waiting" && n > 0 ? "text-accent" : "text-ink-soft"}`}>
         {n}

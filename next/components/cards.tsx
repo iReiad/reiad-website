@@ -15,13 +15,12 @@
    rather than of the page it is listed on, so it is read off the
    row instead of being passed in by the hub.
 
-   ---- the picture ----
+   ---- the picture, and the colour ----
 
-   Its own cover where the Studio drew one, and a drawing derived
-   from the row where it did not. Nothing is chosen by hand and
-   nothing has to be: `shared/art.ts` reads the tag, the topics and
-   the section, so a piece published next year arrives with a
-   picture and a colour of its own.
+   Its own cover where the Studio drew one, and none otherwise.
+   The colour is derived from the row by `shared/art.ts`, out of
+   the tag, the topics and the section, so a piece published next
+   year arrives with a colour of its own and nobody chooses one.
    ============================================================ */
 
 import type { Piece } from "../lib/pieces";
@@ -72,11 +71,7 @@ export function PieceCard({ piece, icon, hidden }: {
   return (
     <GoCard
       href={piece.url} hidden={hidden}
-      /* The piece's own photograph first, a drawing of what it is
-         about second. Never both: two pictures on one card is two
-         answers to the same question. */
       cover={cover}
-      art={cover ? undefined : art.subject}
       accent={art.accent}
       icon={icon}
       chip={piece.tag}

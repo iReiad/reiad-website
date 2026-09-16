@@ -78,10 +78,9 @@ export function LessonTick({
   id: string;
   title: string;
   stage: string;
-      /** Every lesson id on this lesson's ladder, so the tick can tell
-          finishing a lesson from finishing the whole stage. Optional: a
-          school that does not pass it gets the lesson cue, which is the
-          true smaller sentence rather than a wrong one. */
+      /** Every lesson id on this lesson's ladder. Kept on the prop so the
+          route passes the whole ladder once and a caller that wants to say
+          "that finished the stage" has what it needs. */
   of?: string[];
       /** Only the front door reads this, and only as a hint: see
           `Bookmark` in lib/progress.ts. */
@@ -103,15 +102,10 @@ export function LessonTick({
          week. Cleared on `animationend`. */
   const [just, setJust] = useState(false);
   const onClick = useCallback(() => {
-        /* Worked out BEFORE the toggle, because after it the answer is
-           already true and every tick would sound like the end of a stage.
-           Ticking OFF never celebrates and never lands: it is a
-           correction. */
-    const finishes = !done && !!of?.length
-      && of.every((other) => other === id || read.has(other));
+        /* Ticking OFF never lands: it is a correction. */
     if (!done) setJust(true);
-    toggleRead(school, id, finishes ? "stage" : "lesson");
-  }, [school, id, of, read, done]);
+    toggleRead(school, id);
+  }, [school, id, done]);
 
   return (
         /* The air around it is this caller's, not the button's. The

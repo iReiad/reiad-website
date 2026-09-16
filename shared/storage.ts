@@ -239,13 +239,6 @@ export const KEPT: Keep[] = [
       + "for it: this browser. A phone and a laptop have different room and "
       + "different signal, and a choice about one says nothing about the other.",
     by: "next/lib/offline-files.ts" },
-  { key: "weather-place", where: "local", held: "device", syncs: false,
-    what: "Where you are, to two decimal places, for the sky on the glass.",
-    why: "Every other synced key is something the reader MADE. Where somebody "
-      + "is standing is not that: it is different on every device by "
-      + "definition, and a phone in Dhaka and a laptop in Brighton are two "
-      + "places. Two decimals is about a kilometre.",
-    by: "next/components/weather.tsx" },
 
   /* ---------------- credentials and caches ---------------- */
   { key: "reiad-session", where: "local", held: "session", syncs: false,

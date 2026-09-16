@@ -30,7 +30,6 @@ import { Chip, ChipLink } from "../ui/chip";
 import { Field, Select } from "../ui/field";
 import { Meter } from "../ui/meter";
 import { Surface } from "../ui/surface";
-import { cue } from "../../lib/sound";
 import { T, W, both, useToolLang } from "./lang";
 import { SignedOut } from "./signed-out";
 import { useWho } from "./use-who";
@@ -69,7 +68,6 @@ export function Settings() {
     if (!w) return;
     const next = await savePrefs(w, part);
     setPrefs(next);
-    cue("saved");
     setSaidPrefs(true);
     setTimeout(() => setSaidPrefs(false), 1600);
     if (part.dense !== undefined) {
@@ -81,7 +79,7 @@ export function Settings() {
   const makeProject = useCallback(async () => {
     if (!w || !name.trim()) return;
     const p = await addProject(w, name.trim(), kind, tone);
-    if (p) { cue("saved"); setName(""); setProjects((was) => [p, ...was]); }
+    if (p) { setName(""); setProjects((was) => [p, ...was]); }
   }, [w, name, kind, tone]);
 
   const pull = useCallback(async () => {
@@ -125,7 +123,6 @@ export function Settings() {
       }
       await logImport(w, `zotero: ${added} of ${total}`);
       setPulling(`${added} ${both("rs.lib.imported")}, ${skipped} ${both("rs.lib.skipped")}`);
-      cue("saved");
       setZKey("");
     } catch { setPulling(both("rs.notsaved")); }
   }, [w, zUser, zKey]);

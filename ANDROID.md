@@ -330,9 +330,9 @@ have dropped a word's emphasis on day one, silently.
 ### The design language, mapped rather than imitated
 
 The stylesheet is the specification: tokens first
-(`next/styles/site.css` declares them all), then the six glass
-kinds in `@layer glow`, and `DESIGN.md` for the sentences. The
-mapping is mechanical where it matters:
+(`next/styles/site.css` declares them all), and `DESIGN.md` for
+the sentences. The design is plain, which makes the mapping
+mechanical where it matters:
 
 - **Colour**: the oklch token pairs (light and dark) resolve to
   Compose colours at build time in the app repo, from a small
@@ -348,19 +348,14 @@ mapping is mechanical where it matters:
 - **Shape and metrics**: the radius ladder (5, 12, 18, 24, pill)
   and the 44px tap height become the Shapes and minimum touch
   target; the spacing ramp becomes the spacing constants.
-- **The material**: cards, chips, panes, plates and grooves become
-  a surface modifier with the same four numbers per kind. The lit
-  edge and rim are drawn strokes; the pointer glow becomes a
-  touch-position glow with the same asymmetry, in fast and out
-  slow, because the asymmetry is most of what reads as material.
-  Blur (the frost) uses RenderEffect where the device offers it
-  and falls back to the solid fills, which is precisely the
-  site's own `plain` fallback, so the degraded look is already
-  designed.
-- **Motion**: the duration set (0.16 to 0.45s, the 1.35s shimmer)
-  and the tilt-on-device-orientation the site already does on
-  phones, honouring the platform's reduced-motion setting the way
-  the site honours the media query.
+- **The surfaces**: a card is a panel with a hairline and a
+  corner, a sunk ground is darker than the page, and a floating
+  thing has the one shadow. No blur, no texture and no glow, on
+  the site and in the app, which is also what keeps a cheap
+  device fast.
+- **Motion**: the duration set (0.16 to 0.45s, the 1.35s shimmer),
+  honouring the platform's reduced-motion setting the way the
+  site honours the media query.
 
 What is not attempted: pixel parity with the web. The app matches
 the tokens, the voice and the affordances; it lays out like an
@@ -503,7 +498,6 @@ pass on it:
 | Risk | The handling |
 | --- | --- |
 | oklch to sRGB conversion drift | tokens resolved by one script, checked by the screenshot suite, never hand-copied |
-| Blur cost on cheap devices | the site's own `plain` material is the designed fallback |
 | The implicit auth flow needs the fragment to survive the redirect | App Links deliver fragments; verified in phase 2's first week, with the custom-scheme fallback ready |
 | Dot-directory asset upload for assetlinks | verified on a deploy before anything depends on it |
 | The sanitiser vocabulary grows and the renderer lags | the app's parser logs unknown shapes and renders them as plain text; a periodic fixture refresh turns silence into a failing test |

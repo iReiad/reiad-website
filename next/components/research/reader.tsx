@@ -50,7 +50,6 @@ import { Button } from "../ui/button";
 import { Chip, ChipButton, ChipLink } from "../ui/chip";
 import { Field, Select, TextArea } from "../ui/field";
 import { Surface } from "../ui/surface";
-import { cue } from "../../lib/sound";
 import { T, W, both, useToolLang } from "./lang";
 import { SignedOut } from "./signed-out";
 import { useWho, SETTLE } from "./use-who";
@@ -236,7 +235,6 @@ export function Reader({ id }: { id: string }) {
     if (!h) return;
     setMarks((was) => [...was, h].sort((a, b) => (a.page ?? 0) - (b.page ?? 0) || a.created_at.localeCompare(b.created_at)));
     setCurrent(h.id);
-    cue("tick");
   }, []);
 
   const changed = useCallback((h: Highlight) => {
@@ -254,7 +252,6 @@ export function Reader({ id }: { id: string }) {
     const r = await saveSource(w, source, { status: "read" }, source.updated_at);
     if (!r.ok) return;
     setSource(r.row);
-    cue("lesson");
     const notes = await listNotes(w, { source: source.id, kind: "literature", limit: 1 });
     setAsked(notes.length ? "done" : "asking");
   }, [w, source]);
@@ -265,7 +262,7 @@ export function Reader({ id }: { id: string }) {
       kind: "literature", source_id: source.id, title: source.title,
       text: line.trim(), body: `<p>${line.trim().replace(/</g, "&lt;")}</p>`,
     });
-    if (n) { cue("saved"); setAsked("done"); }
+    if (n) { setAsked("done"); }
   }, [w, source, line]);
 
   if (!w) return <SignedOut answered={answered} />;

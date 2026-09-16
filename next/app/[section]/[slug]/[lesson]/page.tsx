@@ -10,14 +10,14 @@
 
 import type { Metadata } from "next";
 import { notFound } from "next/navigation";
-import { laddered, stageUrl } from "@reiad/shared/schools";
+import { bnNum, laddered, stageUrl } from "@reiad/shared/schools";
 import { getLesson } from "../../../../lib/school";
 import { siteOrigin } from "../../../../lib/article";
 import { schoolIcon } from "../../../../lib/school-icons";
 import { SiteScripts } from "../../../../components/scripts";
 import { Keep } from "../../../../components/keep";
 import { Where } from "../../../../components/where";
-import { LessonTick } from "../../../../components/progress";
+import { CardTick, LessonTick } from "../../../../components/progress";
 import { Eyebrow } from "../../../../components/ui/label";
 import { LessonBody } from "../../../../components/lesson/body";
 import { ReadLangSwitch } from "../../../../components/lesson/lang-switch";
@@ -89,6 +89,14 @@ export default async function LessonPage({ params }: { params: Params }) {
   const meta = [it.label, soon ? "আসছে" : look.words.minutes(Number(it.minutes ?? 0))]
     .filter(Boolean)
     .join(" · ");
+
+  /* The whole stage, in order, so a reader always sees where this
+     lesson sits and can reach any other without going back up.
+     Every rung is listed, written or not: a rung that is coming is
+     part of the shape of the stage, and hiding it makes "৩ / ১২"
+     a lie. Only a live rung is a link. */
+  const rungs = laddered(school, stage);
+  const at = rungs.findIndex((l) => String(l.id) === String(it.id));
 
   return (
     <>
@@ -204,16 +212,57 @@ export default async function LessonPage({ params }: { params: Params }) {
           </p>
         </article>
 
+        {/* ---- this stage, as a list ----
+            The navigation a course needs and this page did not have: the
+            stage's lessons in order, the one you are on marked, and your
+            place in it counted. Server-rendered, so it is there with no
+            JavaScript and for a crawler. The money school's rungs carry a
+            tick, read in the browser; the other three schools draw their
+            ticks with their own module on the stage page. */}
+        {rungs.length > 1 ? (
+          <nav className="stage-nav" aria-label={`${stage.kicker} · ${stage.bn}`}>
+            <p className="stage-nav-head">
+              <a href={stageUrl(school, stage)}>{`${stage.kicker} · ${stage.bn}`}</a>
+              {at >= 0 ? (
+                <span className="mono">{`${bnNum(at + 1)} / ${bnNum(rungs.length)}`}</span>
+              ) : null}
+            </p>
+            <ol>
+              {rungs.map((rung, i) => {
+                const here = i === at;
+                const live = (rung.status ?? "live") === "live";
+                const name = (
+                  <>
+                    {rung.label ? <span className="mono stage-nav-n">{rung.label}</span> : null}
+                    <span className="stage-nav-title bn-h">{String(rung.bn)}</span>
+                    <span className="mono stage-nav-min">
+                      {live ? look.words.minutes(Number(rung.minutes ?? 0)) : "আসছে"}
+                    </span>
+                  </>
+                );
+                return (
+                  <li key={rung.id} aria-current={here ? "page" : undefined}
+                      data-soon={live ? undefined : ""}>
+                    {live && !here ? <a href={rung.url}>{name}</a> : <span>{name}</span>}
+                    {school === "money" && live
+                      ? <CardTick school={school} id={String(rung.id)} /> : null}
+                  </li>
+                );
+              })}
+            </ol>
+          </nav>
+        ) : null}
+
         {(prev || tail) ? (
           <nav className="prev-next" aria-label={look.words.navLabel}>
             {prev ? (
-              <a data-cue="prev" href={prev.url}>
+              <a href={prev.url}>
                 <span className="mono">{look.words.prev}</span>
                 <strong className="bn-h">{prev.bn}</strong>
               </a>
             ) : null}
             {tail ? (
-              <a data-cue="next" href={tail.url}>
+              <a href={tail.url}>
                 <span className="mono">{tail.kicker}</span>
                 <strong className="bn-h">{tail.label}</strong>
               </a>

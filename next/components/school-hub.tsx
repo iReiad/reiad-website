@@ -5,12 +5,12 @@
    Studio changes this page and nothing has to be rebuilt.
 
    Every step and every stage is a `GoCard`: they take you to a page, they
-   carry an accent rail and an arrow, and they show a tick. Everything
-   explaining how the school works is an `InfoCard`: no arrow, no lift, a
-   dashed edge. */
+   carry an accent rail and an arrow, and they show a tick. Nothing on the
+   page explains the page: the footer carries the one sentence that has to
+   be here, that none of this is investment advice. */
 
 import { bnNum, type SchoolStage } from "@reiad/shared/schools";
-import { GoCard, InfoCard } from "./deck";
+import { GoCard } from "./deck";
 import { Icon } from "./icons";
 import { LadderMeter, Resume, type LadderLesson } from "./progress";
 import type { School } from "../lib/school";
@@ -143,8 +143,7 @@ export function MoneyHub({ school }: { school: School }) {
               ধাপে ধাপে · <span lang="en">The ladder</span>
             </SectionLabel>
             <p className="hub-section-note" lang="bn">
-              হাতেখড়ির পর ক্রম মেনে এগোনো সবচেয়ে কাজে দেয়, তবে যেকোনো ধাপ থেকে শুরু করা যায়।
-              যেগুলো এখনো লেখা হয়নি সেগুলোও নিচে আছে, কারণ কী আসছে জানা থাকলে অপেক্ষা করা যায়।
+              ক্রম মেনে এগোনো সবচেয়ে কাজে দেয়, তবে কোথাও তালা নেই: যেকোনো ধাপ থেকে শুরু করা যায়।
             </p>
           </div>
 
@@ -197,48 +196,18 @@ export function MoneyHub({ school }: { school: School }) {
           </div>
         </section>
 
-        {/* ---------- how it is put together ---------- */}
-        <section className="hub-section" id="kivabe">
-          <div className="hub-section-head">
-            <SectionLabel>
-              কীভাবে সাজানো · <span lang="en">How it works</span>
-            </SectionLabel>
-          </div>
-
-          <div className="deck">
-            <InfoCard
-              icon="signpost" accent="var(--green)" lang="bn"
-              title="ক্রম আছে, বাধ্যবাধকতা নেই"
-              dek="প্রতিটা ধাপ ধরে নেয় আগেরটা পড়া আছে, কিন্তু কোথাও তালা নেই। যেটা দরকার সেটা
-                   সরাসরি পড়তে পারেন, লিংক ধরে পিছিয়েও যেতে পারেন।"
-            />
-            <InfoCard
-              icon="check" accent="var(--green)" lang="bn"
-              title="টিক আপনার অ্যাকাউন্টে"
-              dek="কোন লেখাটা পড়া হয়েছে সেটা জমা থাকে আপনার অ্যাকাউন্টে, তাই ফোনে
-                   যেখানে থামবেন ল্যাপটপে সেখান থেকেই শুরু করতে পারবেন।"
-            />
-            <InfoCard
-              icon="warning" accent="var(--gold)" lang="bn"
-              title="এটা পরামর্শ না"
-              dek="এখানকার সবকিছু সাধারণ শিক্ষামূলক তথ্য। কোন শেয়ার কিনবেন সেটা এখানে
-                   কেউ বলবে না, আর যে সাইট বলে সেটা নিয়ে সন্দেহ করাই ভালো।"
-            />
-          </div>
-        </section>
-
         {/* ---------- and the two doors out ---------- */}
         <section className="hub-section" id="ekhon">
           <div className="deck deck-2">
             <GoCard
-              href="/money/contents" art="book" accent="var(--green)" icon="book" lang="bn"
+              href="/money/contents" accent="var(--green)" icon="book" lang="bn"
               chip="পুরো তালিকা"
               title="সব লেখার তালিকা"
               dek="এক পাতায় প্রতিটা ধাপের প্রতিটা লেখা, নাম ধরে ধরে।"
               go="তালিকা দেখুন"
             />
             <GoCard
-              href="/tools" art="sheets" accent="var(--gold)" icon="calculator" lang="bn"
+              href="/tools" accent="var(--gold)" icon="calculator" lang="bn"
               chip="ক্যালকুলেটর"
               title="নিজের সংখ্যা বসিয়ে দেখুন"
               dek="চক্রবৃদ্ধি, কিস্তি, মূল্যস্ফীতি আর সঞ্চয়পত্র: পড়া জিনিসটা নিজের টাকায় মিলিয়ে নেওয়া।"

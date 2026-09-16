@@ -130,12 +130,13 @@ function wrap(ctx, text, width, max) {
     }
     return lines;
 }
-/* THE ROOM, at 1200 by 630: the same ten layers, in the same
-   order, that `next/components/card-art.tsx` puts behind every
-   card here. Sky, weave, halo, rays, far, floor, stage, near,
-   spec, veil, then the card's own furniture: the scrim, the
-   accent rail every `<GoCard>` carries and the hairline rim.
-   A canvas has no cascade, so one line of CSS there is six here. */
+/* THE ROOM, at 1200 by 630: ten layers, back to front. Sky,
+   weave, halo, rays, far, floor, stage, near, spec, veil, then
+   the card's own furniture: the scrim, the accent rail every
+   `<GoCard>` carries and the hairline rim. The site's own cards
+   are plain now; a picture pasted into a chat is the one place
+   the room is still drawn, because a chat preview has to say
+   where it came from before anybody reads the title. */
 /* NO TWO CARDS THE SAME, and never a random number: the
    composition is DERIVED from the piece's own id, through the
    same hash `shared/art.ts` picks the subject with. A card has to

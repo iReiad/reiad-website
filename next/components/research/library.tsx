@@ -30,7 +30,6 @@ import { Field, Select } from "../ui/field";
 import { Empty } from "../ui/note";
 import { Surface } from "../ui/surface";
 import { Icon } from "../icons";
-import { cue } from "../../lib/sound";
 import { T, W, both, useToolLang } from "./lang";
 import { SignedOut } from "./signed-out";
 import { SourceCard } from "./source";
@@ -132,7 +131,7 @@ export function Library({ openId }: { openId?: string }) {
         }
         setSaid(`${count} ${both("rs.lib.imported")}, ${items.length - count} ${both("rs.lib.skipped")}`);
       }
-      if (made) { cue("saved"); setLine(""); setOpen(made.id); }
+      if (made) { setLine(""); setOpen(made.id); }
       await reload();
     } finally { setBusy(false); }
   }, [w, line, busy, take, reload]);
@@ -150,7 +149,6 @@ export function Library({ openId }: { openId?: string }) {
       }
       await logImport(w, `${file.name}: ${count} of ${items.length}`);
       setSaid(`${count} ${both("rs.lib.imported")}, ${items.length - count} ${both("rs.lib.skipped")}`);
-      cue("saved");
       await reload();
     } finally { setBusy(false); }
   }, [w, take, reload]);

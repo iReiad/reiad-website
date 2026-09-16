@@ -20,24 +20,14 @@
    ============================================================ */
 
 import type { CSSProperties, ReactNode } from "react";
-import { CardArt, type ArtSubject } from "./card-art";
 import { Icon } from "./icons";
 
 type Common = {
-  /** The picture across the top, by what it is a picture OF.
-      `shared/nav.ts` names one per school, tool and desk, so the
-      same thing wears the same drawing wherever it is drawn: the
-      board, `/skills`, the tools hub. Omitted, and the card is
-      what every card here was before there were pictures. */
-  art?: ArtSubject;
   /** A PHOTOGRAPH across the top, where the thing has one of its
       own: a piece's cover, drawn by the Studio from its lead
-      photo. It wins over `art`, because a photograph is of that
-      piece and a drawing is only of its desk.
-
-      It cannot answer the theme and does not pretend to. That is
-      the one honest difference between the two: a drawing is made
-      of the page's tokens, a photograph is a photograph. */
+      photo. Nothing else goes across the top of a card: a drawing
+      there was ten layers of decoration on every card on the site,
+      and a card is a title, a line and a way in. */
   cover?: string;
   /** The drawing in the tile. Omitted, and there is no tile. */
   icon?: string;
@@ -63,14 +53,14 @@ type Common = {
 const style = (accent?: string) =>
   (accent ? { "--accent": accent } as CSSProperties : undefined);
 
-function Inside({ art, cover, icon, chip, title, dek, children }: Common) {
+function Inside({ cover, icon, chip, title, dek, children }: Common) {
   return (
     <>
       {cover ? (
         <span className="card-band card-photo" aria-hidden="true">
           <img src={cover} alt="" loading="lazy" decoding="async" />
         </span>
-      ) : art ? <CardArt subject={art} className="card-band" /> : null}
+      ) : null}
       {(icon || chip) ? (
         <div className="card-top">
           {icon ? <span className="card-art"><Icon name={icon} size={20} /></span> : null}
@@ -103,16 +93,9 @@ export function GoCard({
   done?: boolean;
 }) {
   return (
-    <a className={["card", (rest.art || rest.cover) ? "card-banded" : null, rest.className]
+    <a className={["card", rest.cover ? "card-banded" : null, rest.className]
          .filter(Boolean).join(" ")}
        data-kind="go" data-done={done ? "" : undefined} hidden={hidden}
-       /* The light is what a card that answers you has and a card
-          that does not has none of. `<InfoCard>` and `<SoonCard>`
-          below deliberately carry no `data-glow`: they are the
-          end of the road, and the same distinction the rail and
-          the arrow already draw is drawn once more by the one
-          thing a pointer can test without clicking. */
-       data-glow="card"
        id={rest.id} href={href} lang={rest.lang} style={style(rest.accent)}>
       {done ? <span className="card-tick" aria-label="পড়া হয়েছে">✓</span> : null}
       <Inside {...rest} />
@@ -132,7 +115,7 @@ export function GoCard({
     lost its chip. */
 export function InfoCard({ fill, ...props }: Common & { fill?: boolean }) {
   return (
-    <div className={["card", (props.art || props.cover) ? "card-banded" : null, props.className]
+    <div className={["card", props.cover ? "card-banded" : null, props.className]
            .filter(Boolean).join(" ")}
          data-kind="info" data-fill={fill ? "" : undefined}
          id={props.id} lang={props.lang} style={style(props.accent)}>

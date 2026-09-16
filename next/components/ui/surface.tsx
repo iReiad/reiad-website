@@ -1,33 +1,33 @@
 /* ============================================================
-   ui/surface.tsx: the material a thing is made of.
+   ui/surface.tsx: what a thing is made of.
 
-   `@layer deck` already answers "does this card take you
-   somewhere", which is a question about MEANING and stays where
-   it is: `<GoCard>` and `<InfoCard>` are two components rather
-   than one with a prop precisely so neither can be the other by
-   accident.
+   `@layer deck` answers "does this card take you somewhere",
+   which is a question about MEANING and stays where it is:
+   `<GoCard>` and `<InfoCard>` are two components rather than one
+   with a prop precisely so neither can be the other by accident.
 
-   This answers a different question: what is it made of. Four
-   materials, and they differ in how much of the page's colour
-   they carry and what texture they have, so two things at the
-   same lightness still read as different objects.
+   This answers a different question, and the answer is plain.
+   Three materials, and they differ only in the ground:
 
-     pane     a card. The panel tint, a lit top edge, a sheen.
-     sunk     a well: a ground something sits IN rather than ON.
-              Woven, and darker than the page.
-     glass    an overlay with content moving under it. The only
-              tier that pays for a backdrop blur, because it is
-              the only one where the blur does anything.
+     pane     a card: the panel colour, a hairline, a corner.
+     sunk     a well: a ground something sits IN rather than ON,
+              darker than the page.
+     glass    an overlay with content moving under it: the same
+              panel, with the one shadow this site has for a
+              thing that floats.
      bare     no material. For a wrapper that only needs the
               accent scoping below.
+
+   No blur, no texture, no lit edge: a surface is a colour and a
+   line, and `scripts/check-plain.ts` fails a blur coming back.
 
    ---- and it can carry an accent of its own ----
 
    `accent` sets `--accent` on the element, so everything inside
-   follows it: the buttons, the fields, the tint, the texture, the
-   focus rings. That is how one card on the skills page can wear
-   the German blue while the card beside it wears the Qur'anic
-   teal, without either naming a colour twice.
+   follows it: the buttons, the fields, the tint, the focus rings.
+   That is how one card on the skills page can wear the German
+   blue while the card beside it wears the Qur'anic teal, without
+   either naming a colour twice.
    ============================================================ */
 
 import type { CSSProperties, ElementType, ReactNode } from "react";
@@ -35,36 +35,10 @@ import type { CSSProperties, ElementType, ReactNode } from "react";
 export type Material = "pane" | "sunk" | "glass" | "bare";
 
 const MATERIALS: Record<Material, string> = {
-  pane: [
-    "bg-panel bg-sheen [--surface-image:var(--sheen)]",
-    "border border-pane-edge rounded-[var(--radius-card)]",
-    "shadow-[inset_0_1px_0_var(--pane-top),var(--shadow)]",
-  ].join(" "),
-
-  sunk: [
-    "bg-paper-sunk bg-weave [--surface-image:var(--weave)]",
-    /* The weave is nine layers at nine tilings whose periods
-       share no factor. Without its size list every one of them
-       stretches to the whole surface, which is one soft blob
-       rather than a sheet of paper. */
-    "[--surface-size:var(--weave-size)] [background-size:var(--weave-size)]",
-    "border border-hairline rounded-[var(--radius-card)]",
-    "shadow-[inset_0_1px_2px_rgb(0_0_0/0.04)]",
-  ].join(" "),
-
-  glass: [
-    "bg-glass bg-sheen [--surface-image:var(--sheen)]",
-    "backdrop-blur-[14px] backdrop-saturate-[1.7]",
-    "border border-glass-edge rounded-[var(--radius-card)]",
-    "shadow-[var(--shadow-lift)]",
-    /* A browser with no backdrop-filter gets the solid surface
-       instead. Without this it gets a 28% transparent pane over
-       moving text, which is the one state glass must never be
-       in. */
-    "supports-[not_(backdrop-filter:blur(1px))]:bg-glass-solid",
-  ].join(" "),
-
-  bare: "[--surface-image:none]",
+  pane: "bg-panel border border-hairline rounded-[var(--radius-card)]",
+  sunk: "bg-paper-sunk border border-hairline rounded-[var(--radius-card)]",
+  glass: "bg-panel border border-hairline rounded-[var(--radius-card)] shadow-[var(--shadow-lift)]",
+  bare: "",
 };
 
 export interface SurfaceProps {
@@ -72,7 +46,8 @@ export interface SurfaceProps {
   material?: Material;
   /** A colour token, `var(--blue)`. Everything inside follows it. */
   accent?: string;
-  /** Lifts on hover, for a surface that is itself the target. */
+  /** Changes its edge on hover, for a surface that is itself the
+      target. Nothing moves. */
   interactive?: boolean;
   className?: string;
   style?: CSSProperties;
@@ -88,22 +63,11 @@ export function Surface({
       className={[
         MATERIALS[material],
         interactive
-          ? "transition-[transform,box-shadow,border-color] duration-[var(--fast)] "
-            + "ease-[var(--ease)] hover:-translate-y-0.5 "
-            + "hover:shadow-[var(--shadow-lift)] hover:border-accent-line"
+          ? "transition-[border-color] duration-[var(--fast)] "
+            + "ease-[var(--ease)] hover:border-accent-line"
           : "",
         className,
       ].filter(Boolean).join(" ")}
-      /* The light, for a surface that answers a pointer at all.
-         An overlay gets the widest and dimmest of the four
-         because it is the thickest thing on the page; a surface
-         that is itself the target gets a card's. A plain pane
-         gets none, for the reason `<InfoCard>` gets none.
-
-         `--surface-image` travels in MATERIALS above rather than
-         here, so each material keeps its own texture under the
-         light instead of every one of them getting a pane's. */
-      data-glow={interactive ? "card" : material === "glass" ? "pane" : undefined}
       /* Cast for the reason `footer.tsx` casts: React's
          CSSProperties cannot express a custom property. */
       style={accent
