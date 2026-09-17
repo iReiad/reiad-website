@@ -4,7 +4,13 @@
    PLAIN DOM ON PURPOSE. The detail sheet, the editable grids and the timer
    all mutate the document, and a React render of the same tree would put
    the server's markup back over every keystroke. `mount.tsx` owns the
-   host element and hands it in; nothing here looks a page up. */
+   host element and hands it in; nothing here looks a page up.
+
+   THE PLAN THE APP DRAWS IS NOT THE PLAN FILE. `plan.json` is the
+   default; the dates, words, days and tasks the owner changed live in
+   the state under `edits`, and `applyEdits` lays one over the other.
+   Nothing here writes `plan.json`, which ships to every reader of the
+   repository and belongs to no account. */
 
 
 /* ---------- the plan ---------- */
@@ -88,6 +94,73 @@ export interface Plan {
 /** A task with the day it belongs to folded in. */
 export type PlannedTask = Task & { day: number; date: string; goal: string };
 
+/* ---------- the plan as the owner has changed it ---------- */
+
+/** What the owner moved or rewrote about one day. `plan.json` is the
+    default and is never written: every change below rides in the state,
+    so a day moved on the phone is moved on the laptop too. */
+export interface DayEdit { date?: string; theme?: string; goal?: string }
+
+/** The same for one task. `steps` replaces the list outright. */
+export interface TaskEdit {
+  title?: string;
+  minutes?: number;
+  kind?: TaskKind;
+  why?: string;
+  steps?: string[];
+}
+
+export interface PlanEdits {
+  /** Day number to what was changed about it. */
+  days: Record<string, DayEdit>;
+  /** Task id to what was changed about it. */
+  tasks: Record<string, TaskEdit>;
+  /** Days the owner added. `tasks` on one of these stays empty: an
+      added day's tasks live in `extraTasks` under its number, exactly
+      like any other day's. */
+  extraDays: Day[];
+  /** Day number to the tasks added to it. */
+  extraTasks: Record<string, Task[]>;
+  /** Task ids the owner dropped. Hidden rather than deleted, because a
+      task that came from the file has to be one press from coming back. */
+  hidden: string[];
+}
+
+export const noEdits = (): PlanEdits =>
+  ({ days: {}, tasks: {}, extraDays: [], extraTasks: {}, hidden: [] });
+
+/** The plan the app draws: the file with the owner's edits laid over
+    it, in date order. Pure, and it copies rather than writes: the
+    imported JSON is ONE object shared by every mount in the tab. */
+export function applyEdits(plan: Plan, edits?: PlanEdits | null): Plan {
+  if (!edits) return plan;
+  const hidden = new Set(edits.hidden ?? []);
+  const days: Day[] = [...plan.days, ...(edits.extraDays ?? [])].map((d) => {
+    const e = edits.days?.[d.n] ?? {};
+    const tasks = [...d.tasks, ...(edits.extraTasks?.[d.n] ?? [])]
+      .filter((t) => !hidden.has(t.id))
+      .map((t) => {
+        const p = edits.tasks?.[t.id];
+        return p ? {
+          ...t,
+          title: p.title ?? t.title,
+          minutes: p.minutes ?? t.minutes,
+          kind: p.kind ?? t.kind,
+          why: p.why ?? t.why,
+          steps: p.steps ?? t.steps,
+        } : { ...t };
+      });
+    /* An empty string is a field the owner cleared, not a field they
+       set to nothing: a day with no date could not be drawn at all. */
+    return { ...d, date: e.date || d.date, theme: e.theme || d.theme, goal: e.goal || d.goal, tasks };
+  });
+  /* Date order, because a day moved to the front is a day that comes
+     first. The NUMBER stays what it was: both rituals are ticked under
+     `r-open-<n>`, so renumbering would lose those ticks. */
+  days.sort((a, b) => (a.date === b.date ? a.n - b.n : a.date.localeCompare(b.date)));
+  return { ...plan, days };
+}
+
 /* ---------- the state ---------- */
 
 export type Cell = string | number | boolean | undefined;
@@ -144,6 +217,11 @@ export interface WorkAlphaState {
   review: { first: string; objections: string[]; second: string };
   monthReview: { hours: string; goals: string; lessons: string; m2goal: string; m2days: string };
   settings: { repo: string; name: string };
+  /** The owner's changes to the plan itself. `applyEdits` lays them
+      over `plan.json`, which no save ever touches. */
+  edits: PlanEdits;
+  /** A free note, filed under `task:<id>` or `day:<n>`. */
+  notes: Record<string, string>;
   /** Stamped by the storage on every save, so two copies of the
       state can say which is newer. */
   updated_at?: string;
@@ -199,6 +277,8 @@ export function freshState(plan: Plan): WorkAlphaState {
     review: { first: "", objections: ["", "", ""], second: "" },
     monthReview: { hours: "", goals: "", lessons: "", m2goal: "", m2days: "" },
     settings: { repo: "", name: "" },
+    edits: noEdits(),
+    notes: {},
   };
 }
 
@@ -218,6 +298,10 @@ export function merge(base: WorkAlphaState, saved: unknown): WorkAlphaState {
     review: { ...base.review, ...s.review },
     monthReview: { ...base.monthReview, ...s.monthReview },
     settings: { ...base.settings, ...s.settings },
+    /* A level down here too, so a state saved before the plan could be
+       edited still arrives with all five fields of `PlanEdits`. */
+    edits: { ...base.edits, ...s.edits },
+    notes: { ...base.notes, ...s.notes },
   };
 }
 
@@ -293,13 +377,30 @@ interface GridOpts<R extends GridRow> {
 
 /* ---------- mount ---------- */
 
-export function mount(root: HTMLElement, plan: Plan, storage: Storage): Promise<Mounted> {
-  let state = freshState(plan);
+export function mount(root: HTMLElement, basePlan: Plan, storage: Storage): Promise<Mounted> {
+  let state = freshState(basePlan);
   let page: PageId = "dashboard";
+  /* Not saved, and deliberately: the plan page opens read-only every
+     time, so a stray press on a phone cannot rewrite last week. */
+  let editing = false;
   let saveTimer: ReturnType<typeof setTimeout> | undefined;
   const planned = (d: Day, t: Task): PlannedTask => ({ ...t, day: d.n, date: d.date, goal: d.goal });
-  const allTasks: PlannedTask[] = plan.days.flatMap((d) => d.tasks.map((t) => planned(d, t)));
-  const goalById: Record<string, Goal> = Object.fromEntries(plan.goals.map((g) => [g.id, g]));
+
+  /* THE FOUR BELOW ARE DERIVED, from the file and the owner's edits,
+     and `rebuild()` is the only place any of them is assigned. An edit
+     that lands without it draws yesterday's dates. */
+  let plan: Plan = basePlan;
+  let allTasks: PlannedTask[] = [];
+  let goalById: Record<string, Goal> = {};
+  let plannedTotal = 0;
+  function rebuild(): void {
+    plan = applyEdits(basePlan, state.edits);
+    allTasks = plan.days.flatMap((d) => d.tasks.map((t) => planned(d, t)));
+    goalById = Object.fromEntries(plan.goals.map((g) => [g.id, g]));
+    plannedTotal = allTasks.reduce((s, t) => s + t.minutes, 0)
+      + plan.days.length * (plan.rituals.open.minutes + plan.rituals.close.minutes);
+  }
+  rebuild();
 
   root.classList.add("wa");
   root.innerHTML = "";
@@ -320,6 +421,9 @@ export function mount(root: HTMLElement, plan: Plan, storage: Storage): Promise<
     saveTimer = setTimeout(() => { storage.save(state).catch(() => {}); }, 250);
   }
   function set(fn: (s: WorkAlphaState) => void): void { fn(state); save(); render(); }
+  /* A change to the plan itself: everything derived has to be built
+     again BEFORE anything draws. */
+  function setPlan(fn: (e: PlanEdits) => void): void { fn(state.edits); rebuild(); save(); render(); }
 
   /* ---------- derived ---------- */
 
@@ -327,11 +431,18 @@ export function mount(root: HTMLElement, plan: Plan, storage: Storage): Promise<
   const primary = (): TrackId => (state.track === "both" ? "A" : state.track);
   const taskMinutes = (t: Task): number => state.spent[t.id] || 0;
   const isDone = (t: Task): boolean => Boolean(state.done[t.id]);
-  const plannedTotal = allTasks.reduce((s, t) => s + t.minutes, 0)
-    + plan.days.length * (plan.rituals.open.minutes + plan.rituals.close.minutes);
   const doneMinutes = (): number => allTasks.filter(isDone).reduce((s, t) => s + t.minutes, 0);
   const loggedMinutes = (): number => Object.values(state.spent).reduce((a, b) => a + b, 0);
-  const dayProgress = (d: Day): number => d.tasks.filter(isDone).length / d.tasks.length;
+  /* A day can have no tasks now: an added one starts empty, and a day
+     whose tasks were all dropped is the same shape. */
+  const dayProgress = (d: Day): number =>
+    (d.tasks.length ? d.tasks.filter(isDone).length / d.tasks.length : 0);
+  /** A goal by id, and the first goal for an id that is not one: a day
+      carries the id as a string and the state is the owner's to edit. */
+  const goalOf = (id: string): Goal => goalById[id] ?? plan.goals[0];
+  /** Where a goal's checkpoint day sits now, which is not `g.day - 1`
+      once a day has moved or one has been added before it. */
+  const dayOf = (n: number): Day | undefined => plan.days.find((d) => d.n === n);
   const goalProgress = (g: Goal): number => {
     const ts = allTasks.filter((t) => t.goal === g.id);
     return ts.length ? ts.filter(isDone).length / ts.length : 0;
@@ -399,7 +510,7 @@ export function mount(root: HTMLElement, plan: Plan, storage: Storage): Promise<
   /* ---------- head, track, tabs ---------- */
 
   function renderHead(): void {
-    const pct = Math.round((doneMinutes() / plannedTotal) * 100);
+    const pct = Math.round((doneMinutes() / Math.max(1, plannedTotal)) * 100);
     const day = currentDay();
     const dl = nextDeadline();
     const daysTo = dl ? Math.ceil((dateOf(dl.date).getTime() - dateOf(todayIso()).getTime()) / DAY_MS) : null;
@@ -457,7 +568,8 @@ export function mount(root: HTMLElement, plan: Plan, storage: Storage): Promise<
         plan.goals.map((g) => {
           const met = Boolean(state.goalsMet[g.id]);
           const p = goalProgress(g);
-          const left = ((g.day - 0.5) / total) * 100;
+          const at = plan.days.findIndex((d) => d.n === g.day);
+          const left = (((at < 0 ? g.day - 1 : at) + 0.5) / total) * 100;
           return h("button", {
             class: "wa-flag" + (met ? " is-met" : p > 0 ? " is-live" : ""),
             style: "left:" + left + "%;--c:" + g.color,
@@ -524,7 +636,7 @@ export function mount(root: HTMLElement, plan: Plan, storage: Storage): Promise<
       h("section", { class: "wa-card wa-span2" },
         h("h2", null, "Today: " + fmtLong(day.date)),
         h("p", { class: "wa-muted" }, "Day " + day.n + ", " + day.theme + ". Goal " + day.goal + ": "
-          + goalById[day.goal].name + ". Planned " + mins(dayMinutes) + "."),
+          + goalOf(day.goal).name + ". Planned " + mins(dayMinutes) + "."),
         ritualRow(plan.rituals.open, day, "open"),
         day.tasks.map((t) => taskRow(planned(day, t))),
         ritualRow(plan.rituals.close, day, "close")),
@@ -562,10 +674,14 @@ export function mount(root: HTMLElement, plan: Plan, storage: Storage): Promise<
   }
 
   function heatmap(m: Record<string, number>): HTMLDivElement {
-    const start = dateOf(plan.start);
+    /* The EARLIEST PLANNED DAY, not `plan.start`: the owner can move
+       the whole month, and a window anchored to the file would then be
+       six weeks of empty squares. The days arrive in date order. */
+    const start = dateOf(plan.days[0]?.date ?? plan.start);
     /* The Saturday before the start, because the work days are the weekend. */
     const first = new Date(start.getTime() - ((start.getDay() + 1) % 7) * DAY_MS);
-    const weeks = 6;
+    const last = dateOf(plan.days[plan.days.length - 1]?.date ?? plan.start);
+    const weeks = clamp(Math.ceil((last.getTime() - first.getTime()) / (7 * DAY_MS)) + 1, 6, 26);
     const plannedDays = new Set(plan.days.map((d) => d.date));
     const max = Math.max(60, ...Object.values(m));
     const grid = h("div", { class: "wa-heat" });
@@ -634,7 +750,7 @@ export function mount(root: HTMLElement, plan: Plan, storage: Storage): Promise<
     const ts = allTasks.filter((t) => t.goal === gid);
     if (ts.every(isDone) && !state.goalsMet[gid]) {
       state.goalsMet[gid] = new Date().toISOString();
-      goalMet(goalById[gid].color);
+      goalMet(goalOf(gid).color);
     }
   }
   function goalMet(color: string): void {
@@ -687,7 +803,7 @@ export function mount(root: HTMLElement, plan: Plan, storage: Storage): Promise<
           h("span", { class: "wa-kind", style: "--k:var(--k-" + t.kind + ")" }, KINDS[t.kind]),
           h("span", null, mins(t.minutes)),
           h("span", null, "Day " + t.day + ", " + fmt(t.date)),
-          h("span", { style: "color:" + goalById[t.goal].color }, t.goal + " " + goalById[t.goal].name)),
+          h("span", { style: "color:" + goalOf(t.goal).color }, t.goal + " " + goalOf(t.goal).name)),
         h("h3", null, "Why this task exists"), h("p", null, t.why),
         h("h3", null, "Do exactly this"), h("ol", { class: "wa-steps" }, t.steps.map((s) => h("li", null, s))),
         h("h3", null, "The AI prompt"),
@@ -695,13 +811,16 @@ export function mount(root: HTMLElement, plan: Plan, storage: Storage): Promise<
           ? h("div", { class: "wa-promptbox" },
             h("pre", null, promptText),
             h("button", { class: "wa-btn", onclick: (e: Event) => copy(promptText, e.currentTarget as HTMLElement) }, "Copy prompt"))
-          : h("p", { class: "wa-muted" }, t.prompt),
+          : h("p", { class: "wa-muted" }, t.prompt || "No prompt: this one is yours."),
         h("h3", null, "What you hand in"), h("p", null, t.output),
-        h("h3", null, "Done means"), h("p", { class: "wa-done-test" }, t.done),
+        h("h3", null, "Done means"), h("p", { class: "wa-done-test" }, t.done || "Yours to say."),
         activeTracks().map(trackNote),
+        h("h3", null, "My notes"),
+        note("task:" + t.id, 4, "What you found, where you stopped, what to do differently."),
         h("div", { class: "wa-row" },
           h("button", { class: "wa-btn wa-btn-p", onclick: () => { toggle(t.id, t.minutes, t); closeModal(); } },
             isDone(t) ? "Un-tick" : "Mark done"),
+          h("button", { class: "wa-btn", onclick: () => { closeModal(); openTaskEditor(t); } }, "Rewrite this task"),
           h("button", {
             class: "wa-btn",
             onclick: () => { if (timing()) stopTimer(); else startTimer(t); render(); closeModal(); },
@@ -723,28 +842,280 @@ export function mount(root: HTMLElement, plan: Plan, storage: Storage): Promise<
     else done();
   }
 
-  /* ---------- plan ---------- */
+  /* ---------- notes ---------- */
+
+  /** A note box that saves on blur and draws nothing again: a render
+      here would collapse every day the owner had opened, and nothing
+      on the page reads the note back. */
+  function note(key: string, rows: number, placeholder: string): HTMLTextAreaElement {
+    return h("textarea", {
+      class: "wa-ta", rows, placeholder, "data-note": key,
+      onchange: (e: Event) => { state.notes[key] = field(e).value; save(); },
+    }, state.notes[key] || "");
+  }
+
+  /* ---------- plan, and changing it ---------- */
+
+  const isAdded = (n: number): boolean => state.edits.extraDays.some((d) => d.n === n);
+  /* The three below make the entry if it is not there yet, so nothing
+     else has to remember whether this day has been touched before. */
+  function dayEdit(n: number): DayEdit {
+    const held = state.edits.days[n];
+    if (held) return held;
+    return (state.edits.days[n] = {});
+  }
+  function taskEdit(id: string): TaskEdit {
+    const held = state.edits.tasks[id];
+    if (held) return held;
+    return (state.edits.tasks[id] = {});
+  }
+  function addedTasks(n: number): Task[] {
+    const held = state.edits.extraTasks[n];
+    if (held) return held;
+    return (state.edits.extraTasks[n] = []);
+  }
+  const editCount = (): number => {
+    const e = state.edits;
+    return Object.keys(e.days).length + Object.keys(e.tasks).length + e.extraDays.length
+      + Object.values(e.extraTasks).reduce((n, ts) => n + ts.length, 0) + e.hidden.length;
+  };
+
+  /** The five lines of a day's log are filed under its DATE, so a day
+      that moves takes them with it rather than leaving them on a date
+      nothing points at any more. A date already spoken for keeps what
+      it has: two days on one date is the owner's business, losing a
+      log to it is not. */
+  function moveLogs(moves: Array<[from: string, to: string]>): void {
+    const logs: WorkAlphaState["logs"] = { ...state.logs };
+    for (const [from] of moves) delete logs[from];
+    for (const [from, to] of moves) {
+      const held = state.logs[from];
+      if (held && !logs[to]) logs[to] = held;
+    }
+    state.logs = logs;
+  }
+
+  function moveDay(d: Day, date: string): void {
+    if (!date || date === d.date) return;
+    setPlan(() => {
+      dayEdit(d.n).date = date;
+      moveLogs([[d.date, date]]);
+    });
+  }
+
+  function shiftAll(days: number): void {
+    if (!days) return;
+    setPlan(() => {
+      const moves: Array<[string, string]> = [];
+      for (const d of plan.days) {
+        const to = iso(new Date(dateOf(d.date).getTime() + days * DAY_MS));
+        dayEdit(d.n).date = to;
+        moves.push([d.date, to]);
+      }
+      moveLogs(moves);
+    });
+  }
+
+  function addDay(): void {
+    const last = plan.days[plan.days.length - 1];
+    /* Over the file AND the added days, so a number is never reused:
+       it is what both rituals are ticked under. */
+    const n = Math.max(0, ...basePlan.days.map((d) => d.n), ...state.edits.extraDays.map((d) => d.n)) + 1;
+    setPlan((e) => {
+      e.extraDays.push({
+        n, date: iso(new Date(dateOf(last.date).getTime() + DAY_MS)),
+        theme: "A day of my own", goal: last.goal, tasks: [],
+      });
+    });
+  }
+
+  function deleteDay(d: Day): void {
+    if (!isAdded(d.n) || !confirm("Delete this day and the tasks on it?")) return;
+    setPlan((e) => {
+      e.extraDays = e.extraDays.filter((x) => x.n !== d.n);
+      delete e.extraTasks[d.n];
+      delete e.days[d.n];
+    });
+  }
+
+  function addTask(d: Day): void {
+    const id = "x" + Date.now().toString(36);
+    setPlan(() => {
+      addedTasks(d.n).push({
+        id, minutes: 30, kind: "write", title: "A task of my own",
+        why: "", steps: [], prompt: "", output: "", done: "",
+      });
+    });
+  }
+
+  function dropTask(t: Task, d: Day): void {
+    /* Before it goes: a timer left running on a task that is no longer
+       in the plan has nothing to count down to, and nothing to stop it. */
+    if (state.timer?.taskId === t.id) stopTimer();
+    setPlan((e) => {
+      const added = e.extraTasks[d.n] ?? [];
+      if (added.some((x) => x.id === t.id)) {
+        e.extraTasks[d.n] = added.filter((x) => x.id !== t.id);
+        delete e.tasks[t.id];
+        return;
+      }
+      if (!e.hidden.includes(t.id)) e.hidden.push(t.id);
+    });
+  }
+
+  function undoEdits(): void {
+    if (!confirm("Put the plan back to the file? Your ticks, notes and rows all stay.")) return;
+    setPlan(() => { state.edits = noEdits(); });
+  }
 
   function planPage(): HTMLElement {
     return h("div", { class: "wa-plan" },
-      h("p", { class: "wa-muted" }, plan.workDays.join(" and ") + ", " + plan.hoursPerWeek
-        + " hours a week. Click a day to expand it; click a task for the full guide."),
-      plan.days.map((d) => {
-        const p = dayProgress(d);
-        const g = goalById[d.goal];
-        return h("details", { class: "wa-day", open: d.date === currentDay().date, style: "--c:" + g.color },
-          h("summary", null,
-            h("span", { class: "wa-day-n" }, d.n),
-            h("span", { class: "wa-day-t" }, h("b", null, d.theme),
-              h("small", null, fmtLong(d.date) + " · " + g.id + " " + g.name)),
-            h("span", { class: "wa-day-p" }, ring(Math.round(p * 100), 44, g.color, ""))),
-          h("div", { class: "wa-day-body" },
-            ritualRow(plan.rituals.open, d, "open"),
-            d.tasks.map((t) => taskRow(planned(d, t))),
-            ritualRow(plan.rituals.close, d, "close"),
-            h("div", { class: "wa-timeline" }, d.tasks.map((t) =>
-              h("i", { style: "flex:" + t.minutes + ";background:var(--k-" + t.kind + ")", title: t.title + " " + mins(t.minutes) })))));
-      }));
+      h("div", { class: "wa-row" },
+        h("button", {
+          class: "wa-btn" + (editing ? " wa-btn-p" : ""), "data-edit-plan": true,
+          onclick: () => { editing = !editing; renderMain(); },
+        }, editing ? "Done changing it" : "Change the plan"),
+        h("span", { class: "wa-muted" }, plan.workDays.join(" and ") + ", " + plan.hoursPerWeek
+          + " hours a week. " + (editing
+            ? "Move a day, rewrite a task, add what is missing. The plan file is never written: what you change here is yours and travels with your account."
+            : "Click a day to expand it; click a task for the full guide."))),
+      editing ? editBar() : null,
+      plan.days.map(dayBlock),
+      editing ? droppedCard() : null);
+  }
+
+  function editBar(): HTMLElement {
+    let by = 7;
+    const n = editCount();
+    return h("section", { class: "wa-card wa-editbar" },
+      h("h2", null, "The whole plan"),
+      h("div", { class: "wa-row" },
+        h("label", { class: "wa-inline" }, "Move every day by",
+          h("input", {
+            type: "number", value: by, step: 1, "data-shift-by": true,
+            onchange: (e: Event) => { by = parseInt(field(e).value, 10) || 0; },
+          }), "days"),
+        h("button", { class: "wa-btn", "data-shift-later": true, onclick: () => shiftAll(by) }, "Later"),
+        h("button", { class: "wa-btn", onclick: () => shiftAll(-by) }, "Earlier"),
+        h("button", { class: "wa-btn", "data-add-day": true, onclick: addDay }, "Add a day"),
+        n ? h("button", { class: "wa-btn wa-btn-danger", onclick: undoEdits }, "Undo my " + n + " change" + (n === 1 ? "" : "s")) : null));
+  }
+
+  function dayBlock(d: Day): HTMLElement {
+    const p = dayProgress(d);
+    const g = goalOf(d.goal);
+    return h("details", {
+      class: "wa-day", open: editing || d.date === currentDay().date, style: "--c:" + g.color,
+    },
+    h("summary", null,
+      h("span", { class: "wa-day-n" }, d.n),
+      h("span", { class: "wa-day-t" }, h("b", null, d.theme),
+        h("small", null, fmtLong(d.date) + " · " + g.id + " " + g.name)),
+      h("span", { class: "wa-day-p" }, ring(Math.round(p * 100), 44, g.color, ""))),
+    h("div", { class: "wa-day-body" },
+      editing ? dayEditor(d) : null,
+      ritualRow(plan.rituals.open, d, "open"),
+      d.tasks.map((t) => (editing ? taskEditor(planned(d, t), d) : taskRow(planned(d, t)))),
+      editing ? h("button", { class: "wa-btn", "data-add-task": d.n, onclick: () => addTask(d) }, "Add a task") : null,
+      ritualRow(plan.rituals.close, d, "close"),
+      h("label", { class: "wa-note" }, "My notes on this day",
+        note("day:" + d.n, 3, "What actually happened, what to move, what to ask.")),
+      h("div", { class: "wa-timeline" }, d.tasks.map((t) =>
+        h("i", { style: "flex:" + t.minutes + ";background:var(--k-" + t.kind + ")", title: t.title + " " + mins(t.minutes) })))));
+  }
+
+  function dayEditor(d: Day): HTMLElement {
+    const put = (fn: (e: DayEdit) => void): void => setPlan(() => fn(dayEdit(d.n)));
+    return h("div", { class: "wa-edit" },
+      h("label", null, "Date",
+        h("input", {
+          type: "date", class: "wa-input", value: d.date, "data-day-date": d.n,
+          onchange: (e: Event) => moveDay(d, field(e).value),
+        })),
+      h("label", null, "Theme",
+        h("input", {
+          class: "wa-input", value: d.theme, "data-day-theme": d.n,
+          onchange: (e: Event) => put((x) => { x.theme = field(e).value; }),
+        })),
+      h("label", null, "Goal",
+        h("select", { class: "wa-input", onchange: (e: Event) => put((x) => { x.goal = field(e).value; }) },
+          plan.goals.map((g) => h("option", { value: g.id, selected: g.id === d.goal }, g.id + " " + g.name)))),
+      h("div", { class: "wa-row" },
+        isAdded(d.n)
+          ? h("button", { class: "wa-btn wa-btn-danger", onclick: () => deleteDay(d) }, "Delete this day")
+          : h("span", { class: "wa-muted" }, "Day " + d.n + " of the plan. Ticks stay with the day, wherever you move it.")));
+  }
+
+  function taskEditor(t: PlannedTask, d: Day): HTMLElement {
+    const put = (fn: (e: TaskEdit) => void): void => setPlan(() => fn(taskEdit(t.id)));
+    return h("div", { class: "wa-task wa-task-edit", style: "--k:var(--k-" + t.kind + ")" },
+      h("input", {
+        class: "wa-input", value: t.title, "data-task-title": t.id,
+        onchange: (e: Event) => put((x) => { x.title = field(e).value; }),
+      }),
+      h("select", {
+        class: "wa-input",
+        onchange: (e: Event) => put((x) => { x.kind = field(e).value as TaskKind; }),
+      }, (Object.keys(KINDS) as TaskKind[]).map((k) => h("option", { value: k, selected: k === t.kind }, KINDS[k]))),
+      h("input", {
+        class: "wa-input", type: "number", min: 0, step: 5, value: t.minutes, "data-task-minutes": t.id,
+        onchange: (e: Event) => put((x) => { x.minutes = Math.max(0, parseInt(field(e).value, 10) || 0); }),
+      }),
+      h("button", { class: "wa-mini", onclick: () => openTaskEditor(t) }, "Words"),
+      h("button", { class: "wa-mini", "data-drop-task": t.id, onclick: () => dropTask(t, d) }, "Drop"));
+  }
+
+  /** The words of a task: the paragraph under "Why this task exists"
+      and the numbered list under "Do exactly this", which are what the
+      sheet reads back. */
+  function openTaskEditor(t: PlannedTask): void {
+    const why = h("textarea", { class: "wa-ta", rows: 3 }, t.why);
+    const steps = h("textarea", { class: "wa-ta", rows: 10 }, t.steps.join("\n"));
+    openModal("Rewrite: " + t.title, h("div", null,
+      h("h3", null, "Why this task exists"), why,
+      h("h3", null, "Do exactly this, one step to a line"), steps,
+      h("div", { class: "wa-row" },
+        h("button", {
+          class: "wa-btn wa-btn-p",
+          onclick: () => {
+            setPlan(() => {
+              const p = taskEdit(t.id);
+              p.why = why.value.trim();
+              p.steps = steps.value.split("\n").map((line) => line.trim()).filter(Boolean);
+            });
+            closeModal();
+          },
+        }, "Save"),
+        h("button", {
+          class: "wa-btn",
+          onclick: () => {
+            /* The WORDS only: the title, the kind and the minutes are
+               changed in the row behind this sheet, and a press here
+               must not undo those too. */
+            setPlan(() => {
+              const p = taskEdit(t.id);
+              delete p.why;
+              delete p.steps;
+              if (!Object.keys(p).length) delete state.edits.tasks[t.id];
+            });
+            closeModal();
+          },
+        }, "Back to the plan's words"))));
+  }
+
+  function droppedCard(): HTMLElement | null {
+    const dropped = state.edits.hidden;
+    if (!dropped.length) return null;
+    const fromFile = new Map(basePlan.days.flatMap((d) => d.tasks.map((t) => [t.id, "Day " + d.n + ": " + t.title] as const)));
+    return h("section", { class: "wa-card" },
+      h("h2", null, "Dropped tasks"),
+      h("p", { class: "wa-muted" }, "Out of the plan and out of every total. One press puts one back where it was."),
+      dropped.map((id) => h("div", { class: "wa-row" },
+        h("span", null, fromFile.get(id) ?? id),
+        h("button", {
+          class: "wa-mini", "data-restore-task": id,
+          onclick: () => setPlan((e) => { e.hidden = e.hidden.filter((x) => x !== id); }),
+        }, "Put it back"))));
   }
 
   /* ---------- goals ---------- */
@@ -758,7 +1129,8 @@ export function mount(root: HTMLElement, plan: Plan, storage: Storage): Promise<
           h("div", { class: "wa-goal-head" },
             ring(Math.round(goalProgress(g) * 100), 64, g.color, ""),
             h("div", null, h("h2", null, g.id + ". " + g.name),
-              h("small", { class: "wa-muted" }, "Checkpoint at the end of Day " + g.day + ", " + fmt(plan.days[g.day - 1].date)))),
+              h("small", { class: "wa-muted" }, "Checkpoint at the end of Day " + g.day
+                + (dayOf(g.day) ? ", " + fmt((dayOf(g.day) as Day).date) : "")))),
           h("p", null, h("b", null, "The test: "), g.test),
           h("ul", { class: "wa-list" }, ts.map((t) =>
             h("li", { class: isDone(t) ? "is-done" : "" },
@@ -983,11 +1355,11 @@ export function mount(root: HTMLElement, plan: Plan, storage: Storage): Promise<
         const filled = fields.filter(([k]) => L[k]).length;
         const write = (k: LogField) => (e: Event): void =>
           set((s) => { s.logs[d.date] = { ...s.logs[d.date], [k]: field(e).value }; });
-        return h("details", { class: "wa-day", open: d.date === currentDay().date, style: "--c:" + goalById[d.goal].color },
+        return h("details", { class: "wa-day", open: d.date === currentDay().date, style: "--c:" + goalOf(d.goal).color },
           h("summary", null,
             h("span", { class: "wa-day-n" }, d.n),
             h("span", { class: "wa-day-t" }, h("b", null, fmtLong(d.date)), h("small", null, filled + " / 5 lines")),
-            h("span", { class: "wa-day-p" }, ring(Math.round(filled / 5 * 100), 44, goalById[d.goal].color, ""))),
+            h("span", { class: "wa-day-p" }, ring(Math.round(filled / 5 * 100), 44, goalOf(d.goal).color, ""))),
           h("div", { class: "wa-day-body wa-logform" }, fields.map(([k, lbl]) =>
             h("label", null, lbl, k === "time"
               ? h("input", { type: "number", min: 0, value: L[k] || "", onchange: write(k) })
@@ -1078,13 +1450,21 @@ export function mount(root: HTMLElement, plan: Plan, storage: Storage): Promise<
         h("p", { class: "wa-muted" }, "Reset wipes every tick, note and row. Export first."),
         h("button", {
           class: "wa-btn wa-btn-danger",
-          onclick: () => { if (confirm("Reset everything? Export first.")) { state = freshState(plan); save(); render(); } },
+          onclick: () => {
+            if (confirm("Reset everything? Export first.")) { state = freshState(basePlan); rebuild(); save(); render(); }
+          },
         }, "Reset month")),
       h("section", { class: "wa-card" },
         h("h2", null, "The plan in numbers"),
+        h("p", { class: "wa-muted" }, "The plan as you have it: the file, with your changes over it."),
         stat("Days", plan.days.length), stat("Tasks", allTasks.length),
         stat("Planned hours", Math.round(plannedTotal / 60)),
-        stat("Goals", plan.goals.length), stat("Prompts", plan.prompts.length)));
+        stat("Goals", plan.goals.length), stat("Prompts", plan.prompts.length),
+        stat("My changes to the plan", editCount()),
+        stat("Notes written", Object.values(state.notes).filter(Boolean).length),
+        editCount()
+          ? h("button", { class: "wa-btn", onclick: undoEdits }, "Undo my changes to the plan")
+          : null));
   }
 
   function exportJson(): void {
@@ -1098,7 +1478,7 @@ export function mount(root: HTMLElement, plan: Plan, storage: Storage): Promise<
     const f = box(e).files?.[0];
     if (!f) return;
     f.text()
-      .then((txt) => { state = merge(freshState(plan), JSON.parse(txt)); save(); render(); })
+      .then((txt) => { state = merge(freshState(basePlan), JSON.parse(txt)); rebuild(); save(); render(); })
       .catch(() => alert("That file is not a Work-Alpha export."));
   }
 
@@ -1112,6 +1492,7 @@ export function mount(root: HTMLElement, plan: Plan, storage: Storage): Promise<
 
   return storage.load().then((saved) => {
     state = merge(state, saved);
+    rebuild();
     if (state.timer) runTimer();
     render();
     return { getState: () => state, setPage: (p: PageId) => { page = p; render(); } };

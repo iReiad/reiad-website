@@ -29,7 +29,7 @@ import { dirname, extname, join } from "node:path";
 import { fileURLToPath } from "node:url";
 import { load, open, skip } from "./hydrate-fixture.ts";
 import type { BrowserContext, ConsoleMessage, Page, Route } from "playwright";
-import type { Mounted, Plan, Storage, WorkAlphaState } from "./components/work-alpha/engine.ts";
+import type { Day, Mounted, Plan, PlanEdits, Storage, Task, WorkAlphaState } from "./components/work-alpha/engine.ts";
 
 const ROOT = join(dirname(fileURLToPath(import.meta.url)), "..");
 const PORT = 8794;
@@ -73,9 +73,10 @@ const TABS = ["dashboard", "plan", "goals", "library", "gap", "data", "people",
   interface Engine {
     mount: (root: HTMLElement, plan: Plan, storage: Storage) => Promise<Mounted>;
     freshState: (plan: Plan) => WorkAlphaState;
+    applyEdits: (plan: Plan, edits?: PlanEdits | null) => Plan;
   }
-  const { mount, freshState } = await load<Engine>(
-    "export { mount, freshState } from './components/work-alpha/engine';");
+  const { mount, freshState, applyEdits } = await load<Engine>(
+    "export { mount, freshState, applyEdits } from './components/work-alpha/engine';");
 
   /** One account, in memory, with what was saved kept as sent. */
   const memory = (): Storage & { saved: WorkAlphaState[] } => {
@@ -89,6 +90,13 @@ const TABS = ["dashboard", "plan", "goals", "library", "gap", "data", "people",
   const press = (el: Element | null): void => {
     if (!el) throw new Error("nothing to press");
     el.dispatchEvent(new window.Event("click", { bubbles: true }));
+  };
+  /** A field filled and left, which is what every editor here listens
+      for: the engine saves on `change`, never on a keystroke. */
+  const fill = (el: Element | null, value: string): void => {
+    if (!el) throw new Error("nothing to fill");
+    (el as HTMLInputElement).value = value;
+    el.dispatchEvent(new window.Event("change", { bubbles: true }));
   };
   const settle = (): Promise<void> => new Promise((r) => setTimeout(r, 320));
 
@@ -135,6 +143,103 @@ const TABS = ["dashboard", "plan", "goals", "library", "gap", "data", "people",
   const back = await mount(again, PLAN, store);
   ok("a second mount against the same account has the tick", Boolean(back.getState().done[first]));
   is("and draws it", again.querySelectorAll(".wa-main .wa-task.is-done").length, 1);
+
+  /* ---------- the plan is the owner's to change ---------- */
+
+  console.log("\nchanging the plan");
+
+  const empty = (): PlanEdits => freshState(PLAN).edits;
+  const taskIn = (p: Plan, id: string): Task | undefined =>
+    p.days.flatMap((d) => d.tasks).find((t) => t.id === id);
+
+  const second = PLAN.days[1];
+  const moved = applyEdits(PLAN, { ...empty(), days: { [second.n]: { date: "2026-08-01" } } });
+  is("a day moved to before the rest comes first", moved.days[0].n, second.n);
+  is("with the date it was moved to", moved.days[0].date, "2026-08-01");
+  is("and its number, which its ticks are filed under", moved.days[0].tasks.length, second.tasks.length);
+  is("while the plan file it came from is untouched", PLAN.days[1].date, second.date);
+
+  const one = PLAN.days[0].tasks[0];
+  const rewritten = applyEdits(PLAN, {
+    ...empty(), tasks: { [one.id]: { title: "My own title", minutes: 5 } },
+  });
+  is("a rewritten task takes the new title", taskIn(rewritten, one.id)?.title, "My own title");
+  is("and the new minutes", taskIn(rewritten, one.id)?.minutes, 5);
+  is("and keeps every word that was not rewritten", taskIn(rewritten, one.id)?.steps, one.steps);
+  is("the file still has its own", taskIn(PLAN, one.id)?.title, one.title);
+
+  ok("a dropped task is out of the plan",
+    !taskIn(applyEdits(PLAN, { ...empty(), hidden: [one.id] }), one.id));
+
+  const mine: Task = {
+    id: "x-own", minutes: 45, kind: "write", title: "A day of mine",
+    why: "", steps: [], prompt: "", output: "", done: "",
+  };
+  const extraDay: Day = { n: 99, date: "2026-12-31", theme: "Mine", goal: PLAN.goals[0].id, tasks: [] };
+  const wider = applyEdits(PLAN, { ...empty(), extraDays: [extraDay], extraTasks: { 99: [mine] } });
+  is("an added day is in the plan", wider.days.length, PLAN.days.length + 1);
+  is("at the end, where its date puts it", wider.days[wider.days.length - 1].n, 99);
+  is("with the task added to it", taskIn(wider, mine.id)?.title, mine.title);
+
+  /* The page, where all of that is pressed rather than passed. */
+  const deck = document.createElement("div") as unknown as HTMLElement;
+  const store2 = memory();
+  const editor = await mount(deck, PLAN, store2);
+  const day1 = PLAN.days[0];
+  /* A log on day 1, written the way the log page writes it, to see
+     whether it travels with the day. `getState()` is the live state. */
+  editor.getState().logs[day1.date] = { did: "read two papers" };
+
+  editor.setPage("plan");
+  is("the plan page opens read-only", deck.querySelectorAll(".wa-edit").length, 0);
+  press(deck.querySelector("[data-edit-plan]"));
+  is("pressing Change the plan puts a field block on every day",
+    deck.querySelectorAll(".wa-edit").length, PLAN.days.length);
+
+  fill(deck.querySelector(`[data-day-date="${day1.n}"]`), "2026-11-14");
+  is("moving a day writes the new date",
+    editor.getState().edits.days[day1.n]?.date, "2026-11-14");
+  ok("and the day block says so", deck.textContent?.includes("14 November"));
+  is("and the day's log moved with it",
+    editor.getState().logs["2026-11-14"]?.did, "read two papers");
+  ok("leaving nothing on the date it left", !editor.getState().logs[day1.date]);
+
+  fill(deck.querySelector(`[data-day-theme="${day1.n}"]`), "My own theme");
+  ok("a theme is the owner's to rewrite", deck.textContent?.includes("My own theme"));
+
+  press(deck.querySelector(`[data-add-task="${day1.n}"]`));
+  is("adding a task files it under its day",
+    editor.getState().edits.extraTasks[day1.n]?.length, 1);
+  /* By its field rather than its words: a task in edit mode is a row
+     of controls, and a title in a control is an attribute. */
+  const added = editor.getState().edits.extraTasks[day1.n]?.[0];
+  is("and it draws as a row on the day",
+    deck.querySelector(`[data-task-title="${added?.id ?? ""}"]`)?.getAttribute("value"),
+    "A task of my own");
+
+  press(deck.querySelector(`[data-drop-task="${one.id}"]`));
+  is("dropping a task from the file hides it rather than deleting it",
+    editor.getState().edits.hidden, [one.id]);
+  ok("and it is off the page", !deck.querySelector(`[data-drop-task="${one.id}"]`));
+  press(deck.querySelector(`[data-restore-task="${one.id}"]`));
+  is("putting it back empties the dropped list", editor.getState().edits.hidden, []);
+
+  const plus7 = (d: string): string =>
+    new Date(Date.parse(`${d}T00:00:00Z`) + 7 * 86400000).toISOString().slice(0, 10);
+  press(deck.querySelector("[data-shift-later]"));
+  is("a week later moves the day that had not moved", editor.getState().edits.days[second.n]?.date, plus7(second.date));
+  is("and the one that had", editor.getState().edits.days[day1.n]?.date, plus7("2026-11-14"));
+  is("carrying the log again", editor.getState().logs[plus7("2026-11-14")]?.did, "read two papers");
+
+  fill(deck.querySelector(`[data-note="day:${day1.n}"]`), "Ask about the visa rule");
+  await settle();
+  is("a note goes to the account",
+    store2.saved.at(-1)?.notes[`day:${day1.n}`], "Ask about the visa rule");
+
+  const carried = await mount(document.createElement("div") as unknown as HTMLElement, PLAN, store2);
+  is("and a second mount has the moved day",
+    carried.getState().edits.days[day1.n]?.date, plus7("2026-11-14"));
+  is("and the note", carried.getState().notes[`day:${day1.n}`], "Ask about the visa rule");
 
   for (const k of ["window", "document"]) delete (globalThis as Record<string, unknown>)[k];
 }
