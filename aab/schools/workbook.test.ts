@@ -71,6 +71,10 @@ const bundled = await build({
   mainFields: ["module", "main"],
   conditions: ["import", "default"],
   jsx: "automatic",
+  /* `@reiad/shared` is installed in `next/` and nowhere else, and
+     `next/node_modules` is absent on a CI runner. `hub.test.ts`
+     says why it is an alias to the source and not a second copy. */
+  alias: { "@reiad/shared": join(ROOT, "shared") },
   logLevel: "silent",
 });
 
