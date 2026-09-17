@@ -45,6 +45,23 @@ export const readKeyOf = (school: string): string =>
 export const lastKeyOf = (school: string): string =>
   LAST_KEY[school] ?? `${school}-last`;
 
+export const checkKeyOf = (school: string): string =>
+  CHECK_KEY[school] ?? `${school}-checks`;
+
+    /** How many days this person has turned up, out of `days-active`,
+        which `aab/src/streak.ts` writes. Read here for the medals and
+        never written: a day goes in when a school announces progress,
+        and this file only ever announces. */
+export function daysActive(): number {
+  try {
+    const raw: unknown = JSON.parse(localStorage.getItem("days-active") ?? "[]");
+    if (!Array.isArray(raw)) return 0;
+    return new Set(raw.filter((d): d is string => typeof d === "string")).size;
+  } catch {
+    return 0;
+  }
+}
+
 export interface Bookmark {
   /** What the ticks are filed under, and the only field anything
       decides anything by. */

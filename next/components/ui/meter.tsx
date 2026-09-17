@@ -48,7 +48,7 @@ export function Meter({
         aria-valuemin={0}
         aria-valuemax={total}
         className={[
-          "relative flex-1 overflow-hidden rounded-full",
+          "relative flex-1 overflow-hidden rounded-tight",
           "bg-paper-sunk",
           "border border-hairline",
           size === "sm" ? "h-1.5" : "h-2.5",
@@ -56,7 +56,7 @@ export function Meter({
       >
         <i
           className={[
-            "absolute inset-y-0 left-0 block rounded-full",
+            "absolute inset-y-0 left-0 block rounded-tight",
             "bg-accent-strong",
             "transition-[width] duration-[var(--slow)] ease-[var(--ease)]",
             "motion-reduce:transition-none",

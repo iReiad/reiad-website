@@ -6,6 +6,10 @@
        node scripts/check-all.ts --checks    checks only
        node scripts/check-all.ts --stage=X   one stage: checks,
                                               generated or tests
+       node scripts/check-all.ts --changed   only what the changed
+                                              files could have broken
+       node scripts/check-all.ts --since=REF what --changed compares
+                                              against (origin/main)
        node scripts/check-all.ts --quiet     one line per failure
 
    THE LIST BELOW IS THE ONLY LIST. `.github/workflows/checks.yml`
@@ -27,11 +31,11 @@
    is not there.
 
    Anything needing a browser, a server or a network is NOT here.
-   Those are listed in CLAUDE.md under "Before deploying" and have
+   Those are listed in HANDBOOK.md under "Before deploying" and have
    to be run by hand.
    ============================================================ */
 
-import { spawn } from "node:child_process";
+import { spawn, execFileSync } from "node:child_process";
 import { dirname, join } from "node:path";
 import { fileURLToPath } from "node:url";
 import { cpus } from "node:os";
@@ -41,6 +45,12 @@ const QUIET = process.argv.includes("--quiet");
 const ONLY_CHECKS = process.argv.includes("--checks");
 /** One stage by name, for a CI step that wants its own heading. */
 const STAGE = process.argv.find((a) => a.startsWith("--stage="))?.slice(8);
+/** Only the entries whose inputs changed. CI never passes this: the
+    full list runs on every push, so a scoped local run cannot lower
+    the bar, only save the minutes between a one-line edit and the
+    answer. */
+const CHANGED = process.argv.includes("--changed");
+const SINCE = process.argv.find((a) => a.startsWith("--since="))?.slice(8) ?? "origin/main";
 
 /** One thing to run: a path, or a path and its arguments. */
 type Entry = string | string[];
@@ -212,6 +222,8 @@ const STAGES: Array<[stage: string, entries: Entry[]]> = [
     "functions/_lib/food.test.ts",
     "aab/schools/progress.test.ts",
     "next/progress.test.ts",
+    /* The medals, which are arithmetic over the same keys. */
+    "next/medals.test.ts",
     "next/comments.test.ts",
     "next/book-api.test.ts",
     "aab/schools/hub.test.ts",
@@ -223,6 +235,148 @@ const STAGES: Array<[stage: string, entries: Entry[]]> = [
     "aab/portfolio/dissertation.test.ts",
   ]],
 ];
+
+/* ============================================================
+   --changed: what each entry READS, as path prefixes (or `*.ext`
+   for a suffix), so an edit to a food row does not run the
+   research tests and an edit to a stylesheet does not rebuild the
+   course catalogue.
+
+   AN ENTRY WITH NO LINE HERE ALWAYS RUNS. That is the safe
+   default: a check that reads the whole repository (dashes,
+   pointers, types, mjs) or whose inputs are too spread to name
+   stays on the list, and only a check with a small, known set of
+   inputs is scoped. A pattern that is too narrow costs nothing in
+   CI, which runs everything, and costs one missed local failure
+   that CI then reports; so when in doubt, widen it.
+
+   `scripts/check-all.ts` changing runs everything, and so does
+   any change under `scripts/` that is not a fixture, because a
+   check's own edit is the one thing its pattern cannot see.
+   ============================================================ */
+const WHEN: Record<string, string[]> = {
+  "scripts/check-routes.ts": ["next/app/", "worker.js", "wrangler.toml", "aab/_redirects", "aab/.assetsignore", "aab/", "shared/nav.ts", "shared/content.ts"],
+  "scripts/check-css.ts": ["*.css", "*.tsx", "aab/", "functions/_lib/sanitise.ts", "content/schools.backup.json"],
+  "scripts/check-sw.ts": ["aab/"],
+  "scripts/check-content.ts": ["shared/", "next/", "aab/", "content/"],
+  "scripts/check-calculators.ts": ["aab/tools/", "aab/src/tools/", "aab/calculators.js", "shared/", "next/components/"],
+  "scripts/check-csp.ts": ["aab/", "next/", "shared/headers.ts", "functions/"],
+  "scripts/check-crons.ts": ["worker.js", "wrangler.toml", "functions/"],
+  "scripts/check-pieces.ts": ["content/", "next/", "shared/"],
+  "scripts/check-headers.ts": ["functions/", "shared/headers.ts", "aab/_headers", "worker.js"],
+  "scripts/check-schools.ts": ["shared/curricula/", "shared/schools.ts", "content/schools.backup.json", "aab/"],
+  "scripts/check-money.ts": ["scripts/money/", "shared/lesson", "shared/curricula/money.ts", "next/components/lesson/", "content/"],
+  "scripts/check-english.ts": ["scripts/english/", "shared/curricula/english.ts", "next/lib/workbooks/", "functions/_lib/sanitise.ts", "content/"],
+  "scripts/check-rows.ts": ["shared/rows.ts", "functions/", "supabase/", "next/lib/"],
+  "scripts/check-rls.ts": ["supabase/"],
+  "scripts/check-migrations.ts": ["supabase/"],
+  "scripts/check-api.ts": ["aab/", "next/", "functions/", "worker.js", "app/src/"],
+  "scripts/check-app-surface.ts": ["shared/", "functions/api/site", "functions/api/tools", "functions/api/foods"],
+  "scripts/check-contrast.ts": ["*.css"],
+  "scripts/check-surfaces.ts": ["*.css", "*.tsx"],
+  "scripts/check-components.ts": ["*.css", "*.tsx", "aab/"],
+  "scripts/check-jsx-space.ts": ["*.tsx"],
+  "scripts/check-jsx-nesting.ts": ["*.tsx"],
+  "scripts/check-scale.ts": ["*.css"],
+  "scripts/check-prefixes.ts": ["*.css"],
+  "scripts/check-selfref.ts": ["*.css"],
+  "scripts/check-utility-clash.ts": ["*.css", "*.tsx"],
+  "scripts/check-closed.ts": ["aab/", "functions/", "scripts/closed-set.json"],
+  "scripts/check-admin.ts": ["functions/"],
+  "scripts/check-plain.ts": ["*.css", "*.tsx", "aab/", "app/src/"],
+  "scripts/check-prefs.ts": ["aab/src/prefs.ts", "next/components/shell.tsx", "next/components/account/", "shared/storage.ts"],
+  "scripts/check-storage.ts": ["aab/", "next/", "shared/storage.ts", "app/src/"],
+  "scripts/check-account.ts": ["aab/src/account-page.ts", "supabase/"],
+  "scripts/check-art.ts": ["shared/art", "aab/src/share-card.ts", "*.css"],
+  "scripts/check-icons.ts": ["*.tsx", "next/lib/school-icons.ts", "aab/"],
+  "scripts/check-next.ts": ["next/", "aab/fallback.css", "aab/404.html", "aab/offline.html"],
+  "scripts/check-courses.ts": ["shared/courses", "aab/src/courses.ts", "aab/courses", "next/app/(site)/skills/", "functions/api/courses/", "functions/_lib/drive", "scripts/fixtures/course-crawl/"],
+  "scripts/check-diet.ts": ["shared/diet", "shared/foods", "next/components/diet/", "next/app/(site)/tools/diet", "supabase/", "DIET.md"],
+  "scripts/check-research.ts": ["shared/research", "next/components/research/", "next/app/(site)/tools/research", "functions/api/research/", "supabase/", "RESEARCH.md"],
+  "scripts/check-accents.ts": ["*.css", "*.tsx", "shared/nav.ts"],
+  "scripts/build-modules.ts": ["aab/src/", "aab/", "shared/"],
+  "scripts/build-fallback.ts": ["*.css", "aab/fallback.css"],
+  "scripts/build-school-icons.ts": ["aab/", "next/lib/school-icons.ts"],
+  "scripts/build-stamp.ts": ["app/", "aab/studio/"],
+  "scripts/import-courses.ts": ["shared/courses", "scripts/fixtures/course-crawl/"],
+  "scripts/export-stock-fixtures.ts": ["aab/tools/", "aab/src/tools/", "scripts/fixtures/"],
+  "scripts/export-calculator-fixtures.ts": ["aab/tools/", "aab/src/tools/", "aab/calculators.js", "scripts/fixtures/"],
+  "scripts/export-portfolio-fixtures.ts": ["aab/portfolio/", "scripts/fixtures/"],
+  "scripts/export-routine-fixtures.ts": ["shared/routine", "scripts/fixtures/"],
+  "scripts/export-diet-fixtures.ts": ["shared/diet", "shared/foods", "scripts/fixtures/"],
+  "scripts/input.test.ts": ["functions/"],
+  "scripts/reader.test.ts": ["functions/"],
+  "scripts/comments.test.ts": ["functions/"],
+  "scripts/restore.test.ts": ["functions/", "content/"],
+  "scripts/bundle.test.ts": ["shared/bundle.ts", "aab/"],
+  "scripts/snapshot.test.ts": ["functions/", "worker.js"],
+  "scripts/routine.test.ts": ["shared/routine", "next/components/routine/", "next/app/(site)/tools/routine"],
+  "scripts/netzwerk.test.ts": ["shared/netzwerk.ts", "next/components/netzwerk/", "next/lib/netzwerk", "scripts/fixtures/netzwerk-plan.json"],
+  "scripts/diet.test.ts": ["shared/diet", "shared/foods"],
+  "scripts/csv.test.ts": ["shared/csv.ts"],
+  "scripts/research.test.ts": ["shared/research", "next/components/research/", "functions/api/research/"],
+  "scripts/research-stats.test.ts": ["shared/research"],
+  "scripts/research-field.test.ts": ["shared/research"],
+  "scripts/research-tools.test.ts": ["shared/research"],
+  "scripts/research-assist.test.ts": ["shared/research", "functions/api/research/"],
+  "scripts/insights.test.ts": ["shared/insights.ts", "next/components/topic-filter.tsx", "next/app/(site)/insights"],
+  "scripts/activity.test.ts": ["shared/activity.ts"],
+  "scripts/widgets.test.ts": ["shared/widgets.ts", "next/components/home/"],
+  "next/recipes.test.ts": ["next/lib/recipes", "next/components/", "shared/"],
+  "scripts/admin.test.ts": ["functions/", "next/components/admin/"],
+  "scripts/schools.test.ts": ["shared/curricula/", "shared/schools.ts", "content/schools.backup.json", "functions/"],
+  "scripts/schools-api.test.ts": ["functions/", "shared/schools.ts"],
+  "scripts/site-api.test.ts": ["functions/api/site", "shared/"],
+  "functions/_lib/notion.test.ts": ["functions/_lib/notion"],
+  "functions/_lib/drive.test.ts": ["functions/_lib/drive", "functions/_lib/ticket"],
+  "functions/_lib/quiz.test.ts": ["functions/_lib/quiz", "functions/_lib/sanitise.ts"],
+  "functions/_lib/food.test.ts": ["functions/_lib/food", "shared/foods", "shared/diet"],
+  "aab/schools/progress.test.ts": ["aab/schools/", "aab/src/", "aab/deutsch/", "aab/english/", "aab/quran/", "shared/curricula/"],
+  "next/progress.test.ts": ["next/lib/progress.ts", "next/components/progress.tsx"],
+  "next/medals.test.ts": ["next/lib/medals.ts", "next/lib/progress.ts"],
+  "next/comments.test.ts": ["next/components/comments", "next/lib/comments", "functions/"],
+  "next/book-api.test.ts": ["functions/api/book", "next/lib/workbooks/", "shared/lesson.ts"],
+  "aab/schools/hub.test.ts": ["aab/schools/", "next/lib/school-hubs.ts", "next/lib/school-hub-content.ts", "shared/curricula/"],
+  "aab/schools/workbook.test.ts": ["aab/schools/", "next/lib/workbooks/", "next/components/workbook"],
+  "aab/courses.test.ts": ["aab/src/courses.ts", "aab/courses", "shared/courses"],
+  "aab/portfolio/stress.test.ts": ["aab/portfolio/"],
+  "aab/portfolio/scorecard.test.ts": ["aab/portfolio/"],
+  "aab/portfolio/frontier.test.ts": ["aab/portfolio/"],
+  "aab/portfolio/dissertation.test.ts": ["aab/portfolio/"],
+};
+
+/** Every path that differs from `SINCE`, plus what is edited and
+    not yet committed, plus new files. Null when git cannot answer,
+    which runs everything and says so. */
+function changedPaths(): Set<string> | null {
+  const git = (...args: string[]): string[] =>
+    execFileSync("git", args, { cwd: ROOT, encoding: "utf8" })
+      .split("\n").map((l) => l.trim()).filter(Boolean);
+  try {
+    const base = git("merge-base", SINCE, "HEAD")[0];
+    return new Set([
+      ...git("diff", "--name-only", base),
+      ...git("ls-files", "--others", "--exclude-standard"),
+    ]);
+  } catch {
+    return null;
+  }
+}
+
+const matches = (path: string, pattern: string): boolean =>
+  pattern.startsWith("*.") ? path.endsWith(pattern.slice(1)) : path.startsWith(pattern);
+
+/** Whether an entry has to run for this set of changes. */
+function wanted(entry: Entry, changed: Set<string>): boolean {
+  const name = Array.isArray(entry) ? entry[0] : entry;
+  const patterns = WHEN[name];
+  if (!patterns) return true;
+  for (const path of changed) {
+    if (path === name) return true;
+    if (patterns.some((p) => matches(path, p))) return true;
+  }
+  return false;
+}
 
 /* One spare core, so a laptop stays usable while this runs. */
 const AT_ONCE = Math.max(2, (cpus().length || 4) - 1);
@@ -264,18 +418,44 @@ if (STAGE && !STAGES.some(([name]) => name === STAGE)) {
   process.exit(1);
 }
 
+/* The scope, decided once. Any check or test under scripts/ that
+   changed, or this file, widens it back to everything: an edit to a
+   check is the one input no pattern above can see. */
+let changed: Set<string> | null = null;
+if (CHANGED) {
+  changed = changedPaths();
+  if (!changed) {
+    console.log(`--changed: git could not compare against ${SINCE}, so everything runs.`);
+  } else if ([...changed].some((p) => p === "scripts/check-all.ts"
+      || (p.startsWith("scripts/") && !p.startsWith("scripts/fixtures/") && /\.ts$/.test(p)
+          && !/\.test\.ts$/.test(p) && !WHEN[p] && /^scripts\/(check|build|export|import)-/.test(p)))) {
+    console.log("--changed: a check itself changed, so everything runs.");
+    changed = null;
+  } else {
+    console.log(`--changed: ${changed.size} path(s) differ from ${SINCE}.`);
+  }
+}
+
+let skipped = 0;
 for (const [stage, entries] of STAGES) {
   if (STAGE && stage !== STAGE) continue;
   if (ONLY_CHECKS && stage === "tests") continue;
 
-  const results = await pool(entries);
+  const picked = changed ? entries.filter((e) => wanted(e, changed)) : entries;
+  skipped += entries.length - picked.length;
+  if (picked.length === 0) {
+    if (!QUIET) console.log(`  --   ${stage} (0 of ${entries.length})`);
+    continue;
+  }
+
+  const results = await pool(picked);
   ran += results.length;
 
   const bad = results.filter((r) => r.code !== 0);
   failures.push(...bad);
 
   if (!QUIET) {
-    const label = `${stage} (${results.length})`;
+    const label = changed ? `${stage} (${results.length} of ${entries.length})` : `${stage} (${results.length})`;
     console.log(`${bad.length ? "FAIL" : "  ok"}  ${label}`);
     for (const r of bad) console.log(`      ${r.name}`);
   }
@@ -292,4 +472,5 @@ if (failures.length) {
   process.exit(1);
 }
 
-console.log(`\nall ${ran} passed in ${seconds.toFixed(1)}s.\n`);
+console.log(`\nall ${ran} passed in ${seconds.toFixed(1)}s.`
+  + (changed ? ` ${skipped} skipped: their inputs did not change against ${SINCE}.` : "") + "\n");

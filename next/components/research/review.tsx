@@ -588,8 +588,8 @@ function Screen({ w, review, records, sources, onChanged, onSource, onPicking, o
         ) : null}
         <span className="ml-auto text-t1 text-ink-soft tabular-nums" data-testid="rs-rev-meter">{done} {both("rs.rev.of")} {total} {both("rs.rev.decided")}</span>
       </div>
-      <div className="h-1.5 rounded-full overflow-hidden" style={{ background: "var(--paper-sunk)" }} aria-hidden="true">
-        <div className="h-full rounded-full" style={{ width: `${pct}%`, background: toneVar("rose"), transition: "width 240ms ease-out" }} />
+      <div className="h-1.5 rounded-tight overflow-hidden" style={{ background: "var(--paper-sunk)" }} aria-hidden="true">
+        <div className="h-full rounded-tight" style={{ width: `${pct}%`, background: toneVar("rose"), transition: "width 240ms ease-out" }} />
       </div>
       <p className="text-t1 text-ink-soft"><W k="rs.rev.screen.hint" /></p>
       {canSecond ? <p className="text-t1 text-ink-soft"><W k="rs.rev.second.hint" /></p> : null}

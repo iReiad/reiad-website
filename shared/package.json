@@ -37,6 +37,7 @@
     "./research-review": "./research-review.ts",
     "./csl": "./csl/index.ts",
     "./csl/*": "./csl/*.ts",
+    "./curricula/*": "./curricula/*.ts",
     "./research-stats": "./research-stats.ts",
     "./research-lab": "./research-lab.ts",
     "./research-field": "./research-field.ts",

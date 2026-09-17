@@ -62,7 +62,7 @@ export interface Crumb {
         THE MARK IS THE ICON SET'S CHEVRON, NOT A `›`. A glyph is
         positioned by the font it resolves out of and sized by the crumb
         beside it, and this row holds neither still: the trail's stack
-        starts at Noto Sans Bengali, which has no `›`, and the crumb you
+        starts at Noto Serif Bengali, which has no `›`, and the crumb you
         are ON is a step larger, so `1.35em` is two box sizes. Measured on
         a phone the three marks sat 3.6px apart on marks 5px tall. An
         `<svg>` centred in a grid cell is centred, and the chevron's path

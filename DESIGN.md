@@ -20,11 +20,21 @@ section's accent through `--paper`, `--panel` and `--hairline`, so
 the paper on a German page is faintly blue without a texture
 saying so.
 
-**Corners are a ladder, never a number.** `--radius-xs` 5,
-`--radius-sm` 12, `--radius` 18, `--radius-lg` 24, `--radius-pill`.
-`check-scale.ts` fails on a literal px radius. A row and a control
-are pills; a card is `--radius`; a field is the card's, because a
-box you type a paragraph into wants a corner and not a capsule.
+**Corners are a ladder, never a number, and the shape is square.**
+`--radius-xs` 2, `--radius-sm` 3, `--radius` 4, `--radius-lg` 6.
+`check-scale.ts` fails on a literal px radius. There is no pill: a
+control and a row take `--radius-sm`, a card `--radius`, a field the
+card's. A bullet, a slider's thumb and a ring are drawn at `50%`
+because they are dots, not corners.
+
+**Type is a book's.** Literata for the running text and the headings,
+with optical sizing on; Inter on anything you press or type into; the
+mono on labels. Bangla is Noto Serif Bengali in both roles.
+
+**A strip of choices is one bar.** `.tabs` is a panel with a hairline
+round it and the choices flat inside; the chosen one is the accent
+solid. The bar holds still and the chosen panel drops in under it
+(`[data-enter]`, one keyframe), whichever page's strip it is.
 
 **The page wears its section's colour.** `--accent` is set on
 `<html>` from the one table in `shared/nav.ts`, and every

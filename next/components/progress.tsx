@@ -15,11 +15,12 @@
 
 import { useCallback, useEffect, useState, useSyncExternalStore } from "react";
 import {
-  getLast, lastKeyOf, markRead, readKeyOf, readSet, setLast, subscribe,
+  checkSet, daysActive, getLast, lastKeyOf, markRead, readKeyOf, readSet, setLast, subscribe,
   toggleRead, type Bookmark,
 } from "../lib/progress";
 import { GoCard } from "./deck";
 import { Icon } from "./icons";
+import { medalsFor, newlyEarned, type Medal } from "../lib/medals";
 
 /** The lessons of a school, as the page already knows them. */
 export interface LadderLesson {
@@ -101,11 +102,23 @@ export function LessonTick({
          would pop a moment after every load of a lesson finished last
          week. Cleared on `animationend`. */
   const [just, setJust] = useState(false);
+      /* The medal this press earned, if it earned one. Measured on the
+         same press, before and after the write, so the line says "five
+         lessons" on the fifth tick and nothing on the sixth. The stage
+         is `of`, which is the one this lesson is a rung of; the whole
+         school is the hub's to know. */
+  const [won, setWon] = useState<Medal[]>([]);
   const onClick = useCallback(() => {
         /* Ticking OFF never lands: it is a correction. */
     if (!done) setJust(true);
+    const measure = () => medalsFor({
+      read: readSet(school), checks: checkSet(school), days: daysActive(),
+      stages: of ? [of] : [],
+    });
+    const before = measure();
     toggleRead(school, id);
-  }, [school, id, done]);
+    setWon(done ? [] : newlyEarned(before, measure()));
+  }, [school, id, done, of]);
 
   return (
         /* The air around it is this caller's, not the button's. The
@@ -125,6 +138,12 @@ export function LessonTick({
         <Icon name="check" size={16} />
         {done ? words.done : words.notDone}
       </button>
+      {won.length ? (
+        <p className="medal-won" lang="bn" role="status">
+          <Icon name="spark" size={16} />
+          নতুন পদক: {won.map((m) => m.bn).join(", ")}
+        </p>
+      ) : null}
     </div>
   );
 }

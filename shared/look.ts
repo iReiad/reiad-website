@@ -124,6 +124,13 @@ export const dateLabel = (article: Pick<Article, "lang" | "published_at">): stri
 
 /** One stylesheet, one request, every face this site uses.
  *
+ * Literata is the text face and carries its optical-size axis, so
+ * the one family cuts a heading and a line of prose differently.
+ * Noto Serif Bengali is loaded in three weights because it is the
+ * Bangla body AND the Bangla heading now, and `site.css` says why
+ * a one-weight Bengali face was not an option. `aab/404.html` and
+ * `aab/offline.html` carry this URL by hand: change all three.
+ *
  * `Caveat` is loaded for exactly one thing: WHAT A READER WROTE
  * THEMSELVES, which is the note on a routine day and the line
  * beside "something I chose", and nothing else ever. One weight,
@@ -132,9 +139,9 @@ export const dateLabel = (article: Pick<Article, "lang" | "published_at">): stri
  * page rather than a broken one.
  */
 export const FONTS =
-  "https://fonts.googleapis.com/css2?family=Spectral:wght@400;500;600"
-  + "&family=IBM+Plex+Sans:wght@400;500;600&family=IBM+Plex+Mono:wght@400;500"
-  + "&family=Noto+Sans+Bengali:wght@400;500&family=Noto+Serif+Bengali:wght@500;600"
+  "https://fonts.googleapis.com/css2?family=Literata:ital,opsz,wght@0,7..72,400;0,7..72,500;0,7..72,600;1,7..72,400"
+  + "&family=Inter:wght@400;500;600&family=IBM+Plex+Mono:wght@400;500"
+  + "&family=Noto+Serif+Bengali:wght@400;500;600"
   + "&family=Caveat:wght@500"
   + "&display=swap";
 

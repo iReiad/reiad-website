@@ -15,6 +15,8 @@ import { Icon } from "./icons";
 import { LadderMeter, Resume, type LadderLesson } from "./progress";
 import type { School } from "../lib/school";
 import { SectionLabel } from "./ui/label";
+import { Medals } from "./medals";
+import { stageIdsOf } from "../lib/medal-stages";
 
     /* What a rung's card is coloured by, and the distinction is between
        STATE and section. `live` follows the page: a rung belongs to its
@@ -91,6 +93,9 @@ export function MoneyHub({ school }: { school: School }) {
             }}
           />
         </header>
+
+        {/* What a learner has earned here; null until there is a tick. */}
+        <Medals school={school.school} stages={stageIdsOf(school.school)} />
 
         {/* ---------- stage zero, which is where everybody starts ---------- */}
         {first ? (

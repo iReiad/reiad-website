@@ -302,9 +302,23 @@ applyLang();
         p.setAttribute("role", "tabpanel");
         p.setAttribute("aria-labelledby", `tab-${p.id}`);
     });
+    /* Which panel is on screen, so a CHANGE can be told from the
+       first showing: the drop-in below plays on a press and never
+       on load. */
+    let shown = null;
     function show(id, { focus = false, push = false } = {}) {
         const panel = panels.find((p) => p.id === id) ?? panels[0];
         panels.forEach((p) => { p.hidden = p !== panel; });
+        /* The bar stays still and the panel drops in: `[data-enter]`
+           in the stylesheet, the one keyframe every tab strip on the
+           site shares. Removed and re-added across a forced layout so
+           it restarts. */
+        if (shown && shown !== panel) {
+            panel.removeAttribute("data-enter");
+            void panel.offsetWidth;
+            panel.setAttribute("data-enter", "");
+        }
+        shown = panel;
         links.forEach((a) => {
             const on = idOf(a) === panel.id;
             a.setAttribute("aria-selected", String(on));

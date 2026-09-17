@@ -68,7 +68,7 @@ const token = (): string =>
 
     And `htmlResponse()` rather than a bare `new Response`, which
     is the rule at "A response a Worker builds is not a static
-    asset" in CLAUDE.md. This was the last handler still building
+    asset" in HANDBOOK.md. This was the last handler still building
     its own: no CSP, no HSTS, no X-Frame-Options on a page a
     reader reaches from their email. `check-headers.ts` now fails
     on any HTML response that does not go through it. */

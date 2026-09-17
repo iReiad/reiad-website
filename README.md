@@ -52,6 +52,6 @@ cd app && npm run build               # aab/studio/
 - **Counts come from the data**, never from a sentence. See `COUNTS` in
   `aab/content.js`.
 
-`CLAUDE.md` is the working reference: why each rule exists and what breaks
+`HANDBOOK.md` is the working reference: why each rule exists and what breaks
 without it. `SETUP.md` is first-time setup. `MIGRATION.md` tracks the move to
 TypeScript and Tailwind. `ANDROID.md` is the plan for the native Android app.
