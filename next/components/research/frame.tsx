@@ -40,6 +40,8 @@ export function ResearchFrame({ href, title, lede, children, wide }: {
       className={["wrap dt-page rs-page", wide ? "rs-wide" : null].filter(Boolean).join(" ")}
       style={{ "--accent": toneVar(page?.tone ?? RESEARCH_TONE) } as React.CSSProperties}
     >
+      {/* First, above the head, so it is in one place on every room. */}
+      <ResearchStrip />
       <header className="dt-head">
         <div className="dt-head-row">
           <h1>{head ? <T en={head.en} bn={head.bn} /> : <T en="Research Studio" bn="গবেষণা স্টুডিও" />}</h1>
@@ -58,7 +60,6 @@ export function ResearchFrame({ href, title, lede, children, wide }: {
           </p>
         ) : null}
       </header>
-      <ResearchStrip />
       {children}
     </main>
   );

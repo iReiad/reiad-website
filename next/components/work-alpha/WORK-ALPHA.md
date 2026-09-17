@@ -133,7 +133,7 @@ Rules from CLAUDE.md that this touches:
   If the site's `--paper`/`--ink` tokens are meant to win, set them on
   `.wa` from the site's own variables (`--paper: var(--paper)` will not do;
   read `@layer tokens` for the real names). `scripts/check-plain.ts`
-  will refuse a blur, a perspective or a view-driven animation in
+  will list a blur, a perspective or a view-driven animation in
   `.wa-*`: a surface here is a colour, a hairline and a corner like
   everywhere else. Do not leave the check red.
 

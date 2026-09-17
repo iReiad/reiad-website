@@ -49,6 +49,11 @@ export function DietPage({ href, title, lede, children }: {
          exists. */
       style={{ "--accent": page?.tone ?? DIET_TONE } as React.CSSProperties}
     >
+      {/* FIRST, above the head. Under a title and a lede whose
+          length differs on every page the strip moved on every
+          change of page; up here it is in one place on all of
+          them, and the page changes beneath it. */}
+      <DietStrip />
       <header className="dt-head">
         <div className="dt-head-row">
           <h1>{heading}</h1>
@@ -59,7 +64,6 @@ export function DietPage({ href, title, lede, children }: {
           bn={<p className="dt-lede">{lede.bn}</p>}
         />
       </header>
-      <DietStrip />
       {children}
       {href ? <Nearby href={href} /> : null}
     </main>

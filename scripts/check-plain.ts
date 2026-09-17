@@ -1,8 +1,16 @@
 #!/usr/bin/env node
 /* ============================================================
-   check-plain.ts: the design is plain, and this keeps it plain.
+   check-plain.ts: what the stylesheet spends on paint, as a list.
 
        node scripts/check-plain.ts
+
+   THIS DOES NOT FAIL. It did, and it is a list now, because the
+   look of this site is not fixed: a redesign may bring a blur or
+   a turn if it wants one, and what it should know is the cost.
+   Each entry below is a compositing layer or a listener per
+   surface, and this prints where they are so a pull request that
+   adds one adds it on purpose. `check-all.ts` does not run it;
+   run it by hand when changing the look.
 
    Every surface on this site is a colour, a hairline and a
    corner. Nothing blurs what is behind it, nothing turns in
@@ -102,11 +110,9 @@ for (const file of markup) {
 }
 
 if (failures.length) {
-  console.error(`plain: ${failures.length} thing(s) the plain design does not do:\n`);
-  for (const f of failures) console.error(`   ${f}`);
-  console.error("\nA surface is a colour, a hairline and a corner. Take the effect out");
-  console.error("rather than adding it to a list here: there is no list, on purpose.");
-  process.exit(1);
+  console.log(`plain: ${failures.length} effect(s) that cost a layer or a listener per surface:\n`);
+  for (const f of failures) console.log(`   ${f}`);
+  console.log("\nA list, not a failure: keep each one only if the look wants it.\n");
 }
 
 console.log(`plain: ${styles.length} stylesheet(s) and ${markup.length} component file(s), `

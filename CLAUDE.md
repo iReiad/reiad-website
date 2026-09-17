@@ -1,10 +1,15 @@
 # reiad.co.uk, house rules
 
 This file is what an agent reads on every turn, so it is short on
-purpose. `HANDBOOK.md` is the long form: the same rules with their
-reasons and the incidents behind them, 2,300 lines, indexed by heading.
-**Do not read the handbook whole.** Open the section named beside the
-area you are touching, with a search for the heading, and only that one.
+purpose. Two more files, and that is the whole of the reading:
+
+- **`MAP.md` first, once per task.** Generated from the files themselves:
+  every route, every file with the one sentence at the top of it, every
+  storage key, the menu, the checks. It says where everything is, so a
+  file is opened only to change it. About 900 lines.
+- **`HANDBOOK.md` by heading, when a rule's reason is needed.** The
+  rules with their reasons and the incidents behind them, 2,300 lines.
+  **Never whole.** Search for the heading named beside the rule below.
 
 ## Punctuation: no em dashes. Ever.
 
@@ -59,17 +64,26 @@ every tracked file. Handbook: "Punctuation".
 - **Bangla is the learning language, English the working one.** Plain
   Bangla, short sentences, no transliterated jargon.
 
-## The look, in six lines
+## The look today, and it is not fixed
 
-Plain surfaces: a colour, a hairline and a corner; nothing blurs, tilts
-or animates on scroll (`check-plain.ts`). Square with the edge taken
-off: four corner rungs, 2 to 6px, no pill (`check-scale.ts`). Set like
-a book: Literata for the text and headings, Inter on controls, the mono
-on labels, Noto Serif Bengali for Bangla. One tab bar: `.tabs` is a
-contained strip, the chosen tab is the accent solid, the bar holds still
-and the panel drops in on `[data-enter]`. Two kinds of card, `<GoCard>`
-and `<InfoCard>`, and one thing is one card. A page wears its section's
-colour from `shared/nav.ts`. `DESIGN.md` is the rest.
+Today: plain surfaces (a colour, a hairline and a corner), square with
+the edge taken off (four corner rungs, no pill), set like a book
+(Literata for text and headings, Inter on controls, the mono on labels,
+Noto Serif Bengali for Bangla), one tab bar (`.tabs`, a contained strip
+whose chosen tab is the accent solid; the bar holds still and the panel
+drops in on `[data-enter]`), two kinds of card (`<GoCard>`, `<InfoCard>`),
+and a page wears its section's colour from `shared/nav.ts`.
+
+**A new style is welcome.** Nothing above is a rule; it is a description
+of what is there. A model with a better idea changes the tokens at the
+top of `next/styles/site.css` and says what it did in `DESIGN.md`. What
+the checks hold is not taste: `check-contrast.ts` (readable at its
+size), `check-scale.ts` (one scale, however it is set), `check-accents.ts`
+(a section's colour comes from the one table), `check-css.ts` (a class
+means one thing), `check-components.ts` (a control exists once). Change
+a token's value freely; do not add a fifty-first size beside the scale.
+`scripts/check-plain.ts` is a list of what costs paint time, run by
+hand, and it fails nothing.
 
 ## Working economically
 
@@ -101,24 +115,32 @@ pass, and it is not a reason to run the others. The full list, with what
 each one guards, is in the handbook under "Before deploying". CI runs
 every check on every push, so a scoped local run never lowers the bar.
 
-While working: read a file's relevant lines rather than the whole file,
-search the handbook by heading rather than reading it, and do not
-re-run a check whose inputs have not changed since it last passed.
+While working: `MAP.md` says what a file is for, so open one only to
+change it, and read its relevant lines rather than the whole file.
+Search the handbook by heading rather than reading it. Do not re-run a
+check whose inputs have not changed since it last passed. `MAP.md` is
+rebuilt by `node scripts/build-map.ts` and the generated stage fails
+when it is stale, so a new file needs the one-line `name.ts: purpose`
+header the map is built from.
 
-## Ship it
+## Ship it, and merge it yourself
 
-Open the pull request, wait for the checks, squash merge. No second
-conversation. Three green checks is not green: `checks` is the fourth
-and the one that matters. A red check is a reason to fix, never to
-merge anyway. Before opening, look at the open pull requests, not just
-`main`. Handbook: "Ship it", "Before opening a pull request", "Merging".
+Open the pull request, wait for the checks, mark it ready and squash
+merge it. **Nobody is asked and nobody is waited for**: a green pull
+request that sits is work that is not shipped. Three green checks is not
+green: `checks` is the fourth and the one that matters. A red check is a
+reason to fix and push again, never to merge anyway. Before opening,
+look at the open pull requests, not just `main`. The deploy runs from
+`main` on its own. Handbook: "Ship it", "Before opening a pull request",
+"Merging".
 
 ## Where things are
 
 | | |
 | --- | --- |
+| `MAP.md` | where everything is, generated: read first |
 | `ARCHITECTURE.md` | where things go |
-| `DESIGN.md` | what they look like, and what is still wrong |
+| `DESIGN.md` | what they look like today, and what is still wrong |
 | `HANDBOOK.md` | every rule with its reason, by heading |
 | `MIGRATION.md` | what is still on the old system |
 | `ANDROID.md`, `DIET.md`, `MONEY.md`, `RESEARCH.md`, `ROUTINE.md` | one plan each |

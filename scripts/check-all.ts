@@ -120,12 +120,6 @@ const STAGES: Array<[stage: string, entries: Entry[]]> = [
        endpoint that answers, returns the right shape, passes
        every other check, and works for everybody. */
     "scripts/check-admin.ts",
-    /* The design is plain, and this is what keeps it plain: no
-       blur, no perspective, no view-driven animation and no
-       pointer light, in the stylesheet or in a component. Each
-       of those shipped once and was the most expensive thing on
-       the page. */
-    "scripts/check-plain.ts",
     /* The reader's two type settings are written out twice, in
        the panel's table and in the boot script that runs before
        the first paint. A value in one and not the other is a
@@ -175,6 +169,10 @@ const STAGES: Array<[stage: string, entries: Entry[]]> = [
     "scripts/check-accents.ts",
   ]],
   ["generated", [
+    /* MAP.md, the note an agent reads first, out of the files
+       themselves: stale the moment a file or a route is added,
+       unless this says so. */
+    ["scripts/build-map.ts", "--check"],
     ["scripts/build-modules.ts", "--check"],
     ["scripts/build-fallback.ts", "--check"],
     ["scripts/build-school-icons.ts", "--check"],
@@ -283,7 +281,6 @@ const WHEN: Record<string, string[]> = {
   "scripts/check-utility-clash.ts": ["*.css", "*.tsx"],
   "scripts/check-closed.ts": ["aab/", "functions/", "scripts/closed-set.json"],
   "scripts/check-admin.ts": ["functions/"],
-  "scripts/check-plain.ts": ["*.css", "*.tsx", "aab/", "app/src/"],
   "scripts/check-prefs.ts": ["aab/src/prefs.ts", "next/components/shell.tsx", "next/components/account/", "shared/storage.ts"],
   "scripts/check-storage.ts": ["aab/", "next/", "shared/storage.ts", "app/src/"],
   "scripts/check-account.ts": ["aab/src/account-page.ts", "supabase/"],

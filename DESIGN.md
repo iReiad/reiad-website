@@ -3,6 +3,12 @@
 `ARCHITECTURE.md` is where things go. This is what they look like
 when they get there, and the list of what does not yet.
 
+**None of this is fixed.** It describes today's look so a change
+is made on purpose rather than by drift. A better idea is welcome:
+change the tokens at the top of `next/styles/site.css`, keep to one
+scale, keep the contrast, keep a class meaning one thing, and then
+rewrite this file to say what the look is now.
+
 ## The language
 
 **Plain.** A surface is a ground and an edge: `--panel` or
@@ -12,8 +18,9 @@ nothing turns towards the pointer and nothing animates because the
 reader scrolled. The bar, a menu and the palette float on
 `--shadow`; a card under the pointer takes `--shadow-lift` and a
 firmer border; everything else sits flat on the page.
-`scripts/check-plain.ts` fails a blur, a perspective, a
-view-driven animation or a `data-glow` coming back.
+`scripts/check-plain.ts` lists a blur, a perspective, a
+view-driven animation or a `data-glow`, so one that comes back
+comes back on purpose; it fails nothing.
 
 **Paper, by colour alone.** The page carries a trace of the
 section's accent through `--paper`, `--panel` and `--hairline`, so

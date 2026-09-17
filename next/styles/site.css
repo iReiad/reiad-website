@@ -3053,6 +3053,14 @@ it collapsed to the width of the word "Bangladesh". */
   }
   .tab:is([aria-selected="true"], [aria-current="true"]) :is(.tab-en, .tab-bn) { color: var(--accent-ink); }
   .tab-bn { font-size: var(--t-3); color: var(--ink-soft); }
+  /* A label that switches language (the diet and research strips
+     render both halves and the stylesheet picks) keeps the Bangla
+     face for its Bangla half: the mono has no Bengali, and
+     uppercase means nothing to it. */
+  .tab-en [lang="bn"] {
+    font-family: var(--font-bn); font-size: var(--t-3);
+    letter-spacing: 0; text-transform: none;
+  }
 
   /* A nav down one page, rather than five panels one of which
      shows. Eight of them do not wrap to three lines on a phone:
@@ -5560,26 +5568,32 @@ it collapsed to the width of the word "Bangladesh". */
 
     & .mono { color: var(--ink-soft); }
   }
+  /* A segmented control is a tab strip that changes a figure
+     rather than a page, so it is drawn as one: the same contained
+     strip as `.tabs`, the chosen segment the accent solid. */
   .segmented {
-    display: inline-flex; border: 1px solid var(--hairline);
-    border-radius: var(--radius-sm); overflow: clip;
+    display: inline-flex; gap: 2px; padding: 3px;
+    border: 1px solid var(--hairline);
+    border-radius: var(--radius-sm); background-color: var(--panel);
 
     & button {
       border: 0; background: none; cursor: pointer; color: var(--ink-soft);
-      padding: 6px 12px; font-family: var(--font-mono); font-size: var(--t-1);
+      padding: 5px 12px; border-radius: var(--radius-xs);
+      font-family: var(--font-mono); font-size: var(--t-1);
       letter-spacing: 0.04em; text-transform: uppercase;
+      transition: background-color var(--fast) var(--ease), color var(--fast) var(--ease);
     }
-    & button[aria-pressed="true"] { background: var(--accent-soft); color: var(--accent); }
-    & button + button { border-inline-start: 1px solid var(--hairline); }
+    & button:hover { background-color: var(--paper-sunk); color: var(--ink); }
+    & button[aria-pressed="true"] { background-color: var(--accent-strong); color: var(--accent-ink); }
   }
   .toggle {
-    border: 1px solid var(--hairline); background: var(--paper);
+    border: 1px solid var(--hairline); background: var(--panel);
     border-radius: var(--radius-sm); padding: 6px 14px; cursor: pointer;
     font-family: var(--font-mono); font-size: var(--t-1);
     letter-spacing: 0.04em; text-transform: uppercase; color: var(--ink-soft);
 
     &[aria-pressed="true"] {
-      border-color: var(--accent); background: var(--accent-soft); color: var(--accent);
+      border-color: transparent; background: var(--accent-strong); color: var(--accent-ink);
     }
   }
   .driver[data-inactive] { opacity: 0.4; }
@@ -13102,16 +13116,25 @@ German for day, and .tag is what the site has always called
     margin: -1px; padding: 0; overflow: hidden;
     clip-path: inset(50%); white-space: nowrap; border: 0;
   }
+  /* The table a chart hands a screen reader is laid out at 1px
+     too. Clipped or not, a table laid out at its content width
+     has a box that reaches past a phone's edge, and
+     `lesson.test.ts` measures every box; the reader hears the
+     same cells whatever width they have. */
+  .ls-sr table { inline-size: 1px; table-layout: fixed; }
 
   /* ---- the switch ----
 
      `.dt-lang`'s shape, deliberately: a reader who has met the
      language switch on a calculator should not have to find a
      different one here. */
+  /* The strip's geometry again (`.tabs`): a lesson's language
+     switch is two choices in one bar, and the lit half is the
+     accent solid like a chosen tab. */
   .ls-lang {
-    display: inline-flex; gap: var(--s-1);
-    padding: var(--s-2);
-    background: var(--paper-sunk);
+    display: inline-flex; gap: 2px;
+    padding: 3px;
+    background: var(--panel);
     border: 1px solid var(--hairline);
     border-radius: var(--radius-sm);
     margin: var(--s-6) 0 var(--s-8);
@@ -13120,8 +13143,8 @@ German for day, and .tag is what the site has always called
     appearance: none; cursor: pointer;
     font: inherit; font-size: var(--t-2);
     padding: var(--s-3) var(--s-7);
-    border: 1px solid transparent;
-    border-radius: var(--radius-sm);
+    border: 0;
+    border-radius: var(--radius-xs);
     background: transparent; color: var(--ink-soft);
   }
   /* Lit from the attribute rather than from `aria-pressed`,
@@ -13131,9 +13154,8 @@ German for day, and .tag is what the site has always called
      exactly this reason. */
   :root[data-read-lang="en"] .ls-lang-btn[data-half="en"],
   :root:not([data-read-lang="en"]) .ls-lang-btn[data-half="bn"] {
-    background: var(--panel);
-    border-color: var(--hairline);
-    color: var(--ink);
+    background: var(--accent-strong);
+    color: var(--accent-ink);
   }
 
   /* ---- stars ---- */
@@ -14151,78 +14173,32 @@ German for day, and .tag is what the site has always called
 
   /* ---- the way from any page of this tool to any other ----
 
-     The account page's second floating object, one level down.
-     It is `.topbar` again: the same pill, the same ground, the
-     same edge and shadow, one `--top-gap` under the site's bar
-     and inside the page's own column, so a reader who has
-     learnt that the floating thing at the top is the site's
-     controls reads this one as this page's.
-
-     Links rather than tabs, because these are eleven separate
-     routes. `aria-current="page"` is what marks the one you are
-     on, which is the right word for a link and is also what the
-     stylesheet draws, so the two cannot disagree. */
-  .dt-tabs {
-    display: flex;
-    gap: var(--s-2);
-    flex-wrap: nowrap;
-    overflow-x: auto;
-    /* AND IT MUST NOT WIDEN THE PAGE. `overflow-x: auto` zeroes
-       the min-content contribution of a FLEX ITEM and not of a
-       block in normal flow, so fourteen tabs set this strip's
-       min-content to 1227px, `main.wrap` is `fit-content` because
-       its auto inline margins opt it out of stretch, and the
-       whole page went 83px past its column: a horizontal
-       scrollbar on the site, the language switch off the right
-       edge, and every panel below it clipped. `contain` is what
-       actually says "size me from my parent, not my contents". */
-    contain: inline-size;
-    scrollbar-width: none;
-    position: sticky;
-    top: calc(var(--top-space) + var(--top-gap));
-    z-index: 20;
-    padding: 6px var(--bar-pad);
-    margin-block-end: var(--step);
-    border-radius: var(--radius-sm);
-    border: 1px solid var(--hairline);
-    box-shadow: var(--shadow);
-  }
-  .dt-tabs::-webkit-scrollbar { display: none; }
-
-  .dt-tab {
-    flex: 0 0 auto;
-    display: inline-flex;
-    align-items: center;
-    gap: var(--s-3);
-    font-size: var(--t-1);
-    padding: var(--s-2) var(--s-4);
-    border-radius: var(--radius-sm);
-    color: var(--ink-soft);
-    text-decoration: none;
-    white-space: nowrap;
-  }
+     The site's own strip: `.tabs.tabs-nav[data-sticky]` in
+     `@layer components` is the bar, `.tab` the choice, and the
+     two strips (`diet/strip.tsx`, `research/strip.tsx`) add only
+     the dot that carries each page's own colour. Links rather
+     than tabs, because these are separate routes; `aria-current`
+     is what lights the one you are on, and `.tab` already draws
+     that state. It sits ABOVE the head, so it is in one place on
+     every page and the page changes beneath it. */
+  .dt-tabs { margin-block-end: var(--s-8); }
 
   /* THE PAGE'S OWN COLOUR, on every tab. Eleven grey words with
      one of them filled says which page you are on and nothing at
-     all about where the other ten go. The dot is the colour and
-     the pill only fills on the page you are on, so the strip
-     stays a strip rather than becoming a paint chart. */
+     all about where the other ten go. The dot is the colour; the
+     fill is the accent, on the page you are on, like every other
+     strip on the site. */
   .dt-tab-dot {
+    display: inline-block; vertical-align: middle;
     inline-size: 7px;
     block-size: 7px;
+    margin-inline-end: var(--s-3);
     border-radius: 50%;
     background: var(--tone, var(--accent));
-    flex: 0 0 auto;
     opacity: 0.75;
   }
-  .dt-tab:hover { color: var(--ink); }
   .dt-tab:hover .dt-tab-dot { opacity: 1; }
-
-  .dt-tab[aria-current="page"] {
-    background: var(--tone, var(--accent));
-    color: var(--accent-ink);
-  }
-  /* On the filled pill the dot would be a hole. */
+  /* On the filled tab the dot would be a hole. */
   .dt-tab[aria-current="page"] .dt-tab-dot {
     background: var(--accent-ink);
     opacity: 0.6;

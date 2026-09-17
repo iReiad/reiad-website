@@ -368,10 +368,12 @@ hero's type and buttons are the largest on the page. The tints are
 measured: `--accent-soft` is 12% and a dark panel 18% because
 `check-contrast.ts` fails one step louder.
 
-**`scripts/check-plain.ts` is what stops it coming back**, one small
-rule at a time, which is how every one of those arrived:
+**`scripts/check-plain.ts` lists what would bring it back**, one small
+rule at a time, which is how every one of those arrived. It is a list
+and not a failure now, because the look is not fixed (`DESIGN.md`):
+the list is there so the cost is known.
 
-| it fails on | which was |
+| it lists | which was |
 | --- | --- |
 | `backdrop-filter` | the glass |
 | `perspective`, `rotateX`, `rotateY` | the lean towards the pointer |
@@ -1311,8 +1313,8 @@ node scripts/check-utility-clash.ts # a class this site styles that Tailwind als
 node scripts/check-closed.ts # a new file on the old system: a browser module in
                             # aab/src/, a hand-written page, a functions/*.js
 node scripts/check-plain.ts # a blur, a turn towards the pointer, a light under
-                            # it or an entrance on scroll, coming back one rule
-                            # at a time
+                            # it or an entrance on scroll: a LIST of what costs
+                            # paint time, run by hand, never a failure
 node scripts/check-prefs.ts # a type step the panel offers and the boot script
                             # throws away before the first paint, so the choice
                             # never survives a reload
