@@ -75,10 +75,12 @@ const Html = ({ html, as: Tag = "p", className }: {
    book opens with three pronunciation days the game leaves out, so
    `#spiel-1` there opened a day with nothing to play. */
 function gameHref(href: string): string {
-  const m = href.match(/^(.*\/)([^/#]+)#spiel$/);
+  const m = href.match(/^\/([^/]+)\/([^/]+)\/([^/#]+)#spiel$/);
   if (!m) return href;
-  const day = bookFor(m[2])?.days.find((d) => hasGame(d.watch));
-  return day ? `${m[1]}${m[2]}#spiel-${day.n}` : `${m[1]}${m[2]}`;
+  const [, school, stage, page] = m;
+  const book = bookFor(stage);
+  const day = book?.school === school ? book.days.find((d) => hasGame(d.watch)) : undefined;
+  return day ? `/${school}/${stage}/${page}#spiel-${day.n}` : `/${school}/${stage}/${page}`;
 }
 
 function Actions({ actions, onAccent }: { actions: HubAction[]; onAccent?: boolean }) {
