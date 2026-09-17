@@ -16,7 +16,7 @@ had done "ধাপ ৩" could not say which they meant.
 The stage SLUGS did not move and must not: `start`, `basics-1`,
 `basics-2`, `basics-3` are in `learn-read` in real browsers and in
 `public.progress` in real accounts, and the rule at the top of
-"What a reader has read" in `CLAUDE.md` is the whole reason.
+"What a reader has read" in `HANDBOOK.md` is the whole reason.
 
 ## The ladder
 
@@ -165,7 +165,7 @@ itself in both languages from one definition.
 The last four arrived with the English school's grammar term and
 are the language schools': their lines are in the TARGET language,
 so they are plain strings, and `lesson/language.tsx` draws them.
-CLAUDE.md has the rules under "The English grammar term".
+HANDBOOK.md has the rules under "The English grammar term".
 
 **A LINE has points and a BAR has bands, and they are two scales.**
 `x(i)` spreads `i` edge to edge, which is what a line through

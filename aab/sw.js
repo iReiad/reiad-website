@@ -24,6 +24,10 @@
    the number moves. `node scripts/check-sw.ts --update` records the
    new hashes.
 
+   v255: the site is set like a book. /fallback.css carries the new
+         faces (Literata, Inter, Noto Serif Bengali), the square
+         corners and the one tab bar; /tools/tools.js drops a chosen
+         calculator in under a bar that stays still.
    v254: the English school gains a third term. /english/curriculum.js
          carries টার্ম ৩, twenty-five parts and a second book, and
          /content.js carries the menu's three-term blurb and the counts
@@ -46,7 +50,7 @@
    v249: comments. Every precached module lost the essay at the top
         of it and this file lost 2,167 lines of changelog, so the
         bytes moved without a line of behaviour changing. */
-const VERSION = "v254";
+const VERSION = "v255";
 const SHELL = `shell-${VERSION}`;
 const RUNTIME = `runtime-${VERSION}`;
 

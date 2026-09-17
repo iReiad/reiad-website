@@ -339,7 +339,7 @@ mechanical where it matters:
   script reading the published stylesheet, so a retuned accent on
   the site is a rebuild rather than a hand-edit. Per-section
   accents follow the nav table, as the site's `--accent` does.
-- **Type**: Spectral, IBM Plex Sans and Mono, Noto Sans and Serif
+- **Type**: Literata, Inter and IBM Plex Mono, Noto Serif
   Bengali, Caveat, via Compose's Google Fonts provider with
   bundled fallbacks; the nine-step scale and the looser Bangla
   leading are a Typography object. Bangla-first labelling (Bangla
@@ -523,7 +523,7 @@ Custom Tab. Nothing else until a phase demands it.
 | File | What it is to the app |
 | --- | --- |
 | this file | the plan |
-| `CLAUDE.md` | the rules, above all "What a reader has read" |
+| `HANDBOOK.md` | the rules, above all "What a reader has read" |
 | `aab/src/sync.ts` | the sync contract and the key list |
 | `aab/src/account.ts` | the auth flows and the session shape |
 | `functions/_lib/sanitise.ts` | the whole grammar a body can hold |

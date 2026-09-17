@@ -12,7 +12,7 @@
    ---- the account below is invented, and has to be ----
 
    Not a snapshot of the real one. That account is one person's
-   and this file is committed: every rule in CLAUDE.md's Backups
+   and this file is committed: every rule in HANDBOOK.md's Backups
    section about what may go in git applies, and "the repository
    is private" is not an answer, because visibility is one click
    and retroactive in neither direction.

@@ -99,7 +99,7 @@ interface Book {
 
 /* The three books, and the two storage keys they must write. Those
    strings are in real browsers: the rule at the top of "What a
-   reader has read" in CLAUDE.md is why renaming one loses
+   reader has read" in HANDBOOK.md is why renaming one loses
    somebody's work rather than moving it. */
 const BOOKS: Book[] = [
   { school: "deutsch", slug: "stufe-1", script: "/deutsch/arbeitsbuch.js", writeKey: "deutsch-schrift" },

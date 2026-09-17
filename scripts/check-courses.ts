@@ -495,7 +495,7 @@ if (!sample) {
   }
 }
 
-/* 10. What CLAUDE.md says the catalogue holds
+/* 10. What HANDBOOK.md says the catalogue holds
 
    That row states five numbers about a generated file, which is
    the shape of claim the rule at the top of that file is about:
@@ -511,12 +511,12 @@ if (!sample) {
 const counts = catalogueCounts();
 
 {
-  const rules = readFileSync(join(ROOT, "CLAUDE.md"), "utf8");
+  const rules = readFileSync(join(ROOT, "HANDBOOK.md"), "utf8");
   const row = rules.split("\n").find((line) =>
     line.includes("shared/courses.data.json") && line.includes("Generated"));
 
   if (!row) {
-    say("CLAUDE.md no longer has a row saying what the catalogue holds. "
+    say("HANDBOOK.md no longer has a row saying what the catalogue holds. "
       + "Either it moved, in which case fix the finder here, or it went, "
       + "in which case this check has nothing to hold and should go too.");
   } else {
@@ -533,9 +533,9 @@ const counts = catalogueCounts();
     ];
     for (const [what, claimed, real] of claims) {
       if (claimed === null) {
-        say(`CLAUDE.md's catalogue row no longer says how many ${what}s there are`);
+        say(`HANDBOOK.md's catalogue row no longer says how many ${what}s there are`);
       } else if (claimed !== real) {
-        say(`CLAUDE.md says ${claimed} ${what}(s) and the catalogue holds ${real}`);
+        say(`HANDBOOK.md says ${claimed} ${what}(s) and the catalogue holds ${real}`);
       }
     }
   }

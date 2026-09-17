@@ -77,7 +77,7 @@ function Section({ id, title, blurb, children }: {
             rhythm device the section rail's active chip uses, so
             eight sections read as one page rather than as eight
             features that arrived separately. */}
-        <span className="mb-1 h-[3px] w-7 rounded-full bg-green/70" aria-hidden="true" />
+        <span className="mb-1 h-[3px] w-7 rounded-tight bg-green/70" aria-hidden="true" />
         <h2 className="m-0 font-read text-[clamp(1.2rem,3.4vw,1.5rem)]">{title}</h2>
         <p className="m-0 max-w-[var(--measure)] text-t5 text-ink-soft">{blurb}</p>
       </div>
@@ -318,7 +318,7 @@ export default function AccountPage() {
                     cell beside a pinned image instead of under it. */}
             <span id="account-face" aria-hidden="true"
                   className="relative grid aspect-square w-[clamp(48px,12vw,62px)] place-items-center
-                             overflow-hidden rounded-full bg-green font-read
+                             overflow-hidden rounded-tight bg-green font-read
                              text-[clamp(1.3rem,5vw,1.8rem)] leading-none text-white
                              [&>img]:absolute [&>img]:inset-0 [&>img]:size-full [&>img]:object-cover" />
             <div className="min-w-0">

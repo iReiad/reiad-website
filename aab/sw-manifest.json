@@ -1,8 +1,8 @@
 {
-  "version": "v254",
+  "version": "v255",
   "hashes": {
-    "/offline.html": "bd9144e7162be323",
-    "/fallback.css": "cad7010f8d859ed0",
+    "/offline.html": "87b4e796dca2f580",
+    "/fallback.css": "02879dc4dacac96a",
     "/app.js": "15fc494b10b8f0e5",
     "/content.js": "8d901ab4a400b0e4",
     "/api.js": "2fa93d7b5e02d2e3",
@@ -15,7 +15,7 @@
     "/photo.js": "494fdc73845dabe8",
     "/saved.js": "08cf896f276e0043",
     "/prefs.js": "9c7d0b9c5a23e085",
-    "/checkpoints.js": "76b8d5874dcaa160",
+    "/checkpoints.js": "ca2d1953175a9017",
     "/audience.js": "258e3cfce4163f89",
     "/activation.js": "a97badadcf296094",
     "/money/reader.js": "4abf83585f45cfbb",

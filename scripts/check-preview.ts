@@ -214,7 +214,7 @@ for (const route of ROUTES) {
        This counted `class="cell read-card"` and `sample-card`
        until 3 September 2026, and those are two of the three
        shapes a piece wore before `<GoCard>` became the only one:
-       CLAUDE.md's "One thing is one card". So it reported nought
+       HANDBOOK.md's "One thing is one card". So it reported nought
        cards on every hub, on main as much as on a branch, and it
        had been doing so since that change: the one check nobody
        runs without a preview URL to hand.

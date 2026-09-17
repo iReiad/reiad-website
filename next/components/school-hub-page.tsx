@@ -43,6 +43,8 @@ import { Band } from "./ui/band";
 import { Button, ButtonLink } from "./ui/button";
 import { InfoCard } from "./deck";
 import { Eyebrow, SectionLabel } from "./ui/label";
+import { Medals } from "./medals";
+import { stageIdsOf } from "../lib/medal-stages";
 
 /* The hero's own class, written out rather than interpolated.
 
@@ -194,11 +196,11 @@ export function SchoolHubPage({ school }: { school: string }) {
         <div className="flex flex-wrap items-center gap-3">
           <Actions actions={hero.actions} />
           {hero.round ? (
-            /* A disc rather than a pill, on purpose: it is the one
-               door on this page that is not a lesson, and it should
+            /* A square with a double edge and its own ground: it is the
+               one door on this page that is not a lesson, and it should
                look like a different kind of thing. */
             <a href={hero.round.href}
-               className="ml-auto inline-grid size-36 place-items-center rounded-full border-2 border-accent bg-accent-soft p-3 text-center no-underline shadow-[var(--shadow-lift)] transition-[background-color,translate] duration-[var(--fast)] ease-[var(--ease)] hover:bg-accent-strong hover:text-accent-ink hover:-translate-y-0.5">
+               className="ml-auto inline-grid size-36 place-items-center rounded-card border-2 border-accent bg-accent-soft p-3 text-center no-underline shadow-[var(--shadow-lift)] transition-[background-color,translate] duration-[var(--fast)] ease-[var(--ease)] hover:bg-accent-strong hover:text-accent-ink hover:-translate-y-0.5">
               <span className="grid gap-0.5">
                 <b className="font-code text-t3 uppercase tracking-wider" lang="en">{hero.round.label}</b>
                 <span className="text-t2" lang="bn">{hero.round.sub}</span>
@@ -215,6 +217,10 @@ export function SchoolHubPage({ school }: { school: string }) {
             is already looking at. */}
         <div id="resume" hidden />
       </div>
+
+      {/* What a learner has earned here. Nothing for a stranger: the
+          component renders null until there is a tick in this school. */}
+      <Medals school={school} stages={stageIdsOf(school)} />
 
       {sections.map((s) => <Section key={s.id} section={s} />)}
 

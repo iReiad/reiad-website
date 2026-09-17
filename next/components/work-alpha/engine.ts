@@ -307,7 +307,9 @@ export function mount(root: HTMLElement, plan: Plan, storage: Storage): Promise<
   const shell = {
     head: h("header", { class: "wa-head" }),
     track: h("section", { class: "wa-track" }),
-    tabs: h("nav", { class: "wa-tabs", role: "tablist" }),
+    /* The site's own strip (`.tabs` in `@layer components`), so
+       this page's bar is the one every other page has. */
+    tabs: h("nav", { class: "tabs tabs-nav", role: "tablist" }),
     main: h("main", { class: "wa-main" }),
     modal: h("div", { class: "wa-modal", hidden: true }),
   };
@@ -476,18 +478,30 @@ export function mount(root: HTMLElement, plan: Plan, storage: Storage): Promise<
   function renderTabs(): void {
     shell.tabs.replaceChildren(...PAGES.map(([id, name]) =>
       h("button", {
-        class: "wa-tab" + (page === id ? " is-on" : ""),
+        class: "tab",
         role: "tab",
         "aria-selected": page === id,
         onclick: () => { page = id; render(); },
-      }, name)));
+      }, h("span", { class: "tab-en" }, name))));
   }
 
+  /* Which page the main was last drawn for, so the drop-in plays
+     on a CHANGE of page and not on every render: a tick redraws
+     the page, and a page that dropped in on every tick would be
+     nodding at the reader. Null until the first draw, which does
+     not play either. */
+  let drawn: PageId | null = null;
   function renderMain(): void {
     shell.main.replaceChildren(pages[page]());
-    shell.main.classList.remove("wa-enter");
-    void shell.main.offsetWidth;
-    shell.main.classList.add("wa-enter");
+    /* `[data-enter]` is the site's keyframe, shared with the
+       calculators and the account page: the bar stays still and
+       the new page drops in under it. */
+    if (drawn !== null && drawn !== page) {
+      shell.main.removeAttribute("data-enter");
+      void shell.main.offsetWidth;
+      shell.main.setAttribute("data-enter", "");
+    }
+    drawn = page;
   }
 
   /* ---------- dashboard ---------- */

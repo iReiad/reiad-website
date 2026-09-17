@@ -11,7 +11,7 @@
    the school's own name, and `learn` is the reason: the money
    school moved to /money/ in August 2026 and its keys did not
    move with it, because a key is a string in real browsers and in
-   real accounts rather than an identifier. CLAUDE.md, "What a
+   real accounts rather than an identifier. HANDBOOK.md, "What a
    reader has read". */
 const PREFIX: Record<string, string> = {
   money: "learn",

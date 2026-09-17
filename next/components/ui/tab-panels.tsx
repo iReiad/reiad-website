@@ -76,6 +76,26 @@ export function TabPanels({ label, panels, className }: {
     return () => removeEventListener("hashchange", fromHash);
   }, [has, panels]);
 
+  /* THE BAR STAYS STILL AND THE PANEL DROPS IN. `data-enter` is
+     what `@layer components` animates, written after the switch
+     and never on the first panel: a page that played this on
+     load would be every account page sliding in from nowhere.
+     Removed and re-added across a forced layout so a press on
+     the same tab twice plays twice, which is what Work-Alpha's
+     engine does and what the calculators do. */
+  const shown = useRef<string | null>(null);
+  useEffect(() => {
+    if (at === null) return;
+    const was = shown.current;
+    shown.current = at;
+    if (was === null || was === at) return;
+    const el = document.getElementById(`panel-${at}`);
+    if (!el) return;
+    el.removeAttribute("data-enter");
+    void el.offsetWidth;
+    el.setAttribute("data-enter", "");
+  }, [at]);
+
   const go = useCallback((id: string, focus = false) => {
     setAt(id);
     if (location.hash.slice(1) !== id) {

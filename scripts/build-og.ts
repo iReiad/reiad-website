@@ -289,7 +289,7 @@ const cardFor = (rel: string): string =>
 
 const FONTS = FONT_CSS
   ? `<style>${readFileSync(FONT_CSS, "utf8")}</style>`
-  : `<link href="https://fonts.googleapis.com/css2?family=Spectral:wght@500&family=IBM+Plex+Mono:wght@400;500&family=Noto+Serif+Bengali:wght@600&family=Noto+Sans+Bengali:wght@400&display=swap" rel="stylesheet">`;
+  : `<link href="https://fonts.googleapis.com/css2?family=Literata:opsz,wght@7..72,500&family=IBM+Plex+Mono:wght@400;500&family=Noto+Serif+Bengali:wght@400;600&display=swap" rel="stylesheet">`;
 
 const page = (card: Card): string => `<!doctype html><meta charset="utf-8">
 ${FONTS}

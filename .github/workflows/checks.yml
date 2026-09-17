@@ -74,6 +74,6 @@ jobs:
       # them SKIPS rather than fails without a browser, a server on
       # :8899 or an OpenNext build, and exits 0, so adding them
       # here would turn a green tick into a statement about
-      # nothing. CLAUDE.md says which ones and what each needs.
+      # nothing. HANDBOOK.md says which ones and what each needs.
       - name: Run the tests
         run: node scripts/check-all.ts --stage=tests

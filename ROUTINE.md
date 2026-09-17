@@ -353,7 +353,7 @@ adding a seventh task.
 
 ### 7.13 A routine is a fourth kind of target
 
-`public.targets` has three kinds and `CLAUDE.md` sets the bar for a
+`public.targets` has three kinds and `HANDBOOK.md` sets the bar for a
 fourth: *"if the site cannot measure it out of something it already
 holds, the bar would be a decoration."* A routine is measurable out
 of `routine_entries`, so `kind = 'routine'` passes honestly. It is

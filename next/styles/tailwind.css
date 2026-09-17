@@ -186,7 +186,7 @@
   --radius-*: initial;
   --radius-card: var(--radius);
   --radius-tight: var(--radius-sm);
-  --radius-round: var(--radius-pill);
+  --radius-round: var(--radius-sm);
 
   /* ---- and the same collision, six more times ----
 

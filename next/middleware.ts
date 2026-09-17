@@ -41,7 +41,7 @@ const PRIVATE_CACHE = "private, no-store";
 
 /* Matched on the path so that a route added under one of these
    gets it without knowing this file exists. `/skills/courses` is
-   here for the reason at the top of its own section in CLAUDE.md:
+   here for the reason at the top of its own section in HANDBOOK.md:
    it is somebody else's course, behind `isAdmin()`, and a shared
    copy of it is a redistribution. */
 const PRIVATE = [/^\/admin(\/|$)/, /^\/account(\/|$)/, /^\/studio(\/|$)/,

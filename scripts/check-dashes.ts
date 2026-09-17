@@ -81,7 +81,7 @@ for (const file of tracked) {
 if (found.length) {
   console.error(`${found.length} em dash(es):\n`);
   for (const line of found) console.error(`   ${line}`);
-  console.error("\nThe top of CLAUDE.md has the table of what to use instead. A"
+  console.error("\nHANDBOOK.md, \"Punctuation\", has the table of what to use instead. A"
     + " sentence that\nneeds one is usually two ideas that have not been"
     + " separated properly.\n\nIf a file must carry one, add it to ALLOWED in"
     + " this check with the reason.\n");

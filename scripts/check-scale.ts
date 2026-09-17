@@ -16,7 +16,7 @@
    the top of the scale is what this fails on.
 
    The corners are the same rule: `--radius-xs` to `--radius-lg`
-   and `--radius-pill` are the rungs and a literal px radius fails.
+   are the rungs and a literal px radius fails.
    A percentage does not, because a circle is a shape rather than a
    rung. */
 

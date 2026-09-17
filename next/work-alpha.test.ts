@@ -106,7 +106,7 @@ const TABS = ["dashboard", "plan", "goals", "library", "gap", "data", "people",
 
   is("the head carries the plan's name", root.querySelector("h1")?.textContent, PLAN.name);
   is("seven flags on the goal track", count(".wa-flag"), PLAN.goals.length);
-  is("twelve tabs", count(".wa-tab"), TABS.length);
+  is("twelve tabs", count(".wa .tab"), TABS.length);
   is("the dashboard lists the current day's tasks",
     count(".wa-main .wa-task:not(.wa-ritual)"), CURRENT.tasks.length);
   is("and the two rituals around them", count(".wa-main .wa-ritual"), 2);
@@ -350,7 +350,7 @@ console.log("\nthe three locks, in a browser");
   const { page, context, account, errors } = await openPage({ owner: true });
   ok("the owner gets the app", await shows(page, ".wa .wa-flag"), errors.join(" | "));
   is("seven flags", await page.locator(".wa-flag").count(), PLAN.goals.length);
-  is("twelve tabs", await page.locator(".wa-tab").count(), TABS.length);
+  is("twelve tabs", await page.locator(".wa .tab").count(), TABS.length);
   is("the current day's tasks", await page.locator(".wa-main .wa-task:not(.wa-ritual)").count(),
     CURRENT.tasks.length);
   ok("and the rail draws the entry", await shows(page, RAIL_ENTRY));
@@ -389,7 +389,7 @@ console.log("\nthe three locks, in a browser");
   is("and Escape closes it", await page.locator(".wa-modal[hidden]").count(), 1);
 
   for (let i = 0; i < TABS.length; i++) {
-    await page.click(`.wa-tab >> nth=${i}`);
+    await page.click(`.wa .tab >> nth=${i}`);
     const nodes = await page.locator(".wa-main *").count();
     ok(`the ${TABS[i]} tab renders`, nodes >= 5, `${nodes} node(s)`);
   }
