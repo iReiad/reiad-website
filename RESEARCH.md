@@ -2103,7 +2103,7 @@ policies), `scripts/check-storage.ts` (the five keys),
 `scripts/check-csp.ts` and `scripts/check-headers.ts` (the three
 words added to the policy), `scripts/check-admin.ts` (the gates),
 `scripts/check-css.ts` (the chip class in three places, the desk's
-rules gone), `scripts/check-plain.ts` (no blur, no turn, no light in
+rules gone), `scripts/check-plain.ts` (a list of any blur, turn or light in
 a new room), `scripts/check-content.ts` (any count a room states),
 `scripts/check-crons.ts` (the weekly alert), `scripts/check-api.ts`
 (every endpoint the browser calls is routed), `scripts/check-icons.ts`

@@ -24,6 +24,10 @@
    the number moves. `node scripts/check-sw.ts --update` records the
    new hashes.
 
+   v256: the strips join the one bar. /fallback.css draws the diet and
+         research strips, the segmented controls and a lesson's language
+         switch as the site's tab bar, and lays a chart's hidden data
+         table out at 1px.
    v255: the site is set like a book. /fallback.css carries the new
          faces (Literata, Inter, Noto Serif Bengali), the square
          corners and the one tab bar; /tools/tools.js drops a chosen
@@ -50,7 +54,7 @@
    v249: comments. Every precached module lost the essay at the top
         of it and this file lost 2,167 lines of changelog, so the
         bytes moved without a line of behaviour changing. */
-const VERSION = "v255";
+const VERSION = "v256";
 const SHELL = `shell-${VERSION}`;
 const RUNTIME = `runtime-${VERSION}`;
 

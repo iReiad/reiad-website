@@ -49,20 +49,23 @@ export function ResearchStrip() {
 
   return (
     <nav
-      className="dt-tabs topbar"
+      className="tabs tabs-nav dt-tabs"
+      data-sticky=""
       ref={bar as React.RefObject<HTMLElement>}
       onKeyDown={onKey}
       aria-label="Research rooms / গবেষণার ঘর"
     >
       <Link
         href={RESEARCH_HOME}
-        className="dt-tab"
+        className="tab dt-tab"
         style={{ "--tone": toneVar(RESEARCH_TONE) } as React.CSSProperties}
         aria-current={onHome ? "page" : undefined}
         tabIndex={onHome ? 0 : -1}
       >
-        <span className="dt-tab-dot" aria-hidden="true" />
-        <T en="Board" bn="বোর্ড" />
+        <span className="tab-en">
+          <span className="dt-tab-dot" aria-hidden="true" />
+          <T en="Board" bn="বোর্ড" />
+        </span>
       </Link>
       {RESEARCH_PAGES.map((p) => {
         const here = at(p.href);
@@ -70,13 +73,15 @@ export function ResearchStrip() {
           <Link
             key={p.href}
             href={p.href}
-            className="dt-tab"
+            className="tab dt-tab"
             style={{ "--tone": toneVar(p.tone) } as React.CSSProperties}
             aria-current={here ? "page" : undefined}
             tabIndex={here ? 0 : -1}
           >
-            <span className="dt-tab-dot" aria-hidden="true" />
-            <T en={p.tab.en} bn={p.tab.bn} />
+            <span className="tab-en">
+              <span className="dt-tab-dot" aria-hidden="true" />
+              <T en={p.tab.en} bn={p.tab.bn} />
+            </span>
           </Link>
         );
       })}

@@ -13,8 +13,8 @@
    their own metadata, their own data and their own addresses,
    and folding them into one page would take the addresses away.
 
-   So it is the same SHAPE and not the same component: the pill,
-   the glass, the roving tabindex, the arrow keys. What it is not
+   So it is the same SHAPE and not the same component: the strip,
+   the roving tabindex, the arrow keys. What it is not
    is a `role="tablist"`, because these are links to other
    documents and calling a link a tab tells a screen reader a
    panel is about to change under it when a page is about to
@@ -90,21 +90,29 @@ export function DietStrip() {
   const onHome = at(DIET_HOME);
 
   return (
+    /* THE SITE'S OWN STRIP (`.tabs` in @layer components), so this
+       bar is the one every other page has, and it sits ABOVE the
+       head in `page-frame.tsx`: under a title and a lede of varying
+       length it moved on every page change, which is the opposite
+       of a bar that holds still. */
     <nav
-      className="dt-tabs topbar"
+      className="tabs tabs-nav dt-tabs"
+      data-sticky=""
       ref={bar as React.RefObject<HTMLElement>}
       onKeyDown={onKey}
       aria-label={lang === "bn" ? "খাদ্য ও ওজনের পাতাগুলো" : "Diet tool pages"}
     >
       <Link
         href={DIET_HOME}
-        className="dt-tab"
+        className="tab dt-tab"
         style={{ "--tone": DIET_TONE } as React.CSSProperties}
         aria-current={onHome ? "page" : undefined}
         tabIndex={onHome ? 0 : -1}
       >
-        <span className="dt-tab-dot" aria-hidden="true" />
-        <T en="Today" bn="আজ" />
+        <span className="tab-en">
+          <span className="dt-tab-dot" aria-hidden="true" />
+          <T en="Today" bn="আজ" />
+        </span>
       </Link>
       {DIET_PAGES.map((p) => {
         const here = at(p.href);
@@ -112,7 +120,7 @@ export function DietStrip() {
           <Link
             key={p.href}
             href={p.href}
-            className="dt-tab"
+            className="tab dt-tab"
             /* Its own colour, on every tab rather than only the
                current one: a strip where ten tabs are grey and
                one is coloured says which page you are on and
@@ -125,8 +133,10 @@ export function DietStrip() {
                strip is never a dead tab stop. */
             tabIndex={here || (onHome && false) ? 0 : -1}
           >
-            <span className="dt-tab-dot" aria-hidden="true" />
-            <T en={p.tab.en} bn={p.tab.bn} />
+            <span className="tab-en">
+              <span className="dt-tab-dot" aria-hidden="true" />
+              <T en={p.tab.en} bn={p.tab.bn} />
+            </span>
           </Link>
         );
       })}

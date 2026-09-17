@@ -33,6 +33,9 @@ export const metadata: Metadata = pageMeta({
 export default function DietPage() {
   return (
     <main id="main" className="wrap dt-page">
+      {/* First, above the head: the same place as on every other
+          page of the tool. */}
+      <DietStrip />
       <header className="dt-head">
         <div className="dt-head-row">
           <h1 lang="bn">খাদ্য ও ওজন</h1>
@@ -56,7 +59,6 @@ export default function DietPage() {
         />
       </header>
 
-      <DietStrip />
 
       <DietBoard />
 
