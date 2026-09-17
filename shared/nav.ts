@@ -121,7 +121,7 @@ export const NAV: NavGroup[] = [
       {
         label: "English", sub: "মন থেকে ইংরেজি", href: "/english",
         icon: "signpost", key: "english", art: "bubbles", kind: "কোর্স", ladder: true, accent: "var(--violet)",
-        blurb: "দুই টার্মে ইংরেজি: শব্দের ক্রম থেকে দুই মিনিট টানা বলা পর্যন্ত, সাথে ৩০ দিনের খাতা।",
+        blurb: "তিন টার্মে ইংরেজি: শব্দের ক্রম থেকে দুই মিনিট টানা বলা, তারপর পুরো ব্যাকরণ, সাথে দুটো ৩০ দিনের খাতা।",
       },
       {
         label: "Cooking", sub: "রান্না", href: "/cooking",

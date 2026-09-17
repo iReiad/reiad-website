@@ -201,7 +201,7 @@ const CARDS: Card[] = [
      card and one per term. */
   { file: "english.png", eyebrow: "মন থেকে ইংরেজি · English From The Heart",
     title: "মুখস্থ নয়। কাঠামো।",
-    sub: "দুই টার্ম · রোজ এক ঘণ্টা · অর্ধেকটা মুখে বলা", bn: true },
+    sub: "তিন টার্ম · রোজ এক ঘণ্টা · অর্ধেকটা মুখে বলা", bn: true },
   /* The kitchen. One card for the whole of it: the pieces differ
      in ingredient, not in kind, and a card naming an onion would
      be wrong on the next piece that lands. */

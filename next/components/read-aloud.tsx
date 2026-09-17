@@ -61,8 +61,11 @@ function readable(article: Element): Segment[] {
 /** The closest voice to the language the piece is in: the exact
     tag, then the language whatever the region, then an English one
     for a language this machine has no voice for at all, because a
-    Bangla sentence read by an English voice is still words. */
-function pickVoice(voices: SpeechSynthesisVoice[], lang: string): SpeechSynthesisVoice | null {
+    Bangla sentence read by an English voice is still words.
+
+    Exported for `lesson/hear.tsx`, which speaks one line of a
+    lesson with the same voice this reads the whole piece in. */
+export function pickVoice(voices: SpeechSynthesisVoice[], lang: string): SpeechSynthesisVoice | null {
   const short = lang.split("-")[0];
   return voices.find((v) => v.lang === lang)
     ?? voices.find((v) => v.lang?.startsWith(short))

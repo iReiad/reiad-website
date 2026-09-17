@@ -244,7 +244,7 @@ export const SKILLS: Skill[] = [
     url: "/english",
     icon: "signpost",
     status: "live",
-    blurb: "দুই টার্মে ইংরেজি: শব্দের ক্রম থেকে দুই মিনিট টানা বলা পর্যন্ত, সাথে ৩০ দিনের খাতা।",
+    blurb: "তিন টার্মে ইংরেজি: শব্দের ক্রম থেকে দুই মিনিট টানা বলা, তারপর পুরো ব্যাকরণ, সাথে দুটো ৩০ দিনের খাতা।",
   },
   {
     slug: "cooking",
@@ -522,7 +522,7 @@ export const PAGES: Page[] = [
     hint: "Tool", group: "deutsch",
     blurb: "For learners on the Netzwerk neu books: a 52 or 40 week plan from your own start date, a chapter tracker with spaced reviews, a daily log and a weekly score." },
   { title: "English: মন থেকে ইংরেজি", url: "/english",
-    hint: "Page", blurb: "English from Bangla in two terms, from word order to holding the floor for two minutes." },
+    hint: "Page", blurb: "English from Bangla in three terms: from word order to holding the floor for two minutes, then the whole grammar with games and a sound on every line." },
 
   /* One entry per practice book, built from the curriculum, for
      the reason the German ones are. */

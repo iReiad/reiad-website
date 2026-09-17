@@ -23,6 +23,8 @@ import { SectionLabel } from "./ui/label";
 import { Button } from "./ui/button";
 import { SentenceGame, type GameWords } from "./sentence-game";
 import { hasGame, playable } from "../lib/sentence-game";
+import { Hear } from "./lesson/hear";
+import { Gap } from "./lesson/language";
 
     /** The key a textarea saves under: `<stufe slug>/<name>`, where the
         name carries the day number. The builder made this string and so
@@ -48,12 +50,12 @@ const WORDS = {
   deutsch: {
     day: "Tag", pattern: "Das Muster · ছাঁচ",
     watch: "Schau", swap: "Tausche", say: "Sag es", heart: "Von Herzen",
-    game: "Satzbau",
+    game: "Satzbau", gap: "Lücke",
   },
   english: {
     day: "Day", pattern: "The pattern · ছাঁচ",
     watch: "Watch", swap: "Swap", say: "Say it", heart: "From the heart",
-    game: "Word order",
+    game: "Word order", gap: "Fill the gap",
   },
 } as const;
 
@@ -102,7 +104,15 @@ export function WorkbookDayCard(
         <div className="satz-list">
           {day.watch.map((s, i) => (
             <p className="satz" key={i}>
-              <b lang={lang}>{s.target}</b><span>{s.bn}</span>
+              {/* The speaker inside the line's own element, so the
+                  two-column grid a line sits in is not handed a
+                  third child. Left off a pronunciation key line,
+                  which is a pair of words and not a sentence. */}
+              <b lang={lang}>
+                {s.target}
+                {s.target.includes("=") ? null : <Hear text={s.target} lang={lang} />}
+              </b>
+              <span>{s.bn}</span>
             </p>
           ))}
         </div>
@@ -136,6 +146,18 @@ export function WorkbookDayCard(
           ))}
         </div>
       </section>
+
+      {/* The grammar book's drill: the day's rule, applied to six
+          sentences with a hole in each. Between the reader's own
+          sentences and the translations, so the rule is tested
+          before it is used. A book whose days carry none draws
+          nothing here. */}
+      {day.gaps?.length ? (
+        <section className="tag-teil luecke" id={`gap-${day.n}`}>
+          <h3 className="mono"><span lang={lang}>{w.gap}</span> · সঠিক শব্দটা বসাও</h3>
+          <Gap items={day.gaps} id={`${slug}/${day.n}`} lang={lang} />
+        </section>
+      ) : null}
 
       <section className="tag-teil sagen">
         <h3 className="mono"><span lang={lang}>{w.say}</span> · আগে বলো, তারপর লেখো</h3>

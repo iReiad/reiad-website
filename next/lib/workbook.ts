@@ -28,6 +28,14 @@ export interface WorkbookPrompt {
   a: string;
 }
 
+/** A sentence with one hole and words to try in it: the grammar
+    book's drill, the same shape a lesson's `gap` block holds, so
+    one component fills both. NOT called `a` anywhere inside:
+    `/api/book/<stage>` strips `say[].a` and asserts no field of
+    that name leaves in the bytes. */
+import type { GapItem } from "@reiad/shared/lesson";
+export type { GapItem };
+
 /** One day. Always the same four parts, which is the whole point
     of the book: the shape of the page never changes, only what is
     poured into it. */
@@ -41,6 +49,10 @@ export interface WorkbookDay {
   watch: WorkbookLine[];
   /** Prompts to translate. Speak first, write second. */
   say: WorkbookPrompt[];
+  /** Sentences with a hole in them, for a book that drills a
+      rule. Only the grammar book has them; a book with none
+      draws no section. */
+  gaps?: GapItem[];
   /** The free-writing task. */
   heart: { target: string; bn: string };
 }
@@ -114,6 +126,7 @@ import deutschStufe1 from "./workbooks/deutsch-stufe-1.ts";
 import deutschStufe2 from "./workbooks/deutsch-stufe-2.ts";
 import deutschStufe3 from "./workbooks/deutsch-stufe-3.ts";
 import englishTerm1 from "./workbooks/english-term-1.ts";
+import englishTerm3 from "./workbooks/english-term-3.ts";
 
 /* The two source shapes, described exactly as the files write
    them, so the adapters below are checked rather than trusted. */
@@ -146,6 +159,7 @@ interface EnglishBook {
     pattern: { shape: string; why: string; examples: string; tip: string };
     watch: { en: string; bn: string }[];
     say: WorkbookPrompt[];
+    gaps?: GapItem[];
     heart: { en: string; bn: string };
   }[];
 }
@@ -206,6 +220,7 @@ const fromEnglish = (b: EnglishBook): WorkbookBook => ({
     pattern: d.pattern,
     watch: d.watch.map((s) => ({ target: s.en, bn: s.bn })),
     say: d.say,
+    ...(d.gaps ? { gaps: d.gaps } : {}),
     heart: { target: d.heart.en, bn: d.heart.bn },
   })),
 });
@@ -213,12 +228,14 @@ const fromEnglish = (b: EnglishBook): WorkbookBook => ({
 /** Every practice book, by the slug of the rung it belongs to.
 
     The slugs do not collide: German counts in Stufen and English
-    in terms. */
+    in terms. Term 2 has none, on purpose: `chorcha` in the ladder
+    says what the practice is instead. */
 export const BOOKS: Record<string, WorkbookBook> = {
   "stufe-1": fromGerman(deutschStufe1 as GermanBook),
   "stufe-2": fromGerman(deutschStufe2 as GermanBook),
   "stufe-3": fromGerman(deutschStufe3 as GermanBook),
   "term-1": fromEnglish(englishTerm1 as EnglishBook),
+  "term-3": fromEnglish(englishTerm3 as EnglishBook),
 };
 
 /**

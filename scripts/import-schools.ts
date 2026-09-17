@@ -41,14 +41,28 @@ const CURRICULA = join(ROOT, "shared", "curricula");
    failure. */
 const SNAPSHOT = join(ROOT, "content", "schools.backup.json");
 
-interface SnapshotLesson { school: string; stage: string; slug: string; body?: string }
+interface SnapshotLesson {
+  school: string; stage: string; slug: string;
+  body?: string; body_en?: string; blocks?: string;
+}
 
-function proseFromSnapshot(): Map<string, string> {
-  const by = new Map<string, string>();
+/** A lesson's three written columns, as the snapshot holds them.
+    All three, not the body alone: the money school's blocks and
+    the grammar term's are rows too, and an import that carried
+    the prose and dropped the blocks would leave eighty lessons
+    with a heading over every mount. */
+interface Prose { body: string; body_en: string; blocks: string }
+
+function proseFromSnapshot(): Map<string, Prose> {
+  const by = new Map<string, Prose>();
   if (!existsSync(SNAPSHOT)) return by;
   const snap = JSON.parse(readFileSync(SNAPSHOT, "utf8")) as { lessons?: SnapshotLesson[] };
   for (const l of snap.lessons ?? []) {
-    if (l.body) by.set(`${l.school}/${l.stage}/${l.slug}`, l.body);
+    if (l.body) {
+      by.set(`${l.school}/${l.stage}/${l.slug}`, {
+        body: l.body, body_en: l.body_en ?? "", blocks: l.blocks || "{}",
+      });
+    }
   }
   return by;
 }
@@ -202,7 +216,9 @@ export async function readSchool(school: School): Promise<Rows> {
           /* An empty body is not a failure: the builders already
              draw a "coming soon" page for a lesson nobody has
              written, and that has to keep working. */
-          body: prose.get(`${school.id}/${stage.slug}/${lesson.slug}`) ?? "",
+          body: prose.get(`${school.id}/${stage.slug}/${lesson.slug}`)?.body ?? "",
+          body_en: prose.get(`${school.id}/${stage.slug}/${lesson.slug}`)?.body_en ?? "",
+          blocks: prose.get(`${school.id}/${stage.slug}/${lesson.slug}`)?.blocks ?? "{}",
         });
       }
     }
@@ -278,10 +294,11 @@ export function toSql(all: Rows, now: string): string {
   }
   for (const l of all.lessons) {
     lines.push(
-      "INSERT INTO school_lessons (school, stage, slug, section, position, title, minutes, status, meta, body, updated_at) VALUES ("
+      "INSERT INTO school_lessons (school, stage, slug, section, position, title, minutes, status, meta, body, body_en, blocks, updated_at) VALUES ("
       + [
         q(l.school), q(l.stage), q(l.slug), q(l.section), l.position,
-        q(l.title), l.minutes, q(l.status), json(l.meta), q(l.body), q(now),
+        q(l.title), l.minutes, q(l.status), json(l.meta), q(l.body),
+        q(l.body_en ?? ""), q(l.blocks ?? "{}"), q(now),
       ].join(", ")
       + ");"
     );

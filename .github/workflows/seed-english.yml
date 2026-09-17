@@ -1,0 +1,106 @@
+# Write the English school's rows into D1, from a browser.
+#
+#   GitHub -> Actions -> "Seed the English school into D1" -> Run workflow
+#
+# The sibling of seed-money.yml, and it needs the same
+# CLOUDFLARE_API_TOKEN secret; import-schools.yml says how to make
+# one.
+#
+# WHY THE ENGLISH SCHOOL HAS ITS OWN: the grammar term's prose is
+# in `scripts/english/`, with interactive blocks beside it, and
+# `seed-english.ts` is what turns those into rows. The first two
+# terms' prose lives only in the snapshot, so the SQL touches
+# their ladder columns and leaves their words alone.
+#
+# IT UPSERTS, then prunes, in the order and for the reasons
+# `seed-english.ts` gives.
+#
+# IT DOES NOT RUN ON A PUSH OR A SCHEDULE. This rewrites every
+# lesson of one school.
+
+name: Seed the English school into D1
+
+on:
+  workflow_dispatch:
+    inputs:
+      target:
+        description: "Which database"
+        required: true
+        default: remote
+        type: choice
+        options: [remote, local]
+
+permissions:
+  contents: read
+
+concurrency:
+  group: seed-english
+  cancel-in-progress: false
+
+jobs:
+  seed:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@v5
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "22"
+
+      - name: Check the token is there
+        run: |
+          if [ -z "${{ secrets.CLOUDFLARE_API_TOKEN }}" ]; then
+            echo "::error::CLOUDFLARE_API_TOKEN is not set. See the note at the"
+            echo "::error::top of .github/workflows/import-schools.yml for how"
+            echo "::error::to make one. Nothing was changed."
+            exit 1
+          fi
+
+      # The generator validates before it writes: a body that
+      # mounts a block it does not have, a block of a kind that is
+      # not implemented, or a class the sanitiser would strip all
+      # stop it here rather than reaching a reader.
+      - name: Check the lessons
+        run: node scripts/check-english.ts
+
+      - name: Build the SQL
+        run: node scripts/seed-english.ts --out english.sql
+
+      # An empty file imports perfectly and writes nothing. Three
+      # stages, eleven sections, fifty-five lessons and three
+      # deletes is what the generator prints; under 60 means it
+      # did not do its job.
+      - name: Refuse to import an empty file
+        run: |
+          queries=$(grep -c '^\(INSERT\|DELETE\)' english.sql || true)
+          size=$(wc -c < english.sql)
+          echo "english.sql: $size bytes, $queries queries"
+          if [ "$queries" -lt 60 ]; then
+            echo "::error::Only $queries queries in the file. Expected around 72."
+            echo "::error::Nothing was written."
+            exit 1
+          fi
+
+      - name: Write it
+        env:
+          CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+        run: |
+          npx --yes wrangler@4 d1 execute reiad \
+            --${{ inputs.target }} --file=english.sql --yes
+
+      # A tick on a job that wrote nothing is what wasted two
+      # attempts on the older workflow, so the last thing it does is
+      # ask the database what is in it now. Fifty-five lessons
+      # should come back written, twenty-five of them with blocks.
+      - name: Say what is in there now
+        env:
+          CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+        run: |
+          npx --yes wrangler@4 d1 execute reiad --${{ inputs.target }} --json \
+            --command "SELECT stage,
+                 COUNT(*) AS lessons,
+                 SUM(CASE WHEN body <> '' THEN 1 ELSE 0 END) AS bangla,
+                 SUM(CASE WHEN blocks <> '{}' THEN 1 ELSE 0 END) AS with_blocks
+               FROM school_lessons WHERE school = 'english'
+               GROUP BY stage ORDER BY stage"

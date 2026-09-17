@@ -8,7 +8,7 @@
    `aab/english/curriculum.js`, which `sw.js` precaches by name.
    Edit this file, never that one.
 
-   THE SHAPE: `TERMS[]`, two terms, a folder and a page each;
+   THE SHAPE: `TERMS[]`, three terms, a folder and a page each;
    `.sections[]`, segments and never pages; `.parts[]`, one page
    each. THE UNIT IS A PART, NOT A DAY: the days live in the
    practice book, and the map inside part 13 lines them up against
@@ -354,10 +354,273 @@ const TERM_2_SECTIONS = [
     },
 ];
 /* ------------------------------------------------------------
-   THE LADDER, two terms: thirteen parts then seventeen. Term One
-   carries the thirty-day book; Term Two carries NO book, which is
-   a decision rather than a gap, and its `chorcha` line says what
-   the daily practice is instead.
+   টার্ম ৩: the grammar course. Twenty-five parts in three rungs,
+   basic, intermediate and advanced, and a thirty-day book of its
+   own. The prose and the blocks are in `scripts/english/term-3/`,
+   seeded by `scripts/seed-english.ts`; the book is
+   `next/lib/workbooks/english-term-3.ts`.
+
+   The intermediate and advanced sections EXPAND the basic ones
+   rather than starting again: the tense machine of part 7 is
+   what the perfect tenses of part 11 are bolted on to, and the
+   sentence kinds of part 10 are what the exam room of part 24
+   transforms. A part's `n` is the number the pages print.
+   ------------------------------------------------------------ */
+const TERM_3_SECTIONS = [
+    {
+        id: "basic",
+        bn: "বেসিক: খেলার নিয়ম",
+        en: "Basic: the rules of the game",
+        parts: [
+            {
+                slug: "players",
+                n: 1,
+                bn: "আটজন খেলোয়াড়: parts of speech",
+                en: "The eight players",
+                icon: "pair",
+                minutes: 10,
+                blurb: "একটা দলে ব্যাটার, বোলার, কিপার। ইংরেজি বাক্যেও আটটা পজিশন, আর প্রত্যেকের কাজ আলাদা। আজ পুরো দলটা চিনে নাও।",
+            },
+            {
+                slug: "nouns",
+                n: 2,
+                bn: "নাম-শব্দ: noun, একটা না অনেক",
+                en: "Nouns: one or many",
+                icon: "basket",
+                minutes: 10,
+                blurb: "cat থেকে cats সহজ, child থেকে children নয়, আর water কখনো waters হয় না। গোনা যায় কি যায় না, সেটাই আসল প্রশ্ন।",
+            },
+            {
+                slug: "pronouns",
+                n: 3,
+                bn: "বদলি খেলোয়াড়: pronoun",
+                en: "Pronouns: the substitutes",
+                icon: "hand",
+                minutes: 9,
+                blurb: "একই নাম বারবার না বলে মাঠে বদলি নামাও: he, she, it, they। কিন্তু I আর me, they আর them এক নয়, আর সেটাই সবাই গুলিয়ে ফেলে।",
+            },
+            {
+                slug: "articles",
+                n: 4,
+                bn: "a, an, the: তিনটা ছোট শব্দের বড় কাজ",
+                en: "Articles",
+                icon: "glue",
+                minutes: 9,
+                blurb: "বাংলায় এদের কোনো ভাই নেই, তাই বাংলাভাষীর কানে এরা ধরা পড়ে না। কখন কোনটা, আর কখন কিছুই না: তিনটা প্রশ্নে পুরো নিয়ম।",
+            },
+            {
+                slug: "adjectives",
+                n: 5,
+                bn: "রং লাগানো: adjective আর তুলনা",
+                en: "Adjectives and comparison",
+                icon: "star",
+                minutes: 9,
+                blurb: "big, bigger, biggest; good, better, best। কোন শব্দে -er বসে আর কোনটায় more, তার একটা সহজ কান-নিয়ম আছে।",
+            },
+            {
+                slug: "agreement",
+                n: 6,
+                bn: "কর্তা আর ক্রিয়ার মিল: -s এর নিয়ম",
+                en: "Subject and verb agree",
+                icon: "equals",
+                minutes: 9,
+                blurb: "She play cricket, নাকি She plays? একজন হলে ক্রিয়ায় একটা টুপি। পরীক্ষায় সবচেয়ে বেশি নম্বর কাটা যায় এই এক অক্ষরে।",
+            },
+            {
+                slug: "tenses",
+                n: 7,
+                bn: "টাইম মেশিন: তিন কাল, চার রূপ",
+                en: "The tense machine",
+                icon: "clock",
+                minutes: 12,
+                blurb: "কাল, আজ, আগামীকাল; আর প্রতিটার চার রকম রূপ। বারোটা ঘরের মানচিত্রটা একবার মাথায় বসলে tense আর ভয় লাগে না।",
+            },
+            {
+                slug: "adverbs",
+                n: 8,
+                bn: "কীভাবে, কখন, কোথায়: adverb",
+                en: "Adverbs",
+                icon: "wave",
+                minutes: 8,
+                blurb: "Mustafiz bowls fast: fast শব্দটা বোলিংকে বর্ণনা করছে, বোলারকে নয়। -ly লাগে কোথায়, always বসে কোথায়, আজ সেটা।",
+            },
+            {
+                slug: "prepositions",
+                n: 9,
+                bn: "in, on, at, under: জায়গা আর সময়ের ছোট শব্দ",
+                en: "Prepositions",
+                icon: "map",
+                minutes: 10,
+                blurb: "বাংলায় একটা 'এ' দিয়ে যা হয়, ইংরেজিতে তিনটা শব্দে ভাগ করা: in the box, on the box, at the box। ছবি দিয়ে মনে রাখো।",
+            },
+            {
+                slug: "sentences",
+                n: 10,
+                bn: "বাক্যের চার রকম, আর বড় হাতের অক্ষর",
+                en: "Kinds of sentence",
+                icon: "engine",
+                minutes: 9,
+                blurb: "বলা, জিজ্ঞেস করা, আদেশ করা, চমকে ওঠা। প্রতিটার শুরু আর শেষ আলাদা, আর একটা কমা কোথায় বসল তাতে মানে বদলে যায়।",
+            },
+        ],
+    },
+    {
+        id: "middle",
+        bn: "মাঝারি: খেলা গড়া",
+        en: "Intermediate: building the game",
+        parts: [
+            {
+                slug: "perfect",
+                n: 11,
+                bn: "have + V3: সেতু-কাল আর অতীতের আগের অতীত",
+                en: "The perfect tenses",
+                icon: "bridge",
+                minutes: 11,
+                blurb: "I have eaten, I had eaten, I will have eaten: একই ক্রিয়ার তিন রূপ, আর প্রতিটা একটা সেতু। পরীক্ষার right form-এর অর্ধেক এখানে।",
+            },
+            {
+                slug: "modals",
+                n: 12,
+                bn: "can, must, should: শক্তির শব্দ",
+                en: "Modal verbs",
+                icon: "key",
+                minutes: 10,
+                blurb: "পারা, লাগা, উচিত, হতে পারে। এদের পরে ক্রিয়া কখনো বদলায় না, আর একটা শব্দ বদলালেই ভদ্রতা থেকে হুকুম।",
+            },
+            {
+                slug: "questions",
+                n: 13,
+                bn: "প্রশ্ন বানানোর মেশিন, আর tag question",
+                en: "Questions and tags",
+                icon: "question",
+                minutes: 10,
+                blurb: "do/does/did কোথায় বসে, wh-শব্দ কোথায়, আর বাক্যের শেষে সেই ছোট্ট লেজ: isn't it? পরীক্ষায় প্রতি বছর আসে, জীবনে রোজ।",
+            },
+            {
+                slug: "joining",
+                n: 14,
+                bn: "and, but, because, although: বাক্য জোড়া",
+                en: "Conjunctions and clauses",
+                icon: "link",
+                minutes: 10,
+                blurb: "ছোট বাক্য ভুল নয়, শুধু ছোট। জোড়ার শব্দগুলো শিখলে তিন বাক্যের কথা এক বাক্যে বলা যায়, আর কমাটা কোথায় বসবে সেটাও।",
+            },
+            {
+                slug: "passive",
+                n: 15,
+                bn: "কে করল জানা নেই: passive voice",
+                en: "The passive",
+                icon: "flip",
+                minutes: 10,
+                blurb: "The match was won. কে জিতল বলা নেই, তবু বাক্য পূর্ণ। be + V3 এর মেশিন, আর voice change-এর পরীক্ষার কৌশল।",
+            },
+            {
+                slug: "reported",
+                n: 16,
+                bn: "সে বলল যে…: reported speech",
+                en: "Reported speech",
+                icon: "quote",
+                minutes: 11,
+                blurb: "অন্যের কথা নিজের মুখে। কাল এক ধাপ পিছিয়ে যায়, today হয়ে যায় that day, আর narration-এর নম্বর পুরোটা তোলা যায়।",
+            },
+            {
+                slug: "conditionals",
+                n: 17,
+                bn: "if-এর চার সিঁড়ি",
+                en: "Conditionals",
+                icon: "fork",
+                minutes: 11,
+                blurb: "If it rains, if it rained, if it had rained: যত পিছনের কাল, তত কম সত্যি। চার সিঁড়ি চিনলে ইংরেজিতে কল্পনা করা যায়।",
+            },
+            {
+                slug: "ing-to",
+                n: 18,
+                bn: "-ing নাকি to: gerund আর infinitive",
+                en: "Gerund or infinitive",
+                icon: "branch",
+                minutes: 9,
+                blurb: "enjoy playing কিন্তু want to play। কোন ক্রিয়ার পরে কোনটা বসে, তার একটা ছোট তালিকা আছে, আর বাকিটা কান।",
+            },
+        ],
+    },
+    {
+        id: "advanced",
+        bn: "উচ্চতর: ম্যাচ জেতা",
+        en: "Advanced: winning the match",
+        parts: [
+            {
+                slug: "relatives",
+                n: 19,
+                bn: "who, which, that: বাক্যের ভিতরে বাক্য",
+                en: "Relative clauses",
+                icon: "nest",
+                minutes: 10,
+                blurb: "The boy who scored the century: দুটো বাক্য একটার ভিতরে। কমা বসলে মানে বদলায়, আর that কখন বাদ দেওয়া যায় সেটাও।",
+            },
+            {
+                slug: "determiners",
+                n: 20,
+                bn: "some, any, much, many, few: পরিমাণের শব্দ",
+                en: "Determiners and quantity",
+                icon: "layers",
+                minutes: 9,
+                blurb: "কতটুকু, কয়টা, কোনটা। some আর any-র ভিতরের নিয়ম, few আর a few-র বিরাট পার্থক্য, আর each আর every-র মাঝের সরু রেখা।",
+            },
+            {
+                slug: "causatives",
+                n: 21,
+                bn: "make, let, have, get: অন্যকে দিয়ে করানো",
+                en: "Causatives and verb patterns",
+                icon: "hand",
+                minutes: 10,
+                blurb: "I had my phone repaired: নিজে সারাইনি, সারিয়ে নিয়েছি। কাউকে দিয়ে কিছু করানোর চারটা ক্রিয়া, আর প্রতিটার নিজের ছাঁচ।",
+            },
+            {
+                slug: "emphasis",
+                n: 22,
+                bn: "জোর দেওয়ার ব্যাকরণ: inversion, cleft, so আর such",
+                en: "Emphasis and inversion",
+                icon: "tone",
+                minutes: 10,
+                blurb: "Never have I seen such a catch! সাধারণ কথাটাকে উল্টে দিলেই জোর। It was Shakib who…: বাক্য ভেঙে আলো ফেলা।",
+            },
+            {
+                slug: "punctuation",
+                n: 23,
+                bn: "কমা, অ্যাপস্ট্রফি, সেমিকোলন: যতিচিহ্নের খেলা",
+                en: "Punctuation",
+                icon: "pen",
+                minutes: 9,
+                blurb: "Let's eat, Nanu আর Let's eat Nanu-র মাঝে একটা কমার দূরত্ব। its আর it's, কোলন আর সেমিকোলন: লেখায় নম্বর ওঠে এখানেই।",
+            },
+            {
+                slug: "transformation",
+                n: 24,
+                bn: "পরীক্ষার হল: transformation, right form, narration",
+                en: "The exam room",
+                icon: "check",
+                minutes: 12,
+                blurb: "SSC আর HSC-র প্রশ্নপত্রে যে পাঁচটা ব্যাকরণের প্রশ্ন বছরের পর বছর আসে, তার প্রতিটার নিয়ম আর প্রতিটার ফাঁদ, একসাথে।",
+            },
+            {
+                slug: "mistakes",
+                n: 25,
+                bn: "বাংলাভাষীর পঁচিশটা ফাঁদ, আর ত্রিশ দিনের মানচিত্র",
+                en: "Twenty-five traps and the map",
+                icon: "map",
+                minutes: 11,
+                blurb: "যে ভুলগুলো বাংলা থেকে ইংরেজিতে আসার পথে সবাই করে, একটা তালিকায়। আর খাতার ত্রিশ দিন কোন পর্বের সাথে মেলে, সেই মানচিত্র।",
+            },
+        ],
+    },
+];
+/* ------------------------------------------------------------
+   THE LADDER, three terms: thirteen parts, seventeen, then
+   twenty-five. Term One carries the thirty-day book; Term Two
+   carries NO book, which is a decision rather than a gap, and its
+   `chorcha` line says what the daily practice is instead; Term
+   Three carries a book of its own, thirty days again, because a
+   grammar point is learnt by being used thirty times.
    ------------------------------------------------------------ */
 export const TERMS = [
     {
@@ -388,6 +651,20 @@ export const TERMS = [
         chorcha: "এই টার্মে ভরাট করার খাতা নেই। রোজকার কাজ তিনটে: দুই মিনিট নিজেকে রেকর্ড করা, একটা সত্যিকারের লেখা জোরে পড়া, আর নতুন জোড়া-শব্দ নিজের খাতায় তোলা।",
         sections: TERM_2_SECTIONS,
     },
+    {
+        slug: "term-3",
+        kicker: "টার্ম ৩",
+        bn: "ইংরেজি ব্যাকরণ",
+        en: "Term Three · English Grammar",
+        icon: "gears",
+        who: "স্কুল-কলেজের শিক্ষার্থী, আর যে কেউ যাঁর ইংরেজিটা চলে কিন্তু নিয়মটা জানা নেই",
+        blurb: "শব্দের আট জাত থেকে passive, narration আর if পর্যন্ত: পুরো ব্যাকরণ তিন ধাপে, বেসিক থেকে উচ্চতর। প্রতিটা নিয়মের সাথে শোনার বোতাম, খেলা আর পরীক্ষার কৌশল।",
+        can: "পঁচিশটা পর্ব শেষে: যেকোনো বাক্য দেখে বলতে পারবে কোন শব্দটা কী কাজ করছে, নিজের বাক্যের ভুল নিজে ধরতে পারবে, আর পরীক্ষার ব্যাকরণ অংশে আন্দাজে নয়, নিয়ম জেনে উত্তর দিতে পারবে।",
+        minutes: [30, 45],
+        status: "live",
+        workbook: { slug: "workbook", days: 30 },
+        sections: TERM_3_SECTIONS,
+    },
 ];
 /* ------------------------------------------------------------
    THE SCHOOL
@@ -400,8 +677,8 @@ export const SCHOOL = {
     tagline: "মুখস্থ নয়, কাঠামো। একটা ছাঁচ শিখুন, তারপর নিজের হাজারটা বাক্য বানান।",
 };
 /* ------------------------------------------------------------
-   URLs, ids and sums. Nothing below assumes there are two terms
-   or that a term has a workbook.
+   URLs, ids and sums. Nothing below assumes how many terms there
+   are or that a term has a workbook.
    ------------------------------------------------------------ */
 /** A term's ladder URL. */
 export const termUrl = (term) => `/english/${term.slug}`;
