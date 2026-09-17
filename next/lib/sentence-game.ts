@@ -12,3 +12,8 @@ export const tokens = (s: string): string[] => s.trim().split(/\s+/).filter(Bool
 export function playable(lines: GameLine[]): GameLine[] {
   return lines.filter((l) => !l.target.includes("=") && tokens(l.target).length >= 3);
 }
+
+/** Whether a day has a game at all: two lines is the least a round
+    can shuffle. The book mounts on this and the hub links on it, so
+    a threshold typed in either place would let the two disagree. */
+export const hasGame = (lines: GameLine[]): boolean => playable(lines).length >= 2;

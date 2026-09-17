@@ -22,7 +22,7 @@ import { bn, targetLang } from "../lib/workbook";
 import { SectionLabel } from "./ui/label";
 import { Button } from "./ui/button";
 import { SentenceGame, type GameWords } from "./sentence-game";
-import { playable } from "../lib/sentence-game";
+import { hasGame, playable } from "../lib/sentence-game";
 
     /** The key a textarea saves under: `<stufe slug>/<name>`, where the
         name carries the day number. The builder made this string and so
@@ -111,7 +111,7 @@ export function WorkbookDayCard(
       {/* The game, between reading the models and writing your own:
           the same five sentences, shuffled, built back by hand. Left
           out on a day whose lines are not sentences. */}
-      {playable(day.watch).length >= 2 ? (
+      {hasGame(day.watch) ? (
         <section className="tag-teil spiel" id={`spiel-${day.n}`}>
           <h3 className="mono"><span lang={lang}>{w.game}</span> · শব্দগুলো ঠিক ক্রমে বসাও</h3>
           <SentenceGame id={`${slug}/${day.n}`} lines={playable(day.watch)}

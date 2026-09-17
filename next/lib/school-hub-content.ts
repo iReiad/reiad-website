@@ -191,7 +191,7 @@ export const HUB_CONTENT: Record<string, HubContent> = {
               "kind": "solid"
             },
             {
-              "href": "/deutsch/stufe-1/arbeitsbuch#spiel-1",
+              "href": "/deutsch/stufe-1/arbeitsbuch#spiel",
               "label": "বাক্য সাজানোর খেলা",
               "kind": "ghost"
             },
@@ -481,7 +481,7 @@ export const HUB_CONTENT: Record<string, HubContent> = {
               "kind": "solid"
             },
             {
-              "href": "/english/term-1/workbook#spiel-1",
+              "href": "/english/term-1/workbook#spiel",
               "label": "বাক্য সাজানোর খেলা",
               "kind": "ghost"
             },

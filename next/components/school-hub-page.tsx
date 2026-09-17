@@ -37,6 +37,8 @@
    ============================================================ */
 
 import { HUB_CONTENT, type HubAction, type HubSection } from "../lib/school-hub-content";
+import { bookFor } from "../lib/workbook";
+import { hasGame } from "../lib/sentence-game";
 import { Band } from "./ui/band";
 import { Button, ButtonLink } from "./ui/button";
 import { InfoCard } from "./deck";
@@ -68,12 +70,23 @@ const Html = ({ html, as: Tag = "p", className }: {
    `dangerouslySetInnerHTML` on the link itself, because React
    refuses an element given both that and children, and `children`
    is what a button takes. */
+/* A practice book link ending `#spiel` is resolved to the first day
+   that has a game. Out of the book rather than typed: the German
+   book opens with three pronunciation days the game leaves out, so
+   `#spiel-1` there opened a day with nothing to play. */
+function gameHref(href: string): string {
+  const m = href.match(/^(.*\/)([^/#]+)#spiel$/);
+  if (!m) return href;
+  const day = bookFor(m[2])?.days.find((d) => hasGame(d.watch));
+  return day ? `${m[1]}${m[2]}#spiel-${day.n}` : `${m[1]}${m[2]}`;
+}
+
 function Actions({ actions, onAccent }: { actions: HubAction[]; onAccent?: boolean }) {
   if (!actions.length) return null;
   return (
     <>
       {actions.map((a) => (
-        <ButtonLink key={a.href} href={a.href} kind={a.kind} onAccent={onAccent} size="lg">
+        <ButtonLink key={a.href} href={gameHref(a.href)} kind={a.kind} onAccent={onAccent} size="lg">
           <Html as="span" html={a.label} />
         </ButtonLink>
       ))}

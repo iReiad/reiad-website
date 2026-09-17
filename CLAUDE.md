@@ -906,8 +906,9 @@ written above and the pattern's words lit in the finished sentence.
 `playable()` in `next/lib/sentence-game.ts` leaves out a line that is
 not a sentence, which the pronunciation days' `Wasser = ভাসা` lines are.
 Nothing is stored: tomorrow the same five are worth building again. The
-hubs link `#spiel-1`, and `aab/schools/workbook.js` opens a day from
-that anchor as it does from `#tag-N`.
+hubs link `#spiel`, which `gameHref()` in `school-hub-page.tsx` resolves
+to the first day `hasGame()` says yes to, and `aab/schools/workbook.js`
+opens a day from `#spiel-N` as it does from `#tag-N`.
 
 ## The Netzwerk study planner, for learners on the Klett books
 
