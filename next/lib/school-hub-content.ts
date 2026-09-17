@@ -390,6 +390,7 @@ export const HUB_CONTENT: Record<string, HubContent> = {
       "resetId": "english-reset",
       "resetLabel": "রিসেট",
       "countFallback": "পর্ব আর দিন, এক নজরে",
+      "round": { "href": "/english/term-3", "label": "English Grammar", "sub": "ব্যাকরণ, বেসিক থেকে উচ্চতর" },
       "actions": [
         {
           "href": "/english/term-1/word-order.html",
@@ -437,13 +438,14 @@ export const HUB_CONTENT: Record<string, HubContent> = {
       },
       {
         "id": "ladder",
-        "label": "দুটো টার্ম · <span lang=\"en\">Two terms</span>",
-        "intro": "প্রথম টার্মে বাক্য বানানো। দ্বিতীয়তে ভাব বহন: যুক্তি, সন্দেহ, কল্পনা, ভদ্র দ্বিমত, আর না থেমে দুই মিনিট বলা।",
+        "label": "তিনটে টার্ম · <span lang=\"en\">Three terms</span>",
+        "intro": "প্রথম টার্মে বাক্য বানানো। দ্বিতীয়তে ভাব বহন: যুক্তি, সন্দেহ, কল্পনা, ভদ্র দ্বিমত, আর না থেমে দুই মিনিট বলা। তৃতীয়তে পুরো ব্যাকরণ, বেসিক থেকে উচ্চতর, প্রতিটা নিয়মে খেলা আর শোনার বোতাম।",
         "ladder": {
           "listId": "term-list",
           "fallback": [
             "<a href=\"/english/term-1\"><b>টার্ম ১ · শুরু থেকে</b></a> ১৩টি পর্ব। শব্দের ক্রম, <span lang=\"en\">am/is/are</span>, <span lang=\"en\">have</span>, তিন কাল, সাহায্যকারী শব্দ, প্রশ্ন, আঠা-শব্দ আর রোজকার বাক্যভাণ্ডার। সাথে ৩০ দিনের অনুশীলন খাতা।",
-            "<a href=\"/english/term-2\"><b>টার্ম ২ · ভাব বহন</b></a> ১৭টি পর্ব। ভাব জোড়া দেওয়া, <span lang=\"en\">perfect</span> কাল, সময়ের স্তর, <span lang=\"en\">if</span>, নিশ্চয়তা, <span lang=\"en\">passive</span>, reported speech, phrasal verb, সুর আর দুই মিনিট ধরে বলা।"
+            "<a href=\"/english/term-2\"><b>টার্ম ২ · ভাব বহন</b></a> ১৭টি পর্ব। ভাব জোড়া দেওয়া, <span lang=\"en\">perfect</span> কাল, সময়ের স্তর, <span lang=\"en\">if</span>, নিশ্চয়তা, <span lang=\"en\">passive</span>, reported speech, phrasal verb, সুর আর দুই মিনিট ধরে বলা।",
+            "<a href=\"/english/term-3\"><b>টার্ম ৩ · ইংরেজি ব্যাকরণ</b></a> ২৫টি পর্ব, তিন ধাপে: বেসিক, মাঝারি, উচ্চতর। শব্দের আট জাত থেকে <span lang=\"en\">passive</span>, <span lang=\"en\">narration</span> আর <span lang=\"en\">if</span> পর্যন্ত, প্রতিটা নিয়মে শোনার বোতাম, ফাঁকা ঘরের খেলা আর পরীক্ষার কৌশল। সাথে নিজের ৩০ দিনের খাতা।"
           ]
         }
       },
@@ -507,7 +509,7 @@ export const HUB_CONTENT: Record<string, HubContent> = {
           },
           {
             "q": "এটা কি পরীক্ষার প্রস্তুতি?",
-            "html": "<p>না। লক্ষ্য মুখ খোলা। ব্যাকরণ আছে, মুখস্থ করতে নয়, বাক্য বানাতে।</p>"
+            "html": "<p>প্রথম দুই টার্মে না: লক্ষ্য মুখ খোলা। <a href=\"/english/term-3\">টার্ম ৩</a> হ্যাঁ: পুরো ব্যাকরণ বেসিক থেকে উচ্চতর, আর শেষের পর্বগুলোয় <span lang=\"en\">right form, transformation, narration, voice</span>, যে প্রশ্নগুলো প্রতি বছর আসে, ধাপে ধাপে।</p>"
           },
           {
             "q": "খাতাটা কি ছাপাতে হবে?",

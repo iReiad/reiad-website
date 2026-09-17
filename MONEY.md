@@ -156,6 +156,16 @@ itself in both languages from one definition.
 | `compare` | reads two or three things side by side |
 | `spot` | finds what is wrong in an excerpt |
 | `drill` | does something outside the page and ticks it off |
+| `grid` | types into a sheet with holes in it |
+| `pattern` | reads the shape a language lesson teaches, and hears every line that fits it |
+| `lines` | hears a line in the language being learnt and says it back |
+| `gap` | taps the word that fills a hole in a sentence |
+| `build` | puts a shuffled sentence's words back in order, the practice books' game inside a lesson |
+
+The last four arrived with the English school's grammar term and
+are the language schools': their lines are in the TARGET language,
+so they are plain strings, and `lesson/language.tsx` draws them.
+CLAUDE.md has the rules under "The English grammar term".
 
 **A LINE has points and a BAR has bands, and they are two scales.**
 `x(i)` spreads `i` edge to edge, which is what a line through

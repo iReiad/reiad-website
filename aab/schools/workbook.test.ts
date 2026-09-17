@@ -97,13 +97,17 @@ interface Book {
   writeKey: string;
 }
 
-/* The two books, and the two storage keys they must write. Those
+/* The three books, and the two storage keys they must write. Those
    strings are in real browsers: the rule at the top of "What a
    reader has read" in CLAUDE.md is why renaming one loses
    somebody's work rather than moving it. */
 const BOOKS: Book[] = [
   { school: "deutsch", slug: "stufe-1", script: "/deutsch/arbeitsbuch.js", writeKey: "deutsch-schrift" },
   { school: "english", slug: "term-1", script: "/english/workbook.js", writeKey: "english-write" },
+  /* The grammar book: the same engine, the same key, a day that
+     also carries six gaps. Driven so a day with a gap section
+     still opens, saves and ticks. */
+  { school: "english", slug: "term-3", script: "/english/workbook.js", writeKey: "english-write" },
 ];
 
 let bad = 0;
@@ -255,5 +259,5 @@ for (const book of BOOKS) {
 
 console.log(bad
   ? `\n${bad} failed. A book that renders and does nothing looks finished.`
-  : "\nBoth books open a day, keep what is written, show their answers and tick.");
+  : "\nEvery book opens a day, keeps what is written, shows its answers and ticks.");
 process.exit(bad ? 1 : 0);

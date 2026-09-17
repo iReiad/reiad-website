@@ -24,6 +24,10 @@
    the number moves. `node scripts/check-sw.ts --update` records the
    new hashes.
 
+   v254: the English school gains a third term. /english/curriculum.js
+         carries টার্ম ৩, twenty-five parts and a second book, and
+         /content.js carries the menu's three-term blurb and the counts
+         that grew with it.
    v253: the bars stop jumping. /schools/hub.js, /schools/workbook.js
          and the three stage scripts draw a bar's first value at once
          and slide only the ones after it; /workbook.js opens a day from
@@ -42,7 +46,7 @@
    v249: comments. Every precached module lost the essay at the top
         of it and this file lost 2,167 lines of changelog, so the
         bytes moved without a line of behaviour changing. */
-const VERSION = "v253";
+const VERSION = "v254";
 const SHELL = `shell-${VERSION}`;
 const RUNTIME = `runtime-${VERSION}`;
 

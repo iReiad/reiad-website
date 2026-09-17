@@ -47,7 +47,8 @@ export type Tone = "good" | "bad" | "warn" | "pick" | "plain" | "lead";
 export const TONES: readonly Tone[] = ["good", "bad", "warn", "pick", "plain", "lead"];
 
 /* ------------------------------------------------------------
-   The eleven kinds
+   The twelve kinds the money school brought, and below them the
+   four the language schools did
    ------------------------------------------------------------ */
 
 interface BlockBase {
@@ -211,16 +212,81 @@ export interface DrillBlock extends BlockBase {
   steps: { text: Say; hint?: Say }[];
 }
 
+/* ------------------------------------------------------------
+   The four the language schools brought
+
+   A language lesson drills its TARGET language, and a line of
+   English is the same string whichever language the page is read
+   in, so it is a plain string here the way a chart's labels are.
+   What is said ABOUT it is a `Say`. `target` is the word the
+   practice books already use for it.
+   ------------------------------------------------------------ */
+
+/** One line in the language being learnt, and what it means. */
+export interface TargetLine {
+  target: string;
+  bn: string;
+}
+
+/** The shape a lesson teaches, said loud, with lines that fit
+    it. The English school opened every part with one of these as
+    prose; as a block it is data the app can draw, and every line
+    in it can be heard. */
+export interface PatternBlock extends BlockBase {
+  kind: "pattern";
+  /** `WHO + am / is / are + ____`, in the target language. */
+  shape: string;
+  why: Say;
+  examples: TargetLine[];
+  tip?: Say;
+}
+
+/** Lines to hear and say back, each beside its meaning. */
+export interface LinesBlock extends BlockBase {
+  kind: "lines";
+  lines: TargetLine[];
+}
+
+/** A sentence with one hole in it and a few words to try there.
+    `text` carries the hole as `___`, `right` is the index of the
+    word that fits, and `why` explains the choice whichever word
+    was tried, for the reason a quiz option's does. */
+export interface GapItem {
+  text: string;
+  /** What the finished sentence means. */
+  bn?: string;
+  options: string[];
+  right: number;
+  why: Say;
+}
+
+export interface GapBlock extends BlockBase {
+  kind: "gap";
+  items: GapItem[];
+}
+
+/** The practice books' sentence game, inside a lesson: the lines
+    shuffled and built back one word at a time under the pattern
+    they follow. A line needs three words to be worth shuffling,
+    which `playable()` in `next/lib/sentence-game.ts` also says. */
+export interface BuildBlock extends BlockBase {
+  kind: "build";
+  pattern: string;
+  lines: TargetLine[];
+}
+
 export type Block =
   | QuizBlock | OrderBlock | MatchBlock | BinsBlock | LabBlock
   | ChartBlock | FigureBlock | RevealBlock | CompareBlock
-  | SpotBlock | DrillBlock | GridBlock;
+  | SpotBlock | DrillBlock | GridBlock
+  | PatternBlock | LinesBlock | GapBlock | BuildBlock;
 
 export type BlockKind = Block["kind"];
 
 export const BLOCK_KINDS: readonly BlockKind[] = [
   "quiz", "order", "match", "bins", "lab", "chart",
   "figure", "reveal", "compare", "spot", "drill", "grid",
+  "pattern", "lines", "gap", "build",
 ];
 
 export const FIGURE_SHAPES: readonly FigureShape[] = [
@@ -284,6 +350,9 @@ export const parseBlocks = (raw: unknown): Blocks => {
    lessons fixed one message at a time is eighty runs.
    ------------------------------------------------------------ */
 
+/** A non-empty string, which is what a target-language line is. */
+const isText = (v: unknown): boolean => typeof v === "string" && v.trim() !== "";
+
 const isSay = (v: unknown): boolean =>
   !!v && typeof v === "object"
   && typeof (v as Say).bn === "string" && (v as Say).bn.trim() !== ""
@@ -324,6 +393,11 @@ export function blockProblems(
   };
   const says = (where: string, v: unknown): void => {
     if (!isSay(v)) at(`${where} is not a { bn, en }`);
+  };
+  /** A line in the target language beside its meaning. */
+  const lineOk = (where: string, v: unknown): void => {
+    const line = v as Record<string, unknown> | null;
+    if (!line || !isText(line.target) || !isText(line.bn)) at(`${where} is not a { target, bn }`);
   };
 
   switch (kind) {
@@ -495,6 +569,43 @@ export function blockProblems(
         const s = step as Record<string, unknown>;
         says(`step ${n + 1}`, s.text);
         if (s.hint !== undefined) says(`step ${n + 1} hint`, s.hint);
+      }
+      break;
+    }
+    case "pattern": {
+      if (!isText(b.shape)) at("has no shape");
+      says("why", b.why);
+      for (const [n, line] of list("examples", 1).entries()) lineOk(`example ${n + 1}`, line);
+      if (b.tip !== undefined) says("tip", b.tip);
+      break;
+    }
+    case "lines": {
+      for (const [n, line] of list("lines", 2).entries()) lineOk(`line ${n + 1}`, line);
+      break;
+    }
+    case "gap": {
+      for (const [n, item] of list("items", 2).entries()) {
+        const it = item as Record<string, unknown>;
+        const text = String(it.text ?? "");
+        /* Exactly one hole: none is a sentence with nothing to
+           do, two is a sentence the one word cannot fill. */
+        if ((text.match(/___/g) ?? []).length !== 1) at(`item ${n + 1} needs exactly one ___ in its text`);
+        const options = Array.isArray(it.options) ? it.options : [];
+        if (options.length < 2 || !options.every(isText)) at(`item ${n + 1} needs at least two words to choose from`);
+        if (!Number.isInteger(it.right) || Number(it.right) < 0 || Number(it.right) >= options.length) {
+          at(`item ${n + 1} says option ${String(it.right)} is right, which is not one of them`);
+        }
+        if (it.bn !== undefined && !isText(it.bn)) at(`item ${n + 1} bn is not a string`);
+        says(`item ${n + 1} why`, it.why);
+      }
+      break;
+    }
+    case "build": {
+      if (!isText(b.pattern)) at("has no pattern");
+      for (const [n, line] of list("lines", 2).entries()) {
+        lineOk(`line ${n + 1}`, line);
+        const words = String((line as Record<string, unknown>).target ?? "").trim().split(/\s+/).filter(Boolean);
+        if (words.length < 3) at(`line ${n + 1} has ${words.length} word(s), and a game needs three to shuffle`);
       }
       break;
     }

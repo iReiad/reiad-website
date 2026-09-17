@@ -75,6 +75,21 @@ const SAMPLES: Record<string, Block> = {
   drill: { kind: "drill", title: say("করুন", "Drill"),
     steps: three.map((text) => ({ text, hint: say("ইঙ্গিত", "Hint") })) },
   grid: { kind: "grid", model: GRID_IDS[0], title: say("ছক", "Sheet") },
+  /* The four language blocks. Their lines are in the target
+     language, so they are plain strings, and the three-word
+     minimum is the build block's, which shuffles them. */
+  pattern: { kind: "pattern", title: say("ছাঁচ", "Pattern"), shape: "WHO + DOES + WHAT",
+    why: say("কারণ", "Because"), tip: say("ইঙ্গিত", "Tip"),
+    examples: [{ target: "Rafi plays cricket.", bn: "রাফি ক্রিকেট খেলে।" }] },
+  lines: { kind: "lines", title: say("শোনো", "Listen"), lines: [
+    { target: "I eat rice.", bn: "আমি ভাত খাই।" },
+    { target: "She reads a book.", bn: "সে বই পড়ে।" }] },
+  gap: { kind: "gap", title: say("ফাঁকা ঘর", "Gap"), items: [
+    { text: "She ___ cricket.", bn: "সে ক্রিকেট খেলে।", options: ["plays", "play"], right: 0, why: say("কারণ", "Because") },
+    { text: "They ___ cricket.", options: ["plays", "play"], right: 1, why: say("কারণ", "Because") }] },
+  build: { kind: "build", title: say("সাজাও", "Build"), pattern: "WHO + DOES + WHAT", lines: [
+    { target: "I eat rice.", bn: "আমি ভাত খাই।" },
+    { target: "She reads a book.", bn: "সে বই পড়ে।" }] },
 };
 
 const short = BLOCK_KINDS.filter((k) => !SAMPLES[k]);

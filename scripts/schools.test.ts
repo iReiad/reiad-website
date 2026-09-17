@@ -219,6 +219,14 @@ for (const school of SCHOOLS) {
       failures.push(`${school.id}/${expected.slug}: the body is not byte-identical`);
       break;
     }
+    /* And the blocks, which arrived with the money school and
+       are the grammar term's whole interactive: an import that
+       carried the prose and not these left a heading over every
+       mount, on a page that rendered. */
+    if (String(got.blocks ?? "{}") !== String(expected.blocks ?? "{}")) {
+      failures.push(`${school.id}/${expected.slug}: the blocks did not survive`);
+      break;
+    }
     if (got.body) bodies++;
     const meta = JSON.parse(String(got.meta)) as Record<string, unknown>;
     for (const [key, value] of

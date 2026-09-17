@@ -3,7 +3,7 @@
 
    The registry, and the frame every block sits in: a kind label,
    a title, a line saying what to do, and then the thing itself.
-   The frame is here rather than in each of the eleven so that a
+   The frame is here rather than in each of the sixteen so that a
    reader learns one shape and then recognises it everywhere.
 
    ---- an unknown kind renders nothing, and that is deliberate ----
@@ -21,6 +21,7 @@ import { Figure } from "./figure";
 import { Chart, Lab } from "./lab";
 import { Bins, Compare, Drill, Match, Order, Quiz, Reveal, Spot } from "./interactive";
 import { Grid } from "./grid";
+import { Build, Gap, Lines, Pattern } from "./language";
 
 /** What each kind is called, above the block. Not decoration: a
     reader who sees "হাতে কলমে" knows before reading a word that
@@ -39,6 +40,19 @@ const KIND_WORDS: Record<Block["kind"], { bn: string; en: string }> = {
   spot: { bn: "খুঁজে বের করুন", en: "Find the problem" },
   drill: { bn: "করে ফেলুন", en: "Go and do it" },
   grid: { bn: "ছকে বসান", en: "Fill in the sheet" },
+  pattern: { bn: "ছাঁচ", en: "The pattern" },
+  lines: { bn: "শোনো, বলো", en: "Listen and say" },
+  gap: { bn: "ফাঁকা ঘর", en: "Fill the gap" },
+  build: { bn: "বাক্য সাজাও", en: "Build the sentence" },
+};
+
+/* The language a school's blocks speak in. The four language
+   blocks carry lines in the TARGET language and speak them, so
+   the school decides the voice; the money school's blocks carry
+   none and never reach this. */
+const TARGET_LANG: Record<string, string> = {
+  english: "en",
+  deutsch: "de",
 };
 
 export function LessonBlock(
@@ -62,6 +76,10 @@ export function LessonBlock(
       case "spot": return <Spot block={block} />;
       case "drill": return <Drill block={block} id={id} lesson={lesson} school={school} />;
       case "grid": return <Grid block={block} />;
+      case "pattern": return <Pattern block={block} lang={TARGET_LANG[school] ?? "en"} />;
+      case "lines": return <Lines block={block} lang={TARGET_LANG[school] ?? "en"} />;
+      case "gap": return <Gap items={block.items} id={id} lang={TARGET_LANG[school] ?? "en"} />;
+      case "build": return <Build block={block} id={id} lang={TARGET_LANG[school] ?? "en"} />;
       default: return null;
     }
   })();

@@ -1,10 +1,10 @@
 {
-  "version": "v253",
+  "version": "v254",
   "hashes": {
     "/offline.html": "bd9144e7162be323",
-    "/fallback.css": "b62a88605270c37f",
+    "/fallback.css": "cad7010f8d859ed0",
     "/app.js": "15fc494b10b8f0e5",
-    "/content.js": "d21288b54aae07d8",
+    "/content.js": "8d901ab4a400b0e4",
     "/api.js": "2fa93d7b5e02d2e3",
     "/pieces.js": "6770c112d46e0320",
     "/signin.js": "2cefbe16558152f0",
@@ -35,7 +35,7 @@
     "/quran/icons.js": "61c6b82fe694551c",
     "/quran/dars.js": "13a675820bfb2306",
     "/quran/dhap.js": "a85382a972eea3ac",
-    "/english/curriculum.js": "05c2910627602974",
+    "/english/curriculum.js": "d7b60ec7579dbe87",
     "/english/hub.js": "e6680bab326806df",
     "/english/progress.js": "cdf5c13e6e1f67fd",
     "/english/icons.js": "a7b36e9bdc48f610",

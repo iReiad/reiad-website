@@ -105,6 +105,7 @@
 /quran/dhap-3/index.html     /quran/dhap-3       301
 /english/term-1/index.html   /english/term-1     301
 /english/term-2/index.html   /english/term-2     301
+/english/term-3/index.html   /english/term-3     301
 
 # The practice books. A learner opens one of these every evening
 # and has it bookmarked, which is the whole argument for a rule
@@ -113,6 +114,7 @@
 /deutsch/stufe-2/arbeitsbuch.html  /deutsch/stufe-2/arbeitsbuch  301
 /deutsch/stufe-3/arbeitsbuch.html  /deutsch/stufe-3/arbeitsbuch  301
 /english/term-1/workbook.html      /english/term-1/workbook      301
+/english/term-3/workbook.html      /english/term-3/workbook      301
 
 # ---------- retired pages that still have links pointing at them ----------
 # Both spellings of the source, because a visitor may arrive at

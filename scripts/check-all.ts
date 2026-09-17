@@ -76,6 +76,7 @@ const STAGES: Array<[stage: string, entries: Entry[]]> = [
     "scripts/check-headers.ts",
     "scripts/check-schools.ts",
     "scripts/check-money.ts",
+    "scripts/check-english.ts",
     "scripts/check-rows.ts",
     "scripts/check-rls.ts",
     "scripts/check-migrations.ts",

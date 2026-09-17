@@ -28,6 +28,7 @@ import { useState } from "react";
 import { shuffled } from "@reiad/shared/lesson";
 import { Button } from "./ui/button";
 import { tokens, type GameLine } from "../lib/sentence-game";
+import { Hear } from "./lesson/hear";
 
 export interface GameWords {
   title: string;
@@ -169,6 +170,9 @@ export function SentenceGame({ id, lines, pattern, lang, words }: {
         ) : (
           <>
             <span className="text-t4 font-semibold text-accent" lang="bn">{words.right}</span>
+            {/* Built right: now hear it whole, which is the reward
+                and the point. */}
+            <Hear text={line.target} lang={lang} />
             <Button kind="solid" size="sm" onClick={next}>{words.next}</Button>
           </>
         )}

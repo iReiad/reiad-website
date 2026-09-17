@@ -910,6 +910,50 @@ hubs link `#spiel`, which `gameHref()` in `school-hub-page.tsx` resolves
 to the first day `hasGame()` says yes to, and `aab/schools/workbook.js`
 opens a day from `#spiel-N` as it does from `#tag-N`.
 
+## The English grammar term, and the four language blocks
+
+`/english/term-3`, ইংরেজি ব্যাকরণ: twenty-five parts in three rungs and
+a thirty-day book of its own. It is the first term of a language school
+whose prose is SEEDED like the money school's rather than typed into
+the Studio: `scripts/english/term-3/` holds the parts with their blocks,
+`scripts/seed-english.ts` writes the rows and refreshes the snapshot,
+`scripts/check-english.ts` runs in `check-all.ts`, and
+`.github/workflows/seed-english.yml` is the button. The first two terms
+have no file there and keep the snapshot's prose: the seeder's SQL
+touches only their ladder columns.
+
+**Its prose carries `<span lang="en">` on every English word, and the
+server's sanitiser keeps no `lang`.** So does every part of the first two
+terms. That is what gives the English its own face and what the
+touch-to-hear control finds, and it is why a part saved from the Studio
+loses it. Seed from the file. `check-english.ts` holds the prose to the
+sanitiser's CLASSES, which is the check a Studio edit would also pass.
+
+**Four block kinds are the language schools' and their lines are plain
+strings.** `pattern`, `lines`, `gap` and `build` in `shared/lesson.ts`
+carry a line in the TARGET language, which is the same string whichever
+language the page is read in, the way a chart's labels are; what is said
+ABOUT a line is a `Say`. `next/components/lesson/language.tsx` draws them
+and `lesson/hear.tsx` speaks them: one 34px button per line, hidden until
+an effect finds `speechSynthesis`, with the voice `read-aloud.tsx` picks.
+A `gap` item is never called `a` inside, because `/api/book/<stage>`
+strips `say[].a` and asserts no field of that name leaves in the bytes,
+and the grammar book's days carry the same items under `gaps`.
+
+**Touch to hear is a mode, not a row of speakers.** `HearProse` in the
+lesson route sets `data-hear="on"` on the article while it is pressed,
+the stylesheet underlines every English span so a reader can see what
+will answer, and a tap speaks it. Off by default: a page that speaks
+when touched surprises the reader who was only scrolling. Lines inside
+a block are left alone, because every block that carries English
+carries its own speaker.
+
+**The book's days line up with the parts, and part 25 says how.**
+`check-english.ts` reads the map out of that part's prose and fails if a
+day of `next/lib/workbooks/english-term-3.ts` is mapped no times or
+twice. The map is prose because a learner reads it; the check is what
+stops it going stale.
+
 ## The Netzwerk study planner, for learners on the Klett books
 
 `/deutsch/advanced`, the round door on the German hub. `shared/netzwerk.ts`

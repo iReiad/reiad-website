@@ -22,6 +22,7 @@ import { Eyebrow } from "../../../../components/ui/label";
 import { LessonBody } from "../../../../components/lesson/body";
 import { ReadLangSwitch } from "../../../../components/lesson/lang-switch";
 import { Stars } from "../../../../components/lesson/stars";
+import { HearProse } from "../../../../components/lesson/hear-prose";
 
 type Params = Promise<{ section: string; slug: string; lesson: string }>;
 
@@ -161,6 +162,12 @@ export default async function LessonPage({ params }: { params: Params }) {
             <div className="piece-tools">
               <Keep url={it.url} title={String(it.bn)} kind="lesson" />
               <Where url={it.url} />
+              {/* Touch any English line in the prose to hear it.
+                  Only the school whose prose is full of them: a
+                  German lesson's German is the same idea and is
+                  not wired yet, and the money school's English
+                  is not the thing being learnt. */}
+              {school === "english" ? <HearProse lang="en" /> : null}
             </div>
           )}
 

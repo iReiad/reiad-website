@@ -210,6 +210,7 @@ const BOOK_FILE: Record<string, string> = {
   "stufe-2": "deutsch-stufe-2",
   "stufe-3": "deutsch-stufe-3",
   "term-1": "english-term-1",
+  "term-3": "english-term-3",
 };
 
 let books = 0;

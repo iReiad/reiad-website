@@ -72,7 +72,7 @@ export const SCHOOL_HUBS: Record<string, SchoolHub> = {
   "english": {
     head: {
           "title": "মন থেকে ইংরেজি, বাংলাভাষীর জন্য, Reiad's Library",
-          "description": "দুই টার্মে ইংরেজি: শব্দের ক্রম থেকে দুই মিনিট টানা বলা পর্যন্ত। মুখস্থ নয়, কাঠামো। সাথে ৩০ দিনের অনুশীলন খাতা, বাংলায়, বিনামূল্যে।",
+          "description": "তিন টার্মে ইংরেজি: শব্দের ক্রম থেকে দুই মিনিট টানা বলা, তারপর পুরো ব্যাকরণ বেসিক থেকে উচ্চতর, খেলা আর শোনার বোতাম সহ। মুখস্থ নয়, কাঠামো। সাথে দুটো ৩০ দিনের অনুশীলন খাতা, বাংলায়, বিনামূল্যে।",
           "canonical": "https://reiad.co.uk/english",
           "ogImage": "https://reiad.co.uk/og/english.png",
           "ogType": "website"

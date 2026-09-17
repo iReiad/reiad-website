@@ -44,5 +44,6 @@ export const SCHOOL_STAGES: Record<string, TreeStage[]> = {
   english: [
     { slug: "term-1", label: "শুরু থেকে", kicker: "টার্ম ১", lessons: 13 },
     { slug: "term-2", label: "ভাব বহন", kicker: "টার্ম ২", lessons: 17 },
+    { slug: "term-3", label: "ইংরেজি ব্যাকরণ", kicker: "টার্ম ৩", lessons: 25 },
   ],
 };
