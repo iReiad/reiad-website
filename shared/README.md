@@ -115,6 +115,15 @@ this repository got written.
   once, and `unlisted` is how a section stays out of both menus
   while still being said once.
 
+- **`netzwerk.ts`** the Netzwerk neu study planner behind
+  `/deutsch/advanced`: the 48-chapter map, the 40 grammar points,
+  the daily method, the content library, the exams and the tips,
+  ported whole out of one workbook, and `planFor()`, which writes
+  both routes' week-by-week plans out of the rules rather than
+  storing 92 rows. `scripts/netzwerk.test.ts` holds it to the
+  workbook's own cells. Here because the plan is arithmetic the
+  page, a check and one day the app all have to agree on.
+
 - **`diet-words.ts`** the diet tool's own readouts, in both
   languages. Its own table rather than a corner of
   `tool-strings.ts`, because `stringKeys` in the stock fixture is

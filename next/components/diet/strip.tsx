@@ -27,9 +27,19 @@
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { useCallback, useEffect, useRef } from "react";
+import { useCallback, useLayoutEffect, useRef } from "react";
 import { DIET_HOME, DIET_PAGES, DIET_TONE } from "../../lib/diet-pages";
 import { T, useToolLang } from "./lang";
+
+/** Put the current tab in the middle of the strip, by moving the
+    strip alone. Exported for the research rooms' strip, which is
+    the same shape. */
+export function centreCurrent(bar: HTMLElement | null): void {
+  const here = bar?.querySelector<HTMLElement>('[aria-current="page"]');
+  if (!bar || !here) return;
+  const want = here.offsetLeft - (bar.clientWidth - here.offsetWidth) / 2;
+  bar.scrollLeft = Math.max(0, want);
+}
 
 export function DietStrip() {
   const path = usePathname();
@@ -56,19 +66,18 @@ export function DietStrip() {
     links[next].focus();
   }, []);
 
-  /* THE TAB YOU ARE ON HAS TO BE ON SCREEN. The strip is wider
-     than its column and scrolls, so from the twelfth page of
-     fourteen a reader saw eleven grey tabs and no lit one, which
-     reads as a strip that has lost track of where they are.
-
-     `inline: "center"` rather than `"nearest"`, because nearest
-     leaves the current tab flush against an edge where it looks
-     like the end of the list. `block: "nearest"` so scrolling the
-     strip does not scroll the page under a sticky bar, which is
-     the bug the account page's tab strip was caught by. */
-  useEffect(() => {
-    const here = bar.current?.querySelector<HTMLAnchorElement>('[aria-current="page"]');
-    here?.scrollIntoView({ inline: "center", block: "nearest" });
+  /* THE TAB YOU ARE ON HAS TO BE ON SCREEN, AND NOTHING ELSE MAY
+     MOVE. The strip is wider than its column and scrolls, so from
+     the twelfth page of fourteen a reader saw eleven grey tabs and
+     no lit one. `scrollIntoView` was the wrong tool for it: it
+     scrolls every ancestor as well as the strip, and under the
+     site's smooth scrolling and the strip's own snap points the
+     result was a strip that slid, snapped again, and dragged the
+     page with it on every load. `centreCurrent` writes the strip's
+     own `scrollLeft` and nothing else, in a LAYOUT effect, so it
+     is where it should be before the first paint. */
+  useLayoutEffect(() => {
+    centreCurrent(bar.current);
   }, [path]);
 
   /* A trailing slash is the same address. `bare()` in `worker.js`

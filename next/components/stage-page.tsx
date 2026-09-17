@@ -151,7 +151,10 @@ export async function StagePage({ section, slug }: { section: string; slug: stri
               <>
                 <div className="stage-progress" {...{ [shape.progressAttr]: stage.slug }}>
                   <span className="track"><i /></span>
-                  <span className="count mono" />
+                  {/* One line of text from the first paint, so the
+                      row does not grow when the school's script
+                      writes the count in after load. */}
+                  <span className="count mono">{bnDigits(counted.live)}টি পাঠ</span>
                 </div>
                 <div className="hero-actions">
                   {/* Where "continue" goes with no progress stored. The

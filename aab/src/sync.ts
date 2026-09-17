@@ -111,6 +111,11 @@ const KEYS: Record<string, readonly [Rule, string]> = {
      `scripts/check-storage.ts` fails if either stops travelling. */
   "deutsch-schrift": ["merge", "deutsch:progress"],
   "english-write":   ["merge", "english:progress"],
+
+  /* The Netzwerk study planner: `{ <learner id>: { ...plan, ts } }`,
+     one stamped entry per learner, so two devices editing two
+     learners reconcile and the newer copy of one learner wins. */
+  "netzwerk-plan":   ["merge", "deutsch:progress"],
 };
 
 /** Every key the account owns, which is every key above. */

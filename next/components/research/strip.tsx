@@ -13,7 +13,8 @@
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { useCallback, useEffect, useRef } from "react";
+import { useCallback, useLayoutEffect, useRef } from "react";
+import { centreCurrent } from "../diet/strip";
 import { toneVar } from "@reiad/shared/research";
 import { RESEARCH_HOME, RESEARCH_PAGES, RESEARCH_TONE } from "../../lib/research-pages";
 import { T } from "./lang";
@@ -37,9 +38,8 @@ export function ResearchStrip() {
     links[next].focus();
   }, []);
 
-  useEffect(() => {
-    const here = bar.current?.querySelector<HTMLAnchorElement>('[aria-current="page"]');
-    here?.scrollIntoView({ inline: "center", block: "nearest" });
+  useLayoutEffect(() => {
+    centreCurrent(bar.current);
   }, [path]);
 
   /* A room's children (`/library/<id>`) light the room. */

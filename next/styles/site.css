@@ -247,7 +247,7 @@
        paper the accent measured 4.15 on its own soft ground, and
        nothing could see it until those pairs went into
        `check-contrast.ts`. 80 rules paint this. */
-    --accent-soft:   color-mix(in oklab, var(--accent) 10%, var(--paper-base));
+    --accent-soft:   color-mix(in oklab, var(--accent) 12%, var(--paper-base));
     --accent-line:   color-mix(in oklab, var(--accent) 28%, transparent);
     --accent-ring:   color-mix(in oklab, var(--accent) 30%, transparent);
     --accent-strong: color-mix(in oklab, var(--accent) 88%, var(--accent-mate));
@@ -365,7 +365,7 @@
     --plum:         light-dark(oklch(50% 0.200 var(--h-plum)),   oklch(72% 0.204 var(--h-plum)));
     --rose:         light-dark(oklch(50% 0.188 var(--h-rose)),   oklch(72% 0.160 var(--h-rose)));
     --gold:         light-dark(oklch(50% 0.099 var(--h-gold)),   oklch(72% 0.139 var(--h-gold)));
-    --danger:       light-dark(oklch(52%   0.150 28),             oklch(70%   0.140 28));
+    --danger:       light-dark(oklch(52%   0.150 28),             oklch(74%   0.140 28));
 
     /* --- the one every component actually reads ---
 
@@ -735,7 +735,7 @@
      ============================================================ */
 
   [style*="--accent"], [data-section] {
-    --accent-soft:   color-mix(in oklab, var(--accent) 10%, var(--paper-base));
+    --accent-soft:   color-mix(in oklab, var(--accent) 12%, var(--paper-base));
     --accent-line:   color-mix(in oklab, var(--accent) 28%, transparent);
     --accent-ring:   color-mix(in oklab, var(--accent) 30%, transparent);
     --accent-strong: color-mix(in oklab, var(--accent) 88%, var(--accent-mate));
@@ -787,10 +787,10 @@
 
     --paper:        color-mix(in oklab, var(--accent) 7%,  var(--paper-base));
     --paper-sunk:   color-mix(in oklab, var(--accent) 8%,  var(--paper-sunk-base));
-    --panel:        color-mix(in oklab, var(--accent) 16%, var(--panel-base));
-    --panel-hover:  color-mix(in oklab, var(--accent) 22%, var(--panel-base));
-    --hairline:     color-mix(in oklab, var(--accent) 18%, var(--hairline-base));
-    --pane-edge:    color-mix(in oklab, var(--accent) 40%, var(--hairline-base));
+    --panel:        color-mix(in oklab, var(--accent) 18%, var(--panel-base));
+    --panel-hover:  color-mix(in oklab, var(--accent) 24%, var(--panel-base));
+    --hairline:     color-mix(in oklab, var(--accent) 24%, var(--hairline-base));
+    --pane-edge:    color-mix(in oklab, var(--accent) 48%, var(--hairline-base));
     }
   }
 
@@ -806,10 +806,10 @@
 
     --paper:        color-mix(in oklab, var(--accent) 7%,  var(--paper-base));
     --paper-sunk:   color-mix(in oklab, var(--accent) 8%,  var(--paper-sunk-base));
-    --panel:        color-mix(in oklab, var(--accent) 16%, var(--panel-base));
-    --panel-hover:  color-mix(in oklab, var(--accent) 22%, var(--panel-base));
-    --hairline:     color-mix(in oklab, var(--accent) 18%, var(--hairline-base));
-    --pane-edge:    color-mix(in oklab, var(--accent) 40%, var(--hairline-base));
+    --panel:        color-mix(in oklab, var(--accent) 18%, var(--panel-base));
+    --panel-hover:  color-mix(in oklab, var(--accent) 24%, var(--panel-base));
+    --hairline:     color-mix(in oklab, var(--accent) 24%, var(--hairline-base));
+    --pane-edge:    color-mix(in oklab, var(--accent) 48%, var(--hairline-base));
   }
 
   :root[data-theme="light"] { color-scheme: light; }
@@ -836,7 +836,6 @@
        viewport. `clip` kills the sideways scrollbar without creating a
        scroll container, which `hidden` would, breaking the sticky header. */
     overflow-x: clip;
-    scroll-behavior: smooth;
     /* Sticky-header clearance for every #anchor and every
        scrollIntoView on the site. --header-h is measured at runtime
        by app.js, because the header's height changes with the
@@ -857,6 +856,15 @@
        out from under the finger that pressed it. */
     scrollbar-gutter: stable;
   }
+  /* SMOOTH ONLY FOR SOMETHING A READER PRESSED. `scroll-behavior:
+     smooth` on `html` made every programmatic scroll slide too: a
+     strip centring its current tab on load, a book restoring its
+     bookmark, a hub scrolling its rail item into view, all of them
+     a page visibly moving under a thumb that had not moved. A
+     pressed link holds the focus, so `:focus-within` is exactly
+     "the reader did this"; a script's scroll on load has nothing
+     focused and arrives at once. */
+  html:focus-within { scroll-behavior: smooth; }
 
   body {
     background: var(--paper);
@@ -1112,6 +1120,15 @@
     padding-bottom: 10px;
     margin-bottom: 26px;
     display: block;
+
+    /* A short thick bar of the section's colour above the words:
+       what tells a reader scrolling fast that a new part starts
+       here, without reading it. */
+    &::before {
+      content: ""; display: block;
+      width: 40px; height: 5px; margin-bottom: 10px;
+      border-radius: var(--radius-pill); background: var(--accent);
+    }
   }
 
   section > .wrap > h2, .prose h2 { font-size: 1.6rem; margin-bottom: 14px; }
@@ -1415,7 +1432,7 @@
      where it has been since before any of this: eighteen browser
      modules write that name and it is not worth a second spelling
      to make three sizes read alike. */
-  .btn-lg { padding: 12px 24px; font-size: var(--t-4); min-height: 48px; }
+  .btn-lg { padding: 13px 28px; font-size: var(--t-5); min-height: 52px; }
   .btn-block { width: 100%; }
 
   .icon-btn {
@@ -2356,16 +2373,34 @@
        clamp covers the whole range those twelve were reaching
        for, so there is nothing left to override, and all twelve
        inline styles went in the same commit. */
-    padding-block: clamp(40px, 6vw, 62px) clamp(18px, 2.6vw, 28px);
+    padding-block: clamp(30px, 5vw, 52px) clamp(26px, 3.6vw, 40px);
+    /* A BAND IN THE PAGE'S OWN COLOUR. The head of every page was
+       type on paper, and the paper of a German page and of the
+       money school were the same paper. The soft ground is the
+       accent at fifteen per cent, so the top of a German page is
+       blue before a word is read, and the corner and the hairline
+       make it an object rather than a wash. */
+    padding-inline: clamp(18px, 3vw, 36px);
+    background: var(--accent-soft);
+    border: 1px solid var(--accent-line);
+    border-radius: var(--radius-lg);
+    margin-block-end: var(--gap);
   }
 
   .eyebrow { color: var(--accent); display: block; margin-bottom: 18px; }
-  .hero h1 { font-size: clamp(2.2rem, 5.8vw, 3.8rem); max-width: 18ch; }
+  .hero h1 {
+    font-size: clamp(2.5rem, 6.4vw, 4.4rem); max-width: 18ch;
+    letter-spacing: -0.01em; line-height: 1.05;
+  }
   .hero p.lede {
     margin-top: 20px; max-width: 56ch;
-    font-size: var(--t-7); color: var(--ink-soft);
+    font-size: var(--t-8); color: var(--ink);
   }
   .hero-actions { margin-top: 30px; display: flex; flex-wrap: wrap; gap: var(--s-6); }
+  /* The buttons in a hero are the page's two ways in, so they are
+     the biggest controls on it. */
+  .hero-actions .btn { min-height: 52px; padding: 12px 26px; font-size: var(--t-4); }
+  .hero-actions .btn:lang(bn) { font-size: var(--t-6); }
 
   /* ---------- THE OLD FRONT PAGE ----------
 
@@ -2976,14 +3011,16 @@ it collapsed to the width of the word "Bangladesh". */
      page you are at. They look the same because to a reader they
      are the same answer to "which one am I on". */
   .tab:is([aria-selected="true"], [aria-current="true"]) {
-    border-color: var(--accent);
-    background-color: var(--accent-soft);
+    border-color: transparent;
+    background-color: var(--accent-strong);
+    color: var(--accent-ink);
+    box-shadow: var(--shadow);
   }
   .tab-en {
     font-family: var(--font-mono); font-size: var(--t-2);
     letter-spacing: 0.05em; text-transform: uppercase;
   }
-  .tab:is([aria-selected="true"], [aria-current="true"]) .tab-en { color: var(--accent); }
+  .tab:is([aria-selected="true"], [aria-current="true"]) :is(.tab-en, .tab-bn) { color: var(--accent-ink); }
   .tab-bn { font-size: var(--t-3); color: var(--ink-soft); }
 
   /* A nav down one page, rather than five panels one of which
@@ -2993,11 +3030,16 @@ it collapsed to the width of the word "Bangladesh". */
      the scrolling. */
   .tabs-nav {
     flex-wrap: nowrap; overflow-x: auto;
-    scrollbar-width: none; scroll-snap-type: x proximity;
+    scrollbar-width: none;
     margin-top: 0;
+    /* And it must not widen the page: see `.dt-tabs`. A block-level
+       scroll container still contributes its whole row to the
+       min-content of whatever holds it, and on a phone the eleven
+       tabs of the study planner made the page 945px wide. */
+    contain: inline-size; min-width: 0;
   }
   .tabs-nav::-webkit-scrollbar { display: none; }
-  .tabs-nav > .tab { flex: 0 0 auto; scroll-snap-align: start; }
+  .tabs-nav > .tab { flex: 0 0 auto; }
 
   /* A second floating object, under the first.
 
@@ -4651,7 +4693,7 @@ it collapsed to the width of the word "Bangladesh". */
      `ui/chip.tsx`, which made a SECOND chip: same idea, different
      padding, different font, different size, and near enough
      alike that nobody would call it a bug. */
-  .chip-accent { background-color: var(--accent-soft); color: var(--accent); border-color: var(--accent-line); }
+  .chip-accent { background-color: var(--accent-strong); color: var(--accent-ink); border-color: transparent; }
   .chip-warn   { color: var(--gold); border-color: color-mix(in oklab, var(--gold) 35%, transparent); }
   .chip-danger { color: var(--danger); border-color: color-mix(in oklab, var(--danger) 35%, transparent); }
 
@@ -4779,10 +4821,12 @@ it collapsed to the width of the word "Bangladesh". */
     font-family: var(--font-mono); font-size: var(--t-2); color: var(--ink-soft);
   }
   .progress-line .track {
-    flex: 1; max-width: 260px; height: 5px; border-radius: var(--radius-pill);
+    flex: 1; max-width: 260px; height: 10px; border-radius: var(--radius-pill);
     background: var(--hairline); overflow: clip;
   }
   .progress-line .track i { display: block; height: 100%; background: var(--accent); width: 0; }
+  .progress-line[data-live] .track i { transition: width var(--slow) var(--ease); }
+  .progress-line .count { min-height: 1lh; }
 
   /* ---------- pull quote / principle ---------- */
   .principles {
@@ -6054,14 +6098,14 @@ and an intro that needs them in step is an intro that breaks
     margin-block: 8px 22px;
 
     & .track {
-      flex: 1; max-width: 260px; height: 5px; border-radius: var(--radius-pill);
+      flex: 1; max-width: 260px; height: 10px; border-radius: var(--radius-pill);
       background: var(--hairline); overflow: clip;
     }
     & .track i {
       display: block; height: 100%; width: 0; background: var(--accent);
-      transition: width var(--slow) var(--ease);
     }
-    & .count { color: var(--ink-soft); }
+    &[data-live] .track i { transition: width var(--slow) var(--ease); }
+    & .count { color: var(--ink-soft); min-height: 1lh; }
     &[data-state="done"] .count { color: var(--accent); }
   }
 
@@ -6129,7 +6173,7 @@ and an intro that needs them in step is an intro that breaks
 
   /* Someone who asked for less motion gets the state, not the sweep. */
   @media (prefers-reduced-motion: reduce) {
-    .ring-fill, .stage-progress .track i { transition: none; }
+    .ring-fill, .stage-progress[data-live] .track i { transition: none; }
     .lesson-card:hover { transform: none; }
   }
 }
@@ -6208,14 +6252,16 @@ German for day, and .tag is what the site has always called
     margin-block: 20px;
 
     & .track {
-      flex: 1; min-width: 160px; max-width: 340px; height: 6px;
+      flex: 1; min-width: 160px; max-width: 340px; height: 10px;
       background: var(--hairline); border-radius: var(--radius-pill); overflow: hidden;
     }
     & .track i {
       display: block; height: 100%; width: 0; background: var(--accent);
-      transition: width var(--slow) var(--ease);
     }
-    & .count { color: var(--ink-soft); font-size: var(--t-3); }
+    &[data-live] .track i { transition: width var(--slow) var(--ease); }
+    /* A line of text high even while empty, so the row does not
+       grow by a line when the module fills it in after load. */
+    & .count { color: var(--ink-soft); font-size: var(--t-3); min-height: 1lh; }
     &[data-state="done"] .track i { background: var(--accent); }
   }
   .tracker {
@@ -6239,9 +6285,13 @@ German for day, and .tag is what the site has always called
       box-shadow: var(--shadow);
     }
     & .tracker-tag[data-done] {
-      background: var(--accent-soft); border-color: var(--accent); color: var(--accent);
+      background: var(--accent-strong); border-color: transparent; color: var(--accent-ink);
+      font-weight: 700;
     }
-    & .tracker-tag[data-current] { outline: 2px solid var(--accent); outline-offset: 1px; }
+    & .tracker-tag[data-current] {
+      outline: 3px solid var(--accent); outline-offset: 2px; font-weight: 700;
+      color: var(--accent);
+    }
   }
   /* The day walker: prev, a picker, next, and "all days at once"
      pushed to the far end. It ships hidden and empty, and
@@ -6663,7 +6713,7 @@ German for day, and .tag is what the site has always called
   }
 
   @media (prefers-reduced-motion: reduce) {
-    body.deutsch .buch-fortschritt .track i { transition: none; }
+    body.deutsch .buch-fortschritt[data-live] .track i { transition: none; }
   }
 }
 
@@ -8903,8 +8953,8 @@ German for day, and .tag is what the site has always called
      hidden when the rail is folded, so the mark has to survive
      without it. */
   .rail-item[aria-current="page"] {
-    background: var(--panel);
-    border-color: var(--pane-edge);
+    background: var(--accent-soft);
+    border-color: var(--accent-line);
     font-weight: 600;
   }
   .rail-item[aria-current="page"]::before {
@@ -8930,6 +8980,38 @@ German for day, and .tag is what the site has always called
     padding: 8px var(--rail-pad) 12px;
     border-top: 1px solid var(--hairline);
   }
+  /* Where to go next, as one handle at the foot of the rail. The
+     accent fill, because it is the one thing in the rail that is
+     an action rather than a place, and a learner should find it
+     without reading. */
+  .rail-continue {
+    display: flex; align-items: center; gap: 10px;
+    margin: 4px 0 10px;
+    padding: 9px 11px;
+    border-radius: var(--radius-sm);
+    background: var(--accent-strong); color: var(--accent-ink);
+    text-decoration: none;
+    box-shadow: var(--shadow);
+    transition: filter var(--fast) var(--ease), box-shadow var(--fast) var(--ease);
+
+    &:hover { filter: brightness(1.08); box-shadow: var(--shadow-lift); }
+    & .rail-continue-ico {
+      flex: 0 0 26px; height: 26px; display: grid; place-items: center;
+      border-radius: var(--radius-pill);
+      background: color-mix(in oklab, var(--accent-ink) 18%, transparent);
+    }
+    & .rail-continue-text { display: grid; gap: 1px; min-width: 0; }
+    & .rail-continue-label {
+      font-size: var(--t-0); letter-spacing: 0.08em; text-transform: uppercase;
+      opacity: 0.82;
+    }
+    & b {
+      font-family: var(--font-bn); font-weight: 600; font-size: var(--t-4); line-height: 1.3;
+      overflow: hidden; text-overflow: ellipsis; white-space: nowrap;
+    }
+  }
+  html[data-rail="closed"] .rail-continue { justify-content: center; padding: 8px; }
+  html[data-rail="closed"] .rail-continue-text { display: none; }
   .rail-toggle {
     display: flex; align-items: center; gap: 11px;
     width: 100%; padding: 8px var(--rail-pad);
@@ -9944,7 +10026,7 @@ German for day, and .tag is what the site has always called
      carries and no informational one does. */
   .card[data-kind="go"]::before {
     content: "";
-    position: absolute; inset: 0 auto 0 0; width: 3px; z-index: 0;
+    position: absolute; inset: 0 auto 0 0; width: 6px; z-index: 0;
     background: var(--accent);
   }
   /* Hover is the border and a small lift, and nothing moves. */
@@ -9961,8 +10043,9 @@ German for day, and .tag is what the site has always called
     border-style: dashed;
   }
   .card[data-kind="info"] .card-art {
-    background: none;
+    background: var(--accent-soft); color: var(--accent);
     border: 1px dashed color-mix(in oklab, var(--accent) 40%, var(--hairline));
+    box-shadow: none;
   }
 
   /* ---------- a card for something not written yet ---------- */
@@ -9977,23 +10060,27 @@ German for day, and .tag is what the site has always called
   /* ---------- the parts ---------- */
 
   .card-top { display: flex; align-items: center; gap: var(--s-6); }
+  /* SOLID, both of them. A tinted tile and a tinted chip read as
+     grey from a metre away, and the tile is the one thing on a card
+     that says what colour the card is before anybody reads it. */
   .card-art {
-    flex: 0 0 38px; height: 38px;
+    flex: 0 0 42px; height: 42px;
     display: grid; place-items: center;
     border-radius: var(--radius-sm);
-    color: var(--accent);
-    background: color-mix(in oklab, var(--accent) 12%, transparent);
-    border: 1px solid color-mix(in oklab, var(--accent) 24%, transparent);
+    color: var(--accent-ink);
+    background: var(--accent-strong);
+    border: 1px solid transparent;
+    box-shadow: var(--shadow);
   }
   .card-chip {
     display: inline-flex; align-items: center; gap: var(--s-3);
     align-self: flex-start;
-    padding: 3px 9px;
+    padding: 4px 10px;
     border-radius: var(--radius-pill);
     font-family: var(--font-mono); font-size: var(--t-0);
     letter-spacing: 0.1em; text-transform: uppercase;
-    color: var(--accent);
-    background: color-mix(in oklab, var(--accent) 12%, transparent);
+    color: var(--accent-ink);
+    background: var(--accent-strong);
   }
   .card-title {
     font-family: var(--font-serif); font-size: var(--t-7); line-height: 1.25;
@@ -10087,32 +10174,24 @@ German for day, and .tag is what the site has always called
   /* ---------- a bar of progress, wherever one is shown ---------- */
 
   .meter {
-    height: 6px; border-radius: var(--radius-pill);
+    height: 10px; border-radius: var(--radius-pill);
     background: color-mix(in oklab, var(--ink) 10%, transparent);
     overflow: hidden;
   }
   .meter > i {
     display: block; height: 100%;
     border-radius: var(--radius-pill);
-    background: linear-gradient(90deg, var(--accent), var(--accent));
-    transition: width var(--slow) var(--ease);
+    background: var(--accent);
   }
-  /* AND IT FILLS RATHER THAN BEING FULL. Every meter on this site
-     is drawn in the browser out of the reader's own ticks, so the
-     first paint is the whole of somebody's progress appearing at
-     once. `scale` rather than `width`, because the transition
-     above is what carries a tick pressed later and an animation
-     on the same property would fight it every time; the scale
-     runs on the compositor and is gone by the time anything else
-     moves. Both ends written out: a one-sided keyframe would
-     interpolate from `none`, which is not a pair of numbers. */
-  @media (prefers-reduced-motion: no-preference) {
-    .meter > i {
-      transform-origin: left center;
-      animation: meter-fill var(--slow) var(--ease);
-    }
-  }
-  @keyframes meter-fill { from { scale: 0 1; } to { scale: 1 1; } }
+  /* THE FIRST VALUE IS DRAWN, THE NEXT ONES SLIDE. Every meter on
+     this site is drawn in the browser out of the reader's own
+     ticks, so a transition on the first paint is the whole of
+     somebody's progress sweeping in from nought on every page
+     load. `data-live` is set one frame after that paint, by the
+     component or the module that drew it, and only then does a
+     change animate. Same rule for `.stage-progress`,
+     `.buch-fortschritt` and `.progress-line` below. */
+  .meter[data-live] > i { transition: width var(--slow) var(--ease); }
   .meter-line {
     display: flex; align-items: center; gap: var(--s-5);
     font-family: var(--font-mono); font-size: var(--t-1);
@@ -10149,7 +10228,7 @@ German for day, and .tag is what the site has always called
   }
 
   @media (prefers-reduced-motion: reduce) {
-    .card, .card-go::after, .meter > i, .ring-fill { transition: none; }
+    .card, .card-go::after, .meter[data-live] > i, .ring-fill { transition: none; }
     a.card[data-kind="go"]:hover { transform: none; }
   }
 }
@@ -10189,19 +10268,22 @@ German for day, and .tag is what the site has always called
 
   .hub-hero {
     display: grid; gap: 14px;
-    padding-bottom: clamp(22px, 3vw, 34px);
-    border-bottom: 1px solid var(--hairline);
+    /* The same band `.hero` is: see the note there. */
+    padding: clamp(26px, 4vw, 44px) clamp(18px, 3vw, 36px) clamp(24px, 3.4vw, 36px);
+    background: var(--accent-soft);
+    border: 1px solid var(--accent-line);
+    border-radius: var(--radius-lg);
     margin-bottom: var(--step);
   }
   .hub-eyebrow { color: var(--accent); }
   .hub-hero h1 {
-    font-size: clamp(1.9rem, 4.4vw, 3rem);
-    margin: 0; max-width: 20ch;
+    font-size: clamp(2.3rem, 5.4vw, 3.6rem);
+    margin: 0; max-width: 20ch; line-height: 1.08;
   }
   .hub-lede {
     margin: 0; max-width: 62ch;
-    font-size: clamp(1rem, 1.5vw, 1.1rem);
-    color: var(--ink-soft);
+    font-size: clamp(1.05rem, 1.6vw, 1.2rem);
+    color: var(--ink);
   }
   .hub-progress { max-width: 460px; }
 
@@ -13887,7 +13969,6 @@ German for day, and .tag is what the site has always called
        actually says "size me from my parent, not my contents". */
     contain: inline-size;
     scrollbar-width: none;
-    scroll-snap-type: x proximity;
     position: sticky;
     top: calc(var(--top-space) + var(--top-gap));
     z-index: 20;
@@ -13901,7 +13982,6 @@ German for day, and .tag is what the site has always called
 
   .dt-tab {
     flex: 0 0 auto;
-    scroll-snap-align: start;
     display: inline-flex;
     align-items: center;
     gap: var(--s-3);

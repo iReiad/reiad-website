@@ -43,6 +43,7 @@
     "./research-tools": "./research-tools.ts",
     "./research-assist": "./research-assist.ts",
     "./calculators": "./calculators.ts",
-    "./tool-strings": "./tool-strings.ts"
+    "./tool-strings": "./tool-strings.ts",
+    "./netzwerk": "./netzwerk.ts"
   }
 }

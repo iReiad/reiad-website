@@ -96,9 +96,25 @@ export function paintBar(school, { pct, count, anything }) {
   if (!line) return;
   line.querySelector(".track i").style.width = `${pct}%`;
   line.querySelector(".count").textContent = count;
+  settle(line);
 
   const reset = document.getElementById(`${school}-reset`);
   if (reset) reset.hidden = !anything;
+}
+
+/** The first value a bar shows is drawn at once and only the ones
+    after it slide: the stylesheet transitions a bar's fill only
+    under `data-live`, which this sets a frame after the first paint.
+    Without it every page load swept the reader's progress in from
+    nought, which read as the bar jumping. */
+/** `requestAnimationFrame` where there is one: the tests build these
+    pages in linkedom, which has no frames. */
+const nextFrame = (fn) =>
+  (typeof requestAnimationFrame === "function" ? requestAnimationFrame : setTimeout)(fn);
+
+export function settle(bar) {
+  if (!bar || bar.dataset.live !== undefined) return;
+  nextFrame(() => nextFrame(() => { bar.dataset.live = ""; }));
 }
 
 /** The reset button. Asks first, in the school's own words. */

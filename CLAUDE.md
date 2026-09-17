@@ -309,6 +309,24 @@ becomes one column and two rows, the lozenge sliding down instead of
 across, with the rules inside a `min-width: 901px` query rather than stated
 and then taken back in a second block.
 
+**The rail's foot carries the one action on every page: where to go
+next.** `RailContinue` in `sidebar.tsx` reads the bookmark after
+hydration and renders nothing for a stranger; it is in the rail, which
+is fixed, so it appears without moving anything a reader is looking at.
+
+**A bar draws its first value at once and slides only the ones after
+it.** Every meter on this site is drawn out of storage after hydration,
+so a transition on the first paint was somebody's whole progress
+sweeping in from nought on every load. The stylesheet transitions
+`.meter`, `.stage-progress`, `.buch-fortschritt` and `.progress-line`
+only under `data-live`, and whatever paints one sets that a frame after
+its first paint: `useSettled()` in `components/progress.tsx`, `settle()`
+in `aab/schools/hub.js`. The same rule for the page: `scroll-behavior:
+smooth` is on `html:focus-within` only, so a scroll a reader pressed for
+slides and a scroll a script makes on load arrives at once, and the two
+tab strips write their own `scrollLeft` rather than `scrollIntoView`,
+which scrolls every ancestor too.
+
 **Two pages are not routes and cannot be:** `404.html` and `offline.html`.
 They carry `.slimbar` instead, in the same layer, and they are the whole of
 `aab/*.html`. If you add a third, give it the slim bar too: `body > header`
@@ -332,6 +350,14 @@ a sky behind every page, a meadow behind the front door and a relief
 that lifted every icon. Together they were four thousand lines of
 stylesheet, three listeners on every page and the most expensive
 thing on the site to paint, and none of it was the reading.
+
+**Plain is not pale.** The head of every page is a band in the page's
+own colour (`.hero` and `.hub-hero`, on `--accent-soft`), a card's icon
+tile and chip are the accent solid, a chosen tab and a done day are
+solid, a section label carries a short thick bar of its colour, and the
+hero's type and buttons are the largest on the page. The tints are
+measured: `--accent-soft` is 12% and a dark panel 18% because
+`check-contrast.ts` fails one step louder.
 
 **`scripts/check-plain.ts` is what stops it coming back**, one small
 rule at a time, which is how every one of those arrived:
@@ -870,6 +896,32 @@ because its pages are routes. These three still need a browser module for a
 different reason: a practice book is a page a learner TYPES INTO, and what
 they type is theirs and the browser's. The book is a route and
 `workbook-body.tsx` loads the engine through `SiteScripts`.
+
+### The sentence game inside every practice day
+
+`next/components/sentence-game.tsx`, mounted by `workbook.tsx` between
+the model lines and the learner's own sentences: the day's five models,
+shuffled, built back one tap per word, with the day's own pattern
+written above and the pattern's words lit in the finished sentence.
+`playable()` in `next/lib/sentence-game.ts` leaves out a line that is
+not a sentence, which the pronunciation days' `Wasser = ভাসা` lines are.
+Nothing is stored: tomorrow the same five are worth building again. The
+hubs link `#spiel-1`, and `aab/schools/workbook.js` opens a day from
+that anchor as it does from `#tag-N`.
+
+## The Netzwerk study planner, for learners on the Klett books
+
+`/deutsch/advanced`, the round door on the German hub. `shared/netzwerk.ts`
+is one workbook ported whole: the 48-chapter map, the 40 grammar
+points, the daily method, the content library, the exams and the tips,
+plus `planFor()`, which WRITES the two routes' 52 and 40 weeks out of the
+rules rather than storing 92 rows, so a start date is one input.
+`scripts/netzwerk.test.ts` holds both routes to the workbook's own cells
+in `scripts/fixtures/netzwerk-plan.json`. A learner is a name, a route
+and a start date under `netzwerk-plan`, one stamped entry per learner,
+which `sync.ts` carries as a `merge`; which learner a tab had open is
+`netzwerk-active` in sessionStorage. `next/lib/netzwerk-store.ts` is the
+browser half and `next/components/netzwerk/` draws the eleven panels.
 
 ## A piece is a page, not a console
 

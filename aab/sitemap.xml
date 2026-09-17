@@ -33,6 +33,10 @@
     <priority>0.8</priority>
   </url>
   <url>
+    <loc>https://reiad.co.uk/deutsch/advanced</loc>
+    <priority>0.8</priority>
+  </url>
+  <url>
     <loc>https://reiad.co.uk/english</loc>
     <priority>0.8</priority>
   </url>
@@ -145,6 +149,18 @@
     <priority>0.8</priority>
   </url>
   <url>
+    <loc>https://reiad.co.uk/money/start/why-invest.html</loc>
+    <priority>0.7</priority>
+  </url>
+  <url>
+    <loc>https://reiad.co.uk/money/start/your-goal.html</loc>
+    <priority>0.7</priority>
+  </url>
+  <url>
+    <loc>https://reiad.co.uk/money/start/how-much-risk.html</loc>
+    <priority>0.7</priority>
+  </url>
+  <url>
     <loc>https://reiad.co.uk/money/start/money-first.html</loc>
     <priority>0.7</priority>
   </url>
@@ -197,6 +213,18 @@
     <priority>0.7</priority>
   </url>
   <url>
+    <loc>https://reiad.co.uk/money/terms/market-cap.html</loc>
+    <priority>0.7</priority>
+  </url>
+  <url>
+    <loc>https://reiad.co.uk/money/terms/liquidity.html</loc>
+    <priority>0.7</priority>
+  </url>
+  <url>
+    <loc>https://reiad.co.uk/money/terms/circuit-breaker.html</loc>
+    <priority>0.7</priority>
+  </url>
+  <url>
     <loc>https://reiad.co.uk/money/terms/ipo.html</loc>
     <priority>0.7</priority>
   </url>
@@ -205,11 +233,11 @@
     <priority>0.7</priority>
   </url>
   <url>
-    <loc>https://reiad.co.uk/money/terms/sanchayapatra.html</loc>
+    <loc>https://reiad.co.uk/money/terms/etf.html</loc>
     <priority>0.7</priority>
   </url>
   <url>
-    <loc>https://reiad.co.uk/money/terms/bond.html</loc>
+    <loc>https://reiad.co.uk/money/terms/sanchayapatra.html</loc>
     <priority>0.7</priority>
   </url>
   <url>
@@ -217,7 +245,19 @@
     <priority>0.7</priority>
   </url>
   <url>
+    <loc>https://reiad.co.uk/money/terms/bond.html</loc>
+    <priority>0.7</priority>
+  </url>
+  <url>
+    <loc>https://reiad.co.uk/money/terms/treasury-bill.html</loc>
+    <priority>0.7</priority>
+  </url>
+  <url>
     <loc>https://reiad.co.uk/money/terms/dividend.html</loc>
+    <priority>0.7</priority>
+  </url>
+  <url>
+    <loc>https://reiad.co.uk/money/terms/bonus-rights.html</loc>
     <priority>0.7</priority>
   </url>
   <url>
@@ -233,7 +273,19 @@
     <priority>0.7</priority>
   </url>
   <url>
+    <loc>https://reiad.co.uk/money/terms/book-value.html</loc>
+    <priority>0.7</priority>
+  </url>
+  <url>
+    <loc>https://reiad.co.uk/money/terms/roe.html</loc>
+    <priority>0.7</priority>
+  </url>
+  <url>
     <loc>https://reiad.co.uk/money/terms/risk-return.html</loc>
+    <priority>0.7</priority>
+  </url>
+  <url>
+    <loc>https://reiad.co.uk/money/terms/portfolio.html</loc>
     <priority>0.7</priority>
   </url>
   <url>
@@ -246,6 +298,10 @@
   </url>
   <url>
     <loc>https://reiad.co.uk/money/terms/compounding.html</loc>
+    <priority>0.7</priority>
+  </url>
+  <url>
+    <loc>https://reiad.co.uk/money/terms/margin-loan.html</loc>
     <priority>0.7</priority>
   </url>
   <url>
@@ -266,6 +322,14 @@
   </url>
   <url>
     <loc>https://reiad.co.uk/money/basics-2/crowd-behaviour.html</loc>
+    <priority>0.7</priority>
+  </url>
+  <url>
+    <loc>https://reiad.co.uk/money/basics-2/market-cycles.html</loc>
+    <priority>0.7</priority>
+  </url>
+  <url>
+    <loc>https://reiad.co.uk/money/basics-2/order-types.html</loc>
     <priority>0.7</priority>
   </url>
   <url>
@@ -290,6 +354,10 @@
   </url>
   <url>
     <loc>https://reiad.co.uk/money/basics-2/share-categories.html</loc>
+    <priority>0.7</priority>
+  </url>
+  <url>
+    <loc>https://reiad.co.uk/money/basics-2/ipo-in-practice.html</loc>
     <priority>0.7</priority>
   </url>
   <url>
@@ -333,6 +401,10 @@
     <priority>0.7</priority>
   </url>
   <url>
+    <loc>https://reiad.co.uk/money/basics-2/costs-and-taxes.html</loc>
+    <priority>0.7</priority>
+  </url>
+  <url>
     <loc>https://reiad.co.uk/money/basics-3/dse-website.html</loc>
     <priority>0.7</priority>
   </url>
@@ -365,6 +437,14 @@
     <priority>0.7</priority>
   </url>
   <url>
+    <loc>https://reiad.co.uk/money/basics-3/comparing-peers.html</loc>
+    <priority>0.7</priority>
+  </url>
+  <url>
+    <loc>https://reiad.co.uk/money/basics-3/valuation-basics.html</loc>
+    <priority>0.7</priority>
+  </url>
+  <url>
     <loc>https://reiad.co.uk/money/basics-3/red-flags.html</loc>
     <priority>0.7</priority>
   </url>
@@ -377,11 +457,19 @@
     <priority>0.7</priority>
   </url>
   <url>
+    <loc>https://reiad.co.uk/money/basics-3/your-own-biases.html</loc>
+    <priority>0.7</priority>
+  </url>
+  <url>
     <loc>https://reiad.co.uk/money/basics-3/case-study.html</loc>
     <priority>0.7</priority>
   </url>
   <url>
-    <loc>https://reiad.co.uk/money/basics-3/your-own-biases.html</loc>
+    <loc>https://reiad.co.uk/money/basics-3/build-a-portfolio.html</loc>
+    <priority>0.7</priority>
+  </url>
+  <url>
+    <loc>https://reiad.co.uk/money/basics-3/your-first-review.html</loc>
     <priority>0.7</priority>
   </url>
   <url>

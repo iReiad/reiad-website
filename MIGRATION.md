@@ -57,7 +57,8 @@ because it is the one that is going to be read by TypeScript at the
 other end.
 
 **Still JavaScript:** `sw.js`, and `aab/schools/*.js`, the three-school
-engine.
+engine. `workbook.js` still builds the day walker for a page that ships
+it empty; the route renders it now, so that branch is only a fallback.
 
 `sw.js` is last on purpose and to TypeScript rather than to a component:
 a mistake there logs nobody out and serves stale everything.
