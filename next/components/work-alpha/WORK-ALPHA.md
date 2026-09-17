@@ -170,3 +170,41 @@ no-browser half.
 Title: `Work-Alpha: the owner's research control room`. Body: what it is,
 the three locks, the table, the checks run. Squash merge when `checks` is
 green. Do not ask whether to merge.
+
+## Since then: the plan is the owner's to change
+
+The month never survives contact with the month. A day slips, a task turns
+out to be two, a week is lost to something else. So the plan drawn by the
+app is `plan.json` with the owner's changes laid over it, and the changes
+live in the state beside the ticks:
+
+| in `state.edits` | what it holds |
+| --- | --- |
+| `days` | a day number to a new date, theme or goal |
+| `tasks` | a task id to a new title, kind, minutes, reason or steps |
+| `extraDays` | days the owner added, numbered past the file's last |
+| `extraTasks` | a day number to the tasks added to it |
+| `hidden` | tasks dropped: out of every total, one press from back |
+
+`applyEdits(plan, edits)` is pure and does the laying over; `rebuild()` in
+`mount` is the only place the derived plan, the task list, the goals and the
+planned total are assigned. Four rules hold it together:
+
+1. **`plan.json` is never written.** It ships to every reader of the
+   repository and belongs to no account. The file is the default, the
+   account holds the differences.
+2. **A day's number is its identity, its date is only when it happens.**
+   Both rituals are ticked under `r-open-<n>`, so days are sorted by date
+   for drawing and never renumbered. An added day takes the next free
+   number over the file and the added days together.
+3. **A day that moves takes its log with it.** The five lines are filed
+   under the date, so `moveLogs` carries them across; a date already
+   spoken for keeps what it has.
+4. **A task from the file is hidden, not deleted.** Only a task the owner
+   added is really removed, because only that one cannot come back from
+   the file.
+
+Notes are the other half of the same idea: `state.notes` under `task:<id>`
+and `day:<n>`, a box on the task sheet and one under each day. They save on
+blur and draw nothing again, because a re-render would shut every day the
+owner had opened.

@@ -124,6 +124,21 @@
 .wa-ta { margin-bottom: 12px; } .wa-input { margin-bottom: 8px; }
 .wa-ta:focus, .wa-input:focus, .wa-logform textarea:focus, .wa-logform input:focus { outline: 2px solid var(--accent); outline-offset: 1px; }
 
+/* changing the plan: the same day block, with the summary's three
+   facts as fields under it and every task row a row of controls.
+   `.wa-task-edit` overrides the three columns of `.wa-task` above;
+   it has no tick and no timer, so the check column would be empty. */
+.wa-edit { display: grid; grid-template-columns: repeat(auto-fit, minmax(160px, 1fr)); gap: 10px 14px; padding: 12px 0 14px; border-bottom: 1px solid var(--line); margin-bottom: 8px; }
+.wa-edit label { display: grid; gap: 4px; font-size: 0.88rem; color: var(--mute); }
+.wa-edit .wa-input, .wa-edit select { margin-bottom: 0; }
+.wa-edit .wa-row { grid-column: 1 / -1; margin: 0; }
+.wa-editbar { margin-bottom: 14px; }
+.wa-editbar .wa-row { margin-bottom: 0; }
+.wa-task-edit { grid-template-columns: 1fr 130px 92px auto auto; gap: 8px; }
+.wa-task-edit .wa-input { margin-bottom: 0; }
+.wa-note { display: grid; gap: 4px; font-size: 0.88rem; color: var(--mute); margin-top: 12px; }
+.wa-note .wa-ta { margin-bottom: 0; }
+
 /* goals */
 .wa-goalcard { border-top: 6px solid var(--c); } .wa-goalcard.is-met { background: color-mix(in oklab, var(--c) 10%, var(--card)); }
 .wa-goal-head { display: flex; gap: 14px; align-items: center; margin-bottom: 10px; }
@@ -177,4 +192,4 @@
 @keyframes wa-pop { 60% { opacity: 1; } to { transform: rotate(var(--a)) translateY(-180px) rotate(200deg); opacity: 0; } }
 
 @media (prefers-reduced-motion: reduce) { .wa * { animation: none !important; transition: none !important; } }
-@media (max-width: 700px) { .wa-flag { width: 60px; } .wa-flag-name { display: none; } .wa-track { padding-bottom: 20px; } .wa-task { grid-template-columns: 26px 1fr; } .wa-task .wa-mini { grid-column: 2; justify-self: start; } }
+@media (max-width: 700px) { .wa-flag { width: 60px; } .wa-flag-name { display: none; } .wa-track { padding-bottom: 20px; } .wa-task { grid-template-columns: 26px 1fr; } .wa-task .wa-mini { grid-column: 2; justify-self: start; } .wa-task-edit { grid-template-columns: 1fr 1fr; } .wa-task-edit .wa-input:first-child { grid-column: 1 / -1; } }
