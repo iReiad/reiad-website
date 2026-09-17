@@ -473,8 +473,10 @@ const TERM_2_SECTIONS: Section[] = [
    টার্ম ৩: the grammar course. Twenty-five parts in three rungs,
    basic, intermediate and advanced, and a thirty-day book of its
    own. The prose and the blocks are in `scripts/english/term-3/`,
-   seeded by `scripts/seed-english.ts`; the book is
-   `next/lib/workbooks/english-term-3.ts`.
+   one file per part, seeded by `scripts/seed-english.ts`; the
+   book is `next/lib/workbooks/english-term-3.ts`. Each part takes
+   its topic end to end, so `minutes` runs to twenty-odd and a
+   part carries a dozen blocks of several kinds rather than five.
 
    The intermediate and advanced sections EXPAND the basic ones
    rather than starting again: the tense machine of part 7 is
@@ -494,7 +496,7 @@ const TERM_3_SECTIONS: Section[] = [
         bn: "আটজন খেলোয়াড়: parts of speech",
         en: "The eight players",
         icon: "pair",
-        minutes: 10,
+        minutes: 25,
         blurb:
           "একটা দলে ব্যাটার, বোলার, কিপার। ইংরেজি বাক্যেও আটটা পজিশন, আর প্রত্যেকের কাজ আলাদা। আজ পুরো দলটা চিনে নাও।",
       },
@@ -504,7 +506,7 @@ const TERM_3_SECTIONS: Section[] = [
         bn: "নাম-শব্দ: noun, একটা না অনেক",
         en: "Nouns: one or many",
         icon: "basket",
-        minutes: 10,
+        minutes: 27,
         blurb:
           "cat থেকে cats সহজ, child থেকে children নয়, আর water কখনো waters হয় না। গোনা যায় কি যায় না, সেটাই আসল প্রশ্ন।",
       },
@@ -514,7 +516,7 @@ const TERM_3_SECTIONS: Section[] = [
         bn: "বদলি খেলোয়াড়: pronoun",
         en: "Pronouns: the substitutes",
         icon: "hand",
-        minutes: 9,
+        minutes: 23,
         blurb:
           "একই নাম বারবার না বলে মাঠে বদলি নামাও: he, she, it, they। কিন্তু I আর me, they আর them এক নয়, আর সেটাই সবাই গুলিয়ে ফেলে।",
       },
@@ -524,7 +526,7 @@ const TERM_3_SECTIONS: Section[] = [
         bn: "a, an, the: তিনটা ছোট শব্দের বড় কাজ",
         en: "Articles",
         icon: "glue",
-        minutes: 9,
+        minutes: 23,
         blurb:
           "বাংলায় এদের কোনো ভাই নেই, তাই বাংলাভাষীর কানে এরা ধরা পড়ে না। কখন কোনটা, আর কখন কিছুই না: তিনটা প্রশ্নে পুরো নিয়ম।",
       },
@@ -534,7 +536,7 @@ const TERM_3_SECTIONS: Section[] = [
         bn: "রং লাগানো: adjective আর তুলনা",
         en: "Adjectives and comparison",
         icon: "star",
-        minutes: 9,
+        minutes: 23,
         blurb:
           "big, bigger, biggest; good, better, best। কোন শব্দে -er বসে আর কোনটায় more, তার একটা সহজ কান-নিয়ম আছে।",
       },
@@ -544,7 +546,7 @@ const TERM_3_SECTIONS: Section[] = [
         bn: "কর্তা আর ক্রিয়ার মিল: -s এর নিয়ম",
         en: "Subject and verb agree",
         icon: "equals",
-        minutes: 9,
+        minutes: 20,
         blurb:
           "She play cricket, নাকি She plays? একজন হলে ক্রিয়ায় একটা টুপি। পরীক্ষায় সবচেয়ে বেশি নম্বর কাটা যায় এই এক অক্ষরে।",
       },
@@ -554,7 +556,7 @@ const TERM_3_SECTIONS: Section[] = [
         bn: "টাইম মেশিন: তিন কাল, চার রূপ",
         en: "The tense machine",
         icon: "clock",
-        minutes: 12,
+        minutes: 26,
         blurb:
           "কাল, আজ, আগামীকাল; আর প্রতিটার চার রকম রূপ। বারোটা ঘরের মানচিত্রটা একবার মাথায় বসলে tense আর ভয় লাগে না।",
       },
@@ -564,7 +566,7 @@ const TERM_3_SECTIONS: Section[] = [
         bn: "কীভাবে, কখন, কোথায়: adverb",
         en: "Adverbs",
         icon: "wave",
-        minutes: 8,
+        minutes: 23,
         blurb:
           "Mustafiz bowls fast: fast শব্দটা বোলিংকে বর্ণনা করছে, বোলারকে নয়। -ly লাগে কোথায়, always বসে কোথায়, আজ সেটা।",
       },
@@ -574,7 +576,7 @@ const TERM_3_SECTIONS: Section[] = [
         bn: "in, on, at, under: জায়গা আর সময়ের ছোট শব্দ",
         en: "Prepositions",
         icon: "map",
-        minutes: 10,
+        minutes: 27,
         blurb:
           "বাংলায় একটা 'এ' দিয়ে যা হয়, ইংরেজিতে তিনটা শব্দে ভাগ করা: in the box, on the box, at the box। ছবি দিয়ে মনে রাখো।",
       },
@@ -584,7 +586,7 @@ const TERM_3_SECTIONS: Section[] = [
         bn: "বাক্যের চার রকম, আর বড় হাতের অক্ষর",
         en: "Kinds of sentence",
         icon: "engine",
-        minutes: 9,
+        minutes: 26,
         blurb:
           "বলা, জিজ্ঞেস করা, আদেশ করা, চমকে ওঠা। প্রতিটার শুরু আর শেষ আলাদা, আর একটা কমা কোথায় বসল তাতে মানে বদলে যায়।",
       },
@@ -601,7 +603,7 @@ const TERM_3_SECTIONS: Section[] = [
         bn: "have + V3: সেতু-কাল আর অতীতের আগের অতীত",
         en: "The perfect tenses",
         icon: "bridge",
-        minutes: 11,
+        minutes: 23,
         blurb:
           "I have eaten, I had eaten, I will have eaten: একই ক্রিয়ার তিন রূপ, আর প্রতিটা একটা সেতু। পরীক্ষার right form-এর অর্ধেক এখানে।",
       },
@@ -611,7 +613,7 @@ const TERM_3_SECTIONS: Section[] = [
         bn: "can, must, should: শক্তির শব্দ",
         en: "Modal verbs",
         icon: "key",
-        minutes: 10,
+        minutes: 25,
         blurb:
           "পারা, লাগা, উচিত, হতে পারে। এদের পরে ক্রিয়া কখনো বদলায় না, আর একটা শব্দ বদলালেই ভদ্রতা থেকে হুকুম।",
       },
@@ -621,7 +623,7 @@ const TERM_3_SECTIONS: Section[] = [
         bn: "প্রশ্ন বানানোর মেশিন, আর tag question",
         en: "Questions and tags",
         icon: "question",
-        minutes: 10,
+        minutes: 25,
         blurb:
           "do/does/did কোথায় বসে, wh-শব্দ কোথায়, আর বাক্যের শেষে সেই ছোট্ট লেজ: isn't it? পরীক্ষায় প্রতি বছর আসে, জীবনে রোজ।",
       },
@@ -631,7 +633,7 @@ const TERM_3_SECTIONS: Section[] = [
         bn: "and, but, because, although: বাক্য জোড়া",
         en: "Conjunctions and clauses",
         icon: "link",
-        minutes: 10,
+        minutes: 25,
         blurb:
           "ছোট বাক্য ভুল নয়, শুধু ছোট। জোড়ার শব্দগুলো শিখলে তিন বাক্যের কথা এক বাক্যে বলা যায়, আর কমাটা কোথায় বসবে সেটাও।",
       },
@@ -641,7 +643,7 @@ const TERM_3_SECTIONS: Section[] = [
         bn: "কে করল জানা নেই: passive voice",
         en: "The passive",
         icon: "flip",
-        minutes: 10,
+        minutes: 22,
         blurb:
           "The match was won. কে জিতল বলা নেই, তবু বাক্য পূর্ণ। be + V3 এর মেশিন, আর voice change-এর পরীক্ষার কৌশল।",
       },
@@ -651,7 +653,7 @@ const TERM_3_SECTIONS: Section[] = [
         bn: "সে বলল যে…: reported speech",
         en: "Reported speech",
         icon: "quote",
-        minutes: 11,
+        minutes: 24,
         blurb:
           "অন্যের কথা নিজের মুখে। কাল এক ধাপ পিছিয়ে যায়, today হয়ে যায় that day, আর narration-এর নম্বর পুরোটা তোলা যায়।",
       },
@@ -661,7 +663,7 @@ const TERM_3_SECTIONS: Section[] = [
         bn: "if-এর চার সিঁড়ি",
         en: "Conditionals",
         icon: "fork",
-        minutes: 11,
+        minutes: 22,
         blurb:
           "If it rains, if it rained, if it had rained: যত পিছনের কাল, তত কম সত্যি। চার সিঁড়ি চিনলে ইংরেজিতে কল্পনা করা যায়।",
       },
@@ -671,7 +673,7 @@ const TERM_3_SECTIONS: Section[] = [
         bn: "-ing নাকি to: gerund আর infinitive",
         en: "Gerund or infinitive",
         icon: "branch",
-        minutes: 9,
+        minutes: 23,
         blurb:
           "enjoy playing কিন্তু want to play। কোন ক্রিয়ার পরে কোনটা বসে, তার একটা ছোট তালিকা আছে, আর বাকিটা কান।",
       },
@@ -688,7 +690,7 @@ const TERM_3_SECTIONS: Section[] = [
         bn: "who, which, that: বাক্যের ভিতরে বাক্য",
         en: "Relative clauses",
         icon: "nest",
-        minutes: 10,
+        minutes: 24,
         blurb:
           "The boy who scored the century: দুটো বাক্য একটার ভিতরে। কমা বসলে মানে বদলায়, আর that কখন বাদ দেওয়া যায় সেটাও।",
       },
@@ -698,7 +700,7 @@ const TERM_3_SECTIONS: Section[] = [
         bn: "some, any, much, many, few: পরিমাণের শব্দ",
         en: "Determiners and quantity",
         icon: "layers",
-        minutes: 9,
+        minutes: 23,
         blurb:
           "কতটুকু, কয়টা, কোনটা। some আর any-র ভিতরের নিয়ম, few আর a few-র বিরাট পার্থক্য, আর each আর every-র মাঝের সরু রেখা।",
       },
@@ -708,7 +710,7 @@ const TERM_3_SECTIONS: Section[] = [
         bn: "make, let, have, get: অন্যকে দিয়ে করানো",
         en: "Causatives and verb patterns",
         icon: "hand",
-        minutes: 10,
+        minutes: 22,
         blurb:
           "I had my phone repaired: নিজে সারাইনি, সারিয়ে নিয়েছি। কাউকে দিয়ে কিছু করানোর চারটা ক্রিয়া, আর প্রতিটার নিজের ছাঁচ।",
       },
@@ -718,7 +720,7 @@ const TERM_3_SECTIONS: Section[] = [
         bn: "জোর দেওয়ার ব্যাকরণ: inversion, cleft, so আর such",
         en: "Emphasis and inversion",
         icon: "tone",
-        minutes: 10,
+        minutes: 23,
         blurb:
           "Never have I seen such a catch! সাধারণ কথাটাকে উল্টে দিলেই জোর। It was Shakib who…: বাক্য ভেঙে আলো ফেলা।",
       },
@@ -728,7 +730,7 @@ const TERM_3_SECTIONS: Section[] = [
         bn: "কমা, অ্যাপস্ট্রফি, সেমিকোলন: যতিচিহ্নের খেলা",
         en: "Punctuation",
         icon: "pen",
-        minutes: 9,
+        minutes: 23,
         blurb:
           "Let's eat, Nanu আর Let's eat Nanu-র মাঝে একটা কমার দূরত্ব। its আর it's, কোলন আর সেমিকোলন: লেখায় নম্বর ওঠে এখানেই।",
       },
@@ -738,7 +740,7 @@ const TERM_3_SECTIONS: Section[] = [
         bn: "পরীক্ষার হল: transformation, right form, narration",
         en: "The exam room",
         icon: "check",
-        minutes: 12,
+        minutes: 24,
         blurb:
           "SSC আর HSC-র প্রশ্নপত্রে যে পাঁচটা ব্যাকরণের প্রশ্ন বছরের পর বছর আসে, তার প্রতিটার নিয়ম আর প্রতিটার ফাঁদ, একসাথে।",
       },
@@ -748,7 +750,7 @@ const TERM_3_SECTIONS: Section[] = [
         bn: "বাংলাভাষীর পঁচিশটা ফাঁদ, আর ত্রিশ দিনের মানচিত্র",
         en: "Twenty-five traps and the map",
         icon: "map",
-        minutes: 11,
+        minutes: 22,
         blurb:
           "যে ভুলগুলো বাংলা থেকে ইংরেজিতে আসার পথে সবাই করে, একটা তালিকায়। আর খাতার ত্রিশ দিন কোন পর্বের সাথে মেলে, সেই মানচিত্র।",
       },
@@ -811,7 +813,10 @@ export const TERMS: Term[] = [
       "শব্দের আট জাত থেকে passive, narration আর if পর্যন্ত: পুরো ব্যাকরণ তিন ধাপে, বেসিক থেকে উচ্চতর। প্রতিটা নিয়মের সাথে শোনার বোতাম, খেলা আর পরীক্ষার কৌশল।",
     can:
       "পঁচিশটা পর্ব শেষে: যেকোনো বাক্য দেখে বলতে পারবে কোন শব্দটা কী কাজ করছে, নিজের বাক্যের ভুল নিজে ধরতে পারবে, আর পরীক্ষার ব্যাকরণ অংশে আন্দাজে নয়, নিয়ম জেনে উত্তর দিতে পারবে।",
-    minutes: [30, 45],
+    /* A part is twenty-odd minutes of reading and games now, and
+       the day's workbook page another fifteen, so the sitting is
+       longer than it was when a part was five blocks. */
+    minutes: [40, 60],
     status: "live",
     workbook: { slug: "workbook", days: 30 },
     sections: TERM_3_SECTIONS,

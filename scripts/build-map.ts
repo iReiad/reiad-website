@@ -98,7 +98,7 @@ const FOLDED: Record<string, string> = {
   "next/lib/methods": "one method essay per file, for /tools/research/methods/<slug>",
   "next/lib/workbooks": "one practice book per file, a term's or a Stufe's days",
   "scripts/money": "the money school's seeded lessons, one stage per file",
-  "scripts/english/term-3": "the English grammar term's seeded parts, one rung per file",
+  "scripts/english/term-3": "the English grammar term's seeded parts, one part per file, and the three rungs that gather them",
   "shared/csl": "the CSL citation styles the Research Studio renders",
 };
 

@@ -351,6 +351,78 @@ const MODELS: GridModel[] = [
     ],
   },
 
+  /* ---------- english: one person, four forms ----------
+
+     The grammar term's pronoun sheet. Three columns, because a
+     pronoun's trap is that Bangla has one word where English has
+     four, and a reader who has typed him, his and his in a row
+     has seen the shape of it. */
+  {
+    id: "en-pronouns",
+    title: S("একজন, চার রূপে", "One person, four forms"),
+    columns: [S("কর্ম", "object"), S("কার, নামের আগে", "before a noun"), S("কার, একা", "on its own")],
+    fmt: "text",
+    rows: [
+      row("i", "I", "I", [word("me", "me"), word("my", "my"), word("mine", "mine")]),
+      row("he", "he", "he", [ask("him"), ask("his"), ask("his")]),
+      row("she", "she", "she", [ask("her"), ask("her"), ask("hers")]),
+      row("we", "we", "we", [ask("us"), ask("our"), ask("ours")]),
+      row("they", "they", "they", [ask("them"), ask("their"), ask("theirs")]),
+    ],
+  },
+
+  /* ---------- english: be, now and then ---------- */
+  {
+    id: "en-be",
+    title: S("be: এখন আর তখন", "Be: now and then"),
+    columns: [S("এখন", "now"), S("তখন", "then")],
+    fmt: "text",
+    rows: [
+      row("i", "I", "I", [word("am", "am"), ask("was")]),
+      row("you", "you", "you", [ask("are"), ask("were")]),
+      row("he", "he / she / it", "he / she / it", [ask("is"), ask("was")]),
+      row("we", "we", "we", [ask("are"), ask("were")]),
+      row("they", "they", "they", [ask("are"), ask("were")]),
+    ],
+  },
+
+  /* ---------- english: the rebels, three forms ----------
+
+     V2 and V3 of the verbs every perfect and every passive in
+     the term reaches for. `go` is given so the sheet opens as a
+     worked row rather than a blank one. */
+  {
+    id: "en-rebels",
+    title: S("রেবেল ক্রিয়া: তিন রূপ", "Rebel verbs: three forms"),
+    columns: [S("অতীত, V2", "past, V2"), S("তৃতীয় রূপ, V3", "participle, V3")],
+    fmt: "text",
+    rows: [
+      row("go", "go", "go", [word("went", "went"), word("gone", "gone")]),
+      row("see", "see", "see", [ask("saw"), ask("seen")]),
+      row("eat", "eat", "eat", [ask("ate"), ask("eaten")]),
+      row("write", "write", "write", [ask("wrote"), ask("written")]),
+      row("take", "take", "take", [ask("took"), ask("taken")]),
+      row("speak", "speak", "speak", [ask("spoke"), ask("spoken")]),
+      row("break", "break", "break", [ask("broke"), ask("broken")]),
+    ],
+  },
+
+  /* ---------- english: the three steps of comparison ---------- */
+  {
+    id: "en-compare",
+    title: S("তুলনার তিন সিঁড়ি", "The three steps of comparison"),
+    columns: [S("দুজনের মধ্যে", "of two"), S("সবার মধ্যে", "of all")],
+    fmt: "text",
+    rows: [
+      row("tall", "tall", "tall", [word("taller", "taller"), word("tallest", "tallest")]),
+      row("big", "big", "big", [ask("bigger"), ask("biggest")]),
+      row("happy", "happy", "happy", [ask("happier"), ask("happiest")]),
+      row("careful", "careful", "careful", [ask("more careful"), ask("most careful")]),
+      row("good", "good", "good", [ask("better"), ask("best")]),
+      row("bad", "bad", "bad", [ask("worse"), ask("worst")]),
+    ],
+  },
+
   /* ---------- quran: one root, four words ---------- */
   {
     id: "ar-root",

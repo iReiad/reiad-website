@@ -576,7 +576,7 @@ Every `page.tsx` under `next/app/`, by address.
 | `scripts/check-utility-clash.ts` | a class this site styles must not also be a class Tailwind generates. |
 | `scripts/check-worker-size.ts` | the Next Worker against Cloudflare's cap. |
 | `scripts/english/shape.ts` | what one authored part looks like. |
-| `scripts/english/term-3/` | 3 files: the English grammar term's seeded parts, one rung per file |
+| `scripts/english/term-3/` | 28 files: the English grammar term's seeded parts, one part per file, and the three rungs that gather them |
 | `scripts/english/term-3.ts` | টার্ম ৩: ইংরেজি ব্যাকরণ. |
 | `scripts/export-calculator-fixtures.ts` | the five calculators, frozen. |
 | `scripts/export-diet-fixtures.ts` | the body and the energy, frozen. |
