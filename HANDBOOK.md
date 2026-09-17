@@ -927,6 +927,9 @@ opens a day from `#spiel-N` as it does from `#tag-N`.
 a thirty-day book of its own. It is the first term of a language school
 whose prose is SEEDED like the money school's rather than typed into
 the Studio: `scripts/english/term-3/` holds the parts with their blocks,
+ONE FILE PER PART (`NN-slug.ts`, exporting `PART`) with `basic.ts`,
+`middle.ts` and `advanced.ts` gathering them into the three rungs, so a
+correction to part 4 never shares a diff with part 24;
 `scripts/seed-english.ts` writes the rows and refreshes the snapshot,
 `scripts/check-english.ts` runs in `check-all.ts`, and
 `.github/workflows/seed-english.yml` is the button. The first two terms
@@ -939,6 +942,14 @@ terms. That is what gives the English its own face and what the
 touch-to-hear control finds, and it is why a part saved from the Studio
 loses it. Seed from the file. `check-english.ts` holds the prose to the
 sanitiser's CLASSES, which is the check a Studio edit would also pass.
+
+**A part takes its topic end to end.** Prose, then a dozen or more
+blocks of several kinds, then a run at the exam question the topic
+appears in: the sections a part carries are the rule, the table that
+sorts it, the trap, the exam room, and a closing checklist. That is why
+a part's `minutes` in `shared/curricula/english.ts` reads twenty-odd
+rather than ten. A new part that lands with five blocks and no exam
+section is thinner than the twenty-five beside it, and reads that way.
 
 **Four block kinds are the language schools' and their lines are plain
 strings.** `pattern`, `lines`, `gap` and `build` in `shared/lesson.ts`

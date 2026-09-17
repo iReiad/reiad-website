@@ -1,12 +1,13 @@
 /* ============================================================
-   টার্ম ৩: ইংরেজি ব্যাকরণ. The twenty-five parts, in three
-   files under `term-3/`, one per rung of the ladder.
+   টার্ম ৩: ইংরেজি ব্যাকরণ. The twenty-five parts, one file each
+   under `term-3/`, gathered by three rung files.
 
    `scripts/seed-english.ts` reads every `scripts/english/<term>.ts`
    for a `LESSONS` export keyed by part slug, so this file is the
-   term and the three beside it are its rungs. Split because a
-   correction to part 4 should not sit in the same diff as part
-   24, and because one file would be four hundred kilobytes.
+   term, `basic.ts`, `middle.ts` and `advanced.ts` are its rungs,
+   and `NN-slug.ts` beside them is one part. Split that far
+   because a correction to part 4 should not sit in the same diff
+   as part 24, and because one file would be a megabyte.
    ============================================================ */
 
 import type { Written } from "./shape.ts";

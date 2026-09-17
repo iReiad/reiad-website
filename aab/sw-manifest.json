@@ -1,5 +1,5 @@
 {
-  "version": "v256",
+  "version": "v257",
   "hashes": {
     "/offline.html": "87b4e796dca2f580",
     "/fallback.css": "f7997f5552242cc4",
@@ -35,7 +35,7 @@
     "/quran/icons.js": "61c6b82fe694551c",
     "/quran/dars.js": "13a675820bfb2306",
     "/quran/dhap.js": "a85382a972eea3ac",
-    "/english/curriculum.js": "d7b60ec7579dbe87",
+    "/english/curriculum.js": "edf7a47f5e35faa8",
     "/english/hub.js": "e6680bab326806df",
     "/english/progress.js": "cdf5c13e6e1f67fd",
     "/english/icons.js": "a7b36e9bdc48f610",

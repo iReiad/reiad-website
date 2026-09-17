@@ -24,6 +24,10 @@
    the number moves. `node scripts/check-sw.ts --update` records the
    new hashes.
 
+   v257: the grammar term's parts run twice as long. /english/curriculum.js
+         carries the new minutes for all twenty-five parts of টার্ম ৩,
+         each of which now takes its topic end to end, and the longer
+         daily sitting the term asks for.
    v256: the strips join the one bar. /fallback.css draws the diet and
          research strips, the segmented controls and a lesson's language
          switch as the site's tab bar, and lays a chart's hidden data
@@ -54,7 +58,7 @@
    v249: comments. Every precached module lost the essay at the top
         of it and this file lost 2,167 lines of changelog, so the
         bytes moved without a line of behaviour changing. */
-const VERSION = "v256";
+const VERSION = "v257";
 const SHELL = `shell-${VERSION}`;
 const RUNTIME = `runtime-${VERSION}`;
 
