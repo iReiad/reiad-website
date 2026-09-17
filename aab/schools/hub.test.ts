@@ -26,6 +26,9 @@ import { fileURLToPath, pathToFileURL } from "node:url";
 const ROOT = join(dirname(fileURLToPath(import.meta.url)), "..", "..");
 const AAB = join(ROOT, "aab");
 
+import { bookFor } from "../../next/lib/workbook.ts";
+import { hasGame } from "../../next/lib/sentence-game.ts";
+
 let parseHTML: typeof import("linkedom").parseHTML;
 try {
   ({ parseHTML } = await import("linkedom"));
@@ -135,6 +138,19 @@ for (const school of ["deutsch", "english", "quran"]) {
   if (!body) { ok(`${school}: markup found in school-hubs.ts`, false); continue; }
 
   const { window, document } = parseHTML(`<!doctype html><html><body>${body}</body></html>`);
+
+  /* The routine's game link is resolved by the page out of the book,
+     and it has to open the FIRST day that has a game: the German
+     book's first three days have none. Read off the book here so
+     the number is never typed into this file. */
+  const firstBook: Record<string, string> = { deutsch: "stufe-1", english: "term-1" };
+  const book = firstBook[school] ? bookFor(firstBook[school]) : null;
+  if (book) {
+    const link = document.querySelector('a[href*="#spiel-"]')?.getAttribute("href") ?? "";
+    const first = book.days.find((d) => hasGame(d.watch))?.n;
+    ok(`${school}: the game link opens the first day that has a game`,
+      link.endsWith(`#spiel-${first}`), `${link || "(no game link)"} where the first game is day ${first}`);
+  }
   const store = new Map<string, string>();
   const listeners = new Map<string, Array<(e: Event) => void>>();
   Object.assign(globalThis, {

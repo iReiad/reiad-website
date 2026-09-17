@@ -20,6 +20,7 @@
 
 import { findTerm, termParts } from "/english/curriculum.js";
 import { readSet, termStats, dayStats, onProgress } from "/english/progress.js";
+import { settle } from "/schools/hub.js";
 
 /* Bangla numerals, so a counter on a Bangla page doesn't read
    half in one script and half in another. */
@@ -42,6 +43,11 @@ function paintAll() {
   const bar = document.querySelector("[data-term-progress]");
   if (bar) {
     bar.querySelector(".track i").style.width = `${stats.pct}%`;
+    if (bar.dataset.live === undefined) {
+      /* Drawn at once the first time, slid the times after: the
+         stylesheet transitions the fill only under `data-live`. */
+      settle(bar);
+    }
     bar.querySelector(".count").textContent = stats.done === 0
       ? `${bn(stats.live)}টা পর্ব, এখনো শুরু হয়নি`
       : stats.complete

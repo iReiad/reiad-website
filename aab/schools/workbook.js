@@ -30,6 +30,19 @@ const esc = (s) =>
   String(s).replace(/[&<>"]/g, (c) =>
     ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;" }[c]));
 
+/** The bar's first value is drawn, the next ones slide: see
+    `settle()` in schools/hub.js. A copy rather than an import: this
+    module imports nothing, and an import is a second file a page
+    has to fetch before the book works. */
+/** `requestAnimationFrame` where there is one: the tests build these
+    pages in linkedom, which has no frames. */
+const nextFrame = (fn) =>
+  (typeof requestAnimationFrame === "function" ? requestAnimationFrame : setTimeout)(fn);
+const settle = (bar) => {
+  if (bar.dataset.live !== undefined) return;
+  nextFrame(() => nextFrame(() => { bar.dataset.live = ""; }));
+};
+
 /**
  * @param {object} school
  * @param {string} school.writeKey    localStorage key for what was typed.
@@ -189,17 +202,22 @@ export function initWorkbook(school) {
   function buildNav() {
     if (!nav) return;
     nav.hidden = false;
-    nav.innerHTML = `
-      <button type="button" class="btn btn-ghost" data-go="prev">← আগের দিন</button>
-      <label class="tag-waehler">
-        <span class="mono">দিন</span>
-        <select aria-label="দিন বেছে নিন">
-          ${days.map((d) => `<option value="${d.n}">${bn(d.n)} · ${esc(d.title)}</option>`).join("")}
-        </select>
-      </label>
-      <button type="button" class="btn btn-ghost" data-go="next">পরের দিন →</button>
-      <button type="button" class="btn btn-ghost push" data-go="all" aria-pressed="false">সব দিন একসাথে</button>
-    `;
+    /* The route renders the walker, so it is on the page before this
+       runs and nothing moves when it is wired. Built here only for a
+       page that shipped it empty. */
+    if (!nav.querySelector("select")) {
+      nav.innerHTML = `
+        <button type="button" class="btn btn-ghost" data-go="prev">← আগের দিন</button>
+        <label class="tag-waehler">
+          <span class="mono">দিন</span>
+          <select aria-label="দিন বেছে নিন">
+            ${days.map((d) => `<option value="${d.n}">${bn(d.n)} · ${esc(d.title)}</option>`).join("")}
+          </select>
+        </label>
+        <button type="button" class="btn btn-ghost" data-go="next">পরের দিন →</button>
+        <button type="button" class="btn btn-ghost push" data-go="all" aria-pressed="false">সব দিন একসাথে</button>
+      `;
+    }
 
     nav.addEventListener("click", (e) => {
       const go = e.target.closest("[data-go]")?.dataset.go;
@@ -264,6 +282,7 @@ export function initWorkbook(school) {
           ? `${bn(stats.total)} দিনই শেষ ✓, এবার ${allDoneWord} ${bn(stats.total + 1)}`
           : `${bn(stats.done)}/${bn(stats.total)} দিন হয়েছে`;
       bar.dataset.state = stats.complete ? "done" : stats.done ? "going" : "new";
+      settle(bar);
     }
 
     const today = document.querySelector("[data-buch-heute]");
@@ -327,7 +346,7 @@ export function initWorkbook(school) {
      they left it, the way a real one falls open at the bookmark.
      Failing that, day one. */
   function openingDay() {
-    const fromHash = /^#tag-(\d+)$/.exec(location.hash)?.[1];
+    const fromHash = /^#(?:tag|spiel)-(\d+)$/.exec(location.hash)?.[1];
     if (fromHash) return { day: clamp(fromHash), fromHash: true };
     const last = getLastDay();
     if (last) return { day: clamp(last), fromHash: false };

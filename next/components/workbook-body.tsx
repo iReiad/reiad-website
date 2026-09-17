@@ -68,13 +68,15 @@ export function WorkbookBody(
               {book.lede.bn}
             </p>
             <p className="buch-warnung">
-              এই খাতা পড়ার জন্য নয়, লেখার জন্য, আর জোরে বলার জন্য। খালি ঘরগুলো আপনার।
-              ভরান। যা লেখেন সেটা শুধু আপনার এই ব্রাউজারেই জমা থাকে, কোথাও পাঠানো হয় না।
+              পড়ার খাতা নয়, লেখার আর জোরে বলার। খালি ঘরগুলো তোমার। যা লেখো, তোমার ব্রাউজারে থাকে।
             </p>
 
             <div className="buch-fortschritt" data-buch-fortschritt>
               <span className="track"><i /></span>
-              <span className="count mono" />
+              {/* One line of text from the first paint, so the row
+                  is already a line high when the module writes the
+                  real count into it. */}
+              <span className="count mono">{bn(total)} দিনের খাতা</span>
             </div>
 
             <div className="hero-actions">
@@ -96,7 +98,7 @@ export function WorkbookBody(
             <section id="schluessel" className="no-filter">
               <SectionLabel>ধ্বনির চাবি</SectionLabel>
               <p className="measure">
-                আটকে গেলে এখানে ফিরে আসুন। এই এক তালিকা মুখস্থ হলে যেকোনো শব্দ পড়তে পারবেন।
+                আটকে গেলে এখানে ফিরে এসো। এই এক তালিকায় যেকোনো শব্দ পড়া যায়।
               </p>
               <details className="faq laut-details">
                 <summary>ধ্বনির চাবি খুলুন</summary>
@@ -113,11 +115,15 @@ export function WorkbookBody(
             </section>
           ) : null}
 
-          {/* The day walker, filled in by the module: prev, a
-              day picker, next, and "all days at once". It ships
-              hidden and empty so that with scripts off the book
-              is simply every day, printed, which is what a
-              practice book on paper is.
+          {/* The day walker: prev, a day picker, next, and "all
+              days at once". RENDERED HERE rather than built by the
+              module, so it is on the page from the first paint and
+              nothing under it moves when the module wires it up a
+              moment later; it shipped hidden and empty before, and
+              appearing pushed the whole book down by its own height
+              on every load. With scripts off the `<noscript>` rule
+              takes it away and the book is simply every day,
+              printed, which is what a practice book on paper is.
 
               `data-tag-nav` and the `id` on the days below are
               not decoration. `schools/workbook.js` opens with
@@ -126,7 +132,22 @@ export function WorkbookBody(
               had that id and this route did not, so the module
               threw before its first function ran and BOTH books
               rendered perfectly and did nothing. */}
-          <nav className="tag-nav" data-tag-nav hidden aria-label="দিন বদলান" />
+          <noscript><style>{".tag-nav{display:none}"}</style></noscript>
+          <nav className="tag-nav" data-tag-nav aria-label="দিন বদলান">
+            <Button kind="ghost" data-go="prev">← আগের দিন</Button>
+            <label className="tag-waehler">
+              <span className="mono">দিন</span>
+              <select aria-label="দিন বেছে নিন" defaultValue={String(book.days[0]?.n ?? 1)}>
+                {book.days.map((day) => (
+                  <option key={day.n} value={day.n}>{bn(day.n)} · {day.target}</option>
+                ))}
+              </select>
+            </label>
+            <Button kind="ghost" data-go="next">পরের দিন →</Button>
+            <Button kind="ghost" className="push" data-go="all" aria-pressed="false">
+              সব দিন একসাথে
+            </Button>
+          </nav>
 
           <div className="buch-tage" id="tage">
             {book.days.map((day) => (

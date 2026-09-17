@@ -160,6 +160,7 @@ export function LadderMeter({
   const read = useRead(school);
   const done = ids.filter((id) => read.has(id)).length;
   const pct = ids.length ? Math.round((done / ids.length) * 100) : 0;
+  const live = useSettled();
 
   const label = (done === 0 && words.none ? words.none : words.some)
     .replace("{done}", bn(done))
@@ -168,12 +169,31 @@ export function LadderMeter({
   return (
     <div className="meter-line" style={accent ? { ["--accent" as string]: accent } : undefined}>
       <span className="meter" role="progressbar" aria-valuenow={pct}
-            aria-valuemin={0} aria-valuemax={100} aria-label={label}>
+            aria-valuemin={0} aria-valuemax={100} aria-label={label}
+            data-live={live ? "" : undefined}>
         <i style={{ width: `${pct}%` }} />
       </span>
       <span>{label}</span>
     </div>
   );
+}
+
+    /** False for the first paint and true a frame later. A bar reads
+        its value out of storage AFTER hydration, so the first client
+        render is nought and the second is the truth, and a transition
+        between the two is somebody's whole progress sweeping in on
+        every page load. `@layer deck` animates `.meter` only under
+        `data-live`, which this hands it once the truth has been
+        painted, so a tick pressed later still slides. */
+export function useSettled(): boolean {
+  const [settled, setSettled] = useState(false);
+  useEffect(() => {
+    let frame = requestAnimationFrame(() => {
+      frame = requestAnimationFrame(() => setSettled(true));
+    });
+    return () => cancelAnimationFrame(frame);
+  }, []);
+  return settled;
 }
 
 /** A tick on a card, for a lesson in a list. Rendered inside the

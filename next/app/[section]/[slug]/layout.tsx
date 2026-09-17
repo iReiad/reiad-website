@@ -78,13 +78,16 @@ export default async function ReadingLayout({
         Everything here is a fact about the school rather than about the
         lesson, which is why it can be decided one segment above it.
         `LOOKS` in `lib/school.ts` holds all five. */
-export function SchoolShell({ school, stage, children }: {
+export function SchoolShell({ school, stage, crumb, children }: {
   school: string;
   /** The stage this page is inside, where there is one. The hub
       one segment up passes nothing, because a hub is not inside a
       stage; a stage page and every lesson under it pass the slug,
       and that is the crumb the trail was missing. */
   stage?: string;
+  /** A page inside the school that is not a stage: the study
+      planner. Its own name, as the last crumb. */
+  crumb?: string;
   children: ReactNode;
 }) {
   const look = LOOKS[school];
@@ -96,7 +99,7 @@ export function SchoolShell({ school, stage, children }: {
       current={look.current}
       footer={look.footer}
       skip="মূল লেখায় যান"
-      crumbs={trailFor(look.current, [], stage)}
+      crumbs={trailFor(look.current, crumb ? [{ label: crumb }] : [], stage)}
           /* Only the script every page of the school loads. The one a
              particular KIND of page loads is not here and cannot be: a
              lesson loads `/quran/dars.js` and its stage's ladder loads

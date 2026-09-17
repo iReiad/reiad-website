@@ -187,6 +187,9 @@ const STAGES: Array<[stage: string, entries: Entry[]]> = [
     "scripts/bundle.test.ts",
     "scripts/snapshot.test.ts",
     "scripts/routine.test.ts",
+    /* The study planner's two routes against the workbook's own
+       rows, cell for cell, and the tracker's formulas. */
+    "scripts/netzwerk.test.ts",
     "scripts/diet.test.ts", "scripts/csv.test.ts",
     "scripts/research.test.ts", "scripts/research-stats.test.ts", "scripts/research-field.test.ts", "scripts/research-tools.test.ts", "scripts/research-assist.test.ts",
     "scripts/insights.test.ts", "scripts/activity.test.ts",

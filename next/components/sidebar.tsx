@@ -16,10 +16,13 @@
    attribute is the state; the buttons toggle it and the stylesheet
    answers. A copy in React is the copy that arrives one paint late. */
 
-import { useEffect, useState } from "react";
+import { useEffect, useState, useSyncExternalStore } from "react";
 import { NAV, ORDER, type NavGroup } from "@reiad/shared/nav";
 import { Icon } from "./icons";
 import { AudienceSwitch } from "./topbar";
+import { useBookmark } from "./door";
+import { readSet, subscribe as onProgress } from "../lib/progress";
+import { LADDER_SCHOOLS } from "@reiad/shared/nav";
 import type { Current } from "./shell";
 
 const RAIL_KEY = "rail";
@@ -71,8 +74,18 @@ export function DrawerBackdrop() {
      marked. `nearest` so it does nothing at all when the item is
      already visible, which is most of the time. */
   useEffect(() => {
-    document.querySelector(".rail-item[aria-current='page']")
-      ?.scrollIntoView({ block: "nearest" });
+    const item = document.querySelector<HTMLElement>(".rail-item[aria-current='page']");
+    const list = item?.closest<HTMLElement>(".rail-nav");
+    if (!item || !list) return;
+    /* The list's own `scrollTop`, never `scrollIntoView`: that
+       scrolls every ancestor too, and on a phone it moved the page
+       under the drawer on load. */
+    const top = item.offsetTop - list.offsetTop;
+    const bottom = top + item.offsetHeight;
+    if (top < list.scrollTop) list.scrollTop = top;
+    else if (bottom > list.scrollTop + list.clientHeight) {
+      list.scrollTop = bottom - list.clientHeight;
+    }
   }, []);
 
   useEffect(() => {
@@ -198,6 +211,7 @@ export function Sidebar({ current }: { current: Current }) {
               switch is the widest of them and the least urgent. It is a
               question a reader answers once, so it belongs in the menu. */}
       <div className="rail-foot">
+        <RailContinue />
         <div className="rail-audience">
           <span className="rail-label mono">What brings you here</span>
           <AudienceSwitch />
@@ -205,6 +219,38 @@ export function Sidebar({ current }: { current: Current }) {
         <SidebarToggle />
       </div>
     </aside>
+  );
+}
+
+/** WHERE TO GO NEXT, on every page. The one question a returning
+    learner has, answered in the same place whatever page they are
+    on: the lesson they were in, or the school's hub once that
+    lesson is ticked. Nothing on the server, nothing for a stranger:
+    it reads the bookmark after hydration and renders nothing until
+    there is one. In the rail rather than the page, so it appears
+    without moving anything a reader is looking at. */
+function RailContinue() {
+  const mark = useBookmark();
+  const done = useSyncExternalStore(
+    onProgress,
+    () => (mark && readSet(mark.school).has(mark.id) ? "yes" : "no"),
+    () => "no",
+  ) === "yes";
+  if (!mark) return null;
+  const school = LADDER_SCHOOLS.find((s) => s.key === mark.school);
+  const href = done ? (school?.href ?? "/skills") : mark.url;
+  return (
+    <a className="rail-continue" href={href}
+       style={school ? ({ "--accent": school.accent } as React.CSSProperties) : undefined}
+       aria-label={done ? `পরের পাঠে যান, ${school?.bn ?? mark.school}` : `যেখানে ছিলেন: ${mark.title}`}>
+      <span className="rail-continue-ico"><Icon name="spark" size={16} /></span>
+      <span className="rail-continue-text">
+        <span className="rail-continue-label mono" lang="bn">
+          {done ? "এরপর কী" : "যেখানে ছিলেন"}
+        </span>
+        <b lang="bn">{done ? (school?.bn ?? mark.school) : mark.title}</b>
+      </span>
+    </a>
   );
 }
 

@@ -24,6 +24,11 @@
    the number moves. `node scripts/check-sw.ts --update` records the
    new hashes.
 
+   v253: the bars stop jumping. /schools/hub.js, /schools/workbook.js
+         and the three stage scripts draw a bar's first value at once
+         and slide only the ones after it; /workbook.js opens a day from
+         a game anchor; /fallback.css carries the louder palette, the
+         hero band and the rail's continue handle.
    v252: the plain design. /tilt.js is gone and /app.js no longer
          imports it; /prefs.js lost the glass, sound and weather tables;
          /fallback.css is the stylesheet without the glass, the scenes,
@@ -37,7 +42,7 @@
    v249: comments. Every precached module lost the essay at the top
         of it and this file lost 2,167 lines of changelog, so the
         bytes moved without a line of behaviour changing. */
-const VERSION = "v252";
+const VERSION = "v253";
 const SHELL = `shell-${VERSION}`;
 const RUNTIME = `runtime-${VERSION}`;
 

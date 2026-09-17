@@ -302,6 +302,9 @@ export const PAGES = [
                 blurb: `One page a day for ${s.workbook.days} days: a pattern, five models, eight of your own sentences, six translations, and one true paragraph.`,
             }] : [];
     }),
+    { title: "Deutsch: Netzwerk neu study planner, A1 to B2", url: "/deutsch/advanced",
+        hint: "Tool", group: "deutsch",
+        blurb: "For learners on the Netzwerk neu books: a 52 or 40 week plan from your own start date, a chapter tracker with spaced reviews, a daily log and a weekly score." },
     { title: "English: মন থেকে ইংরেজি", url: "/english",
         hint: "Page", blurb: "English from Bangla in two terms, from word order to holding the floor for two minutes." },
     /* One entry per practice book, built from the curriculum, for

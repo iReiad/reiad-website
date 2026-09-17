@@ -37,6 +37,8 @@
    ============================================================ */
 
 import { HUB_CONTENT, type HubAction, type HubSection } from "../lib/school-hub-content";
+import { bookFor } from "../lib/workbook";
+import { hasGame } from "../lib/sentence-game";
 import { Band } from "./ui/band";
 import { Button, ButtonLink } from "./ui/button";
 import { InfoCard } from "./deck";
@@ -68,12 +70,25 @@ const Html = ({ html, as: Tag = "p", className }: {
    `dangerouslySetInnerHTML` on the link itself, because React
    refuses an element given both that and children, and `children`
    is what a button takes. */
+/* A practice book link ending `#spiel` is resolved to the first day
+   that has a game. Out of the book rather than typed: the German
+   book opens with three pronunciation days the game leaves out, so
+   `#spiel-1` there opened a day with nothing to play. */
+function gameHref(href: string): string {
+  const m = href.match(/^\/([^/]+)\/([^/]+)\/([^/#]+)#spiel$/);
+  if (!m) return href;
+  const [, school, stage, page] = m;
+  const book = bookFor(stage);
+  const day = book?.school === school ? book.days.find((d) => hasGame(d.watch)) : undefined;
+  return day ? `/${school}/${stage}/${page}#spiel-${day.n}` : `/${school}/${stage}/${page}`;
+}
+
 function Actions({ actions, onAccent }: { actions: HubAction[]; onAccent?: boolean }) {
   if (!actions.length) return null;
   return (
     <>
       {actions.map((a) => (
-        <ButtonLink key={a.href} href={a.href} kind={a.kind} onAccent={onAccent} size="lg">
+        <ButtonLink key={a.href} href={gameHref(a.href)} kind={a.kind} onAccent={onAccent} size="lg">
           <Html as="span" html={a.label} />
         </ButtonLink>
       ))}
@@ -161,14 +176,12 @@ export function SchoolHubPage({ school }: { school: string }) {
         <Html as="h1" className="bn-h" html={hero.title} />
         <Html className="lede" html={hero.lede} />
 
-        {/* Where they left off. hub.js fills this when there is
-            something to resume; a first-time visitor sees a clean
-            start rather than an empty box. */}
-        <div id="resume" hidden />
-
         <div className="progress-line" id={hero.progressId}>
           <span className="track"><i /></span>
-          <span className="count" />
+          {/* A line of text from the first paint, so the row is
+              already one line high when hub.js writes the real
+              count into it a moment later. */}
+          <span className="count">{hero.countFallback}</span>
           {/* hub.js finds this by id and unhides it once there is
               something to reset. It is a real button rather than a
               chip class, so it gets the focus ring and the tap
@@ -180,7 +193,27 @@ export function SchoolHubPage({ school }: { school: string }) {
 
         <div className="flex flex-wrap items-center gap-3">
           <Actions actions={hero.actions} />
+          {hero.round ? (
+            /* A disc rather than a pill, on purpose: it is the one
+               door on this page that is not a lesson, and it should
+               look like a different kind of thing. */
+            <a href={hero.round.href}
+               className="ml-auto inline-grid size-36 place-items-center rounded-full border-2 border-accent bg-accent-soft p-3 text-center no-underline shadow-[var(--shadow-lift)] transition-[background-color,translate] duration-[var(--fast)] ease-[var(--ease)] hover:bg-accent-strong hover:text-accent-ink hover:-translate-y-0.5">
+              <span className="grid gap-0.5">
+                <b className="font-code text-t3 uppercase tracking-wider" lang="en">{hero.round.label}</b>
+                <span className="text-t2" lang="bn">{hero.round.sub}</span>
+              </span>
+            </a>
+          ) : null}
         </div>
+
+        {/* Where they left off. hub.js fills this when there is
+            something to resume; a first-time visitor sees a clean
+            start rather than an empty box. LAST in the hero, so
+            that when it appears after load it pushes the sections
+            below it rather than the bar and the buttons a reader
+            is already looking at. */}
+        <div id="resume" hidden />
       </div>
 
       {sections.map((s) => <Section key={s.id} section={s} />)}

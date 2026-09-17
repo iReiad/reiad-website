@@ -17,6 +17,7 @@
 
 import { findDhap, dhapLessons } from "/quran/curriculum.js";
 import { doneSet, dhapStats, onProgress } from "/quran/progress.js";
+import { settle } from "/schools/hub.js";
 
 /* Bangla numerals, so a counter on a Bangla page doesn't read
    half in one script and half in another. */
@@ -39,6 +40,11 @@ function paintAll() {
   const bar = document.querySelector("[data-dhap-progress]");
   if (bar) {
     bar.querySelector(".track i").style.width = `${stats.pct}%`;
+    if (bar.dataset.live === undefined) {
+      /* Drawn at once the first time, slid the times after: the
+         stylesheet transitions the fill only under `data-live`. */
+      settle(bar);
+    }
     /* Days, not pages. The course counts in days from its first
        slide to its last, and a learner who has done four lessons
        covering five days has done five days. */

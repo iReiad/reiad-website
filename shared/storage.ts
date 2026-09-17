@@ -164,6 +164,16 @@ export const KEPT: Keep[] = [
     what: "What you wrote in the English practice book.",
     by: "aab/english/workbook.js" },
 
+  { key: "netzwerk-plan", where: "local", held: "made", syncs: true,
+    what: "Your Netzwerk neu study plans: each learner's route, start date, targets, "
+      + "ticks, daily log and weekly scores.",
+    by: "next/lib/netzwerk-store.ts" },
+  { key: "netzwerk-active", where: "session", held: "device", syncs: false,
+    what: "Which learner the study planner had open in this tab.",
+    why: "Two people share one device on the planner, and which of them last had it "
+      + "open is a fact about this tab, not about either account.",
+    by: "next/lib/netzwerk-store.ts" },
+
   { key: "days-active", where: "local", held: "progress", syncs: true,
     what: "The days you turned up.", by: "aab/src/streak.ts" },
 

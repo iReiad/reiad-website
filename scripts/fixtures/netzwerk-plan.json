@@ -1,0 +1,2434 @@
+{
+ "A": [
+  {
+   "n": 1,
+   "level": "A1",
+   "days": [
+    "A1 K1 · Session 1/4",
+    "A1 K1 · Session 2/4",
+    "A1 K1 · Session 3/4",
+    "A1 K1 · Session 4/4",
+    "A1 K2 · Session 1/4",
+    "A1 K2 · Session 2/4"
+   ],
+   "focus": "K1: sein, verb endings, 3 sentence shapes | K2: conjugation, articles, nicht",
+   "speaking": "Record a 60–90 s monologue on this week's topic (phone). Sat: 10 min German-only talk with partner.",
+   "milestone": ""
+  },
+  {
+   "n": 2,
+   "level": "A1",
+   "days": [
+    "A1 K2 · Session 3/4",
+    "A1 K2 · Session 4/4",
+    "A1 K3 · Session 1/4",
+    "A1 K3 · Session 2/4",
+    "A1 K3 · Session 3/4",
+    "A1 K3 · Session 4/4"
+   ],
+   "focus": "K2: conjugation, articles, nicht | K3: kein, plurals, Imperativ Sie, directions",
+   "speaking": "Record a 60–90 s monologue on this week's topic (phone). Sat: 10 min German-only talk with partner.",
+   "milestone": ""
+  },
+  {
+   "n": 3,
+   "level": "A1",
+   "days": [
+    "A1 Plattform 1: Prüfungstraining, timed (covers K1–K3)",
+    "A1 Review + speaking lab K1–K3 (retell topics, error log, Anki leeches)",
+    "A1 K4 · Session 1/4",
+    "A1 K4 · Session 2/4",
+    "A1 K4 · Session 3/4",
+    "A1 K4 · Session 4/4"
+   ],
+   "focus": "K4: Akkusativ, möchten, Komposita",
+   "speaking": "Record a 60–90 s monologue on this week's topic (phone). Sat: 10 min German-only talk with partner.",
+   "milestone": "Plattform self-test (≥70% to continue)"
+  },
+  {
+   "n": 4,
+   "level": "A1",
+   "days": [
+    "A1 K5 · Session 1/4",
+    "A1 K5 · Session 2/4",
+    "A1 K5 · Session 3/4",
+    "A1 K5 · Session 4/4",
+    "A1 K6 · Session 1/4",
+    "A1 K6 · Session 2/4"
+   ],
+   "focus": "K5: trennbare Verben, Uhrzeit, Possessivartikel | K6: Datum, Akk-Pronomen, war/hatte",
+   "speaking": "Record a 60–90 s monologue on this week's topic (phone). Sat: 10 min German-only talk with partner.",
+   "milestone": ""
+  },
+  {
+   "n": 5,
+   "level": "A1",
+   "days": [
+    "A1 K6 · Session 3/4",
+    "A1 K6 · Session 4/4",
+    "A1 Plattform 2: Prüfungstraining, timed (covers K4–K6)",
+    "A1 Review + speaking lab K4–K6 (retell topics, error log, Anki leeches)",
+    "A1 K7 · Session 1/4",
+    "A1 K7 · Session 2/4"
+   ],
+   "focus": "K6: Datum, Akk-Pronomen, war/hatte | K7: Modalverben, Wohin?, mit wem?",
+   "speaking": "Record a 60–90 s monologue on this week's topic (phone). Sat: 10 min German-only talk with partner.",
+   "milestone": "Plattform self-test (≥70% to continue)"
+  },
+  {
+   "n": 6,
+   "level": "A1",
+   "days": [
+    "A1 K7 · Session 3/4",
+    "A1 K7 · Session 4/4",
+    "A1 K8 · Session 1/4",
+    "A1 K8 · Session 2/4",
+    "A1 K8 · Session 3/4",
+    "A1 K8 · Session 4/4"
+   ],
+   "focus": "K7: Modalverben, Wohin?, mit wem? | K8: Imperativ du/ihr, sollen/dürfen, mir tut weh",
+   "speaking": "Record a 60–90 s monologue on this week's topic (phone). Sat: 10 min German-only talk with partner.",
+   "milestone": ""
+  },
+  {
+   "n": 7,
+   "level": "A1",
+   "days": [
+    "A1 K9 · Session 1/4",
+    "A1 K9 · Session 2/4",
+    "A1 K9 · Session 3/4",
+    "A1 K9 · Session 4/4",
+    "A1 Plattform 3: Prüfungstraining, timed (covers K7–K9)",
+    "A1 Review + speaking lab K7–K9 (retell topics, error log, Anki leeches)"
+   ],
+   "focus": "K9: Wechselpräp. + Dativ (Wo?), gefallen",
+   "speaking": "Record a 60–90 s monologue on this week's topic (phone). Sat: 10 min German-only talk with partner.",
+   "milestone": "Plattform self-test (≥70% to continue)"
+  },
+  {
+   "n": 8,
+   "level": "A1",
+   "days": [
+    "A1 K10 · Session 1/4",
+    "A1 K10 · Session 2/4",
+    "A1 K10 · Session 3/4",
+    "A1 K10 · Session 4/4",
+    "A1 K11 · Session 1/4",
+    "A1 K11 · Session 2/4"
+   ],
+   "focus": "K10: Perfekt (haben/sein, Partizip II) | K11: Dativ-Pronomen, Verben mit Dativ, welch-?",
+   "speaking": "Record a 60–90 s monologue on this week's topic (phone). Sat: 10 min German-only talk with partner.",
+   "milestone": ""
+  },
+  {
+   "n": 9,
+   "level": "A1",
+   "days": [
+    "A1 K11 · Session 3/4",
+    "A1 K11 · Session 4/4",
+    "A1 K12 · Session 1/4",
+    "A1 K12 · Session 2/4",
+    "A1 K12 · Session 3/4",
+    "A1 K12 · Session 4/4"
+   ],
+   "focus": "K11: Dativ-Pronomen, Verben mit Dativ, welch-? | K12: Perfekt mit sein, nach/in + Ort, Wetter",
+   "speaking": "Record a 60–90 s monologue on this week's topic (phone). Sat: 10 min German-only talk with partner.",
+   "milestone": ""
+  },
+  {
+   "n": 10,
+   "level": "A1",
+   "days": [
+    "A1 Plattform 4: Prüfungstraining, timed (covers K10–K12)",
+    "A1 Review + speaking lab K10–K12 (retell topics, error log, Anki leeches)",
+    "Mock exam: Goethe-Zertifikat A1 (Start Deutsch 1) Modellsatz – Hören + Lesen (timed)",
+    "Mock exam: Goethe-Zertifikat A1 (Start Deutsch 1) Modellsatz – Schreiben + Sprechen (with partner)",
+    "Final A1 review: weak-spot drill from error log",
+    "Buffer / catch-up (or repeat the hardest Plattform)"
+   ],
+   "focus": "Review / exam week – no new grammar",
+   "speaking": "Record a 60–90 s monologue on this week's topic (phone). Sat: 10 min German-only talk with partner.",
+   "milestone": "Plattform self-test (≥70% to continue); Mock exam week; A1 complete → enter score, decide on exam"
+  },
+  {
+   "n": 11,
+   "level": "A2",
+   "days": [
+    "A2 K1 · Session 1/4",
+    "A2 K1 · Session 2/4",
+    "A2 K1 · Session 3/4",
+    "A2 K1 · Session 4/4",
+    "A2 K2 · Session 1/4",
+    "A2 K2 · Session 2/4"
+   ],
+   "focus": "K1: weil (Verb am Ende), denn, Perfekt-Review | K2: Modalverben Präteritum, dass",
+   "speaking": "2-min monologue using this week's Redemittel + 15-min couple conversation (Sat).",
+   "milestone": ""
+  },
+  {
+   "n": 12,
+   "level": "A2",
+   "days": [
+    "A2 K2 · Session 3/4",
+    "A2 K2 · Session 4/4",
+    "A2 K3 · Session 1/4",
+    "A2 K3 · Session 2/4",
+    "A2 K3 · Session 3/4",
+    "A2 K3 · Session 4/4"
+   ],
+   "focus": "K2: Modalverben Präteritum, dass | K3: Komparativ/Superlativ, als/wie",
+   "speaking": "2-min monologue using this week's Redemittel + 15-min couple conversation (Sat).",
+   "milestone": ""
+  },
+  {
+   "n": 13,
+   "level": "A2",
+   "days": [
+    "A2 Plattform 1: Prüfungstraining, timed (covers K1–K3)",
+    "A2 Review + speaking lab K1–K3 (retell topics, error log, Anki leeches)",
+    "A2 K4 · Session 1/4",
+    "A2 K4 · Session 2/4",
+    "A2 K4 · Session 3/4",
+    "A2 K4 · Session 4/4"
+   ],
+   "focus": "K4: wenn, Verben mit Präposition, wo(r)-/da(r)-",
+   "speaking": "2-min monologue using this week's Redemittel + 15-min couple conversation (Sat).",
+   "milestone": "Plattform self-test (≥70% to continue)"
+  },
+  {
+   "n": 14,
+   "level": "A2",
+   "days": [
+    "A2 K5 · Session 1/4",
+    "A2 K5 · Session 2/4",
+    "A2 K5 · Session 3/4",
+    "A2 K5 · Session 4/4",
+    "A2 K6 · Session 1/4",
+    "A2 K6 · Session 2/4"
+   ],
+   "focus": "K5: Adjektivdeklination, Könnten Sie…? | K6: als vs wenn, Präteritum, deshalb",
+   "speaking": "2-min monologue using this week's Redemittel + 15-min couple conversation (Sat).",
+   "milestone": ""
+  },
+  {
+   "n": 15,
+   "level": "A2",
+   "days": [
+    "A2 K6 · Session 3/4",
+    "A2 K6 · Session 4/4",
+    "A2 Plattform 2: Prüfungstraining, timed (covers K4–K6)",
+    "A2 Review + speaking lab K4–K6 (retell topics, error log, Anki leeches)",
+    "A2 K7 · Session 1/4",
+    "A2 K7 · Session 2/4"
+   ],
+   "focus": "K6: als vs wenn, Präteritum, deshalb | K7: indirekte Fragen (ob/W-Wort), Grafik",
+   "speaking": "2-min monologue using this week's Redemittel + 15-min couple conversation (Sat).",
+   "milestone": "Plattform self-test (≥70% to continue)"
+  },
+  {
+   "n": 16,
+   "level": "A2",
+   "days": [
+    "A2 K7 · Session 3/4",
+    "A2 K7 · Session 4/4",
+    "A2 K8 · Session 1/4",
+    "A2 K8 · Session 2/4",
+    "A2 K8 · Session 3/4",
+    "A2 K8 · Session 4/4"
+   ],
+   "focus": "K7: indirekte Fragen (ob/W-Wort), Grafik | K8: sollte, um…zu / damit, Präsentation",
+   "speaking": "2-min monologue using this week's Redemittel + 15-min couple conversation (Sat).",
+   "milestone": ""
+  },
+  {
+   "n": 17,
+   "level": "A2",
+   "days": [
+    "A2 K9 · Session 1/4",
+    "A2 K9 · Session 2/4",
+    "A2 K9 · Session 3/4",
+    "A2 K9 · Session 4/4",
+    "A2 Plattform 3: Prüfungstraining, timed (covers K7–K9)",
+    "A2 Review + speaking lab K7–K9 (retell topics, error log, Anki leeches)"
+   ],
+   "focus": "K9: Relativsätze, trotzdem/obwohl",
+   "speaking": "2-min monologue using this week's Redemittel + 15-min couple conversation (Sat).",
+   "milestone": "Plattform self-test (≥70% to continue)"
+  },
+  {
+   "n": 18,
+   "level": "A2",
+   "days": [
+    "A2 K10 · Session 1/4",
+    "A2 K10 · Session 2/4",
+    "A2 K10 · Session 3/4",
+    "A2 K10 · Session 4/4",
+    "A2 K11 · Session 1/4",
+    "A2 K11 · Session 2/4"
+   ],
+   "focus": "K10: Wechselpräp. Akk vs Dativ, Reflexivverben | K11: Konjunktiv II (hätte/wäre/würde), seit/vor/in",
+   "speaking": "2-min monologue using this week's Redemittel + 15-min couple conversation (Sat).",
+   "milestone": ""
+  },
+  {
+   "n": 19,
+   "level": "A2",
+   "days": [
+    "A2 K11 · Session 3/4",
+    "A2 K11 · Session 4/4",
+    "A2 K12 · Session 1/4",
+    "A2 K12 · Session 2/4",
+    "A2 K12 · Session 3/4",
+    "A2 K12 · Session 4/4"
+   ],
+   "focus": "K11: Konjunktiv II (hätte/wäre/würde), seit/vor/in | K12: Relativsätze mit Präposition, Bild beschreiben",
+   "speaking": "2-min monologue using this week's Redemittel + 15-min couple conversation (Sat).",
+   "milestone": ""
+  },
+  {
+   "n": 20,
+   "level": "A2",
+   "days": [
+    "A2 Plattform 4: Prüfungstraining, timed (covers K10–K12)",
+    "A2 Review + speaking lab K10–K12 (retell topics, error log, Anki leeches)",
+    "Mock exam: Goethe-Zertifikat A2 Modellsatz – Hören + Lesen (timed)",
+    "Mock exam: Goethe-Zertifikat A2 Modellsatz – Schreiben + Sprechen (with partner)",
+    "Final A2 review: weak-spot drill from error log",
+    "Buffer / catch-up (or repeat the hardest Plattform)"
+   ],
+   "focus": "Review / exam week – no new grammar",
+   "speaking": "2-min monologue using this week's Redemittel + 15-min couple conversation (Sat).",
+   "milestone": "Plattform self-test (≥70% to continue); Mock exam week; A2 complete → enter score, decide on exam"
+  },
+  {
+   "n": 21,
+   "level": "B1",
+   "days": [
+    "B1 K1 · Session 1/5",
+    "B1 K1 · Session 2/5",
+    "B1 K1 · Session 3/5",
+    "B1 K1 · Session 4/5",
+    "B1 K1 · Session 5/5",
+    "B1 K2 · Session 1/5"
+   ],
+   "focus": "K1: Erzählzeiten, Nebensätze-Review, Wortbildung | K2: Passiv Präsens, Modalpartikeln",
+   "speaking": "3-min opinion talk (recorded) + 20-min couple discussion. 1 tandem/tutor session if possible.",
+   "milestone": ""
+  },
+  {
+   "n": 22,
+   "level": "B1",
+   "days": [
+    "B1 K2 · Session 2/5",
+    "B1 K2 · Session 3/5",
+    "B1 K2 · Session 4/5",
+    "B1 K2 · Session 5/5",
+    "B1 K3 · Session 1/5",
+    "B1 K3 · Session 2/5"
+   ],
+   "focus": "K2: Passiv Präsens, Modalpartikeln | K3: Plusquamperfekt, nachdem, Futur I",
+   "speaking": "3-min opinion talk (recorded) + 20-min couple discussion. 1 tandem/tutor session if possible.",
+   "milestone": ""
+  },
+  {
+   "n": 23,
+   "level": "B1",
+   "days": [
+    "B1 K3 · Session 3/5",
+    "B1 K3 · Session 4/5",
+    "B1 K3 · Session 5/5",
+    "B1 Plattform 1: Prüfungstraining, timed (covers K1–K3)",
+    "B1 Review + speaking lab K1–K3 (retell topics, error log, Anki leeches)",
+    "B1 Weak-spot drill after K3 (Intensivtrainer / Übungsbuch grammar)"
+   ],
+   "focus": "K3: Plusquamperfekt, nachdem, Futur I",
+   "speaking": "3-min opinion talk (recorded) + 20-min couple discussion. 1 tandem/tutor session if possible.",
+   "milestone": "Plattform self-test (≥70% to continue)"
+  },
+  {
+   "n": 24,
+   "level": "B1",
+   "days": [
+    "B1 K4 · Session 1/5",
+    "B1 K4 · Session 2/5",
+    "B1 K4 · Session 3/5",
+    "B1 K4 · Session 4/5",
+    "B1 K4 · Session 5/5",
+    "B1 K5 · Session 1/5"
+   ],
+   "focus": "K4: Konjunktiv II irreal, Nomen-Verb-Verbindungen | K5: Passiv + Modalverb, zweiteilige Konnektoren, Genitiv",
+   "speaking": "3-min opinion talk (recorded) + 20-min couple discussion. 1 tandem/tutor session if possible.",
+   "milestone": ""
+  },
+  {
+   "n": 25,
+   "level": "B1",
+   "days": [
+    "B1 K5 · Session 2/5",
+    "B1 K5 · Session 3/5",
+    "B1 K5 · Session 4/5",
+    "B1 K5 · Session 5/5",
+    "B1 K6 · Session 1/5",
+    "B1 K6 · Session 2/5"
+   ],
+   "focus": "K5: Passiv + Modalverb, zweiteilige Konnektoren, Genitiv | K6: Futur I (Vermutung), falls, -bar/-los/-voll",
+   "speaking": "3-min opinion talk (recorded) + 20-min couple discussion. 1 tandem/tutor session if possible.",
+   "milestone": ""
+  },
+  {
+   "n": 26,
+   "level": "B1",
+   "days": [
+    "B1 K6 · Session 3/5",
+    "B1 K6 · Session 4/5",
+    "B1 K6 · Session 5/5",
+    "B1 Plattform 2: Prüfungstraining, timed (covers K4–K6)",
+    "B1 Review + speaking lab K4–K6 (retell topics, error log, Anki leeches)",
+    "B1 Weak-spot drill after K6 (Intensivtrainer / Übungsbuch grammar)"
+   ],
+   "focus": "K6: Futur I (Vermutung), falls, -bar/-los/-voll",
+   "speaking": "3-min opinion talk (recorded) + 20-min couple discussion. 1 tandem/tutor session if possible.",
+   "milestone": "Plattform self-test (≥70% to continue)"
+  },
+  {
+   "n": 27,
+   "level": "B1",
+   "days": [
+    "B1 K7 · Session 1/5",
+    "B1 K7 · Session 2/5",
+    "B1 K7 · Session 3/5",
+    "B1 K7 · Session 4/5",
+    "B1 K7 · Session 5/5",
+    "B1 K8 · Session 1/5"
+   ],
+   "focus": "K7: temporale Nebensätze (bevor/während/bis/sobald) | K8: indem, Passiv Vergangenheit, trotz/wegen",
+   "speaking": "3-min opinion talk (recorded) + 20-min couple discussion. 1 tandem/tutor session if possible.",
+   "milestone": ""
+  },
+  {
+   "n": 28,
+   "level": "B1",
+   "days": [
+    "B1 K8 · Session 2/5",
+    "B1 K8 · Session 3/5",
+    "B1 K8 · Session 4/5",
+    "B1 K8 · Session 5/5",
+    "B1 K9 · Session 1/5",
+    "B1 K9 · Session 2/5"
+   ],
+   "focus": "K8: indem, Passiv Vergangenheit, trotz/wegen | K9: Partizip als Adjektiv, Adjektive ohne Artikel",
+   "speaking": "3-min opinion talk (recorded) + 20-min couple discussion. 1 tandem/tutor session if possible.",
+   "milestone": ""
+  },
+  {
+   "n": 29,
+   "level": "B1",
+   "days": [
+    "B1 K9 · Session 3/5",
+    "B1 K9 · Session 4/5",
+    "B1 K9 · Session 5/5",
+    "B1 Plattform 3: Prüfungstraining, timed (covers K7–K9)",
+    "B1 Review + speaking lab K7–K9 (retell topics, error log, Anki leeches)",
+    "B1 Weak-spot drill after K9 (Intensivtrainer / Übungsbuch grammar)"
+   ],
+   "focus": "K9: Partizip als Adjektiv, Adjektive ohne Artikel",
+   "speaking": "3-min opinion talk (recorded) + 20-min couple discussion. 1 tandem/tutor session if possible.",
+   "milestone": "Plattform self-test (≥70% to continue)"
+  },
+  {
+   "n": 30,
+   "level": "B1",
+   "days": [
+    "B1 K10 · Session 1/5",
+    "B1 K10 · Session 2/5",
+    "B1 K10 · Session 3/5",
+    "B1 K10 · Session 4/5",
+    "B1 K10 · Session 5/5",
+    "B1 K11 · Session 1/5"
+   ],
+   "focus": "K10: Konjunktiv II Vergangenheit, ohne…zu, dennoch | K11: attributiver Superlativ, brauchen…zu",
+   "speaking": "3-min opinion talk (recorded) + 20-min couple discussion. 1 tandem/tutor session if possible.",
+   "milestone": ""
+  },
+  {
+   "n": 31,
+   "level": "B1",
+   "days": [
+    "B1 K11 · Session 2/5",
+    "B1 K11 · Session 3/5",
+    "B1 K11 · Session 4/5",
+    "B1 K11 · Session 5/5",
+    "B1 K12 · Session 1/5",
+    "B1 K12 · Session 2/5"
+   ],
+   "focus": "K11: attributiver Superlativ, brauchen…zu | K12: Passiv alle Zeiten, lassen, Nominalisierung",
+   "speaking": "3-min opinion talk (recorded) + 20-min couple discussion. 1 tandem/tutor session if possible.",
+   "milestone": ""
+  },
+  {
+   "n": 32,
+   "level": "B1",
+   "days": [
+    "B1 K12 · Session 3/5",
+    "B1 K12 · Session 4/5",
+    "B1 K12 · Session 5/5",
+    "B1 Plattform 4: Prüfungstraining, timed (covers K10–K12)",
+    "B1 Review + speaking lab K10–K12 (retell topics, error log, Anki leeches)",
+    "B1 Weak-spot drill after K12 (Intensivtrainer / Übungsbuch grammar)"
+   ],
+   "focus": "K12: Passiv alle Zeiten, lassen, Nominalisierung",
+   "speaking": "3-min opinion talk (recorded) + 20-min couple discussion. 1 tandem/tutor session if possible.",
+   "milestone": "Plattform self-test (≥70% to continue)"
+  },
+  {
+   "n": 33,
+   "level": "B1",
+   "days": [
+    "B1 Speaking: 3 recorded Sprechen tasks (presentation + discussion)",
+    "B1 Writing: 2 exam-format texts, self-corrected next day",
+    "B1 Reading marathon: 3 articles (Nachrichtenleicht / DW Top-Thema / Deutsch perfekt)",
+    "B1 Listening marathon: 3 podcasts/news + transcript check",
+    "B1 Grammar sprint: all 'Kurz und klar' pages re-tested",
+    "Mock exam: Goethe-Zertifikat B1 Modellsatz – Hören + Lesen (timed)"
+   ],
+   "focus": "Review / exam week – no new grammar",
+   "speaking": "3-min opinion talk (recorded) + 20-min couple discussion. 1 tandem/tutor session if possible.",
+   "milestone": "Mock exam week"
+  },
+  {
+   "n": 34,
+   "level": "B1",
+   "days": [
+    "Mock exam: Goethe-Zertifikat B1 Modellsatz – Schreiben + Sprechen (with partner)",
+    "Final B1 review: weak-spot drill from error log",
+    "Buffer / catch-up (or repeat the hardest Plattform)",
+    "B1 Vocabulary sprint: Anki leeches + 100-word active recall",
+    "B1 Second mock (full, timed) or tutor session",
+    "Buffer / catch-up"
+   ],
+   "focus": "Review / exam week – no new grammar",
+   "speaking": "3-min opinion talk (recorded) + 20-min couple discussion. 1 tandem/tutor session if possible.",
+   "milestone": "Mock exam week; B1 complete → enter score, decide on exam"
+  },
+  {
+   "n": 35,
+   "level": "B2",
+   "days": [
+    "B2 K1 · Session 1/7",
+    "B2 K1 · Session 2/7",
+    "B2 K1 · Session 3/7",
+    "B2 K1 · Session 4/7",
+    "B2 K1 · Session 5/7",
+    "B2 K1 · Session 6/7"
+   ],
+   "focus": "K1: Mittelfeld-Wortstellung, Verbindungsadverbien",
+   "speaking": "4-min presentation-style talk + 30-min discussion. Weekly tutor/tandem session.",
+   "milestone": ""
+  },
+  {
+   "n": 36,
+   "level": "B2",
+   "days": [
+    "B2 K1 · Session 7/7",
+    "B2 K2 · Session 1/7",
+    "B2 K2 · Session 2/7",
+    "B2 K2 · Session 3/7",
+    "B2 K2 · Session 4/7",
+    "B2 K2 · Session 5/7"
+   ],
+   "focus": "K1: Mittelfeld-Wortstellung, Verbindungsadverbien | K2: Konjunktiv II, Passiv-Ersatzformen",
+   "speaking": "4-min presentation-style talk + 30-min discussion. Weekly tutor/tandem session.",
+   "milestone": ""
+  },
+  {
+   "n": 37,
+   "level": "B2",
+   "days": [
+    "B2 K2 · Session 6/7",
+    "B2 K2 · Session 7/7",
+    "B2 K3 · Session 1/7",
+    "B2 K3 · Session 2/7",
+    "B2 K3 · Session 3/7",
+    "B2 K3 · Session 4/7"
+   ],
+   "focus": "K2: Konjunktiv II, Passiv-Ersatzformen | K3: Zeitverhältnisse, Partizipialattribute",
+   "speaking": "4-min presentation-style talk + 30-min discussion. Weekly tutor/tandem session.",
+   "milestone": ""
+  },
+  {
+   "n": 38,
+   "level": "B2",
+   "days": [
+    "B2 K3 · Session 5/7",
+    "B2 K3 · Session 6/7",
+    "B2 K3 · Session 7/7",
+    "B2 Plattform 1: Prüfungstraining, timed (covers K1–K3)",
+    "B2 Review + speaking lab K1–K3 (retell topics, error log, Anki leeches)",
+    "B2 Weak-spot drill after K3 (Intensivtrainer / Übungsbuch grammar)"
+   ],
+   "focus": "K3: Zeitverhältnisse, Partizipialattribute",
+   "speaking": "4-min presentation-style talk + 30-min discussion. Weekly tutor/tandem session.",
+   "milestone": "Plattform self-test (≥70% to continue)"
+  },
+  {
+   "n": 39,
+   "level": "B2",
+   "days": [
+    "B2 K4 · Session 1/7",
+    "B2 K4 · Session 2/7",
+    "B2 K4 · Session 3/7",
+    "B2 K4 · Session 4/7",
+    "B2 K4 · Session 5/7",
+    "B2 K4 · Session 6/7"
+   ],
+   "focus": "K4: indirekte Rede (Konjunktiv I), Argumentation",
+   "speaking": "4-min presentation-style talk + 30-min discussion. Weekly tutor/tandem session.",
+   "milestone": ""
+  },
+  {
+   "n": 40,
+   "level": "B2",
+   "days": [
+    "B2 K4 · Session 7/7",
+    "B2 K5 · Session 1/7",
+    "B2 K5 · Session 2/7",
+    "B2 K5 · Session 3/7",
+    "B2 K5 · Session 4/7",
+    "B2 K5 · Session 5/7"
+   ],
+   "focus": "K4: indirekte Rede (Konjunktiv I), Argumentation | K5: Nominalstil ↔ Verbalstil, Genitivpräpositionen",
+   "speaking": "4-min presentation-style talk + 30-min discussion. Weekly tutor/tandem session.",
+   "milestone": ""
+  },
+  {
+   "n": 41,
+   "level": "B2",
+   "days": [
+    "B2 K5 · Session 6/7",
+    "B2 K5 · Session 7/7",
+    "B2 K6 · Session 1/7",
+    "B2 K6 · Session 2/7",
+    "B2 K6 · Session 3/7",
+    "B2 K6 · Session 4/7"
+   ],
+   "focus": "K5: Nominalstil ↔ Verbalstil, Genitivpräpositionen | K6: als ob, so…dass, Modalverben subjektiv",
+   "speaking": "4-min presentation-style talk + 30-min discussion. Weekly tutor/tandem session.",
+   "milestone": ""
+  },
+  {
+   "n": 42,
+   "level": "B2",
+   "days": [
+    "B2 K6 · Session 5/7",
+    "B2 K6 · Session 6/7",
+    "B2 K6 · Session 7/7",
+    "B2 Plattform 2: Prüfungstraining, timed (covers K4–K6)",
+    "B2 Review + speaking lab K4–K6 (retell topics, error log, Anki leeches)",
+    "B2 Weak-spot drill after K6 (Intensivtrainer / Übungsbuch grammar)"
+   ],
+   "focus": "K6: als ob, so…dass, Modalverben subjektiv",
+   "speaking": "4-min presentation-style talk + 30-min discussion. Weekly tutor/tandem session.",
+   "milestone": "Plattform self-test (≥70% to continue)"
+  },
+  {
+   "n": 43,
+   "level": "B2",
+   "days": [
+    "B2 K7 · Session 1/7",
+    "B2 K7 · Session 2/7",
+    "B2 K7 · Session 3/7",
+    "B2 K7 · Session 4/7",
+    "B2 K7 · Session 5/7",
+    "B2 K7 · Session 6/7"
+   ],
+   "focus": "K7: Relativsätze (dessen/deren), falls/sofern",
+   "speaking": "4-min presentation-style talk + 30-min discussion. Weekly tutor/tandem session.",
+   "milestone": ""
+  },
+  {
+   "n": 44,
+   "level": "B2",
+   "days": [
+    "B2 K7 · Session 7/7",
+    "B2 K8 · Session 1/7",
+    "B2 K8 · Session 2/7",
+    "B2 K8 · Session 3/7",
+    "B2 K8 · Session 4/7",
+    "B2 K8 · Session 5/7"
+   ],
+   "focus": "K7: Relativsätze (dessen/deren), falls/sofern | K8: Modalverben (Vermutung), Sicherheitsgrade",
+   "speaking": "4-min presentation-style talk + 30-min discussion. Weekly tutor/tandem session.",
+   "milestone": ""
+  },
+  {
+   "n": 45,
+   "level": "B2",
+   "days": [
+    "B2 K8 · Session 6/7",
+    "B2 K8 · Session 7/7",
+    "B2 K9 · Session 1/7",
+    "B2 K9 · Session 2/7",
+    "B2 K9 · Session 3/7",
+    "B2 K9 · Session 4/7"
+   ],
+   "focus": "K8: Modalverben (Vermutung), Sicherheitsgrade | K9: Funktionsverbgefüge, konzessiv/adversativ",
+   "speaking": "4-min presentation-style talk + 30-min discussion. Weekly tutor/tandem session.",
+   "milestone": ""
+  },
+  {
+   "n": 46,
+   "level": "B2",
+   "days": [
+    "B2 K9 · Session 5/7",
+    "B2 K9 · Session 6/7",
+    "B2 K9 · Session 7/7",
+    "B2 Plattform 3: Prüfungstraining, timed (covers K7–K9)",
+    "B2 Review + speaking lab K7–K9 (retell topics, error log, Anki leeches)",
+    "B2 Weak-spot drill after K9 (Intensivtrainer / Übungsbuch grammar)"
+   ],
+   "focus": "K9: Funktionsverbgefüge, konzessiv/adversativ",
+   "speaking": "4-min presentation-style talk + 30-min discussion. Weekly tutor/tandem session.",
+   "milestone": "Plattform self-test (≥70% to continue)"
+  },
+  {
+   "n": 47,
+   "level": "B2",
+   "days": [
+    "B2 K10 · Session 1/7",
+    "B2 K10 · Session 2/7",
+    "B2 K10 · Session 3/7",
+    "B2 K10 · Session 4/7",
+    "B2 K10 · Session 5/7",
+    "B2 K10 · Session 6/7"
+   ],
+   "focus": "K10: Textkohärenz, Partizipien erweitert",
+   "speaking": "4-min presentation-style talk + 30-min discussion. Weekly tutor/tandem session.",
+   "milestone": ""
+  },
+  {
+   "n": 48,
+   "level": "B2",
+   "days": [
+    "B2 K10 · Session 7/7",
+    "B2 K11 · Session 1/7",
+    "B2 K11 · Session 2/7",
+    "B2 K11 · Session 3/7",
+    "B2 K11 · Session 4/7",
+    "B2 K11 · Session 5/7"
+   ],
+   "focus": "K10: Textkohärenz, Partizipien erweitert | K11: Infinitivkonstruktionen, Präpositionaladverbien",
+   "speaking": "4-min presentation-style talk + 30-min discussion. Weekly tutor/tandem session.",
+   "milestone": ""
+  },
+  {
+   "n": 49,
+   "level": "B2",
+   "days": [
+    "B2 K11 · Session 6/7",
+    "B2 K11 · Session 7/7",
+    "B2 K12 · Session 1/7",
+    "B2 K12 · Session 2/7",
+    "B2 K12 · Session 3/7",
+    "B2 K12 · Session 4/7"
+   ],
+   "focus": "K11: Infinitivkonstruktionen, Präpositionaladverbien | K12: Passiv + Modalverb alle Zeiten, Amtssprache",
+   "speaking": "4-min presentation-style talk + 30-min discussion. Weekly tutor/tandem session.",
+   "milestone": ""
+  },
+  {
+   "n": 50,
+   "level": "B2",
+   "days": [
+    "B2 K12 · Session 5/7",
+    "B2 K12 · Session 6/7",
+    "B2 K12 · Session 7/7",
+    "B2 Plattform 4: Prüfungstraining, timed (covers K10–K12)",
+    "B2 Review + speaking lab K10–K12 (retell topics, error log, Anki leeches)",
+    "B2 Weak-spot drill after K12 (Intensivtrainer / Übungsbuch grammar)"
+   ],
+   "focus": "K12: Passiv + Modalverb alle Zeiten, Amtssprache",
+   "speaking": "4-min presentation-style talk + 30-min discussion. Weekly tutor/tandem session.",
+   "milestone": "Plattform self-test (≥70% to continue)"
+  },
+  {
+   "n": 51,
+   "level": "B2",
+   "days": [
+    "B2 Speaking: 3 recorded Sprechen tasks (presentation + discussion)",
+    "B2 Writing: 2 exam-format texts, self-corrected next day",
+    "B2 Reading marathon: 3 articles (Nachrichtenleicht / DW Top-Thema / Deutsch perfekt)",
+    "B2 Listening marathon: 3 podcasts/news + transcript check",
+    "B2 Grammar sprint: all 'Kurz und klar' pages re-tested",
+    "Mock exam: Goethe-Zertifikat B2 Modellsatz – Hören + Lesen (timed)"
+   ],
+   "focus": "Review / exam week – no new grammar",
+   "speaking": "4-min presentation-style talk + 30-min discussion. Weekly tutor/tandem session.",
+   "milestone": "Mock exam week"
+  },
+  {
+   "n": 52,
+   "level": "B2",
+   "days": [
+    "Mock exam: Goethe-Zertifikat B2 Modellsatz – Schreiben + Sprechen (with partner)",
+    "Final B2 review: weak-spot drill from error log",
+    "Buffer / catch-up (or repeat the hardest Plattform)",
+    "B2 Vocabulary sprint: Anki leeches + 100-word active recall",
+    "B2 Second mock (full, timed) or tutor session",
+    "Buffer / catch-up"
+   ],
+   "focus": "Review / exam week – no new grammar",
+   "speaking": "4-min presentation-style talk + 30-min discussion. Weekly tutor/tandem session.",
+   "milestone": "Mock exam week; B2 complete → enter score, decide on exam"
+  }
+ ],
+ "B": [
+  {
+   "n": 1,
+   "level": "Bridge (A1)",
+   "days": [
+    "Bridge A1 K1 · A: Kurz und klar → grammar ÜB (odd nos.) → Lernwortschatz → Anki",
+    "Bridge A1 K1 · B: Redemittel aloud ×3 → remaining ÜB → audio + shadow → 90-s recording",
+    "Bridge A1 K2 · A: Kurz und klar → grammar ÜB (odd nos.) → Lernwortschatz → Anki",
+    "Bridge A1 K2 · B: Redemittel aloud ×3 → remaining ÜB → audio + shadow → 90-s recording",
+    "Bridge A1 K3 · Skim: Kurz und klar + Lernwortschatz → Anki + audio once",
+    "Bridge A1 K4 · A: Kurz und klar → grammar ÜB (odd nos.) → Lernwortschatz → Anki"
+   ],
+   "focus": "K1: sein, verb endings, 3 sentence shapes | K2: conjugation, articles, nicht | K3: kein, plurals, Imperativ Sie, directions | K4: Akkusativ, möchten, Komposita",
+   "speaking": "Say every Redemittel on each 'Kurz und klar' page aloud twice. Daily 5-min German with your partner.",
+   "milestone": ""
+  },
+  {
+   "n": 2,
+   "level": "Bridge (A1)",
+   "days": [
+    "Bridge A1 K4 · B: Redemittel aloud ×3 → remaining ÜB → audio + shadow → 90-s recording",
+    "Bridge A1 K5 · A: Kurz und klar → grammar ÜB (odd nos.) → Lernwortschatz → Anki",
+    "Bridge A1 K5 · B: Redemittel aloud ×3 → remaining ÜB → audio + shadow → 90-s recording",
+    "Bridge A1 K6 · A: Kurz und klar → grammar ÜB (odd nos.) → Lernwortschatz → Anki",
+    "Bridge A1 K6 · B: Redemittel aloud ×3 → remaining ÜB → audio + shadow → 90-s recording",
+    "Bridge A1 K7 · A: Kurz und klar → grammar ÜB (odd nos.) → Lernwortschatz → Anki"
+   ],
+   "focus": "K4: Akkusativ, möchten, Komposita | K5: trennbare Verben, Uhrzeit, Possessivartikel | K6: Datum, Akk-Pronomen, war/hatte | K7: Modalverben, Wohin?, mit wem?",
+   "speaking": "Say every Redemittel on each 'Kurz und klar' page aloud twice. Daily 5-min German with your partner.",
+   "milestone": ""
+  },
+  {
+   "n": 3,
+   "level": "Bridge (A1)",
+   "days": [
+    "Bridge A1 K7 · B: Redemittel aloud ×3 → remaining ÜB → audio + shadow → 90-s recording",
+    "Bridge A1 K8 · Skim: Kurz und klar + Lernwortschatz → Anki + audio once",
+    "Bridge A1 K9 · A: Kurz und klar → grammar ÜB (odd nos.) → Lernwortschatz → Anki",
+    "Bridge A1 K9 · B: Redemittel aloud ×3 → remaining ÜB → audio + shadow → 90-s recording",
+    "Bridge A1 K10 · A: Kurz und klar → grammar ÜB (odd nos.) → Lernwortschatz → Anki",
+    "Bridge A1 K10 · B: Redemittel aloud ×3 → remaining ÜB → audio + shadow → 90-s recording"
+   ],
+   "focus": "K7: Modalverben, Wohin?, mit wem? | K8: Imperativ du/ihr, sollen/dürfen, mir tut weh | K9: Wechselpräp. + Dativ (Wo?), gefallen | K10: Perfekt (haben/sein, Partizip II)",
+   "speaking": "Say every Redemittel on each 'Kurz und klar' page aloud twice. Daily 5-min German with your partner.",
+   "milestone": ""
+  },
+  {
+   "n": 4,
+   "level": "Bridge (A1→A2)",
+   "days": [
+    "Bridge A1 K11 · Skim: Kurz und klar + Lernwortschatz → Anki + audio once",
+    "Bridge A1 K12 · Skim: Kurz und klar + Lernwortschatz → Anki + audio once",
+    "Bridge test: A1 Plattform 1–4 + Goethe A1 Modellsatz Lesen/Hören (score it)",
+    "Bridge A2 K1 · A: Kurz und klar → grammar ÜB (odd nos.) → Lernwortschatz → Anki",
+    "Bridge A2 K1 · B: Redemittel aloud ×3 → remaining ÜB → audio + shadow → 90-s recording",
+    "Bridge A2 K2 · A: Kurz und klar → grammar ÜB (odd nos.) → Lernwortschatz → Anki"
+   ],
+   "focus": "K11: Dativ-Pronomen, Verben mit Dativ, welch-? | K12: Perfekt mit sein, nach/in + Ort, Wetter | K1: weil (Verb am Ende), denn, Perfekt-Review | K2: Modalverben Präteritum, dass",
+   "speaking": "Same + build up to a 5-min 'Über mich' monologue by the end of the bridge.",
+   "milestone": "Bridge test – score decides"
+  },
+  {
+   "n": 5,
+   "level": "Bridge (A2)",
+   "days": [
+    "Bridge A2 K2 · B: Redemittel aloud ×3 → remaining ÜB → audio + shadow → 90-s recording",
+    "Bridge A2 K3 · A: Kurz und klar → grammar ÜB (odd nos.) → Lernwortschatz → Anki",
+    "Bridge A2 K3 · B: Redemittel aloud ×3 → remaining ÜB → audio + shadow → 90-s recording",
+    "Bridge A2 K4 · A: Kurz und klar → grammar ÜB (odd nos.) → Lernwortschatz → Anki",
+    "Bridge A2 K4 · B: Redemittel aloud ×3 → remaining ÜB → audio + shadow → 90-s recording",
+    "Bridge A2 K5 · A: Kurz und klar → grammar ÜB (odd nos.) → Lernwortschatz → Anki"
+   ],
+   "focus": "K2: Modalverben Präteritum, dass | K3: Komparativ/Superlativ, als/wie | K4: wenn, Verben mit Präposition, wo(r)-/da(r)- | K5: Adjektivdeklination, Könnten Sie…?",
+   "speaking": "Same + build up to a 5-min 'Über mich' monologue by the end of the bridge.",
+   "milestone": ""
+  },
+  {
+   "n": 6,
+   "level": "Bridge (A2)",
+   "days": [
+    "Bridge A2 K5 · B: Redemittel aloud ×3 → remaining ÜB → audio + shadow → 90-s recording",
+    "Bridge A2 K6 · Skim: Kurz und klar + Lernwortschatz → Anki + audio once",
+    "Bridge A2 K7 · Skim: Kurz und klar + Lernwortschatz → Anki + audio once",
+    "Bridge A2 K8 · A: Kurz und klar → grammar ÜB (odd nos.) → Lernwortschatz → Anki",
+    "Bridge A2 K8 · B: Redemittel aloud ×3 → remaining ÜB → audio + shadow → 90-s recording",
+    "Bridge A2 K9 · A: Kurz und klar → grammar ÜB (odd nos.) → Lernwortschatz → Anki"
+   ],
+   "focus": "K5: Adjektivdeklination, Könnten Sie…? | K6: als vs wenn, Präteritum, deshalb | K7: indirekte Fragen (ob/W-Wort), Grafik | K8: sollte, um…zu / damit, Präsentation | K9: Relativsätze, trotzdem/obwohl",
+   "speaking": "Same + build up to a 5-min 'Über mich' monologue by the end of the bridge.",
+   "milestone": ""
+  },
+  {
+   "n": 7,
+   "level": "Bridge (A2)",
+   "days": [
+    "Bridge A2 K9 · B: Redemittel aloud ×3 → remaining ÜB → audio + shadow → 90-s recording",
+    "Bridge A2 K10 · A: Kurz und klar → grammar ÜB (odd nos.) → Lernwortschatz → Anki",
+    "Bridge A2 K10 · B: Redemittel aloud ×3 → remaining ÜB → audio + shadow → 90-s recording",
+    "Bridge A2 K11 · A: Kurz und klar → grammar ÜB (odd nos.) → Lernwortschatz → Anki",
+    "Bridge A2 K11 · B: Redemittel aloud ×3 → remaining ÜB → audio + shadow → 90-s recording",
+    "Bridge A2 K12 · Skim: Kurz und klar + Lernwortschatz → Anki + audio once"
+   ],
+   "focus": "K9: Relativsätze, trotzdem/obwohl | K10: Wechselpräp. Akk vs Dativ, Reflexivverben | K11: Konjunktiv II (hätte/wäre/würde), seit/vor/in | K12: Relativsätze mit Präposition, Bild beschreiben",
+   "speaking": "Same + build up to a 5-min 'Über mich' monologue by the end of the bridge.",
+   "milestone": ""
+  },
+  {
+   "n": 8,
+   "level": "Bridge (A2)",
+   "days": [
+    "Bridge test: A2 Plattform 1–4 + Goethe A2 Modellsatz Lesen/Hören (score it)",
+    "Bridge consolidation: verb table – Perfekt/Präteritum of the top 60 verbs (chant + write)",
+    "Bridge consolidation: case tables + Wechselpräpositionen speed drill",
+    "Bridge consolidation: Nebensätze (weil/dass/wenn/obwohl/Relativsatz) speed drill aloud",
+    "Bridge consolidation: 5-minute recorded 'Über mich' monologue + correction",
+    "Bridge: Goethe A2 Modellsatz Sprechen with your partner (both roles) – or buffer if behind"
+   ],
+   "focus": "Review / exam week – no new grammar",
+   "speaking": "Same + build up to a 5-min 'Über mich' monologue by the end of the bridge.",
+   "milestone": "Bridge test – score decides; Bridge complete → B1 starts next week"
+  },
+  {
+   "n": 9,
+   "level": "B1",
+   "days": [
+    "B1 K1 · Session 1/5",
+    "B1 K1 · Session 2/5",
+    "B1 K1 · Session 3/5",
+    "B1 K1 · Session 4/5",
+    "B1 K1 · Session 5/5",
+    "B1 K2 · Session 1/5"
+   ],
+   "focus": "K1: Erzählzeiten, Nebensätze-Review, Wortbildung | K2: Passiv Präsens, Modalpartikeln",
+   "speaking": "3-min opinion talk (recorded) + 20-min couple discussion. 1 tandem/tutor session if possible.",
+   "milestone": ""
+  },
+  {
+   "n": 10,
+   "level": "B1",
+   "days": [
+    "B1 K2 · Session 2/5",
+    "B1 K2 · Session 3/5",
+    "B1 K2 · Session 4/5",
+    "B1 K2 · Session 5/5",
+    "B1 K3 · Session 1/5",
+    "B1 K3 · Session 2/5"
+   ],
+   "focus": "K2: Passiv Präsens, Modalpartikeln | K3: Plusquamperfekt, nachdem, Futur I",
+   "speaking": "3-min opinion talk (recorded) + 20-min couple discussion. 1 tandem/tutor session if possible.",
+   "milestone": ""
+  },
+  {
+   "n": 11,
+   "level": "B1",
+   "days": [
+    "B1 K3 · Session 3/5",
+    "B1 K3 · Session 4/5",
+    "B1 K3 · Session 5/5",
+    "B1 Plattform 1: Prüfungstraining, timed (covers K1–K3)",
+    "B1 Review + speaking lab K1–K3 (retell topics, error log, Anki leeches)",
+    "B1 Weak-spot drill after K3 (Intensivtrainer / Übungsbuch grammar)"
+   ],
+   "focus": "K3: Plusquamperfekt, nachdem, Futur I",
+   "speaking": "3-min opinion talk (recorded) + 20-min couple discussion. 1 tandem/tutor session if possible.",
+   "milestone": "Plattform self-test (≥70% to continue)"
+  },
+  {
+   "n": 12,
+   "level": "B1",
+   "days": [
+    "B1 K4 · Session 1/5",
+    "B1 K4 · Session 2/5",
+    "B1 K4 · Session 3/5",
+    "B1 K4 · Session 4/5",
+    "B1 K4 · Session 5/5",
+    "B1 K5 · Session 1/5"
+   ],
+   "focus": "K4: Konjunktiv II irreal, Nomen-Verb-Verbindungen | K5: Passiv + Modalverb, zweiteilige Konnektoren, Genitiv",
+   "speaking": "3-min opinion talk (recorded) + 20-min couple discussion. 1 tandem/tutor session if possible.",
+   "milestone": ""
+  },
+  {
+   "n": 13,
+   "level": "B1",
+   "days": [
+    "B1 K5 · Session 2/5",
+    "B1 K5 · Session 3/5",
+    "B1 K5 · Session 4/5",
+    "B1 K5 · Session 5/5",
+    "B1 K6 · Session 1/5",
+    "B1 K6 · Session 2/5"
+   ],
+   "focus": "K5: Passiv + Modalverb, zweiteilige Konnektoren, Genitiv | K6: Futur I (Vermutung), falls, -bar/-los/-voll",
+   "speaking": "3-min opinion talk (recorded) + 20-min couple discussion. 1 tandem/tutor session if possible.",
+   "milestone": ""
+  },
+  {
+   "n": 14,
+   "level": "B1",
+   "days": [
+    "B1 K6 · Session 3/5",
+    "B1 K6 · Session 4/5",
+    "B1 K6 · Session 5/5",
+    "B1 Plattform 2: Prüfungstraining, timed (covers K4–K6)",
+    "B1 Review + speaking lab K4–K6 (retell topics, error log, Anki leeches)",
+    "B1 Weak-spot drill after K6 (Intensivtrainer / Übungsbuch grammar)"
+   ],
+   "focus": "K6: Futur I (Vermutung), falls, -bar/-los/-voll",
+   "speaking": "3-min opinion talk (recorded) + 20-min couple discussion. 1 tandem/tutor session if possible.",
+   "milestone": "Plattform self-test (≥70% to continue)"
+  },
+  {
+   "n": 15,
+   "level": "B1",
+   "days": [
+    "B1 K7 · Session 1/5",
+    "B1 K7 · Session 2/5",
+    "B1 K7 · Session 3/5",
+    "B1 K7 · Session 4/5",
+    "B1 K7 · Session 5/5",
+    "B1 K8 · Session 1/5"
+   ],
+   "focus": "K7: temporale Nebensätze (bevor/während/bis/sobald) | K8: indem, Passiv Vergangenheit, trotz/wegen",
+   "speaking": "3-min opinion talk (recorded) + 20-min couple discussion. 1 tandem/tutor session if possible.",
+   "milestone": ""
+  },
+  {
+   "n": 16,
+   "level": "B1",
+   "days": [
+    "B1 K8 · Session 2/5",
+    "B1 K8 · Session 3/5",
+    "B1 K8 · Session 4/5",
+    "B1 K8 · Session 5/5",
+    "B1 K9 · Session 1/5",
+    "B1 K9 · Session 2/5"
+   ],
+   "focus": "K8: indem, Passiv Vergangenheit, trotz/wegen | K9: Partizip als Adjektiv, Adjektive ohne Artikel",
+   "speaking": "3-min opinion talk (recorded) + 20-min couple discussion. 1 tandem/tutor session if possible.",
+   "milestone": ""
+  },
+  {
+   "n": 17,
+   "level": "B1",
+   "days": [
+    "B1 K9 · Session 3/5",
+    "B1 K9 · Session 4/5",
+    "B1 K9 · Session 5/5",
+    "B1 Plattform 3: Prüfungstraining, timed (covers K7–K9)",
+    "B1 Review + speaking lab K7–K9 (retell topics, error log, Anki leeches)",
+    "B1 Weak-spot drill after K9 (Intensivtrainer / Übungsbuch grammar)"
+   ],
+   "focus": "K9: Partizip als Adjektiv, Adjektive ohne Artikel",
+   "speaking": "3-min opinion talk (recorded) + 20-min couple discussion. 1 tandem/tutor session if possible.",
+   "milestone": "Plattform self-test (≥70% to continue)"
+  },
+  {
+   "n": 18,
+   "level": "B1",
+   "days": [
+    "B1 K10 · Session 1/5",
+    "B1 K10 · Session 2/5",
+    "B1 K10 · Session 3/5",
+    "B1 K10 · Session 4/5",
+    "B1 K10 · Session 5/5",
+    "B1 K11 · Session 1/5"
+   ],
+   "focus": "K10: Konjunktiv II Vergangenheit, ohne…zu, dennoch | K11: attributiver Superlativ, brauchen…zu",
+   "speaking": "3-min opinion talk (recorded) + 20-min couple discussion. 1 tandem/tutor session if possible.",
+   "milestone": ""
+  },
+  {
+   "n": 19,
+   "level": "B1",
+   "days": [
+    "B1 K11 · Session 2/5",
+    "B1 K11 · Session 3/5",
+    "B1 K11 · Session 4/5",
+    "B1 K11 · Session 5/5",
+    "B1 K12 · Session 1/5",
+    "B1 K12 · Session 2/5"
+   ],
+   "focus": "K11: attributiver Superlativ, brauchen…zu | K12: Passiv alle Zeiten, lassen, Nominalisierung",
+   "speaking": "3-min opinion talk (recorded) + 20-min couple discussion. 1 tandem/tutor session if possible.",
+   "milestone": ""
+  },
+  {
+   "n": 20,
+   "level": "B1",
+   "days": [
+    "B1 K12 · Session 3/5",
+    "B1 K12 · Session 4/5",
+    "B1 K12 · Session 5/5",
+    "B1 Plattform 4: Prüfungstraining, timed (covers K10–K12)",
+    "B1 Review + speaking lab K10–K12 (retell topics, error log, Anki leeches)",
+    "B1 Weak-spot drill after K12 (Intensivtrainer / Übungsbuch grammar)"
+   ],
+   "focus": "K12: Passiv alle Zeiten, lassen, Nominalisierung",
+   "speaking": "3-min opinion talk (recorded) + 20-min couple discussion. 1 tandem/tutor session if possible.",
+   "milestone": "Plattform self-test (≥70% to continue)"
+  },
+  {
+   "n": 21,
+   "level": "B1",
+   "days": [
+    "B1 Speaking: 3 recorded Sprechen tasks (presentation + discussion)",
+    "B1 Writing: 2 exam-format texts, self-corrected next day",
+    "B1 Reading marathon: 3 articles (Nachrichtenleicht / DW Top-Thema / Deutsch perfekt)",
+    "B1 Listening marathon: 3 podcasts/news + transcript check",
+    "B1 Grammar sprint: all 'Kurz und klar' pages re-tested",
+    "Mock exam: Goethe-Zertifikat B1 Modellsatz – Hören + Lesen (timed)"
+   ],
+   "focus": "Review / exam week – no new grammar",
+   "speaking": "3-min opinion talk (recorded) + 20-min couple discussion. 1 tandem/tutor session if possible.",
+   "milestone": "Mock exam week"
+  },
+  {
+   "n": 22,
+   "level": "B1",
+   "days": [
+    "Mock exam: Goethe-Zertifikat B1 Modellsatz – Schreiben + Sprechen (with partner)",
+    "Final B1 review: weak-spot drill from error log",
+    "Buffer / catch-up (or repeat the hardest Plattform)",
+    "B1 Vocabulary sprint: Anki leeches + 100-word active recall",
+    "B1 Second mock (full, timed) or tutor session",
+    "Buffer / catch-up"
+   ],
+   "focus": "Review / exam week – no new grammar",
+   "speaking": "3-min opinion talk (recorded) + 20-min couple discussion. 1 tandem/tutor session if possible.",
+   "milestone": "Mock exam week; B1 complete → enter score, decide on exam"
+  },
+  {
+   "n": 23,
+   "level": "B2",
+   "days": [
+    "B2 K1 · Session 1/7",
+    "B2 K1 · Session 2/7",
+    "B2 K1 · Session 3/7",
+    "B2 K1 · Session 4/7",
+    "B2 K1 · Session 5/7",
+    "B2 K1 · Session 6/7"
+   ],
+   "focus": "K1: Mittelfeld-Wortstellung, Verbindungsadverbien",
+   "speaking": "4-min presentation-style talk + 30-min discussion. Weekly tutor/tandem session.",
+   "milestone": ""
+  },
+  {
+   "n": 24,
+   "level": "B2",
+   "days": [
+    "B2 K1 · Session 7/7",
+    "B2 K2 · Session 1/7",
+    "B2 K2 · Session 2/7",
+    "B2 K2 · Session 3/7",
+    "B2 K2 · Session 4/7",
+    "B2 K2 · Session 5/7"
+   ],
+   "focus": "K1: Mittelfeld-Wortstellung, Verbindungsadverbien | K2: Konjunktiv II, Passiv-Ersatzformen",
+   "speaking": "4-min presentation-style talk + 30-min discussion. Weekly tutor/tandem session.",
+   "milestone": ""
+  },
+  {
+   "n": 25,
+   "level": "B2",
+   "days": [
+    "B2 K2 · Session 6/7",
+    "B2 K2 · Session 7/7",
+    "B2 K3 · Session 1/7",
+    "B2 K3 · Session 2/7",
+    "B2 K3 · Session 3/7",
+    "B2 K3 · Session 4/7"
+   ],
+   "focus": "K2: Konjunktiv II, Passiv-Ersatzformen | K3: Zeitverhältnisse, Partizipialattribute",
+   "speaking": "4-min presentation-style talk + 30-min discussion. Weekly tutor/tandem session.",
+   "milestone": ""
+  },
+  {
+   "n": 26,
+   "level": "B2",
+   "days": [
+    "B2 K3 · Session 5/7",
+    "B2 K3 · Session 6/7",
+    "B2 K3 · Session 7/7",
+    "B2 Plattform 1: Prüfungstraining, timed (covers K1–K3)",
+    "B2 Review + speaking lab K1–K3 (retell topics, error log, Anki leeches)",
+    "B2 Weak-spot drill after K3 (Intensivtrainer / Übungsbuch grammar)"
+   ],
+   "focus": "K3: Zeitverhältnisse, Partizipialattribute",
+   "speaking": "4-min presentation-style talk + 30-min discussion. Weekly tutor/tandem session.",
+   "milestone": "Plattform self-test (≥70% to continue)"
+  },
+  {
+   "n": 27,
+   "level": "B2",
+   "days": [
+    "B2 K4 · Session 1/7",
+    "B2 K4 · Session 2/7",
+    "B2 K4 · Session 3/7",
+    "B2 K4 · Session 4/7",
+    "B2 K4 · Session 5/7",
+    "B2 K4 · Session 6/7"
+   ],
+   "focus": "K4: indirekte Rede (Konjunktiv I), Argumentation",
+   "speaking": "4-min presentation-style talk + 30-min discussion. Weekly tutor/tandem session.",
+   "milestone": ""
+  },
+  {
+   "n": 28,
+   "level": "B2",
+   "days": [
+    "B2 K4 · Session 7/7",
+    "B2 K5 · Session 1/7",
+    "B2 K5 · Session 2/7",
+    "B2 K5 · Session 3/7",
+    "B2 K5 · Session 4/7",
+    "B2 K5 · Session 5/7"
+   ],
+   "focus": "K4: indirekte Rede (Konjunktiv I), Argumentation | K5: Nominalstil ↔ Verbalstil, Genitivpräpositionen",
+   "speaking": "4-min presentation-style talk + 30-min discussion. Weekly tutor/tandem session.",
+   "milestone": ""
+  },
+  {
+   "n": 29,
+   "level": "B2",
+   "days": [
+    "B2 K5 · Session 6/7",
+    "B2 K5 · Session 7/7",
+    "B2 K6 · Session 1/7",
+    "B2 K6 · Session 2/7",
+    "B2 K6 · Session 3/7",
+    "B2 K6 · Session 4/7"
+   ],
+   "focus": "K5: Nominalstil ↔ Verbalstil, Genitivpräpositionen | K6: als ob, so…dass, Modalverben subjektiv",
+   "speaking": "4-min presentation-style talk + 30-min discussion. Weekly tutor/tandem session.",
+   "milestone": ""
+  },
+  {
+   "n": 30,
+   "level": "B2",
+   "days": [
+    "B2 K6 · Session 5/7",
+    "B2 K6 · Session 6/7",
+    "B2 K6 · Session 7/7",
+    "B2 Plattform 2: Prüfungstraining, timed (covers K4–K6)",
+    "B2 Review + speaking lab K4–K6 (retell topics, error log, Anki leeches)",
+    "B2 Weak-spot drill after K6 (Intensivtrainer / Übungsbuch grammar)"
+   ],
+   "focus": "K6: als ob, so…dass, Modalverben subjektiv",
+   "speaking": "4-min presentation-style talk + 30-min discussion. Weekly tutor/tandem session.",
+   "milestone": "Plattform self-test (≥70% to continue)"
+  },
+  {
+   "n": 31,
+   "level": "B2",
+   "days": [
+    "B2 K7 · Session 1/7",
+    "B2 K7 · Session 2/7",
+    "B2 K7 · Session 3/7",
+    "B2 K7 · Session 4/7",
+    "B2 K7 · Session 5/7",
+    "B2 K7 · Session 6/7"
+   ],
+   "focus": "K7: Relativsätze (dessen/deren), falls/sofern",
+   "speaking": "4-min presentation-style talk + 30-min discussion. Weekly tutor/tandem session.",
+   "milestone": ""
+  },
+  {
+   "n": 32,
+   "level": "B2",
+   "days": [
+    "B2 K7 · Session 7/7",
+    "B2 K8 · Session 1/7",
+    "B2 K8 · Session 2/7",
+    "B2 K8 · Session 3/7",
+    "B2 K8 · Session 4/7",
+    "B2 K8 · Session 5/7"
+   ],
+   "focus": "K7: Relativsätze (dessen/deren), falls/sofern | K8: Modalverben (Vermutung), Sicherheitsgrade",
+   "speaking": "4-min presentation-style talk + 30-min discussion. Weekly tutor/tandem session.",
+   "milestone": ""
+  },
+  {
+   "n": 33,
+   "level": "B2",
+   "days": [
+    "B2 K8 · Session 6/7",
+    "B2 K8 · Session 7/7",
+    "B2 K9 · Session 1/7",
+    "B2 K9 · Session 2/7",
+    "B2 K9 · Session 3/7",
+    "B2 K9 · Session 4/7"
+   ],
+   "focus": "K8: Modalverben (Vermutung), Sicherheitsgrade | K9: Funktionsverbgefüge, konzessiv/adversativ",
+   "speaking": "4-min presentation-style talk + 30-min discussion. Weekly tutor/tandem session.",
+   "milestone": ""
+  },
+  {
+   "n": 34,
+   "level": "B2",
+   "days": [
+    "B2 K9 · Session 5/7",
+    "B2 K9 · Session 6/7",
+    "B2 K9 · Session 7/7",
+    "B2 Plattform 3: Prüfungstraining, timed (covers K7–K9)",
+    "B2 Review + speaking lab K7–K9 (retell topics, error log, Anki leeches)",
+    "B2 Weak-spot drill after K9 (Intensivtrainer / Übungsbuch grammar)"
+   ],
+   "focus": "K9: Funktionsverbgefüge, konzessiv/adversativ",
+   "speaking": "4-min presentation-style talk + 30-min discussion. Weekly tutor/tandem session.",
+   "milestone": "Plattform self-test (≥70% to continue)"
+  },
+  {
+   "n": 35,
+   "level": "B2",
+   "days": [
+    "B2 K10 · Session 1/7",
+    "B2 K10 · Session 2/7",
+    "B2 K10 · Session 3/7",
+    "B2 K10 · Session 4/7",
+    "B2 K10 · Session 5/7",
+    "B2 K10 · Session 6/7"
+   ],
+   "focus": "K10: Textkohärenz, Partizipien erweitert",
+   "speaking": "4-min presentation-style talk + 30-min discussion. Weekly tutor/tandem session.",
+   "milestone": ""
+  },
+  {
+   "n": 36,
+   "level": "B2",
+   "days": [
+    "B2 K10 · Session 7/7",
+    "B2 K11 · Session 1/7",
+    "B2 K11 · Session 2/7",
+    "B2 K11 · Session 3/7",
+    "B2 K11 · Session 4/7",
+    "B2 K11 · Session 5/7"
+   ],
+   "focus": "K10: Textkohärenz, Partizipien erweitert | K11: Infinitivkonstruktionen, Präpositionaladverbien",
+   "speaking": "4-min presentation-style talk + 30-min discussion. Weekly tutor/tandem session.",
+   "milestone": ""
+  },
+  {
+   "n": 37,
+   "level": "B2",
+   "days": [
+    "B2 K11 · Session 6/7",
+    "B2 K11 · Session 7/7",
+    "B2 K12 · Session 1/7",
+    "B2 K12 · Session 2/7",
+    "B2 K12 · Session 3/7",
+    "B2 K12 · Session 4/7"
+   ],
+   "focus": "K11: Infinitivkonstruktionen, Präpositionaladverbien | K12: Passiv + Modalverb alle Zeiten, Amtssprache",
+   "speaking": "4-min presentation-style talk + 30-min discussion. Weekly tutor/tandem session.",
+   "milestone": ""
+  },
+  {
+   "n": 38,
+   "level": "B2",
+   "days": [
+    "B2 K12 · Session 5/7",
+    "B2 K12 · Session 6/7",
+    "B2 K12 · Session 7/7",
+    "B2 Plattform 4: Prüfungstraining, timed (covers K10–K12)",
+    "B2 Review + speaking lab K10–K12 (retell topics, error log, Anki leeches)",
+    "B2 Weak-spot drill after K12 (Intensivtrainer / Übungsbuch grammar)"
+   ],
+   "focus": "K12: Passiv + Modalverb alle Zeiten, Amtssprache",
+   "speaking": "4-min presentation-style talk + 30-min discussion. Weekly tutor/tandem session.",
+   "milestone": "Plattform self-test (≥70% to continue)"
+  },
+  {
+   "n": 39,
+   "level": "B2",
+   "days": [
+    "B2 Speaking: 3 recorded Sprechen tasks (presentation + discussion)",
+    "B2 Writing: 2 exam-format texts, self-corrected next day",
+    "B2 Reading marathon: 3 articles (Nachrichtenleicht / DW Top-Thema / Deutsch perfekt)",
+    "B2 Listening marathon: 3 podcasts/news + transcript check",
+    "B2 Grammar sprint: all 'Kurz und klar' pages re-tested",
+    "Mock exam: Goethe-Zertifikat B2 Modellsatz – Hören + Lesen (timed)"
+   ],
+   "focus": "Review / exam week – no new grammar",
+   "speaking": "4-min presentation-style talk + 30-min discussion. Weekly tutor/tandem session.",
+   "milestone": "Mock exam week"
+  },
+  {
+   "n": 40,
+   "level": "B2",
+   "days": [
+    "Mock exam: Goethe-Zertifikat B2 Modellsatz – Schreiben + Sprechen (with partner)",
+    "Final B2 review: weak-spot drill from error log",
+    "Buffer / catch-up (or repeat the hardest Plattform)",
+    "B2 Vocabulary sprint: Anki leeches + 100-word active recall",
+    "B2 Second mock (full, timed) or tutor session",
+    "Buffer / catch-up"
+   ],
+   "focus": "Review / exam week – no new grammar",
+   "speaking": "4-min presentation-style talk + 30-min discussion. Weekly tutor/tandem session.",
+   "milestone": "Mock exam week; B2 complete → enter score, decide on exam"
+  }
+ ],
+ "tracker": {
+  "A": [
+   {
+    "level": "A1",
+    "n": 1,
+    "title": "Guten Tag!",
+    "week": 1
+   },
+   {
+    "level": "A1",
+    "n": 2,
+    "title": "Freunde, Kollegen und ich",
+    "week": 1
+   },
+   {
+    "level": "A1",
+    "n": 3,
+    "title": "In Hamburg",
+    "week": 2
+   },
+   {
+    "level": "A1",
+    "n": 4,
+    "title": "Guten Appetit!",
+    "week": 3
+   },
+   {
+    "level": "A1",
+    "n": 5,
+    "title": "Alltag und Familie",
+    "week": 4
+   },
+   {
+    "level": "A1",
+    "n": 6,
+    "title": "Zeit mit Freunden",
+    "week": 4
+   },
+   {
+    "level": "A1",
+    "n": 7,
+    "title": "Arbeitsalltag",
+    "week": 5
+   },
+   {
+    "level": "A1",
+    "n": 8,
+    "title": "Fit und gesund",
+    "week": 6
+   },
+   {
+    "level": "A1",
+    "n": 9,
+    "title": "Meine Wohnung",
+    "week": 7
+   },
+   {
+    "level": "A1",
+    "n": 10,
+    "title": "Studium und Beruf",
+    "week": 8
+   },
+   {
+    "level": "A1",
+    "n": 11,
+    "title": "Die Jacke gefällt mir!",
+    "week": 8
+   },
+   {
+    "level": "A1",
+    "n": 12,
+    "title": "Ab in den Urlaub!",
+    "week": 9
+   },
+   {
+    "level": "A2",
+    "n": 1,
+    "title": "Und was machst du?",
+    "week": 11
+   },
+   {
+    "level": "A2",
+    "n": 2,
+    "title": "Nach der Schulzeit",
+    "week": 11
+   },
+   {
+    "level": "A2",
+    "n": 3,
+    "title": "Immer online?",
+    "week": 12
+   },
+   {
+    "level": "A2",
+    "n": 4,
+    "title": "Große und kleine Gefühle",
+    "week": 13
+   },
+   {
+    "level": "A2",
+    "n": 5,
+    "title": "Leben in der Stadt",
+    "week": 14
+   },
+   {
+    "level": "A2",
+    "n": 6,
+    "title": "Arbeitswelten",
+    "week": 14
+   },
+   {
+    "level": "A2",
+    "n": 7,
+    "title": "Ganz schön mobil",
+    "week": 15
+   },
+   {
+    "level": "A2",
+    "n": 8,
+    "title": "Gelernt ist gelernt!",
+    "week": 16
+   },
+   {
+    "level": "A2",
+    "n": 9,
+    "title": "Sportlich, sportlich",
+    "week": 17
+   },
+   {
+    "level": "A2",
+    "n": 10,
+    "title": "Zusammen leben",
+    "week": 18
+   },
+   {
+    "level": "A2",
+    "n": 11,
+    "title": "Wie die Zeit vergeht!",
+    "week": 18
+   },
+   {
+    "level": "A2",
+    "n": 12,
+    "title": "Gute Unterhaltung!",
+    "week": 19
+   },
+   {
+    "level": "B1",
+    "n": 1,
+    "title": "Gute Reise!",
+    "week": 21
+   },
+   {
+    "level": "B1",
+    "n": 2,
+    "title": "Das ist ja praktisch!",
+    "week": 21
+   },
+   {
+    "level": "B1",
+    "n": 3,
+    "title": "Veränderungen",
+    "week": 22
+   },
+   {
+    "level": "B1",
+    "n": 4,
+    "title": "Arbeitswelt",
+    "week": 24
+   },
+   {
+    "level": "B1",
+    "n": 5,
+    "title": "Umweltfreundlich?",
+    "week": 24
+   },
+   {
+    "level": "B1",
+    "n": 6,
+    "title": "Blick nach vorn",
+    "week": 25
+   },
+   {
+    "level": "B1",
+    "n": 7,
+    "title": "Zwischenmenschliches",
+    "week": 27
+   },
+   {
+    "level": "B1",
+    "n": 8,
+    "title": "Rund um Körper und Geist",
+    "week": 27
+   },
+   {
+    "level": "B1",
+    "n": 9,
+    "title": "Kunststücke",
+    "week": 28
+   },
+   {
+    "level": "B1",
+    "n": 10,
+    "title": "Miteinander",
+    "week": 30
+   },
+   {
+    "level": "B1",
+    "n": 11,
+    "title": "Stadt, Land, Fluss",
+    "week": 30
+   },
+   {
+    "level": "B1",
+    "n": 12,
+    "title": "Geld regiert die Welt?",
+    "week": 31
+   },
+   {
+    "level": "B2",
+    "n": 1,
+    "title": "Begegnungen",
+    "week": 35
+   },
+   {
+    "level": "B2",
+    "n": 2,
+    "title": "An die Arbeit",
+    "week": 36
+   },
+   {
+    "level": "B2",
+    "n": 3,
+    "title": "Alles im Wandel",
+    "week": 37
+   },
+   {
+    "level": "B2",
+    "n": 4,
+    "title": "Lass uns reden ...",
+    "week": 39
+   },
+   {
+    "level": "B2",
+    "n": 5,
+    "title": "Technik gut, alles gut?",
+    "week": 40
+   },
+   {
+    "level": "B2",
+    "n": 6,
+    "title": "Gesundheit!",
+    "week": 41
+   },
+   {
+    "level": "B2",
+    "n": 7,
+    "title": "Wieder was gelernt!",
+    "week": 43
+   },
+   {
+    "level": "B2",
+    "n": 8,
+    "title": "Einfach menschlich",
+    "week": 44
+   },
+   {
+    "level": "B2",
+    "n": 9,
+    "title": "Gut wirtschaften",
+    "week": 45
+   },
+   {
+    "level": "B2",
+    "n": 10,
+    "title": "Kunstvoll",
+    "week": 47
+   },
+   {
+    "level": "B2",
+    "n": 11,
+    "title": "Viel zu tun",
+    "week": 48
+   },
+   {
+    "level": "B2",
+    "n": 12,
+    "title": "Aufgepasst!",
+    "week": 49
+   }
+  ],
+  "B": [
+   {
+    "level": "A1",
+    "n": 1,
+    "title": "Guten Tag!  [Bridge-full]",
+    "week": 1
+   },
+   {
+    "level": "A1",
+    "n": 2,
+    "title": "Freunde, Kollegen und ich  [Bridge-full]",
+    "week": 1
+   },
+   {
+    "level": "A1",
+    "n": 3,
+    "title": "In Hamburg  [Bridge-skim]",
+    "week": 1
+   },
+   {
+    "level": "A1",
+    "n": 4,
+    "title": "Guten Appetit!  [Bridge-full]",
+    "week": 1
+   },
+   {
+    "level": "A1",
+    "n": 5,
+    "title": "Alltag und Familie  [Bridge-full]",
+    "week": 2
+   },
+   {
+    "level": "A1",
+    "n": 6,
+    "title": "Zeit mit Freunden  [Bridge-full]",
+    "week": 2
+   },
+   {
+    "level": "A1",
+    "n": 7,
+    "title": "Arbeitsalltag  [Bridge-full]",
+    "week": 2
+   },
+   {
+    "level": "A1",
+    "n": 8,
+    "title": "Fit und gesund  [Bridge-skim]",
+    "week": 3
+   },
+   {
+    "level": "A1",
+    "n": 9,
+    "title": "Meine Wohnung  [Bridge-full]",
+    "week": 3
+   },
+   {
+    "level": "A1",
+    "n": 10,
+    "title": "Studium und Beruf  [Bridge-full]",
+    "week": 3
+   },
+   {
+    "level": "A1",
+    "n": 11,
+    "title": "Die Jacke gefällt mir!  [Bridge-skim]",
+    "week": 4
+   },
+   {
+    "level": "A1",
+    "n": 12,
+    "title": "Ab in den Urlaub!  [Bridge-skim]",
+    "week": 4
+   },
+   {
+    "level": "A2",
+    "n": 1,
+    "title": "Und was machst du?  [Bridge-full]",
+    "week": 4
+   },
+   {
+    "level": "A2",
+    "n": 2,
+    "title": "Nach der Schulzeit  [Bridge-full]",
+    "week": 4
+   },
+   {
+    "level": "A2",
+    "n": 3,
+    "title": "Immer online?  [Bridge-full]",
+    "week": 5
+   },
+   {
+    "level": "A2",
+    "n": 4,
+    "title": "Große und kleine Gefühle  [Bridge-full]",
+    "week": 5
+   },
+   {
+    "level": "A2",
+    "n": 5,
+    "title": "Leben in der Stadt  [Bridge-full]",
+    "week": 5
+   },
+   {
+    "level": "A2",
+    "n": 6,
+    "title": "Arbeitswelten  [Bridge-skim]",
+    "week": 6
+   },
+   {
+    "level": "A2",
+    "n": 7,
+    "title": "Ganz schön mobil  [Bridge-skim]",
+    "week": 6
+   },
+   {
+    "level": "A2",
+    "n": 8,
+    "title": "Gelernt ist gelernt!  [Bridge-full]",
+    "week": 6
+   },
+   {
+    "level": "A2",
+    "n": 9,
+    "title": "Sportlich, sportlich  [Bridge-full]",
+    "week": 6
+   },
+   {
+    "level": "A2",
+    "n": 10,
+    "title": "Zusammen leben  [Bridge-full]",
+    "week": 7
+   },
+   {
+    "level": "A2",
+    "n": 11,
+    "title": "Wie die Zeit vergeht!  [Bridge-full]",
+    "week": 7
+   },
+   {
+    "level": "A2",
+    "n": 12,
+    "title": "Gute Unterhaltung!  [Bridge-skim]",
+    "week": 7
+   },
+   {
+    "level": "B1",
+    "n": 1,
+    "title": "Gute Reise!",
+    "week": 9
+   },
+   {
+    "level": "B1",
+    "n": 2,
+    "title": "Das ist ja praktisch!",
+    "week": 9
+   },
+   {
+    "level": "B1",
+    "n": 3,
+    "title": "Veränderungen",
+    "week": 10
+   },
+   {
+    "level": "B1",
+    "n": 4,
+    "title": "Arbeitswelt",
+    "week": 12
+   },
+   {
+    "level": "B1",
+    "n": 5,
+    "title": "Umweltfreundlich?",
+    "week": 12
+   },
+   {
+    "level": "B1",
+    "n": 6,
+    "title": "Blick nach vorn",
+    "week": 13
+   },
+   {
+    "level": "B1",
+    "n": 7,
+    "title": "Zwischenmenschliches",
+    "week": 15
+   },
+   {
+    "level": "B1",
+    "n": 8,
+    "title": "Rund um Körper und Geist",
+    "week": 15
+   },
+   {
+    "level": "B1",
+    "n": 9,
+    "title": "Kunststücke",
+    "week": 16
+   },
+   {
+    "level": "B1",
+    "n": 10,
+    "title": "Miteinander",
+    "week": 18
+   },
+   {
+    "level": "B1",
+    "n": 11,
+    "title": "Stadt, Land, Fluss",
+    "week": 18
+   },
+   {
+    "level": "B1",
+    "n": 12,
+    "title": "Geld regiert die Welt?",
+    "week": 19
+   },
+   {
+    "level": "B2",
+    "n": 1,
+    "title": "Begegnungen",
+    "week": 23
+   },
+   {
+    "level": "B2",
+    "n": 2,
+    "title": "An die Arbeit",
+    "week": 24
+   },
+   {
+    "level": "B2",
+    "n": 3,
+    "title": "Alles im Wandel",
+    "week": 25
+   },
+   {
+    "level": "B2",
+    "n": 4,
+    "title": "Lass uns reden ...",
+    "week": 27
+   },
+   {
+    "level": "B2",
+    "n": 5,
+    "title": "Technik gut, alles gut?",
+    "week": 28
+   },
+   {
+    "level": "B2",
+    "n": 6,
+    "title": "Gesundheit!",
+    "week": 29
+   },
+   {
+    "level": "B2",
+    "n": 7,
+    "title": "Wieder was gelernt!",
+    "week": 31
+   },
+   {
+    "level": "B2",
+    "n": 8,
+    "title": "Einfach menschlich",
+    "week": 32
+   },
+   {
+    "level": "B2",
+    "n": 9,
+    "title": "Gut wirtschaften",
+    "week": 33
+   },
+   {
+    "level": "B2",
+    "n": 10,
+    "title": "Kunstvoll",
+    "week": 35
+   },
+   {
+    "level": "B2",
+    "n": 11,
+    "title": "Viel zu tun",
+    "week": 36
+   },
+   {
+    "level": "B2",
+    "n": 12,
+    "title": "Aufgepasst!",
+    "week": 37
+   }
+  ]
+ },
+ "practice": {
+  "A": [
+   {
+    "n": 1,
+    "level": "A1",
+    "planned": "A1 K1, A1 K2"
+   },
+   {
+    "n": 2,
+    "level": "A1",
+    "planned": "A1 K2, A1 K3"
+   },
+   {
+    "n": 3,
+    "level": "A1",
+    "planned": "A1 K4"
+   },
+   {
+    "n": 4,
+    "level": "A1",
+    "planned": "A1 K5, A1 K6"
+   },
+   {
+    "n": 5,
+    "level": "A1",
+    "planned": "A1 K6, A1 K7"
+   },
+   {
+    "n": 6,
+    "level": "A1",
+    "planned": "A1 K7, A1 K8"
+   },
+   {
+    "n": 7,
+    "level": "A1",
+    "planned": "A1 K9"
+   },
+   {
+    "n": 8,
+    "level": "A1",
+    "planned": "A1 K10, A1 K11"
+   },
+   {
+    "n": 9,
+    "level": "A1",
+    "planned": "A1 K11, A1 K12"
+   },
+   {
+    "n": 10,
+    "level": "A1",
+    "planned": "Review / exam"
+   },
+   {
+    "n": 11,
+    "level": "A2",
+    "planned": "A2 K1, A2 K2"
+   },
+   {
+    "n": 12,
+    "level": "A2",
+    "planned": "A2 K2, A2 K3"
+   },
+   {
+    "n": 13,
+    "level": "A2",
+    "planned": "A2 K4"
+   },
+   {
+    "n": 14,
+    "level": "A2",
+    "planned": "A2 K5, A2 K6"
+   },
+   {
+    "n": 15,
+    "level": "A2",
+    "planned": "A2 K6, A2 K7"
+   },
+   {
+    "n": 16,
+    "level": "A2",
+    "planned": "A2 K7, A2 K8"
+   },
+   {
+    "n": 17,
+    "level": "A2",
+    "planned": "A2 K9"
+   },
+   {
+    "n": 18,
+    "level": "A2",
+    "planned": "A2 K10, A2 K11"
+   },
+   {
+    "n": 19,
+    "level": "A2",
+    "planned": "A2 K11, A2 K12"
+   },
+   {
+    "n": 20,
+    "level": "A2",
+    "planned": "Review / exam"
+   },
+   {
+    "n": 21,
+    "level": "B1",
+    "planned": "B1 K1, B1 K2"
+   },
+   {
+    "n": 22,
+    "level": "B1",
+    "planned": "B1 K2, B1 K3"
+   },
+   {
+    "n": 23,
+    "level": "B1",
+    "planned": "B1 K3"
+   },
+   {
+    "n": 24,
+    "level": "B1",
+    "planned": "B1 K4, B1 K5"
+   },
+   {
+    "n": 25,
+    "level": "B1",
+    "planned": "B1 K5, B1 K6"
+   },
+   {
+    "n": 26,
+    "level": "B1",
+    "planned": "B1 K6"
+   },
+   {
+    "n": 27,
+    "level": "B1",
+    "planned": "B1 K7, B1 K8"
+   },
+   {
+    "n": 28,
+    "level": "B1",
+    "planned": "B1 K8, B1 K9"
+   },
+   {
+    "n": 29,
+    "level": "B1",
+    "planned": "B1 K9"
+   },
+   {
+    "n": 30,
+    "level": "B1",
+    "planned": "B1 K10, B1 K11"
+   },
+   {
+    "n": 31,
+    "level": "B1",
+    "planned": "B1 K11, B1 K12"
+   },
+   {
+    "n": 32,
+    "level": "B1",
+    "planned": "B1 K12"
+   },
+   {
+    "n": 33,
+    "level": "B1",
+    "planned": "Review / exam"
+   },
+   {
+    "n": 34,
+    "level": "B1",
+    "planned": "Review / exam"
+   },
+   {
+    "n": 35,
+    "level": "B2",
+    "planned": "B2 K1"
+   },
+   {
+    "n": 36,
+    "level": "B2",
+    "planned": "B2 K1, B2 K2"
+   },
+   {
+    "n": 37,
+    "level": "B2",
+    "planned": "B2 K2, B2 K3"
+   },
+   {
+    "n": 38,
+    "level": "B2",
+    "planned": "B2 K3"
+   },
+   {
+    "n": 39,
+    "level": "B2",
+    "planned": "B2 K4"
+   },
+   {
+    "n": 40,
+    "level": "B2",
+    "planned": "B2 K4, B2 K5"
+   },
+   {
+    "n": 41,
+    "level": "B2",
+    "planned": "B2 K5, B2 K6"
+   },
+   {
+    "n": 42,
+    "level": "B2",
+    "planned": "B2 K6"
+   },
+   {
+    "n": 43,
+    "level": "B2",
+    "planned": "B2 K7"
+   },
+   {
+    "n": 44,
+    "level": "B2",
+    "planned": "B2 K7, B2 K8"
+   },
+   {
+    "n": 45,
+    "level": "B2",
+    "planned": "B2 K8, B2 K9"
+   },
+   {
+    "n": 46,
+    "level": "B2",
+    "planned": "B2 K9"
+   },
+   {
+    "n": 47,
+    "level": "B2",
+    "planned": "B2 K10"
+   },
+   {
+    "n": 48,
+    "level": "B2",
+    "planned": "B2 K10, B2 K11"
+   },
+   {
+    "n": 49,
+    "level": "B2",
+    "planned": "B2 K11, B2 K12"
+   },
+   {
+    "n": 50,
+    "level": "B2",
+    "planned": "B2 K12"
+   },
+   {
+    "n": 51,
+    "level": "B2",
+    "planned": "Review / exam"
+   },
+   {
+    "n": 52,
+    "level": "B2",
+    "planned": "Review / exam"
+   }
+  ],
+  "B": [
+   {
+    "n": 1,
+    "level": "Bridge (A1)",
+    "planned": "A1 K1, A1 K2, A1 K3, A1 K4"
+   },
+   {
+    "n": 2,
+    "level": "Bridge (A1)",
+    "planned": "A1 K4, A1 K5, A1 K6, A1 K7"
+   },
+   {
+    "n": 3,
+    "level": "Bridge (A1)",
+    "planned": "A1 K7, A1 K8, A1 K9, A1 K10"
+   },
+   {
+    "n": 4,
+    "level": "Bridge (A1→A2)",
+    "planned": "A1 K11, A1 K12, A2 K1, A2 K2"
+   },
+   {
+    "n": 5,
+    "level": "Bridge (A2)",
+    "planned": "A2 K2, A2 K3, A2 K4, A2 K5"
+   },
+   {
+    "n": 6,
+    "level": "Bridge (A2)",
+    "planned": "A2 K5, A2 K6, A2 K7, A2 K8, A2 K9"
+   },
+   {
+    "n": 7,
+    "level": "Bridge (A2)",
+    "planned": "A2 K9, A2 K10, A2 K11, A2 K12"
+   },
+   {
+    "n": 8,
+    "level": "Bridge (A2)",
+    "planned": "Review / exam"
+   },
+   {
+    "n": 9,
+    "level": "B1",
+    "planned": "B1 K1, B1 K2"
+   },
+   {
+    "n": 10,
+    "level": "B1",
+    "planned": "B1 K2, B1 K3"
+   },
+   {
+    "n": 11,
+    "level": "B1",
+    "planned": "B1 K3"
+   },
+   {
+    "n": 12,
+    "level": "B1",
+    "planned": "B1 K4, B1 K5"
+   },
+   {
+    "n": 13,
+    "level": "B1",
+    "planned": "B1 K5, B1 K6"
+   },
+   {
+    "n": 14,
+    "level": "B1",
+    "planned": "B1 K6"
+   },
+   {
+    "n": 15,
+    "level": "B1",
+    "planned": "B1 K7, B1 K8"
+   },
+   {
+    "n": 16,
+    "level": "B1",
+    "planned": "B1 K8, B1 K9"
+   },
+   {
+    "n": 17,
+    "level": "B1",
+    "planned": "B1 K9"
+   },
+   {
+    "n": 18,
+    "level": "B1",
+    "planned": "B1 K10, B1 K11"
+   },
+   {
+    "n": 19,
+    "level": "B1",
+    "planned": "B1 K11, B1 K12"
+   },
+   {
+    "n": 20,
+    "level": "B1",
+    "planned": "B1 K12"
+   },
+   {
+    "n": 21,
+    "level": "B1",
+    "planned": "Review / exam"
+   },
+   {
+    "n": 22,
+    "level": "B1",
+    "planned": "Review / exam"
+   },
+   {
+    "n": 23,
+    "level": "B2",
+    "planned": "B2 K1"
+   },
+   {
+    "n": 24,
+    "level": "B2",
+    "planned": "B2 K1, B2 K2"
+   },
+   {
+    "n": 25,
+    "level": "B2",
+    "planned": "B2 K2, B2 K3"
+   },
+   {
+    "n": 26,
+    "level": "B2",
+    "planned": "B2 K3"
+   },
+   {
+    "n": 27,
+    "level": "B2",
+    "planned": "B2 K4"
+   },
+   {
+    "n": 28,
+    "level": "B2",
+    "planned": "B2 K4, B2 K5"
+   },
+   {
+    "n": 29,
+    "level": "B2",
+    "planned": "B2 K5, B2 K6"
+   },
+   {
+    "n": 30,
+    "level": "B2",
+    "planned": "B2 K6"
+   },
+   {
+    "n": 31,
+    "level": "B2",
+    "planned": "B2 K7"
+   },
+   {
+    "n": 32,
+    "level": "B2",
+    "planned": "B2 K7, B2 K8"
+   },
+   {
+    "n": 33,
+    "level": "B2",
+    "planned": "B2 K8, B2 K9"
+   },
+   {
+    "n": 34,
+    "level": "B2",
+    "planned": "B2 K9"
+   },
+   {
+    "n": 35,
+    "level": "B2",
+    "planned": "B2 K10"
+   },
+   {
+    "n": 36,
+    "level": "B2",
+    "planned": "B2 K10, B2 K11"
+   },
+   {
+    "n": 37,
+    "level": "B2",
+    "planned": "B2 K11, B2 K12"
+   },
+   {
+    "n": 38,
+    "level": "B2",
+    "planned": "B2 K12"
+   },
+   {
+    "n": 39,
+    "level": "B2",
+    "planned": "Review / exam"
+   },
+   {
+    "n": 40,
+    "level": "B2",
+    "planned": "Review / exam"
+   }
+  ]
+ }
+}

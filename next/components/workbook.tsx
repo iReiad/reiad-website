@@ -21,6 +21,8 @@ import type { WorkbookBook, WorkbookDay } from "../lib/workbook";
 import { bn, targetLang } from "../lib/workbook";
 import { SectionLabel } from "./ui/label";
 import { Button } from "./ui/button";
+import { SentenceGame, type GameWords } from "./sentence-game";
+import { hasGame, playable } from "../lib/sentence-game";
 
     /** The key a textarea saves under: `<stufe slug>/<name>`, where the
         name carries the day number. The builder made this string and so
@@ -46,12 +48,28 @@ const WORDS = {
   deutsch: {
     day: "Tag", pattern: "Das Muster · ছাঁচ",
     watch: "Schau", swap: "Tausche", say: "Sag es", heart: "Von Herzen",
+    game: "Satzbau",
   },
   english: {
     day: "Day", pattern: "The pattern · ছাঁচ",
     watch: "Watch", swap: "Swap", say: "Say it", heart: "From the heart",
+    game: "Word order",
   },
 } as const;
+
+/* The game's own words, in Bangla and the book's language. */
+const GAME_WORDS: Record<"deutsch" | "english", GameWords> = {
+  deutsch: {
+    title: "Satzbau", sub: "বাক্য সাজাও", prompt: "বাংলায়:", pattern: "ছাঁচ",
+    check: "মিলিয়ে দেখো", next: "পরেরটা →", again: "আবার", right: "ঠিক! ✓",
+    wrong: "ক্রমটা এখনো ঠিক নয়।", done: "পাঁচটাই ঠিক ✓ আজকের ছাঁচ তোমার।", replay: "আবার খেলো",
+  },
+  english: {
+    title: "Word order", sub: "বাক্য সাজাও", prompt: "বাংলায়:", pattern: "ছাঁচ",
+    check: "মিলিয়ে দেখো", next: "পরেরটা →", again: "আবার", right: "ঠিক! ✓",
+    wrong: "ক্রমটা এখনো ঠিক নয়।", done: "পাঁচটাই ঠিক ✓ আজকের ছাঁচ তোমার।", replay: "আবার খেলো",
+  },
+};
 
 export function WorkbookDayCard(
   { day, slug, book }: { day: WorkbookDay; slug: string; book: WorkbookBook },
@@ -90,11 +108,20 @@ export function WorkbookDayCard(
         </div>
       </section>
 
+      {/* The game, between reading the models and writing your own:
+          the same five sentences, shuffled, built back by hand. Left
+          out on a day whose lines are not sentences. */}
+      {hasGame(day.watch) ? (
+        <section className="tag-teil spiel" id={`spiel-${day.n}`}>
+          <h3 className="mono"><span lang={lang}>{w.game}</span> · শব্দগুলো ঠিক ক্রমে বসাও</h3>
+          <SentenceGame id={`${slug}/${day.n}`} lines={playable(day.watch)}
+                        pattern={day.pattern.shape} lang={lang} words={GAME_WORDS[book.school]} />
+        </section>
+      ) : null}
+
       <section className="tag-teil tausche">
         <h3 className="mono"><span lang={lang}>{w.swap}</span> · একই ছাঁচে নিজের আটটা বাক্য</h3>
-        <p className="tag-hinweis">
-          লেখার সময় প্রতিটা জোরে বলো। যা লেখো সেটা এই ব্রাউজারেই জমা থাকে।
-        </p>
+        <p className="tag-hinweis">লিখতে লিখতে জোরে বলো।</p>
         <div className="felder">
           {Array.from({ length: OWN_SENTENCES }, (_, i) => (
             <label className="feld" key={i}>
@@ -135,9 +162,7 @@ export function WorkbookDayCard(
                 data-antwort={day.n} aria-expanded="false">
           উত্তর দেখুন
         </Button>
-        <p className="tag-hinweis">
-          আগে নিজে চেষ্টা, তারপর মিলাও। ছাঁচ ঠিক থাকলে আলাদা বাক্যও সঠিক, ছাঁচটাই আসল।
-        </p>
+        <p className="tag-hinweis">আগে নিজে, তারপর মিলাও। ছাঁচ ঠিক থাকলে আলাদা বাক্যও ঠিক।</p>
       </section>
 
       <section className="tag-teil herzen">
