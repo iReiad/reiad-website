@@ -527,10 +527,10 @@ for (const [who, audience, track, expected] of READERS) {
          pair of buttons on screen. */
   const doors: Record<string, string[]> = {
     open: ["/skills", "/portfolio"],
-    learn: ["/money", "/skills"],
-    work: ["/portfolio", "/contact"],
+    learn: ["/skills", "/portfolio"],
+    work: ["/skills", "/portfolio"],
   };
-  ok(`the door offers ${who} their own two ways in`,
+  ok(`the door offers ${who} both audience routes`,
     front.doors.join(",") === doors[expected].join(","),
     `got [${front.doors}], expected [${doors[expected]}]`);
 
@@ -771,7 +771,7 @@ for (const width of [360, 390, 412]) {
   const lefts = await page.evaluate(() => {
     const l = (s: string) => { const e = document.querySelector(s);
       return e ? Math.round(e.getBoundingClientRect().left) : null; };
-    return { close: l(".drawer-close"), group: l(".rail-nav .rail-label"),
+    return { close: l(".drawer-close"), group: l(".rail-nav .rail-group-title"),
              askLabel: l(".rail-audience .rail-label"),
              ask: l(".rail-audience .audience-switch") };
   });
@@ -802,8 +802,9 @@ for (const width of [360, 390, 412]) {
   /* The foot is reachable rather than pushed off the bottom. */
   ok(`${width}px: the audience switch is inside the drawer`,
     await page.evaluate(() => {
-      const f = document.querySelector(".rail-foot");
-      return !!f && f.getBoundingClientRect().bottom <= innerHeight + 1;
+      const f = document.querySelector(".rail-audience");
+      return !!f && f.getBoundingClientRect().top >= 0
+        && f.getBoundingClientRect().bottom <= innerHeight + 1;
     }));
 
   /* And the same pixel closes it again. */
@@ -845,6 +846,35 @@ for (const width of [360, 390, 412]) {
   await page.close();
 }
 
+// Active sections open on arrival; keyboard and no-script readers can reach every group.
+for (const [path, group] of [["/skills", "learn"], ["/tools", "make"], ["/portfolio", "work"]]) {
+  const { page } = await open(path);
+  const active = page.locator(`details.rail-group[data-group="${group}"]`);
+  ok(`${path}: the current section starts open`, await active.getAttribute("open") !== null);
+  ok(`${path}: the current link is visible`, await active.locator('[aria-current="page"]').isVisible());
+  const other = page.locator(`details.rail-group:not([data-group="${group}"])`).first();
+  await other.locator("summary").focus();
+  await page.keyboard.press("Enter");
+  ok(`${path}: Enter opens another section`, await other.locator("a").first().isVisible());
+  await page.keyboard.press("Enter");
+  ok(`${path}: Enter closes it again`, !await other.locator("a").first().isVisible());
+  await page.close();
+}
+{
+  const context = await browser.newContext({ javaScriptEnabled: false });
+  const page = await context.newPage();
+  await page.goto(`http://localhost:${PORT}/portfolio`);
+  await page.locator('details[data-group="learn"] summary').click();
+  ok("without scripts, Learning still opens", await page.locator('.rail-item[href="/skills"]').isVisible());
+  await page.goto(`http://localhost:${PORT}/contact`);
+  await page.selectOption("#contact-kind", "reader");
+  await page.fill("#contact-deadline", "2026-12-01");
+  ok("without scripts, optional fields belong to the posting form",
+    await page.locator('form select[name="kind"]').inputValue() === "reader"
+    && await page.locator('form input[name="deadline"]').inputValue() === "2026-12-01");
+  await context.close();
+}
+
     /* ---- the contact form, and the three ways sending it can go ----
        This is the one page where somebody with a broken script is trying
        to reach a person, so the form works three ways and says which
@@ -866,11 +896,15 @@ for (const [label, api, web3, expected] of SENDING) {
   await page.route("https://fonts.googleapis.com/**", (r: Route) => r.abort());
 
   let posted = 0;
-  await page.route("**/api/**", (r: Route) => r.fulfill({
-    status: 200, contentType: "application/json", body: JSON.stringify({ ok: api }),
-  }));
+  let enquiry: { kind?: string; message?: string } | null = null;
+  let fallback = "";
+  await page.route("**/api/**", (r: Route) => {
+    if (r.request().url().endsWith("/enquiries")) enquiry = r.request().postDataJSON();
+    return r.fulfill({ status: 200, contentType: "application/json", body: JSON.stringify({ ok: api }) });
+  });
   await page.route("https://api.web3forms.com/**", (r: Route) => {
     posted += 1;
+    fallback = r.request().postData() ?? "";
     return r.fulfill({ status: 200, contentType: "application/json",
       body: JSON.stringify({ success: web3, message: "x" }) });
   });
@@ -890,6 +924,17 @@ for (const [label, api, web3, expected] of SENDING) {
 
   await page.fill("#contact-name", "A Reader");
   await page.fill("#contact-email", "a@example.com");
+  await page.selectOption("#contact-kind", "project");
+  ok(`${label}: the prompt asks clients for deliverables`,
+    (await page.locator("#contact-message-hint").textContent())?.includes("deliverables"));
+  await page.selectOption("#contact-kind", "hiring");
+  ok(`${label}: recruiters see a role prompt`,
+    (await page.locator("#contact-message-hint").textContent())?.includes("job link"));
+  await page.selectOption("#contact-kind", "reader");
+  ok(`${label}: readers see a lesson prompt`,
+    (await page.locator("#contact-message-hint").textContent())?.includes("lesson"));
+  await page.selectOption("#contact-kind", "project");
+  await page.fill("#contact-deadline", "2026-12-01");
   await page.fill("#contact-message", "Hello, this is a message.");
   await page.getByRole("button", { name: "Send message" }).click();
   await page.waitForTimeout(1200);
@@ -898,6 +943,12 @@ for (const [label, api, web3, expected] of SENDING) {
   ok(`${label}: it says what happened`, expected.test(said ?? ""), said);
   ok(`${label}: and falls through only when it has to`,
     api ? posted === 0 : posted === 1, `web3 posts: ${posted}`);
+  const payload = enquiry as { kind?: string; message?: string } | null;
+  ok(`${label}: the type and deadline reach the delivery path`, api
+    ? payload?.kind === "project" && payload.message?.includes("Requested deadline: 2026-12-01")
+    : fallback.includes("project") && fallback.includes("2026-12-01"));
+  ok(`${label}: ${web3 || api ? "success clears" : "failure preserves"} the enquiry`,
+    await page.inputValue("#contact-kind") === (web3 || api ? "general" : "project"));
   ok(`${label}: no page errors`, errors.length === 0, errors[0]);
   await page.close();
 }

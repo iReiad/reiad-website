@@ -60,7 +60,14 @@ export function WorkCard({ study, lead, compact }: {
             : `${study.chip} · ${study.facts[0] ?? "Interactive"}`}
         </Chip>
         <h3>{study.title}</h3>
-        <p>{compact ? study.line : study.paragraph}</p>
+        {study.summary ? (
+          <>
+            <p className="work-question">{study.summary.question}</p>
+            <p>{study.summary.finding}</p>
+            {!compact && <p><strong>My contribution: </strong>{study.summary.contribution}</p>}
+          </>
+        ) : <p>{study.line}</p>}
+        {!compact && <p className="work-method"><strong>Method: </strong>{study.paragraph}</p>}
         {compact || !study.facts.length ? null : (
           <ul className="work-facts">
             {study.facts.map((fact) => <li key={fact}>{fact}</li>)}

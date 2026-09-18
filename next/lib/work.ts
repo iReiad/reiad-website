@@ -154,42 +154,13 @@ const DRAWINGS: Record<string, Drawing> = {
     page has room to say how the thing works, the other has room
     to say what it is. */
 const PARAGRAPHS: Record<string, string> = {
-  "/portfolio/three-statement":
-    "Linked income statement, balance sheet and cash flow, with a scenario "
-    + "switch and a balance check that is computed rather than asserted: if the "
-    + "model were wrong, it would say so. Drag any assumption and all three "
-    + "statements, the charts and the credit metrics move with it.",
-  "/portfolio/dcf":
-    "WACC built up from its parts, two terminal value methods that quote each "
-    + "other back, and a two-way grid on WACC and terminal growth where every "
-    + "cell is a full revaluation and clicking one adopts it.",
-  "/portfolio/dsex":
-    "Rolling volatility, drawdown episodes with their recovery times, fat-tail "
-    + "diagnostics against a normal curve, and what actually happened to "
-    + "someone who held for a day, a year or five.",
-  "/portfolio/frontier":
-    "Ten mid-cap holdings past a Shariah and sustainability screen that runs "
-    + "before any price is looked at, weighted at the end of 2015 by minimising "
-    + "contributed variance, then held unchanged through five years nobody had "
-    + "seen. The frontier and the optimised alternatives are solved beside it, "
-    + "live.",
-  "/portfolio/scorecard":
-    "The whole pipeline on a real public dataset, fitted in your browser while "
-    + "you read: split, encode, a logistic scorecard against a boosted "
-    + "ensemble, cross-validation, calibration, and the cut-off where the "
-    + "modelling stops and the lending decision starts. Including an honest "
-    + "answer about which model wins.",
-  "/portfolio/stress":
-    "Unemployment, growth and rates driving default rates through a Merton "
-    + "model and a vintage hazard model at once, then loss given default as an "
-    + "option on the collateral, IFRS 9 staging, and the capital ratio. The gap "
-    + "between the two engines stays on the page, because that gap is the model "
-    + "risk.",
-  "/portfolio/dissertation":
-    "The hypothesis was that Shariah-compliant funds carry less risk. It "
-    + "failed, and the power analysis then showed why a sample of three could "
-    + "never have tested it. Every table and series on the page is the "
-    + "submitted one.",
+  "/portfolio/three-statement": "Linked statements, working-capital drivers, credit metrics and three forecast scenarios. Illustrative company data.",
+  "/portfolio/dcf": "WACC components, perpetuity-growth and exit-multiple terminal values, and a two-way sensitivity grid.",
+  "/portfolio/dsex": "Rolling volatility, drawdown episodes, return distributions and holding-period comparisons. Import a CSV or use the simulated demo.",
+  "/portfolio/frontier": "Shariah and sustainability screening, contributed-variance weighting and an efficient-frontier comparison using daily closes.",
+  "/portfolio/scorecard": "Train/test split, encoding, cross-validation, calibration and lending cut-offs on a public dataset.",
+  "/portfolio/stress": "Merton and vintage hazard models, collateral-based loss estimates, IFRS 9 staging and CET1 capital.",
+  "/portfolio/dissertation": "Submitted fund panel, factor regressions, risk comparisons and statistical power analysis.",
 };
 
 /** What a title reads as on a card, where the words "interactive
@@ -209,9 +180,50 @@ const TITLES: Record<string, string> = {
   "/portfolio/dissertation": "Islamic vs conventional funds: an MSc dissertation",
 };
 
+/** The question, takeaway and contribution, before the technical detail.
+    Takeaways describe the case study, not a promised client outcome. */
+const SUMMARIES: Record<string, { question: string; finding: string; contribution: string }> = {
+  "/portfolio/three-statement": {
+    question: "How does growth change cash needs?",
+    finding: "Profit and cash can move differently as working capital and investment change.",
+    contribution: "Built a linked forecast with scenarios and a live balance check.",
+  },
+  "/portfolio/dcf": {
+    question: "Which assumptions drive the valuation?",
+    finding: "The value changes with the discount rate and terminal assumptions; a single estimate hides that sensitivity.",
+    contribution: "Linked cash flows to a DCF, built up WACC and added two terminal methods.",
+  },
+  "/portfolio/dsex": {
+    question: "How much risk sits behind an index return?",
+    finding: "Drawdown depth, recovery time and holding period reveal risks an average return misses.",
+    contribution: "Built a browser analysis tool for return series, with CSV import and a clearly marked simulated demo.",
+  },
+  "/portfolio/frontier": {
+    question: "How does a screened fund hold up over time?",
+    finding: "An unchanged allocation exposes the realised trade-off between the original weights and later market moves.",
+    contribution: "Screened and weighted a ten-stock portfolio, then analysed its five-year hold and alternative allocations.",
+  },
+  "/portfolio/scorecard": {
+    question: "Does a more complex credit model improve lending decisions?",
+    finding: "Ranking, calibration and the lending cut-off need separate checks; the comparison changes when the models are refitted.",
+    contribution: "Built a reproducible pipeline comparing a logistic scorecard with gradient boosting.",
+  },
+  "/portfolio/stress": {
+    question: "How do economic shocks reach a bank's capital?",
+    finding: "Two default models can imply different losses under the same shock, exposing model risk.",
+    contribution: "Connected macro scenarios to default, provisions and capital, with a reverse stress test.",
+  },
+  "/portfolio/dissertation": {
+    question: "Do Islamic equity funds carry less risk?",
+    finding: "The lower-risk hypothesis was not supported; the small Islamic-fund sample limits what can be concluded.",
+    contribution: "Analysed the fund panel for my MSc dissertation, including factor regressions and a power analysis.",
+  },
+};
+
 export interface Study {
   readonly url: string;
   readonly title: string;
+  readonly summary?: { question: string; finding: string; contribution: string };
   /** `model`, `analysis` or `research`, out of `PAGES`. It is the
       second half of the chip, so a reader can sort seven cards
       into three kinds without reading a word of the paragraphs. */
@@ -242,6 +254,7 @@ export const STUDIES: readonly Study[] = PAGES
     const drawing = DRAWINGS[page.url];
     return {
       url: page.url,
+      summary: SUMMARIES[page.url],
       title: TITLES[page.url] ?? page.short ?? page.title,
       kind: KIND_WORDS[page.kind ?? ""] ?? "Case study",
       chip: drawing?.chip ?? "Case study",

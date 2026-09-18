@@ -41,12 +41,20 @@
    ============================================================ */
 
 import { useCallback, useState, type FormEvent } from "react";
+import { Field, Select, TextArea } from "./ui/field";
 import { Button } from "./ui/button";
 import { runtimeModule } from "./account/runtime";
 
 type ApiModule = typeof import("/api.js");
 
 const apiModule = () => runtimeModule<ApiModule>("/api.js");
+
+const PROMPTS: Record<string, string> = {
+  general: "Tell me what you need. For a project, include the goal and deliverables; for a role, the job link; for a reading question, the page link.",
+  project: "What decision should this help you make? Include the deliverables, available data, budget range and any examples.",
+  hiring: "Share the role or job link, team, location or remote arrangement, and your hiring timeline.",
+  reader: "Link to the page or lesson, tell me where you got stuck, and what you have tried. Bangla or English is welcome.",
+};
 
 type State = { text: string; kind: "" | "ok" | "err" };
 
@@ -68,6 +76,7 @@ export function ContactForm({ action, children }: {
 }) {
   const [state, setState] = useState<State | null>(null);
   const [busy, setBusy] = useState(false);
+  const [kind, setKind] = useState("general");
 
   const submit = useCallback(async (e: FormEvent<HTMLFormElement>) => {
     e.preventDefault();
@@ -83,10 +92,14 @@ export function ContactForm({ action, children }: {
       if (api && await api.backendReady()) {
         const result = await api.sendEnquiry({
           name: value("name"), email: value("email"),
-          message: value("message"), kind: "general",
+          message: value("message") + (value("deadline")
+            ? `\n\nRequested deadline: ${value("deadline")}` : ""),
+          kind: value("kind") || "general",
+          website: value("botcheck"),
         });
         if (result?.ok) {
           form.reset();
+          setKind("general");
           setState(SENT);
           return;
         }
@@ -102,6 +115,7 @@ export function ContactForm({ action, children }: {
       const json = await res.json() as { success?: boolean; message?: string };
       if (!json.success) throw new Error(json.message || "failed");
       form.reset();
+      setKind("general");
       setState(SENT);
     } catch {
       setState(FAILED);
@@ -121,6 +135,24 @@ export function ContactForm({ action, children }: {
     <form action={action} method="POST" onSubmit={submit}
           className="grid max-w-[var(--measure)] gap-4">
       {children}
+      <Field id="contact-name" name="name" label="Name" type="text"
+             required autoComplete="name" maxLength={120} placeholder="Your name" />
+      <Field id="contact-email" name="email" label="Email" type="email"
+             required autoComplete="email" hint="So I can reply. Nothing else is done with it."
+             placeholder="you@example.com" />
+      <Select id="contact-kind" name="kind" label="Enquiry type (optional)"
+              value={kind} onChange={(event) => setKind(event.target.value)}>
+        <option value="general">General enquiry / not sure</option>
+        <option value="project">Client: a project</option>
+        <option value="hiring">Recruiter: a role</option>
+        <option value="reader">Reader: a question</option>
+      </Select>
+      <Field id="contact-deadline" name="deadline" label="Deadline (optional)"
+             type="date" hint="A preferred date, if you have one. I will confirm availability in my reply." />
+      <TextArea id="contact-message" name="message" label="Message" required
+                minLength={10} maxLength={7800} rows={6}
+                hint={<span aria-live="polite">{PROMPTS[kind]}</span>}
+                placeholder="A few lines about what you need." />
 
       <Button type="submit" kind="solid" size="lg" disabled={busy}>
         Send message
@@ -131,7 +163,7 @@ export function ContactForm({ action, children }: {
           who cannot see the line change, and it is empty until
           there is something to say so it is not read on load. */}
       <p id="form-status" role="status" aria-live="polite"
-         className={`text-t2 ${state?.kind === "ok" ? "text-green"
+         className={`text-t4 ${state?.kind === "ok" ? "text-green"
            : state?.kind === "err" ? "text-danger" : "text-ink-soft"}`}>
         {state?.text ?? ""}
       </p>

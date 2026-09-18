@@ -187,35 +187,41 @@ export function Sidebar({ current }: { current: Current }) {
         </a>
       </div>
 
+      <div className="rail-audience">
+        <span className="rail-label mono">What brings you here</span>
+        <AudienceSwitch />
+      </div>
       <nav className="rail-nav" aria-label="Main">
-        {groups.map((group) => (
-          <div className="rail-group" key={group.id} data-group={group.id}
-               style={{ "--accent": group.accent } as React.CSSProperties}>
-            <span className="rail-label mono">{group.label}</span>
+        {groups.map((group) => {
+          const items = <>
             {group.items.filter((item) => !item.unlisted).map((item) => (
               <Item key={item.href} item={item} current={current} />
             ))}
             <OwnerItems items={group.items.filter((item) => item.ownerOnly)} current={current} />
-          </div>
-        ))}
+          </>;
+          const expandable = ["learn", "make", "work"].includes(group.id);
+          const active = group.items.some((item) => item.key === current);
+          const style = { "--accent": group.accent } as React.CSSProperties;
+          return expandable ? (
+            <details className="rail-group" key={group.id} data-group={group.id}
+                     style={style} open={active}>
+              <summary className="rail-group-title" aria-label={group.label}>
+                <Icon name={group.items[0].icon} size={18} />
+                <span className="rail-label mono">{group.label}</span>
+                <span className="rail-group-chevron"><Icon name="chevron" size={16} /></span>
+              </summary>
+              {items}
+            </details>
+          ) : (
+            <div className="rail-group" key={group.id} data-group={group.id} style={style}>
+              <span className="rail-label mono">{group.label}</span>
+              {items}
+            </div>
+          );
+        })}
       </nav>
-
-          {/* The fold, and the audience switch. The switch is in the top
-              bar on a laptop and in here on a phone, and the stylesheet
-              shows exactly one: two instances of one component rather than
-              two implementations of one idea, holding no state, because
-              the state is `data-audience` on the root.
-
-              Why it moves at all: below 900px the bar has a burger, two
-              labels and three icon buttons on a 360px screen, and the
-              switch is the widest of them and the least urgent. It is a
-              question a reader answers once, so it belongs in the menu. */}
       <div className="rail-foot">
         <RailContinue />
-        <div className="rail-audience">
-          <span className="rail-label mono">What brings you here</span>
-          <AudienceSwitch />
-        </div>
         <SidebarToggle />
       </div>
     </aside>

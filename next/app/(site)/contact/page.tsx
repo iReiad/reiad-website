@@ -15,7 +15,7 @@
 
 import { accentFor } from "@reiad/shared/nav";
 import type { Metadata } from "next";
-import { Field, TextArea } from "../../../components/ui/field";
+
 import { ContactForm } from "../../../components/contact-form";
 import { pageMeta } from "../../../lib/pageMeta";
 import { GoCard } from "../../../components/deck";
@@ -41,8 +41,8 @@ export default function ContactPage() {
             <h1>Hiring, or need a model built?
             </h1>
             <p className="lede">
-              Recruiters, freelance clients, and Learn-hub readers all welcome. The form
-          below lands straight in my inbox, or email{" "}
+              Recruiters, freelance clients, and readers are all welcome. Send a message
+          below, or email{" "}
           
               <a href="mailto:i@reiad.co.uk">i@reiad.co.uk
               </a> directly.
@@ -63,40 +63,6 @@ export default function ContactPage() {
               <input type="hidden" name="from_name" defaultValue="reiad.co.uk contact form" />
               <input type="checkbox" name="botcheck" tabIndex={-1} className="honeypot" aria-hidden="true" />
 
-              {/* Three fields, and every one of them used to be a
-                  bare input inside a wrapping label with no id on
-                  it. That works for a mouse and is thin for
-                  everything else: nothing tied a message to a
-                  field, and the placeholder was doing the label's
-                  job. `ui/field.tsx` wires the label, the hint and
-                  `aria-describedby` together. */}
-              <Field
-                id="contact-name"
-                name="name"
-                label="Name"
-                type="text"
-                required
-                autoComplete="name"
-                placeholder="Your name"
-              />
-              <Field
-                id="contact-email"
-                name="email"
-                label="Email"
-                type="email"
-                required
-                autoComplete="email"
-                hint="So I can reply. Nothing else is done with it."
-                placeholder="you@example.com"
-              />
-              <TextArea
-                id="contact-message"
-                name="message"
-                label="Message"
-                required
-                rows={5}
-                placeholder="A few lines about what you need: a role, a project brief, or a question."
-              />
             </ContactForm>
           </section>
           <section>
@@ -134,10 +100,10 @@ export default function ContactPage() {
               <div className="row">
                 <span className="k mono">Where it goes
                 </span>
-                <span className="v">The form posts to Web3Forms, which emails it to me and stores
-              nothing else. This site sets no analytics cookies and runs no trackers.
-              How you like to read and how far you have got through a course are kept
-              with your account.
+                <span className="v">Your name, email and message are saved in this site's private enquiry inbox.
+              If that service is unavailable, or JavaScript is off, Web3Forms sends
+              the form to me by email. Include only what I need to answer you.
+              Lesson progress stays in your browser and syncs across devices when you sign in.
                 </span>
               </div>
             </div>

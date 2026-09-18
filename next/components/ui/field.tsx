@@ -50,7 +50,7 @@ function Wrap({
         htmlFor={id}
         className={hideLabel
           ? "sr-only"
-          : "text-t1 font-medium tracking-wide uppercase text-ink-soft"}
+          : "text-t4 font-medium text-ink"}
       >
         {label}
       </label>
@@ -58,14 +58,14 @@ function Wrap({
       {children}
 
       {hint && !error ? (
-        <p id={`${id}-hint`} className="text-t1 text-ink-soft">{hint}</p>
+        <p id={`${id}-hint`} className="text-t3 text-ink-soft">{hint}</p>
       ) : null}
 
       {/* `role="alert"` so a message that appears after a failed
           submit is read out, rather than sitting there for
           somebody who cannot see it turn red. */}
       {error ? (
-        <p id={`${id}-error`} role="alert" className="text-t1 text-danger">{error}</p>
+        <p id={`${id}-error`} role="alert" className="text-t3 text-danger">{error}</p>
       ) : null}
     </div>
   );

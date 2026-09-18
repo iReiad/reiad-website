@@ -305,7 +305,7 @@ export default function Page() {
                         dek="A reply within one business day with scope, a delivery date and a fixed price. The price does not move unless the scope does, so the estimate is my problem rather than yours." />
               <InfoCard chip="Step three"
                         title="Delivery"
-                        dek="The working files (model, code or draft), a walkthrough of how they fit together, and one round of revisions included. Ownership transfers on final payment." />
+                        dek="The working files (model, code or draft), a walkthrough of how they fit together, and revisions included: one round for models and analysis, two rounds for finance writing. The quote confirms the scope and revision allowance. Ownership transfers on final payment." />
             </div>
             <p className="note">
               Prefer the protection of a platform? I also take projects through Fiverr
