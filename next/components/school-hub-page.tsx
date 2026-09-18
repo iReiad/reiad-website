@@ -179,7 +179,7 @@ export function SchoolHubPage({ school }: { school: string }) {
         <Html className="lede" html={hero.lede} />
         <nav className="learner-course-nav" aria-label="কোর্সের পথ" lang="bn">
           <ButtonLink href="/skills" kind="ghost">সব কোর্স</ButtonLink>
-          <ButtonLink href={`#${sections[0]?.id ?? "resume"}`} kind="soft">পাঠের তালিকা</ButtonLink>
+          <ButtonLink href={`#${sections.find((section) => section.ladder)?.id ?? sections[0]?.id ?? "resume"}`} kind="soft">পাঠের তালিকা</ButtonLink>
           <ButtonLink href="/account" kind="quiet">আমার অগ্রগতি</ButtonLink>
         </nav>
 
