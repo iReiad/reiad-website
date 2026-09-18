@@ -135,20 +135,17 @@ export default function HomePage() {
               </p>
             ))}
 
-                {/* THE SWITCH MOVES A DOOR, not three sentences. A pair
-                    of buttons per audience is server-rendered here and
-                    chosen by the same attribute, so the answer to "I am
-                    here to hire" is a button rather than a paragraph. */}
-            {DOOR.ways.map((way) => (
-              <div className="hero-actions" data-when={way.when} key={way.when}>
-                <ButtonLink kind="solid" href={way.go.href} lang={way.go.lang}>
-                  {way.go.label}
-                </ButtonLink>
-                <ButtonLink kind="ghost" href={way.also.href} lang={way.also.lang}>
-                  {way.also.label}
-                </ButtonLink>
-              </div>
-            ))}
+            <nav className="hero-actions" aria-label="Choose where to start">
+              <ButtonLink kind="solid" href="/skills" lang="en">
+                Learn in Bangla
+              </ButtonLink>
+              <ButtonLink kind="ghost" href="/portfolio" lang="en">
+                Hire me / View my work
+              </ButtonLink>
+            </nav>
+            <p className="text-t5 text-ink-soft" lang="bn">
+              পাঠের অগ্রগতি এই ব্রাউজারে থাকে। সাইন ইন করলে অন্য ডিভাইসেও পাবেন।
+            </p>
           </div>
 
               {/* ---- the ledger ----

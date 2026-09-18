@@ -76,3 +76,17 @@ Studio's own, and `textarea[data-schrift]` in the practice book.
 only lets the number fall. It is at 16. That number reaching zero
 is what "the design is consistent" means here, and nothing else
 does.
+
+## Navigation and first impressions, September 2026
+
+The homepage keeps both audience routes visible: Learn in Bangla and
+Hire me / View my work. The rail puts its audience switch above the menu,
+with native expandable Learning, Tools and Work groups. The current
+section starts open; the other groups remain available by keyboard and
+without JavaScript. Reading and Account stay directly accessible.
+
+Secondary text has stronger contrast in both themes. Bangla rail labels,
+form labels and hints use larger existing type steps; common labels and
+buttons use sentence case with less letter spacing. Portfolio cards lead
+with the question and takeaway, then contribution and method. Enquiries
+include optional type and deadline fields, with guidance for each audience.

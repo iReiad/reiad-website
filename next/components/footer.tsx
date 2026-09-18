@@ -40,8 +40,8 @@ export function SiteFooter({
           <div className="deck-foot-mark">
             <span className="deck-foot-name">{name}</span>
             <p className="deck-foot-line" lang="bn">
-              বাংলায় শেখা, আর যে কাজগুলো খুলে দেখা যায়। শেখা ফ্রি, আর
-              অগ্রগতি থাকে আপনার অ্যাকাউন্টে।
+              বাংলায় শেখা, আর যে কাজগুলো খুলে দেখা যায়। শেখা ফ্রি।
+              পাঠের অগ্রগতি এই ব্রাউজারে থাকে। সাইন ইন করলে অন্য ডিভাইসেও পাবেন।
             </p>
             <a className="deck-foot-mail" href="mailto:i@reiad.co.uk">
               <Icon name="mail" size={14} /> i@reiad.co.uk

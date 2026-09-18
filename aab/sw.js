@@ -24,6 +24,8 @@
    the number moves. `node scripts/check-sw.ts --update` records the
    new hashes.
 
+   v258: clearer navigation, readable secondary labels and form hints
+         in /fallback.css.
    v257: the grammar term's parts run twice as long. /english/curriculum.js
          carries the new minutes for all twenty-five parts of টার্ম ৩,
          each of which now takes its topic end to end, and the longer
@@ -58,7 +60,7 @@
    v249: comments. Every precached module lost the essay at the top
         of it and this file lost 2,167 lines of changelog, so the
         bytes moved without a line of behaviour changing. */
-const VERSION = "v257";
+const VERSION = "v258";
 const SHELL = `shell-${VERSION}`;
 const RUNTIME = `runtime-${VERSION}`;
 
