@@ -3,10 +3,10 @@
 This file is what an agent reads on every turn, so it is short on
 purpose. Two more files, and that is the whole of the reading:
 
-- **`MAP.md` first, once per task.** Generated from the files themselves:
+- **`AGENTS.md` first, once per task.** Then search `MAP.md` for the feature being changed. The map is generated from the files themselves:
   every route, every file with the one sentence at the top of it, every
   storage key, the menu, the checks. It says where everything is, so a
-  file is opened only to change it. About 900 lines.
+  file is opened only to change it. Do not read the whole map.
 - **`HANDBOOK.md` by heading, when a rule's reason is needed.** The
   rules with their reasons and the incidents behind them, 2,300 lines.
   **Never whole.** Search for the heading named beside the rule below.

@@ -1,27 +1,10 @@
-/* The front door. Every band is one LEAD and a set behind it, in the
-   order somebody arriving asks: what is this, is it any good, where do I
-   start.
-
-     door      who this is, what is here, and two ways in
-     work      seven case studies, each with its own chart
-     library   six courses, the largest one drawn large
-     writing   the newest pieces, out of the database
-     tools     six things a reader can use today
-     board     the reader's own, and only when they have one
-
-   Every figure in the ledger is a `data-count` slot filled from `COUNTS`
-   in `shared/content.ts`, so a course published tomorrow moves it with
-   nobody editing this file.
-
-   `/` MUST STAY A PRERENDERED FILE, never `force-dynamic`: that costs a
-   Worker render and a query on every visit to the most-hit page, and it
-   takes `next/interactive.test.ts` down silently, because that harness
-   serves `.next/server/app/index.html` from disk and SKIPS without one.
-   So the writing band fetches and draws a real door to `/insights`;
-   everything else here is a compile-time constant out of `shared/`. */
+/* The learner entrance: discover a subject, follow a course, and return to progress.
+   Keep this page prerendered: the browser tests read its generated HTML.
+   Public subjects and lesson totals come from shared data; private courses stay gated. */
 
 import type { Metadata } from "next";
 import type { CSSProperties } from "react";
+import { CourseDiscovery } from "../../components/course-discovery";
 import { Board } from "../../components/home/board";
 import { LatestWriting } from "../../components/home/writing";
 import { Reckoner } from "../../components/home/reckoner";
@@ -32,10 +15,9 @@ import { SectionLabel } from "../../components/ui/label";
 import { pageMeta } from "../../lib/pageMeta";
 import { STUDIES } from "../../lib/work";
 import {
-  COUNTS, DOOR, allDars, allLessons, allParts, allTeile,
+  COUNTS, allDars, allLessons, allParts, allTeile,
 } from "@reiad/shared/content";
 import { NAV, accentFor } from "@reiad/shared/nav";
-import { bnNum } from "@reiad/shared/schools";
 
 export const metadata: Metadata = pageMeta({
   path: "/",
@@ -98,133 +80,53 @@ function bandAccent(key: string): CSSProperties | undefined {
 
 export default function HomePage() {
   return (
-    <main id="main">
+    <main id="main" className="learning-home">
       <div className="home-wrap mx-auto w-full max-w-[1240px]
         px-[clamp(16px,3vw,44px)] pt-[clamp(18px,3.4vw,44px)] pb-[clamp(28px,4vw,56px)]
         grid gap-[clamp(34px,4.4vw,64px)]">
-
-            {/* ---- the door ----
-                Two columns from 1000px up: what this is on the left, what
-                is here on the right. One column left the right 581px of
-                the first screen empty on every laptop. */}
-        <header className="door">
-          <div className="door-say">
-                {/* THE NAME IS A LINK: a reader who wants to know who
-                    wrote this presses the name, which is where they would
-                    press anyway. */}
-            <span className="gate-eyebrow mono" lang="en">
-              <a href="/about">{DOOR.eyebrow}</a>
-            </span>
-
-                {/* One <h1> per audience, all three server-rendered and
-                    chosen by `data-hl` before first paint. The copy is
-                    `DOOR` in shared/content.ts, because a sentence is DATA
-                    and data reaches the Android app with no release. */}
-            {Object.entries(DOOR.copy).map(([when, copy]) => {
-              const [before, after] = copy.headline.split(copy.mark);
-              return (
-                <h1 className="gate-h1" data-when={when} key={when} lang={copy.lang}>
-                  {before}<em className="gate-mark">{copy.mark}</em>{after}
-                </h1>
-              );
-            })}
-
-            {Object.entries(DOOR.copy).map(([when, copy]) => (
-              <p className="gate-lede" data-when={when} key={when} lang={copy.lang}>
-                {copy.lede}
-              </p>
-            ))}
-
-            <nav className="hero-actions" aria-label="Choose where to start">
-              <ButtonLink kind="solid" href="/skills" lang="en">
-                Learn in Bangla
-              </ButtonLink>
-              <ButtonLink kind="ghost" href="/portfolio" lang="en">
-                Hire me / View my work
-              </ButtonLink>
+        <header className="learner-hero">
+          <div className="learner-intro">
+            <span className="learner-kicker" lang="en">YOUR NEXT CHAPTER STARTS HERE</span>
+            <h1 lang="bn">ছোট্ট শুরু।<br /><em>অনেক দূর।</em></h1>
+            <p lang="bn">টাকা বুঝতে চান, নতুন ভাষা শিখতে চান, নাকি নিজের জন্য কিছু করতে চান? আপনার শুরুটা হোক এখানেই। সহজ বাংলায়, নিজের গতিতে।</p>
+            <nav className="hero-actions" aria-label="শেখা শুরু করুন">
+              <ButtonLink kind="solid" href="#learn-h" lang="bn">আমার কোর্স খুঁজি</ButtonLink>
+              <ButtonLink kind="ghost" href="/account" lang="bn">আমার অগ্রগতি</ButtonLink>
             </nav>
-            <p className="text-t5 text-ink-soft" lang="bn">
-              পাঠের অগ্রগতি এই ব্রাউজারে থাকে। সাইন ইন করলে অন্য ডিভাইসেও পাবেন।
-            </p>
+            <div className="learner-promises" lang="bn"><span>পড়তে কোনো খরচ নেই</span><span>একদম শুরু থেকে</span><span>নিজের সময়ে</span></div>
           </div>
-
-              {/* ---- the ledger ----
-                  What is actually here, counted: five rows out of
-                  `COUNTS`, each one a way in, the numeral a slot rather
-                  than a number anybody typed. No ground and no edge: the
-                  headline already carries the weight on this screen. */}
-          <div className="door-ledger">
-            <ul className="ledger">
-              {DOOR.facts.map((row) => (
-                <li key={row.count}>
-                  <a href={row.href}>
-                    <b data-count={row.count} lang="bn">{bnNum(COUNTS[row.count])}</b>
-                    <span className="ledger-bn" lang="bn">{row.label}</span>
-                    <span className="ledger-en mono">{row.en}</span>
-                  </a>
-                </li>
-              ))}
-            </ul>
-          </div>
+          <aside className="learner-start" aria-labelledby="start-heading">
+            <span className="learner-kicker" lang="en">A LITTLE DIRECTION</span>
+            <h2 id="start-heading" lang="bn">কোথা থেকে শুরু করব?</h2>
+            <ol className="learner-steps" lang="bn">
+              <li><b>আপনার বিষয় বেছে নিন</b><span>নিচে কোর্সগুলো দেখে যেটা ভালো লাগে, সেটাই খুলুন।</span></li>
+              <li><b>প্রথম পাঠ দিয়ে শুরু করুন</b><span>আগে থেকে কিছু জানা লাগবে না। ধাপে ধাপে এগোন।</span></li>
+              <li><b>পড়ুন, অনুশীলন করুন, ফিরে আসুন</b><span>পাঠ শেষে টিক দিন। পরের বার সেখান থেকেই এগোবেন।</span></li>
+            </ol>
+            <a href="/skills" className="learner-start-link" lang="bn">সব শেখার পথ দেখুন <span aria-hidden="true">↗</span></a>
+          </aside>
         </header>
 
-            {/* ---- one line of the site's own arithmetic ----
-                The one thing on this page a reader can USE. Between the
-                door and the library because it is the door's claim made
-                concrete and the library's subject introduced. */}
-        <Reckoner />
-
-            {/* ---- the library ----
-                First, because the door speaks Bangla to anybody who has
-                pressed nothing and its primary button goes to `/skills`.
-                Somebody here to hire gets a door whose primary button IS
-                the work, which is one press rather than one scroll. Six
-                cards, each in its school's own colour, three to a row. */}
         <section aria-labelledby="learn-h">
           <div className="hub-section-head">
             <SectionLabel>
               শেখা · <span lang="en">The library</span>
             </SectionLabel>
-            <h2 className="band-h" id="learn-h" lang="bn">যা যা শেখানো হয়</h2>
+            <h2 className="band-h" id="learn-h" lang="bn">আজ কী শিখতে চান?</h2>
             <p className="hub-section-note" lang="bn">
-              সবগুলো ফ্রি, সবগুলো বাংলায়, একদম শুরু থেকে।
+              বিষয় খুঁজুন, নিজের লক্ষ্য বেছে নিন, আর প্রথম পাঠে চলে যান।
             </p>
           </div>
-          <div className="deck learn-deck">
-            {SCHOOLS.map((item) => (
-              <GoCard
-                key={item.href}
-                href={item.href}
-                icon={item.icon}
-                accent={item.accent ?? "var(--green)"}
-                chip={item.kind ? <span lang="bn">{item.kind}</span> : undefined}
-                title={item.sub ?? item.label}
-                lang={item.sub ? "bn" : undefined}
-                dek={item.blurb}
-                go="খুলুন"
-              />
-            ))}
-          </div>
+          <CourseDiscovery items={SCHOOLS} totals={LADDER_TOTALS} />
         </section>
-
-            {/* ---- the work ----
-                `next/lib/work.ts` is the one list, joined from `PAGES`,
-                and `/portfolio` draws the same seven from it. This band is
-                the compact density of the same card rather than a second
-                card, which is the rule that made `<GoCard>` one component.
-
-                IT WEARS THE PORTFOLIO'S ACCENT: `shared/nav.ts` decides
-                what colour a thing is, so the band asks that table rather
-                than inheriting the page's green. */}
+        <Board start={FIRST_LESSON} totals={LADDER_TOTALS} />
+        <Reckoner />
         <section aria-labelledby="work-h" style={bandAccent("portfolio")}>
           <div className="hub-section-head">
             <SectionLabel>
               কাজ · <span lang="en">Selected work</span>
             </SectionLabel>
             <h2 className="band-h" id="work-h" lang="en">Models you can open and drive</h2>
-                {/* No count in the sentence: the ledger a screen above
-                    states the same figure out of `COUNTS`. The one band not
-                    in the reader's language says so in theirs. */}
             <p className="hub-section-note" lang="en">
               The arithmetic runs in your browser: nothing here is a picture
               of a spreadsheet.
@@ -233,9 +135,6 @@ export default function HomePage() {
               এই অংশটা ইংরেজিতে, কারণ কাজগুলো ইংরেজিতেই করা।
             </p>
           </div>
-              {/* ONE LEAD AND SIX: seven equal cards in a three column
-                  grid is two rows and an orphan, and seven things of equal
-                  weight where the second is built on the first. */}
           <WorkCard study={STUDIES[0]} lead compact />
           <div className="deck work-deck">
             {STUDIES.slice(1).map((study) => (
@@ -243,8 +142,6 @@ export default function HomePage() {
             ))}
           </div>
         </section>
-
-        {/* ============ the writing ============ */}
         <section aria-labelledby="read-h">
           <div className="hub-section-head">
             <SectionLabel>
@@ -252,23 +149,14 @@ export default function HomePage() {
             </SectionLabel>
             <h2 className="band-h" id="read-h" lang="bn">সবচেয়ে নতুন যা লেখা হয়েছে</h2>
           </div>
-              {/* Three, which is the row every other band here is, so the
-                  page has one rhythm. A fourth lays out three and one. */}
           <LatestWriting limit={3} />
         </section>
-
-            {/* ---- the tools ----
-                Every tool carries a blurb in `shared/nav.ts`, in Bangla,
-                which means the rail and the app get them too. */}
         <section aria-labelledby="make-h" style={bandAccent("tools")}>
           <div className="hub-section-head">
             <SectionLabel>
               যন্ত্রপাতি · <span lang="en">The tools</span>
             </SectionLabel>
             <h2 className="band-h" id="make-h" lang="bn">যেগুলো দিয়ে হিসাবটা করা যায়</h2>
-                {/* NOT "যা লেখেন তা আপনার কাছেই থাকে": the routine, the
-                    diet log and the Research Studio keep a reader's rows
-                    in an account. Say the thing that is true of all six. */}
             <p className="hub-section-note" lang="bn">
               হিসাবটা আপনার ব্রাউজারেই চলে, আর বেশিরভাগই অ্যাকাউন্ট ছাড়াই খোলা যায়।
             </p>
@@ -290,12 +178,6 @@ export default function HomePage() {
           </div>
         </section>
 
-            {/* ---- the board ----
-                The reader's own, and last. It draws nothing at all for
-                somebody who has never been here: what a reader has read is
-                not a fact the site has about a stranger, and a dashboard
-                of noughts is worse than no dashboard. */}
-        <Board start={FIRST_LESSON} totals={LADDER_TOTALS} />
       </div>
     </main>
   );
