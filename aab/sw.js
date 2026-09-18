@@ -60,7 +60,9 @@
    v249: comments. Every precached module lost the essay at the top
         of it and this file lost 2,167 lines of changelog, so the
         bytes moved without a line of behaviour changing. */
-const VERSION = "v258";
+// v259: learner discovery, rounded theme and refreshed fallback styles.
+// v260: complete course navigation and discovery layout refinements.
+const VERSION = "v260";
 const SHELL = `shell-${VERSION}`;
 const RUNTIME = `runtime-${VERSION}`;
 

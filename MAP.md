@@ -68,7 +68,7 @@ Every `page.tsx` under `next/app/`, by address.
 | `/[section]/advanced` | /deutsch/advanced: the Netzwerk neu study planner. (`next/app/[section]/advanced/page.tsx`) |
 | `/[section]/contents` | /money/contents, the money school's full index. (`next/app/[section]/contents/page.tsx`) |
 | `/[section]` | Three kinds of index page share this address. (`next/app/[section]/(hub)/page.tsx`) |
-| `/` | The front door. Every band is one LEAD and a set behind it, in the order somebody arriving asks: what is this, is it any good,... (`next/app/(home)/page.tsx`) |
+| `/` | The learner entrance: discover a subject, follow a course, and return to progress. (`next/app/(home)/page.tsx`) |
 | `/about` | /about Ported out of `aab/about.html` with archive/TRANSITION.md Stage 11.5, words unchanged. (`next/app/(site)/about/page.tsx`) |
 | `/account` | /account: the one page about the reader rather than about the writing. (`next/app/(site)/account/page.tsx`) |
 | `/admin` | /admin ADMIN.md is the plan and this is stage 1 of it: the route, the shell, the two sign-ins and Health. (`next/app/(site)/admin/(panel)/page.tsx`) |
@@ -180,6 +180,7 @@ Every `page.tsx` under `next/app/`, by address.
 | `next/components/cards.tsx` | a piece of writing, as a card. |
 | `next/components/comments.tsx` | The thread under a piece. |
 | `next/components/contact-form.tsx` | the contact form, and the three ways sending it can go. |
+| `next/components/course-discovery.tsx` | public subjects filtered by a learner's goal, without private catalogue data. |
 | `next/components/course-shell.tsx` | the empty page four course routes serve. |
 | `next/components/courses/trail.tsx` | The whole path, down to the lesson. |
 | `next/components/deck.tsx` | the two kinds of card, as components. |

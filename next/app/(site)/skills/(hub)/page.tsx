@@ -30,11 +30,12 @@
    ============================================================ */
 
 import type { Metadata } from "next";
-import { GoCard, SoonCard } from "../../../../components/deck";
+import { CourseDiscovery } from "../../../../components/course-discovery";
+import { GoCard } from "../../../../components/deck";
 import { NAV } from "@reiad/shared/nav";
 import { pageMeta } from "../../../../lib/pageMeta";
 import { SectionLabel } from "../../../../components/ui/label";
-import { COUNTS } from "@reiad/shared/content";
+import { allTeile, allDars, allParts, COUNTS } from "@reiad/shared/content";
 import { HEADS } from "@reiad/shared/heads";
 
 export const metadata: Metadata = pageMeta({
@@ -68,10 +69,9 @@ export default function SkillsPage() {
   const skills = learn.filter((item) => !item.unlisted);
   const mine = learn.filter((item) => item.unlisted);
 
-  const live = skills.filter((s) => !s.soon);
 
   return (
-    <main id="main" className="hub">
+    <main id="main" className="hub learning-catalog">
       <div className="hub-wrap">
 
         <header className="hub-hero">
@@ -82,9 +82,9 @@ export default function SkillsPage() {
               on a page counts the data, and two places counting
               it is two chances to disagree. */}
           <span className="hub-eyebrow mono">{HEADS.skills.eyebrow}</span>
-          <h1 className="bn-h">{HEADS.skills.title}</h1>
+          <h1 className="bn-h">আপনার পরের দক্ষতা খুঁজে নিন।</h1>
           <p className="hub-lede" lang="bn">
-            {HEADS.skills.lede.replace("{n}", bn(COUNTS.courses))}
+            {bn(COUNTS.courses)}টি শেখার পথ। বাংলায়, বিনামূল্যে, নিজের সময়ে। আপনার লক্ষ্য দিয়ে শুরু করুন।
           </p>
         </header>
 
@@ -95,41 +95,8 @@ export default function SkillsPage() {
             </SectionLabel>
           </div>
 
-          <div className="deck deck-2">
-            {skills.map((skill) => (
-              skill.soon ? (
-                <SoonCard
-                  key={skill.href} accent="var(--ink-soft)" icon={skill.icon}
-                  lang="bn" title={skill.sub ?? skill.label} dek={skill.blurb}
-                >
-                  <span className="card-meta">
-                    <span lang="en">{skill.label}</span>
-                  </span>
-                </SoonCard>
-              ) : (
-                <GoCard
-                  key={skill.href} href={skill.href}
-                  /* The school's own colour, out of `shared/nav.ts`,
-                     which is where every other place on this site
-                     reads it: the rail, the footer and the page a
-                     card takes you to. This said gold for money and
-                     green for everything else, so German, Qur'anic
-                     Arabic, English, Cooking and Travel all lost
-                     the blue, teal, violet, rose and plum the one
-                     table gives them, on the page whose whole job
-                     is to show the six side by side. */
-                  accent={skill.accent}
-                  icon={skill.icon} chip={skill.kind} lang="bn"
-                  title={skill.sub ?? skill.label} dek={skill.blurb}
-                  go={skill.kind === "কোর্স" ? "কোর্সটা খুলুন" : "লেখাগুলো দেখুন"}
-                >
-                  <span className="card-meta">
-                    <span lang="en">{skill.label}</span>
-                  </span>
-                </GoCard>
-              )
-            ))}
-          </div>
+          <CourseDiscovery items={skills} totals={{ money: COUNTS.lessons, deutsch: allTeile().length, quran: allDars().length, english: allParts().length }} />
+
         </section>
 
         {mine.length ? (

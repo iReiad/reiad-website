@@ -1,3 +1,9 @@
+## Learner discovery refresh, September 2026
+
+The learning entrance now leads with a Bangla welcome, an explicit three-step starting guide and public subject discovery. Subject cards reuse the navigation table, offer bilingual search and goal filters, show real lesson totals, and keep free access visible. Existing account progress remains the source of truth. Private third-party courses stay gated.
+
+The shared corner scale is now 6/10/16/24px, and paper uses a cool neutral hue. Solid subject-colour card headers and a green welcome panel make browsing more energetic. Reading typography, subject identities and dark mode remain available. No new dependencies, storage keys, or external images are required.
+
 # The look, and what is still wrong with it
 
 `ARCHITECTURE.md` is where things go. This is what they look like

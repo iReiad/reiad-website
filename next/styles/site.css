@@ -125,7 +125,7 @@
        accent are untouched, so no contrast ratio moves by more
        than a rounding error. The measured pairs are in the note
        above --hairline. */
-    --h-paper: 84;
+    --h-paper: 255;
 
     /* --- surfaces --- */
     /* --- the two surfaces ---
@@ -629,10 +629,10 @@
        to read as round (a bullet, a slider's thumb, a ring) says
        `50%` where it is drawn, because a dot is a dot and not a
        corner. */
-    --radius-xs: 2px;
-    --radius-sm: 3px;
-    --radius: 4px;
-    --radius-lg: 6px;
+    --radius-xs: 6px;
+    --radius-sm: 10px;
+    --radius: 16px;
+    --radius-lg: 24px;
 
     /* --- controls ---
 
@@ -789,7 +789,7 @@
      accent LIFTS it: a tint that would be garish at 98% reads as
      a warm dark at 21%. */
   @media (prefers-color-scheme: dark) {
-    :root:not([data-theme="light"]), 
+    :root:not([data-theme="light"]),
     :root:not([data-theme="light"]) [style*="--accent"],
     :root:not([data-theme="light"]) [data-section] {
     --paper-base:      oklch(16.5% 0.012 var(--h-green));
@@ -3527,11 +3527,6 @@ it collapsed to the width of the word "Bangladesh". */
      window. */
   .article,
   main .wrap:has(> .term-article),
-  /* The thread under a piece is the same reader reading the same
-     page, and it was `.wrap-narrow`: 760px, which is nineteen
-     Bangla words a line. A comment is short text and short text
-     is where a too-wide measure hurts most, because there are not
-     enough lines to learn the sweep. */
   main:has(> .article) > .comments {
     max-width: calc(var(--measure) + var(--wrap-pad) * 2);
     margin-inline: auto;
@@ -5165,13 +5160,11 @@ it collapsed to the width of the word "Bangladesh". */
      screen has. */
   @media (width < 700px) {
     .work-compact p,
-    .learn-deck .card-dek,
     .make-deck .card-dek { -webkit-line-clamp: 2; }
     /* A picture on a phone is a whole screen's worth of scroll
        rather than a third of a row, and six of them in one band
        is six. Big enough to tell a coin from a pan, which is the
        only thing the drawing has to do. */
-    .learn-deck .card-band { max-height: 128px; }
     .work-compact { padding: 18px; }
   }
 
@@ -5880,7 +5873,7 @@ it collapsed to the width of the word "Bangladesh". */
 
   /* ---------- ONE INTRO PER VISITOR ----------
      Which of the four ledes and button rows is shown is decided by
-     a <style> the page writes into its own <head>, and the
+     a \3c style> the page writes into its own <head>, and the
      headline is swapped by three lines of script sitting next to
      it. Neither is here, and that is deliberate: sw.js serves HTML
      network-first and stylesheets cache-first, so on the first
@@ -8119,8 +8112,7 @@ German for day, and .tag is what the site has always called
 
   /* ---------- PRINT ---------- */
   @media print {
-    body > footer, #palette, .read-progress,
-    .icon-btn, .prev-next, .studio-pane.editor { display: none !important; }
+    body > footer, #palette, .read-progress, .icon-btn, .prev-next, .studio-pane.editor { display: none !important; }
     body { background: #fff; color: #000; font-size: 11pt; }
     .article a::after { content: " (" attr(href) ")"; font-size: 0.85em; color: #555; }
   }
@@ -10576,38 +10568,12 @@ German for day, and .tag is what the site has always called
      Tailwind section of CLAUDE.md draws: JSX gets utilities,
      pseudo-elements and lang-driven type and classes a script
      selects on keep a name. */
-
-  .gate-eyebrow { color: var(--accent); }
   /* A line of credits is not pressable; the link inside it is. */
-  .gate-eyebrow a { color: inherit; text-decoration: none; }
-  .gate-eyebrow a:hover,
-  .gate-eyebrow a:focus-visible { text-decoration: underline; }
-  .gate-h1 {
-    margin: 0;
-    font-size: clamp(1.9rem, 4.4vw, 3.4rem);
-    max-width: 18ch;
-  }
-  .gate-h1[lang="bn"] { font-family: var(--font-bn-serif); line-height: 1.3; }
 
   /* The marked words. A marker stroke under the half of the
      sentence that is the promise, in the calculators' gold so it
      is an underline of the site rather than a colour of one
      school. The ink does not change, so no contrast pair moves. */
-  .gate-mark {
-    font-style: normal;
-    background: linear-gradient(
-      transparent 62%,
-      color-mix(in oklab, var(--accent) 28%, transparent) 62%);
-    border-radius: var(--radius-xs);
-    padding-inline: 2px;
-    box-decoration-break: clone;
-  }
-
-  .gate-lede {
-    margin: 0; max-width: 56ch; color: var(--ink-soft);
-    font-size: clamp(0.95rem, 1.3vw, 1.08rem);
-  }
-  .gate-lede[lang="bn"] { font-family: var(--font-bn); }
 
   /* ---- the tile ----
 
@@ -10708,10 +10674,6 @@ German for day, and .tag is what the site has always called
      lede: the caption read as detached and the lede as glued.
      The eyebrow belongs to the headline and closes up; the lede
      opens; the buttons are a separate act. */
-  .door-say { display: grid; gap: clamp(10px, 1.6vw, 18px); align-content: start; }
-  .door-say .gate-eyebrow { margin-bottom: -6px; }
-  .door-say .gate-lede { margin-top: 4px; }
-  .door-ledger { display: grid; gap: 14px; align-content: start; }
 
   /* ONE COLUMN IS NOT A WIDE COLUMN. Stacked, the ledger takes
      the whole measure, and `auto 1fr auto` then puts six hundred
@@ -10719,7 +10681,6 @@ German for day, and .tag is what the site has always called
      gloss: one row reads as two columns that have lost each
      other. The cap keeps the row a row. */
   @media (width < 1000px) {
-    .door-ledger { max-width: 520px; }
   }
 
   @media (width >= 1000px) {
@@ -10733,7 +10694,6 @@ German for day, and .tag is what the site has always called
        the eyebrow's: the eyebrow is a caption for the sentence
        under it, and a column starting level with it reads as a
        second caption. */
-    .door-ledger { padding-top: 6px; }
   }
 
   /* ---- the ledger ----
@@ -10769,13 +10729,6 @@ German for day, and .tag is what the site has always called
       min-width: 1.6em;
     }
   }
-  .ledger-bn { font-family: var(--font-bn); font-size: var(--t-5); }
-  .ledger-en {
-    font-size: var(--t-3); letter-spacing: 0.02em; text-transform: none;
-    color: var(--ink-soft); text-align: end;
-  }
-  .ledger a:hover .ledger-bn,
-  .ledger a:focus-visible .ledger-bn { color: var(--accent); }
   /* A COLOUR WAS THE WHOLE ANSWER, on five rows whose job is to
      be five ways in. The row steps forward instead, and the
      colour stays: a pointer is a finger, and a row that moves
@@ -10798,7 +10751,6 @@ German for day, and .tag is what the site has always called
      what it actually guards against is a very long gloss on a
      narrow one rather than the phone itself. */
   @media (width < 380px) {
-    .ledger-en { display: none; }
   }
   @media (width < 640px) {
     .ledger a { padding: 7px 0; }
@@ -10943,7 +10895,6 @@ German for day, and .tag is what the site has always called
      for the search palette, where a whole sentence is the answer;
      in a grid of six the difference between a two-line card and a
      six-line one is a ragged band. */
-  .learn-deck .card-dek,
   .make-deck .card-dek {
     display: -webkit-box; -webkit-box-orient: vertical; -webkit-line-clamp: 3;
     overflow: hidden;
@@ -10954,7 +10905,6 @@ German for day, and .tag is what the site has always called
      which is four columns and one empty cell at the end; five
      tools with a lead is six units, which is three columns and
      none. */
-  .learn-deck,
   .make-deck { grid-template-columns: repeat(auto-fill, minmax(min(100%, 300px), 1fr)); }
 
   /* A CARD IS AS TALL AS WHAT IS IN IT, unless every card in the
@@ -10972,7 +10922,6 @@ German for day, and .tag is what the site has always called
      deck homogeneous again the ragged bottoms `start` produces
      are the worse of the two. */
   .work-deck,
-  .learn-deck,
   .make-deck,
   .read-deck { align-items: stretch; }
   /* THREE, LIKE EVERY OTHER BAND. At 260px a fourth column needs
@@ -13464,9 +13413,7 @@ German for day, and .tag is what the site has always called
      layer caps every paragraph and list at the prose measure,
      which inside an 800px frame left the pattern's lines in a
      column half its width with the frame drawn round the space. */
-  .ls-pattern > *, .ls-pattern-eg, .ls-pattern-eg li,
-  .ls-lines-block > *, .ls-lines, .ls-line-row,
-  .ls-gap-item > *, .ls-gap-opts { max-width: none; }
+  .ls-pattern > *, .ls-pattern-eg, .ls-pattern-eg li, .ls-lines-block > *, .ls-lines, .ls-line-row, .ls-gap-item > *, .ls-gap-opts { max-width: none; }
 
   /* ---- pattern ---- */
 
@@ -14122,10 +14069,8 @@ German for day, and .tag is what the site has always called
     inline-size: 9px; block-size: 9px; border-radius: var(--radius-sm);
     background: var(--hairline); flex: none;
   }
-  :is(.ad-row, .ad-dot)[data-state="up"] .ad-dot,
-  .ad-dot[data-state="up"] { background: var(--accent); }
-  :is(.ad-row, .ad-dot)[data-state="down"] .ad-dot,
-  .ad-dot[data-state="down"] { background: var(--danger); }
+  :is(.ad-row, .ad-dot)[data-state="up"] .ad-dot, .ad-dot[data-state="up"] { background: var(--accent); }
+  :is(.ad-row, .ad-dot)[data-state="down"] .ad-dot, .ad-dot[data-state="down"] { background: var(--danger); }
   .ad-row[data-state="up"] .ad-dot { background: var(--accent); }
   .ad-row[data-state="down"] .ad-dot { background: var(--danger); }
 
@@ -14456,9 +14401,7 @@ German for day, and .tag is what the site has always called
      other, so the order was right and unreadable. Proportional
      digits in a column are the one typographic default on this
      site that is wrong for what this tool draws. */
-  .dt-page :is(td, th),
-  .dt-coverage,
-  .dt-sheet :is(td, th, dd) {
+  .dt-page :is(td, th), .dt-coverage, .dt-sheet :is(td, th, dd) {
     font-variant-numeric: tabular-nums;
   }
 
@@ -14808,9 +14751,7 @@ German for day, and .tag is what the site has always called
      of page classes and it went stale twice, three pages at a
      time. `.dt-page > *` is every panel, and the two that are not
      grids say so themselves below. */
-  .dt-goal, .dt-journal, .dt-nutrition, .dt-expect, .dt-trend,
-  .dt-foods, .dt-health, .dt-summary, .dt-keto, .dt-habits,
-  .dt-recipes, .dt-usuals, .dt-year {
+  .dt-goal, .dt-journal, .dt-nutrition, .dt-expect, .dt-trend, .dt-foods, .dt-health, .dt-summary, .dt-keto, .dt-habits, .dt-recipes, .dt-usuals, .dt-year {
     display: grid; gap: var(--step);
   }
 
@@ -15779,3 +15720,66 @@ German for day, and .tag is what the site has always called
   }
 }
 
+
+/* Learner discovery: subject accents and an explicit path from browsing to studying. */
+@layer utilities {
+  .learner-hero { display: grid; grid-template-columns: minmax(0, 1.35fr) minmax(0, 1fr); gap: var(--s-9); align-items: stretch; }
+  .learner-intro { padding: clamp(24px, 4vw, 56px); border-radius: var(--radius-lg); background: var(--accent); color: var(--accent-ink); display: grid; align-content: center; gap: var(--s-8); }
+  .learner-kicker { font: 600 var(--t-4)/1.5 var(--font-sans); letter-spacing: .08em; }
+  .learner-intro h1 { margin: 0; font: 700 clamp(2.5rem, 5vw, 4.5rem)/1.3 var(--font-bn); letter-spacing: -.025em; }
+  .learner-intro h1 em { font-style: normal; color: inherit; text-decoration: underline; text-decoration-thickness: 3px; text-underline-offset: .2em; }
+  .learner-intro p { margin: 0; max-width: 48ch; font-size: var(--t-6); line-height: 1.9; }
+  .learner-intro .hero-actions { margin-top: var(--s-4); }
+  .learner-intro .btn-solid { background: var(--accent-ink); color: var(--accent); border-color: var(--accent-ink); }
+  .learner-intro .btn-ghost { color: var(--accent-ink); border-color: currentColor; background: transparent; }
+  .learner-promises { display: flex; flex-wrap: wrap; gap: var(--s-7); font-size: var(--t-4); }
+  .learner-promises span::before { content: '✓ '; }
+  .learner-start { padding: clamp(24px, 3vw, 40px); border: 2px solid var(--accent); border-radius: var(--radius-lg); background: var(--panel-base); display: flex; flex-direction: column; gap: var(--s-7); }
+  .learner-start h2 { margin: 0; font-size: var(--t-8); line-height: 1.5; }
+  .learner-start .learner-kicker { color: var(--accent); }
+  .learner-steps { list-style: decimal-leading-zero; margin: 0; padding-left: var(--s-10); display: grid; gap: var(--s-8); }
+  .learner-steps li { padding-left: var(--s-3); }
+  .learner-steps li::marker { color: var(--accent); font-family: var(--font-sans); font-weight: 700; }
+  .learner-steps b, .learner-steps span { display: block; }
+  .learner-steps span { color: var(--ink-soft); font-size: var(--t-4); margin-top: var(--s-3); }
+  .learner-start-link { display: flex; justify-content: space-between; gap: var(--s-5); border-top: 1px solid var(--hairline); margin-top: auto; padding-top: var(--s-7); font-weight: 700; color: var(--accent); }
+  .discovery-controls { display: flex; align-items: end; justify-content: space-between; gap: var(--s-8); }
+  .discovery-search { display: grid; gap: var(--s-4); width: min(100%, 36rem); font-size: var(--t-4); font-weight: 600; }
+  .discovery-search input { width: 100%; min-height: 54px; border: 2px solid var(--hairline); border-radius: var(--radius-sm); background: var(--panel-base); color: var(--ink); padding: var(--s-7); font-size: var(--t-6); }
+  .discovery-search input:focus { outline: 2px solid var(--accent); outline-offset: 3px; }
+  .discovery-progress { font-size: var(--t-4); color: var(--ink-soft); text-decoration: none; }
+  .discovery-progress b { display: block; color: var(--accent); }
+  .discovery-filters { display: flex; flex-wrap: wrap; gap: var(--s-4); margin-top: var(--s-8); }
+  .discovery-filters .btn { min-height: 44px; }
+  .discovery-count { font-size: var(--t-4); color: var(--ink-soft); margin-block: var(--s-7); }
+  .discovery-deck { grid-template-columns: repeat(3, minmax(0, 1fr)); }
+  .discovery-card .card-top { background: var(--accent); color: var(--accent-ink); padding: var(--s-8); border-radius: var(--radius-sm); min-height: 100px; justify-content: space-between; }
+  .discovery-card .card-art { background: transparent; color: inherit; width: 44px; height: 44px; }
+  .discovery-card .card-art svg { width: 36px; height: 36px; }
+  .discovery-card .card-chip { color: inherit; background: transparent; font-size: var(--t-4); border: 0; }
+  .discovery-card .card-title { font-size: var(--t-8); line-height: 1.5; }
+  .discovery-card .card-dek { font-size: var(--t-6); line-height: 1.8; }
+  .discovery-card-facts, .discovery-card-access { display: flex; flex-wrap: wrap; justify-content: space-between; gap: var(--s-4); font-size: var(--t-4); }
+  .discovery-card-facts { color: var(--ink-soft); }
+  .discovery-card-access { border-top: 1px solid var(--hairline); padding-top: var(--s-7); }
+  .discovery-card-access b { color: var(--accent); }
+  .discovery-card .card-go { font-size: var(--t-4); }
+  .discovery-empty, .discovery-help { padding: var(--s-9); border: 1px solid var(--hairline); border-radius: var(--radius); background: var(--panel-base); }
+  .discovery-help { margin-top: var(--s-9); display: flex; align-items: center; justify-content: space-between; gap: var(--s-8); }
+  .discovery-help h3 { margin: 0 0 var(--s-4); font-size: var(--t-8); }
+  .discovery-help p { margin: 0; color: var(--ink-soft); font-size: var(--t-6); }
+  .learning-home .band-h, .learning-catalog h1 { font-weight: 700; }
+  .learning-catalog .hub-hero { border-bottom: 4px solid var(--accent); padding-bottom: var(--s-9); }
+  @media (width < 1100px) { .discovery-deck { grid-template-columns: repeat(2, minmax(0, 1fr)); } }
+  @media (width < 850px) { .learner-hero { grid-template-columns: 1fr; } .discovery-controls { align-items: stretch; flex-direction: column; } }
+  @media (width < 580px) { .discovery-deck { grid-template-columns: 1fr; } .discovery-help { align-items: start; flex-direction: column; } .learner-promises { gap: var(--s-4) var(--s-7); } }
+}
+
+@layer utilities {
+  .learning-catalog .hub-hero { padding: var(--s-9); margin-bottom: var(--s-9); }
+  .learning-catalog .hub-hero h1 { font-size: clamp(1.8rem, 3vw, 2.8rem); }
+  .learning-catalog .hub-section { padding-top: var(--s-7); margin-bottom: var(--s-10); }
+  .learning-catalog .hub-section-head { margin-bottom: var(--s-8); }
+  .learner-course-hero { border-top: 6px solid var(--accent); border-radius: var(--radius-lg); padding: var(--s-9); background: var(--panel); }
+  .learner-course-nav { display: flex; flex-wrap: wrap; gap: var(--s-4); margin-block: var(--s-8); }
+}

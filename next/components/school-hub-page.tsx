@@ -173,10 +173,15 @@ export function SchoolHubPage({ school }: { school: string }) {
 
   return (
     <>
-      <div className={`hero ${HERO_CLASS[school] ?? ""}`}>
+      <div className={`hero learner-course-hero ${HERO_CLASS[school] ?? ""}`}>
         <Eyebrow><Html as="span" html={hero.eyebrow} /></Eyebrow>
         <Html as="h1" className="bn-h" html={hero.title} />
         <Html className="lede" html={hero.lede} />
+        <nav className="learner-course-nav" aria-label="কোর্সের পথ" lang="bn">
+          <ButtonLink href="/skills" kind="ghost">সব কোর্স</ButtonLink>
+          <ButtonLink href={`#${sections[0]?.id ?? "resume"}`} kind="soft">পাঠের তালিকা</ButtonLink>
+          <ButtonLink href="/account" kind="quiet">আমার অগ্রগতি</ButtonLink>
+        </nav>
 
         <div className="progress-line" id={hero.progressId}>
           <span className="track"><i /></span>
