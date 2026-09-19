@@ -1,3 +1,9 @@
+## Playful learning shelf, September 2026
+
+The homepage welcome now uses a deep violet ground, a mint action and a lavender heading. A tactile subject shelf takes its colours from the shared navigation and its bar heights and lesson counts from the actual curricula. Stripes, tilted free labels and raised icon tiles bring the reference image into the library without inventing performance scores. Each bar links directly to its public subject. The starting guide remains below the welcome, and course discovery keeps its search and filters.
+
+Hover lifts are brief and disabled for reduced motion. The illustration requires no client JavaScript, external images or new dependencies. Course card icons reuse the raised tile treatment. Reading pages keep their existing palette and typography.
+
 ## Learner discovery refresh, September 2026
 
 The learning entrance now leads with a Bangla welcome, an explicit three-step starting guide and public subject discovery. Subject cards reuse the navigation table, offer bilingual search and goal filters, show real lesson totals, and keep free access visible. Existing account progress remains the source of truth. Private third-party courses stay gated.

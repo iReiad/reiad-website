@@ -8,6 +8,7 @@ import { CourseDiscovery } from "../../components/course-discovery";
 import { Board } from "../../components/home/board";
 import { LatestWriting } from "../../components/home/writing";
 import { Reckoner } from "../../components/home/reckoner";
+import { Icon } from "../../components/icons";
 import { GoCard } from "../../components/deck";
 import { WorkCard } from "../../components/work-card";
 import { ButtonLink } from "../../components/ui/button";
@@ -95,6 +96,22 @@ export default function HomePage() {
             </nav>
             <div className="learner-promises" lang="bn"><span>পড়তে কোনো খরচ নেই</span><span>একদম শুরু থেকে</span><span>নিজের সময়ে</span></div>
           </div>
+          <figure className="learning-shelf" aria-labelledby="shelf-caption" lang="bn">
+            <figcaption id="shelf-caption"><span lang="en">PICK A LITTLE POSSIBILITY</span><b>একটা বিষয়। নতুন একটা দুনিয়া।</b></figcaption>
+            <span className="shelf-spark" aria-hidden="true">✦</span>
+            <div className="shelf-bars">
+              {SCHOOLS.filter((item) => !item.ownerOnly && item.key && LADDER_TOTALS[item.key]).map((item) => {
+                const total = LADDER_TOTALS[item.key!];
+                return <a key={item.href} href={item.href} className="shelf-subject"
+                  style={{ "--accent": item.accent, "--shelf-height": `${total / Math.max(...Object.values(LADDER_TOTALS)) * 240}px` } as CSSProperties}
+                  aria-label={`${item.sub ?? item.label}: ${total.toLocaleString("bn-BD")}টি পাঠ, পড়তে কোনো খরচ নেই`}>
+                  <span className="shelf-column"><strong>{total.toLocaleString("bn-BD")}</strong><span className="shelf-unit">টি পাঠ</span><span className="shelf-sticker">ফ্রি ✦</span><span className="shelf-icon"><Icon name={item.icon} /></span></span>
+                  <span className="shelf-name">{item.sub ?? item.label}</span>
+                </a>;
+              })}
+            </div>
+            <p className="shelf-note">আপনার পছন্দের বিষয় ছুঁয়ে শুরু করুন <span aria-hidden="true">↗</span></p>
+          </figure>
           <aside className="learner-start" aria-labelledby="start-heading">
             <span className="learner-kicker" lang="en">A LITTLE DIRECTION</span>
             <h2 id="start-heading" lang="bn">কোথা থেকে শুরু করব?</h2>
