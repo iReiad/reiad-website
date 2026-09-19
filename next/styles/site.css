@@ -15724,25 +15724,45 @@ German for day, and .tag is what the site has always called
 /* Learner discovery: subject accents and an explicit path from browsing to studying. */
 @layer utilities {
   .learner-hero { display: grid; grid-template-columns: minmax(0, 1.35fr) minmax(0, 1fr); gap: var(--s-9); align-items: stretch; }
-  .learner-intro { padding: clamp(24px, 4vw, 56px); border-radius: var(--radius-lg); background: var(--accent); color: var(--accent-ink); display: grid; align-content: center; gap: var(--s-8); }
+  .learner-intro { --accent: #d3f5bb; --accent-ink: #211938; padding: clamp(24px, 4vw, 56px); border-radius: var(--radius-lg); background: radial-gradient(ellipse at 0% 100%, #554184 0%, transparent 65%), #211938; color: #faf5ff; display: grid; align-content: center; gap: var(--s-8); }
   .learner-kicker { font: 600 var(--t-4)/1.5 var(--font-sans); letter-spacing: .08em; }
   .learner-intro h1 { margin: 0; font: 700 clamp(2.5rem, 5vw, 4.5rem)/1.3 var(--font-bn); letter-spacing: -.025em; }
-  .learner-intro h1 em { font-style: normal; color: inherit; text-decoration: underline; text-decoration-thickness: 3px; text-underline-offset: .2em; }
+  .learner-intro h1 em { font-style: normal; color: #c5b1ff; text-decoration: underline; text-decoration-thickness: 3px; text-underline-offset: .2em; }
   .learner-intro p { margin: 0; max-width: 48ch; font-size: var(--t-6); line-height: 1.9; }
   .learner-intro .hero-actions { margin-top: var(--s-4); }
-  .learner-intro .btn-solid { background: var(--accent-ink); color: var(--accent); border-color: var(--accent-ink); }
-  .learner-intro .btn-ghost { color: var(--accent-ink); border-color: currentColor; background: transparent; }
+  .learner-intro .btn-solid { background: var(--accent); color: var(--accent-ink); border-color: var(--accent); box-shadow: 0 4px 0 #8eaa7a; }
+  .learner-intro .btn-ghost { color: #faf5ff; border-color: currentColor; background: transparent; }
   .learner-promises { display: flex; flex-wrap: wrap; gap: var(--s-7); font-size: var(--t-4); }
   .learner-promises span::before { content: '✓ '; }
-  .learner-start { padding: clamp(24px, 3vw, 40px); border: 2px solid var(--accent); border-radius: var(--radius-lg); background: var(--panel-base); display: flex; flex-direction: column; gap: var(--s-7); }
+  .learner-start { grid-column: 1 / -1; padding: clamp(24px, 3vw, 40px); border: 2px solid var(--accent); border-radius: var(--radius-lg); background: var(--panel-base); display: flex; flex-direction: column; gap: var(--s-7); }
   .learner-start h2 { margin: 0; font-size: var(--t-8); line-height: 1.5; }
   .learner-start .learner-kicker { color: var(--accent); }
-  .learner-steps { list-style: decimal-leading-zero; margin: 0; padding-left: var(--s-10); display: grid; gap: var(--s-8); }
+  .learner-steps { grid-template-columns: repeat(3, minmax(0, 1fr)); list-style: decimal-leading-zero; margin: 0; padding-left: var(--s-10); display: grid; gap: var(--s-8); }
   .learner-steps li { padding-left: var(--s-3); }
   .learner-steps li::marker { color: var(--accent); font-family: var(--font-sans); font-weight: 700; }
   .learner-steps b, .learner-steps span { display: block; }
   .learner-steps span { color: var(--ink-soft); font-size: var(--t-4); margin-top: var(--s-3); }
   .learner-start-link { display: flex; justify-content: space-between; gap: var(--s-5); border-top: 1px solid var(--hairline); margin-top: auto; padding-top: var(--s-7); font-weight: 700; color: var(--accent); }
+  .learning-shelf { margin: 0; padding: var(--s-9); border-radius: var(--radius-lg); position: relative; overflow: hidden; background: radial-gradient(ellipse at 50% 100%, #965d5666, transparent 65%), #211938; color: #faf5ff; display: flex; flex-direction: column; justify-content: space-between; gap: var(--s-8); }
+  .learning-shelf figcaption { display: grid; gap: var(--s-5); }
+  .learning-shelf figcaption > span { font: 600 var(--t-2)/1.5 var(--font-sans); letter-spacing: .1em; color: #d7c9f0; }
+  .learning-shelf figcaption b { color: #faf5ff; font-size: var(--t-7); font-weight: 500; }
+  .shelf-spark { position: absolute; right: var(--s-9); top: 100px; color: #d3f5bb; font-size: var(--t-8); transform: rotate(15deg); }
+  .shelf-bars { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: var(--s-5); align-items: end; padding-top: var(--s-9); background: repeating-linear-gradient(to top, transparent 0 59px, #ffffff0d 59px 60px); }
+  .shelf-subject { min-width: 0; color: inherit; text-decoration: none; display: grid; gap: var(--s-5); text-align: center; }
+  .shelf-column { height: var(--shelf-height); border: 1px solid #ffffff80; border-radius: var(--radius-sm) var(--radius-sm) var(--radius-xs) var(--radius-xs); padding: var(--s-5); display: flex; flex-direction: column; align-items: center; color: #211938; background: color-mix(in srgb, var(--accent) 42%, #fff); box-shadow: inset 2px 2px 0 #ffffff55, 0 8px 16px #0002; transition: transform .2s ease; }
+  .shelf-subject:first-child .shelf-column { background: repeating-linear-gradient(135deg, #ffffff35 0 8px, transparent 8px 16px), color-mix(in srgb, var(--accent) 42%, #fff); }
+  .shelf-column strong { font: 700 var(--t-8)/1.3 var(--font-bn); }
+  .shelf-unit { font-size: var(--t-2); }
+  .shelf-sticker { margin-top: var(--s-5); padding: var(--s-2) var(--s-4); border-radius: var(--radius-xs); background: #fff8dc; color: #33452e; font-size: var(--t-2); font-weight: 700; box-shadow: 0 3px 0 #0002; transform: rotate(-6deg); }
+  .shelf-icon { margin-top: auto; width: 38px; height: 38px; display: grid; place-items: center; border-radius: var(--radius-sm); background: #fffaf3; box-shadow: 0 3px 0 #0002; }
+  .shelf-icon svg { width: 24px; height: 24px; }
+  .shelf-name { font-size: var(--t-2); line-height: 1.6; min-height: 3.2em; }
+  .shelf-note { margin: 0; font-size: var(--t-4); color: #e0d4ed; display: flex; justify-content: space-between; gap: var(--s-5); }
+  .shelf-subject:focus-visible { outline: 2px solid #d3f5bb; outline-offset: 4px; border-radius: var(--radius-xs); }
+  @media (hover: hover) { .shelf-subject:hover .shelf-column { transform: translateY(-8px) rotate(-2deg); } }
+  @media (prefers-reduced-motion: reduce) { .shelf-column { transition: none; } .shelf-subject:hover .shelf-column { transform: none; } }
+  @media (width < 580px) { .learning-shelf { padding: var(--s-7); } .shelf-bars { gap: var(--s-3); } .learner-steps { grid-template-columns: 1fr; } }
   .discovery-controls { display: flex; align-items: end; justify-content: space-between; gap: var(--s-8); }
   .discovery-search { display: grid; gap: var(--s-4); width: min(100%, 36rem); font-size: var(--t-4); font-weight: 600; }
   .discovery-search input { width: 100%; min-height: 54px; border: 2px solid var(--hairline); border-radius: var(--radius-sm); background: var(--panel-base); color: var(--ink); padding: var(--s-7); font-size: var(--t-6); }
@@ -15754,7 +15774,7 @@ German for day, and .tag is what the site has always called
   .discovery-count { font-size: var(--t-4); color: var(--ink-soft); margin-block: var(--s-7); }
   .discovery-deck { grid-template-columns: repeat(3, minmax(0, 1fr)); }
   .discovery-card .card-top { background: var(--accent); color: var(--accent-ink); padding: var(--s-8); border-radius: var(--radius-sm); min-height: 100px; justify-content: space-between; }
-  .discovery-card .card-art { background: transparent; color: inherit; width: 44px; height: 44px; }
+  .discovery-card .card-art { background: var(--accent-ink); color: var(--accent); border-radius: var(--radius-sm); transform: rotate(-6deg); box-shadow: 3px 4px 0 #0002; width: 44px; height: 44px; }
   .discovery-card .card-art svg { width: 36px; height: 36px; }
   .discovery-card .card-chip { color: inherit; background: transparent; font-size: var(--t-4); border: 0; }
   .discovery-card .card-title { font-size: var(--t-8); line-height: 1.5; }

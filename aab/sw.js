@@ -62,7 +62,8 @@
         bytes moved without a line of behaviour changing. */
 // v259: learner discovery, rounded theme and refreshed fallback styles.
 // v260: complete course navigation and discovery layout refinements.
-const VERSION = "v260";
+// v261: playful learning shelf and tactile course icons in fallback styles.
+const VERSION = "v261";
 const SHELL = `shell-${VERSION}`;
 const RUNTIME = `runtime-${VERSION}`;
 
