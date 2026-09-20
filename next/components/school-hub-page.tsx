@@ -43,6 +43,8 @@ import { Band } from "./ui/band";
 import { Button, ButtonLink } from "./ui/button";
 import { InfoCard } from "./deck";
 import { Eyebrow, SectionLabel } from "./ui/label";
+import { Icon } from "./icons";
+import { NAV } from "@reiad/shared/nav";
 import { Medals } from "./medals";
 import { stageIdsOf } from "../lib/medal-stages";
 
@@ -170,10 +172,16 @@ export function SchoolHubPage({ school }: { school: string }) {
   const hub = HUB_CONTENT[school];
   if (!hub) return null;
   const { hero, sections, closing, note } = hub;
+  const subject = NAV.flatMap((group) => group.items).find((item) => item.key === school);
 
   return (
     <>
       <div className={`hero learner-course-hero ${HERO_CLASS[school] ?? ""}`}>
+        <div className="course-emblem" aria-hidden="true">
+          <span className="course-emblem-book"><Icon name={subject?.icon ?? "book"} size={48} /></span>
+          <span className="course-emblem-star">✦</span>
+          <span className="course-emblem-label" lang="bn">নিজের গতিতে</span>
+        </div>
         <Eyebrow><Html as="span" html={hero.eyebrow} /></Eyebrow>
         <Html as="h1" className="bn-h" html={hero.title} />
         <Html className="lede" html={hero.lede} />

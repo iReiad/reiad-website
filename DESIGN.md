@@ -1,3 +1,9 @@
+## Playful shared surfaces, September 2026
+
+The homepage's tactile direction now carries through the shared design system. Subject, tool and portfolio entrances have accent-tinted light and a raised edge. Public school hubs have a decorative book emblem built from the subject's existing icon. Navigation cards use striped rails, tilted icon tiles and small label shadows; information cards remain still. Portfolio chart panels have a soft accent glow. Progress retains its real values and adds a striped fill, while the current stage and completed-stage labels are easier to distinguish.
+
+The treatment follows each section's shared accent and existing light/dark tokens. Small-screen emblems shrink, hover is pointer-only, and reduced-motion settings suppress added movement. No external assets, scripts, dependencies or storage changes are introduced. Long-form lesson text and calculator logic retain their existing layout and behavior.
+
 ## Playful learning shelf, September 2026
 
 The homepage welcome now uses a deep violet ground, a mint action and a lavender heading. A tactile subject shelf takes its colours from the shared navigation and its bar heights and lesson counts from the actual curricula. Stripes, tilted free labels and raised icon tiles bring the reference image into the library without inventing performance scores. Each bar links directly to its public subject. The starting guide remains below the welcome, and course discovery keeps its search and filters.

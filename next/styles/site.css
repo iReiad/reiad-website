@@ -15803,3 +15803,82 @@ German for day, and .tag is what the site has always called
   .learner-course-hero { border-top: 6px solid var(--accent); border-radius: var(--radius-lg); padding: var(--s-9); background: var(--panel); }
   .learner-course-nav { display: flex; flex-wrap: wrap; gap: var(--s-4); margin-block: var(--s-8); }
 }
+
+/* Shared playful surfaces use each section's accent and the existing type/corner scales. */
+@layer utilities {
+  :is(.hero, .hub-hero) {
+    background: radial-gradient(ellipse at 100% 0%, color-mix(in oklab, var(--accent) 20%, transparent), transparent 65%), var(--panel);
+    border-color: var(--accent-line);
+    box-shadow: 0 6px 0 color-mix(in oklab, var(--accent) 12%, var(--paper));
+    border-bottom-width: 2px;
+  }
+  :is(.hero, .hub-hero) .eyebrow {
+    width: fit-content; max-width: 100%; padding: var(--s-3) var(--s-6);
+    border: 1px solid var(--accent-line); border-radius: var(--radius-xs);
+    background: var(--panel); box-shadow: 2px 3px 0 var(--accent-soft);
+  }
+  .learner-course-hero { display: flow-root; }
+  .course-emblem { float: right; position: relative; width: 156px; height: 176px; margin: var(--s-5) 0 var(--s-8) var(--s-9); }
+  .course-emblem-book {
+    position: absolute; inset: 12px 18px 20px 12px; display: grid; place-items: center;
+    border: 2px solid var(--accent); border-left-width: 12px; border-radius: var(--radius-sm);
+    background: repeating-linear-gradient(135deg, transparent 0 12px, color-mix(in oklab, var(--accent) 9%, transparent) 12px 24px), var(--panel);
+    color: var(--accent); transform: rotate(9deg);
+    box-shadow: 6px 6px 0 var(--accent-soft), 10px 10px 0 var(--accent-line);
+  }
+  .course-emblem-star { position: absolute; right: 0; top: 0; color: var(--accent); font-size: var(--t-8); }
+  .course-emblem-label { position: absolute; bottom: 8px; left: 0; padding: var(--s-3) var(--s-6); background: var(--accent-strong); color: var(--accent-ink); border-radius: var(--radius-xs); font-size: var(--t-3); transform: rotate(-6deg); box-shadow: 3px 3px 0 var(--accent-line); }
+  .card[data-kind="go"] { background: linear-gradient(155deg, var(--accent-soft), transparent 55%), var(--panel); box-shadow: 0 4px 0 var(--accent-line); transition: transform var(--fast) var(--ease), box-shadow var(--fast) var(--ease), border-color var(--fast) var(--ease); }
+  .card[data-kind="go"]::before { background: repeating-linear-gradient(135deg, var(--accent) 0 7px, color-mix(in oklab, var(--accent) 60%, var(--panel)) 7px 14px); }
+  .card[data-kind="go"] .card-art { transform: rotate(-6deg); box-shadow: 3px 4px 0 var(--accent-line); border-color: var(--accent-line); transition: transform var(--fast) var(--ease); }
+  .card[data-kind="go"] .card-chip { border: 1px solid var(--accent-line); box-shadow: 2px 3px 0 var(--accent-line); transform: rotate(2deg); letter-spacing: .04em; }
+  .card[data-kind="info"] { border-style: solid; border-top: 3px solid var(--accent-line); }
+  .card[data-kind="info"] .card-art { border-style: solid; border-radius: 50%; }
+  .discovery-card .card-top { background: repeating-linear-gradient(135deg, transparent 0 18px, #ffffff0d 18px 36px), var(--accent); }
+  .discovery-card .card-chip { background: var(--accent-ink); color: var(--accent); padding: var(--s-3) var(--s-5); }
+  a.work-card { box-shadow: 0 4px 0 var(--accent-line); }
+  .work-copy .chip { background: var(--accent-soft); padding: var(--s-3) var(--s-5); border-radius: var(--radius-xs); width: fit-content; max-width: 100%; }
+  :is(.meter > i, .progress-line .track i, .stage-progress .track i) { background: repeating-linear-gradient(135deg, #ffffff30 0 6px, transparent 6px 12px), var(--accent); box-shadow: inset 0 2px 0 #ffffff30; }
+  .resume { border-left-width: 6px; background: linear-gradient(120deg, var(--accent-soft), var(--panel)); box-shadow: 0 4px 0 var(--accent-line); }
+  @media (hover: hover) {
+    a.card[data-kind="go"]:hover { transform: translateY(-3px); box-shadow: 0 7px 0 var(--accent-line), var(--shadow-lift); }
+    a.card[data-kind="go"]:hover .card-art { transform: rotate(3deg); }
+  }
+  @media (width < 580px) {
+    .learner-course-hero .eyebrow { width: calc(100% - 110px); }
+    .course-emblem { width: 94px; height: 112px; margin: 0 0 var(--s-6) var(--s-5); }
+    .course-emblem-book { inset: 4px 10px 15px 8px; border-left-width: 7px; }
+    .course-emblem-book svg { width: 32px; height: 32px; }
+    .course-emblem-label { font-size: var(--t-1); padding: var(--s-2) var(--s-3); }
+  }
+  @media (prefers-reduced-motion: reduce) {
+    .card[data-kind="go"], .card[data-kind="go"] .card-art { transition: none; }
+    a.card[data-kind="go"]:hover, a.card[data-kind="go"]:hover .card-art, .btn-solid:active:not(:disabled) { transform: none; translate: none; }
+  }
+}
+
+@layer components {
+  .btn-solid { box-shadow: 0 3px 0 color-mix(in oklab, var(--accent-strong) 60%, var(--ink)); }
+  .btn-solid:active:not(:disabled) { translate: 0 2px; box-shadow: 0 1px 0 var(--accent-line); }
+}
+
+@layer deck {
+  .meter { height: 12px; box-shadow: inset 0 1px 3px #0002; }
+  .hub-pledge { border-left: 6px solid var(--accent); background: linear-gradient(120deg, var(--accent-soft), var(--panel)); }
+}
+
+@layer board {
+  .meters-list { gap: var(--s-4); }
+  .meters-list a { padding: var(--s-4) var(--s-5); background: var(--accent-soft); border: 1px solid var(--accent-line); border-radius: var(--radius-sm); }
+  .meters-list b[data-done="yes"] { padding: var(--s-2) var(--s-4); background: var(--panel); border-radius: var(--radius-xs); }
+}
+
+@layer money {
+  .rung { border-bottom-width: 3px; border-bottom-color: var(--accent-line); }
+  .rung[data-state="now"] { background: linear-gradient(115deg, var(--accent-soft), var(--panel) 75%); }
+  .rung[data-state="done"] .state-pill { background: var(--accent-strong); color: var(--accent-ink); box-shadow: 2px 2px 0 var(--accent-line); }
+}
+
+@layer work {
+  .work-art { background: radial-gradient(ellipse at 50% 100%, var(--accent-soft), transparent 75%), var(--panel); border-bottom: 1px solid var(--accent-line); }
+}
