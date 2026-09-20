@@ -63,7 +63,8 @@
 // v259: learner discovery, rounded theme and refreshed fallback styles.
 // v260: complete course navigation and discovery layout refinements.
 // v261: playful learning shelf and tactile course icons in fallback styles.
-const VERSION = "v261";
+// v262: shared playful cards, subject emblems and striped progress styling.
+const VERSION = "v262";
 const SHELL = `shell-${VERSION}`;
 const RUNTIME = `runtime-${VERSION}`;
 
