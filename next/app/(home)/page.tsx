@@ -8,6 +8,7 @@ import { CourseDiscovery } from "../../components/course-discovery";
 import { Board } from "../../components/home/board";
 import { LatestWriting } from "../../components/home/writing";
 import { Reckoner } from "../../components/home/reckoner";
+import { LearningChallenge } from "../../components/home/challenge";
 import { Icon } from "../../components/icons";
 import { GoCard } from "../../components/deck";
 import { WorkCard } from "../../components/work-card";
@@ -16,7 +17,7 @@ import { SectionLabel } from "../../components/ui/label";
 import { pageMeta } from "../../lib/pageMeta";
 import { STUDIES } from "../../lib/work";
 import {
-  COUNTS, allDars, allLessons, allParts, allTeile,
+  COUNTS, TERMS, allDars, allLessons, allParts, allTeile,
 } from "@reiad/shared/content";
 import { NAV, accentFor } from "@reiad/shared/nav";
 
@@ -137,6 +138,7 @@ export default function HomePage() {
           <CourseDiscovery items={SCHOOLS} totals={LADDER_TOTALS} />
         </section>
         <Board start={FIRST_LESSON} totals={LADDER_TOTALS} />
+        <LearningChallenge terms={TERMS.map(({ slug, bn, en, blurb }) => ({ slug, bn, en, blurb }))} />
         <Reckoner />
         <section aria-labelledby="work-h" style={bandAccent("portfolio")}>
           <div className="hub-section-head">

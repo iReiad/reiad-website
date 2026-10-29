@@ -218,6 +218,7 @@ Every `page.tsx` under `next/app/`, by address.
 | `next/components/engage.tsx` | What a reader can do besides read: a row of three reactions, and a moderated question box with the questions already answered a... |
 | `next/components/footer.tsx` | the end of every page. |
 | `next/components/home/board.tsx` | The front page is a board the reader arranges. |
+| `next/components/home/challenge.tsx` | a short recall session drawn from the public money glossary, with no progress writes. |
 | `next/components/home/meters.tsx` | How far you are, per school, on the front page. |
 | `next/components/home/reckoner.tsx` | The one thing on the front page a reader can use. |
 | `next/components/home/writing.tsx` | The newest writing, on the front page. |
