@@ -6,6 +6,27 @@ says what they look like. This says what happens next and how.
 
 ## The method, which applies to every phase
 
+### Homepage engagement: a small learning loop
+
+The discovery filters and personal board already help readers find a subject
+and return to it. The next step is a useful reason to interact before opening
+a course: recall a money term, get immediate feedback, then read its explanation.
+
+- Add a short, five-question challenge to the homepage, with descriptions,
+  answer labels and explanation links drawn from the public glossary.
+- Show the correct answer after each attempt and a score at the end. Offer
+  another round and a direct path into the money course.
+- Keep the session separate from lesson completion and account progress.
+  No new storage, tracking, account requirement or private course data.
+- Verify correct and incorrect answers, repeat-click protection, the final
+  score, another round, keyboard focus, explanation links and mobile layout.
+
+Judge the first release by whether a reader can complete this loop without
+instructions. Any later measurement of course visits or repeat use needs a
+separate, explicit analytics decision; this feature adds no analytics.
+
+### Repository maintenance method
+
 1. **Read what it claims.** These files state, in their own
    headers, the bug they exist for. That is the breakdown; it is
    already written.
