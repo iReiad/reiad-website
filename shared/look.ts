@@ -140,8 +140,8 @@ export const dateLabel = (article: Pick<Article, "lang" | "published_at">): stri
  */
 export const FONTS =
   "https://fonts.googleapis.com/css2?family=Literata:ital,opsz,wght@0,7..72,400;0,7..72,500;0,7..72,600;1,7..72,400"
-  + "&family=Inter:wght@400;500;600&family=IBM+Plex+Mono:wght@400;500"
-  + "&family=Noto+Serif+Bengali:wght@400;500;600"
+  + "&family=Inter:wght@400;500;600;700;800&family=IBM+Plex+Mono:wght@400;500"
+  + "&family=Noto+Serif+Bengali:wght@400;500;600;700"
   + "&family=Caveat:wght@500"
   + "&display=swap";
 
