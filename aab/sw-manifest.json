@@ -1,8 +1,8 @@
 {
-  "version": "v264",
+  "version": "v265",
   "hashes": {
     "/offline.html": "87b4e796dca2f580",
-    "/fallback.css": "cd36e92ccd12bea4",
+    "/fallback.css": "423d7cfed5b49605",
     "/app.js": "15fc494b10b8f0e5",
     "/content.js": "8d901ab4a400b0e4",
     "/api.js": "2fa93d7b5e02d2e3",

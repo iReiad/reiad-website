@@ -231,6 +231,24 @@ for (const [fg, bg, threshold, what, accent] of [...PAIRS, ...TINTED]) {
   }
 }
 
+/* Glass can pass over a bright poster as well as paper. Check both themes against
+   the actual carnival palette, without relying on blur to make text readable. */
+for (const theme of ["light", "dark"] as const) {
+  for (const [fg, glass] of [["--carnival-ink", "--glass-chrome"], ["--carnival-ink", "--glass-pink"],
+    ["--ink", "--glass-overlay"], ["--ink-soft", "--glass-overlay"],
+    ["--ink", "--glass-panel"], ["--ink-soft", "--glass-panel"]]) {
+    for (const backdrop of ["--carnival-ink", "--carnival-cream", "--carnival-yellow", "--carnival-pink", "--carnival-cobalt", "--carnival-mint"]) {
+      const ink = resolve(`var(${fg})`, theme), fill = resolve(`var(${glass})`, theme), under = resolve(`var(${backdrop})`, theme);
+      if (!ink || !fill || !under) { missing++; continue; }
+      const ground = over(fill, under);
+      const value = ratio(over(ink, ground), ground);
+      const ok = value >= 4.5;
+      if (!ok) failures++;
+      rows.push({ what: `${fg} on ${glass} over ${backdrop}`, theme, value, threshold: 4.5, ok });
+    }
+  }
+}
+
 if (table) {
   const width = Math.max(...rows.map((r) => r.what.length));
   for (const r of rows) {

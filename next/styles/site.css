@@ -873,6 +873,15 @@
 --edge-burst: url("data:image/svg+xml,%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20width%3D%2248%22%20height%3D%2248%22%20viewBox%3D%220%200%2048%2048%22%3E%3Cpath%20d%3D%22M24%202%2028%209%2035%204%2036%2013%2045%2012%2040%2021%2047%2025%2039%2030%2043%2039%2034%2038%2030%2047%2024%2040%2016%2046%2015%2036%205%2039%2010%2029%201%2024%2010%2019%205%209%2016%2012%2018%202%2024%209%20Z%22%20fill%3D%22%2324182F%22%20stroke%3D%22%23FFF4D6%22%20stroke-width%3D%222%22%20stroke-linejoin%3D%22round%22%2F%3E%3C%2Fsvg%3E");
  }
 
+  :root {
+  --glass-chrome: color-mix(in oklab, var(--carnival-yellow) 78%, transparent);
+  --glass-pink: color-mix(in oklab, var(--carnival-pink) 92%, transparent);
+  --glass-panel: color-mix(in oklab, var(--panel-base) 88%, transparent);
+  --glass-overlay: color-mix(in oklab, var(--panel-base) 94%, transparent);
+  --glass-glint: light-dark(oklch(100% 0 0 / 0.26), oklch(100% 0 0 / 0.05));
+  --glass-sheen: linear-gradient(135deg, var(--glass-glint), transparent 55%);
+}
+
 }
 
 /* ============================================================
@@ -16129,6 +16138,23 @@ German for day, and .tag is what the site has always called
   #palette-input { border-image: none; box-shadow: none; }
 
   .toast { color: var(--carnival-ink); background: var(--carnival-mint); border-image: var(--edge-wave-mint) 12 / 7px / 1px round; box-shadow: 3px 4px 0 var(--carnival-shadow); }
+
+  .ui-surface[data-material="glass"] { background-color: var(--panel-base); }
+
+  @supports (backdrop-filter: blur(1px)) or (-webkit-backdrop-filter: blur(1px)) {
+  .acc-menu, dialog#palette { background-color: var(--glass-overlay); background-image: var(--glass-sheen);
+    backdrop-filter: blur(22px) saturate(115%);
+  }
+  .ui-surface[data-material="glass"] { background-color: var(--glass-panel); background-image: var(--glass-sheen);
+    backdrop-filter: blur(12px) saturate(110%);
+  }
+}
+
+  @media (prefers-reduced-transparency: reduce), (forced-colors: active), print {
+  .acc-menu, dialog#palette, .ui-surface[data-material="glass"] { background-color: var(--panel-base); background-image: none;
+    backdrop-filter: none;
+  }
+}
 }
 @layer shell {
   .topbar, .slimbar { border-color: var(--pane-edge); box-shadow: 0 3px 0 var(--accent-line); border-radius: var(--radius); }
@@ -16171,6 +16197,24 @@ German for day, and .tag is what the site has always called
   @media (max-width: 900px) { .rail-head { border-bottom-width: 1px; } }
 
   @media (max-width: 580px) { .topbar { gap: 6px; } }
+
+  @supports (backdrop-filter: blur(1px)) or (-webkit-backdrop-filter: blur(1px)) {
+  .topbar, .slimbar { background-color: var(--glass-chrome); background-image: var(--glass-sheen);
+    backdrop-filter: blur(16px) saturate(125%);
+  }
+  .tree-panel, .crumb-menu { background-color: var(--glass-overlay); background-image: var(--glass-sheen);
+    backdrop-filter: blur(22px) saturate(115%);
+  }
+}
+
+  @media (prefers-reduced-transparency: reduce), (forced-colors: active), print {
+  .topbar, .slimbar { background-color: var(--carnival-yellow); background-image: none;
+    backdrop-filter: none;
+  }
+  .tree-panel, .crumb-menu { background-color: var(--panel-base); background-image: none;
+    backdrop-filter: none;
+  }
+}
 }
 @layer deck {
   .hub-section-head { position: relative; padding-inline-start: var(--s-8); border-inline-start: 5px solid var(--accent); }
@@ -16215,6 +16259,18 @@ German for day, and .tag is what the site has always called
 @media (width < 580px) { .punk-tape { gap: var(--s-3) var(--s-6); font-size: var(--t-3); } .learner-intro, .learning-shelf { box-shadow: 4px 5px 0 var(--carnival-shadow); } .shelf-bars { gap: var(--s-7); } .shelf-column { padding: var(--s-4); } .shelf-icon { width: 36px; height: 40px; } }
 
   .learning-shelf figcaption b { color: var(--carnival-ink); }
+
+  @supports (backdrop-filter: blur(1px)) or (-webkit-backdrop-filter: blur(1px)) {
+  .learning-shelf { background-color: var(--glass-pink); background-image: var(--glass-sheen), repeating-linear-gradient(135deg, transparent 0 24px, #20132d12 24px 27px);
+    backdrop-filter: blur(8px) saturate(120%);
+  }
+}
+
+  @media (prefers-reduced-transparency: reduce), (forced-colors: active), print {
+  .learning-shelf { background-color: var(--carnival-pink); background-image: none;
+    backdrop-filter: none;
+  }
+}
 }
 @layer tw{
 

@@ -596,6 +596,8 @@ for (const [width, theme] of [[320, "light"], [390, "dark"], [768, "light"], [14
   await page.emulateMedia({ forcedColors: "active" });
   ok(`${width}px ${theme}: forced colors remove decorative images`, await action.evaluate((el) =>
     getComputedStyle(el).borderImageSource === "none"));
+  ok(`${width}px ${theme}: forced colors restore solid chrome`, await page.locator(".topbar").evaluate((el) =>
+    getComputedStyle(el).backdropFilter === "none"));
   await page.close();
 }
 
