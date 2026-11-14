@@ -1,3 +1,11 @@
+# Layered glass, November 2026
+
+Glass is an accent within the punk carnival, with different densities rather than a transparent wash over the whole site. The yellow header uses 78% tint and a 16px blur; menus use 94% neutral tint with a 22px blur; opt-in glass surfaces use 88% tint with a 12px blur; the pink homepage panel keeps 92% tint with an 8px blur. A faint diagonal highlight is stronger in light mode and quieter in dark mode. Text stays fully opaque, and the irregular ink borders remain solid.
+
+The existing glass material is used on the routine dashboard and research search status. Ordinary cards, form fields, lesson prose, charts and editors retain their solid working surfaces. Blurs are bounded to the selected surfaces, with no new animation, JavaScript or dependencies. Unsupported browsers, reduced-transparency settings, forced colors and print use solid backgrounds. The fallback stylesheet's generator supplies Safari prefixes; source declarations use the standard property only.
+
+Contrast checks composite each glass recipe over the bright and dark carnival colors in both themes. The interaction suite also checks that forced-color mode disables the frosted header. The punk-carnival geometry and behavior below remain the current foundation.
+
 # Punk carnival, November 2026
 
 The whole interface now uses the selected punk-carnival direction: acid yellow, hot pink, cobalt, mint and orange; dark ink; hard offset shadows; rippled frames, torn paper, scribbled controls and jagged badges. This replaces the soft, rounded clubhouse as the current design. The earlier notes below are historical.

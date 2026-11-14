@@ -7,14 +7,14 @@
    with a prop precisely so neither can be the other by accident.
 
    Materials retain their meaning; drawn edge variants change their presentation.
-   Three materials, and they differ only in the ground:
+   Four materials, differing in their ground and compositing:
 
      pane     a card: the panel colour, a hairline, a corner.
      sunk     a well: a ground something sits IN rather than ON,
               darker than the page.
-     glass    an overlay with content moving under it: the same
-              panel, with the one shadow this site has for a
-              thing that floats.
+     glass    an opt-in translucent panel with a frosted backdrop
+              and a highlight; solid when blur is unavailable or
+              reduced transparency is requested.
      bare     no material. For a wrapper that only needs the
               accent scoping below.
 
@@ -39,7 +39,7 @@ export type Material = "pane" | "sunk" | "glass" | "bare";
 const MATERIALS: Record<Material, string> = {
   pane: "bg-panel",
   sunk: "bg-paper-sunk",
-  glass: "bg-panel",
+  glass: "",
   bare: "",
 };
 
