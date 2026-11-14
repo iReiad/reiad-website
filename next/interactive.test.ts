@@ -62,11 +62,8 @@ const CASES: Case[] = [
    "the Ctrl+K palette, built by /app.js"],
 ];
 
-    /* The home page shows one of four introductions, chosen before the
-       first paint from what the reader chose last time. All four at once
-       is what a missing boot script looks like. */
-    /* Three answers, not four: the `track` axis is gone, and anything a
-       browser still has stored under it is ignored. */
+    /* Stored audience choices still restore the navigation. The public
+       learning welcome remains available to every returning reader. */
 type Reader = [who: string, audience: string | null, track: string | null, expected: string];
 const READERS: Reader[] = [
   ["a reader who has just arrived", null, null, "open"],
@@ -473,42 +470,23 @@ for (const [url, , selector, what, placeholder] of CASES) {
 for (const [who, audience, track, expected] of READERS) {
   const { page } = await open("/", [audience, track]);
 
-  const shown = await page.evaluate(() =>
-    [...document.querySelectorAll<HTMLElement>("[data-when]")]
-      .filter((el) => getComputedStyle(el).display !== "none")
-      .map((el) => el.dataset.when));
+  const welcome = page.locator(".learner-intro");
+  ok(`the home page gives ${who} one visible learning welcome`,
+    await welcome.count() === 1 && await welcome.isVisible());
+  ok(`the stored audience still restores for ${who}`,
+    await page.locator("html").getAttribute("data-hl") === expected);
 
-  ok(`the home page shows ${who} one introduction`,
-    shown.length > 0 && new Set(shown).size === 1 && shown[0] === expected,
-    `expected ${expected} only, got [${shown}]`);
-
-      /* Under the hero the page is four bands and then the board, and the
-         contract is that it says a thing ONCE. `DRAWABLE` in
-         `home/board.tsx` settles it: a widget the PAGE draws is not one
-         this build renders.
-
-         VISIBLE LINKS ONLY, and that is not a loosening: the door
-         server-renders a pair of buttons for each of the three audiences
-         and the stylesheet shows one, so counting the DOM reports every
-         destination three times on a page that shows it once. */
   const front = await page.evaluate(() => ({
     tiles: [...document.querySelectorAll(".card[href], .gate-tile[href], .work-card[href]")]
       .map((t) => t.getAttribute("href")).filter(Boolean),
-    links: [...document.querySelectorAll<HTMLAnchorElement>("main a[href^='/']")]
-      .filter((a) => a.getClientRects().length > 0)
+    subjects: [...document.querySelectorAll<HTMLAnchorElement>(".discovery-card")]
       .map((a) => a.getAttribute("href")!),
-    /* The door's own pair, in order, and only the pair this
-       reader can see. */
-    doors: [...document.querySelectorAll<HTMLElement>(".hero-actions")]
-      .filter((el) => getComputedStyle(el).display !== "none")
-      .flatMap((el) => [...el.querySelectorAll("a[href]")]
-        .map((a) => a.getAttribute("href")!)),
-    /* The ledger: a numeral, a word and a destination per row. */
-    ledger: [...document.querySelectorAll(".ledger li")].map((li) => ({
-      count: li.querySelector("[data-count]")?.getAttribute("data-count") ?? "",
-      numeral: (li.querySelector("[data-count]")?.textContent ?? "").trim(),
-      href: li.querySelector("a")?.getAttribute("href") ?? "",
-    })),
+    doors: [...document.querySelectorAll<HTMLAnchorElement>(".hero-actions a")]
+      .map((a) => a.getAttribute("href")!),
+    shelf: [...document.querySelectorAll<HTMLAnchorElement>(".shelf-subject")]
+      .map((a) => ({ href: a.getAttribute("href"),
+        label: a.getAttribute("aria-label"),
+        count: a.querySelector("strong")?.textContent?.trim() })),
     /* Every case study, on the front page, with its chart. */
     studies: [...document.querySelectorAll(".work-card[href]")]
       .map((a) => ({ href: a.getAttribute("href")!, chart: !!a.querySelector(".work-art") })),
@@ -517,33 +495,16 @@ for (const [who, audience, track, expected] of READERS) {
   ok(`the front page still has cards for ${who}`, front.tiles.length >= 8,
     `${front.tiles.length} tiles`);
 
-  const times = new Map<string, number>();
-  for (const href of front.links) times.set(href, (times.get(href) ?? 0) + 1);
-  const thrice = [...times].filter(([, n]) => n > 2);
-  ok(`and says no destination three times over for ${who}`, thrice.length === 0,
-    thrice.map(([h, n]) => `${h} x${n}`).join(", "));
-
-      /* The switch moves a DOOR, not three sentences, and there is one
-         pair of buttons on screen. */
-  const doors: Record<string, string[]> = {
-    open: ["/skills", "/portfolio"],
-    learn: ["/skills", "/portfolio"],
-    work: ["/skills", "/portfolio"],
-  };
-  ok(`the door offers ${who} both audience routes`,
-    front.doors.join(",") === doors[expected].join(","),
-    `got [${front.doors}], expected [${doors[expected]}]`);
-
-      /* The ledger counts: every row names a key of `COUNTS` and carries
-         the number that key holds, so a course published tomorrow moves it
-         and nobody edits the page. The five rows point at five different
-         places. */
-  ok(`the ledger states five counted facts for ${who}`,
-    front.ledger.length === 5 && front.ledger.every((r) => r.count && r.numeral),
-    JSON.stringify(front.ledger));
-  ok(`and each of them is a different way in for ${who}`,
-    new Set(front.ledger.map((r) => r.href)).size === front.ledger.length,
-    front.ledger.map((r) => r.href).join(", "));
+  ok(`the subject collection has no duplicate entrances for ${who}`,
+    front.subjects.length === 6 && new Set(front.subjects).size === 6,
+    front.subjects.join(", "));
+  ok(`the welcome offers ${who} discovery and saved progress`,
+    front.doors.join(",") === "#learn-h,/account", front.doors.join(","));
+  ok(`the subject playground links ${who} to all four public schools`,
+    front.shelf.map((r) => r.href).sort().join(",") === "/deutsch,/english,/money,/quran");
+  ok(`each subject tile announces its lesson count for ${who}`,
+    front.shelf.every((r) => r.count && /[০-৯]/.test(r.count) && r.label?.includes(r.count)),
+    JSON.stringify(front.shelf));
 
       /* The work is on the front page: seven case studies were two clicks
          behind a card, so the strongest evidence here was invisible from
@@ -554,6 +515,25 @@ for (const [who, audience, track, expected] of READERS) {
     front.studies.every((s) => s.chart),
     front.studies.filter((s) => !s.chart).map((s) => s.href).join(", "));
 
+  await page.close();
+}
+
+/* Discovery must stay functional after hydration, including its empty-state escape. */
+{
+  const { page, errors } = await open("/");
+  const cards = page.locator(".discovery-card");
+  await page.getByRole("button", { name: "ভাষা শিখব", exact: true }).click();
+  ok("the language goal shows only language courses", await cards.count() === 3);
+  const search = page.locator(".discovery-search input");
+  await search.fill("German");
+  ok("search combines with the selected goal", await cards.count() === 1
+    && await cards.first().getAttribute("href") === "/deutsch");
+  await search.fill("no-matching-subject-12345");
+  ok("an unmatched search explains the empty result", await page.locator(".discovery-empty").isVisible());
+  await page.locator(".discovery-empty button").click();
+  ok("the empty-state action restores every public subject", await cards.count() === 6
+    && await search.inputValue() === "");
+  ok("discovery has no hydration errors", errors.length === 0, errors.join("; "));
   await page.close();
 }
 
