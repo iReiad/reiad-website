@@ -96,6 +96,11 @@ type Pair = [
 ];
 
 const PAIRS: Pair[] = [
+  /* Carnival fills are independent of the section accent and stay readable in both themes. */
+  ...["cream", "yellow", "pink", "mint", "orange"].map((fill): Pair =>
+    ["--carnival-ink", `--carnival-${fill}`, 4.5, `ink on carnival ${fill}`]),
+  ["--carnival-cream", "--carnival-cobalt", 4.5, "cream on carnival cobalt"],
+  ["--carnival-cream", "--carnival-dark", 4.5, "cream on carnival dark"],
   /* The text the whole site is made of. */
   ["--ink", "--paper", 4.5, "body text on the page"],
   ["--ink", "--panel", 4.5, "heading on a card"],

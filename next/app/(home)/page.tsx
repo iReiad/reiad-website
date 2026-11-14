@@ -87,7 +87,7 @@ export default function HomePage() {
         px-[clamp(16px,3vw,44px)] pt-[clamp(18px,3.4vw,44px)] pb-[clamp(28px,4vw,56px)]
         grid gap-[clamp(34px,4.4vw,64px)]">
         <header className="learner-hero">
-          <div className="learner-intro">
+          <div className="learner-intro" data-edge="wave">
             <span className="learner-kicker" lang="en"><Icon name="spark" size={18} /> A LITTLE CURIOUS? YOU BELONG HERE.</span>
             <h1 lang="bn">কৌতূহল থাকুক।<br /><em>শেখা চলুক।</em></h1>
             <p lang="bn">টাকা বুঝতে চান, নতুন ভাষা শিখতে চান, নাকি নিজের জন্য কিছু করতে চান? আপনার শুরুটা হোক এখানেই। সহজ বাংলায়, নিজের গতিতে।</p>
@@ -97,7 +97,8 @@ export default function HomePage() {
             </nav>
             <div className="learner-promises" lang="bn"><span>পড়তে কোনো খরচ নেই</span><span>একদম শুরু থেকে</span><span>নিজের সময়ে</span></div>
           </div>
-          <figure className="learning-shelf" aria-labelledby="shelf-caption" lang="bn">
+          <figure data-edge="tear" className="learning-shelf" aria-labelledby="shelf-caption" lang="bn">
+            <span className="punk-sticker" aria-hidden="true" lang="en">STAY<br />CURIOUS!</span>
             <figcaption id="shelf-caption"><span lang="en">FIND YOUR NEXT LITTLE ADVENTURE</span><b>একটা বিষয়। নতুন একটা দুনিয়া।</b></figcaption>
             <Icon name="spark" size={82} className="shelf-spark" />
             <div className="shelf-bars">
@@ -125,6 +126,7 @@ export default function HomePage() {
           </aside>
         </header>
 
+        <div className="punk-tape" aria-hidden="true" lang="en"><span>MAKE A LITTLE MESS</span><span>LEARN A LITTLE MORE</span><Icon name="spark" size={22} /><span>YOUR PACE. YOUR PLACE.</span></div>
         <section aria-labelledby="learn-h">
           <div className="hub-section-head">
             <SectionLabel>

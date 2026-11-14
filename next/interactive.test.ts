@@ -537,6 +537,65 @@ for (const [who, audience, track, expected] of READERS) {
   await page.close();
 }
 
+/* Drawn borders must leave controls reachable and the document within its viewport. */
+for (const [width, theme] of [[320, "light"], [390, "dark"], [768, "light"], [1440, "dark"]] as const) {
+  const page = await browser.newPage({ viewport: { width, height: 900 }, colorScheme: theme });
+  await page.route("https://fonts.googleapis.com/**", (route: Route) => route.abort());
+  await page.addInitScript((value: string) => localStorage.setItem("theme", value), theme);
+  await page.goto(`http://localhost:${PORT}/`, { waitUntil: "load" });
+  const geometry = await page.evaluate(() => {
+    const button = document.querySelector<HTMLElement>(".hero-actions .btn-solid")!;
+    return {
+      overflow: document.documentElement.scrollWidth > innerWidth,
+      edge: getComputedStyle(button).borderImageSource !== "none",
+      mask: getComputedStyle(button).maskImage,
+      sticker: getComputedStyle(document.querySelector(".punk-sticker")!).pointerEvents,
+      text: getComputedStyle(document.querySelector(".learner-intro p")!).transform,
+    };
+  });
+  ok(`${width}px ${theme}: decorative edges do not widen the document`, !geometry.overflow);
+  ok(`${width}px ${theme}: the primary action has a drawn border`, geometry.edge);
+  ok(`${width}px ${theme}: the button content is not masked`, geometry.mask === "none");
+  ok(`${width}px ${theme}: decorative stickers cannot intercept clicks`, geometry.sticker === "none");
+  ok(`${width}px ${theme}: explanatory text remains level`, geometry.text === "none");
+  const colorPairs = await page.evaluate(() => {
+    const canvas = document.createElement("canvas");
+    canvas.width = canvas.height = 1;
+    const ctx = canvas.getContext("2d", { willReadFrequently: true })!;
+    const luminance = (color: string) => {
+      ctx.clearRect(0, 0, 1, 1); ctx.fillStyle = color; ctx.fillRect(0, 0, 1, 1);
+      const rgb = [...ctx.getImageData(0, 0, 1, 1).data].slice(0, 3)
+        .map((n) => n / 255).map((n) => n <= .04045 ? n / 12.92 : ((n + .055) / 1.055) ** 2.4);
+      return rgb[0] * .2126 + rgb[1] * .7152 + rgb[2] * .0722;
+    };
+    return [[".learning-shelf figcaption b", ".learning-shelf"],
+      [".rail-head .rail-mark", ".rail-head"],
+      [".deck-foot-label", ".deck-foot"],
+      [".hero-actions .btn-solid", ".hero-actions .btn-solid"]].map(([text, ground]) => {
+      const a = luminance(getComputedStyle(document.querySelector(text)!).color);
+      const b = luminance(getComputedStyle(document.querySelector(ground)!).backgroundColor);
+      return { text, ratio: (Math.max(a, b) + .05) / (Math.min(a, b) + .05) };
+    });
+  });
+  ok(`${width}px ${theme}: actual text on bright frames stays readable`,
+    colorPairs.every((p) => p.ratio >= 4.5), JSON.stringify(colorPairs));
+  const action = page.locator(".hero-actions .btn-solid");
+  await action.scrollIntoViewIfNeeded();
+  await action.click();
+  ok(`${width}px ${theme}: the drawn action navigates to discovery`, new URL(page.url()).hash === "#learn-h");
+  const search = page.locator(".discovery-search input");
+  await search.focus();
+  await page.keyboard.press("Tab");
+  ok(`${width}px ${theme}: keyboard navigation reaches a visible focus indicator`, await page.evaluate(() => {
+    const el = document.activeElement;
+    return !!el && el.matches(":focus-visible") && getComputedStyle(el).outlineStyle !== "none";
+  }));
+  await page.emulateMedia({ reducedMotion: "reduce" });
+  ok(`${width}px ${theme}: reduced motion removes button movement`, await action.evaluate((el) =>
+    getComputedStyle(el).transitionDuration.split(",").every((n) => parseFloat(n) < 0.001)));
+  await page.close();
+}
+
     /* ---- the reckoner ----
        Five radios, five answers, and the stylesheet shows the one whose
        radio is checked. No JavaScript, so it answers before hydration.

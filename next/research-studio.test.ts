@@ -1382,7 +1382,7 @@ for (const path of ["/tools/research", "/tools/research/library", "/tools/resear
   ok("and says how many", ((await page.locator('[data-testid="rs-ask-indexed"]').textContent()) ?? "").includes("2"), (await page.locator('[data-testid="rs-ask-indexed"]').textContent()) ?? "");
 
   /* ---- the prompt library ---- */
-  await page.locator("details summary").first().click();
+  await page.locator("details:has(#rs-ask-template) > summary").click();
   await page.locator("#rs-ask-template").selectOption({ label: "Weekly review" });
   await page.waitForTimeout(200);
   ok("a template's marks become fields, in order", await page.locator('[data-testid="rs-ask-marks"] input').count() === 4 && await page.locator("#rs-ask-ph-PROJECT").count() === 1);

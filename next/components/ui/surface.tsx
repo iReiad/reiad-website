@@ -6,7 +6,7 @@
    `<GoCard>` and `<InfoCard>` are two components rather than one
    with a prop precisely so neither can be the other by accident.
 
-   This answers a different question, and the answer is plain.
+   Materials retain their meaning; drawn edge variants change their presentation.
    Three materials, and they differ only in the ground:
 
      pane     a card: the panel colour, a hairline, a corner.
@@ -18,8 +18,8 @@
      bare     no material. For a wrapper that only needs the
               accent scoping below.
 
-   No blur, no texture, no lit edge: a surface is a colour and a
-   line, and `scripts/check-plain.ts` fails a blur coming back.
+   The edge is a border image, never a content mask. Focus rings and
+   popovers must remain outside the surface without being clipped.
 
    ---- and it can carry an accent of its own ----
 
@@ -32,17 +32,20 @@
 
 import type { CSSProperties, ElementType, ReactNode } from "react";
 
+export type EdgeStyle = "wave" | "tear" | "scribble" | "burst";
+
 export type Material = "pane" | "sunk" | "glass" | "bare";
 
 const MATERIALS: Record<Material, string> = {
-  pane: "bg-panel border border-hairline rounded-[var(--radius-card)]",
-  sunk: "bg-paper-sunk border border-hairline rounded-[var(--radius-card)]",
-  glass: "bg-panel border border-hairline rounded-[var(--radius-card)] shadow-[var(--shadow-lift)]",
+  pane: "bg-panel",
+  sunk: "bg-paper-sunk",
+  glass: "bg-panel",
   bare: "",
 };
 
 export interface SurfaceProps {
   as?: ElementType;
+  edge?: EdgeStyle;
   material?: Material;
   /** A colour token, `var(--blue)`. Everything inside follows it. */
   accent?: string;
@@ -55,13 +58,13 @@ export interface SurfaceProps {
 }
 
 export function Surface({
-  as: Tag = "div", material = "pane", accent, interactive = false,
+  as: Tag = "div", material = "pane", edge = "tear", accent, interactive = false,
   className, style, children, ...rest
 }: SurfaceProps & Record<string, unknown>) {
   return (
     <Tag
       className={[
-        MATERIALS[material],
+        "ui-surface", MATERIALS[material],
         interactive
           ? "transition-[border-color] duration-[var(--fast)] "
             + "ease-[var(--ease)] hover:border-accent-line"
@@ -73,6 +76,8 @@ export function Surface({
       style={accent
         ? ({ ...style, "--accent": accent } as CSSProperties)
         : style}
+      data-edge={material === "bare" ? undefined : edge}
+      data-material={material}
       {...rest}
     >
       {children}

@@ -1,3 +1,23 @@
+# Punk carnival, November 2026
+
+The whole interface now uses the selected punk-carnival direction: acid yellow, hot pink, cobalt, mint and orange; dark ink; hard offset shadows; rippled frames, torn paper, scribbled controls and jagged badges. This replaces the soft, rounded clubhouse as the current design. The earlier notes below are historical.
+
+## One edge system across the site
+
+Four SVG border-image recipes draw wave, tear, scribble and burst edges. They are data assets in the shared stylesheet, use nine-slice borders to keep edge detail at different sizes, and never mask or intercept content. The shared Surface component exposes an optional edge variant while retaining its material and accent behavior. The structural corner tokens are zero: a plain rounded box is no longer the interface's default.
+
+The header, sidebar, audience switch, footer, menus, cards, forms, tabs, toolbars, badges, native check/radio controls, slider thumbs, and shared tool panels use the same visual vocabulary. Borders remain in their owning cascade layers. Utility-authored account panels and browser-generated controls inherit the recipes too. The homepage adds a torn slogan strip and a jagged curiosity sticker; they are decorative and hidden from assistive technology.
+
+## Disorder outside, readable work inside
+
+The approved boundary is wild framing with readable content. Bengali shaping, body paragraphs, equations, tables, charts and editable text retain stable orientation and sufficient contrast. Native control semantics, account permissions, private-course gates and stored progress remain unchanged. Staggered cards and tilted stickers use deterministic CSS, not randomness.
+
+The page has a light halftone ground; high-intensity panels carry stripes and contrasting paper frames. Small controls remain aligned with their actual hit areas, and the fixed header and drawer retain their layout coordinates. No new dependency, external illustration, continuous animation or scroll effect is introduced. Reduced motion suppresses interaction movement; forced-color mode restores native controls and plain high-contrast edges.
+
+## Validation contract
+
+The new palette has explicit contrast pairs in the existing color checker, in both themes. Browser regression coverage checks framed controls for hit testing, visible keyboard focus, stable content interiors, responsive overflow and reduced motion. Review the main learning, tools, account, portfolio, routine, diet, research, contact and fallback surfaces in both themes at phone, tablet and desktop sizes. Build the production Worker, regenerate affected fallback output, bump the service-worker cache, and verify the deployed build before calling the rollout complete.
+
 # Learning clubhouse, November 2026
 
 The site should feel like an invitation to try something, especially for a young Bengali reader arriving on a phone. Warm paper, an inky violet welcome, lime actions, generous corners and tactile subject tiles replace the muted dashboard feel. This is a shared visual system across learning, tools, portfolio, account and static fallback pages, not a separate homepage skin.
