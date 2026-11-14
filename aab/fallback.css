@@ -11077,7 +11077,7 @@ input:where([type="checkbox"], [type="radio"]):disabled { cursor: default; opaci
 
 @layer base {
   @media (forced-colors: active) {
-    :where(button, a, input, select, textarea, [role="tab"], [role="dialog"], .ui-surface, .card) { border-image: none !important; box-shadow: none !important; forced-color-adjust: auto; }
+    :where(button, a, input, select, textarea, [role="tab"], [role="dialog"], .ui-surface, .card) { border-image-source: none !important; box-shadow: none !important; forced-color-adjust: auto; }
     input:where([type="checkbox"], [type="radio"]) { appearance: auto; background-image: none; }
   }
 }

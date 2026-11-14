@@ -593,6 +593,9 @@ for (const [width, theme] of [[320, "light"], [390, "dark"], [768, "light"], [14
   await page.emulateMedia({ reducedMotion: "reduce" });
   ok(`${width}px ${theme}: reduced motion removes button movement`, await action.evaluate((el) =>
     getComputedStyle(el).transitionDuration.split(",").every((n) => parseFloat(n) < 0.001)));
+  await page.emulateMedia({ forcedColors: "active" });
+  ok(`${width}px ${theme}: forced colors remove decorative images`, await action.evaluate((el) =>
+    getComputedStyle(el).borderImageSource === "none"));
   await page.close();
 }
 
