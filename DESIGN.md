@@ -1,3 +1,34 @@
+# Learning clubhouse, November 2026
+
+The site should feel like an invitation to try something, especially for a young Bengali reader arriving on a phone. Warm paper, an inky violet welcome, lime actions, generous corners and tactile subject tiles replace the muted dashboard feel. This is a shared visual system across learning, tools, portfolio, account and static fallback pages, not a separate homepage skin.
+
+## Research and decisions
+
+Reviewed on 14 November 2026:
+
+- [Duolingo design](https://design.duolingo.com/): approachable learning, recognizable visual identity and deliberate interaction craft. Adopt a clear action hierarchy and physical button feedback, without copying its mascot or branding.
+- [Headspace](https://www.headspace.com/): welcoming language and topic-led discovery make a broad library feel approachable. Use reassuring copy, rounded shapes and subject-colored entry points.
+- [Brilliant](https://brilliant.org/): its current homepage emphasizes visual interaction, clear starting points and learning by doing. Keep real course data and functioning tools central rather than adding decorative metrics or invented rewards.
+- [WCAG: animation from interactions](https://www.w3.org/WAI/WCAG22/Understanding/animation-from-interactions.html): eliminate unnecessary motion and honor user preferences. Limit movement to brief pointer interactions and suppress it with reduced motion.
+
+These are qualitative design references, not evidence of a measured conversion lift for this site. Forum opinions are not a substitute for checking the actual Bengali learning journey.
+
+## Implementation plan and scope
+
+1. Keep the existing shared navigation, public course data, access gates and progress keys. Change presentation without changing the curriculum, calculator math, account semantics or private catalog visibility.
+2. Revise the shared corner scale to 8/14/24/36px and warm the paper hue. Retain the seven subject accents, light/dark surface hierarchy and readable color pairs.
+3. Make primary, secondary and filter buttons feel pressable with stronger edges, a short raised shadow and a settled pressed state. Preserve keyboard outlines, disabled states and tap targets.
+4. Rebuild the welcome as a violet invitation beside a two-by-two subject playground. Each tile links to a real public school and carries its actual lesson count. Decorative marks are hidden from assistive technology.
+5. Carry the direction into navigation, subject cards, course hubs, tool entrances, portfolio cards, footer and shared forms. Keep long-form reading type and dense calculator/data layouts usable.
+6. Check mobile and desktop layouts, light and dark themes, keyboard navigation, search/filter reset, reduced motion, subject navigation and calculator interaction. Run repository checks, regenerate fallback CSS and retire the previous service-worker cache.
+7. Build the production application, inspect the complete diff, push a PR, wait for required checks and merge only when green. Verify the public deployment before reporting completion.
+
+## Acceptance criteria
+
+The first screen has an obvious learning action and a recognizable visual identity. Every subject remains discoverable, cards and buttons look related across routes, mobile has no horizontal page overflow, dark mode stays readable and reduced-motion readers get stable controls. Real progress, account access and calculator behavior continue to work. No new runtime dependency, remote image or client animation library is required.
+
+The previous design notes below record earlier decisions; the corner scale and shared treatments above describe the current direction.
+
 ## Playful shared surfaces, September 2026
 
 The homepage's tactile direction now carries through the shared design system. Subject, tool and portfolio entrances have accent-tinted light and a raised edge. Public school hubs have a decorative book emblem built from the subject's existing icon. Navigation cards use striped rails, tilted icon tiles and small label shadows; information cards remain still. Portfolio chart panels have a soft accent glow. Progress retains its real values and adds a striped fill, while the current stage and completed-stage labels are easier to distinguish.

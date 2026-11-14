@@ -88,33 +88,33 @@ export default function HomePage() {
         grid gap-[clamp(34px,4.4vw,64px)]">
         <header className="learner-hero">
           <div className="learner-intro">
-            <span className="learner-kicker" lang="en">YOUR NEXT CHAPTER STARTS HERE</span>
-            <h1 lang="bn">ছোট্ট শুরু।<br /><em>অনেক দূর।</em></h1>
+            <span className="learner-kicker" lang="en"><Icon name="spark" size={18} /> A LITTLE CURIOUS? YOU BELONG HERE.</span>
+            <h1 lang="bn">কৌতূহল থাকুক।<br /><em>শেখা চলুক।</em></h1>
             <p lang="bn">টাকা বুঝতে চান, নতুন ভাষা শিখতে চান, নাকি নিজের জন্য কিছু করতে চান? আপনার শুরুটা হোক এখানেই। সহজ বাংলায়, নিজের গতিতে।</p>
             <nav className="hero-actions" aria-label="শেখা শুরু করুন">
-              <ButtonLink kind="solid" href="#learn-h" lang="bn">আমার কোর্স খুঁজি</ButtonLink>
+              <ButtonLink kind="solid" href="#learn-h" lang="bn">চলুন, শুরু করি <Icon name="chevron" size={18} /></ButtonLink>
               <ButtonLink kind="ghost" href="/account" lang="bn">আমার অগ্রগতি</ButtonLink>
             </nav>
             <div className="learner-promises" lang="bn"><span>পড়তে কোনো খরচ নেই</span><span>একদম শুরু থেকে</span><span>নিজের সময়ে</span></div>
           </div>
           <figure className="learning-shelf" aria-labelledby="shelf-caption" lang="bn">
-            <figcaption id="shelf-caption"><span lang="en">PICK A LITTLE POSSIBILITY</span><b>একটা বিষয়। নতুন একটা দুনিয়া।</b></figcaption>
-            <span className="shelf-spark" aria-hidden="true">✦</span>
+            <figcaption id="shelf-caption"><span lang="en">FIND YOUR NEXT LITTLE ADVENTURE</span><b>একটা বিষয়। নতুন একটা দুনিয়া।</b></figcaption>
+            <Icon name="spark" size={82} className="shelf-spark" />
             <div className="shelf-bars">
               {SCHOOLS.filter((item) => !item.ownerOnly && item.key && LADDER_TOTALS[item.key]).map((item) => {
                 const total = LADDER_TOTALS[item.key!];
                 return <a key={item.href} href={item.href} className="shelf-subject"
-                  style={{ "--accent": item.accent, "--shelf-height": `${total / Math.max(...Object.values(LADDER_TOTALS)) * 240}px` } as CSSProperties}
+                  style={{ "--accent": item.accent } as CSSProperties}
                   aria-label={`${item.sub ?? item.label}: ${total.toLocaleString("bn-BD")}টি পাঠ, পড়তে কোনো খরচ নেই`}>
                   <span className="shelf-column"><strong>{total.toLocaleString("bn-BD")}</strong><span className="shelf-unit">টি পাঠ</span><span className="shelf-sticker">ফ্রি ✦</span><span className="shelf-icon"><Icon name={item.icon} /></span></span>
                   <span className="shelf-name">{item.sub ?? item.label}</span>
                 </a>;
               })}
             </div>
-            <p className="shelf-note">আপনার পছন্দের বিষয় ছুঁয়ে শুরু করুন <span aria-hidden="true">↗</span></p>
+            <p className="shelf-note">পছন্দের বিষয় ছুঁয়ে দেখুন। শুরুটা সহজ! <Icon name="chevron" size={20} /></p>
           </figure>
           <aside className="learner-start" aria-labelledby="start-heading">
-            <span className="learner-kicker" lang="en">A LITTLE DIRECTION</span>
+            <span className="learner-kicker" lang="en">SMALL STEPS. BIG POSSIBILITIES.</span>
             <h2 id="start-heading" lang="bn">কোথা থেকে শুরু করব?</h2>
             <ol className="learner-steps" lang="bn">
               <li><b>আপনার বিষয় বেছে নিন</b><span>নিচে কোর্সগুলো দেখে যেটা ভালো লাগে, সেটাই খুলুন।</span></li>
