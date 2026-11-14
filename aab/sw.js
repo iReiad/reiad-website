@@ -24,6 +24,8 @@
    the number moves. `node scripts/check-sw.ts --update` records the
    new hashes.
 
+   v264: punk carnival frames, acid palette, native controls and collage
+         furniture in /fallback.css.
    v263: playful learning clubhouse, rounded subject tiles and pressable
          shared controls in /fallback.css.
    v258: clearer navigation, readable secondary labels and form hints
@@ -66,7 +68,7 @@
 // v260: complete course navigation and discovery layout refinements.
 // v261: playful learning shelf and tactile course icons in fallback styles.
 // v262: shared playful cards, subject emblems and striped progress styling.
-const VERSION = "v263";
+const VERSION = "v264";
 const SHELL = `shell-${VERSION}`;
 const RUNTIME = `runtime-${VERSION}`;
 

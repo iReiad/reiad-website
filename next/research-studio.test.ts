@@ -221,7 +221,8 @@ interface Sent { method: string; path: string; body: unknown }
 async function open(path: string, { signedIn = true }: { signedIn?: boolean } = {}): Promise<{
   page: Page; errors: string[]; sent: Sent[]; rows: Record<string, Row[]>; asked: string[]; published: { token: string }[];
 }> {
-  const page = await browser.newPage();
+  /* Persistence checks use stable motion; the interactive suite covers animated chrome. */
+  const page = await browser.newPage({ reducedMotion: "reduce" });
   const errors: string[] = [];
   const sent: Sent[] = [];
   const asked: string[] = [];
@@ -824,9 +825,14 @@ for (const path of ["/tools/research", "/tools/research/library", "/tools/resear
   ok("changing the style renders every chip again out of the same href", oscola !== apa && oscola.length > 0, `apa=${apa} oscola=${oscola}`);
   ok("and the row remembers the style", sent.some((x) => x.method === "PATCH" && x.path.includes("research_documents") && (x.body as { style?: string }).style === "oscola"));
 
-  /* ---- a footnote ---- */
-  await page.locator(".rs-editor").click();
-  await page.keyboard.press("End");
+  /* Insert after the citation, independent of its wrapping or the editor's size. */
+  await page.locator(".rs-editor").focus();
+  await page.keyboard.press("ControlOrMeta+End");
+  ok("the footnote starts outside a citation", await page.evaluate(() => {
+    const node = getSelection()?.focusNode;
+    const element = node instanceof Element ? node : node?.parentElement;
+    return !!element && !element.closest("a.cite");
+  }));
   await page.getByRole("button", { name: /Footnote|পাদটীকা/ }).click();
   await page.waitForTimeout(400);
   ok("a footnote is a marker in the text and a note at the foot, numbered by position",
@@ -1382,7 +1388,7 @@ for (const path of ["/tools/research", "/tools/research/library", "/tools/resear
   ok("and says how many", ((await page.locator('[data-testid="rs-ask-indexed"]').textContent()) ?? "").includes("2"), (await page.locator('[data-testid="rs-ask-indexed"]').textContent()) ?? "");
 
   /* ---- the prompt library ---- */
-  await page.locator("details summary").first().click();
+  await page.locator("details:has(#rs-ask-template) > summary").click();
   await page.locator("#rs-ask-template").selectOption({ label: "Weekly review" });
   await page.waitForTimeout(200);
   ok("a template's marks become fields, in order", await page.locator('[data-testid="rs-ask-marks"] input').count() === 4 && await page.locator("#rs-ask-ph-PROJECT").count() === 1);
